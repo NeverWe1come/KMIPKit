@@ -127,4 +127,41 @@ final class ClientBatchNativeBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
     }
+
+    @Test
+    void cryptoJniReadersRejectMalformedOptionalIdentifiersAndIndicators() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemHash(0, 0, null, 3, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(0, new byte[0], 0, 0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(0, null, 1, 0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(1, null, 0, 0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(1, new byte[] {0x41}, 1, 0, 0,
+                        null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(2, new byte[] {0x41}, 1, 0, 0,
+                        null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(2, null, -1, 0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(2, null, 0x1_0000_0000L,
+                        0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(3, new byte[] {0x41}, 1,
+                        0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(3, null, Integer.MIN_VALUE - 1L,
+                        0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(3, null, Integer.MAX_VALUE + 1L,
+                        0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(77, null, 0, 0, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemSignatureVerify(0, null, 0,
+                        0, 0, null, null, null, 0, -1));
+    }
 }
