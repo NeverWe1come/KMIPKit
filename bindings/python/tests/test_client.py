@@ -3184,6 +3184,7 @@ def test_split_key_prime_field_is_copied_to_native_input(
 ) -> None:
     attributes = ttlv.ttlv_structure_create()
     captured: list[tuple[object, ...]] = []
+    observed_prime_bytes: list[bytes] = []
     sentinel = object()
 
     def make_handle(
@@ -3194,6 +3195,13 @@ def test_split_key_prime_field_is_copied_to_native_input(
         **_kwargs: object,
     ) -> object:
         captured.append(arguments)
+        prime_data = arguments[6]
+        prime_length = int(arguments[7])
+        observed_prime_bytes.append(
+            bytes(extensions.ffi.buffer(prime_data, prime_length))
+            if prime_length
+            else b""
+        )
         return sentinel
 
     monkeypatch.setattr(extensions, "_make_handle", make_handle)
@@ -3211,9 +3219,8 @@ def test_split_key_prime_field_is_copied_to_native_input(
         arguments = captured[0]
         assert arguments[5] == 1
         assert arguments[7] == len(expected_bytes)
-        if expected_bytes:
-            assert bytes(extensions.ffi.buffer(arguments[6], len(expected_bytes))) == expected_bytes
-        else:
+        assert observed_prime_bytes == [expected_bytes]
+        if not expected_bytes:
             assert arguments[6] == extensions.ffi.NULL
     finally:
         attributes.close()

@@ -12,6 +12,7 @@ from ._handles import (
     _new_handle,
     _scalar,
     synchronize_public_functions,
+    _wipe_staging_buffer,
     _wrap_owned_handle,
 )
 
@@ -183,9 +184,16 @@ def _variable_value(symbol: str, value: bytes, limits: CodecLimits) -> Value:
         errors.raise_for_status(6)
     raw = view.tobytes()
     data = ffi.new("uint8_t[]", raw)
-    handle = _new_handle(
-        "kmipkit_ttlv_value_t", getattr(lib, symbol), limits._pointer(), data, len(raw)
-    )
+    try:
+        handle = _new_handle(
+            "kmipkit_ttlv_value_t",
+            getattr(lib, symbol),
+            limits._pointer(),
+            data,
+            len(raw),
+        )
+    finally:
+        _wipe_staging_buffer(data)
     return _wrap_owned_handle(Value, handle)
 
 

@@ -1,9 +1,9 @@
 """Manifest-backed Python facade for the vendor extension registry C ABI.
 
-KMIPKit owns and zeroizes its Rust buffers. Python necessarily creates and
-retains its own copies of input strings, byte strings, and values returned by
-TTLV accessors; Python's runtime does not provide deterministic zeroization of
-those external copies.
+KMIPKit zeroizes its Rust buffers and temporary CFFI byte arrays after
+synchronous ABI calls. Immutable Python ``bytes`` and ``str`` values cannot be
+overwritten in place, and Python's runtime may retain external copies of input
+and accessor values beyond KMIPKit's control.
 
 Opaque native identity handles expose bounded field getters. Inspection keeps
 generic TTLV intact; Python never infers identity by rescanning payload content.
@@ -11,7 +11,8 @@ generic TTLV intact; Python never infers identity by rescanning payload content.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any, overload
@@ -25,8 +26,9 @@ from ._handles import (
     _integer_range,
     _owned_bytes,
     _scalar,
-    synchronize_public_functions,
+    _wipe_staging_buffer,
     _wrap_owned_handle,
+    synchronize_public_functions,
 )
 
 
@@ -409,23 +411,39 @@ def _make_handle(
     arguments: tuple[object, ...],
     out_index: int | None = None,
     consumed_indices: tuple[int, ...] = (),
+    staging_buffers: tuple[Any, ...] = (),
 ) -> Any:
-    output = ffi.new(f"{c_type} **")
-    call_arguments = list(arguments)
-    if out_index is None:
-        call_arguments.append(output)
-    else:
-        call_arguments.insert(out_index, output)
-    function = getattr(lib, function_name)
-    status = (
-        _invoke_consuming(function, tuple(call_arguments), consumed_indices)
-        if consumed_indices
-        else _invoke(function, *call_arguments)
-    )
-    errors.raise_for_status(status)
-    if output[0] == ffi.NULL:
-        errors.raise_for_status(4)
-    return output[0]
+    try:
+        output = ffi.new(f"{c_type} **")
+        call_arguments = list(arguments)
+        if out_index is None:
+            call_arguments.append(output)
+        else:
+            call_arguments.insert(out_index, output)
+        function = getattr(lib, function_name)
+        status = (
+            _invoke_consuming(function, tuple(call_arguments), consumed_indices)
+            if consumed_indices
+            else _invoke(function, *call_arguments)
+        )
+        errors.raise_for_status(status)
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(4)
+        return output[0]
+    finally:
+        for buffer in staging_buffers:
+            _wipe_staging_buffer(buffer)
+
+
+@contextmanager
+def _staging_buffer_scope() -> Iterator[list[Any]]:
+    """Keep staged inputs registered until the builder completes or fails."""
+    buffers: list[Any] = []
+    try:
+        yield buffers
+    finally:
+        for buffer in buffers:
+            _wipe_staging_buffer(buffer)
 
 
 def _make_bytes(value: str) -> tuple[bytes, Any]:
@@ -1303,6 +1321,7 @@ def with_unique_batch_item_id(
         "kmipkit_client_batch_item_with_unique_batch_item_id",
         (item, data, len(raw)),
         consumed_indices=(0,),
+        staging_buffers=(data,),
     )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -1346,16 +1365,21 @@ def _native_value(value: ttlv.Value | None) -> Any:
     return value._pointer()
 
 
-def _native_optional_span(value: bytes | bytearray | memoryview | None) -> tuple[Any, Any]:
+def _native_optional_span(
+    value: bytes | bytearray | memoryview | None,
+    staging_buffers: list[Any] | None = None,
+) -> tuple[Any, Any]:
     """Create a borrowed span record while preserving omitted versus empty input."""
     if value is None:
         return ffi.NULL, None
     raw, data = _owned_bytes(value, _MAX_OPERATION_INPUT_BYTES)
+    if staging_buffers is not None:
+        staging_buffers.append(data)
     span = ffi.new(
         "kmipkit_byte_span_v1_t *",
         {"data": data if raw else ffi.NULL, "length": len(raw)},
     )
-    return span, (data, span)
+    return span, data
 
 
 def _native_optional_indicator(value: bool | None) -> int:
@@ -1368,6 +1392,7 @@ def _native_optional_indicator(value: bool | None) -> int:
 
 def _native_unique_identifier(
     value: UniqueIdentifier | None,
+    staging_buffers: list[Any] | None = None,
 ) -> tuple[Any, Any]:
     if value is None:
         return ffi.NULL, None
@@ -1383,10 +1408,11 @@ def _native_unique_identifier(
     owner = None
     if value.kind is UniqueIdentifierKind.TEXT_STRING:
         raw, owner = _owned_bytes(value.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
-        data = ffi.new("uint8_t[]", raw) if raw else ffi.NULL
+        if staging_buffers is not None:
+            staging_buffers.append(owner)
+        data = owner if raw else ffi.NULL
         record.text_data = data
         record.text_length = len(raw)
-        owner = (owner, data)
     else:
         record.text_data = ffi.NULL
         record.text_length = 0
@@ -1456,38 +1482,41 @@ def client_batch_item_create_split_key(
     parts = _integer_range(split_key_parts, -(1 << 31), (1 << 31) - 1)
     threshold = _integer_range(split_key_threshold, -(1 << 31), (1 << 31) - 1)
     method = _integer_range(split_key_method, 0, 0xFFFF_FFFF)
-    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
-    if prime_field_size is None:
-        has_prime = 0
-        prime_data = ffi.NULL
-        prime_length = 0
-        prime_owner = None
-    else:
-        if not isinstance(prime_field_size, (bytes, bytearray, memoryview)):
-            errors.raise_for_status(4)
-        raw_prime, prime_owner = _owned_bytes(prime_field_size, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
-        prime_data = ffi.new("uint8_t[]", raw_prime) if raw_prime else ffi.NULL
-        has_prime = 1
-        prime_length = len(raw_prime)
-        prime_owner = (prime_owner, prime_data)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_create_split_key",
-        (
-            raw_object_type,
-            identifier,
-            parts,
-            threshold,
-            method,
-            has_prime,
-            prime_data,
-            prime_length,
-            _native_structure(attributes, required=True),
-            _native_structure(protection_storage_masks),
-        ),
-    )
-    # Keep temporary copied values alive until the synchronous ABI call returns.
-    _ = identifier_owner, prime_owner
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        if prime_field_size is None:
+            has_prime = 0
+            prime_data = ffi.NULL
+            prime_length = 0
+        else:
+            if not isinstance(prime_field_size, (bytes, bytearray, memoryview)):
+                errors.raise_for_status(4)
+            raw_prime, prime_owner = _owned_bytes(
+                prime_field_size, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES
+            )
+            staging_buffers.append(prime_owner)
+            prime_data = prime_owner if raw_prime else ffi.NULL
+            has_prime = 1
+            prime_length = len(raw_prime)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_create_split_key",
+            (
+                raw_object_type,
+                identifier,
+                parts,
+                threshold,
+                method,
+                has_prime,
+                prime_data,
+                prime_length,
+                _native_structure(attributes, required=True),
+                _native_structure(protection_storage_masks),
+            ),
+            staging_buffers=tuple(staging_buffers),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -1500,28 +1529,30 @@ def client_batch_item_certify(
     protection_storage_masks: ttlv.Structure | None = None,
 ) -> ClientBatchItem:
     """Create one typed Certify item, copying its opaque request value as sensitive input."""
-    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
-    if certificate_request_type is None:
-        has_request_type = 0
-        request_type = 0
-    else:
-        has_request_type = 1
-        request_type = _integer_range(certificate_request_type, 0, 0xFFFF_FFFF)
-    request_value, request_value_owner = _native_optional_span(certificate_request_value)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_certify",
-        (
-            identifier,
-            has_request_type,
-            request_type,
-            request_value,
-            _native_structure(attributes),
-            _native_structure(protection_storage_masks),
-        ),
-    )
-    # Retain caller-independent temporary input storage through the synchronous ABI call.
-    _ = identifier_owner, request_value_owner
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        if certificate_request_type is None:
+            has_request_type = 0
+            request_type = 0
+        else:
+            has_request_type = 1
+            request_type = _integer_range(certificate_request_type, 0, 0xFFFF_FFFF)
+        request_value, _ = _native_optional_span(
+            certificate_request_value, staging_buffers
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_certify",
+            (
+                identifier,
+                has_request_type,
+                request_type,
+                request_value,
+                _native_structure(attributes),
+                _native_structure(protection_storage_masks),
+            ),
+            staging_buffers=tuple(staging_buffers),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -1534,19 +1565,20 @@ def client_batch_item_hash(
     final_indicator: bool | None = None,
 ) -> ClientBatchItem:
     """Create a Hash request item without performing local cryptography."""
-    correlation, correlation_owner = _native_optional_span(correlation_value)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_hash",
-        (
-            _native_structure(parameters, required=True),
-            _native_value(data),
-            correlation,
-            _native_optional_indicator(init_indicator),
-            _native_optional_indicator(final_indicator),
-        ),
-    )
-    _ = correlation_owner
+    with _staging_buffer_scope() as staging_buffers:
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_hash",
+            (
+                _native_structure(parameters, required=True),
+                _native_value(data),
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+            staging_buffers=tuple(staging_buffers),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -1560,21 +1592,22 @@ def client_batch_item_mac(
     final_indicator: bool | None = None,
 ) -> ClientBatchItem:
     """Create a MAC request item while preserving optional wire fields."""
-    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
-    correlation, correlation_owner = _native_optional_span(correlation_value)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_mac",
-        (
-            identifier,
-            _native_structure(parameters),
-            _native_value(data),
-            correlation,
-            _native_optional_indicator(init_indicator),
-            _native_optional_indicator(final_indicator),
-        ),
-    )
-    _ = identifier_owner, correlation_owner
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_mac",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+            staging_buffers=tuple(staging_buffers),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -1589,23 +1622,24 @@ def client_batch_item_mac_verify(
     final_indicator: bool | None = None,
 ) -> ClientBatchItem:
     """Create a MAC Verify request item and copy opaque MAC bytes at the ABI boundary."""
-    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
-    mac_span, mac_owner = _native_optional_span(mac_data)
-    correlation, correlation_owner = _native_optional_span(correlation_value)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_mac_verify",
-        (
-            identifier,
-            _native_structure(parameters),
-            _native_value(data),
-            mac_span,
-            correlation,
-            _native_optional_indicator(init_indicator),
-            _native_optional_indicator(final_indicator),
-        ),
-    )
-    _ = identifier_owner, mac_owner, correlation_owner
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        mac_span, _ = _native_optional_span(mac_data, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_mac_verify",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                mac_span,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+            staging_buffers=tuple(staging_buffers),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -1620,23 +1654,24 @@ def client_batch_item_sign(
     final_indicator: bool | None = None,
 ) -> ClientBatchItem:
     """Create a Sign request item; KMIPKit never computes a digest or signature locally."""
-    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
-    digest_span, digest_owner = _native_optional_span(digested_data)
-    correlation, correlation_owner = _native_optional_span(correlation_value)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_sign",
-        (
-            identifier,
-            _native_structure(parameters),
-            _native_value(data),
-            digest_span,
-            correlation,
-            _native_optional_indicator(init_indicator),
-            _native_optional_indicator(final_indicator),
-        ),
-    )
-    _ = identifier_owner, digest_owner, correlation_owner
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        digest_span, _ = _native_optional_span(digested_data, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_sign",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                digest_span,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+            staging_buffers=tuple(staging_buffers),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -1652,25 +1687,26 @@ def client_batch_item_signature_verify(
     final_indicator: bool | None = None,
 ) -> ClientBatchItem:
     """Create a Signature Verify request item using opaque signature inputs."""
-    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
-    digest_span, digest_owner = _native_optional_span(digested_data)
-    signature_span, signature_owner = _native_optional_span(signature_data)
-    correlation, correlation_owner = _native_optional_span(correlation_value)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_signature_verify",
-        (
-            identifier,
-            _native_structure(parameters),
-            _native_value(data),
-            digest_span,
-            signature_span,
-            correlation,
-            _native_optional_indicator(init_indicator),
-            _native_optional_indicator(final_indicator),
-        ),
-    )
-    _ = identifier_owner, digest_owner, signature_owner, correlation_owner
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        digest_span, _ = _native_optional_span(digested_data, staging_buffers)
+        signature_span, _ = _native_optional_span(signature_data, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_signature_verify",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                digest_span,
+                signature_span,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+            staging_buffers=tuple(staging_buffers),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 

@@ -300,6 +300,15 @@ def _owned_bytes(
     return raw, ffi.new("uint8_t[]", raw)
 
 
+def _wipe_staging_buffer(buffer: Any) -> None:
+    """Overwrite a temporary CFFI byte array owned by the Python adapter."""
+    if buffer is None or buffer == ffi.NULL:
+        return
+    length = ffi.sizeof(buffer)
+    if length:
+        ffi.buffer(buffer, length)[:] = b"\x00" * length
+
+
 def _handle_array(
     c_type: str, values: list[NativeHandle] | tuple[NativeHandle, ...]
 ) -> Any:

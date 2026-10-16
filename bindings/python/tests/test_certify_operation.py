@@ -13,7 +13,12 @@ def test_certify_builder_preserves_open_request_type_and_sensitive_bytes(monkeyp
     copied_request_values: list[bytes] = []
     secret = b"certificate-request-marker"
 
-    def make_handle(handle_type: str, symbol: str, arguments: tuple[object, ...]) -> int:
+    def make_handle(
+        handle_type: str,
+        symbol: str,
+        arguments: tuple[object, ...],
+        **_kwargs: object,
+    ) -> int:
         calls.append((symbol, arguments))
         span = arguments[3]
         copied_request_values.append(bytes(ffi.buffer(span.data, len(secret))))
@@ -106,7 +111,8 @@ def test_certify_builder_allows_identifier_only_request(monkeypatch) -> None:
     monkeypatch.setattr(
         extensions,
         "_make_handle",
-        lambda _kind, symbol, arguments: calls.append((symbol, arguments)) or 23,
+        lambda _kind, symbol, arguments, **_kwargs: calls.append((symbol, arguments))
+        or 23,
     )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
 

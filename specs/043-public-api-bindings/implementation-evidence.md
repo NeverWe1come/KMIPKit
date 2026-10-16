@@ -2219,3 +2219,20 @@ an increase of 48 covered lines from the previous run, but remains below the
 indicator values; its focused Java/JNI boundary suite passes 7 tests. Keep T043
 and the manifest operation state open until a run including that commit passes
 the coverage threshold and remaining required checks.
+
+## T079 — Python native staging zeroization
+
+This task implements Constitution §8, `KMIPKIT-0021-FR-012`, and
+`KMIPKIT-0043-FR-009`/`KMIPKIT-0043-FR-010`. Python builders overwrite
+KMIPKit-owned CFFI staging arrays after synchronous native calls on success and
+ABI errors, and also clear staged values when later local validation fails
+before the call. The shared variable TTLV path covers BigInteger, TextString,
+and ByteString while preserving codec limits and omitted-versus-empty spans.
+Caller-owned bytearrays remain unchanged. Python immutable values and runtime
+copies remain outside deterministic zeroization.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `cbe68b98` | `.\bindings\python\.venv\Scripts\python.exe -m pytest -q --tb=short bindings/python/tests/test_certify_operation.py bindings/python/tests/test_hash_mac_signature_operations.py -k 'zeroized_after_native_call or zeroized_after_abi_call'` | Expected failure: 18 cases failed at post-call staging-zeroization assertions (2 Certify, 10 Hash/MAC/MAC Verify/Sign/Signature Verify, and 6 BigInteger/TextString/ByteString success/error cases); 44 deselected. Fake ABI functions observed every original staged input, and caller-owned buffers were not modified. |
+| Red | `cbe68b98` | `.\bindings\python\.venv\Scripts\python.exe -m pytest -q --tb=short bindings/python/tests/test_hash_mac_signature_operations.py::test_operation_staging_bytes_are_zeroized_after_preflight_failure` | Expected failure: 1 test found the unzeroized correlation staging buffer after Hash rejected invalid parameters before reaching the ABI. |
+| Green | this commit | `.\bindings\python\.venv\Scripts\python.exe -m pytest -q --tb=short bindings/python/tests/test_certify_operation.py bindings/python/tests/test_hash_mac_signature_operations.py -k 'zeroized_after_native_call or zeroized_after_abi_call or zeroized_after_preflight_failure'`; `.\bindings\python\.venv\Scripts\python.exe -m pytest -q bindings/python/tests/test_certify_operation.py bindings/python/tests/test_hash_mac_signature_operations.py`; `.\bindings\python\.venv\Scripts\python.exe -m pytest -q bindings/python/tests` | PASS: 19 focused zeroization cases, 63 tests across the two operation modules, and the full Python suite (341 tests). Updated the public Python module docstring and English/Spanish cryptographic-operation guidance with immutable-runtime-copy limits. |
