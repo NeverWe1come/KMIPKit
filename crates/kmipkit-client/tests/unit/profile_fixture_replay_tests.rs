@@ -106,98 +106,99 @@ impl Transport for SharedReplayTransport {
     }
 }
 
+const PINNED_CASES: &[(&str, &str)] = &[
+    (
+        "BL-M-1-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"),
+    ),
+    (
+        "BL-M-2-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"),
+    ),
+    (
+        "BL-M-3-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"),
+    ),
+    (
+        "BL-M-4-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"),
+    ),
+    (
+        "BL-M-5-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"),
+    ),
+    (
+        "BL-M-6-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"),
+    ),
+    (
+        "BL-M-7-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"),
+    ),
+    (
+        "BL-M-8-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"),
+    ),
+    (
+        "BL-M-9-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"),
+    ),
+    (
+        "BL-M-10-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"),
+    ),
+    (
+        "BL-M-11-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"),
+    ),
+    (
+        "BL-M-12-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"),
+    ),
+    (
+        "BL-M-13-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"),
+    ),
+    (
+        "SKLC-M-1-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"),
+    ),
+    (
+        "SKLC-M-2-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"),
+    ),
+    (
+        "SKLC-M-3-21",
+        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"),
+    ),
+];
+const EXPECTED_RESULTS: &[&str] = &[
+    "BL-M-1-21=REPLAYED exchanges=7 operations=7",
+    "BL-M-2-21=REPLAYED exchanges=5 operations=7",
+    "BL-M-3-21=REPLAYED exchanges=7 operations=7",
+    "BL-M-4-21=PINNED_BUT_UNEXECUTED step=1 error=Validation/Some(InvalidInput)/Some(NotSent) sent_exchanges=1 operations_attempted=2 later_steps_unexecuted=5",
+    "BL-M-5-21=REPLAYED exchanges=7 operations=7",
+    "BL-M-6-21=REPLAYED exchanges=6 operations=6",
+    "BL-M-7-21=PINNED_BUT_UNEXECUTED step=2 error=Validation/Some(InvalidInput)/Some(NotSent) sent_exchanges=2 operations_attempted=3 later_steps_unexecuted=3",
+    "BL-M-8-21=REPLAYED exchanges=7 operations=7",
+    "BL-M-9-21=REPLAYED exchanges=5 operations=5",
+    "BL-M-10-21=PINNED_BUT_UNEXECUTED step=1 error=Validation/Some(InvalidInput)/Some(NotSent) sent_exchanges=1 operations_attempted=2 later_steps_unexecuted=3",
+    "BL-M-11-21=REPLAYED exchanges=5 operations=5",
+    "BL-M-12-21=REPLAYED exchanges=5 operations=5",
+    "BL-M-13-21=REPLAYED exchanges=6 operations=6",
+    "SKLC-M-1-21=REPLAYED exchanges=3 operations=3",
+    "SKLC-M-2-21=REPLAYED exchanges=8 operations=8",
+    "SKLC-M-3-21=REPLAYED exchanges=8 operations=8",
+];
+
 #[test]
 // This one matrix deliberately keeps all 16 exact case IDs and expected outcomes together.
 #[allow(clippy::too_many_lines)]
 fn every_available_profile_fixture_records_replay_or_typed_blocker() {
-    let cases: &[(&str, &str)] = &[
-        (
-            "BL-M-1-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"),
-        ),
-        (
-            "BL-M-2-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"),
-        ),
-        (
-            "BL-M-3-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"),
-        ),
-        (
-            "BL-M-4-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"),
-        ),
-        (
-            "BL-M-5-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"),
-        ),
-        (
-            "BL-M-6-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"),
-        ),
-        (
-            "BL-M-7-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"),
-        ),
-        (
-            "BL-M-8-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"),
-        ),
-        (
-            "BL-M-9-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"),
-        ),
-        (
-            "BL-M-10-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"),
-        ),
-        (
-            "BL-M-11-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"),
-        ),
-        (
-            "BL-M-12-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"),
-        ),
-        (
-            "BL-M-13-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"),
-        ),
-        (
-            "SKLC-M-1-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"),
-        ),
-        (
-            "SKLC-M-2-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"),
-        ),
-        (
-            "SKLC-M-3-21",
-            include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"),
-        ),
-    ];
-    let expected_results = [
-        "BL-M-1-21=REPLAYED exchanges=7 operations=7",
-        "BL-M-2-21=REPLAYED exchanges=5 operations=7",
-        "BL-M-3-21=REPLAYED exchanges=7 operations=7",
-        "BL-M-4-21=PINNED_BUT_UNEXECUTED step=1 error=Validation/Some(InvalidInput)/Some(NotSent) sent_exchanges=1 operations_attempted=2 later_steps_unexecuted=5",
-        "BL-M-5-21=REPLAYED exchanges=7 operations=7",
-        "BL-M-6-21=REPLAYED exchanges=6 operations=6",
-        "BL-M-7-21=PINNED_BUT_UNEXECUTED step=2 error=Validation/Some(InvalidInput)/Some(NotSent) sent_exchanges=2 operations_attempted=3 later_steps_unexecuted=3",
-        "BL-M-8-21=REPLAYED exchanges=7 operations=7",
-        "BL-M-9-21=REPLAYED exchanges=5 operations=5",
-        "BL-M-10-21=PINNED_BUT_UNEXECUTED step=1 error=Validation/Some(InvalidInput)/Some(NotSent) sent_exchanges=1 operations_attempted=2 later_steps_unexecuted=3",
-        "BL-M-11-21=REPLAYED exchanges=5 operations=5",
-        "BL-M-12-21=REPLAYED exchanges=5 operations=5",
-        "BL-M-13-21=REPLAYED exchanges=6 operations=6",
-        "SKLC-M-1-21=REPLAYED exchanges=3 operations=3",
-        "SKLC-M-2-21=REPLAYED exchanges=8 operations=8",
-        "SKLC-M-3-21=REPLAYED exchanges=8 operations=8",
-    ];
     let limits = CodecLimits::defaults();
-    let mut results = Vec::with_capacity(cases.len());
+    let mut results = Vec::with_capacity(PINNED_CASES.len());
 
-    for (case_id, xml) in cases {
+    for (case_id, xml) in PINNED_CASES {
         let fixture = OasisProfileFixture::from_xml(
             case_id,
             xml,
@@ -351,7 +352,7 @@ fn every_available_profile_fixture_records_replay_or_typed_blocker() {
     );
     assert_eq!(
         results.iter().map(String::as_str).collect::<Vec<_>>(),
-        expected_results,
+        EXPECTED_RESULTS,
         "each pinned case retains its exact replay or blocker result"
     );
     for result in &results {
