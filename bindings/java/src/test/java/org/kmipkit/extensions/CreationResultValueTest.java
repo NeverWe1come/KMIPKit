@@ -1,5 +1,6 @@
 package org.kmipkit.extensions;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -191,6 +192,15 @@ final class CreationResultValueTest {
                 () -> ClientBatchItemResult.parseSupportedVersions(new long[] {Integer.MAX_VALUE + 1L, 0}));
         assertThrows(InvalidInputException.class,
                 () -> ClientBatchItemResult.parseSupportedVersions(new long[] {0, Integer.MIN_VALUE - 1L}));
+    }
+
+    @Test
+    void metadataParserRejectsInvalidNativeTupleLength() {
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseMetadata(null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseMetadata(new long[] {0, 0, 0}));
+        assertArrayEquals(new long[] {1, 2, 3, 4},
+                ClientBatchItemResult.parseMetadata(new long[] {1, 2, 3, 4}));
     }
 
     private static Object[] identifierRecord(long kind, long number) {
