@@ -62,17 +62,19 @@ pub(super) fn run_lifecycle_case(case_id: &str) -> Result<(), Box<dyn Error>> {
     let operation_result = if operation == "Validate" {
         run_validate_case(&mut client, case_id, &row, &mut ownership)
     } else {
-        provision_object(&mut client, object_type, case_id, &mut ownership).and_then(|objects| {
-            run_lifecycle_operation(
-                &mut client,
-                case_id,
-                operation,
-                object_type,
-                &row,
-                &objects,
-                &mut ownership,
-            )
-        })
+        provision_object(&mut client, object_type, case_id, &row, &mut ownership).and_then(
+            |objects| {
+                run_lifecycle_operation(
+                    &mut client,
+                    case_id,
+                    operation,
+                    object_type,
+                    &row,
+                    &objects,
+                    &mut ownership,
+                )
+            },
+        )
     }
     .map_err(|error| error.to_string());
     let result = finish_operation_with_cleanup(operation_result, || {
@@ -119,14 +121,17 @@ fn run_activate(
 ) -> Result<(), Box<dyn Error>> {
     if object_type == "SplitKey" {
         let state = get_object_state(client, case_id, unique_id)?;
-        // OASIS KMIP v2.1 §6.1.1 only activates Pre-Active objects;
-        // §11.55, Table 486 assigns Pre-Active the raw value 1.
-        if state != 1 {
+        let requested_date = get_object_activation_date(client, case_id, unique_id)?;
+        let now = now_unix_seconds()?;
+        let future_date_retained = requested_date.is_some_and(|date| date > now);
+        if state != STATE_PRE_ACTIVE || !future_date_retained {
             return Err(format!(
-                "case {case_id} classification=client_blocked; Create Split Key returned server-managed State {state}, while KMIP Activate requires Pre-Active"
+                "case {case_id} classification=setup_blocked; Create Split Key returned State {state} and retained a future Activation Date={future_date_retained}; expected State Pre-Active and the requested future Activation Date"
             )
             .into());
         }
+        // OASIS KMIP v2.1 §6.1.1 only activates Pre-Active objects;
+        // §11.55, Table 486 assigns Pre-Active the raw value 1.
     }
     execute_case(
         client,
@@ -697,6 +702,7 @@ fn provision_object(
     client: &mut Client,
     object_type: &str,
     case_id: &str,
+    row: &serde_json::Value,
     ownership: &mut CaseOwnership,
 ) -> Result<OwnedObjects, Box<dyn Error>> {
     let primary = match object_type {
@@ -760,17 +766,13 @@ fn provision_object(
                 2,
                 2,
                 SplitKeyMethod::XOR,
-                AttributeSet::try_new([
-                    name_attribute(case_id)?,
-                    kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(12))?,
-                ])?,
+                split_key_attributes(row, case_id)?,
             )
             .with_unique_identifier(identifier(&source_id));
             let ids = execute_created_split(client, case_id, split, ownership)?;
-            let primary = ids.first().cloned().ok_or_else(|| {
+            ids.first().cloned().ok_or_else(|| {
                 format!("case {case_id}: Create Split Key returned no identifiers")
-            })?;
-            primary
+            })?
         }
         "Certificate" => {
             register_certificate(client, case_id, ValidationCertificate::Leaf, ownership)?
@@ -780,6 +782,30 @@ fn provision_object(
         unknown => return Err(format!("case {case_id}: unsupported object type {unknown}").into()),
     };
     Ok(OwnedObjects { primary })
+}
+
+fn split_key_attributes(
+    row: &serde_json::Value,
+    case_id: &str,
+) -> Result<AttributeSet, Box<dyn Error>> {
+    let mut attributes = vec![
+        name_attribute(case_id)?,
+        kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(12))?,
+    ];
+    match row["parameters"]["activation_date"].as_str() {
+        Some("future") => attributes.push(kmip_item(
+            ACTIVATION_DATE,
+            Value::date_time(future_date()?),
+        )?),
+        Some(_) => {
+            return Err(format!(
+                "case {case_id} has an unsupported SplitKey Activation Date fixture"
+            )
+            .into());
+        }
+        None => {}
+    }
+    Ok(AttributeSet::try_new(attributes)?)
 }
 
 fn create_result_id(
@@ -1363,6 +1389,19 @@ fn verify_activation_date(
     identifier: &str,
     expected: i64,
 ) -> Result<(), Box<dyn Error>> {
+    let actual = get_object_activation_date(client, case_id, identifier)?;
+    if actual == Some(expected) {
+        Ok(())
+    } else {
+        Err("server Activation Date does not equal the exact value written by this case".into())
+    }
+}
+
+fn get_object_activation_date(
+    client: &mut Client,
+    case_id: &str,
+    identifier: &str,
+) -> Result<Option<i64>, Box<dyn Error>> {
     execute_case(
         client,
         case_id,
@@ -1383,27 +1422,29 @@ fn verify_activation_date(
             let attributes = result
                 .attributes()
                 .ok_or_else(|| "Activation Date verification returned no Attributes".to_owned())?;
-            let matches = attributes.as_items().iter().any(|item| {
-                item.tag().raw() == ACTIVATION_DATE
-                    && item.with_value(|value| {
-                        matches!(value, kmipkit_ttlv::ValueView::DateTime(actual) if *actual == expected)
-                    })
-            });
-            if matches {
-                Ok(())
-            } else {
-                Err(
-                    "server Activation Date does not equal the exact value written by this case"
-                        .to_owned(),
-                )
-            }
+            let Some(item) = attributes
+                .as_items()
+                .iter()
+                .find(|item| item.tag().raw() == ACTIVATION_DATE)
+            else {
+                return Ok(None);
+            };
+            item.with_value(|value| match value {
+                kmipkit_ttlv::ValueView::DateTime(value) => Ok(Some(*value)),
+                _ => Err("server Activation Date has an invalid KMIP value type".to_owned()),
+            })
         },
     )
 }
 
 fn future_date() -> Result<i64, Box<dyn Error>> {
-    let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
-    Ok(i64::try_from(now)? + 3600)
+    Ok(now_unix_seconds()? + 3600)
+}
+
+fn now_unix_seconds() -> Result<i64, Box<dyn Error>> {
+    Ok(i64::try_from(
+        SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+    )?)
 }
 
 fn name_attribute(value: &str) -> Result<Item, Box<dyn Error>> {
@@ -1913,6 +1954,7 @@ mod review_regression_tests {
 
     #[test]
     fn state_preflight_uses_the_allocated_kmip_attribute_tag() {
+        // OASIS KMIP v2.1 §11.56, Table 487 assigns State to tag 0x42008D.
         let request = GetAttributesRequest::try_new(
             Some("case-owned-object".to_owned()),
             [AttributeReference::tag(STATE)],
@@ -1936,13 +1978,35 @@ mod review_regression_tests {
 
     #[test]
     fn activate_split_key_fixture_requests_a_future_activation_date() {
-        let row = manifest_row("cosmian-528-activate-splitkey")
-            .expect("Activate SplitKey manifest row");
+        let row =
+            manifest_row("cosmian-528-activate-splitkey").expect("Activate SplitKey manifest row");
         assert_eq!(
             row["parameters"]["activation_date"].as_str(),
             Some("future"),
             "the SplitKey must be created with the manifest's Pre-Active setup"
         );
+        assert_eq!(row["parameters"]["state"].as_str(), Some("Pre-Active"));
+        let attributes = split_key_attributes(&row, "case-owned-activate-splitkey")
+            .expect("future Activation Date fixture");
+        let activation_date = attributes
+            .as_items()
+            .iter()
+            .find(|item| item.tag().raw() == ACTIVATION_DATE)
+            .and_then(|item| {
+                item.with_value(|value| match value {
+                    kmipkit_ttlv::ValueView::DateTime(value) => Some(*value),
+                    _ => None,
+                })
+            })
+            .expect("future Activation Date attribute");
+        let now = i64::try_from(
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+        )
+        .expect("current time fits in KMIP Date-Time");
+        assert!(activation_date > now);
     }
 
     #[test]
