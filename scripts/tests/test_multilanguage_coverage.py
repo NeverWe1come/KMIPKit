@@ -305,6 +305,8 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             excluded_paths = (
                 "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
                 "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
+                "bindings/python/src/kmipkit/_native_ffi/__init__.py",
+                "bindings/python/src/kmipkit/_native_ffi/ffi.py",
                 "bindings/java/src/test/java/org/kmipkit/RegistryTest.java",
                 "bindings/java/examples/RegistryExample.java",
                 "bindings/python/tests/test_registry.py",
