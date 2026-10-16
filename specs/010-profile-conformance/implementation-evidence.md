@@ -3385,3 +3385,19 @@ After item 6's structural status review, a current inventory summary and the lat
 | Red — pin the current summary's reviewed item statuses and structural-only limit | `d08bce1c`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_current_baseline_condition_summary_matches_reviewed_structural_crosswalks -v` | Expected Red: the summary says items 1–5 and 7–8 are reviewed and item 6 remains pending; it does not identify the now-reviewed item-6 structural crosswalk. |
 | Green — reconcile the current summary and latest item-5 status note | `5f327382`; the same focused command; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles` | PASS: focused summary regression 1/1; generator module 65 passed / 1 skipped due to Windows symlink permissions. |
 | Refactor/evidence — record the QA correction | This DCO-signed Refactor/evidence commit; `git diff --check` | PASS: the current summary reports items 1–8 as reviewed at their documented scope, identifies items 5 and 6 as structural-only, and keeps semantic coverage and T002 open. No OASIS, catalog, generated output, or runtime behavior changed. |
+
+### KMIPKIT-0010 T002/T003 verification checkpoint — current feature branch (2026-10-16)
+
+This checkpoint records the current scoped verification without advancing T002 or T003. The catalog and generator test modules pass against the checked-in oracle, but passing tests do not resolve source-only mappings or make an incomplete crosswalk complete. The current oracle still records 112 source-only review gaps and `requirement_crosswalk_complete: false`; 57 catalog requirement records have no `source_clause_ids`. Table-row source records and the remaining unassigned or ambiguous actor/scope dispositions remain traceability evidence, not inferred client obligations. No profile-conformance claim is made, and the T002/T003 task checkboxes remain open pending review of the complete source-derived requirement closure.
+
+| Verification | Command | Result |
+|---|---|---|
+| Catalog and generator test modules | `py -3 -B -m unittest tools.normative_catalog.tests.test_validate tools.normative_catalog.tests.test_generate_profiles` | PASS: 342 tests in 276.365 s; 2 platform-conditioned skips. |
+| Catalog validation | `py -3 -B -m tools.normative_catalog.validate --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,117 records. |
+| Generated profile metadata | `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check` | PASS: generated Rust profile metadata matches the catalog. |
+| Generated coverage report | `py -3 -B tools/normative_catalog/report.py --repo-root . --check` | PASS: generated coverage report matches the catalog. |
+| Pinned source immutability | `py -3 -B -m tools.normative_catalog.check_immutable_sources --repo-root . --base-sha ff159a8b3fdb92b6ff6174c1c7e5ad2588dc5138` | PASS: pinned OASIS upstream sources match the current local `release/1.0.0` merge base. |
+| Normative source candidate audit | `py -3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha ff159a8b3fdb92b6ff6174c1c7e5ad2588dc5138 --check` | PASS: all 1,411 pinned Specification and Profiles source candidates match the clause ledger. |
+| Official profile and operation test source audit | `py -3 -B tools/normative_catalog/audit_case_sources.py --repo-root .` | PASS: 93 profile-test rows and 110 Test Cases CN01 rows; zero catalog-to-source mismatches. The audit retains 10 source-internal official-ID/href-name divergences as source evidence and does not fabricate cross-source links. |
+
+The verified local release ref is `ff159a8b3fdb92b6ff6174c1c7e5ad2588dc5138`, an ancestor of feature HEAD `b4cfa6527b97417cfa1f5acbc00935a9fa4d532f`. This documents the exact source-immutability comparison point for this run.
