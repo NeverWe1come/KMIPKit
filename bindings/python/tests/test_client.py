@@ -1178,6 +1178,172 @@ def test_discover_versions_response_mapping_matches_shared_fixture(
     assert released == ["item", "item", "item", "item", "response"]
 
 
+def test_creation_response_mapping_preserves_wire_identifiers_and_failure_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture_path = Path(__file__).resolve().parents[3] / "tests/fixtures/api/shared-capability-parity.json"
+    fixtures = {
+        case["id"]: case["expectedOutput"]
+        for case in json.loads(fixture_path.read_text(encoding="utf-8"))["cases"]
+        if case["id"].startswith("creation.")
+    }
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_storage = [_opaque("kmipkit_client_batch_item_response_t") for _ in range(4)]
+    item_pointers = [pointer for pointer, _storage in item_storage]
+    message_text = fixtures["creation.result-message-on-failure.v1"]["resultMessage"]
+    message_data = client.ffi.new("uint8_t[]", message_text.encode("utf-8"))
+    text_storage: list[object] = []
+    released: list[str] = []
+
+    def item_index(item: object) -> int:
+        return item_pointers.index(item)
+
+    def write_identifier(output: object, kind: int, value: object) -> None:
+        output.kind = kind  # type: ignore[attr-defined]
+        output.reserved = 0  # type: ignore[attr-defined]
+        output.text_data = client.ffi.NULL  # type: ignore[attr-defined]
+        output.text_length = 0  # type: ignore[attr-defined]
+        output.enumeration_value = 0  # type: ignore[attr-defined]
+        output.integer_value = 0  # type: ignore[attr-defined]
+        if kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
+            text = str(value).encode("utf-8")
+            data = client.ffi.new("uint8_t[]", text)
+            text_storage.append(data)
+            output.text_data = data  # type: ignore[attr-defined]
+            output.text_length = len(text)  # type: ignore[attr-defined]
+        elif kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
+            output.enumeration_value = int(value)  # type: ignore[attr-defined]
+        else:
+            output.integer_value = int(value)  # type: ignore[attr-defined]
+
+    def metadata(item: object, out: object) -> int:
+        index = item_index(item)
+        _initialize_metadata_v2(out)
+        out.operation = (1, 1, 2, 40)[index]  # type: ignore[attr-defined]
+        out.result_status = (0, 1, 0, 0)[index]  # type: ignore[attr-defined]
+        if index == 1:
+            out.has_result_reason = 1  # type: ignore[attr-defined]
+            out.result_reason = fixtures["creation.result-message-on-failure.v1"]["resultReason"]  # type: ignore[attr-defined]
+            out.has_result_message = 1  # type: ignore[attr-defined]
+            out.result_message_data = message_data  # type: ignore[attr-defined]
+            out.result_message_length = len(message_text.encode("utf-8"))  # type: ignore[attr-defined]
+        return 0
+
+    def create(item: object, present: object, object_type: object, identifier: object) -> int:
+        index = item_index(item)
+        present[0] = int(index == 0)  # type: ignore[index]
+        object_type[0] = 7 if index == 0 else 0  # type: ignore[index]
+        if index == 0:
+            write_identifier(identifier, int(extensions.UniqueIdentifierKind.INTEGER), -8)
+        return 0
+
+    def create_key_pair(
+        item: object, present: object, private_identifier: object, public_identifier: object
+    ) -> int:
+        index = item_index(item)
+        present[0] = int(index == 2)  # type: ignore[index]
+        if index == 2:
+            write_identifier(
+                private_identifier,
+                int(extensions.UniqueIdentifierKind.ENUMERATION),
+                0xFFFF_FFFF,
+            )
+            write_identifier(
+                public_identifier,
+                int(extensions.UniqueIdentifierKind.TEXT_STRING),
+                "public-key-α",
+            )
+        return 0
+
+    def split_count(item: object, present: object, count: object) -> int:
+        index = item_index(item)
+        present[0] = int(index == 3)  # type: ignore[index]
+        count[0] = 4 if index == 3 else 0  # type: ignore[index]
+        return 0
+
+    split_values = (
+        (extensions.UniqueIdentifierKind.TEXT_STRING, "part-a"),
+        (extensions.UniqueIdentifierKind.ENUMERATION, 0xFFFF_FFFF),
+        (extensions.UniqueIdentifierKind.INTEGER, -7),
+        (extensions.UniqueIdentifierKind.TEXT_STRING, "part-a"),
+    )
+
+    def split_identifier(item: object, index: int, output: object) -> int:
+        assert item_index(item) == 3
+        kind, value = split_values[int(index)]
+        write_identifier(output, int(kind), value)
+        return 0
+
+    def absent_span(_item: object, present: object, value: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        value.data = client.ffi.NULL  # type: ignore[attr-defined]
+        value.length = 0  # type: ignore[attr-defined]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 4) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, index, out: out.__setitem__(0, item_pointers[int(index)]) or 0,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=absent_span,
+        kmipkit_client_batch_item_response_pending_correlation_value=absent_span,
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
+        kmipkit_client_batch_item_response_create=create,
+        kmipkit_client_batch_item_response_create_key_pair=create_key_pair,
+        kmipkit_client_batch_item_response_create_split_key_count=split_count,
+        kmipkit_client_batch_item_response_create_split_key_unique_identifier_at=split_identifier,
+    )
+    monkeypatch.setattr(client, "lib", fake)
+
+    result = client._batch_result(response_pointer)
+    try:
+        create_expected = fixtures["creation.create.request-response.v1"]
+        create_item = result.items[0]
+        assert create_item.operation == 1
+        assert create_item.create_object_type == create_expected["responseObjectType"]
+        assert create_item.unique_identifier == extensions.UniqueIdentifier.integer(
+            create_expected["uniqueIdentifier"]["integer"]
+        )
+        assert create_item.result_message is create_expected["resultMessage"]
+
+        failure_expected = fixtures["creation.result-message-on-failure.v1"]
+        failure_item = result.items[1]
+        assert failure_item.operation == failure_expected["operation"]
+        assert failure_item.outcome == failure_expected["outcomeKind"]
+        assert failure_item.result_status == failure_expected["resultStatus"]
+        assert failure_item.result_reason == failure_expected["resultReason"]
+        assert failure_item.result_message == failure_expected["resultMessage"]
+        assert failure_item.unique_identifier is None
+        assert message_text not in repr(failure_item)
+        assert message_text not in repr(failure_item.metadata_v2)
+
+        key_pair_expected = fixtures["creation.key-pair.request-response.v1"]
+        key_pair_item = result.items[2]
+        assert key_pair_item.private_key_unique_identifier == extensions.UniqueIdentifier.enumeration(
+            key_pair_expected["privateUniqueIdentifier"]["enumeration"]
+        )
+        assert key_pair_item.public_key_unique_identifier == extensions.UniqueIdentifier.text_string(
+            key_pair_expected["publicUniqueIdentifier"]["text"]
+        )
+
+        split_expected = fixtures["creation.split-key.request-response.v1"]
+        split_item = result.items[3]
+        wire_order = split_expected["responseUniqueIdentifiersInWireOrder"]
+        assert split_item.split_key_unique_identifiers == tuple(
+            {
+                "TextString": extensions.UniqueIdentifier.text_string,
+                "Enumeration": extensions.UniqueIdentifier.enumeration,
+                "Integer": extensions.UniqueIdentifier.integer,
+            }[item["wireType"]](item.get("text", item.get("enumeration", item.get("integer"))))
+            for item in wire_order
+        )
+    finally:
+        result.close()
+
+    assert released == ["item", "item", "item", "item", "response"]
+
+
 def test_batch_result_accepts_absent_spans_and_no_result_reason(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

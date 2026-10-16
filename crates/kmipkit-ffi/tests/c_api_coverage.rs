@@ -532,85 +532,123 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 6),
+            integer(0x0042_000D, 8),
         ],
     );
     let response_payload = structure(
         0x0042_007C,
         [protocol_version.clone(), protocol_version.clone()],
     );
-    let successful_item = structure(
-        0x0042_000F,
-        [
-            enumeration(0x0042_005C, 30),
-            ttlv_item(0x0042_0093, 0x08, b"item-0"),
-            enumeration(0x0042_007F, 0),
-            response_payload,
-        ],
-    );
-    let pending_item = structure(
-        0x0042_000F,
-        [
-            enumeration(0x0042_005C, 30),
-            ttlv_item(0x0042_0093, 0x08, b"item-1"),
-            enumeration(0x0042_007F, 2),
-            ttlv_item(0x0042_0006, 0x08, &[0x00, 0xa1, 0x7f]),
-            structure(0x0042_007C, []),
-        ],
-    );
-    let failed_item = structure(
-        0x0042_000F,
-        [
-            enumeration(0x0042_005C, 30),
-            ttlv_item(0x0042_0093, 0x08, b"item-2"),
-            enumeration(0x0042_007F, 1),
-            enumeration(0x0042_007E, 1),
-        ],
-    );
-    let empty_item = structure(
-        0x0042_000F,
-        [
-            enumeration(0x0042_005C, 30),
-            ttlv_item(0x0042_0093, 0x08, b"item-3"),
-            enumeration(0x0042_007F, 0),
-            structure(0x0042_007C, []),
-        ],
-    );
+    structure(
+        0x0042_007B,
+        std::iter::once(header)
+            .chain(discover_version_response_items(response_payload))
+            .chain(creation_response_items()),
+    )
+}
+
+fn discover_version_response_items(response_payload: Vec<u8>) -> [Vec<u8>; 4] {
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-0"),
+                enumeration(0x0042_007F, 0),
+                response_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-1"),
+                enumeration(0x0042_007F, 2),
+                ttlv_item(0x0042_0006, 0x08, &[0x00, 0xa1, 0x7f]),
+                structure(0x0042_007C, []),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-2"),
+                enumeration(0x0042_007F, 1),
+                enumeration(0x0042_007E, 1),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-3"),
+                enumeration(0x0042_007F, 0),
+                structure(0x0042_007C, []),
+            ],
+        ),
+    ]
+}
+
+fn creation_response_items() -> [Vec<u8>; 4] {
     let create_payload = structure(
         0x0042_007C,
         [enumeration(0x0042_0057, 7), integer(0x0042_0094, -8)],
     );
-    let create_item = structure(
-        0x0042_000F,
+    let create_key_pair_payload = structure(
+        0x0042_007C,
         [
-            enumeration(0x0042_005C, 1),
-            ttlv_item(0x0042_0093, 0x08, b"item-4"),
-            enumeration(0x0042_007F, 0),
-            create_payload,
+            enumeration(0x0042_0066, u32::MAX),
+            ttlv_item(0x0042_006F, 0x07, "public-key-α".as_bytes()),
         ],
     );
-    let create_failure_item = structure(
-        0x0042_000F,
+    let create_split_key_payload = structure(
+        0x0042_007C,
         [
-            enumeration(0x0042_005C, 1),
-            ttlv_item(0x0042_0093, 0x08, b"item-5"),
-            enumeration(0x0042_007F, 1),
-            enumeration(0x0042_007E, 5),
-            ttlv_item(0x0042_007D, 0x07, "création refusée ✓".as_bytes()),
+            ttlv_item(0x0042_0094, 0x07, b"part-a"),
+            enumeration(0x0042_0094, u32::MAX),
+            integer(0x0042_0094, -7),
+            ttlv_item(0x0042_0094, 0x07, b"part-a"),
         ],
     );
-    structure(
-        0x0042_007B,
-        [
-            header,
-            successful_item,
-            pending_item,
-            failed_item,
-            empty_item,
-            create_item,
-            create_failure_item,
-        ],
-    )
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 1),
+                ttlv_item(0x0042_0093, 0x08, b"item-4"),
+                enumeration(0x0042_007F, 0),
+                create_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 1),
+                ttlv_item(0x0042_0093, 0x08, b"item-5"),
+                enumeration(0x0042_007F, 1),
+                enumeration(0x0042_007E, 5),
+                ttlv_item(0x0042_007D, 0x07, "création refusée ✓".as_bytes()),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 2),
+                ttlv_item(0x0042_0093, 0x08, b"item-6"),
+                enumeration(0x0042_007F, 0),
+                create_key_pair_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 40),
+                ttlv_item(0x0042_0093, 0x08, b"item-7"),
+                enumeration(0x0042_007F, 0),
+                create_split_key_payload,
+            ],
+        ),
+    ]
 }
 
 fn mismatched_discover_versions_response() -> Vec<u8> {
@@ -638,7 +676,7 @@ fn mismatched_discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, item])
 }
 
-fn structure<const N: usize>(tag: u32, children: [Vec<u8>; N]) -> Vec<u8> {
+fn structure(tag: u32, children: impl IntoIterator<Item = Vec<u8>>) -> Vec<u8> {
     let value = children.into_iter().flatten().collect::<Vec<_>>();
     ttlv_item(tag, 0x01, &value)
 }

@@ -165,6 +165,72 @@ fn creation_operation_values_match_kmip_21_table_470() {
 }
 
 #[test]
+fn every_client_operation_value_matches_kmip_21_table_470() {
+    let cases = [
+        (ClientOperation::Activate, 0x12),
+        (ClientOperation::AddAttribute, 0x0d),
+        (ClientOperation::AdjustAttribute, 0x30),
+        (ClientOperation::Archive, 0x15),
+        (ClientOperation::Cancel, 0x19),
+        (ClientOperation::Certify, 0x06),
+        (ClientOperation::Check, 0x09),
+        (ClientOperation::Create, 0x01),
+        (ClientOperation::CreateKeyPair, 0x02),
+        (ClientOperation::CreateSplitKey, 0x28),
+        (ClientOperation::Decrypt, 0x20),
+        (ClientOperation::DeleteAttribute, 0x0f),
+        (ClientOperation::DeriveKey, 0x05),
+        (ClientOperation::Destroy, 0x14),
+        (ClientOperation::DiscoverVersions, 0x1e),
+        (ClientOperation::Encrypt, 0x1f),
+        (ClientOperation::Export, 0x2b),
+        (ClientOperation::Get, 0x0a),
+        (ClientOperation::GetAttributeList, 0x0c),
+        (ClientOperation::GetAttributes, 0x0b),
+        (ClientOperation::GetConstraints, 0x38),
+        (ClientOperation::GetUsageAllocation, 0x11),
+        (ClientOperation::Hash, 0x27),
+        (ClientOperation::Import, 0x2a),
+        (ClientOperation::Interop, 0x34),
+        (ClientOperation::JoinSplitKey, 0x29),
+        (ClientOperation::Log, 0x2c),
+        (ClientOperation::Login, 0x2d),
+        (ClientOperation::Logout, 0x2e),
+        (ClientOperation::Locate, 0x08),
+        (ClientOperation::Mac, 0x23),
+        (ClientOperation::MacVerify, 0x24),
+        (ClientOperation::ModifyAttribute, 0x0e),
+        (ClientOperation::ObtainLease, 0x10),
+        (ClientOperation::Pkcs11, 0x33),
+        (ClientOperation::Ping, 0x3b),
+        (ClientOperation::Poll, 0x1a),
+        (ClientOperation::Process, 0x3a),
+        (ClientOperation::Query, 0x18),
+        (ClientOperation::QueryAsyncRequests, 0x39),
+        (ClientOperation::Recertify, 0x07),
+        (ClientOperation::Recover, 0x16),
+        (ClientOperation::Register, 0x03),
+        (ClientOperation::Rekey, 0x04),
+        (ClientOperation::RekeyKeyPair, 0x1d),
+        (ClientOperation::ReProvision, 0x35),
+        (ClientOperation::Revoke, 0x13),
+        (ClientOperation::RngRetrieve, 0x25),
+        (ClientOperation::RngSeed, 0x26),
+        (ClientOperation::SetAttribute, 0x31),
+        (ClientOperation::SetConstraints, 0x37),
+        (ClientOperation::SetDefaults, 0x36),
+        (ClientOperation::Sign, 0x21),
+        (ClientOperation::SignatureVerify, 0x22),
+        (ClientOperation::Validate, 0x17),
+        (ClientOperation::DelegatedLogin, 0x2f),
+    ];
+
+    for (operation, raw) in cases {
+        assert_eq!(operation.raw(), raw, "operation: {operation:?}");
+    }
+}
+
+#[test]
 fn creation_result_message_fixture_is_limited_to_operation_failure() {
     let create = fixture_case("creation.create.request-response.v1");
     assert_eq!(create["expectedOutput"]["resultStatus"], 0);
