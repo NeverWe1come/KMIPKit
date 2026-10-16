@@ -2328,8 +2328,8 @@ responses. Production behavior was not changed solely to raise coverage.
 | Phase | Commits | Verification | Result |
 |---|---|---|---|
 | Red | CI run `38898672071`; regression commit `5d6c4be9` | Selected-scope changed-production gate; focused structural-line regression | CI initially failed at 4,078/4,352 (93.70 percent). The initial regression failed at 1/3; the final fixture isolates the uncovered closing brace and expects the two executable changed lines to pass. |
-| Green | `46524845`, `52298800`, `ae7b487f`, `92f4a69a` | `cargo test -p kmipkit-ffi --all-features`; coverage gate tests; multilanguage coverage tests; exact CI artifact replay | PASS locally. The replay against base `d5d5ab75` and merge `ae7b487f` passes at 3,975/4,148 (95.83 percent); the 95 percent threshold is unchanged. |
-| Refactor | Follow-up evidence reconciliation | Documentation, traceability, and task status | Results now distinguish the previous failed CI run from the passing local replay; T082 remains open for updated-head CI. |
+| Green | `46524845`, `52298800`, `ae7b487f`, `92f4a69a` | `cargo test -p kmipkit-ffi --all-features`; coverage gate tests; multilanguage coverage tests; exact CI artifact replay; cross-platform CI run `38971591114` | PASS. Updated head `b244d1c3` passed all required CI jobs; changed-production coverage is 3,977/4,148 (95.88 percent), with the 95 percent threshold unchanged. |
+| Refactor | Follow-up evidence reconciliation | Documentation, traceability, and task status | Recorded the passing updated-head CI evidence and closed T082. |
 
 The first updated-head PR run, `38960983127` on `25c1c885`, exposed a Python
 test-fixture ordering defect on Ubuntu, Windows, and macOS: six isolated handle
@@ -2354,18 +2354,26 @@ The replay also passes kmipkit-ttlv 735/741 (99.19 percent), kmipkit-protocol
 12,573/12,965 (96.98 percent), kmipkit-transport 3,714/3,902 (95.18 percent),
 kmipkit-ffi 4,767/4,940 (96.50 percent), Java 1,920/1,969 (97.51 percent),
 Python 2,327/2,356 (98.77 percent), JNI 2,702/3,032 (89.12 percent), and the
-Rust workspace 28,755/29,724 (96.74 percent). The exact artifact replay is a
-local check; updated-head cross-platform CI is still required.
+Rust workspace 28,755/29,724 (96.74 percent). Updated-head CI run `38971591114`
+on `b244d1c3abca137842e3b7beb241fa6f94aeb321` completed successfully: 34 jobs
+passed, two informational jobs were skipped, and no required job failed. Its
+selected-scope gate reports changed-production coverage of 3,977/4,148 (95.88
+percent), including 15 summary-only lines as uncovered. Component results are
+kmipkit-ttlv 735/741 (99.19 percent), kmipkit-protocol 12,573/12,965 (96.98
+percent), kmipkit-transport 3,713/3,902 (95.16 percent), kmipkit-ffi
+4,769/4,940 (96.54 percent), Java 1,920/1,969 (97.51 percent), Python
+2,327/2,356 (98.77 percent), JNI 2,702/3,032 (89.12 percent), and workspace
+28,756/29,724 (96.74 percent).
 
 Verification for the correction: `python scripts/tests/test_coverage_gate.py`
 passes 55 tests with 3 Windows symlink-permission skips;
 `python scripts/tests/test_multilanguage_coverage.py` passes 24 tests; and
 `cargo test -p kmipkit-ffi --all-features` passes 99 Rust tests and 5 compiled C
-consumer tests. `git diff --check` passes. The previous cross-platform CI run
-`38961756222` still records a failure for the old gate code; the parent PR stays
-in draft until the updated head passes the required jobs.
+consumer tests. `git diff --check` and `cargo fmt --all --check` pass. Earlier
+run `38961756222` records the original gate failure; corrected run
+`38971591114` passes.
 
 The independent T082 QA review found the requested coverage cases present. The
-security review found no new issue in the added test-only coverage. Local replay
-of the exact failed-run artifacts now passes the changed-production threshold;
-T082 remains open until the corrected head passes cross-platform CI.
+security review found no new issue in the added test-only coverage. The exact
+failed-run artifacts pass local replay, and the corrected head passes the full
+cross-platform CI matrix; T082 is complete.
