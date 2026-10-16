@@ -358,7 +358,11 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 contracts[identifier]["implementation_refs"] and contracts[identifier]["verification_refs"]
                 for identifier in known_linked_contract_ids
             )
-            explicit_blocker = gap["scope_disposition"] == "unresolved"
+            review_note = resolution.get("review_note", "")
+            explicit_blocker = (
+                gap["scope_disposition"] == "unresolved"
+                or "Keep this imperative source gap unresolved" in review_note
+            )
 
             with self.subTest(gap_id=gap_id):
                 if number in (12, 14, 16):
@@ -721,9 +725,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         for number in (13, 15, 18, 20):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
             resolution = gap["source_resolution"]
-            self.assertEqual(gap["scope_disposition"], "unresolved")
+            self.assertEqual(gap["scope_disposition"], "client_1_0")
             self.assertEqual(resolution["related_source_table_contract_ids"], [])
             self.assertIn("response-field contract and executable test", resolution["review_note"])
+            self.assertIn("Keep this imperative source gap unresolved", resolution["review_note"])
 
         self.assertIn(
             "Seven Correlation Value request-table contracts are recorded: five `KMIPKIT-0021` contracts plus only the two optional KMIPKIT-0019 Encrypt/Decrypt request rows",
@@ -736,6 +741,24 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         )
         self.assertIn("response Data consumption remains unmapped", summary)
         self.assertNotIn("operation-specific request and response evidence is assigned", summary)
+
+    def test_t002_research_index_matches_procedure_scope_dispositions(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
+        rows = {}
+        for line in research.splitlines():
+            if not line.startswith("| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-"):
+                continue
+            cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+            rows[cells[0].strip("`")] = cells
+
+        for number in range(11, 21):
+            gap_id = f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"
+            with self.subTest(gap_id=gap_id):
+                self.assertIn(gap_id, rows)
+                self.assertEqual(rows[gap_id][2].strip("`").strip(), gaps[gap_id]["scope_disposition"])
+                self.assertEqual(rows[gap_id][3].strip("`").strip(), "reviewed_procedure_context")
 
     def test_t002_research_records_already_verified_profile_inclusion_edges(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
