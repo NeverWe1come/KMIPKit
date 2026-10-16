@@ -6,6 +6,8 @@
 
 #[path = "cosmian_kms/common.rs"]
 mod common;
+#[path = "cosmian_kms/cryptographic.rs"]
+mod cryptographic;
 #[path = "cosmian_kms/lifecycle.rs"]
 mod lifecycle;
 #[path = "cosmian_kms/transfer.rs"]
