@@ -2250,3 +2250,24 @@ filter selected 18 ABI cases with 44 deselected; adding and running the
 preflight regression separately makes the focused Green result 18 ABI cases
 plus 1 preflight case, with 44 unrelated tests deselected (63 total tests in
 the two modules).
+
+Independent review of Red `cbe68b98`, Green `49ef7883`, Refactor `1b906ed9`,
+and the scope clarification `a831f988` found no blocking issues. It confirmed
+cleanup on success, ABI error, and preflight failure, and confirmed that
+request-header Client Correlation Value is metadata outside the sensitive
+operation-input guarantee. The reviewer reran the 19 focused cases and the
+full 341-test Python suite successfully.
+
+## T080 — Java operation-input staging limit
+
+This task enforces the existing 16 MiB operation-input ceiling in Java before
+cloning byte arrays for Certify, MAC Verify, Sign, and Signature Verify.
+Request-header correlation values are metadata and remain outside this
+operation-payload limit. The caller's arrays are not mutated, and oversized
+payloads fail before the JNI library is initialized.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `8f1324f5` | `mvn -q '-Dtest=NativeLibraryLoaderTest#exactLimitOperationInputsAreAcceptedWithoutMutatingCallerArrays+oversizedOperationInputsAreRejectedBeforeJni' test` | Expected failure: 2 tests ran; exact-limit construction passed, while the oversized child-JVM probe reached `NativeExtensionRegistry` and failed loading the deliberately unavailable native library before any `ResourceLimitException`. |
+| Green | `206dd24d` | Same focused Maven command | PASS: 2 tests, 0 failures/errors/skips. Exact 16 MiB payloads constructed without mutating caller arrays; payloads above the limit were rejected before native loading. |
+| Refactor | `ec91ffbc` | Same focused command; `mvn -q verify`; `git diff --check HEAD~3..HEAD` | PASS: final checks cover the five payload byte-array positions only. Root reran `mvn -q verify` successfully on Windows; the implementer reports 192 Java tests, 3 skipped, no failures/errors, and the JaCoCo gate passing. |
