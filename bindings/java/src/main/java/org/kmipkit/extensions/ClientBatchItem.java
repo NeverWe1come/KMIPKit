@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 /** Typed request batch item with caller-ordered registry-validated extensions. */
 public final class ClientBatchItem implements AutoCloseable {
     private static final int MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024;
+    private static final int MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024;
 
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
@@ -99,6 +100,7 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable byte[] certificateRequestValue,
             @Nullable TtlvStructure attributes,
             @Nullable TtlvStructure protectionStorageMasks) {
+        requireOperationInputWithinLimit(certificateRequestValue);
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         byte[] requestValueCopy = copyForNative(certificateRequestValue);
         try {
@@ -168,6 +170,8 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable byte[] correlationValue,
             @Nullable Boolean initIndicator,
             @Nullable Boolean finalIndicator) {
+        requireOperationInputWithinLimit(macData);
+        requireOperationInputWithinLimit(correlationValue);
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         byte[] macCopy = copyForNative(macData);
         byte[] correlationCopy = copyForNative(correlationValue);
@@ -192,6 +196,8 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable byte[] correlationValue,
             @Nullable Boolean initIndicator,
             @Nullable Boolean finalIndicator) {
+        requireOperationInputWithinLimit(digestedData);
+        requireOperationInputWithinLimit(correlationValue);
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         byte[] digestedCopy = copyForNative(digestedData);
         byte[] correlationCopy = copyForNative(correlationValue);
@@ -217,6 +223,9 @@ public final class ClientBatchItem implements AutoCloseable {
             @Nullable byte[] correlationValue,
             @Nullable Boolean initIndicator,
             @Nullable Boolean finalIndicator) {
+        requireOperationInputWithinLimit(digestedData);
+        requireOperationInputWithinLimit(signatureData);
+        requireOperationInputWithinLimit(correlationValue);
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         byte[] digestedCopy = copyForNative(digestedData);
         byte[] signatureCopy = copyForNative(signatureData);
@@ -261,6 +270,12 @@ public final class ClientBatchItem implements AutoCloseable {
 
     private static byte[] copyForNative(byte[] value) {
         return value == null ? null : value.clone();
+    }
+
+    private static void requireOperationInputWithinLimit(byte[] value) {
+        if (value != null && value.length > MAX_OPERATION_INPUT_BYTES) {
+            throw new ResourceLimitException("operation input exceeds the configured limit");
+        }
     }
 
     private static void clearNativeCopies(byte[]... values) {
