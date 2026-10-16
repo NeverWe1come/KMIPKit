@@ -3,7 +3,9 @@
 use std::error::Error;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientRequest, ClientResponseView};
+use kmipkit_client::{
+    Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientRequest, ClientResponseView,
+};
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AttributeReference, AttributeSet, CheckRequest,
     CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CurrentAttribute,
@@ -38,10 +40,12 @@ const KEY_MATERIAL: u32 = 0x0042_0043;
 const ACTIVATION_DATE: u32 = 0x0042_0001;
 const STATE: u32 = 0x0042_0091;
 const COMMENT: u32 = 0x0042_00FD;
+const OBJECT_TYPE: u32 = 0x0042_0057;
+const OBJECT_NOT_FOUND: u32 = 0x0000_0037;
+const STATUS_SUCCESS: u32 = 0;
 
 struct OwnedObjects {
     primary: String,
-    _linked: Vec<String>,
 }
 
 /// Executes one manifest case using a fresh mTLS client and fresh server object.
@@ -51,15 +55,28 @@ pub(super) fn run_lifecycle_case(case_id: &str) -> Result<(), Box<dyn Error>> {
     let object_type = required_text(&row, "object_type")?;
     let mut client = client()?;
 
-    if operation == "Validate" {
-        return run_validate_case(&mut client, case_id, &row);
+    let mut ownership = CaseOwnership::default();
+    let operation_result = if operation == "Validate" {
+        run_validate_case(&mut client, case_id, &row, &mut ownership)
+    } else {
+        provision_object(&mut client, object_type, case_id, &mut ownership).and_then(|objects| {
+            run_lifecycle_operation(
+                &mut client,
+                case_id,
+                operation,
+                object_type,
+                &row,
+                &objects,
+                &mut ownership,
+            )
+        })
     }
+    .map_err(|error| error.to_string());
+    let result = finish_operation_with_cleanup(operation_result, || {
+        cleanup_owned_objects(&mut client, case_id, &ownership)
+    });
+    result.map_err(|message| -> Box<dyn Error> { message.into() })?;
 
-    let objects = provision_object(&mut client, object_type, case_id)?;
-    run_lifecycle_operation(&mut client, case_id, operation, object_type, &objects)?;
-
-    // Split-key setup can create a linked source plus multiple parts. Its IDs
-    // stay private to this case; Compose teardown disposes the temporary DB.
     println!("case_id={case_id} classification=typed_success");
     Ok(())
 }
@@ -69,7 +86,9 @@ fn run_lifecycle_operation(
     case_id: &str,
     operation: &str,
     object_type: &str,
+    row: &serde_json::Value,
     objects: &OwnedObjects,
+    ownership: &mut CaseOwnership,
 ) -> Result<(), Box<dyn Error>> {
     match operation {
         "Activate" => run_activate(client, case_id, object_type, &objects.primary),
@@ -77,9 +96,9 @@ fn run_lifecycle_operation(
         "Delete Attribute" => run_delete_attribute(client, case_id, &objects.primary),
         "Get Attribute List" => run_get_attribute_list(client, case_id, &objects.primary),
         "Get Attributes" => run_get_attributes(client, case_id, &objects.primary),
-        "Locate" => run_locate(client, case_id, object_type, &objects.primary),
-        "Check" => run_check(client, case_id, &objects.primary),
-        "Destroy" => run_destroy(client, case_id, object_type, &objects.primary),
+        "Locate" => run_locate(client, case_id, row, &objects.primary),
+        "Check" => run_check(client, case_id, row, &objects.primary),
+        "Destroy" => run_destroy(client, case_id, object_type, &objects.primary, ownership),
         "Revoke" => run_revoke(client, case_id, object_type, &objects.primary),
         "Modify Attribute" => run_modify_attribute(client, case_id, &objects.primary),
         "Set Attribute" => run_set_attribute(client, case_id, &objects.primary),
@@ -116,6 +135,7 @@ fn run_activate(
                 response
                     .activate()
                     .and_then(|result| result.unique_identifier()),
+                unique_id,
                 "Activate",
             )
         },
@@ -141,10 +161,12 @@ fn run_add_attribute(
                 response
                     .add_attribute()
                     .and_then(|result| result.unique_identifier()),
+                identifier,
                 "Add Attribute",
             )
         },
     )?;
+    verify_comment(client, case_id, identifier, case_id)?;
     Ok(())
 }
 
@@ -168,10 +190,12 @@ fn run_delete_attribute(
                 response
                     .delete_attribute()
                     .and_then(|result| result.unique_identifier()),
+                identifier,
                 "Delete Attribute",
             )
         },
     )?;
+    verify_comment_absent(client, case_id, identifier)?;
     Ok(())
 }
 
@@ -224,12 +248,15 @@ fn run_get_attributes(
                 .get_attributes()
                 .and_then(|result| result.attributes())
                 .ok_or_else(|| "successful Get Attributes has no Attributes".to_owned())?;
-            if !attributes
+            let comments = attributes
                 .as_items()
                 .iter()
-                .any(|item| item.tag().raw() == COMMENT)
-            {
-                return Err("Get Attributes omitted the requested Comment".to_owned());
+                .filter(|item| item.tag().raw() == COMMENT)
+                .collect::<Vec<_>>();
+            if comments.len() != 1 || !comment_value_matches(comments[0], case_id) {
+                return Err(
+                    "Get Attributes did not return exactly the case-owned Comment value".to_owned(),
+                );
             }
             Ok(())
         },
@@ -240,14 +267,10 @@ fn run_get_attributes(
 fn run_locate(
     client: &mut Client,
     case_id: &str,
-    object_type: &str,
+    row: &serde_json::Value,
     identifier: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let filter = if object_type == "SplitKey" {
-        AttributeSet::try_new([])?
-    } else {
-        AttributeSet::try_new([name_attribute(case_id)?])?
-    };
+    let filter = locate_filter_from_row(row, case_id)?;
     execute_case(
         client,
         case_id,
@@ -273,8 +296,16 @@ fn run_locate(
     Ok(())
 }
 
-fn run_check(client: &mut Client, case_id: &str, unique_id: &str) -> Result<(), Box<dyn Error>> {
-    let request = CheckRequest::new().with_unique_identifier(identifier(unique_id));
+fn run_check(
+    client: &mut Client,
+    case_id: &str,
+    row: &serde_json::Value,
+    unique_id: &str,
+) -> Result<(), Box<dyn Error>> {
+    let mut request = CheckRequest::new().with_unique_identifier(identifier(unique_id));
+    if let Some(mask) = check_usage_mask_from_row(row)? {
+        request = request.with_cryptographic_usage_mask(mask);
+    }
     execute_case(
         client,
         case_id,
@@ -285,6 +316,7 @@ fn run_check(client: &mut Client, case_id: &str, unique_id: &str) -> Result<(), 
                 response
                     .check()
                     .and_then(|result| result.unique_identifier()),
+                unique_id,
                 "Check",
             )
         },
@@ -297,6 +329,7 @@ fn run_destroy(
     case_id: &str,
     object_type: &str,
     unique_id: &str,
+    ownership: &mut CaseOwnership,
 ) -> Result<(), Box<dyn Error>> {
     if object_type == "SplitKey" {
         revoke_for_destroy(client, case_id, unique_id)?;
@@ -311,10 +344,12 @@ fn run_destroy(
                 response
                     .destroy()
                     .and_then(|result| result.unique_identifier()),
+                unique_id,
                 "Destroy",
             )
         },
     )?;
+    ownership.release(unique_id);
     Ok(())
 }
 
@@ -340,6 +375,7 @@ fn run_revoke(
                 response
                     .revoke()
                     .and_then(|result| result.unique_identifier()),
+                unique_id,
                 "Revoke",
             )
         },
@@ -370,10 +406,12 @@ fn run_modify_attribute(
                     response
                         .modify_attribute()
                         .and_then(|result| result.unique_identifier()),
+                    identifier,
                     "Modify Attribute",
                 )
             },
         )?;
+        verify_comment(client, case_id, identifier, &format!("{case_id}-updated"))?;
     }
     Ok(())
 }
@@ -399,10 +437,12 @@ fn run_set_attribute(
                     response
                         .set_attribute()
                         .and_then(|result| result.unique_identifier()),
+                    identifier,
                     "Set Attribute",
                 )
             },
         )?;
+        verify_comment(client, case_id, identifier, case_id)?;
     }
     Ok(())
 }
@@ -466,12 +506,145 @@ fn execute_case<T>(
     })
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum CleanupResult {
+    Destroyed,
+    AlreadyAbsent,
+}
+
+fn cleanup_owned_objects(
+    client: &mut Client,
+    case_id: &str,
+    ownership: &CaseOwnership,
+) -> Result<(), String> {
+    let mut failures = Vec::new();
+    for identifier in ownership.cleanup_order() {
+        let initial_destroy = cleanup_destroy(client, case_id, identifier);
+        if initial_destroy.is_ok() {
+            continue;
+        }
+        let revoke = cleanup_revoke(client, case_id, identifier);
+        let retry = cleanup_destroy(client, case_id, identifier);
+        if retry.is_ok() {
+            continue;
+        }
+        failures.push(format!(
+            "cleanup failed for case-owned object after Destroy/Revoke/Destroy: initial Destroy {}; Revoke {}; retry Destroy {}",
+            initial_destroy.err().unwrap_or_else(|| "succeeded".to_owned()),
+            revoke.err().unwrap_or_else(|| "succeeded".to_owned()),
+            retry.err().unwrap_or_else(|| "succeeded".to_owned())
+        ));
+    }
+    if failures.is_empty() {
+        Ok(())
+    } else {
+        Err(format!("case {case_id}: {}", failures.join("; ")))
+    }
+}
+
+fn cleanup_destroy(
+    client: &mut Client,
+    case_id: &str,
+    identifier: &str,
+) -> Result<CleanupResult, String> {
+    let response = execute_cleanup_request(
+        client,
+        case_id,
+        ClientRequest::destroy(DestroyRequest::new(Some(UniqueIdentifier::TextString(
+            identifier.to_owned(),
+        )))),
+        "Destroy cleanup",
+    )?;
+    let item = response
+        .get(0)
+        .ok_or_else(|| format!("case {case_id} Destroy cleanup returned no result"))?;
+    let outcome = item.outcome();
+    let status = outcome.result().status();
+    if status.raw() == STATUS_SUCCESS {
+        let returned = outcome
+            .response()
+            .destroy()
+            .and_then(|result| result.unique_identifier());
+        require_identifier(returned, identifier, "Destroy cleanup")?;
+        return Ok(CleanupResult::Destroyed);
+    }
+    let reason = outcome
+        .result()
+        .reason()
+        .map(kmipkit_protocol::ResultReason::raw);
+    if reason == Some(OBJECT_NOT_FOUND) {
+        return Ok(CleanupResult::AlreadyAbsent);
+    }
+    Err(format!(
+        "case {case_id} Destroy cleanup: Result Status {} ({}) Reason {:?}",
+        status.raw(),
+        status.known_name().unwrap_or("unknown"),
+        reason
+    ))
+}
+
+fn cleanup_revoke(client: &mut Client, case_id: &str, identifier: &str) -> Result<(), String> {
+    let response = execute_cleanup_request(
+        client,
+        case_id,
+        ClientRequest::revoke(
+            RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)
+                .with_unique_identifier(UniqueIdentifier::TextString(identifier.to_owned())),
+        ),
+        "Revoke cleanup",
+    )?;
+    let item = response
+        .get(0)
+        .ok_or_else(|| format!("case {case_id} Revoke cleanup returned no result"))?;
+    let outcome = item.outcome();
+    let status = outcome.result().status();
+    if status.raw() == STATUS_SUCCESS {
+        let returned = outcome
+            .response()
+            .revoke()
+            .and_then(|result| result.unique_identifier());
+        return require_identifier(returned, identifier, "Revoke cleanup");
+    }
+    let reason = outcome
+        .result()
+        .reason()
+        .map(kmipkit_protocol::ResultReason::raw);
+    Err(format!(
+        "case {case_id} Revoke cleanup: Result Status {} ({}) Reason {:?}",
+        status.raw(),
+        status.known_name().unwrap_or("unknown"),
+        reason
+    ))
+}
+
+fn execute_cleanup_request(
+    client: &mut Client,
+    case_id: &str,
+    request: ClientRequest,
+    operation: &str,
+) -> Result<ClientBatchResponse, String> {
+    client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(request)),
+            &kmipkit_ttlv::codec::CodecLimits::defaults(),
+        )
+        .map_err(|error| {
+            format!(
+                "case {case_id} {operation}: client error category={:?}, cause={:?}, delivery={:?}",
+                error.category(),
+                error.cause_category(),
+                error.delivery_state()
+            )
+        })
+}
+
 fn provision_object(
     client: &mut Client,
     object_type: &str,
     case_id: &str,
+    ownership: &mut CaseOwnership,
 ) -> Result<OwnedObjects, Box<dyn Error>> {
-    let (primary, linked, _raw_type) = match object_type {
+    let primary = match object_type {
         "SymmetricKey" => {
             let attrs = AttributeSet::try_new([
                 kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(AES))?,
@@ -479,13 +652,13 @@ fn provision_object(
                 kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(12))?,
                 name_attribute(case_id)?,
             ])?;
-            let id = create_result_id(
+            create_result_id(
                 client,
                 case_id,
                 ClientRequest::Create(CreateRequest::new(ObjectType::from_raw(2), attrs)),
                 "Create",
-            )?;
-            (id, Vec::new(), 2)
+                ownership,
+            )?
         }
         "PrivateKey" | "PublicKey" => {
             let common = AttributeSet::try_new([
@@ -503,11 +676,12 @@ fn provision_object(
                     CRYPTOGRAPHIC_USAGE_MASK,
                     Value::integer(2),
                 )?])?);
-            let (private_id, public_id) = execute_created_key_pair(client, case_id, request)?;
+            let (private_id, public_id) =
+                execute_created_key_pair(client, case_id, request, ownership)?;
             if object_type == "PrivateKey" {
-                (private_id.clone(), vec![public_id], 4)
+                private_id
             } else {
-                (public_id.clone(), vec![private_id], 3)
+                public_id
             }
         }
         "SplitKey" => {
@@ -524,32 +698,34 @@ fn provision_object(
                     ])?,
                 )),
                 "Create split source",
+                ownership,
             )?;
             let split = CreateSplitKeyRequest::new(
                 ObjectType::from_raw(2),
                 2,
                 2,
                 SplitKeyMethod::XOR,
-                AttributeSet::try_new([name_attribute(case_id)?])?,
+                AttributeSet::try_new([
+                    name_attribute(case_id)?,
+                    kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(12))?,
+                ])?,
             )
             .with_unique_identifier(identifier(&source_id));
-            let ids = execute_created_split(client, case_id, split)?;
+            let ids = execute_created_split(client, case_id, split, ownership)?;
             let primary = ids.first().cloned().ok_or_else(|| {
                 format!("case {case_id}: Create Split Key returned no identifiers")
             })?;
-            let mut linked = ids.into_iter().skip(1).collect::<Vec<_>>();
-            linked.push(source_id);
-            (primary, linked, 5)
+            ownership.track(source_id);
+            primary
         }
-        "Certificate" => (register_certificate(client, case_id)?, Vec::new(), 1),
-        "SecretData" => (register_secret_data(client, case_id)?, Vec::new(), 7),
-        "OpaqueObject" => (register_opaque_object(client, case_id)?, Vec::new(), 8),
+        "Certificate" => {
+            register_certificate(client, case_id, ValidationCertificate::Leaf, ownership)?
+        }
+        "SecretData" => register_secret_data(client, case_id, ownership)?,
+        "OpaqueObject" => register_opaque_object(client, case_id, ownership)?,
         unknown => return Err(format!("case {case_id}: unsupported object type {unknown}").into()),
     };
-    Ok(OwnedObjects {
-        primary,
-        _linked: linked,
-    })
+    Ok(OwnedObjects { primary })
 }
 
 fn create_result_id(
@@ -557,14 +733,17 @@ fn create_result_id(
     case_id: &str,
     request: ClientRequest,
     operation: &str,
+    ownership: &mut CaseOwnership,
 ) -> Result<String, Box<dyn Error>> {
     execute_case(client, case_id, request, operation, |response| {
         let id = response
             .create()
             .and_then(|result| result.unique_identifier())
             .ok_or_else(|| "successful Create response has no Unique Identifier".to_owned())?;
-        text_identifier(id)
-            .map_err(|_| "Create response identifier is not a text identifier".to_owned())
+        let id = text_identifier(id)
+            .map_err(|_| "Create response identifier is not a text identifier".to_owned())?;
+        ownership.track(id.clone());
+        Ok(id)
     })
 }
 
@@ -572,6 +751,7 @@ fn execute_created_key_pair(
     client: &mut Client,
     case_id: &str,
     request: CreateKeyPairRequest,
+    ownership: &mut CaseOwnership,
 ) -> Result<(String, String), Box<dyn Error>> {
     execute_case(
         client,
@@ -588,12 +768,13 @@ fn execute_created_key_pair(
             let public_id = pair
                 .public_key_unique_identifier()
                 .ok_or_else(|| "Create Key Pair omitted the Public Key identifier".to_owned())?;
-            Ok((
-                text_identifier(private_id)
-                    .map_err(|_| "Private Key identifier is not text".to_owned())?,
-                text_identifier(public_id)
-                    .map_err(|_| "Public Key identifier is not text".to_owned())?,
-            ))
+            let private_id = text_identifier(private_id)
+                .map_err(|_| "Private Key identifier is not text".to_owned())?;
+            ownership.track(private_id.clone());
+            let public_id = text_identifier(public_id)
+                .map_err(|_| "Public Key identifier is not text".to_owned())?;
+            ownership.track(public_id.clone());
+            Ok((private_id, public_id))
         },
     )
 }
@@ -602,6 +783,7 @@ fn execute_created_split(
     client: &mut Client,
     case_id: &str,
     request: CreateSplitKeyRequest,
+    ownership: &mut CaseOwnership,
 ) -> Result<Vec<String>, Box<dyn Error>> {
     execute_case(
         client,
@@ -618,21 +800,30 @@ fn execute_created_split(
             result
                 .unique_identifiers()
                 .iter()
-                .map(|id| {
-                    text_identifier(id).map_err(|_| "Split Key identifier is not text".to_owned())
+                .try_fold(Vec::new(), |mut ids, id| {
+                    let id = text_identifier(id)
+                        .map_err(|_| "Split Key identifier is not text".to_owned())?;
+                    ownership.track(id.clone());
+                    ids.push(id);
+                    Ok(ids)
                 })
-                .collect()
         },
     )
 }
 
-fn register_certificate(client: &mut Client, case_id: &str) -> Result<String, Box<dyn Error>> {
-    let der = read_pem_der(&certificate_directory().join("validation/leaf.crt"))?;
+fn register_certificate(
+    client: &mut Client,
+    case_id: &str,
+    certificate: ValidationCertificate,
+    ownership: &mut CaseOwnership,
+) -> Result<String, Box<dyn Error>> {
+    let der = read_pem_der(&validation_certificate_path(certificate))?;
     let attributes = AttributeSet::try_new([
         kmip_item(
             CERTIFICATE_LENGTH,
             Value::integer(i32::try_from(der.len())?),
         )?,
+        kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(2))?,
         name_attribute(case_id)?,
     ])?;
     let object = kmip_item(
@@ -646,10 +837,15 @@ fn register_certificate(client: &mut Client, case_id: &str) -> Result<String, Bo
         client,
         case_id,
         RegisterRequest::new(ObjectType::from_raw(1), attributes, object),
+        ownership,
     )
 }
 
-fn register_secret_data(client: &mut Client, case_id: &str) -> Result<String, Box<dyn Error>> {
+fn register_secret_data(
+    client: &mut Client,
+    case_id: &str,
+    ownership: &mut CaseOwnership,
+) -> Result<String, Box<dyn Error>> {
     let material = SecretBytes::new(case_id.as_bytes().to_vec());
     let attributes = AttributeSet::try_new([
         kmip_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(12))?,
@@ -678,10 +874,15 @@ fn register_secret_data(client: &mut Client, case_id: &str) -> Result<String, Bo
         client,
         case_id,
         RegisterRequest::new(ObjectType::from_raw(7), attributes, object),
+        ownership,
     )
 }
 
-fn register_opaque_object(client: &mut Client, case_id: &str) -> Result<String, Box<dyn Error>> {
+fn register_opaque_object(
+    client: &mut Client,
+    case_id: &str,
+    ownership: &mut CaseOwnership,
+) -> Result<String, Box<dyn Error>> {
     // OASIS KMIP v2.1 §2.3, Table 4 requires Opaque Data Type as an
     // Enumeration; §11.35, Table 469 assigns the 8XXXXXXX extension range.
     // Name remains valid here: §4.32, Table 94 applies it to All Objects.
@@ -704,6 +905,7 @@ fn register_opaque_object(client: &mut Client, case_id: &str) -> Result<String, 
             object,
         )
         .with_opaque_object_context(OpaqueObjectContext::Generic),
+        ownership,
     )
 }
 
@@ -711,6 +913,7 @@ fn register_result_id(
     client: &mut Client,
     case_id: &str,
     request: RegisterRequest,
+    ownership: &mut CaseOwnership,
 ) -> Result<String, Box<dyn Error>> {
     let request = ClientRequest::register(request);
     execute_case(client, case_id, request, "Register setup", |response| {
@@ -718,7 +921,10 @@ fn register_result_id(
             .register()
             .and_then(|result| result.unique_identifier())
             .ok_or_else(|| "successful Register response has no Unique Identifier".to_owned())?;
-        text_identifier(id).map_err(|_| "Register response identifier is not text".to_owned())
+        let id = text_identifier(id)
+            .map_err(|_| "Register response identifier is not text".to_owned())?;
+        ownership.track(id.clone());
+        Ok(id)
     })
 }
 
@@ -726,27 +932,20 @@ fn run_validate_case(
     client: &mut Client,
     case_id: &str,
     row: &serde_json::Value,
+    ownership: &mut CaseOwnership,
 ) -> Result<(), Box<dyn Error>> {
     let params = &row["parameters"];
     let mut request = ValidateRequest::new();
-    let root_der = read_pem_der(&certificate_directory().join("ca/ca.crt"))?;
-    let intermediate_der =
-        read_pem_der(&certificate_directory().join("validation/intermediate.crt"))?;
-    let leaf_der = read_pem_der(&certificate_directory().join("validation/leaf.crt"))?;
-
+    let plan = validation_chain_plan(row, case_id);
     let mut managed = Vec::new();
-    if params["chain_input"] == "managed-identifiers" || params["chain_input"] == "mixed" {
-        managed.push(register_certificate(client, &format!("{case_id}-leaf"))?);
-        managed.push(register_certificate(
-            client,
-            &format!("{case_id}-intermediate"),
-        )?);
-        managed.push(register_certificate(client, &format!("{case_id}-root"))?);
+    for (name, certificate) in &plan.managed_certificates {
+        managed.push(register_certificate(client, name, *certificate, ownership)?);
     }
     match params["chain_input"].as_str() {
         Some("certificate-values") => {
-            for der in [&leaf_der, &intermediate_der, &root_der] {
-                request = request.with_certificate(certificate_structure(der)?);
+            for certificate in &plan.certificate_values {
+                let der = read_pem_der(&validation_certificate_path(*certificate))?;
+                request = request.with_certificate(certificate_structure(&der)?);
             }
         }
         Some("managed-identifiers") => {
@@ -755,10 +954,11 @@ fn run_validate_case(
             }
         }
         Some("mixed") => {
+            let leaf_der = read_pem_der(&validation_certificate_path(ValidationCertificate::Leaf))?;
             request = request
                 .with_certificate(certificate_structure(&leaf_der)?)
-                .with_unique_identifier(UniqueIdentifier::TextString(managed[1].clone()))
-                .with_unique_identifier(UniqueIdentifier::TextString(managed[2].clone()));
+                .with_unique_identifier(UniqueIdentifier::TextString(managed[0].clone()))
+                .with_unique_identifier(UniqueIdentifier::TextString(managed[1].clone()));
         }
         _ => return Err(format!("case {case_id}: unknown Validate chain_input").into()),
     }
@@ -844,6 +1044,7 @@ fn add_case_comment(
                     response
                         .set_attribute()
                         .and_then(|result| result.unique_identifier()),
+                    identifier,
                     "Set Attribute setup",
                 )
             },
@@ -860,8 +1061,71 @@ fn add_case_comment(
         |response| {
             require_text_identifier(
                 response.add_attribute().and_then(|r| r.unique_identifier()),
+                identifier,
                 "Add Attribute setup",
             )
+        },
+    )
+}
+
+fn verify_comment(
+    client: &mut Client,
+    case_id: &str,
+    identifier: &str,
+    expected: &str,
+) -> Result<(), Box<dyn Error>> {
+    execute_case(
+        client,
+        case_id,
+        ClientRequest::get_attributes(GetAttributesRequest::try_new(
+            Some(identifier.to_owned()),
+            [AttributeReference::tag(COMMENT)],
+        )?),
+        "Get Attributes Comment verification",
+        |response| {
+            let attributes = response
+                .get_attributes()
+                .and_then(|result| result.attributes())
+                .ok_or_else(|| "Comment verification returned no Attributes".to_owned())?;
+            let comments = attributes
+                .as_items()
+                .iter()
+                .filter(|item| item.tag().raw() == COMMENT)
+                .collect::<Vec<_>>();
+            if comments.len() != 1 || !comment_value_matches(comments[0], expected) {
+                return Err(
+                    "server Comment does not equal the exact value written by this case".to_owned(),
+                );
+            }
+            Ok(())
+        },
+    )
+}
+
+fn verify_comment_absent(
+    client: &mut Client,
+    case_id: &str,
+    identifier: &str,
+) -> Result<(), Box<dyn Error>> {
+    execute_case(
+        client,
+        case_id,
+        ClientRequest::get_attribute_list(GetAttributeListRequest::new(Some(
+            identifier.to_owned(),
+        ))),
+        "Get Attribute List Comment deletion verification",
+        |response| {
+            let references = response
+                .get_attribute_list()
+                .and_then(|result| result.attribute_references())
+                .ok_or_else(|| "Get Attribute List returned no Attribute References".to_owned())?;
+            if references
+                .iter()
+                .any(|reference| reference.tag_value() == Some(COMMENT))
+            {
+                return Err("Delete Attribute left the case-owned Comment present".to_owned());
+            }
+            Ok(())
         },
     )
 }
@@ -920,6 +1184,7 @@ fn revoke_for_destroy(
                 response
                     .revoke()
                     .and_then(|result| result.unique_identifier()),
+                unique_id,
                 "Revoke setup",
             )
         },
@@ -939,6 +1204,7 @@ fn activate_for_revoke(
         |response| {
             require_identifier(
                 response.activate().and_then(|r| r.unique_identifier()),
+                unique_id,
                 "Activate setup",
             )
         },
@@ -964,6 +1230,7 @@ fn modify_activation_date(
         |response| {
             require_text_identifier(
                 response.add_attribute().and_then(|r| r.unique_identifier()),
+                identifier,
                 "Add Attribute setup",
             )
         },
@@ -982,10 +1249,12 @@ fn modify_activation_date(
                 response
                     .modify_attribute()
                     .and_then(|r| r.unique_identifier()),
+                identifier,
                 "Modify Attribute",
             )
         },
-    )
+    )?;
+    verify_activation_date(client, case_id, identifier, date + 60)
 }
 
 fn set_activation_date(
@@ -993,22 +1262,59 @@ fn set_activation_date(
     case_id: &str,
     identifier: &str,
 ) -> Result<(), Box<dyn Error>> {
+    let date = future_date()?;
     execute_case(
         client,
         case_id,
         ClientRequest::set_attribute(SetAttributeRequest::new(
             Some(identifier.to_owned()),
-            NewAttribute::new(kmip_item(
-                ACTIVATION_DATE,
-                Value::date_time(future_date()?),
-            )?),
+            NewAttribute::new(kmip_item(ACTIVATION_DATE, Value::date_time(date))?),
         )),
         "Set Attribute",
         |response| {
             require_text_identifier(
                 response.set_attribute().and_then(|r| r.unique_identifier()),
+                identifier,
                 "Set Attribute",
             )
+        },
+    )?;
+    verify_activation_date(client, case_id, identifier, date)
+}
+
+fn verify_activation_date(
+    client: &mut Client,
+    case_id: &str,
+    identifier: &str,
+    expected: i64,
+) -> Result<(), Box<dyn Error>> {
+    execute_case(
+        client,
+        case_id,
+        ClientRequest::get_attributes(GetAttributesRequest::try_new(
+            Some(identifier.to_owned()),
+            [AttributeReference::tag(ACTIVATION_DATE)],
+        )?),
+        "Get Attributes Activation Date verification",
+        |response| {
+            let attributes = response
+                .get_attributes()
+                .and_then(|result| result.attributes())
+                .ok_or_else(|| "Activation Date verification returned no Attributes".to_owned())?;
+            let matches = attributes.as_items().iter().any(|item| {
+                item.tag().raw() == ACTIVATION_DATE
+                    && item.with_value(|value| {
+                        matches!(value, kmipkit_ttlv::ValueView::DateTime(actual) if *actual == expected)
+                    })
+            });
+            if matches {
+                Ok(())
+            } else {
+                Err(
+                    "server Activation Date does not equal the exact value written by this case"
+                        .to_owned(),
+                )
+            }
         },
     )
 }
@@ -1035,32 +1341,56 @@ fn self_identifier(value: &str) -> UniqueIdentifier {
 }
 
 fn require_identifier(
-    identifier: Option<&UniqueIdentifier>,
+    actual: Option<&UniqueIdentifier>,
+    expected: &str,
     operation: &str,
 ) -> Result<(), String> {
-    identifier
-        .ok_or_else(|| format!("successful {operation} response has no Unique Identifier"))
+    actual
+        .filter(|value| identifier_matches(Some(value), expected))
+        .ok_or_else(|| {
+            format!("successful {operation} response omitted the case-owned Unique Identifier")
+        })
         .map(|_| ())
 }
 
-fn require_text_identifier(identifier: Option<&str>, operation: &str) -> Result<(), String> {
-    identifier
-        .filter(|value| !value.is_empty())
-        .ok_or_else(|| format!("successful {operation} response has no Unique Identifier"))
+fn require_text_identifier(
+    actual: Option<&str>,
+    expected: &str,
+    operation: &str,
+) -> Result<(), String> {
+    actual
+        .filter(|value| !value.is_empty() && *value == expected)
+        .ok_or_else(|| {
+            format!("successful {operation} response omitted the case-owned Unique Identifier")
+        })
         .map(|_| ())
 }
 
-// These manifest-to-request seams deliberately capture the current request
-// behavior in Red. Green will make them match the case's declared parameters.
 fn locate_filter_from_row(
     row: &serde_json::Value,
     case_id: &str,
 ) -> Result<AttributeSet, Box<dyn Error>> {
-    let object_type = required_text(row, "object_type")?;
-    if object_type == "SplitKey" {
-        AttributeSet::try_new([]).map_err(Into::into)
-    } else {
-        AttributeSet::try_new([name_attribute(case_id)?]).map_err(Into::into)
+    let object_type = object_type_value(required_text(row, "object_type")?)?;
+    if row["parameters"]["filter"] != "unique case-owned name and Object Type" {
+        return Err(format!("case {case_id}: unsupported Locate filter contract").into());
+    }
+    AttributeSet::try_new([
+        name_attribute(case_id)?,
+        kmip_item(OBJECT_TYPE, Value::enumeration(object_type))?,
+    ])
+    .map_err(Into::into)
+}
+
+fn object_type_value(name: &str) -> Result<u32, Box<dyn Error>> {
+    match name {
+        "Certificate" => Ok(1),
+        "SymmetricKey" => Ok(2),
+        "PublicKey" => Ok(3),
+        "PrivateKey" => Ok(4),
+        "SplitKey" => Ok(5),
+        "SecretData" => Ok(7),
+        "OpaqueObject" => Ok(8),
+        _ => Err(format!("unsupported manifest Object Type {name}").into()),
     }
 }
 
@@ -1084,6 +1414,15 @@ enum ValidationCertificate {
     Root,
 }
 
+fn validation_certificate_path(certificate: ValidationCertificate) -> std::path::PathBuf {
+    let relative = match certificate {
+        ValidationCertificate::Leaf => "validation/leaf.crt",
+        ValidationCertificate::Intermediate => "validation/intermediate.crt",
+        ValidationCertificate::Root => "ca/ca.crt",
+    };
+    certificate_directory().join(relative)
+}
+
 #[derive(Debug, Eq, PartialEq)]
 struct ValidationChainPlan {
     certificate_values: Vec<ValidationCertificate>,
@@ -1102,15 +1441,22 @@ fn validation_chain_plan(row: &serde_json::Value, case_id: &str) -> ValidationCh
         },
         Some("managed-identifiers") => ValidationChainPlan {
             certificate_values: Vec::new(),
-            managed_certificates: ["leaf", "intermediate", "root"]
-                .map(|name| (format!("{case_id}-{name}"), ValidationCertificate::Leaf))
-                .into(),
+            managed_certificates: [
+                ("leaf", ValidationCertificate::Leaf),
+                ("intermediate", ValidationCertificate::Intermediate),
+                ("root", ValidationCertificate::Root),
+            ]
+            .map(|(name, certificate)| (format!("{case_id}-{name}"), certificate))
+            .into(),
         },
         Some("mixed") => ValidationChainPlan {
             certificate_values: vec![ValidationCertificate::Leaf],
-            managed_certificates: ["intermediate", "root"]
-                .map(|name| (format!("{case_id}-{name}"), ValidationCertificate::Leaf))
-                .into(),
+            managed_certificates: [
+                ("intermediate", ValidationCertificate::Intermediate),
+                ("root", ValidationCertificate::Root),
+            ]
+            .map(|(name, certificate)| (format!("{case_id}-{name}"), certificate))
+            .into(),
         },
         _ => ValidationChainPlan {
             certificate_values: Vec::new(),
@@ -1132,27 +1478,37 @@ impl CaseOwnership {
     fn cleanup_order(&self) -> impl Iterator<Item = &str> {
         self.identifiers.iter().rev().map(String::as_str)
     }
+
+    fn release(&mut self, identifier: &str) {
+        self.identifiers
+            .retain(|owned_identifier| owned_identifier != identifier);
+    }
 }
 
 fn finish_operation_with_cleanup<T>(
     operation: Result<T, String>,
     cleanup: impl FnOnce() -> Result<(), String>,
 ) -> Result<T, String> {
-    match operation {
-        Err(primary) => Err(primary),
-        Ok(value) => {
-            cleanup()?;
-            Ok(value)
+    let cleanup_result = cleanup();
+    match (operation, cleanup_result) {
+        (Ok(value), Ok(())) => Ok(value),
+        (Err(primary), Ok(())) => Err(primary),
+        (Ok(_), Err(cleanup)) => Err(format!("case cleanup failed: {cleanup}")),
+        (Err(primary), Err(cleanup)) => {
+            Err(format!("{primary}; case cleanup also failed: {cleanup}"))
         }
     }
 }
 
 fn identifier_matches(actual: Option<&UniqueIdentifier>, expected: &str) -> bool {
-    actual.is_some()
+    matches!(actual, Some(UniqueIdentifier::TextString(value)) if value == expected)
 }
 
 fn comment_value_matches(item: &Item, expected: &str) -> bool {
     item.tag().raw() == COMMENT
+        && item.with_value(|value| {
+            matches!(value, kmipkit_ttlv::ValueView::TextString(actual) if actual == expected)
+        })
 }
 
 fn manifest_row(case_id: &str) -> Result<serde_json::Value, Box<dyn Error>> {
@@ -1164,6 +1520,12 @@ fn manifest_row(case_id: &str) -> Result<serde_json::Value, Box<dyn Error>> {
         .and_then(|rows| rows.iter().find(|row| row["case_id"] == case_id))
         .cloned()
         .ok_or_else(|| format!("case {case_id} was not found in the capability manifest").into())
+}
+
+fn required_text<'a>(row: &'a serde_json::Value, field: &str) -> Result<&'a str, Box<dyn Error>> {
+    row[field]
+        .as_str()
+        .ok_or_else(|| format!("manifest case has no textual {field}").into())
 }
 
 #[cfg(test)]
@@ -1193,7 +1555,7 @@ mod review_regression_tests {
                 .find(|item| item.tag().raw() == 0x0042_0057);
             assert!(
                 object_type_item.is_some_and(|item| {
-                    item.with_value(|value| matches!(value, kmipkit_ttlv::ValueView::Enumeration(raw) if raw == object_type))
+                    item.with_value(|value| matches!(value, kmipkit_ttlv::ValueView::Enumeration(raw) if *raw == *object_type))
                 }),
                 "{case_id} Locate filter must contain its Object Type"
             );
@@ -1245,7 +1607,22 @@ mod review_regression_tests {
                 ],
             ),
             (
+                "cosmian-528-validate-certificate-managed-identifiers-explicit-time",
+                vec![
+                    ValidationCertificate::Leaf,
+                    ValidationCertificate::Intermediate,
+                    ValidationCertificate::Root,
+                ],
+            ),
+            (
                 "cosmian-528-validate-certificate-mixed-current",
+                vec![
+                    ValidationCertificate::Intermediate,
+                    ValidationCertificate::Root,
+                ],
+            ),
+            (
+                "cosmian-528-validate-certificate-mixed-explicit-time",
                 vec![
                     ValidationCertificate::Intermediate,
                     ValidationCertificate::Root,
@@ -1290,6 +1667,14 @@ mod review_regression_tests {
             "cleanup must run after an operation failure"
         );
         assert_eq!(result, Err("primary failure".to_owned()));
+
+        let combined =
+            finish_operation_with_cleanup(Err::<(), _>("primary failure".to_owned()), || {
+                Err("secondary cleanup failure".to_owned())
+            });
+        let message = combined.expect_err("both errors should be observable");
+        assert!(message.contains("primary failure"));
+        assert!(message.contains("secondary cleanup failure"));
     }
 
     #[test]
@@ -1297,6 +1682,19 @@ mod review_regression_tests {
         let mut ownership = CaseOwnership::default();
         ownership.track("first-created".to_owned());
         ownership.track("linked-second".to_owned());
+        assert_eq!(
+            ownership.cleanup_order().collect::<Vec<_>>(),
+            ["linked-second", "first-created"]
+        );
+    }
+
+    #[test]
+    fn successfully_destroyed_case_object_is_released_from_cleanup() {
+        let mut ownership = CaseOwnership::default();
+        ownership.track("first-created".to_owned());
+        ownership.track("destroyed-by-case-operation".to_owned());
+        ownership.track("linked-second".to_owned());
+        ownership.release("destroyed-by-case-operation");
         assert_eq!(
             ownership.cleanup_order().collect::<Vec<_>>(),
             ["linked-second", "first-created"]
@@ -1324,10 +1722,4 @@ mod review_regression_tests {
             .expect("well-formed Comment item");
         assert!(comment_value_matches(&expected, "case-1"));
     }
-}
-
-fn required_text<'a>(row: &'a serde_json::Value, field: &str) -> Result<&'a str, Box<dyn Error>> {
-    row[field]
-        .as_str()
-        .ok_or_else(|| format!("manifest case has no textual {field}").into())
 }
