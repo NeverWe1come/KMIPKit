@@ -8,6 +8,10 @@
 mod common;
 #[path = "cosmian_kms/lifecycle.rs"]
 mod lifecycle;
+#[path = "cosmian_kms/transfer.rs"]
+mod transfer;
+#[path = "cosmian_kms/key_management.rs"]
+mod key_management;
 
 use std::collections::BTreeSet;
 use std::error::Error;
