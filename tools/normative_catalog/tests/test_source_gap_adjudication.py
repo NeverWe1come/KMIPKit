@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import html
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -10,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
 ORACLE_PATH = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
+SPEC_SOURCE_PATH = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 
 
 AUDITED_REQUIREMENTS = {
@@ -48,6 +51,11 @@ AUDITED_REQUIREMENTS = {
 
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _normalized_html_source_span(lines: list[str], line_range: list[int]) -> str:
+    source_span = " ".join(lines[line_range[0] - 1 : line_range[1]])
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
 
 
 class SourceGapAdjudicationTests(unittest.TestCase):
@@ -633,6 +641,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
     def test_t002_resolves_procedure_context_and_preserves_only_three_ambiguous_gaps(self) -> None:
         oracle = _load_json(ORACLE_PATH)
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        spec_lines = SPEC_SOURCE_PATH.read_text(encoding="cp1252").splitlines()
         procedure_ranges = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011": [22429, 22431],
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-012": [22437, 22439],
@@ -647,18 +656,28 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         }
         for gap_id, line_range in procedure_ranges.items():
             gap = gaps[gap_id]
+            mode = "multi-part" if gap_id.endswith(tuple(f"-{number:03}" for number in range(11, 19))) else "single-part"
             with self.subTest(gap_id=gap_id):
                 self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(
+                    gap["source_excerpt"],
+                    _normalized_html_source_span(spec_lines, line_range),
+                )
                 self.assertEqual(gap["source_force"], "imperative_procedure_without_formal_modal")
                 self.assertEqual(gap["actor"], "client")
                 self.assertEqual(
                     gap["direction"],
-                    "client multi-part/single-part request and response processing",
+                    f"client {mode} request and response processing",
+                )
+                self.assertEqual(
+                    gap["condition"],
+                    f"For a {mode} cryptographic operation.",
                 )
                 self.assertEqual(gap["scope_disposition"], "client_1_0")
                 self.assertEqual(gap["status"], "reviewed_procedure_context")
                 self.assertIsNone(gap["candidate_requirement_id"])
                 self.assertIsNone(gap["proposed_requirement_id"])
+                self.assertIn("standalone requirement ID", gap["review_note"])
 
         ambiguous_gap_details = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE": (
@@ -684,6 +703,10 @@ class SourceGapAdjudicationTests(unittest.TestCase):
             gap = gaps[gap_id]
             with self.subTest(gap_id=gap_id):
                 self.assertEqual(gap["html_line_range"], line_range)
+                self.assertEqual(
+                    gap["source_excerpt"],
+                    _normalized_html_source_span(spec_lines, line_range),
+                )
                 self.assertEqual(gap["scope_disposition"], "unresolved")
                 self.assertEqual(gap["status"], status)
                 self.assertIsNone(gap["candidate_requirement_id"])
@@ -738,6 +761,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
             for row in catalog["profiles"]
             if row["role"] == "client"
         }
+        spec_lines = SPEC_SOURCE_PATH.read_text(encoding="cp1252").splitlines()
 
         self.assertEqual(len(requirements), 57)
         self.assertEqual(
@@ -765,6 +789,13 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 }, requirement["source_refs"])
                 self.assertEqual(requirement["source_locator"], source_row["source_locator"])
                 self.assertEqual(requirement["source_locator"]["kind"], "table_body_row")
+                self.assertEqual(
+                    source_row["source_excerpt"],
+                    _normalized_html_source_span(
+                        spec_lines,
+                        requirement["source_locator"]["html_line_range"],
+                    ),
+                )
                 self.assertEqual(requirement["source_clause_ids"], [])
                 if requirement["scope_state"] == "client_1_0":
                     self.assertTrue(all(requirement_id in ids for ids in profile_requirements.values()))
