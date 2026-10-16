@@ -23,6 +23,28 @@ const DECRYPT_OPERATION: u32 = 0x0000_0020;
 const TEST_NOW: i64 = 1_700_000_000;
 const TEST_UNIQUE_IDENTIFIER_0: &str = "kmipkit-test-unique-id-0";
 const TEST_CORRELATION_VALUE: &[u8] = b"kmipkit-test-correlation-value-0";
+const SUPPORTED_PROFILE_OPERATIONS: &[u32] = &[
+    0x0000_0001, // Create
+    0x0000_0003, // Register
+    0x0000_0009, // Check
+    0x0000_000b, // Get Attributes
+    0x0000_000a, // Get
+    0x0000_000d, // Add Attribute
+    0x0000_000e, // Modify Attribute
+    0x0000_0012, // Activate
+    0x0000_0013, // Revoke
+    0x0000_0014, // Destroy
+    0x0000_0008, // Locate
+    0x0000_002c, // Log
+    0x0000_0034, // Interop
+];
+const CRYPTOGRAPHIC_USAGE_MASKS: &[(&str, i32)] = &[
+    ("Encrypt", 0x0000_0004),
+    ("Decrypt", 0x0000_0008),
+    ("Sign", 0x0000_0001),
+    ("Verify", 0x0000_0002),
+    ("WrapKey", 0x0000_0010),
+];
 
 #[cfg(test)]
 #[path = "../tests/fixtures/oasis_get_fixture_tests.rs"]
@@ -86,6 +108,11 @@ impl OasisProfileFixture {
     /// This API preserves every paired operation and never filters or
     /// reconstructs missing messages. It supports only the two documented
     /// fixture substitutions in [`OasisProfileFixtureBindings`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error when the XML shape, message pairing,
+    /// operation, supported symbol, TTLV value, or resource limit is invalid.
     pub fn from_xml(
         case_id: &str,
         xml: &str,
@@ -117,10 +144,11 @@ impl OasisProfileFixture {
         }
         let catalog = CatalogMaps::load()?;
         let mut exchanges = Vec::with_capacity(messages.len() / 2);
-        for (step, pair) in messages.chunks_exact(2).enumerate() {
-            let [request_node, response_node] = pair else {
-                return Err(OasisCryptoFixtureError::UnpairedMessages);
-            };
+        let (message_pairs, remaining) = messages.as_slice().as_chunks::<2>();
+        if !remaining.is_empty() {
+            return Err(OasisCryptoFixtureError::UnpairedMessages);
+        }
+        for (step, [request_node, response_node]) in message_pairs.iter().enumerate() {
             if request_node.tag_name().name() != "RequestMessage"
                 || response_node.tag_name().name() != "ResponseMessage"
             {
@@ -479,22 +507,7 @@ fn profile_operation(
     batch: Node<'_, '_>,
 ) -> Result<u32, OasisCryptoFixtureError> {
     let value = catalog.enumeration_value(unique_child(batch, "Operation")?)?;
-    const SUPPORTED: &[u32] = &[
-        0x0000_0001, // Create
-        0x0000_0003, // Register
-        0x0000_0009, // Check
-        0x0000_000b, // Get Attributes
-        0x0000_000a, // Get
-        0x0000_000d, // Add Attribute
-        0x0000_000e, // Modify Attribute
-        0x0000_0012, // Activate
-        0x0000_0013, // Revoke
-        0x0000_0014, // Destroy
-        0x0000_0008, // Locate
-        0x0000_002c, // Log
-        0x0000_0034, // Interop
-    ];
-    if SUPPORTED.contains(&value) {
+    if SUPPORTED_PROFILE_OPERATIONS.contains(&value) {
         Ok(value)
     } else {
         Err(OasisCryptoFixtureError::UnsupportedOperation)
@@ -571,10 +584,7 @@ fn validate_batch_item_shape(
             &["Operation", "UniqueBatchItemID", "RequestPayload"],
         ]
     };
-    if !allowed
-        .iter()
-        .any(|candidate| batch_names.as_slice() == *candidate)
-    {
+    if !allowed.contains(&batch_names.as_slice()) {
         return Err(OasisCryptoFixtureError::UnsupportedFixtureConstruct);
     }
     Ok(())
@@ -855,18 +865,14 @@ fn parse_integer(node: Node<'_, '_>) -> Result<i32, OasisCryptoFixtureError> {
             .parse()
             .map_err(|_| OasisCryptoFixtureError::InvalidValue);
     }
-    const MASKS: &[(&str, i32)] = &[
-        ("Encrypt", 0x0000_0004),
-        ("Decrypt", 0x0000_0008),
-        ("Sign", 0x0000_0001),
-        ("Verify", 0x0000_0002),
-        ("WrapKey", 0x0000_0010),
-    ];
     let mut mask = 0;
     let mut seen = HashSet::new();
     for part in value.split_ascii_whitespace() {
         reject_symbol(part)?;
-        let Some((_, bit)) = MASKS.iter().find(|(name, _)| *name == part) else {
+        let Some((_, bit)) = CRYPTOGRAPHIC_USAGE_MASKS
+            .iter()
+            .find(|(name, _)| *name == part)
+        else {
             return Err(OasisCryptoFixtureError::InvalidValue);
         };
         if !seen.insert(part) {
@@ -943,13 +949,16 @@ fn parse_date_time(
     reject_symbol(value)?;
     match value.parse::<i64>() {
         Ok(seconds) => Ok(seconds),
-        Err(_) => parse_rfc3339_date_time(value).map_err(|_| OasisCryptoFixtureError::InvalidValue),
+        Err(_) => {
+            parse_rfc3339_date_time(value).map_err(|()| OasisCryptoFixtureError::InvalidValue)
+        }
     }
 }
 
 fn parse_rfc3339_date_time(value: &str) -> Result<i64, ()> {
     let bytes = value.as_bytes();
     if bytes.len() < 20
+        || bytes[4] != b'-'
         || bytes[7] != b'-'
         || bytes[10] != b'T'
         || bytes[13] != b':'

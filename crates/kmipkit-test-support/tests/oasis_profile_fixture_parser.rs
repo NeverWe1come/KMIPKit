@@ -3,6 +3,8 @@ use kmipkit_test_support::oasis_crypto_fixtures::{
 };
 
 #[test]
+// This oracle table intentionally enumerates every pinned official profile fixture.
+#[allow(clippy::too_many_lines)]
 fn parses_all_pinned_profile_fixtures_in_exact_source_order() {
     let cases: &[(&str, &str, &[u32])] = &[
         (
@@ -105,7 +107,7 @@ fn parses_all_pinned_profile_fixtures_in_exact_source_order() {
             fixture
                 .exchanges()
                 .iter()
-                .map(|exchange| exchange.step())
+                .map(kmipkit_test_support::oasis_crypto_fixtures::OasisProfileExchange::step)
                 .collect::<Vec<_>>(),
             (0..fixture.exchanges().len()).collect::<Vec<_>>(),
             "{case_id} source step indexes"
