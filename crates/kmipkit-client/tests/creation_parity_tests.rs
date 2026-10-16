@@ -161,3 +161,15 @@ fn creation_operation_values_match_kmip_21_table_470() {
     assert_eq!(ClientOperation::CreateKeyPair.raw(), 0x0000_0002);
     assert_eq!(ClientOperation::CreateSplitKey.raw(), 0x0000_0028);
 }
+
+#[test]
+fn creation_result_message_fixture_is_limited_to_operation_failure() {
+    let create = fixture_case("creation.create.request-response.v1");
+    assert_eq!(create["expectedOutput"]["resultStatus"], 0);
+    assert!(create["expectedOutput"]["resultMessage"].is_null());
+
+    let failure = fixture_case("creation.result-message-on-failure.v1");
+    assert_eq!(failure["expectedOutput"]["resultStatus"], 1);
+    assert_eq!(failure["expectedOutput"]["resultReason"], 5);
+    assert_eq!(failure["expectedOutput"]["resultMessage"], "création refusée ✓");
+}
