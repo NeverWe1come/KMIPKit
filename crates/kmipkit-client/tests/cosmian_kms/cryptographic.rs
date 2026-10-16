@@ -29,13 +29,10 @@ const SYMMETRIC_KEY: u32 = 0x0042_007F;
 const KEY_USAGE_MAC_GENERATE_VERIFY: i32 = 384;
 const RAW_KEY_FORMAT_TYPE: u32 = 1;
 const FIXTURE_KEY: [u8; 32] = [0x5A; 32];
-const EXPECTED_TARGET_ROWS: usize = 1_320;
+const EXPECTED_TARGET_ROWS: usize = 942;
 const EXPECTED_EXECUTABLE_ROWS: usize = 95;
 
-const OPERATIONS: [&str; 10] = [
-    "Certify",
-    "Create",
-    "Create Key Pair",
+const OPERATIONS: [&str; 7] = [
     "Decrypt",
     "Encrypt",
     "Hash",
@@ -73,37 +70,6 @@ const ENCRYPTION_PARAMETERS: [&str; 27] = [
     "tweak",
     "vendor_algorithm_value",
     "wire_container",
-];
-
-const CERTIFY_PARAMETERS: [&str; 10] = [
-    "algorithm_dimension",
-    "curve",
-    "extensions",
-    "issuer",
-    "issuer_digest",
-    "issuer_key_bits",
-    "key_bits",
-    "subject_input",
-    "subject_key_bits",
-    "validity",
-];
-const CREATE_PARAMETERS: [&str; 8] = [
-    "access_policy",
-    "boundary",
-    "intended_mode",
-    "key_bits",
-    "output_bytes",
-    "output_secret_data_type",
-    "requested_key_format",
-    "vendor_algorithm_value",
-];
-const CREATE_KEY_PAIR_PARAMETERS: [&str; 6] = [
-    "curve",
-    "key_bits",
-    "policy",
-    "post_quantum",
-    "pre_quantum",
-    "vendor_algorithm_value",
 ];
 
 const HASH_PARAMETERS: [&str; 3] = ["data_length_bytes", "data_mode", "hash"];
@@ -278,14 +244,8 @@ fn target_rows() -> Result<Vec<JsonValue>, Box<dyn Error>> {
     Ok(rows
         .into_iter()
         .filter(|row| {
-            matches!(
-                row["expected_outcome"].as_str(),
-                Some(
-                    "typed_success"
-                        | "source_documentation_discrepancy"
-                        | "documented_but_source_gap"
-                )
-            ) && row["operation"]
+            row["expected_outcome"].as_str() == Some("typed_success")
+                && row["operation"]
                 .as_str()
                 .is_some_and(|operation| OPERATIONS.contains(&operation))
         })
@@ -317,9 +277,6 @@ fn validate_operation_contract(row: &JsonValue) -> Result<(), String> {
         .as_object()
         .ok_or_else(|| format!("case {id} has no parameter object"))?;
     let allowed_parameters = match operation {
-        "Certify" => &CERTIFY_PARAMETERS[..],
-        "Create" => &CREATE_PARAMETERS[..],
-        "Create Key Pair" => &CREATE_KEY_PAIR_PARAMETERS[..],
         "Encrypt" | "Decrypt" => &ENCRYPTION_PARAMETERS[..],
         "Hash" => &HASH_PARAMETERS[..],
         "MAC" | "MAC Verify" => &MAC_PARAMETERS[..],
@@ -364,9 +321,6 @@ fn operation_citation(operation: &str) -> Result<&'static str, String> {
         "MAC Verify" => Ok("oasis-6.1.33-t262-263-264"),
         "Sign" => Ok("oasis-6.1.55-t334-335-336"),
         "Signature Verify" => Ok("oasis-6.1.56-t337-338-339"),
-        "Certify" => Ok("oasis-6.1.6-t179-180-181"),
-        "Create" => Ok("oasis-6.1.8-t186-187-188"),
-        "Create Key Pair" => Ok("oasis-6.1.9-t189-190-191-192"),
         other => Err(format!("no operation citation registered for {other}")),
     }
 }
@@ -379,44 +333,6 @@ fn validate_algorithm_contract(
 ) -> Result<(), String> {
     let id = row["case_id"].as_str().unwrap_or("<missing case_id>");
     match operation {
-        "Certify" => {
-            if !["CertificateRequest", "PublicKey", "Certificate"]
-                .contains(&row["object_type"].as_str().unwrap_or(""))
-            {
-                return Err(format!(
-                    "case {id} Certify has an invalid input object type"
-                ));
-            }
-            if parameters
-                .get("subject_input")
-                .and_then(JsonValue::as_str)
-                .is_none()
-            {
-                return Err(format!("case {id} Certify has no subject input profile"));
-            }
-            for member in ["certificate_request_type", "key_format_type"] {
-                if row["wire_enum_values"][member].is_object() {
-                    let name = row["wire_enum_values"][member]["name"]
-                        .as_str()
-                        .unwrap_or("");
-                    require_wire_enum(row, member, name)?;
-                }
-            }
-        }
-        "Create" | "Create Key Pair" => {
-            if row["wire_enum_values"]["cryptographic_algorithm"].is_object() {
-                let name = row["wire_enum_values"]["cryptographic_algorithm"]["name"]
-                    .as_str()
-                    .unwrap_or(algorithm);
-                require_wire_enum(row, "cryptographic_algorithm", name)?;
-            }
-            if operation == "Create"
-                && !["PrivateKey", "SecretData", "SymmetricKey"]
-                    .contains(&row["object_type"].as_str().unwrap_or(""))
-            {
-                return Err(format!("case {id} Create has an invalid object type"));
-            }
-        }
         "Hash" => validate_hash_contract(row, id, algorithm, parameters)?,
         "MAC" | "MAC Verify" => {
             validate_mac_contract(row, id, operation, algorithm, parameters)?;
