@@ -78,7 +78,7 @@ pub(super) fn run_lifecycle_case(case_id: &str) -> Result<(), Box<dyn Error>> {
     }
     .map_err(|error| error.to_string());
     let result = finish_operation_with_cleanup(operation_result, || {
-        cleanup_owned_objects(&mut client, case_id, &ownership)
+        cleanup_owned_objects(&mut client, case_id, &mut ownership)
     });
     result.map_err(|message| -> Box<dyn Error> { message.into() })?;
 
@@ -104,7 +104,7 @@ fn run_lifecycle_operation(
         "Locate" => run_locate(client, case_id, row, &objects.primary),
         "Check" => run_check(client, case_id, row, &objects.primary),
         "Destroy" => run_destroy(client, case_id, object_type, &objects.primary, ownership),
-        "Revoke" => run_revoke(client, case_id, object_type, &objects.primary),
+        "Revoke" => run_revoke(client, case_id, object_type, &objects.primary, ownership),
         "Modify Attribute" => run_modify_attribute(client, case_id, &objects.primary),
         "Set Attribute" => run_set_attribute(client, case_id, &objects.primary),
         unsupported => {
@@ -344,8 +344,9 @@ fn run_destroy(
     ownership: &mut CaseOwnership,
 ) -> Result<(), Box<dyn Error>> {
     if object_type == "SplitKey" {
-        revoke_for_destroy(client, case_id, unique_id)?;
+        revoke_for_destroy(client, case_id, unique_id, ownership)?;
     }
+    ownership.record_attempt(unique_id, CleanupAction::Destroy);
     execute_case(
         client,
         case_id,
@@ -370,10 +371,12 @@ fn run_revoke(
     case_id: &str,
     object_type: &str,
     unique_id: &str,
+    ownership: &mut CaseOwnership,
 ) -> Result<(), Box<dyn Error>> {
     if object_type != "OpaqueObject" && object_type != "SplitKey" {
         activate_for_revoke(client, case_id, unique_id)?;
     }
+    ownership.record_attempt(unique_id, CleanupAction::Revoke);
     execute_case(
         client,
         case_id,
@@ -539,20 +542,30 @@ enum CleanupActionResult {
 fn cleanup_owned_objects(
     client: &mut Client,
     case_id: &str,
-    ownership: &CaseOwnership,
+    ownership: &mut CaseOwnership,
 ) -> Result<(), String> {
     let mut failures = Vec::new();
-    for identifier in ownership.cleanup_order() {
+    let identifiers = ownership
+        .cleanup_order()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    for identifier in identifiers {
         let state =
-            get_object_state(client, case_id, identifier).map_err(|error| error.to_string());
-        let result = cleanup_owned_object_after_state_result(state, |action| match action {
-            CleanupAction::Destroy => {
-                cleanup_destroy(client, case_id, identifier).map(CleanupActionResult::Destroy)
-            }
-            CleanupAction::Revoke => {
-                cleanup_revoke(client, case_id, identifier).map(|()| CleanupActionResult::Revoke)
-            }
-        });
+            get_object_state(client, case_id, &identifier).map_err(|error| error.to_string());
+        let prior_attempts = ownership.attempted_actions(&identifier);
+        let result = cleanup_owned_object_after_state_result_with_attempts(
+            state,
+            &prior_attempts,
+            |action| {
+                ownership.record_attempt(&identifier, action);
+                match action {
+                    CleanupAction::Destroy => cleanup_destroy(client, case_id, &identifier)
+                        .map(CleanupActionResult::Destroy),
+                    CleanupAction::Revoke => cleanup_revoke(client, case_id, &identifier)
+                        .map(|()| CleanupActionResult::Revoke),
+                }
+            },
+        );
         if let Err(error) = result {
             failures.push(format!("case-owned object cleanup failed: {error}"));
         }
@@ -566,11 +579,28 @@ fn cleanup_owned_objects(
 
 fn cleanup_owned_object_for_state(
     state: u32,
+    perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
+) -> Result<CleanupResult, String> {
+    cleanup_owned_object_for_state_with_attempts(state, &[], perform)
+}
+
+fn cleanup_owned_object_for_state_with_attempts(
+    state: u32,
+    prior_attempts: &[CleanupAction],
     mut perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
 ) -> Result<CleanupResult, String> {
+    if prior_attempts.contains(&CleanupAction::Destroy) {
+        return Err("Destroy was already attempted for this object; no retry was sent".to_owned());
+    }
     match state {
         STATE_PRE_ACTIVE | STATE_DEACTIVATED => perform_cleanup_destroy(&mut perform),
         STATE_ACTIVE => {
+            if prior_attempts.contains(&CleanupAction::Revoke) {
+                return Err(
+                    "Revoke was already attempted while the object remains Active; no retry or unsafe Destroy was sent"
+                        .to_owned(),
+                );
+            }
             match perform(CleanupAction::Revoke)? {
                 CleanupActionResult::Revoke => {}
                 CleanupActionResult::Destroy(_) => {
@@ -585,20 +615,21 @@ fn cleanup_owned_object_for_state(
     }
 }
 
-fn cleanup_owned_object_for_state_with_attempts(
-    state: u32,
-    _prior_attempts: &[CleanupAction],
-    perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
-) -> Result<CleanupResult, String> {
-    cleanup_owned_object_for_state(state, perform)
-}
-
 fn cleanup_owned_object_after_state_result(
     state: Result<u32, String>,
     perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
 ) -> Result<CleanupResult, String> {
     let state = state.map_err(|error| format!("State preflight failed: {error}"))?;
     cleanup_owned_object_for_state(state, perform)
+}
+
+fn cleanup_owned_object_after_state_result_with_attempts(
+    state: Result<u32, String>,
+    prior_attempts: &[CleanupAction],
+    perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
+) -> Result<CleanupResult, String> {
+    let state = state.map_err(|error| format!("State preflight failed: {error}"))?;
+    cleanup_owned_object_for_state_with_attempts(state, prior_attempts, perform)
 }
 
 fn perform_cleanup_destroy(
@@ -1277,9 +1308,11 @@ fn revoke_for_destroy(
     client: &mut Client,
     case_id: &str,
     unique_id: &str,
+    ownership: &mut CaseOwnership,
 ) -> Result<(), Box<dyn Error>> {
     // OASIS KMIP v2.1 §6.1.15 allows Destroy only in Pre-Active or
     // Deactivated; §6.1.44 moves a non-compromise Revoke to Deactivated.
+    ownership.record_attempt(unique_id, CleanupAction::Revoke);
     execute_case(
         client,
         case_id,
@@ -1603,6 +1636,7 @@ fn validation_chain_plan(row: &serde_json::Value, case_id: &str) -> ValidationCh
 #[derive(Default)]
 struct CaseOwnership {
     identifiers: Vec<String>,
+    attempts: Vec<(String, CleanupAction)>,
 }
 
 impl CaseOwnership {
@@ -1614,6 +1648,19 @@ impl CaseOwnership {
 
     fn cleanup_order(&self) -> impl Iterator<Item = &str> {
         self.identifiers.iter().rev().map(String::as_str)
+    }
+
+    fn record_attempt(&mut self, identifier: &str, action: CleanupAction) {
+        self.attempts.push((identifier.to_owned(), action));
+    }
+
+    fn attempted_actions(&self, identifier: &str) -> Vec<CleanupAction> {
+        self.attempts
+            .iter()
+            .filter_map(|(attempted_identifier, action)| {
+                (attempted_identifier == identifier).then_some(*action)
+            })
+            .collect()
     }
 
     fn release(&mut self, identifier: &str) {
@@ -1920,10 +1967,14 @@ mod review_regression_tests {
 
     #[test]
     fn failed_primary_destroy_is_not_repeated_by_cleanup() {
+        let mut ownership = CaseOwnership::default();
+        ownership.track("case-owned-destroy".to_owned());
+        ownership.record_attempt("case-owned-destroy", CleanupAction::Destroy);
+        let prior_attempts = ownership.attempted_actions("case-owned-destroy");
         let mut actions = Vec::new();
         let result = cleanup_owned_object_for_state_with_attempts(
             STATE_PRE_ACTIVE,
-            &[CleanupAction::Destroy],
+            &prior_attempts,
             |action| {
                 actions.push(action);
                 Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
@@ -1935,11 +1986,13 @@ mod review_regression_tests {
 
     #[test]
     fn failed_primary_revoke_is_not_repeated_for_active_object() {
+        let mut ownership = CaseOwnership::default();
+        ownership.track("case-owned-revoke".to_owned());
+        ownership.record_attempt("case-owned-revoke", CleanupAction::Revoke);
+        let prior_attempts = ownership.attempted_actions("case-owned-revoke");
         let mut actions = Vec::new();
-        let result = cleanup_owned_object_for_state_with_attempts(
-            STATE_ACTIVE,
-            &[CleanupAction::Revoke],
-            |action| {
+        let result =
+            cleanup_owned_object_for_state_with_attempts(STATE_ACTIVE, &prior_attempts, |action| {
                 actions.push(action);
                 Ok(match action {
                     CleanupAction::Revoke => CleanupActionResult::Revoke,
@@ -1947,8 +2000,7 @@ mod review_regression_tests {
                         CleanupActionResult::Destroy(CleanupResult::Destroyed)
                     }
                 })
-            },
-        );
+            });
         assert!(result.is_err());
         assert!(actions.is_empty(), "primary Revoke must not be repeated");
     }
@@ -1970,9 +2022,11 @@ mod review_regression_tests {
             "cosmian-528-set-attribute-symmetrickey-activation-date",
         ] {
             let row = manifest_row(case_id).expect("Activation Date manifest row");
-            assert!(row["oasis_source"]
-                .as_array()
-                .is_some_and(|sources| sources.iter().any(|source| source == "oasis-4.1-t29-30")));
+            assert!(
+                row["oasis_source"].as_array().is_some_and(|sources| sources
+                    .iter()
+                    .any(|source| source == "oasis-4.1-t29-30"))
+            );
         }
     }
 
