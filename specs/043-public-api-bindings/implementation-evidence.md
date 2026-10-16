@@ -2211,5 +2211,11 @@ parsers, and wrong-kind/invalid-index cases for the Rust FFI getters. Local
 focused checks pass: Java boundary and response-mapping tests (9 tests), Python
 crypto-operation tests (21 tests), the focused Rust FFI invalid-handle test,
 workspace Clippy, and formatting. A new cross-platform coverage run has not yet
-measured this commit. Keep T043 and the manifest operation state open until the
-coverage threshold and remaining required checks pass.
+measured the follow-up JNI argument cases in commit `4c499ff1`. CI run
+`38894103831` measured 4,009/4,373 changed production lines (91.67 percent),
+an increase of 48 covered lines from the previous run, but remains below the
+95-percent gate by 146 covered lines. Every other required job passed. Commit
+`4c499ff1` adds rejection cases for malformed optional identifiers and invalid
+indicator values; its focused Java/JNI boundary suite passes 7 tests. Keep T043
+and the manifest operation state open until a run including that commit passes
+the coverage threshold and remaining required checks.
