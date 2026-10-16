@@ -113,6 +113,8 @@ final class ClientBatchNativeBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseCreate(0));
         assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCertify(0));
+        assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0));
@@ -163,5 +165,51 @@ final class ClientBatchNativeBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemSignatureVerify(0, null, 0,
                         0, 0, null, null, null, 0, -1));
+    }
+
+    @Test
+    void cryptoJniFactoriesRejectInvalidIndicatorsBeforeNativeHandleLookup() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemHash(0, 0, null, 3, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMac(0, null, 0,
+                        0, 0, null, 0, 3));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemMacVerify(0, null, 0,
+                        0, 0, null, null, 3, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemSign(0, null, 0,
+                        0, 0, null, null, 0, 3));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemSignatureVerify(0, null, 0,
+                        0, 0, null, null, null, 3, 0));
+    }
+
+    @Test
+    void certifyJniReaderRejectsMalformedOptionalIdentifierAndRequestTypeFields() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        0, new byte[] {0x41}, 0, false, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        1, null, 0, false, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        2, new byte[] {0x41}, 1, false, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        2, null, -1, false, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        3, null, Integer.MAX_VALUE + 1L, false, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        77, null, 0, false, 0, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        0, null, 0, false, 0x1_0000_0000L, null, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCertify(
+                        0, null, 0, false, 1, null, 0, 0));
     }
 }

@@ -1328,6 +1328,105 @@ fn empty_unique_identifier_output_v1() -> kmipkit_unique_identifier_v1_t {
 }
 
 #[test]
+fn ffi_unique_identifier_writer_covers_valid_variants_and_rejects_bad_output_records() {
+    assert_eq!(
+        Err(ERROR_INVALID_INPUT),
+        write_unique_identifier_v1(ptr::null_mut(), None)
+    );
+
+    let mut wrong_size = empty_unique_identifier_output_v1();
+    wrong_size.struct_size -= 1;
+    assert_eq!(
+        Err(ERROR_INVALID_INPUT),
+        write_unique_identifier_v1(&raw mut wrong_size, None)
+    );
+
+    let mut wrong_version = empty_unique_identifier_output_v1();
+    wrong_version.abi_version += 1;
+    assert_eq!(
+        Err(ERROR_INVALID_INPUT),
+        write_unique_identifier_v1(&raw mut wrong_version, None)
+    );
+
+    let text_identifier = UniqueIdentifier::TextString(String::from("response-identifier"));
+    let UniqueIdentifier::TextString(text) = &text_identifier else {
+        panic!("test identifier uses the text-string variant");
+    };
+    let mut text_output = empty_unique_identifier_output_v1();
+    assert_eq!(
+        Ok(()),
+        write_unique_identifier_v1(&raw mut text_output, Some(&text_identifier))
+    );
+    assert_eq!(
+        text_output.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(text_output.text_data, text.as_ptr());
+    assert_eq!(
+        text_output.text_length,
+        u64::try_from(text.len()).expect("test identifier length fits the ABI")
+    );
+
+    let mut enumeration_output = empty_unique_identifier_output_v1();
+    assert_eq!(
+        Ok(()),
+        write_unique_identifier_v1(
+            &raw mut enumeration_output,
+            Some(&UniqueIdentifier::Enumeration(u32::MAX))
+        )
+    );
+    assert_eq!(
+        enumeration_output.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION
+    );
+    assert_eq!(enumeration_output.enumeration_value, u32::MAX);
+
+    let mut integer_output = empty_unique_identifier_output_v1();
+    assert_eq!(
+        Ok(()),
+        write_unique_identifier_v1(
+            &raw mut integer_output,
+            Some(&UniqueIdentifier::Integer(i32::MIN))
+        )
+    );
+    assert_eq!(
+        integer_output.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER
+    );
+    assert_eq!(integer_output.integer_value, i32::MIN);
+}
+
+#[test]
+fn ffi_borrowed_span_writer_preserves_absence_and_empty_presence() {
+    let mut present = 9;
+    let mut output = byte_span(b"stale");
+    assert_eq!(Ok(()), set_borrowed_span(&mut present, &mut output, None));
+    assert_eq!(present, 0);
+    assert!(output.data.is_null());
+    assert_eq!(output.length, 0);
+
+    assert_eq!(
+        Ok(()),
+        set_borrowed_span(&mut present, &mut output, Some(&[]))
+    );
+    assert_eq!(present, 1);
+    assert!(output.data.is_null());
+    assert_eq!(output.length, 0);
+
+    let bytes = [0x41, 0x00, 0x42];
+    assert_eq!(
+        Ok(()),
+        set_borrowed_span(&mut present, &mut output, Some(&bytes))
+    );
+    assert_eq!(present, 1);
+    assert_eq!(output.data, bytes.as_ptr());
+    assert_eq!(
+        output.length,
+        u64::try_from(bytes.len()).expect("test span length fits the ABI")
+    );
+}
+
+#[test]
 fn ffi_create_key_pair_getter_copies_successful_typed_identifiers() {
     let response = create_key_pair_success_response()
         .expect("the valid successful typed response is associated with its request");
