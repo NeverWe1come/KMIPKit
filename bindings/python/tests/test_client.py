@@ -105,6 +105,43 @@ def test_batch_and_client_are_context_managed_and_retain_ordered_typed_items() -
     assert ttlv.CodecLimits
 
 
+def test_version_two_metadata_preserves_unknowns_message_presence_and_redacts_repr() -> None:
+    message = "metadata marker: création ✓"
+    metadata = client.BatchItemMetadataV2(
+        operation=0xFFFF_FFFF,
+        outcome=99,
+        result_status=0xFFFF_FFFE,
+        result_reason=0xFFFF_FFFD,
+        result_message=message,
+    )
+    empty_message = client.BatchItemMetadataV2(40, client.BatchOutcome.COMPLETED, 0, None, "")
+    absent_message = client.BatchItemMetadataV2(40, client.BatchOutcome.COMPLETED, 0, None, None)
+
+    assert metadata.operation == 0xFFFF_FFFF
+    assert metadata.outcome == 99
+    assert metadata.result_status == 0xFFFF_FFFE
+    assert metadata.result_reason == 0xFFFF_FFFD
+    assert metadata.result_message == message
+    assert message not in repr(metadata)
+    assert empty_message.result_message == ""
+    assert absent_message.result_message is None
+
+
+def test_version_two_metadata_rejects_invalid_integer_ranges_and_non_utf8_text() -> None:
+    for values in (
+        (-1, 1, 0, None, None),
+        (0x1_0000_0000, 1, 0, None, None),
+        (1, -1, 0, None, None),
+        (1, 1, -1, None, None),
+        (1, 1, 0, 0x1_0000_0000, None),
+    ):
+        with pytest.raises(errors.InvalidInputError):
+            client.BatchItemMetadataV2(*values)
+
+    with pytest.raises(errors.InvalidInputError):
+        client.BatchItemMetadataV2(40, 1, 0, None, "\ud800")
+
+
 def test_public_native_handle_wrappers_reject_direct_cffi_handle_adoption() -> None:
     pointer = client.ffi.cast("void *", 1)
     wrappers = (
