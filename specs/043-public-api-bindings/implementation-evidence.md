@@ -1847,6 +1847,54 @@ the fixture points to `crates/kmipkit/tests/api_levels.rs`.
 The corrected fixture and guard require a fresh full CI run before the PR can
 leave draft status.
 
+## T032 — Create, Create Key Pair, and Create Split Key parity
+
+T032 maps the accepted owner contract in `specs/014-server-generated-creation/spec.md`
+to C, Java, and Python while reusing the canonical Rust request and response
+models. The API manifest and generated outputs declare all three operations,
+response identifiers, and the additive result metadata surface. No formal OASIS
+conformance claim is made.
+
+The shared success fixtures cover Create's Object Type and signed Integer
+Unique Identifier, independent ordered Common/Private/Public groups and the
+distinct private/public identifiers for Create Key Pair, and Create Split
+Key's signed parameters, open method value, required Attributes, optional
+input identifier/masks, ordered repeated identifiers, Pending correlation, and
+no implicit follow-up. The C mTLS consumer executes all three in the same
+ordered batch. Java and Python consume the same shared fixtures.
+
+OASIS KMIP v2.1 §8.6, Table 399, makes Result Message optional only when Result
+Status is neither Pending nor Success; §9.17 permits a descriptive error
+message. Accordingly, successful and Pending creation fixtures omit the
+field, and `creation.result-message-on-failure.v1` retains the exact UTF-8
+message on an Operation Failed result. C v1 metadata layout and signatures
+remain unchanged. The additive metadata v2 API explicitly exposes presence
+and exact bytes; its C pointer is borrowed while the response-item handle is
+alive and is bounded by the decoded message limit. Java and Python copy the
+value before native-owner release. The message is excluded from formatting,
+logs, default errors, and diagnostics.
+
+| Phase | Commit(s) | Red/Green evidence |
+|---|---|---|
+| Red | `0e1b76c2`, `18929733`, `a7cd6bc3`, `4b8bb59e`, `141139b5`, `e9d8d9b1` | Added failure-first Rust, C, Java, Python, and manifest tests: `cargo test -p kmipkit-client --test creation_parity_tests`; `python -B -m unittest tools.api_manifest.tests.test_creation_parity_manifest -v`; `uv run pytest tests/test_client.py tests/test_shared_parity_fixtures.py -q` from `bindings/python`; and `gradlew.bat test --tests org.kmipkit.SharedCapabilityParityFixtureTest` from `bindings/java`. The new operation/mapping/metadata assertions failed against the missing surface. After adding the capability assertion, `cargo test -p kmipkit --test runtime_metadata capability_query_matches_manifest_ready_capabilities` failed with `Ok(false)` versus `Ok(true)` for `server_generated_creation`. |
+| Green | `099d9902` | Implemented all three cross-language builders and response accessors, C metadata v2, exact operation values and runtime capability mapping; regenerated API output from the manifest. `cargo test -p kmipkit-client -p kmipkit-protocol -p kmipkit-ffi -p kmipkit --all-features`, Java full Gradle tests, and Python full pytest suite passed. |
+| Refactor | this evidence commit | Recorded normative traceability and binding lifetime/redaction behavior; updated bilingual user guides and the dependency inventory. Final formatting, generated-file check, binding export audit, and diff validation are recorded below. |
+
+| Verification | Command | Result |
+|---|---|---|
+| Focused Rust parity and failure metadata | `cargo test -p kmipkit-client --test creation_parity_tests`; `cargo test -p kmipkit-client --lib create_failure_preserves_result_and_does_not_retry` | PASS: 5 parity tests and 1 failure-result/no-retry test. |
+| C ABI execution | `cargo test -p kmipkit-ffi --test c_api_coverage --features coverage-c-consumer generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls` | PASS: C consumer constructed and executed the typed mixed batch over TLS. |
+| Java parity and metadata | `bindings/java/gradlew.bat test` | PASS: full Java test task. |
+| Python parity and client | `uv run pytest -q` from `bindings/python` | PASS: 232 tests. |
+| Rust package matrix | `cargo test -p kmipkit-client -p kmipkit-protocol -p kmipkit-ffi -p kmipkit --all-features` | PASS, including doctests and C ABI integration targets. |
+| Rust lint and format | `cargo clippy -p kmipkit-client -p kmipkit-protocol -p kmipkit-ffi -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check` | PASS. AWS-LC emitted its existing Windows compiler/NASM probe warnings. |
+| Manifest generation and export audit | `python -B tools/api_manifest/generate.py --check`; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check` | PASS: 12 generated outputs verified; export audit exited 0 with zero issues. |
+
+T032 closes the operation mapping, parity, documentation, and evidence scope.
+T034 remains open because its Red/Green/Refactor evidence spans T031 through
+T033, and T033 is not part of this change. The branch still requires the
+separate coverage-gate repair and final remote CI on the reviewed head.
+
 ## T031 — Discover Versions response mapping
 
 The four-language mapping now exposes the successful Discover Versions
