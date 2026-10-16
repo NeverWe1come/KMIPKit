@@ -2051,6 +2051,34 @@ class CatalogValidationTests(unittest.TestCase):
             {f"FR-{number:03}" for number in range(1, 9)},
         )
 
+    def test_baseline_tracks_optional_tls12_source_without_claiming_it_in_scope(self) -> None:
+        """Preserve the TLS 1.2 MAY clause while keeping it outside the 1.0 client requirement closure."""
+        requirement_id = "KMIPKIT-REQ-PROF-3.1.1-004"
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1.1-004"
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        oracle = json.loads(
+            (ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json").read_text(encoding="utf-8")
+        )
+        requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
+        catalog_baseline = next(
+            row for row in catalog["profiles"] if row["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        oracle_baseline = next(
+            row for row in oracle["profiles"] if row["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["scope_state"], "out_of_scope")
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertIn(clause_id, catalog_baseline["source_clause_ids"])
+        self.assertIn(clause_id, oracle_baseline["source_clause_ids"])
+        self.assertNotIn(requirement_id, catalog_baseline["requirement_ids"])
+        self.assertNotIn(requirement_id, oracle_baseline["requirement_ids"])
+
+        catalog["requirements"] = [row for row in catalog["requirements"] if row["requirement_id"] != requirement_id]
+        with self.assertRaisesRegex(CatalogValidationError, re.escape(requirement_id)):
+            validate(catalog)
+
     def test_checked_in_clause_ledger_covers_all_keyword_strength_mappings(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_keywords = set(catalog_validate.KEYWORD_STRENGTH)
