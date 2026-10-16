@@ -1525,6 +1525,49 @@ class T076ClientMappingTests(unittest.TestCase):
                     set(declaration["languageMappings"]),
                 )
 
+    def test_creation_java_bridge_and_redacted_formatters_are_exactly_excluded(self) -> None:
+        bridge_exports = {
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreate",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateKeyPair",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateSplitKey",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreate",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMetadataV2",
+        }
+        redacted_formatters = {
+            "org.kmipkit.extensions.ClientBatchItemMetadataV2.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.toString",
+            "org.kmipkit.extensions.UniqueIdentifier.toString",
+        }
+        generated_enum_members = {
+            "org.kmipkit.extensions.UniqueIdentifier.Kind.valueOf",
+            "org.kmipkit.extensions.UniqueIdentifier.Kind.values",
+        }
+        expected = bridge_exports | redacted_formatters | generated_enum_members
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit" and row["exportName"] in expected
+        }
+        self.assertEqual(expected, set(exclusions))
+        for export_name in sorted(bridge_exports):
+            with self.subTest(bridge=export_name):
+                exclusion = exclusions[export_name]
+                self.assertIn("raw-handle JNI bridge", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+        for export_name in sorted(redacted_formatters):
+            with self.subTest(redacted_formatter=export_name):
+                exclusion = exclusions[export_name]
+                self.assertIn("redacted", exclusion["reason"].lower())
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+        for export_name in sorted(generated_enum_members):
+            with self.subTest(generated_enum_member=export_name):
+                exclusion = exclusions[export_name]
+                self.assertIn("compiler-provided enum", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
     def test_creation_result_fields_have_exact_four_language_mappings(self) -> None:
         expected = {
             "kmipkit.client.BatchItemResult.operation": {

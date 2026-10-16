@@ -1959,6 +1959,19 @@ alter a C layout.
 | Green | pending | Add exact four-language manifest mappings and regenerate with the pinned tool; rerun the focused tests and macOS C consumer compilation. |
 | Refactor | pending | Update final traceability and record the verified cross-language/script-contract checks. |
 
+The full binding export audit then found 13 additional Java declarations not
+classified by the focused tests: seven raw JNI dispatch methods for the new
+creation factories and results, four explicitly redacted `toString` methods,
+and the two compiler-provided enum helpers for `UniqueIdentifier.Kind`. The
+typed capabilities are already mapped through the facade; each bridge or
+diagnostic/compiler member needs an exact exclusion rather than a package-wide
+exception.
+
+| Phase | Commit | Command / result |
+|---|---|---|
+| Red | this test/evidence commit | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_creation_java_bridge_and_redacted_formatters_are_exactly_excluded -v`: expected failure listing all 13 absent exact exclusions. `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`: C and Python inventories match; Java reports 13 missing classifications. |
+| Green | pending | Add exact bridge/formatter/enum exclusion records and rerun the Java export audit and manifest contract suite. |
+
 An additional focused contract test now fixes the intended mappings for
 `BatchItemResult.operation`, `result_message`, `unique_identifier`, and
 `public_key_unique_identifier` across all four languages. Its Red command,
