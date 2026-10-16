@@ -249,7 +249,9 @@ valores recibidos a un callback; las copias del llamador quedan fuera de la
 garantía de puesta a cero de KMIPKit. No registres payloads TTLV en bruto ni
 copies secretos a cadenas ordinarias.
 
-En el binding de Python, KMIPKit sobrescribe sus arrays temporales CFFI después
-de cada llamada nativa síncrona, también si devuelve un error, sin modificar la
-entrada del llamador. Los valores inmutables `bytes` y `str` y otras copias del
-runtime quedan fuera de la puesta a cero determinista.
+En el binding de Python, los builders de entradas sensibles de operaciones
+limpian los arrays CFFI que poseen cuando termina su llamada nativa síncrona,
+también si devuelve un error. Los constructores TTLV variables BigInteger,
+TextString y ByteString también limpian sus arrays de staging. Estas rutas no
+modifican la entrada del llamador. Los valores inmutables `bytes` y `str` y
+otras copias del runtime quedan fuera de la puesta a cero determinista.

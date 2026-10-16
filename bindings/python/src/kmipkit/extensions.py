@@ -1,9 +1,11 @@
 """Manifest-backed Python facade for the vendor extension registry C ABI.
 
-KMIPKit zeroizes its Rust buffers and temporary CFFI byte arrays after
-synchronous ABI calls. Immutable Python ``bytes`` and ``str`` values cannot be
-overwritten in place, and Python's runtime may retain external copies of input
-and accessor values beyond KMIPKit's control.
+Sensitive operation-input builders clear the CFFI staging arrays they own
+after synchronous ABI calls. The variable TTLV BigInteger, TextString, and
+ByteString constructors also clear their staging arrays. Immutable Python
+``bytes`` and ``str`` values cannot be overwritten in place, and Python's
+runtime may retain external copies of input and accessor values beyond
+KMIPKit's control.
 
 Opaque native identity handles expose bounded field getters. Inspection keeps
 generic TTLV intact; Python never infers identity by rescanning payload content.

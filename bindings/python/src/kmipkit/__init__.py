@@ -1,8 +1,10 @@
 """KMIPKit Python 3.12 bindings.
 
-KMIPKit overwrites its temporary CFFI staging arrays after synchronous native
-calls and never overwrites caller-owned input. Immutable Python ``bytes`` and
-``str`` values and other runtime copies cannot be deterministically zeroized.
+Sensitive operation-input builders and the variable TTLV BigInteger,
+TextString, and ByteString constructors overwrite the CFFI staging arrays they
+own after their synchronous native calls. These paths do not overwrite
+caller-owned input. Immutable Python ``bytes`` and ``str`` values and other
+runtime copies cannot be deterministically zeroized.
 """
 
 from . import client, errors, extensions, metadata, ttlv

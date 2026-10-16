@@ -243,7 +243,9 @@ zeroizing `SecretBytes`. `with_bytes` lends received values to a callback;
 copies made by the caller are outside KMIPKit's zeroization guarantee. Avoid
 logging raw TTLV payloads or copying secret data into ordinary strings.
 
-In the Python binding, KMIPKit overwrites its temporary CFFI staging byte
-arrays after each synchronous native call, including error returns, without
-modifying caller-owned input. Immutable Python `bytes` and `str` values and
-other runtime copies remain outside deterministic zeroization.
+In the Python binding, sensitive operation-input builders clear the CFFI byte
+arrays they own when their synchronous native calls return, including error
+returns. The variable TTLV BigInteger, TextString, and ByteString constructors
+also clear their owned staging arrays. These paths do not modify caller-owned
+input. Immutable Python `bytes` and `str` values and other runtime copies
+remain outside deterministic zeroization.
