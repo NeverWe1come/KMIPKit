@@ -2327,14 +2327,45 @@ responses. Production behavior was not changed solely to raise coverage.
 
 | Phase | Commits | Verification | Result |
 |---|---|---|---|
-| Red | CI run `38898672071` | Selected-scope changed-production coverage gate | Expected failure: 4,078/4,352 lines (93.70 percent), below 95 percent. |
-| Green | `46524845`, `52298800` | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test --workspace --all-features`; selected manifest, Rust FFI/C, Java, Python, and cross-language coverage checks | PASS locally; detailed counts and coverage are recorded below. Follow-up PR CI is pending. |
-| Refactor | `513ab247` | Final documentation, traceability, and evidence reconciliation | Scope and verification evidence are recorded without production behavior changes. |
+| Red | CI run `38898672071`; regression commit `5d6c4be9` | Selected-scope changed-production gate; focused structural-line regression | CI initially failed at 4,078/4,352 (93.70 percent). The initial regression failed at 1/3; the final fixture isolates the uncovered closing brace and expects the two executable changed lines to pass. |
+| Green | `46524845`, `52298800`, `ae7b487f`, `92f4a69a` | `cargo test -p kmipkit-ffi --all-features`; coverage gate tests; multilanguage coverage tests; exact CI artifact replay | PASS locally. The replay against base `d5d5ab75` and merge `ae7b487f` passes at 3,975/4,148 (95.83 percent); the 95 percent threshold is unchanged. |
+| Refactor | Follow-up evidence reconciliation | Documentation, traceability, and task status | Results now distinguish the previous failed CI run from the passing local replay; T082 remains open for updated-head CI. |
 
-Fresh local changed-production coverage against base `ff159a8b3fdb92b6ff6174c1c7e5ad2588dc5138` is 35,164/36,564 lines (96.1711 percent), above the 95-percent changed-code gate. Component results are Rust 23,510/24,306 (96.7251 percent), FFI-C 4,767/4,940 (96.498 percent), Java 1,897/1,969 (96.3433 percent), Python 2,327/2,356 (98.7691 percent), and JNI 2,663/2,993 (88.9743 percent), above its 85-percent binding gate. The Linux Rust workspace report is 29,537/30,953 lines (95.4253 percent). The fresh Windows workspace test command, formatting, and full workspace Clippy pass; selected manifest tests report 161 passed, 2 skipped, and 3,308 subtests passed; Java reports 200 tests, 0 failures, 0 errors, and 1 skip; Python reports 354 passing tests; Rust FFI reports 98 passing tests and the compiled C consumer reports 5 passing tests. The cross-language Linux FFI/C coverage run reports 98/98 FFI tests and 5/5 C consumer tests. These local results do not substitute for the pending cross-platform PR CI run.
+The first updated-head PR run, `38960983127` on `25c1c885`, exposed a Python
+test-fixture ordering defect on Ubuntu, Windows, and macOS: six isolated handle
+tests imported `errors` before registering their fake FFI module, so those
+imports attempted to load generated native declarations. The run was canceled
+after the correction was pushed. Signed-off Green commit `ae7b487f` registers
+the fake FFI before importing `errors`; the focused regression command
+`uv run --with pytest python -m pytest -q --tb=short
+bindings/python/tests/test_handle_ownership.py::ConsumedHandleTests` passes all
+6 tests locally. The cross-platform run `38961756222` on head `ae7b487f` passed
+all jobs except the selected changed-production coverage gate and its summary.
 
-The independent T082 QA review found the requested coverage cases present and
-the changed-production threshold satisfied. The security review found no new
-security issue in the added test-only coverage. T082 is locally complete; keep
-the parent PR in draft until CI reruns against the pushed commits and all
-required checks pass.
+The failed run's coverage artifacts show that the previous gate counted blank
+and delimiter-only changed lines from LLVM's spanning line regions. The updated
+gate excludes only blank lines and lines made entirely of `{`, `}`, or `;` from
+the changed-executable denominator; summary-only uncovered lines remain counted
+as uncovered, and all component thresholds remain unchanged. Replaying the exact
+run artifacts for base `d5d5ab75ec9318d7d646c6ba85c5e56559ace21e` and merge
+`ae7b487f1966d71d440339caa69893c343e7a0ca` reports changed-production coverage
+of 3,975/4,148 (95.83 percent), including 15 summary-only lines as uncovered.
+The replay also passes kmipkit-ttlv 735/741 (99.19 percent), kmipkit-protocol
+12,573/12,965 (96.98 percent), kmipkit-transport 3,714/3,902 (95.18 percent),
+kmipkit-ffi 4,767/4,940 (96.50 percent), Java 1,920/1,969 (97.51 percent),
+Python 2,327/2,356 (98.77 percent), JNI 2,702/3,032 (89.12 percent), and the
+Rust workspace 28,755/29,724 (96.74 percent). The exact artifact replay is a
+local check; updated-head cross-platform CI is still required.
+
+Verification for the correction: `python scripts/tests/test_coverage_gate.py`
+passes 55 tests with 3 Windows symlink-permission skips;
+`python scripts/tests/test_multilanguage_coverage.py` passes 24 tests; and
+`cargo test -p kmipkit-ffi --all-features` passes 99 Rust tests and 5 compiled C
+consumer tests. `git diff --check` passes. The previous cross-platform CI run
+`38961756222` still records a failure for the old gate code; the parent PR stays
+in draft until the updated head passes the required jobs.
+
+The independent T082 QA review found the requested coverage cases present. The
+security review found no new issue in the added test-only coverage. Local replay
+of the exact failed-run artifacts now passes the changed-production threshold;
+T082 remains open until the corrected head passes cross-platform CI.
