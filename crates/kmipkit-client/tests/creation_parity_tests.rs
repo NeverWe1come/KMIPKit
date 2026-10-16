@@ -2,6 +2,7 @@ use kmipkit_protocol::{
     AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, ObjectType,
     SplitKeyMethod, UniqueIdentifier,
 };
+use kmipkit_client::ClientOperation;
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 use serde_json::Value as JsonValue;
 
@@ -152,4 +153,11 @@ fn create_split_key_request_and_result_match_shared_creation_fixture() {
         payload.view().children()[4]
             .with_value(|value| matches!(value, ValueView::Enumeration(0xdead_beef)))
     );
+}
+
+#[test]
+fn creation_operation_values_match_kmip_21_table_470() {
+    assert_eq!(ClientOperation::Create.raw(), 0x0000_0001);
+    assert_eq!(ClientOperation::CreateKeyPair.raw(), 0x0000_0002);
+    assert_eq!(ClientOperation::CreateSplitKey.raw(), 0x0000_0028);
 }
