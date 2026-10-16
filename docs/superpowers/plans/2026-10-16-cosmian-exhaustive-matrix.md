@@ -17,7 +17,7 @@
 - Rust is Edition 2024; initial MSRV is 1.94.
 - All live integration tests remain ignored by default and run only against the loopback-published, image-digest-pinned Cosmian KMS 5.28.0 deployment.
 - Every operation and normative combination cites the exact OASIS KMIP v2.1 section/table and receives stable KMIPKIT-0015 traceability IDs.
-- Test only valid operation/object/format/algorithm/parameter combinations supported by the pinned server source or documentation; record source/documentation disagreements explicitly.
+- Exclude standards-invalid intersections with exact normative reasons. Retain standards-valid combinations documented or implemented by the pinned release; documented combinations rejected or omitted by source remain explicit discrepancy probes, including Hash/SHA-224. Keep both citations and actual outcomes; expected rejection is never successful interoperability.
 - Never print credentials, private keys, secret material, raw TTLV bodies, or local TLS private keys. Do not retry KMIP requests.
 - Import only fixtures generated for this disposable test deployment; Destroy may target only a uniquely identified object created by the same test case.
 - Do not edit immutable OASIS source copies or manually edit generated files. Do not change production APIs or protocol behavior without a separate approved specification.
@@ -78,12 +78,12 @@
 
 **Files:** Modify `tests/integration/cosmian/capability-matrix.json`, validator in `crates/kmipkit-client/tests/cosmian_kms.rs`, and `specs/015-cosmian-kms-integration/research.md`.
 
-**Interfaces:** Derive only valid intersections from the approved source order: OASIS KMIP v2.1 for normative validity; Cosmian KMS `5.28.0` docs and `crate/server/src/core/operations/` for vendor combinations. Record unsupported managed objects and format gaps as explicit exclusions, not as failed valid intersections.
+**Interfaces:** Use OASIS KMIP v2.1 to determine normative validity and Cosmian KMS `5.28.0` documentation/`crate/server/src/core/operations/` to inventory vendor combinations. Exclude standards-invalid intersections and unsupported capabilities with exact source reasons, but retain standards-valid combinations explicitly documented by Cosmian as discrepancy probes when implementation rejects or omits them. A source/documentation gap must not silently remove a valid advertised case. Passing a check of expected rejection never counts as successful interoperability.
 
 - [ ] Enumerate each advertised operation path and the compatible managed object types from `support.md`, `objects.md`, and pinned operation implementations. Include operation-specific object exclusions with their source evidence.
-- [ ] Enumerate `formats.md` defaults and every nonempty applicable Import/Export format. Cross ASN.1 formats with each supported PEM and DER encoding; add the `PrivateKey`/PKCS#12 PFX import from `objects.md` and `import.rs` with a source-omission note.
+- [ ] Enumerate applicable `formats.md` defaults, every nonempty listed Import/Export format and source-implemented formats. Cover applicable PEM/DER fixture or documented vendor paths, recording normalization and actual wire representation separately. Preserve normative DER requirements (§2.1, Table 2; §11.25, Table 460); PEM is not a KMIP Key Format Type (§11.25, Table 461). Exclude any standards-invalid wire representation with its normative reason and retain the documentation discrepancy; do not send an invalid request. Add PrivateKey/PKCS#12 PFX import from `objects.md`/`import.rs` with its source-omission note.
 - [ ] Enumerate each algorithm and parameter combination from the 5.28.0 algorithms document and operation source. Inspect operation code where documentation is incomplete, including HMAC variants in `mac.rs` and supported derivation parameters in `derive_key.rs`.
-- [ ] For each algorithm, format, object, and encoding dimension, retain only intersections valid under KMIP v2.1 and accepted by the pinned operation implementation. Record exact OASIS and Cosmian file/section references in every row.
+- [ ] For every algorithm, format, object and encoding dimension, retain each standards-valid documented or source-implemented intersection with exact OASIS and Cosmian file/section references. Include documented-but-source-gap rows such as Hash/SHA-224 as explicit discrepancy probes with both sources and individual live outcomes; source rejection or omission alone cannot exclude them. Classify any rejection as failed interoperability even if an expected-finding assertion passes. Exclude standards-invalid combinations with normative reasons.
 - [ ] Add rows for every already-working operation/combination as well as the sixteen missing operation paths; this prevents the old selected-operation list from appearing exhaustive.
 - [ ] Run the inventory test and confirm it now passes; run `cargo fmt --all --check` and `git diff --check`.
 - [ ] Commit the complete passing source inventory with DCO sign-off and a `test:`/`feat(test):` message. This is the explicit Green evidence for the inventory contract.
@@ -107,7 +107,7 @@
 
 **Interfaces:** Fixture generation writes only under ignored `.local/cosmian-kms/`; use KMIPKit `SecretBytes` for imported/exported secret buffers and never include buffer contents in output. Typed request models are the existing `ImportRequest`, `ExportRequest`, `JoinSplitKeyRequest`, `RekeyRequest`, `RekeyKeyPairRequest`, and `DeriveKeyRequest`.
 
-- [ ] Add a manifest-driven typed Import/Export case for every valid object/format/encoding/algorithm intersection. For ASN.1 formats test both PEM and DER; for formats with no explicit encoding dimension test only the documented default.
+- [ ] Add a manifest-driven typed Import/Export case for every standards-valid documented or source-implemented object/format/encoding/algorithm intersection. Cover applicable PEM/DER fixture/documentation paths without inventing a PEM Key Format Type or violating normative DER wire requirements; record fixture normalization and actual wire representation/format separately without recording payload bytes. Mark an inapplicable encoding dimension explicitly. Retain standards-valid documented source gaps as discrepancy probes and exclude standards-invalid wire claims with normative reasons.
 - [ ] Generate an isolated test PFX/PKCS#12 fixture from test-only certificates and keys. Import it as the documented `PrivateKey` object, verify returned object identities/types, and retain the `formats.md` omission note in case and run documentation.
 - [ ] Add typed cases for Re-key, Re-key Key Pair, Join Split Key, and Derive Key for every supported object/algorithm/parameter intersection in the manifest. Each row creates its own source and split components and asserts operation-specific outputs.
 - [ ] Ensure cleanup and Destroy rows only refer to objects created by their own case; Compose teardown still removes all state after the full live run.
@@ -121,10 +121,10 @@
 **Interfaces:** Use existing typed `ClientRequest` variants for RNG Retrieve, RNG Seed, Encrypt, Decrypt, Hash, MAC, MAC Verify, Sign, Signature Verify, Create, Create Key Pair, and Certify. Every row supplies explicit algorithm and parameters from the manifest; no algorithm default is inferred by the client.
 
 - [ ] Add RNG Retrieve and RNG Seed cases for each valid documented parameter set. Use test-only seed input and assert only the typed result shape and requested length; never log output bytes.
-- [ ] Add cryptographic round-trip/verification pairs across every applicable source-confirmed algorithm and parameter combination, using matching test-owned keys, explicit modes/padding/digest/key sizes, and `SecretBytes` for sensitive material.
+- [ ] Add cryptographic round-trip/verification pairs across every applicable standards-valid documented or source-implemented algorithm/parameter combination, using matching test-owned keys, explicit modes/padding/digest/key sizes and `SecretBytes`. Documented source gaps remain individually classified discrepancy probes rather than omitted variants or successful interoperability.
 - [ ] Expand Create/Create Key Pair/Certify coverage to each supported algorithm and key parameter combination needed by another matrix row; keep each row's prerequisites local to that row.
 - [ ] Expand existing Hash, MAC, MAC Verify, Encrypt, Decrypt, Sign, Signature Verify tests over all applicable valid algorithms and parameter variants, including source-confirmed HMAC values absent from the algorithms page.
-- [ ] Retain Query as a failing interoperability result because its successful response omits Table 283's required Protection Storage Masks. Retain Ping and Adjust Attribute as separate unsupported probes, outside the advertised-success matrix.
+- [ ] Retain Query as a failing interoperability result because its successful response omits Table 283's required Protection Storage Masks. Retain Ping/Adjust Attribute as separate unsupported probes and Re-certify as a separate safe source/documentation discrepancy probe (or explicit blocker), outside the 35 advertised supported paths.
 - [ ] Run the random and cryptographic case families serially against the pinned server; capture case-level results and sanitized response evidence.
 - [ ] Commit the typed algorithm-matrix cases with DCO sign-off.
 
