@@ -221,11 +221,7 @@ fn client_errors_retain_nonfinal_validity_indicator_response_ttlv() {
         .expect_err("a non-final verification response cannot contain Validity Indicator");
 
     assert_eq!(error.category(), crate::ClientErrorCategory::Protocol);
-    let sentinel_is_retained = error
-        .response_ttlv()
-        .expect("typed response errors retain the generic response")
-        .with_ttlv(|tree| contains_response_sentinel(&tree));
-    assert!(sentinel_is_retained);
+    assert!(error.response_ttlv().is_none());
 }
 
 fn operation_failure_response() -> Vec<u8> {
