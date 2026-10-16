@@ -179,6 +179,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         uint8_t unique_id_present = 0;
         uint8_t versions_present = 0;
         uint64_t version_count = 0;
+        kmipkit_protocol_version_v1_t versions[2] = {{0}};
         const uint32_t expected_outcome = index == 1 ? 2U : 1U;
         if (kmipkit_client_batch_response_item_at(response, index, &response_item) != 0 ||
             response_item == 0) {
@@ -218,22 +219,21 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         } else if (correlation_present != 0 || correlation.data != 0 || correlation.length != 0) {
             goto cleanup;
         }
-        if (kmipkit_client_batch_item_response_discover_versions_supported_version_count(
-                response_item, &versions_present, &version_count) != 0) {
+        if (kmipkit_client_batch_item_response_discover_versions_supported_versions(
+                response_item, &versions_present, 0, 0, &version_count) != 0) {
             goto cleanup;
         }
         if (index == 0) {
             if (versions_present != 1 || version_count != 2) {
                 goto cleanup;
             }
-            for (uint64_t version_index = 0; version_index < version_count; ++version_index) {
-                int32_t major = 0;
-                int32_t minor = 0;
-                if (kmipkit_client_batch_item_response_discover_versions_supported_version_at(
-                        response_item, version_index, &major, &minor) != 0 ||
-                    major != 2 || minor != 1) {
-                    goto cleanup;
-                }
+            uint64_t copied_count = 0;
+            if (kmipkit_client_batch_item_response_discover_versions_supported_versions(
+                    response_item, &versions_present, versions, 2, &copied_count) != 0 ||
+                versions_present != 1 || copied_count != 2 ||
+                versions[0].major != 2 || versions[0].minor != 1 ||
+                versions[1].major != 2 || versions[1].minor != 1) {
+                goto cleanup;
             }
         } else if (index == 3) {
             if (versions_present != 1 || version_count != 0) {

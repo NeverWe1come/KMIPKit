@@ -3517,6 +3517,22 @@ impl ClientBatchItemResponse {
         self.unique_batch_item_id.as_deref()
     }
 
+    /// Lends the successful Discover Versions response list, when this item
+    /// contains one.
+    ///
+    /// The returned slice preserves the server's source order and repeated
+    /// Protocol Version values. `Some(&[])` is a successful empty response;
+    /// Pending results, non-success results, and other operations return
+    /// `None`.
+    #[must_use]
+    pub fn discover_versions_supported_versions(
+        &self,
+    ) -> Option<&[kmipkit_protocol::ProtocolVersion]> {
+        self.outcome
+            .discover_versions_response()?
+            .supported_versions()
+    }
+
     /// Returns the typed item outcome.
     #[must_use]
     pub const fn outcome(&self) -> &ClientBatchOutcome {

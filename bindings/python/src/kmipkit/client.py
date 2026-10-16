@@ -33,9 +33,12 @@ _MAX_INPUT_BYTES = 16 * 1024 * 1024
 _MAX_TEXT_BYTES = 4_096
 _MAX_BATCH_ITEMS = 4_096
 _MAX_TRANSPORT_CONFIG_ITEMS = 4_096
+_MAX_PROTOCOL_VERSIONS = 100_000
 _MAX_U64 = (1 << 64) - 1
 _MIN_I64 = -(1 << 63)
 _MAX_I64 = (1 << 63) - 1
+_MIN_I32 = -(1 << 31)
+_MAX_I32 = (1 << 31) - 1
 
 
 def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
@@ -87,6 +90,18 @@ class BatchOutcome(IntEnum):
 
     COMPLETED = 1
     PENDING = 2
+
+
+@dataclass(frozen=True, slots=True)
+class ProtocolVersion:
+    """A KMIP protocol version pair returned by Discover Versions."""
+
+    major: int
+    minor: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "major", _integer_range(self.major, _MIN_I32, _MAX_I32))
+        object.__setattr__(self, "minor", _integer_range(self.minor, _MIN_I32, _MAX_I32))
 
 
 @dataclass(frozen=True, slots=True)
@@ -775,6 +790,7 @@ class BatchItemResult:
     result_reason: int | None
     unique_batch_item_id: bytes | None = field(repr=False)
     pending_correlation_value: bytes | None = field(repr=False)
+    supported_versions: tuple[ProtocolVersion, ...] | None = None
 
 
 class BatchResult(_ClientHandle):
@@ -984,6 +1000,7 @@ def _batch_result(handle: Any) -> BatchResult:
                     item,
                     lib.kmipkit_client_batch_item_response_pending_correlation_value,
                 )
+                supported_versions = _discover_versions_supported_versions(item)
                 items.append(
                     BatchItemResult(
                         outcome,
@@ -991,6 +1008,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         result_reason,
                         unique_id,
                         correlation,
+                        supported_versions,
                     )
                 )
             finally:
@@ -1004,6 +1022,39 @@ def _batch_result(handle: Any) -> BatchResult:
 
 class _ClientBatchItemResponse(_ClientHandle):
     _release_name = "kmipkit_client_batch_item_response_release"
+
+
+def _discover_versions_supported_versions(
+    item: _ClientBatchItemResponse,
+) -> tuple[ProtocolVersion, ...] | None:
+    function = lib.kmipkit_client_batch_item_response_discover_versions_supported_versions
+    present = ffi.new("uint8_t *")
+    count = ffi.new("uint64_t *")
+    _raise_abi_status(function(item._pointer(), present, ffi.NULL, 0, count))
+    if present[0] == 0:
+        if count[0] != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    if count[0] > _MAX_PROTOCOL_VERSIONS:
+        errors.raise_for_status(6)
+    required = int(count[0])
+    if required == 0:
+        return ()
+
+    values = ffi.new("kmipkit_protocol_version_v1_t[]", required)
+    copied_present = ffi.new("uint8_t *")
+    copied_count = ffi.new("uint64_t *")
+    _raise_abi_status(
+        function(item._pointer(), copied_present, values, required, copied_count)
+    )
+    if copied_present[0] != 1 or copied_count[0] != required:
+        errors.raise_for_status(4)
+    return tuple(
+        ProtocolVersion(int(values[index].major), int(values[index].minor))
+        for index in range(required)
+    )
 
 
 def _response_span(item: _ClientBatchItemResponse, function: Any) -> bytes | None:

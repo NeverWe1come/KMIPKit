@@ -1497,6 +1497,14 @@ class ManifestSchemaTests(unittest.TestCase):
 
         self.assertEqual(list(self.validator.iter_errors(manifest)), [])
 
+    def test_schema_accepts_optional_java_protocol_version_list(self) -> None:
+        manifest = self._load_fixture()
+        manifest["functions"][0]["java"]["returnType"] = (
+            "Optional<List<ProtocolVersion>>"
+        )
+
+        self.assertEqual(list(self.validator.iter_errors(manifest)), [])
+
     def test_schema_rejects_limit_values_outside_the_approved_profile(self) -> None:
         manifest = self._load_fixture()
         manifest["limits"][0]["hardMaximum"] = 1025

@@ -99,6 +99,11 @@ ffi.cdef(
         uint32_t result_reason;
     } kmipkit_client_batch_item_metadata_v1_t;
 
+    typedef struct {
+        int32_t major;
+        int32_t minor;
+    } kmipkit_protocol_version_v1_t;
+
     int32_t kmipkit_transport_config_create_v1(
         const kmipkit_transport_config_v1_t *configuration,
         kmipkit_transport_config_t **out_configuration);
@@ -154,6 +159,12 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_byte_span_v1_t *out_value);
+    int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_protocol_version_v1_t *out_versions,
+        uint64_t capacity,
+        uint64_t *out_count);
     int32_t kmipkit_client_batch_item_discover_versions(
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_register_request_create(

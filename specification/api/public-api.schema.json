@@ -1107,7 +1107,7 @@
               "items": {
                 "$ref": "#/$defs/cParameter"
               },
-              "description": "Parameter order is the exact C ABI order. Variable-length byte inputs are byte-span pointers paired with uint64_t byte lengths; handle arrays use explicit uint64_t element counts. Version 1 does not describe variable-length output buffers."
+          "description": "Parameter order is the exact C ABI order. Variable-length byte inputs are byte-span pointers paired with uint64_t byte lengths; output arrays require an explicit fixed-width element type, caller capacity, and returned element count."
             },
             "returnType": {
               "const": "int32_t",
@@ -1833,8 +1833,15 @@
     "javaType": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*)*\\s*>)?(?:\\s*\\[\\])*$",
-      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments, including array types. Primitive and void generic arguments and wildcards are unsupported."
+      "anyOf": [
+        {
+          "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*)*\\s*>)?(?:\\s*\\[\\])*$"
+        },
+        {
+          "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*>)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\[\\])?\\s*>\\s*>$"
+        }
+      ],
+      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments, including array types. Nested reference generics are accepted for typed collection results. Primitive and void generic arguments and wildcards are unsupported."
     },
     "javaReturnType": {
       "anyOf": [

@@ -1071,3 +1071,67 @@ pub extern "C" fn kmipkit_client_batch_item_response_pending_correlation_value(
         SUCCESS
     })
 }
+
+/// Copies the typed supported-version list from a successful Discover Versions result.
+///
+/// Call with `out_versions == NULL` and `capacity == 0` to query presence and
+/// the required count. A present empty successful response sets `out_present`
+/// to 1 and `out_count` to 0. Pending, failed, and other-operation results set
+/// both outputs to 0. A second call with sufficient caller-owned capacity
+/// copies values in source order, retaining repetitions.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_discover_versions_supported_versions(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_versions: *mut crate::kmipkit_protocol_version_v1_t,
+    capacity: u64,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let count = scalar_out!(out_count);
+        if out_versions.is_null() && capacity != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(versions) = item.discover_versions_supported_versions() else {
+            *present = 0;
+            *count = 0;
+            return SUCCESS;
+        };
+        let Ok(version_count) = u64::try_from(versions.len()) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *present = 1;
+        *count = version_count;
+        if out_versions.is_null() {
+            return SUCCESS;
+        }
+        let Ok(capacity) = usize::try_from(capacity) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if capacity < versions.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        for (offset, version) in versions.iter().enumerate() {
+            // SAFETY: the caller supplied a non-null, aligned writable array;
+            // capacity was checked against the slice length and `offset` is
+            // an in-bounds element index.
+            unsafe {
+                out_versions
+                    .add(offset)
+                    .write(crate::kmipkit_protocol_version_v1_t {
+                        major: version.major(),
+                        minor: version.minor(),
+                    });
+            }
+        }
+        SUCCESS
+    })
+}

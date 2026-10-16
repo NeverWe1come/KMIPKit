@@ -609,6 +609,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::extension::ExtensionRegistryLimits::max_depth",
     ),
     (
+        "rust-observed-8c986e82d844a650b2bd",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ProtocolVersion",
+    ),
+    (
         "T076:target:rust-kmipkit-protocol:kmipkit_protocol::KmipOperationResult::status",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::KmipOperationResult::status",
@@ -1150,4 +1155,9 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatch::empty",
     ),
     ("api_levels:rust", "rust-kmipkit", "kmipkit::api_levels"),
+    (
+        "T031:accessor:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItemResponse::discover_versions_supported_versions",
+    ),
 ];

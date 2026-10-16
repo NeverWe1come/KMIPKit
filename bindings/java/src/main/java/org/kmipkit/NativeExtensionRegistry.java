@@ -142,6 +142,8 @@ public final class NativeExtensionRegistry {
     public static native long[] clientBatchItemResponseMetadata(long itemResponse);
     public static native @Nullable byte[] clientBatchItemResponseUniqueBatchItemId(long itemResponse);
     public static native @Nullable byte[] clientBatchItemResponsePendingCorrelationValue(long itemResponse);
+    public static native @Nullable long[] clientBatchItemResponseDiscoverVersionsSupportedVersions(
+            long itemResponse);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);

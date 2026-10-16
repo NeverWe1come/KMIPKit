@@ -70,6 +70,8 @@ int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t*, 
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t*, kmipkit_client_batch_item_metadata_v1_t*);
 int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
+int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_protocol_version_v1_t*, uint64_t, uint64_t*);
 int32_t kmipkit_last_error_get(int32_t*, uint32_t*, uint32_t*, uint32_t*);
 }
 
@@ -2281,6 +2283,64 @@ JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatc
             return static_cast<jbyteArray>(nullptr);
         }
         return span_to_java_bytes(env, present, value);
+    });
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDiscoverVersionsSupportedVersions(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        auto* item = from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
+        uint8_t present = 0;
+        uint64_t count = 0;
+        int32_t status = kmipkit_client_batch_item_response_discover_versions_supported_versions(
+                item, &present, nullptr, 0, &count);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present == 0) {
+            if (count != 0) {
+                throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            }
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present != 1 || count > kMaximumNativeArrayElements ||
+            count > static_cast<uint64_t>(std::numeric_limits<jsize>::max() / 2)) {
+            throw_status(env, count > kMaximumNativeArrayElements
+                    ? KMIPKIT_ERROR_RESOURCE_LIMIT : KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jlongArray>(nullptr);
+        }
+
+        std::vector<kmipkit_protocol_version_v1_t> versions(static_cast<size_t>(count));
+        if (count != 0) {
+            uint8_t copied_present = 0;
+            uint64_t copied_count = 0;
+            status = kmipkit_client_batch_item_response_discover_versions_supported_versions(
+                    item, &copied_present, versions.data(), count, &copied_count);
+            if (status != 0) {
+                throw_status(env, status);
+                return static_cast<jlongArray>(nullptr);
+            }
+            if (copied_present != 1 || copied_count != count) {
+                throw_status(env, KMIPKIT_ERROR_INTERNAL);
+                return static_cast<jlongArray>(nullptr);
+            }
+        }
+
+        const jsize value_count = static_cast<jsize>(count * 2);
+        jlongArray result = env->NewLongArray(value_count);
+        if (result == nullptr) {
+            return static_cast<jlongArray>(nullptr);
+        }
+        std::vector<jlong> values(static_cast<size_t>(value_count));
+        for (size_t index = 0; index < versions.size(); ++index) {
+            values[index * 2] = static_cast<jlong>(versions[index].major);
+            values[(index * 2) + 1] = static_cast<jlong>(versions[index].minor);
+        }
+        if (value_count != 0) {
+            env->SetLongArrayRegion(result, 0, value_count, values.data());
+        }
+        return result;
     });
 }
 

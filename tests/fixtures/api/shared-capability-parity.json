@@ -2,30 +2,55 @@
   "format": "kmipkit-shared-api-parity-fixtures",
   "formatVersion": 2,
   "releaseLine": "1.0.0",
-  "parityLanguages": ["rust", "c", "java", "python"],
+  "parityLanguages": [
+    "rust",
+    "c",
+    "java",
+    "python"
+  ],
   "plannedConsumerLanguages": [],
-  "executableConsumerLanguages": ["rust", "c", "java", "python"],
+  "executableConsumerLanguages": [
+    "rust",
+    "c",
+    "java",
+    "python"
+  ],
   "cases": [
     {
       "id": "api-levels.shared.v1",
       "capability": "api_level_discovery",
-      "requirementIds": ["KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010"],
-      "input": {"discovery": "local-api-levels"},
+      "requirementIds": [
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "input": {
+        "discovery": "local-api-levels"
+      },
       "expectedOutput": {
-        "apiLevels": ["high-level", "typed-protocol", "generic-ttlv"],
+        "apiLevels": [
+          "high-level",
+          "typed-protocol",
+          "generic-ttlv"
+        ],
         "networkCalls": 0,
         "distinctFromKmipOperation": "Discover Versions",
         "operationMappingCompleteness": "not-asserted"
       },
       "javaObservedOutput": {
         "available": true,
-        "apiLevels": ["high-level", "typed-protocol", "generic-ttlv"],
+        "apiLevels": [
+          "high-level",
+          "typed-protocol",
+          "generic-ttlv"
+        ],
         "networkCalls": 0,
         "distinctFromKmipOperation": "Discover Versions",
         "operationMappingCompleteness": "not-asserted"
       },
       "errorCategory": null,
-      "cleanup": ["no-handle-or-network-resource-created"],
+      "cleanup": [
+        "no-handle-or-network-resource-created"
+      ],
       "consumerTests": {
         "rust": {
           "status": "available",
@@ -58,18 +83,48 @@
       ],
       "input": {
         "configurations": [
-          {"id": "configuration-a", "extensionIdentities": ["alpha"]},
-          {"id": "configuration-b", "extensionIdentities": ["beta"]}
+          {
+            "id": "configuration-a",
+            "extensionIdentities": [
+              "alpha"
+            ]
+          },
+          {
+            "id": "configuration-b",
+            "extensionIdentities": [
+              "beta"
+            ]
+          }
         ]
       },
       "expectedOutput": {
-        "configurationDefinitionCounts": [1, 1],
-        "configurationIdentities": [["alpha"], ["beta"]],
+        "configurationDefinitionCounts": [
+          1,
+          1
+        ],
+        "configurationIdentities": [
+          [
+            "alpha"
+          ],
+          [
+            "beta"
+          ]
+        ],
         "registryStateIsShared": false
       },
       "javaObservedOutput": {
-        "configurationDefinitionCounts": [1, 1],
-        "configurationIdentities": [["alpha"], ["beta"]],
+        "configurationDefinitionCounts": [
+          1,
+          1
+        ],
+        "configurationIdentities": [
+          [
+            "alpha"
+          ],
+          [
+            "beta"
+          ]
+        ],
         "registryStateIsShared": false
       },
       "errorCategory": null,
@@ -107,7 +162,9 @@
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-011"
       ],
-      "input": {"diagnosticMarker": "secret-value-must-not-appear-in-diagnostics"},
+      "input": {
+        "diagnosticMarker": "secret-value-must-not-appear-in-diagnostics"
+      },
       "expectedOutput": {
         "errorCategory": "invalid_schema",
         "diagnosticOmitsInputMarker": true,
@@ -119,7 +176,9 @@
         "diagnosticContainsPayload": false
       },
       "errorCategory": "invalid_schema",
-      "cleanup": ["release-registry-and-payload-owners-once"],
+      "cleanup": [
+        "release-registry-and-payload-owners-once"
+      ],
       "consumerTests": {
         "rust": {
           "status": "available",
@@ -154,12 +213,28 @@
       ],
       "input": {
         "discovery": "ordered-client-batch-outcomes",
-        "uniqueBatchItemIds": ["6974656d2d30", "6974656d2d31", "6974656d2d32"]
+        "uniqueBatchItemIds": [
+          "6974656d2d30",
+          "6974656d2d31",
+          "6974656d2d32"
+        ]
       },
       "expectedOutput": {
-        "itemIndexes": [0, 1, 2],
-        "resultStatuses": ["Success", "Operation Pending", "Operation Failed"],
-        "uniqueBatchItemIds": ["6974656d2d30", "6974656d2d31", "6974656d2d32"],
+        "itemIndexes": [
+          0,
+          1,
+          2
+        ],
+        "resultStatuses": [
+          "Success",
+          "Operation Pending",
+          "Operation Failed"
+        ],
+        "uniqueBatchItemIds": [
+          "6974656d2d30",
+          "6974656d2d31",
+          "6974656d2d32"
+        ],
         "pendingCount": 1,
         "correlationValueHex": "00a17f",
         "automaticFollowUp": false,
@@ -167,16 +242,30 @@
       },
       "javaObservedOutput": {
         "available": true,
-        "itemIndexes": [0, 1, 2],
-        "resultStatuses": ["Success", "Operation Pending", "Operation Failed"],
-        "uniqueBatchItemIds": ["6974656d2d30", "6974656d2d31", "6974656d2d32"],
+        "itemIndexes": [
+          0,
+          1,
+          2
+        ],
+        "resultStatuses": [
+          "Success",
+          "Operation Pending",
+          "Operation Failed"
+        ],
+        "uniqueBatchItemIds": [
+          "6974656d2d30",
+          "6974656d2d31",
+          "6974656d2d32"
+        ],
         "pendingCount": 1,
         "correlationValueHex": "00a17f",
         "automaticFollowUp": false,
         "transportExchangeCount": 1
       },
       "errorCategory": null,
-      "cleanup": ["no-batch-or-transport-resource-created"],
+      "cleanup": [
+        "no-batch-or-transport-resource-created"
+      ],
       "consumerTests": {
         "rust": {
           "status": "available",
@@ -185,7 +274,10 @@
         },
         "c": {
           "status": "available",
-          "adapterAssertions": ["ordered-mixed-outcomes", "pending-correlation"],
+          "adapterAssertions": [
+            "ordered-mixed-outcomes",
+            "pending-correlation"
+          ],
           "testFile": "bindings/c/tests/client_abi_consumer.c",
           "test": "execute_public_tls_request",
           "supportingTests": [
@@ -193,7 +285,9 @@
               "language": "rust",
               "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
               "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
-              "assertions": ["transportExchangeCount"]
+              "assertions": [
+                "transportExchangeCount"
+              ]
             }
           ]
         },
@@ -203,7 +297,11 @@
         },
         "python": {
           "status": "available",
-          "adapterAssertions": ["ordered-mixed-outcomes", "pending-correlation", "singleNativeExecuteInvocation"],
+          "adapterAssertions": [
+            "ordered-mixed-outcomes",
+            "pending-correlation",
+            "singleNativeExecuteInvocation"
+          ],
           "testFile": "bindings/python/tests/test_client.py",
           "test": "test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once",
           "supportingTests": [
@@ -211,7 +309,9 @@
               "language": "rust",
               "testFile": "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
               "test": "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
-              "assertions": ["transportExchangeCount"]
+              "assertions": [
+                "transportExchangeCount"
+              ]
             }
           ]
         }
@@ -219,7 +319,7 @@
     },
     {
       "id": "discover-versions.supported-versions.v1",
-      "capability": "discover_versions_response",
+      "capability": "client_execution",
       "requirementIds": [
         "KMIPKIT-0007-FR-001",
         "KMIPKIT-0007-FR-002",
@@ -229,12 +329,23 @@
       "normativeSource": "OASIS KMIP v2.1 §6.1.16, Tables 211–213",
       "input": {
         "operation": "Discover Versions",
-        "offeredVersions": [{"major": 2, "minor": 1}]
+        "offeredVersions": [
+          {
+            "major": 2,
+            "minor": 1
+          }
+        ]
       },
       "expectedOutput": {
         "supportedVersions": [
-          {"major": 2, "minor": 1},
-          {"major": 2, "minor": 1}
+          {
+            "major": 2,
+            "minor": 1
+          },
+          {
+            "major": 2,
+            "minor": 1
+          }
         ],
         "preservesSourceOrderAndRepetitions": true,
         "emptySuccessfulResponseIsPresent": true,
@@ -244,8 +355,14 @@
       },
       "javaObservedOutput": {
         "supportedVersions": [
-          {"major": 2, "minor": 1},
-          {"major": 2, "minor": 1}
+          {
+            "major": 2,
+            "minor": 1
+          },
+          {
+            "major": 2,
+            "minor": 1
+          }
         ],
         "preservesSourceOrderAndRepetitions": true,
         "emptySuccessfulResponseIsPresent": true,
@@ -254,7 +371,9 @@
         "automaticFollowUp": false
       },
       "errorCategory": null,
-      "cleanup": ["copy-version-values-before-closing-native-item-handle"],
+      "cleanup": [
+        "copy-version-values-before-closing-native-item-handle"
+      ],
       "consumerTests": {
         "rust": {
           "status": "available",
@@ -289,25 +408,42 @@
         "structure": {
           "type": "Structure",
           "children": [
-            {"tag": "0x540001", "type": "Enumeration", "value": 3775005444},
-            {"tag": "0x540002", "type": "ByteString", "valueHex": "80ff01"}
+            {
+              "tag": "0x540001",
+              "type": "Enumeration",
+              "value": 3775005444
+            },
+            {
+              "tag": "0x540002",
+              "type": "ByteString",
+              "valueHex": "80ff01"
+            }
           ]
         }
       },
       "expectedOutput": {
-        "childTagsInOrder": ["0x540001", "0x540002"],
+        "childTagsInOrder": [
+          "0x540001",
+          "0x540002"
+        ],
         "enumerationValue": 3775005444,
         "byteStringHex": "80ff01",
         "unknownValuesPreserved": true
       },
       "javaObservedOutput": {
-        "childTagsInOrder": ["0x540001", "0x540002"],
+        "childTagsInOrder": [
+          "0x540001",
+          "0x540002"
+        ],
         "enumerationValue": 3775005444,
         "byteStringHex": "80ff01",
         "unknownValuesPreserved": true
       },
       "errorCategory": null,
-      "cleanup": ["close-structure-view-once", "retain-structure-owner-independently"],
+      "cleanup": [
+        "close-structure-view-once",
+        "retain-structure-owner-independently"
+      ],
       "consumerTests": {
         "rust": {
           "status": "blocked",
@@ -339,20 +475,31 @@
       ],
       "input": {
         "sourceFixture": "tests/fixtures/extensions/cases.json",
-        "caseIds": ["valid-recognized", "unknown-preserved"]
+        "caseIds": [
+          "valid-recognized",
+          "unknown-preserved"
+        ]
       },
       "expectedOutput": {
-        "caseOutcomes": ["recognized", "unrecognized.no_match"],
+        "caseOutcomes": [
+          "recognized",
+          "unrecognized.no_match"
+        ],
         "genericPayloadPreserved": true,
         "registrationOrderAffectsResult": false
       },
       "javaObservedOutput": {
-        "caseOutcomes": ["recognized", "unrecognized.no_match"],
+        "caseOutcomes": [
+          "recognized",
+          "unrecognized.no_match"
+        ],
         "genericPayloadPreserved": true,
         "registrationOrderAffectsResult": false
       },
       "errorCategory": null,
-      "cleanup": ["release-registry-recognition-value-and-payload-handles-once"],
+      "cleanup": [
+        "release-registry-recognition-value-and-payload-handles-once"
+      ],
       "consumerTests": {
         "rust": {
           "status": "available",

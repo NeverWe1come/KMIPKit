@@ -558,7 +558,13 @@ fn mixed_discover_versions_response() -> Vec<u8> {
     );
     structure(
         0x0042_007B,
-        [header, successful_item, pending_item, failed_item, empty_item],
+        [
+            header,
+            successful_item,
+            pending_item,
+            failed_item,
+            empty_item,
+        ],
     )
 }
 

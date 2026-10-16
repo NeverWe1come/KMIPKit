@@ -1,5 +1,7 @@
 package org.kmipkit.extensions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -46,6 +48,29 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return value == null ? Optional.empty() : Optional.of(value.clone());
     }
 
+    /**
+     * Returns the ordered Protocol Version list for a successful Discover Versions result.
+     * An empty present list is distinct from Pending, failure, or another operation.
+     */
+    public Optional<List<ProtocolVersion>> supportedVersions() {
+        NativeExtensionRegistry.ensureLoaded();
+        long[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseDiscoverVersionsSupportedVersions);
+        if (values == null) {
+            return Optional.empty();
+        }
+        if ((values.length & 1) != 0) {
+            throw new InvalidInputException("native Discover Versions list is invalid");
+        }
+        List<ProtocolVersion> versions = new ArrayList<>(values.length / 2);
+        for (int index = 0; index < values.length; index += 2) {
+            versions.add(new ProtocolVersion(
+                    checkedVersionComponent(values[index]),
+                    checkedVersionComponent(values[index + 1])));
+        }
+        return Optional.of(List.copyOf(versions));
+    }
+
     private long[] metadata() {
         NativeExtensionRegistry.ensureLoaded();
         long[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseMetadata);
@@ -53,6 +78,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native batch result metadata is invalid");
         }
         return values;
+    }
+
+    private static int checkedVersionComponent(long value) {
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+            throw new InvalidInputException("native Discover Versions component is invalid");
+        }
+        return (int) value;
     }
 
     @Override

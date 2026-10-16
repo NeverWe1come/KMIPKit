@@ -54,6 +54,7 @@ typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_re
 typedef struct kmipkit_register_request_t kmipkit_register_request_t;
 typedef struct kmipkit_request_options_v1_t kmipkit_request_options_v1_t;
 typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
+typedef struct kmipkit_protocol_version_v1_t kmipkit_protocol_version_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -94,6 +95,11 @@ struct kmipkit_request_options_v1_t {
     kmipkit_timeout_limit_v1_t write_timeout;
     kmipkit_timeout_limit_v1_t read_timeout;
     kmipkit_timeout_limit_v1_t total_timeout;
+};
+
+struct kmipkit_protocol_version_v1_t {
+    int32_t major;
+    int32_t minor;
 };
 
 struct kmipkit_byte_span_v1_t {
@@ -389,6 +395,11 @@ int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t * client, kmipki
  */
 /* KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010 */
 int32_t kmipkit_api_levels_get_v1(kmipkit_byte_span_v1_t * out_high_level, kmipkit_byte_span_v1_t * out_typed_protocol, kmipkit_byte_span_v1_t * out_generic_ttlv);
+/* Call with out_versions NULL and capacity zero to query presence and required count. A present empty successful Discover Versions result is represented by out_present 1 and out_count 0; Pending, failure, and other operations are absent.
+ * Call again with a caller-owned array of at least out_count elements to copy versions in response order, preserving repeated values.
+ */
+/* KMIPKIT-0007-FR-002, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_protocol_version_v1_t * out_versions, uint64_t capacity, uint64_t * out_count);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

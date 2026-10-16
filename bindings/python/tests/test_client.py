@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import gc
 import importlib
+import json
 import weakref
 from dataclasses import replace
 from pathlib import Path
@@ -246,6 +247,14 @@ def test_malformed_presence_flag_is_rejected_as_invalid_input(
 def _opaque(c_type: str) -> tuple[object, object]:
     storage = client.ffi.new("uint8_t[]", 1)
     return client.ffi.cast(f"{c_type} *", storage), storage
+
+
+def _no_supported_versions(
+    _item: object, present: object, _versions: object, _capacity: int, count: object
+) -> int:
+    present[0] = 0  # type: ignore[index]
+    count[0] = 0  # type: ignore[index]
+    return 0
 
 
 def _transport_configuration(**overrides: object) -> client.TransportConfig:
@@ -878,6 +887,7 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
         kmipkit_client_batch_item_response_metadata_v1=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda item, present, value: set_span(unique_id, value, present),
         kmipkit_client_batch_item_response_pending_correlation_value=lambda item, present, value: set_span(pending, value, present),
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
     )
     monkeypatch.setattr(client, "lib", fake)
     result = client._batch_result(response_pointer)
@@ -957,6 +967,7 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
         kmipkit_client_batch_item_response_metadata_v1=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=unique_id,
         kmipkit_client_batch_item_response_pending_correlation_value=pending_correlation,
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -1002,16 +1013,17 @@ def test_discover_versions_response_mapping_matches_shared_fixture(
         out.result_reason = 1 if index == 2 else 0  # type: ignore[attr-defined]
         return 0
 
-    def count_versions(item: object, present: object, count: object) -> int:
+    def supported_versions(
+        item: object, present: object, output: object, capacity: int, count: object
+    ) -> int:
         index = item_pointers.index(item)
         present[0] = int(index in (0, 3))  # type: ignore[index]
-        count[0] = (2, 0, 0, 0)[index]  # type: ignore[index]
-        return 0
-
-    def version_at(_item: object, index: int, major: object, minor: object) -> int:
-        versions = expected["supportedVersions"]
-        major[0] = versions[int(index)]["major"]  # type: ignore[index]
-        minor[0] = versions[int(index)]["minor"]  # type: ignore[index]
+        versions = expected["supportedVersions"] if index == 0 else []
+        count[0] = len(versions) if index in (0, 3) else 0  # type: ignore[index]
+        if capacity:
+            for offset, version in enumerate(versions):
+                output[offset].major = version["major"]  # type: ignore[index,attr-defined]
+                output[offset].minor = version["minor"]  # type: ignore[index,attr-defined]
         return 0
 
     fake = SimpleNamespace(
@@ -1022,8 +1034,7 @@ def test_discover_versions_response_mapping_matches_shared_fixture(
         kmipkit_client_batch_item_response_metadata_v1=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=lambda _item, present, value: present.__setitem__(0, 0) or setattr(value, "data", client.ffi.NULL) or setattr(value, "length", 0) or 0,
         kmipkit_client_batch_item_response_pending_correlation_value=lambda _item, present, value: present.__setitem__(0, 0) or setattr(value, "data", client.ffi.NULL) or setattr(value, "length", 0) or 0,
-        kmipkit_client_batch_item_response_discover_versions_supported_version_count=count_versions,
-        kmipkit_client_batch_item_response_discover_versions_supported_version_at=version_at,
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=supported_versions,
     )
     monkeypatch.setattr(client, "lib", fake)
 
@@ -1070,6 +1081,7 @@ def test_batch_result_accepts_absent_spans_and_no_result_reason(
         kmipkit_client_batch_item_response_metadata_v1=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=absent,
         kmipkit_client_batch_item_response_pending_correlation_value=absent,
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
     )
     monkeypatch.setattr(client, "lib", fake)
     result = client._batch_result(response_pointer)

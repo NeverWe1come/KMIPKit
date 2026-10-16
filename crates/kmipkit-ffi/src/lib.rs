@@ -73,6 +73,15 @@ pub struct kmipkit_client_batch_item_metadata_v1_t {
     pub has_result_reason: u32,
     pub result_reason: u32,
 }
+
+/// One exact signed KMIP Protocol Version Major/Minor pair.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct kmipkit_protocol_version_v1_t {
+    pub major: i32,
+    pub minor: i32,
+}
+
 #[repr(C)]
 pub struct kmipkit_validated_extension_value_t {
     _private: [u8; 0],
