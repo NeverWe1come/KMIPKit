@@ -1904,6 +1904,32 @@ coverage gate: 1,392 of 1,481 executable lines were covered (93.99 percent;
 the JNI report. This is the Red result for the coverage work; it does not
 indicate a failing behavior assertion.
 
+The next aggregate, run `38843857297` at head `7c4d817c` (merge commit
+`bd3fdd6a5cec761c71feee81604fb8696da844e8`), also fails the unchanged gate:
+1,995 of 2,650 changed executable lines are covered (75.28 percent; 2,518
+hits are required), leaving 655 uncovered lines. The exact run artifacts were
+reanalyzed and the full aggregate reproduced in a clean worktree; there are
+zero summary-only misses in this report. The largest uncovered groups are
+JNI C++ (287), FFI `client_abi.rs` (121), Java `ClientBatchItemResult.java`
+(72), Rust client operation mapping (53), Python `client.py` (45), FFI
+`extension_registry.rs` (39), and Python `extensions.py` (28). The remaining
+10 misses are in Java `UniqueIdentifier` (7), `ClientBatchItem` (2), and
+`NativeLibraryLoader` (1).
+
+Blame and the branch diff attribute most of these lines to the new T032
+creation mapping: typed result conversion, original-wire-form identifiers,
+and additive metadata v2 accessors. The old T076 JNI execute-with-options
+bridge contributes some uncovered orchestration lines in the same end-to-end
+path. The next coverage tranche therefore adds behavior tests to the existing
+shared client and creation consumers, including all three creation responses;
+it does not change production behavior, add fault-injection seams, exclude
+lines, or lower the gate. This current aggregate is the Red evidence for that
+tranche. The preserved input artifacts are the eight `coverage-*` folders
+from run `38843857297`; the local reproduction used
+`python -B scripts/coverage_gate.py aggregate` with those reports, base
+`550a864840c727afa2bdf20b5a5e25aa3e2b9dff`, and merge
+`bd3fdd6a5cec761c71feee81604fb8696da844e8`.
+
 The report points to reachable boundary and malformed-metadata paths in
 `TransportConfiguration`, `TtlvPath`, the Python handle adapter, and the
 Python Discover Versions response adapter. These paths already implement
