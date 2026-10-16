@@ -123,7 +123,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         error_gap = self.gaps["KMIPKIT-SOURCE-GAP-SPEC-9.17-001"]
 
         self.assertEqual(error_gap["actor"], "unspecified")
-        self.assertEqual(error_gap["direction"], "server_to_client")
+        self.assertEqual(error_gap["direction"], "unspecified")
         self.assertEqual(error_gap["scope_disposition"], "unresolved")
         self.assertIsNone(error_gap["candidate_requirement_id"])
         self.assertIsNone(error_gap["proposed_requirement_id"])
