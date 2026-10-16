@@ -1935,6 +1935,17 @@ mod review_regression_tests {
     }
 
     #[test]
+    fn activate_split_key_fixture_requests_a_future_activation_date() {
+        let row = manifest_row("cosmian-528-activate-splitkey")
+            .expect("Activate SplitKey manifest row");
+        assert_eq!(
+            row["parameters"]["activation_date"].as_str(),
+            Some("future"),
+            "the SplitKey must be created with the manifest's Pre-Active setup"
+        );
+    }
+
+    #[test]
     fn lifecycle_response_identifier_must_equal_case_owned_identifier() {
         assert!(identifier_matches(
             Some(&UniqueIdentifier::TextString("case-1".to_owned())),
