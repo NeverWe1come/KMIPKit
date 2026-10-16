@@ -329,6 +329,9 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             "kmipkit_ttlv_value_view_date_time_extended",
             "kmipkit_ttlv_value_view_byte_length",
             "kmipkit_ttlv_value_view_byte_at",
+            "kmipkit_ttlv_structure_view_release",
+            "kmipkit_ttlv_item_view_release",
+            "kmipkit_ttlv_value_view_release",
         }
         for symbol in required_symbols:
             with self.subTest(symbol=symbol):
