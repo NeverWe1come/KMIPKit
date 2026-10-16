@@ -1912,6 +1912,22 @@ tests rather than production changes or fault-injection seams. The final
 aggregate must be rerun against the reviewed head before this gate can be
 reported green.
 
+The characterization tests now cover those locally reachable branches. The
+Java full Gradle test task passes, and the Python full suite passes 239 tests
+with 95.09 percent package coverage. The complete Rust workspace coverage
+suite also passes on Windows; its raw and normalized reports are retained
+outside the repository under the task's temporary coverage directory. Source
+eligibility preflight passes. These local results demonstrate the added tests
+execute successfully, but they do not replace the changed-code aggregate:
+fresh Linux/macOS Rust reports, C-consumer FFI, cross-platform JaCoCo, Python,
+and JNI reports must be combined by the CI aggregate against the pushed head.
+
+| Coverage phase | Commit | Command / result |
+|---|---|---|
+| Red | `152b7dda` | Reproduced remote run `38830440607`: 1,392/1,481 changed executable lines covered (93.99%; 1,407 required). The preserved report contained 76 uncovered executable lines and 13 conservative JNI summary-only misses. |
+| Green tests | `5c7b27d8` | `bindings/java/gradlew.bat test`: PASS. Python full suite: PASS, 239 tests, 95.09% package coverage. `cargo llvm-cov --workspace --all-features --locked --json --output-path <isolated-temp>/coverage-raw-windows.json`: PASS; normalized report and `scripts/coverage_gate.py preflight --workspace .`: PASS. |
+| Aggregate gate | pending | A fresh full CI aggregate on the pushed head is required to establish the 95 percent changed-code result. |
+
 ## T031 — Discover Versions response mapping
 
 The four-language mapping now exposes the successful Discover Versions
