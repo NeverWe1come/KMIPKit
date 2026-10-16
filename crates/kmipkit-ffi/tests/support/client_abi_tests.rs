@@ -9,7 +9,10 @@ use std::thread;
 
 use base64::Engine;
 use kmipkit_client::{ClientBatchResponse, ClientError, ClientErrorCategory};
-use kmipkit_protocol::{AttributeSet, LocateRequest};
+use kmipkit_protocol::{
+    AttributeSet, CreateKeyPairRequest, CreateSplitKeyRequest, LocateRequest, ObjectType,
+    SplitKeyMethod,
+};
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -437,6 +440,316 @@ fn pending_locate_result(async_requested: bool) -> Result<ClientBatchResponse, C
     let response = client.execute(batch, &CodecLimits::defaults());
     peer.join().expect("controlled local peer completes");
     response
+}
+
+fn create_key_pair_success_response() -> Result<ClientBatchResponse, ClientError> {
+    let response = ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 2),
+                    ttlv_item(0x0042_0093, 0x08, b"key-pair"),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_structure(
+                        0x0042_007c,
+                        [
+                            ttlv_integer(0x0042_0066, -17),
+                            ttlv_item(0x0042_006f, 0x07, b"public-key-abi-test"),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    );
+    execute_single_abi_response(
+        ClientRequest::CreateKeyPair(CreateKeyPairRequest::new()),
+        b"key-pair",
+        response,
+    )
+}
+
+fn create_split_key_success_response() -> Result<ClientBatchResponse, ClientError> {
+    let response = ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 40),
+                    ttlv_item(0x0042_0093, 0x08, b"split-key"),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_structure(
+                        0x0042_007c,
+                        [
+                            ttlv_integer(0x0042_0094, 101),
+                            ttlv_item(0x0042_0094, 0x07, b"split-part-two"),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    );
+    execute_single_abi_response(
+        ClientRequest::CreateSplitKey(CreateSplitKeyRequest::new(
+            ObjectType::from_raw(7),
+            2,
+            1,
+            SplitKeyMethod::XOR,
+            AttributeSet::new(),
+        )),
+        b"split-key",
+        response,
+    )
+}
+
+fn execute_single_abi_response(
+    request: ClientRequest,
+    batch_item_id: &[u8],
+    response: Vec<u8>,
+) -> Result<ClientBatchResponse, ClientError> {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let listener = TcpListener::bind(("127.0.0.1", 0)).expect("loopback binds");
+    let port = listener
+        .local_addr()
+        .expect("loopback has an address")
+        .port();
+    listener
+        .set_nonblocking(true)
+        .expect("test listener accepts with a bounded wait");
+    let server_config = tls13_mtls_server_config(&pki);
+    let peer = thread::spawn(move || {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(connection) => break connection,
+                Err(error)
+                    if error.kind() == io::ErrorKind::WouldBlock
+                        && std::time::Instant::now() < deadline =>
+                {
+                    thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => return,
+                Err(error) => panic!("accepting the client connection: {error}"),
+            }
+        };
+        stream
+            .set_nonblocking(false)
+            .expect("accepted test stream uses blocking reads");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("peer read timeout is set");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("peer write timeout is set");
+        let connection = ServerConnection::new(server_config).expect("TLS 1.3 connection builds");
+        let mut tls = StreamOwned::new(connection, stream);
+        receive_ttlv_frame(&mut tls).expect("the typed request frame is bounded");
+        tls.write_all(&response)
+            .expect("Create Key Pair response is written");
+        tls.flush().expect("the response is flushed");
+    });
+
+    let identity = pki.client_identity();
+    let certificates = identity
+        .certificate_chain_der()
+        .into_iter()
+        .map(<[u8]>::to_vec)
+        .collect();
+    let transport = TransportConfig::builder(Endpoint::raw_tls("127.0.0.1", port))
+        .client_identity(ClientIdentity::new(
+            CertificateInput::from_der(certificates),
+            PrivateKeyInput::from_der(identity.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .tls_server_name("server.kmipkit.test")
+        .timeouts(TimeoutPolicy::default())
+        .build()
+        .expect("the validated local transport configuration builds");
+    let registry = client_extension::client_extension_registry(Vec::new(), extension::defaults())
+        .expect("the empty approved extension registry is valid");
+    let configuration = client_extension::ClientConfiguration::new(registry);
+    let mut client = Client::new(configuration, transport).expect("client construction succeeds");
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(request).with_unique_batch_item_id(batch_item_id.to_vec())
+    ]);
+    let result = client.execute(batch, &CodecLimits::defaults());
+    peer.join().expect("controlled local peer completes");
+    result
+}
+
+fn empty_unique_identifier_output_v1() -> kmipkit_unique_identifier_v1_t {
+    kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("unique identifier size fits ABI field"),
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+    }
+}
+
+#[test]
+fn ffi_create_key_pair_getter_copies_successful_typed_identifiers() {
+    let response = create_key_pair_success_response()
+        .expect("the valid successful typed response is associated with its request");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+
+    let mut key_pair_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &mut key_pair_item),
+        SUCCESS
+    );
+    let mut present = 0;
+    let mut private_identifier = empty_unique_identifier_output_v1();
+    let mut public_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_key_pair(
+            key_pair_item,
+            &mut present,
+            &mut private_identifier,
+            &mut public_identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_eq!(
+        private_identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER
+    );
+    assert_eq!(private_identifier.integer_value, -17);
+    assert_eq!(
+        public_identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(
+        public_identifier.text_length,
+        u64::try_from(b"public-key-abi-test".len()).expect("test identifier length fits u64")
+    );
+    // SAFETY: the live response-item handle retains the Arc-backed response containing this text.
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                public_identifier.text_data,
+                usize::try_from(public_identifier.text_length)
+                    .expect("response identifier length fits this test target"),
+            )
+        },
+        b"public-key-abi-test"
+    );
+
+    kmipkit_client_batch_item_response_release(key_pair_item);
+    kmipkit_client_batch_response_release(response_handle);
+}
+
+#[test]
+fn ffi_create_split_key_getters_copy_nonempty_identifiers_and_reject_out_of_range_index() {
+    let response = create_split_key_success_response()
+        .expect("the valid successful split-key response is associated with its request");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &mut item),
+        SUCCESS
+    );
+
+    let mut present = 0;
+    let mut count = 0;
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_split_key_count(item, &mut present, &mut count),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_eq!(count, 2);
+
+    let mut first = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+            item, 0, &mut first,
+        ),
+        SUCCESS
+    );
+    assert_eq!(first.kind, crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER);
+    assert_eq!(first.integer_value, 101);
+
+    let mut second = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+            item,
+            1,
+            &mut second,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        second.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(
+        second.text_length,
+        u64::try_from(b"split-part-two".len()).expect("test identifier length fits u64")
+    );
+    // SAFETY: the live response-item handle retains the Arc-backed response containing this text.
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                second.text_data,
+                usize::try_from(second.text_length)
+                    .expect("response identifier length fits this test target"),
+            )
+        },
+        b"split-part-two"
+    );
+
+    let mut out_of_range = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+            item,
+            count,
+            &mut out_of_range,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(out_of_range.kind, 0);
+    assert!(out_of_range.text_data.is_null());
+    assert_eq!(out_of_range.text_length, 0);
+
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_client_batch_response_release(response_handle);
 }
 
 #[test]
