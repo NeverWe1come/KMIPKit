@@ -585,6 +585,14 @@ fn cleanup_owned_object_for_state(
     }
 }
 
+fn cleanup_owned_object_for_state_with_attempts(
+    state: u32,
+    _prior_attempts: &[CleanupAction],
+    perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
+) -> Result<CleanupResult, String> {
+    cleanup_owned_object_for_state(state, perform)
+}
+
 fn cleanup_owned_object_after_state_result(
     state: Result<u32, String>,
     perform: impl FnMut(CleanupAction) -> Result<CleanupActionResult, String>,
@@ -1908,6 +1916,64 @@ mod review_regression_tests {
         );
         assert_eq!(revoke_calls.get(), 1);
         assert_eq!(destroy_calls.get(), 0);
+    }
+
+    #[test]
+    fn failed_primary_destroy_is_not_repeated_by_cleanup() {
+        let mut actions = Vec::new();
+        let result = cleanup_owned_object_for_state_with_attempts(
+            STATE_PRE_ACTIVE,
+            &[CleanupAction::Destroy],
+            |action| {
+                actions.push(action);
+                Ok(CleanupActionResult::Destroy(CleanupResult::Destroyed))
+            },
+        );
+        assert!(result.is_err());
+        assert!(actions.is_empty(), "primary Destroy must not be repeated");
+    }
+
+    #[test]
+    fn failed_primary_revoke_is_not_repeated_for_active_object() {
+        let mut actions = Vec::new();
+        let result = cleanup_owned_object_for_state_with_attempts(
+            STATE_ACTIVE,
+            &[CleanupAction::Revoke],
+            |action| {
+                actions.push(action);
+                Ok(match action {
+                    CleanupAction::Revoke => CleanupActionResult::Revoke,
+                    CleanupAction::Destroy => {
+                        CleanupActionResult::Destroy(CleanupResult::Destroyed)
+                    }
+                })
+            },
+        );
+        assert!(result.is_err());
+        assert!(actions.is_empty(), "primary Revoke must not be repeated");
+    }
+
+    #[test]
+    fn activation_date_citation_uses_tables_29_and_30() {
+        let manifest: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../tests/integration/cosmian/capability-matrix.json"
+        ))
+        .expect("capability manifest must be valid JSON");
+        assert_eq!(
+            manifest["source_catalog"]["oasis-4.1-t29-30"]["tables"],
+            serde_json::json!([29, 30])
+        );
+        assert!(manifest["source_catalog"]["oasis-4.1-t27-28"].is_null());
+        for case_id in [
+            "cosmian-528-activate-splitkey",
+            "cosmian-528-modify-attribute-symmetrickey-activation-date",
+            "cosmian-528-set-attribute-symmetrickey-activation-date",
+        ] {
+            let row = manifest_row(case_id).expect("Activation Date manifest row");
+            assert!(row["oasis_source"]
+                .as_array()
+                .is_some_and(|sources| sources.iter().any(|source| source == "oasis-4.1-t29-30")));
+        }
     }
 
     #[test]
