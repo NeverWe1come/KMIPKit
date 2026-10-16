@@ -3401,3 +3401,16 @@ This checkpoint records the current scoped verification without advancing T002 o
 | Official profile and operation test source audit | `py -3 -B tools/normative_catalog/audit_case_sources.py --repo-root .` | PASS: 93 profile-test rows and 110 Test Cases CN01 rows; zero catalog-to-source mismatches. The audit retains 10 source-internal official-ID/href-name divergences as source evidence and does not fabricate cross-source links. |
 
 The verified local release ref is `ff159a8b3fdb92b6ff6174c1c7e5ad2588dc5138`, an ancestor of feature HEAD `b4cfa6527b97417cfa1f5acbc00935a9fa4d532f`. This documents the exact source-immutability comparison point for this run.
+
+
+### KMIPKIT-0010 T002 — Result Message §9.17 mixed source scope (2026-10-16)
+
+The pinned KMIP Specification v2.1 §9.17 paragraph at HTML lines 45156–45158 contains two distinct MAY statements: a Result Message may be returned in a response, and it may be provided to an end user or used for logging/auditing. Table 422 at lines 45162–45193 places the field in a Response Batch Item. The aggregate source gap therefore cannot assert a single `server_to_client` direction, and the full paragraph cannot be classified wholly `server_only`. The second MAY does not name an actor or endpoint; no KMIPKit client requirement is inferred.
+
+| Stage | DCO-signed commit and exact command | Result |
+|---|---|---|
+| Red — require unresolved aggregate direction | `72cc34e3`; focused `test_profile_sections7_through11_review_contracts` | Expected Red: aggregate source gap direction was `server_to_client`, expected `unspecified`. |
+| Green — correct aggregate gap direction | `5faf98d1`; same focused test module | PASS: 7 tests; the aggregate does not project one atom's direction onto the other. |
+| Red — require clause-level mixed scope and source discrepancy | `dcc48a5f`; same focused test module | Expected Red: the aggregate clause was `server_only`; the regression requires `source_discrepancy`, `mixed`, unclear role/direction, and no client requirement ID. |
+| Green — correct clause classification and regenerate report | `0f1c2d42`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profile_sections7_through11_review_contracts`; `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/report.py --repo-root . --check`; `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha b4cfa6527b97417cfa1f5acbc00935a9fa4d532f`; `git diff --check` | PASS: 7 focused tests; 4 sources, 1,411 clauses, 4,117 records; report current; pinned OASIS sources unchanged; clean diff check. |
+| Refactor/evidence — record source rationale and TDD evidence | This DCO-signed evidence commit; the same focused tests and generated report check | PASS: research and evidence distinguish the two MAY atoms and preserve the no-inference boundary. T002/T003 remain open; no profile-conformance claim is made. |
