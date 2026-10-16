@@ -51,6 +51,10 @@ mod extension_execution_tests;
 
 mod execute;
 
+#[cfg(test)]
+#[path = "../tests/unit/profile_fixture_replay_tests.rs"]
+mod profile_fixture_replay_tests;
+
 /// Typed opaque PKCS#11 forwarding models.
 pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 mod usage_allocation;
