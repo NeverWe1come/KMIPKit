@@ -1,6 +1,7 @@
 #include <jni.h>
 #include "kmipkit_internal.h"
 #include "client_batch_item_transfer_guard.hpp"
+#include "response_identifier_validation.hpp"
 #include "secure_bytes.hpp"
 
 #include <algorithm>
@@ -899,43 +900,22 @@ bool response_identifier_to_java(JNIEnv* env, uint8_t response_present,
     fields[1] = 0;
     fields[2] = 0;
     fields[3] = 0;
-    if (value.kind == 0) {
-        if (value.text_data != nullptr || value.text_length != 0
-                || value.enumeration_value != 0 || value.integer_value != 0) {
-            throw_invalid_input(env);
-            return false;
-        }
+    kmipkit::jni::ResponseIdentifierFields normalized{};
+    if (!kmipkit::jni::normalize_response_identifier(response_present, value, &normalized)) {
+        throw_invalid_input(env);
+        return false;
+    }
+    if (normalized.present == 0) {
         return true;
     }
-    if (response_present == 0) {
-        throw_invalid_input(env);
-        return false;
-    }
-    if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
-        if (value.enumeration_value != 0 || value.integer_value != 0) {
-            throw_invalid_input(env);
-            return false;
-        }
-        *text = span_to_java_bytes(env, 1, {value.text_data, value.text_length});
+    if (normalized.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+        *text = span_to_java_bytes(env, 1, {normalized.text_data, normalized.text_length});
         if (*text == nullptr) return false;
-    } else if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
-        if (value.text_data != nullptr || value.text_length != 0 || value.integer_value != 0) {
-            throw_invalid_input(env);
-            return false;
-        }
-    } else if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER) {
-        if (value.text_data != nullptr || value.text_length != 0 || value.enumeration_value != 0) {
-            throw_invalid_input(env);
-            return false;
-        }
-    } else {
-        throw_invalid_input(env);
-        return false;
     }
-    fields[0] = 1;
-    fields[1] = static_cast<jlong>(value.kind);
-    fields[2] = static_cast<jlong>(value.enumeration_value);
-    fields[3] = static_cast<jlong>(value.integer_value);
+    fields[0] = static_cast<jlong>(normalized.present);
+    fields[1] = static_cast<jlong>(normalized.kind);
+    fields[2] = static_cast<jlong>(normalized.enumeration_value);
+    fields[3] = static_cast<jlong>(normalized.integer_value);
     return !env->ExceptionCheck();
 }
 
