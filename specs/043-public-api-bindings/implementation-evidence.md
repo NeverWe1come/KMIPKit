@@ -1895,6 +1895,23 @@ T034 remains open because its Red/Green/Refactor evidence spans T031 through
 T033, and T033 is not part of this change. The branch still requires the
 separate coverage-gate repair and final remote CI on the reviewed head.
 
+## Coverage gate follow-up
+
+Run `38830440607` at PR head `5bfcff21` failed the changed-production-code
+coverage gate: 1,392 of 1,481 executable lines were covered (93.99 percent;
+1,407 hits are required for 95 percent). The preserved CI artifacts identify
+76 executable lines without a hit and 13 conservative summary-only misses in
+the JNI report. This is the Red result for the coverage work; it does not
+indicate a failing behavior assertion.
+
+The report points to reachable boundary and malformed-metadata paths in
+`TransportConfiguration`, `TtlvPath`, the Python handle adapter, and the
+Python Discover Versions response adapter. These paths already implement
+their documented validation behavior, so the follow-up adds characterization
+tests rather than production changes or fault-injection seams. The final
+aggregate must be rerun against the reviewed head before this gate can be
+reported green.
+
 ## T031 — Discover Versions response mapping
 
 The four-language mapping now exposes the successful Discover Versions
