@@ -60,6 +60,9 @@ SHARED_PARITY_CASES = {
     "discover-versions.supported-versions.v1",
     "ttlv.open-values-and-child-order.v1",
     "extensions.recognition-and-generic-preservation.v1",
+    "creation.create.request-response.v1",
+    "creation.key-pair.request-response.v1",
+    "creation.split-key.request-response.v1",
 }
 SHARED_PARITY_LANGUAGES = ["rust", "c", "java", "python"]
 JAVA_TEST_ROOT = ROOT / "bindings" / "java" / "src" / "test" / "java"
@@ -136,6 +139,7 @@ class PublicApiParityTests(unittest.TestCase):
                             "KMIPKIT-0006-FR-",
                             "KMIPKIT-0007-FR-",
                             "KMIPKIT-0012-FR-",
+                            "KMIPKIT-0014-FR-",
                         ))
                         for requirement in case["requirementIds"]
                     ),

@@ -1,6 +1,7 @@
 package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -20,6 +21,8 @@ import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.UniqueIdentifier;
 
 /** Executes the Java mappings declared by the shared API capability fixture. */
 final class SharedCapabilityParityFixtureTest {
@@ -44,7 +47,7 @@ final class SharedCapabilityParityFixtureTest {
                 stringArrayField(fixture, "executableConsumerLanguages"));
 
         List<String> ids = caseIds(fixture);
-        assertEquals(7, ids.size());
+        assertEquals(10, ids.size());
         assertEquals(ids.size(), ids.stream().distinct().count());
         for (String id : ids) {
             String item = caseById(fixture, id);
@@ -92,6 +95,48 @@ final class SharedCapabilityParityFixtureTest {
         assertTrue(item.contains("\"available\": true"));
         assertTrue(item.contains("\"correlationValueHex\": \"00a17f\""));
         assertTrue(item.contains("\"transportExchangeCount\": 1"));
+    }
+
+    @Test
+    void creationCreateMatchesSharedFixture() throws IOException {
+        String item = caseById(Files.readString(sharedFixturePath()), "creation.create.request-response.v1");
+        assertTrue(item.contains("\"attributesPresent\": true"));
+        assertTrue(item.contains("\"resultMessage\": \"création ✓\""));
+        try (TtlvStructure attributes = TtlvStructure.create();
+                TtlvStructure masks = TtlvStructure.create();
+                ClientBatchItem request = ClientBatchItem.create(0xffff_ffffL, attributes, masks)) {
+            assertNotNull(request);
+        }
+    }
+
+    @Test
+    void creationKeyPairMatchesSharedFixture() throws IOException {
+        String item = caseById(Files.readString(sharedFixturePath()), "creation.key-pair.request-response.v1");
+        assertTrue(item.contains("\"groupsRemainDistinct\": true"));
+        assertTrue(item.contains("\"privateUniqueIdentifier\""));
+        try (TtlvStructure common = TtlvStructure.create();
+                TtlvStructure privateAttributes = TtlvStructure.create();
+                TtlvStructure publicAttributes = TtlvStructure.create();
+                TtlvStructure commonMasks = TtlvStructure.create();
+                TtlvStructure publicMasks = TtlvStructure.create();
+                ClientBatchItem request = ClientBatchItem.createKeyPair(
+                        common, privateAttributes, publicAttributes, commonMasks, null, publicMasks)) {
+            assertNotNull(request);
+        }
+    }
+
+    @Test
+    void creationSplitKeyMatchesSharedFixture() throws IOException {
+        String item = caseById(Files.readString(sharedFixturePath()), "creation.split-key.request-response.v1");
+        assertTrue(item.contains("\"splitKeyParts\": -3"));
+        assertTrue(item.contains("\"correlationValueHex\": \"00ff80\""));
+        try (TtlvStructure attributes = TtlvStructure.create();
+                TtlvStructure masks = TtlvStructure.create();
+                ClientBatchItem request = ClientBatchItem.createSplitKey(
+                        0xf000_0000L, UniqueIdentifier.integer(-7), -3, 4, 0xdead_beefL,
+                        null, attributes, masks)) {
+            assertNotNull(request);
+        }
     }
 
     @Test

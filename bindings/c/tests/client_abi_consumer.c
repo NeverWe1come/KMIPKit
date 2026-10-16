@@ -42,6 +42,73 @@ static int api_level_query_matches_shared_fixture_locally(int argc, char **argv)
     return 1;
 }
 
+static int creation_create_matches_shared_fixture(void) {
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *masks = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    if (kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&masks) != 0 ||
+        kmipkit_client_batch_item_create(UINT32_MAX, attributes, masks, &item) != 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(masks);
+    kmipkit_ttlv_structure_release(attributes);
+    return result;
+}
+
+static int creation_create_key_pair_matches_shared_fixture(void) {
+    kmipkit_ttlv_structure_t *groups[5] = {0};
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    for (uint32_t index = 0; index < 5; ++index) {
+        if (kmipkit_ttlv_structure_create(&groups[index]) != 0) {
+            goto cleanup;
+        }
+    }
+    if (kmipkit_client_batch_item_create_key_pair(
+            groups[0], groups[1], groups[2], groups[3], 0, groups[4], &item) != 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    for (uint32_t index = 0; index < 5; ++index) {
+        kmipkit_ttlv_structure_release(groups[index]);
+    }
+    return result;
+}
+
+static int creation_create_split_key_matches_shared_fixture(void) {
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *masks = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_client_batch_item_metadata_v2_t metadata = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_INTEGER;
+    identifier.integer_value = -7;
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = 2;
+    int result = 0;
+    if (kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&masks) != 0 ||
+        kmipkit_client_batch_item_create_split_key(
+            0xf0000000U, &identifier, -3, 4, 0xdeadbeefU, 0, attributes, masks, &item) != 0) {
+        goto cleanup;
+    }
+    result = metadata.struct_size == sizeof(metadata) && metadata.abi_version == 2;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(masks);
+    kmipkit_ttlv_structure_release(attributes);
+    return result;
+}
+
 static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limits) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
@@ -279,6 +346,11 @@ int main(int argc, char **argv) {
     }
     if (client != 0) {
         return 2;
+    }
+    if (!creation_create_matches_shared_fixture() ||
+        !creation_create_key_pair_matches_shared_fixture() ||
+        !creation_create_split_key_matches_shared_fixture()) {
+        return 7;
     }
 
     kmipkit_transport_config_v1_t transport_input = {0};

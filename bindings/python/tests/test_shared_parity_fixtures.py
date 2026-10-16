@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import zipfile
+from dataclasses import fields
 from pathlib import Path
 from typing import Any, get_type_hints
 
@@ -96,6 +97,81 @@ def test_generic_ttlv_shared_fixture_has_an_executable_python_link() -> None:
     assert python_consumer["test"] == (
         "test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle"
     )
+
+
+def test_creation_create_matches_shared_fixture() -> None:
+    case = _parity_cases()["creation.create.request-response.v1"]
+    assert case["input"]["attributesPresent"] is True
+    assert case["expectedOutput"]["uniqueIdentifier"] == {
+        "wireType": "Integer",
+        "integer": -8,
+    }
+    attributes = ttlv.ttlv_structure_create()
+    masks = ttlv.ttlv_structure_create()
+    item = None
+    try:
+        item = extensions.client_batch_item_create(0xFFFF_FFFF, attributes, masks)
+        assert item is not None
+        assert {"operation", "result_message"}.issubset(
+            {field.name for field in fields(client.BatchItemResult)}
+        )
+    finally:
+        if item is not None:
+            item.close()
+        attributes.close()
+        masks.close()
+
+
+def test_creation_key_pair_matches_shared_fixture() -> None:
+    case = _parity_cases()["creation.key-pair.request-response.v1"]
+    expected = case["expectedOutput"]
+    assert expected["groupsRemainDistinct"] is True
+    assert expected["privateAttributeTagsInOrder"][-2:] == ["0x540002", "0x540002"]
+    structures = [ttlv.ttlv_structure_create() for _ in range(5)]
+    common, private, public, common_masks, public_masks = structures
+    item = None
+    try:
+        item = extensions.client_batch_item_create_key_pair(
+            common, private, public, common_masks, None, public_masks
+        )
+        assert item is not None
+    finally:
+        if item is not None:
+            item.close()
+        for structure in structures:
+            structure.close()
+
+
+def test_creation_split_key_matches_shared_fixture() -> None:
+    case = _parity_cases()["creation.split-key.request-response.v1"]
+    request = case["input"]
+    expected = case["expectedOutput"]
+    assert request["splitKeyParts"] == -3
+    assert expected["responseUniqueIdentifiersInWireOrder"][0] == {
+        "wireType": "TextString",
+        "text": "part-a",
+    }
+    assert expected["pendingMetadata"]["correlationValueHex"] == "00ff80"
+    attributes = ttlv.ttlv_structure_create()
+    masks = ttlv.ttlv_structure_create()
+    item = None
+    try:
+        item = extensions.client_batch_item_create_split_key(
+            request["objectType"],
+            request["splitKeyParts"],
+            request["splitKeyThreshold"],
+            request["splitKeyMethod"],
+            attributes,
+            unique_identifier=extensions.UniqueIdentifier.integer(-7),
+            prime_field_size=None,
+            protection_storage_masks=masks,
+        )
+        assert item is not None
+    finally:
+        if item is not None:
+            item.close()
+        attributes.close()
+        masks.close()
 
 
 def _structure_from_shared_ttlv_fixture(

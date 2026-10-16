@@ -340,6 +340,7 @@ dependencies = [
  "quickcheck",
  "rustls",
  "serde",
+ "serde_json",
  "static_assertions",
  "syn 2.0.119",
  "tokio",
