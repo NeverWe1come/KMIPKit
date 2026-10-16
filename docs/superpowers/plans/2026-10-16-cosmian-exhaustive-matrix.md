@@ -167,4 +167,3 @@
 - **Spec coverage:** FR-011–FR-016 are addressed by Tasks 1–8. The exact sixteen missing operation clauses are listed in Task 1. Object, format, encoding, algorithm, and parameter cases are sourced and recorded in Tasks 2–3, executed in Tasks 4–6, parity-checked in Task 7, and reported in Task 8. Isolation and teardown are covered by Tasks 4–6 and 9.
 - **Placeholder scan:** No TODO/TBD steps are present. Conditional branches state concrete stop conditions: no production fix is made without a separate approved specification; each vendor/source rejection is recorded with its case ID and exact sanitized result.
 - **Type consistency:** Manifest fields and the typed request families are named in Tasks 2, 5, and 6. The test target remains `cosmian_kms`; helper modules are under `tests/cosmian_kms/`; case parity is verified against `case_id` in Task 7.
-
