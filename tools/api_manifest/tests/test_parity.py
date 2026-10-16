@@ -63,6 +63,7 @@ SHARED_PARITY_CASES = {
     "creation.create.request-response.v1",
     "creation.key-pair.request-response.v1",
     "creation.split-key.request-response.v1",
+    "creation.result-message-on-failure.v1",
 }
 SHARED_PARITY_LANGUAGES = ["rust", "c", "java", "python"]
 JAVA_TEST_ROOT = ROOT / "bindings" / "java" / "src" / "test" / "java"

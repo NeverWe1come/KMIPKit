@@ -1928,6 +1928,22 @@ and JNI reports must be combined by the CI aggregate against the pushed head.
 | Green tests | `5c7b27d8` | `bindings/java/gradlew.bat test`: PASS. Python full suite: PASS, 239 tests, 95.09% package coverage. `cargo llvm-cov --workspace --all-features --locked --json --output-path <isolated-temp>/coverage-raw-windows.json`: PASS; normalized report and `scripts/coverage_gate.py preflight --workspace .`: PASS. |
 | Aggregate gate | pending | A fresh full CI aggregate on the pushed head is required to establish the 95 percent changed-code result. |
 
+#### T032 manifest correction discovered by run `38840021567`
+
+The Ubuntu Script contracts job on head `2eca0100` exposed two manifest
+contracts that the initial local checks did not include. The shared-parity
+fixture allowlist omitted the already-present
+`creation.result-message-on-failure.v1` case. The T076 Python-export inventory
+also found new T032 result fields and `UniqueIdentifier` factory methods
+unclassified, along with Python dataclass-generated members requiring exact
+exclusion records. This is a contract/traceability regression, not an
+environmental failure.
+
+| Phase | Commit | Command / result |
+|---|---|---|
+| Red | this test/evidence commit | `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v`: reproduced 2 failures among 43 tests. The parity allowlist was updated for the existing failure fixture, and a focused assertion now requires the T032 Python semantic exports to have four-language mappings and exact dataclass exclusions; it fails until the manifest is corrected. |
+| Green | pending | Correct the manifest and regenerate its outputs; rerun the focused contract command and full script-contract matrix. |
+
 ## T031 — Discover Versions response mapping
 
 The four-language mapping now exposes the successful Discover Versions

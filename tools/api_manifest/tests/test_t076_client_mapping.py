@@ -1334,6 +1334,66 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("runtime metadata", exclusion["reason"].lower())
                     self.assertIn("local runtime metadata value", exclusion["reason"].lower())
 
+    def test_creation_result_python_exports_are_classified_exactly(self) -> None:
+        semantic_exports = {
+            "kmipkit.client.BatchItemResult.operation",
+            "kmipkit.client.BatchItemResult.result_message",
+            "kmipkit.client.BatchItemResult.unique_identifier",
+            "kmipkit.client.BatchItemResult.public_key_unique_identifier",
+            "kmipkit.extensions.UniqueIdentifier.text_string",
+            "kmipkit.extensions.UniqueIdentifier.enumeration",
+            "kmipkit.extensions.UniqueIdentifier.integer",
+        }
+        declarations = {
+            row["exportName"]: row
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        self.assertTrue(semantic_exports.issubset(declarations))
+        for export_name in sorted(semantic_exports):
+            with self.subTest(export=export_name):
+                declaration = declarations[export_name]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
+
+        generated_members = {
+            f"kmipkit.{module}.{record}.{member}"
+            for module, record in (
+                ("client", "BatchItemMetadataV2"),
+                ("extensions", "UniqueIdentifier"),
+            )
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__repr__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        self.assertTrue(generated_members.issubset(exclusions))
+        for export_name in sorted(generated_members):
+            with self.subTest(excluded_export=export_name):
+                exclusion = exclusions[export_name]
+                self.assertEqual(export_name, exclusion["exportName"])
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
         trust_source = declarations["kmipkit.client.TrustSource"]
         self.assertEqual("type", trust_source["kind"])
         self.assertEqual("declared", trust_source["declarationState"])
