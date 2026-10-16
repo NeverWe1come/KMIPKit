@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, extensions, ttlv
+from kmipkit import client, errors, extensions, ttlv
 
 
 _OPERATIONS = (
@@ -22,6 +22,74 @@ _OPERATIONS = (
     "sign",
     "signature_verify",
 )
+
+
+@pytest.mark.parametrize(
+    ("operation", "parser", "symbol"),
+    (
+        ("hash", client._hash_response, "kmipkit_client_batch_item_response_hash"),
+        ("mac", client._mac_response, "kmipkit_client_batch_item_response_mac"),
+        ("mac_verify", client._mac_verify_response,
+            "kmipkit_client_batch_item_response_mac_verify"),
+        ("sign", client._sign_response, "kmipkit_client_batch_item_response_sign"),
+        ("signature_verify", client._signature_verify_response,
+            "kmipkit_client_batch_item_response_signature_verify"),
+    ),
+)
+def test_crypto_response_parsers_accept_omitted_optional_outputs(
+    monkeypatch: pytest.MonkeyPatch, operation: str, parser: object, symbol: str
+) -> None:
+    def get_response(_item: object, *outputs: object) -> int:
+        outputs[0][0] = 1
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
+    response = parser(SimpleNamespace(_pointer=lambda: object()))
+
+    assert response is not None
+    if operation == "hash":
+        assert response.data is None
+        assert response.correlation_value is None
+    elif operation == "mac":
+        assert response.unique_identifier is None
+        assert response.mac_data is None
+        assert response.correlation_value is None
+    elif operation == "mac_verify":
+        assert response.unique_identifier is None
+        assert response.validity_indicator_raw is None
+        assert response.correlation_value is None
+    elif operation == "sign":
+        assert response.unique_identifier is None
+        assert response.signature_data is None
+        assert response.correlation_value is None
+    else:
+        assert response.unique_identifier is None
+        assert response.validity_indicator_raw is None
+        assert response.recovered_data is None
+        assert response.correlation_value is None
+
+
+def test_crypto_response_helpers_reject_malformed_native_optional_values() -> None:
+    span = extensions.ffi.new("kmipkit_byte_span_v1_t *")
+    with pytest.raises(errors.InvalidInputError):
+        client._optional_output_span(extensions.ffi.new("uint8_t *", 2), span)
+
+    span.length = 1
+    with pytest.raises(errors.InvalidInputError):
+        client._optional_output_span(extensions.ffi.new("uint8_t *", 1), span)
+
+    identifier = extensions.ffi.new("kmipkit_unique_identifier_v1_t *")
+    identifier.text_length = 1
+    with pytest.raises(errors.InvalidInputError):
+        client._optional_output_identifier(identifier)
+
+
+def test_crypto_builder_helpers_reject_values_outside_the_typed_api() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        extensions._native_value(object())
+
+    with pytest.raises(errors.InvalidInputError):
+        extensions._native_optional_indicator(1)
 
 
 def _capture_constructor(

@@ -1540,6 +1540,82 @@ fn assert_creation_result_getters_return_status(
     );
 }
 
+fn assert_crypto_result_getters_return_status(
+    item: *mut kmipkit_client_batch_item_response_t,
+    expected_status: i32,
+) {
+    let mut present = 0;
+    let mut first_present = 0;
+    let mut first_span = byte_span(&[]);
+    let mut correlation_present = 0;
+    let mut correlation = byte_span(&[]);
+    assert_eq!(
+        kmipkit_client_batch_item_response_hash(
+            item,
+            &raw mut present,
+            &raw mut first_present,
+            &raw mut first_span,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        expected_status
+    );
+
+    let mut unique_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_mac(
+            item,
+            &raw mut present,
+            &raw mut unique_identifier,
+            &raw mut first_present,
+            &raw mut first_span,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        expected_status
+    );
+    let mut validity_present = 0;
+    let mut validity = 0;
+    assert_eq!(
+        kmipkit_client_batch_item_response_mac_verify(
+            item,
+            &raw mut present,
+            &raw mut unique_identifier,
+            &raw mut validity_present,
+            &raw mut validity,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        expected_status
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_response_sign(
+            item,
+            &raw mut present,
+            &raw mut unique_identifier,
+            &raw mut first_present,
+            &raw mut first_span,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        expected_status
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_response_signature_verify(
+            item,
+            &raw mut present,
+            &raw mut unique_identifier,
+            &raw mut validity_present,
+            &raw mut validity,
+            &raw mut first_present,
+            &raw mut first_span,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        expected_status
+    );
+}
+
 #[test]
 fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
     let response = Arc::new(
@@ -1552,6 +1628,7 @@ fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
         HandleValue::ClientBatchResponse(Arc::clone(&response)),
     );
     assert_creation_result_getters_return_status(mismatched_item, ERROR_INVALID_INPUT);
+    assert_crypto_result_getters_return_status(mismatched_item, ERROR_INVALID_INPUT);
     kmipkit_client_batch_item_response_release(mismatched_item);
 
     let invalid_index_item = make_handle(
@@ -1562,6 +1639,7 @@ fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
         },
     );
     assert_creation_result_getters_return_status(invalid_index_item, ERROR_INTERNAL);
+    assert_crypto_result_getters_return_status(invalid_index_item, ERROR_INTERNAL);
     kmipkit_client_batch_item_response_release(invalid_index_item);
 }
 
