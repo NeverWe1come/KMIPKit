@@ -1050,6 +1050,111 @@ fn require_text_identifier(identifier: Option<&str>, operation: &str) -> Result<
         .map(|_| ())
 }
 
+// These manifest-to-request seams deliberately capture the current request
+// behavior in Red. Green will make them match the case's declared parameters.
+fn locate_filter_from_row(
+    row: &serde_json::Value,
+    case_id: &str,
+) -> Result<AttributeSet, Box<dyn Error>> {
+    let object_type = required_text(row, "object_type")?;
+    if object_type == "SplitKey" {
+        AttributeSet::try_new([]).map_err(Into::into)
+    } else {
+        AttributeSet::try_new([name_attribute(case_id)?]).map_err(Into::into)
+    }
+}
+
+fn check_usage_mask_from_row(row: &serde_json::Value) -> Result<Option<i32>, Box<dyn Error>> {
+    let value = &row["parameters"]["usage_mask"];
+    if value.is_null() {
+        Ok(None)
+    } else {
+        value
+            .as_i64()
+            .and_then(|raw| i32::try_from(raw).ok())
+            .map(Some)
+            .ok_or_else(|| "manifest Check usage_mask must be a KMIP Integer".into())
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ValidationCertificate {
+    Leaf,
+    Intermediate,
+    Root,
+}
+
+#[derive(Debug, Eq, PartialEq)]
+struct ValidationChainPlan {
+    certificate_values: Vec<ValidationCertificate>,
+    managed_certificates: Vec<(String, ValidationCertificate)>,
+}
+
+fn validation_chain_plan(row: &serde_json::Value, case_id: &str) -> ValidationChainPlan {
+    match row["parameters"]["chain_input"].as_str() {
+        Some("certificate-values") => ValidationChainPlan {
+            certificate_values: vec![
+                ValidationCertificate::Leaf,
+                ValidationCertificate::Intermediate,
+                ValidationCertificate::Root,
+            ],
+            managed_certificates: Vec::new(),
+        },
+        Some("managed-identifiers") => ValidationChainPlan {
+            certificate_values: Vec::new(),
+            managed_certificates: ["leaf", "intermediate", "root"]
+                .map(|name| (format!("{case_id}-{name}"), ValidationCertificate::Leaf))
+                .into(),
+        },
+        Some("mixed") => ValidationChainPlan {
+            certificate_values: vec![ValidationCertificate::Leaf],
+            managed_certificates: ["intermediate", "root"]
+                .map(|name| (format!("{case_id}-{name}"), ValidationCertificate::Leaf))
+                .into(),
+        },
+        _ => ValidationChainPlan {
+            certificate_values: Vec::new(),
+            managed_certificates: Vec::new(),
+        },
+    }
+}
+
+#[derive(Default)]
+struct CaseOwnership {
+    identifiers: Vec<String>,
+}
+
+impl CaseOwnership {
+    fn track(&mut self, identifier: String) {
+        self.identifiers.push(identifier);
+    }
+
+    fn cleanup_order(&self) -> impl Iterator<Item = &str> {
+        self.identifiers.iter().rev().map(String::as_str)
+    }
+}
+
+fn finish_operation_with_cleanup<T>(
+    operation: Result<T, String>,
+    cleanup: impl FnOnce() -> Result<(), String>,
+) -> Result<T, String> {
+    match operation {
+        Err(primary) => Err(primary),
+        Ok(value) => {
+            cleanup()?;
+            Ok(value)
+        }
+    }
+}
+
+fn identifier_matches(actual: Option<&UniqueIdentifier>, expected: &str) -> bool {
+    actual.is_some()
+}
+
+fn comment_value_matches(item: &Item, expected: &str) -> bool {
+    item.tag().raw() == COMMENT
+}
+
 fn manifest_row(case_id: &str) -> Result<serde_json::Value, Box<dyn Error>> {
     let manifest: serde_json::Value = serde_json::from_str(include_str!(
         "../../../../tests/integration/cosmian/capability-matrix.json"
@@ -1059,6 +1164,166 @@ fn manifest_row(case_id: &str) -> Result<serde_json::Value, Box<dyn Error>> {
         .and_then(|rows| rows.iter().find(|row| row["case_id"] == case_id))
         .cloned()
         .ok_or_else(|| format!("case {case_id} was not found in the capability manifest").into())
+}
+
+#[cfg(test)]
+mod review_regression_tests {
+    use std::cell::Cell;
+
+    use super::*;
+
+    const LOCATE_CASES: &[(&str, u32)] = &[
+        ("cosmian-528-locate-certificate", 1),
+        ("cosmian-528-locate-opaqueobject", 8),
+        ("cosmian-528-locate-privatekey", 4),
+        ("cosmian-528-locate-publickey", 3),
+        ("cosmian-528-locate-secretdata", 7),
+        ("cosmian-528-locate-splitkey", 5),
+        ("cosmian-528-locate-symmetrickey", 2),
+    ];
+
+    #[test]
+    fn locate_filter_contains_case_name_and_manifest_object_type() {
+        for (case_id, object_type) in LOCATE_CASES {
+            let row = manifest_row(case_id).expect("Locate manifest row");
+            let filter = locate_filter_from_row(&row, case_id).expect("Locate filter");
+            let object_type_item = filter
+                .as_items()
+                .iter()
+                .find(|item| item.tag().raw() == 0x0042_0057);
+            assert!(
+                object_type_item.is_some_and(|item| {
+                    item.with_value(|value| matches!(value, kmipkit_ttlv::ValueView::Enumeration(raw) if raw == object_type))
+                }),
+                "{case_id} Locate filter must contain its Object Type"
+            );
+            assert!(
+                filter
+                    .as_items()
+                    .iter()
+                    .any(|item| item.tag().raw() == NAME),
+                "{case_id} Locate filter must contain its case-owned Name"
+            );
+        }
+    }
+
+    #[test]
+    fn check_usage_masks_are_explicit_and_match_each_case_fixture() {
+        let cases = [
+            ("cosmian-528-check-certificate", 2),
+            ("cosmian-528-check-privatekey", 1),
+            ("cosmian-528-check-publickey", 2),
+            ("cosmian-528-check-secretdata", 12),
+            ("cosmian-528-check-splitkey", 12),
+            ("cosmian-528-check-symmetrickey", 12),
+        ];
+        for (case_id, expected) in cases {
+            let row = manifest_row(case_id).expect("Check manifest row");
+            assert_eq!(
+                check_usage_mask_from_row(&row).expect("usage mask"),
+                Some(expected),
+                "{case_id} must send the manifest's exact usage mask"
+            );
+        }
+        let opaque = manifest_row("cosmian-528-check-opaqueobject")
+            .expect("OpaqueObject Check manifest row");
+        assert_eq!(
+            check_usage_mask_from_row(&opaque).expect("optional mask"),
+            None
+        );
+    }
+
+    #[test]
+    fn validation_managed_identifiers_use_the_matching_chain_certificates() {
+        let cases = [
+            (
+                "cosmian-528-validate-certificate-managed-identifiers-current",
+                vec![
+                    ValidationCertificate::Leaf,
+                    ValidationCertificate::Intermediate,
+                    ValidationCertificate::Root,
+                ],
+            ),
+            (
+                "cosmian-528-validate-certificate-mixed-current",
+                vec![
+                    ValidationCertificate::Intermediate,
+                    ValidationCertificate::Root,
+                ],
+            ),
+        ];
+        for (case_id, expected) in cases {
+            let row = manifest_row(case_id).expect("Validate manifest row");
+            let plan = validation_chain_plan(&row, case_id);
+            assert_eq!(
+                plan.managed_certificates
+                    .iter()
+                    .map(|(_, certificate)| *certificate)
+                    .collect::<Vec<_>>(),
+                expected,
+                "{case_id} managed IDs must refer to their matching chain certificate"
+            );
+        }
+        let values_row =
+            manifest_row("cosmian-528-validate-certificate-certificate-values-current")
+                .expect("certificate-values Validate row");
+        assert_eq!(
+            validation_chain_plan(&values_row, "values").certificate_values,
+            [
+                ValidationCertificate::Leaf,
+                ValidationCertificate::Intermediate,
+                ValidationCertificate::Root
+            ]
+        );
+    }
+
+    #[test]
+    fn operation_failure_still_attempts_cleanup_and_remains_primary() {
+        let attempted = Cell::new(false);
+        let result =
+            finish_operation_with_cleanup(Err::<(), _>("primary failure".to_owned()), || {
+                attempted.set(true);
+                Ok(())
+            });
+        assert!(
+            attempted.get(),
+            "cleanup must run after an operation failure"
+        );
+        assert_eq!(result, Err("primary failure".to_owned()));
+    }
+
+    #[test]
+    fn owned_objects_are_cleaned_in_reverse_creation_order() {
+        let mut ownership = CaseOwnership::default();
+        ownership.track("first-created".to_owned());
+        ownership.track("linked-second".to_owned());
+        assert_eq!(
+            ownership.cleanup_order().collect::<Vec<_>>(),
+            ["linked-second", "first-created"]
+        );
+    }
+
+    #[test]
+    fn lifecycle_response_identifier_must_equal_case_owned_identifier() {
+        assert!(identifier_matches(
+            Some(&UniqueIdentifier::TextString("case-1".to_owned())),
+            "case-1"
+        ));
+        assert!(!identifier_matches(
+            Some(&UniqueIdentifier::TextString("other-case".to_owned())),
+            "case-1"
+        ));
+    }
+
+    #[test]
+    fn comment_response_must_equal_the_written_case_value() {
+        let wrong = kmip_item(COMMENT, Value::text_string("other-value".to_owned()))
+            .expect("well-formed Comment item");
+        assert!(!comment_value_matches(&wrong, "case-1"));
+        let expected = kmip_item(COMMENT, Value::text_string("case-1".to_owned()))
+            .expect("well-formed Comment item");
+        assert!(comment_value_matches(&expected, "case-1"));
+    }
 }
 
 fn required_text<'a>(row: &'a serde_json::Value, field: &str) -> Result<&'a str, Box<dyn Error>> {
