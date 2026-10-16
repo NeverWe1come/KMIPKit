@@ -134126,6 +134126,32 @@
       "state": "open",
       "decision_id": null,
       "erratum_source_refs": []
+    },
+    {
+      "discrepancy_id": "KMIPKIT-DISC-053",
+      "summary": "Section 9.17 combines a response-field MAY with a separate use MAY that has no assigned endpoint",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.17"
+        }
+      ],
+      "source_authority": "primary_normative",
+      "normative_status": "evidence_gap",
+      "alternatives": [
+        "Classify only the response-field MAY as server-to-client and keep the end-user or logging/auditing MAY unresolved.",
+        "Assign the entire paragraph a single server-to-client actor and direction."
+      ],
+      "affected_requirement_ids": [],
+      "affected_element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"
+      ],
+      "affected_profile_ids": [],
+      "affected_policy_ids": [],
+      "downstream_impact": "Do not infer a KMIPKit client requirement to provide the Result Message to an end user or use it for logging/auditing until the second MAY's endpoint is established.",
+      "state": "open",
+      "decision_id": null,
+      "erratum_source_refs": []
     }
   ],
   "decisions": [

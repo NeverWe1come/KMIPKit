@@ -24,7 +24,7 @@ This report records inventory coverage and evidence state. It does not claim pro
 | Normative requirements | 632 |
 | Profiles | 35 |
 | Test cases | 203 |
-| Open discrepancies | 36 |
+| Open discrepancies | 37 |
 | Project policies | 4 |
 
 ### Elements by kind
@@ -3411,6 +3411,7 @@ Rows list each distinct requirement found in a client profile closure. Profile m
 | KMIPKIT-DISC-047 | open | blocked for affected records | 1 elements | Query empty-response prose conflicts with required Protection Storage Masks field | KMIPKIT-SRC-spec §6.1.40 |
 | KMIPKIT-DISC-048 | open | blocked for affected records | 2 elements | Verification response tables omit the final multi-part Validity Indicator required by operation prose | KMIPKIT-SRC-spec §6.1.33, KMIPKIT-SRC-spec §6.1.56 |
 | KMIPKIT-DISC-052 | open | blocked for affected records | 2 elements | Set Endpoint Role's successful role switch is unresolved against the client-only 1.0 boundary | KMIPKIT-SRC-spec §6.1.54, KMIPKIT-SRC-spec §6.2.5 |
+| KMIPKIT-DISC-053 | open | blocked for affected records | 1 elements | Section 9.17 combines a response-field MAY with a separate use MAY that has no assigned endpoint | KMIPKIT-SRC-spec §9.17 |
 
 ## Project policies
 
