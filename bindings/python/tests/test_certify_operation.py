@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from kmipkit import client, extensions
+import pytest
+
+from kmipkit import client, errors, extensions
 from kmipkit._client_ffi import ffi
 
 
@@ -29,6 +31,74 @@ def test_certify_builder_preserves_open_request_type_and_sensitive_bytes(monkeyp
     assert calls[0][0] == "kmipkit_client_batch_item_certify"
     assert calls[0][1][1:3] == (1, 0xFEDC_BA98)
     assert copied_request_values == [secret]
+
+
+@pytest.mark.parametrize(("status", "fails"), ((0, False), (4, True)))
+def test_certify_native_staging_bytes_are_zeroized_after_abi_call(
+    monkeypatch: pytest.MonkeyPatch, status: int, fails: bool
+) -> None:
+    caller_input = bytearray(b"certificate-request-secret")
+    staged_buffers: list[object] = []
+    native_calls: list[bytes] = []
+    original_owned_bytes = extensions._owned_bytes
+
+    def track_staging_buffer(
+        value: object, maximum: int = 4_096
+    ) -> tuple[bytes, object]:
+        raw, staging = original_owned_bytes(value, maximum)  # type: ignore[arg-type]
+        staged_buffers.append(staging)
+        return raw, staging
+
+    handle_storage = extensions.ffi.new("uint8_t[]", 1)
+    handle_pointer = extensions.ffi.cast(
+        "kmipkit_client_batch_item_t *", handle_storage
+    )
+
+    def certify(
+        _identifier: object,
+        _has_request_type: int,
+        _request_type: int,
+        request_value: object,
+        _attributes: object,
+        _protection_masks: object,
+        output: object,
+    ) -> int:
+        native_calls.append(
+            bytes(
+                extensions.ffi.buffer(
+                    request_value.data, request_value.length  # type: ignore[attr-defined]
+                )
+            )
+        )
+        if status == 0:
+            output[0] = handle_pointer  # type: ignore[index]
+        return status
+
+    monkeypatch.setattr(extensions, "_owned_bytes", track_staging_buffer)
+    monkeypatch.setattr(
+        extensions,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_certify=certify),
+    )
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    if fails:
+        with pytest.raises(errors.InvalidInputError):
+            extensions.client_batch_item_certify(
+                certificate_request_value=caller_input
+            )
+    else:
+        assert extensions.client_batch_item_certify(
+            certificate_request_value=caller_input
+        ) == handle_pointer
+
+    assert native_calls == [b"certificate-request-secret"]
+    assert len(staged_buffers) == 1
+    zeroed = bytes(len(caller_input))
+    assert bytes(
+        extensions.ffi.buffer(staged_buffers[0], len(caller_input))  # type: ignore[arg-type]
+    ) == zeroed
+    assert caller_input == bytearray(b"certificate-request-secret")
 
 
 def test_certify_builder_allows_identifier_only_request(monkeypatch) -> None:

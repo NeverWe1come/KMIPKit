@@ -667,6 +667,175 @@ def test_omitted_optional_octet_spans_remain_null(
         parameters.close()
 
 
+@pytest.mark.parametrize(
+    "operation,expected_span_count",
+    (("hash", 1), ("mac", 1), ("mac_verify", 2), ("sign", 2), ("signature_verify", 3)),
+)
+@pytest.mark.parametrize(("status", "fails"), ((0, False), (4, True)))
+def test_operation_staging_bytes_are_zeroized_after_native_call(
+    monkeypatch: pytest.MonkeyPatch,
+    operation: str,
+    expected_span_count: int,
+    status: int,
+    fails: bool,
+) -> None:
+    caller_input = bytearray(b"cryptographic-operation-secret")
+    staged_buffers: list[object] = []
+    observed_spans: list[bytes] = []
+    native_calls: list[str] = []
+    original_owned_bytes = extensions._owned_bytes
+
+    def track_staging_buffer(
+        value: object, maximum: int = 4_096
+    ) -> tuple[bytes, object]:
+        raw, staging = original_owned_bytes(value, maximum)  # type: ignore[arg-type]
+        staged_buffers.append(staging)
+        return raw, staging
+
+    handle_storage = extensions.ffi.new("uint8_t[]", 1)
+    handle_pointer = extensions.ffi.cast(
+        "kmipkit_client_batch_item_t *", handle_storage
+    )
+
+    def constructor(*arguments: object) -> int:
+        native_calls.append(operation)
+        spans = _span_arguments(arguments[:-1])
+        observed_spans.extend(_span_bytes(span) for span in spans)
+        if status == 0:
+            arguments[-1][0] = handle_pointer  # type: ignore[index]
+        return status
+
+    monkeypatch.setattr(extensions, "_owned_bytes", track_staging_buffer)
+    monkeypatch.setattr(
+        extensions,
+        "lib",
+        SimpleNamespace(
+            **{
+                f"kmipkit_client_batch_item_{name}": constructor
+                for name in _OPERATIONS
+            }
+        ),
+    )
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    parameters = ttlv.ttlv_structure_create()
+    try:
+        if fails:
+            with pytest.raises(errors.InvalidInputError):
+                _call_operation(
+                    operation,
+                    parameters=parameters,
+                    data=None,
+                    correlation_value=caller_input,
+                    opaque_bytes=caller_input,
+                    opaque_bytes_2=caller_input,
+                )
+        else:
+            assert _call_operation(
+                operation,
+                parameters=parameters,
+                data=None,
+                correlation_value=caller_input,
+                opaque_bytes=caller_input,
+                opaque_bytes_2=caller_input,
+            ) == handle_pointer
+
+        assert native_calls == [operation]
+        expected_spans = [b"cryptographic-operation-secret"] * expected_span_count
+        assert observed_spans == expected_spans
+        assert len(staged_buffers) == expected_span_count
+        assert all(
+            bytes(extensions.ffi.buffer(buffer, len(caller_input)))
+            == bytes(len(caller_input))
+            for buffer in staged_buffers
+        )
+        assert caller_input == bytearray(b"cryptographic-operation-secret")
+    finally:
+        parameters.close()
+
+
+def test_operation_staging_bytes_are_zeroized_after_preflight_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    caller_input = bytearray(b"preflight-correlation-secret")
+    staged_buffers: list[object] = []
+    original_owned_bytes = extensions._owned_bytes
+
+    def track_staging_buffer(
+        value: object, maximum: int = 4_096
+    ) -> tuple[bytes, object]:
+        raw, staging = original_owned_bytes(value, maximum)  # type: ignore[arg-type]
+        staged_buffers.append(staging)
+        return raw, staging
+
+    monkeypatch.setattr(extensions, "_owned_bytes", track_staging_buffer)
+
+    with pytest.raises(errors.InvalidInputError):
+        extensions.client_batch_item_hash(
+            None, correlation_value=caller_input  # type: ignore[arg-type]
+        )
+
+    assert len(staged_buffers) == 1
+    assert bytes(
+        extensions.ffi.buffer(staged_buffers[0], len(caller_input))  # type: ignore[arg-type]
+    ) == bytes(len(caller_input))
+    assert caller_input == bytearray(b"preflight-correlation-secret")
+
+
+@pytest.mark.parametrize(
+    ("constructor_name", "abi_symbol"),
+    (
+        ("ttlv_value_big_integer", "kmipkit_ttlv_value_big_integer"),
+        ("ttlv_value_text_string", "kmipkit_ttlv_value_text_string"),
+        ("ttlv_value_byte_string", "kmipkit_ttlv_value_byte_string"),
+    ),
+)
+@pytest.mark.parametrize(("status", "fails"), ((0, False), (4, True)))
+def test_variable_ttlv_staging_bytes_are_zeroized_after_native_call(
+    monkeypatch: pytest.MonkeyPatch,
+    constructor_name: str,
+    abi_symbol: str,
+    status: int,
+    fails: bool,
+) -> None:
+    caller_input = bytearray(b"ttlv-operation-data-secret")
+    staged_buffers: list[object] = []
+    native_calls: list[bytes] = []
+    limits_storage = ttlv.ffi.new("uint8_t[]", 1)
+    limits_pointer = ttlv.ffi.cast("kmipkit_codec_limits_t *", limits_storage)
+    value_storage = ttlv.ffi.new("uint8_t[]", 1)
+    value_pointer = ttlv.ffi.cast("struct kmipkit_ttlv_value_t *", value_storage)
+
+    def variable_value(
+        _limits: object, data: object, length: int, output: object
+    ) -> int:
+        staged_buffers.append(data)
+        native_calls.append(bytes(ttlv.ffi.buffer(data, length)))  # type: ignore[arg-type]
+        if status == 0:
+            output[0] = value_pointer  # type: ignore[index]
+        return status
+
+    monkeypatch.setattr(ttlv, "codec_limits_max_message_bytes", lambda _limits: 1_024)
+    monkeypatch.setattr(ttlv, "lib", SimpleNamespace(**{abi_symbol: variable_value}))
+    monkeypatch.setattr(ttlv, "_wrap_owned_handle", lambda _kind, value: value)
+    limits = SimpleNamespace(_pointer=lambda: limits_pointer)
+    constructor = getattr(ttlv, constructor_name)
+
+    if fails:
+        with pytest.raises(errors.InvalidInputError):
+            constructor(caller_input, limits)  # type: ignore[arg-type]
+    else:
+        assert constructor(caller_input, limits) == value_pointer  # type: ignore[arg-type]
+
+    assert native_calls == [b"ttlv-operation-data-secret"]
+    assert len(staged_buffers) == 1
+    zeroed = bytes(len(caller_input))
+    assert bytes(
+        ttlv.ffi.buffer(staged_buffers[0], len(caller_input))  # type: ignore[arg-type]
+    ) == zeroed
+    assert caller_input == bytearray(b"ttlv-operation-data-secret")
+
+
 def test_keyed_operation_builder_preserves_unique_identifier_wire_type(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
