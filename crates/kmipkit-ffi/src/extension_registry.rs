@@ -2819,7 +2819,7 @@ pub extern "C" fn kmipkit_client_batch_item_hash(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let parameters = try_ffi!(copy_structure_handle(parameters, true));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
         let Some(parameters) = parameters else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
@@ -3002,7 +3002,7 @@ pub extern "C" fn kmipkit_client_batch_item_create(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let attributes = try_ffi!(copy_attribute_set_handle(attributes, true));
+        let attributes = try_ffi!(copy_attribute_set_handle(attributes, false));
         let Some(attributes) = attributes else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
@@ -3095,7 +3095,7 @@ pub extern "C" fn kmipkit_client_batch_item_create_split_key(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let attributes = try_ffi!(copy_attribute_set_handle(attributes, true));
+        let attributes = try_ffi!(copy_attribute_set_handle(attributes, false));
         let Some(attributes) = attributes else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };

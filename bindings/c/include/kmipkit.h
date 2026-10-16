@@ -51,6 +51,8 @@ typedef struct kmipkit_tag_t kmipkit_tag_t;
 typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
 typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
 typedef struct kmipkit_ttlv_structure_view_t kmipkit_ttlv_structure_view_t;
+typedef struct kmipkit_ttlv_item_view_t kmipkit_ttlv_item_view_t;
+typedef struct kmipkit_ttlv_value_view_t kmipkit_ttlv_value_view_t;
 typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
 typedef struct kmipkit_client_t kmipkit_client_t;
 typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
@@ -184,7 +186,10 @@ void kmipkit_client_extension_registry_release(kmipkit_client_extension_registry
 void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
 void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
+void kmipkit_tag_release(kmipkit_tag_t *handle);
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
+void kmipkit_ttlv_item_view_release(kmipkit_ttlv_item_view_t *handle);
+void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);
 void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);
 void kmipkit_client_release(kmipkit_client_t *handle);
 void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
@@ -347,6 +352,42 @@ int32_t kmipkit_ttlv_value_interval(uint32_t value, kmipkit_ttlv_value_t ** out_
 int32_t kmipkit_ttlv_value_date_time_extended(int64_t value, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_structure_create(kmipkit_ttlv_structure_t ** out_structure);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_structure_view(kmipkit_ttlv_structure_t * structure, kmipkit_ttlv_structure_view_t ** out_view);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_structure_view_item_count(kmipkit_ttlv_structure_view_t * view, uint64_t * out_count);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_structure_view_item_at(kmipkit_ttlv_structure_view_t * view, uint64_t index, kmipkit_ttlv_item_view_t ** out_item);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_item_view_tag(kmipkit_ttlv_item_view_t * view, kmipkit_tag_t ** out_tag);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_item_view_type(kmipkit_ttlv_item_view_t * view, uint8_t * out_item_type);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_item_view_value(kmipkit_ttlv_item_view_t * view, kmipkit_ttlv_value_view_t ** out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view(kmipkit_ttlv_value_t * value, kmipkit_ttlv_value_view_t ** out_view);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_type(kmipkit_ttlv_value_view_t * view, uint8_t * out_item_type);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_structure(kmipkit_ttlv_value_view_t * view, kmipkit_ttlv_structure_view_t ** out_structure);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_integer(kmipkit_ttlv_value_view_t * view, int32_t * out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_long_integer(kmipkit_ttlv_value_view_t * view, int64_t * out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_enumeration(kmipkit_ttlv_value_view_t * view, uint32_t * out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_boolean(kmipkit_ttlv_value_view_t * view, uint8_t * out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_date_time(kmipkit_ttlv_value_view_t * view, int64_t * out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_interval(kmipkit_ttlv_value_view_t * view, uint32_t * out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_date_time_extended(kmipkit_ttlv_value_view_t * view, int64_t * out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_byte_length(kmipkit_ttlv_value_view_t * view, uint64_t * out_length);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_value_view_byte_at(kmipkit_ttlv_value_view_t * view, uint64_t index, uint8_t * out_byte);
 /* KMIPKIT-0043-FR-007 */
 int32_t kmipkit_version_get(uint32_t * out_major, uint32_t * out_minor, uint32_t * out_patch, uint32_t * out_abi_version);
 /* KMIPKIT-0043-FR-007 */
@@ -516,10 +557,22 @@ int32_t kmipkit_client_batch_item_certify(const kmipkit_unique_identifier_v1_t *
  */
 /* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_certify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Executes one caller-ordered batch and preserves the generic ResponseMessage only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
+ * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
+ * Diagnostics remain redacted and never include raw response bytes.
+ */
+/* KMIPKIT-0007-FR-001, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_execute_with_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
 int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
+/* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
+ * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
+ * The generic response is preserved without placing raw response bytes in diagnostics.
+ */
+/* Approved exact C-only exclusion: kmipkit_client_execute_with_options_and_error_ttlv_v1 */
+int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
 
 #ifdef __cplusplus
 }

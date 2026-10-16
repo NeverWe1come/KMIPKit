@@ -53,6 +53,14 @@ class Structure(NativeHandle):
     _release_name = "kmipkit_ttlv_structure_release"
 
 
+def _structure_from_native_address(address: int) -> Structure:
+    """Adopt an opaque Structure handle returned through the shared client ABI."""
+    if address <= 0:
+        errors.raise_for_status(4)
+    handle = ffi.cast("kmipkit_ttlv_structure_t *", address)
+    return _wrap_owned_handle(Structure, handle)
+
+
 class TtlvItem(NativeHandle):
     _release_name = "kmipkit_ttlv_item_release"
 

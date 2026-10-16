@@ -449,6 +449,13 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             _validate_v2_readiness(self, manifest, root)
 
             adr.write_text(
+                "# ADR-0014\n\nStatus: Accepted.\n\n"
+                "Maintainer acceptance for release 1.0.0\n",
+                encoding="utf-8",
+            )
+            _validate_v2_readiness(self, manifest, root)
+
+            adr.write_text(
                 "# ADR-0014\n\n**Status**: Proposed.\n\n"
                 "Maintainer acceptance for release 1.0.0\n",
                 encoding="utf-8",

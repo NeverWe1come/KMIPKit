@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from enum import IntEnum as _IntEnum
 
+from . import ttlv as _ttlv
+
 
 class KmipKitError(Exception):
     """Base class for stable KMIPKit binding errors."""
@@ -93,7 +95,12 @@ def _known_or_raw(enum_type: type[_IntEnum], value: int) -> _IntEnum | int:
 
 
 class ClientExecutionError(KmipKitError):
-    """A client call failed; fields expose only stable categories and delivery state."""
+    """A client call failed with sanitized metadata and optional approved UID-error TTLV.
+
+    ``response_ttlv`` is owned by this exception and may be closed by the caller. It is present
+    only for a missing, repeated, or malformed required Unique Identifier in a successful MAC,
+    MAC Verify, Sign, or Signature Verify response; all other failures expose no response TTLV.
+    """
 
     category = "client_execution"
 
@@ -104,11 +111,13 @@ class ClientExecutionError(KmipKitError):
         category: ClientErrorCategory | int,
         cause: ClientErrorCause | int,
         delivery: DeliveryState | int,
+        response_ttlv: _ttlv.Structure | None = None,
     ) -> None:
         self.status = int(status)
         self.client_category = _known_or_raw(ClientErrorCategory, int(category))
         self.cause = _known_or_raw(ClientErrorCause, int(cause))
         self.delivery = _known_or_raw(DeliveryState, int(delivery))
+        self.response_ttlv = response_ttlv
         super().__init__()
         self.args = (
             f"KMIPKit client operation failed ({self.client_category!s}; "

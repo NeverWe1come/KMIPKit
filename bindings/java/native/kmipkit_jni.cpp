@@ -83,6 +83,13 @@ void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
 int32_t kmipkit_client_execute_with_options_v1(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**);
+int32_t kmipkit_client_execute_with_error_ttlv_v1(
+        kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*,
+        kmipkit_client_batch_response_t**, kmipkit_ttlv_structure_t**);
+int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(
+        kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*,
+        const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**,
+        kmipkit_ttlv_structure_t**);
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t*);
 void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t*);
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t*, uint64_t*);
@@ -149,12 +156,15 @@ void throw_invalid_input(JNIEnv* env) noexcept {
     throw_java(env, "org/kmipkit/InvalidInputException", "native input is invalid");
 }
 
-void throw_client_operation_status(JNIEnv* env, int32_t status) noexcept {
+void throw_client_operation_status(
+        JNIEnv* env, int32_t status,
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr) noexcept {
     int32_t native_status = status;
     uint32_t category = 0;
     uint32_t cause = 0;
     uint32_t delivery = 0;
     if (kmipkit_last_error_get(&native_status, &category, &cause, &delivery) != 0) {
+        if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
         throw_java(env, "org/kmipkit/KmipException", "native operation failed");
         return;
     }
@@ -163,28 +173,42 @@ void throw_client_operation_status(JNIEnv* env, int32_t status) noexcept {
             : "org/kmipkit/ServerResultException";
     jclass exception_class = env->FindClass(class_name);
     if (exception_class == nullptr) {
+        if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
         return;
     }
-    jmethodID constructor = env->GetMethodID(exception_class, "<init>", "(IIII)V");
+    const bool protocol_error = status == kErrorProtocol;
+    jmethodID constructor = env->GetMethodID(
+            exception_class, "<init>", protocol_error ? "(IIIIJ)V" : "(IIII)V");
     if (constructor == nullptr) {
+        if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
         env->DeleteLocalRef(exception_class);
         return;
     }
-    jobject exception = env->NewObject(exception_class, constructor,
-            static_cast<jint>(native_status), static_cast<jint>(category),
-            static_cast<jint>(cause), static_cast<jint>(delivery));
+    jobject exception = protocol_error
+            ? env->NewObject(exception_class, constructor,
+                    static_cast<jint>(native_status), static_cast<jint>(category),
+                    static_cast<jint>(cause), static_cast<jint>(delivery),
+                    static_cast<jlong>(reinterpret_cast<uintptr_t>(response_ttlv)))
+            : env->NewObject(exception_class, constructor,
+                    static_cast<jint>(native_status), static_cast<jint>(category),
+                    static_cast<jint>(cause), static_cast<jint>(delivery));
     if (exception != nullptr) {
+        if (protocol_error) response_ttlv = nullptr;
         env->Throw(static_cast<jthrowable>(exception));
         env->DeleteLocalRef(exception);
     }
+    if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
     env->DeleteLocalRef(exception_class);
 }
 
-void throw_status(JNIEnv* env, int32_t status) noexcept {
+void throw_status(
+        JNIEnv* env, int32_t status,
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr) noexcept {
     if (status == kErrorProtocol || status == kErrorTransport || status == kErrorServerResult) {
-        throw_client_operation_status(env, status);
+        throw_client_operation_status(env, status, response_ttlv);
         return;
     }
+    if (response_ttlv != nullptr) kmipkit_ttlv_structure_release(response_ttlv);
     switch (status) {
     case KMIPKIT_ERROR_COMPATIBILITY_MISMATCH:
         throw_java(env, "org/kmipkit/extensions/ExtensionCompatibilityException",
@@ -2661,8 +2685,14 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecute(
         CodecLimits limits;
         if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
         kmipkit_client_batch_response_t* response = nullptr;
-        const int32_t status = kmipkit_client_execute(client, &batch, limits.get(), &response);
-        if (status != 0) throw_status(env, status);
+        kmipkit_ttlv_structure_t* error_response_ttlv = nullptr;
+        const int32_t status = kmipkit_client_execute_with_error_ttlv_v1(
+                client, &batch, limits.get(), &response, &error_response_ttlv);
+        if (status != 0) throw_status(env, status, error_response_ttlv);
+        else if (error_response_ttlv != nullptr) {
+            kmipkit_ttlv_structure_release(error_response_ttlv);
+            throw_invalid_input(env);
+        }
         if (batch != nullptr) kmipkit_client_batch_release(batch);
         if (status != 0) return static_cast<jlong>(0);
         if (response == nullptr) {
@@ -2724,9 +2754,14 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWi
         }
 
         kmipkit_client_batch_response_t* response = nullptr;
-        const int32_t status = kmipkit_client_execute_with_options_v1(
-                client, &batch, limits.get(), &options, &response);
-        if (status != 0) throw_status(env, status);
+        kmipkit_ttlv_structure_t* error_response_ttlv = nullptr;
+        const int32_t status = kmipkit_client_execute_with_options_and_error_ttlv_v1(
+                client, &batch, limits.get(), &options, &response, &error_response_ttlv);
+        if (status != 0) throw_status(env, status, error_response_ttlv);
+        else if (error_response_ttlv != nullptr) {
+            kmipkit_ttlv_structure_release(error_response_ttlv);
+            throw_invalid_input(env);
+        }
         if (status != 0) return static_cast<jlong>(0);
         if (response == nullptr) {
             throw_invalid_input(env);

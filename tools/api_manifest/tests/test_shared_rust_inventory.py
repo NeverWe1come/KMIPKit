@@ -63,8 +63,8 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 9532)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 245)
-        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 32)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 264)
+        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 31)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
@@ -145,7 +145,30 @@ class SharedRustInventoryTests(unittest.TestCase):
             )
             self.assertEqual(capability["mappings"][language], expected)
 
-    def test_typed_view_and_discover_versions_exports_use_their_semantic_owner_requirements(self) -> None:
+    def test_response_ttlv_access_uses_its_approved_crypto_operation_owner(self) -> None:
+        response_ttlv = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit_client::ClientError::response_ttlv"
+        )
+        self.assertEqual("crypto_response_ttlv", response_ttlv["capabilityId"])
+        self.assertIn("KMIPKIT-0021-FR-015", response_ttlv["requirementIds"])
+        self.assertNotIn("KMIPKIT-0007-FR-006", response_ttlv["requirementIds"])
+        response_ttlv_field = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit::ClientError::ProtocolResponse::response_ttlv"
+        )
+        self.assertEqual("crypto_response_ttlv", response_ttlv_field["capabilityId"])
+        self.assertIn("KMIPKIT-0021-FR-015", response_ttlv_field["requirementIds"])
+        response_ttlv_method = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit::ClientError::response_ttlv"
+        )
+        self.assertEqual("crypto_response_ttlv", response_ttlv_method["capabilityId"])
+        self.assertIn("KMIPKIT-0021-FR-015", response_ttlv_method["requirementIds"])
+
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         declarations = {row["exportName"]: row for row in inventory["mappedDeclarations"]}
 
@@ -263,10 +286,10 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         blocked = inventory["blockedUnreconciledDeclarations"]
 
-        self.assertEqual(len(blocked), 32)
+        self.assertEqual(len(blocked), 31)
         self.assertEqual(
             sum("callable public declaration" in row["blockedReason"] for row in blocked),
-            18,
+            17,
         )
         self.assertEqual(
             sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),

@@ -20,7 +20,7 @@ from typing import get_type_hints
 import pytest
 
 from kmipkit import client, errors, extensions, ttlv
-from kmipkit._handles import _wrap_owned_handle
+from kmipkit._handles import _wipe_staging_buffer, _wrap_owned_handle
 
 
 def test_python_package_advertises_inline_typing_support() -> None:
@@ -104,6 +104,12 @@ def test_batch_and_client_are_context_managed_and_retain_ordered_typed_items() -
     )
     assert extensions.client_batch_item_discover_versions
     assert ttlv.CodecLimits
+
+
+def test_client_execution_error_response_ttlv_annotation_resolves() -> None:
+    annotations = get_type_hints(errors.ClientExecutionError.__init__)
+
+    assert annotations["response_ttlv"] == ttlv.Structure | None
 
 
 def test_version_two_metadata_preserves_unknowns_message_presence_and_redacts_repr() -> None:
@@ -1040,10 +1046,17 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
     released: list[str] = []
     execution_calls: list[bool] = []
 
-    def execute(_client: object, batch_slot: object, _limits: object, output: object) -> int:
+    def execute(
+        _client: object,
+        batch_slot: object,
+        _limits: object,
+        output: object,
+        error_output: object,
+    ) -> int:
         execution_calls.append(True)
         batch_slot[0] = client.ffi.NULL  # type: ignore[index]
         output[0] = response_pointer  # type: ignore[index]
+        assert error_output[0] == client.ffi.NULL  # type: ignore[index]
         return 0
 
     def item_index(item: object) -> int:
@@ -1082,7 +1095,7 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
         return 0
 
     fake = SimpleNamespace(
-        kmipkit_client_execute=execute,
+        kmipkit_client_execute_with_error_ttlv_v1=execute,
         kmipkit_client_release=lambda _ptr: None,
         kmipkit_client_batch_release=lambda _ptr: None,
         kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
@@ -1466,6 +1479,32 @@ def test_batch_result_accepts_absent_spans_and_no_result_reason(
     result.close()
 
 
+def test_certify_response_rejects_identifier_when_response_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+
+    def absent_response_with_identifier(_item: object, present: object, identifier: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        identifier.kind = 2  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_certify=absent_response_with_identifier,
+        ),
+    )
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._certify_response(item)
+    finally:
+        item.close()
+
+
 def test_discover_versions_response_accepts_more_than_default_codec_elements(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1685,10 +1724,354 @@ def test_client_execution_error_retains_owned_generic_response_without_disclosin
     absent = errors.ClientExecutionError(
         status=9,
         category=errors.ClientErrorCategory.TRANSPORT,
-        cause=errors.ClientErrorCause.IO,
+        cause=errors.ClientErrorCause.TRANSPORT_IO,
         delivery=errors.DeliveryState.POSSIBLY_SENT,
     )
     assert absent.response_ttlv is None
+
+
+def _take_client_compatible_structure() -> tuple[ttlv.Structure, object, object, object | None]:
+    response = ttlv.ttlv_structure_create()
+    ttlv_pointer, owner = response._take()
+    address = int(ttlv.ffi.cast("uintptr_t", ttlv_pointer))
+    client_pointer = client.ffi.cast("kmipkit_ttlv_structure_t *", address)
+    return response, ttlv_pointer, client_pointer, owner
+
+
+def test_client_status_releases_error_response_on_success_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response, ttlv_pointer, pointer, _owner = _take_client_compatible_structure()
+    released: list[object] = []
+
+    def release_response(raw_pointer: object) -> None:
+        released.append(raw_pointer)
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(kmipkit_ttlv_structure_release=release_response))
+
+    try:
+        with pytest.raises(errors.KmipKitError):
+            client._raise_client_status(0, pointer)
+
+        assert response.closed
+        assert len(released) == 1
+    finally:
+        ttlv.lib.kmipkit_ttlv_structure_release(ttlv_pointer)
+
+
+def test_client_status_releases_non_protocol_error_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response, ttlv_pointer, pointer, _owner = _take_client_compatible_structure()
+    released: list[object] = []
+
+    monkeypatch.setattr(
+        client,
+        "_read_last_error",
+        lambda: (
+            8,
+            int(errors.ClientErrorCategory.TRANSPORT),
+            int(errors.ClientErrorCause.TRANSPORT_IO),
+            int(errors.DeliveryState.RESPONSE_STARTED),
+        ),
+    )
+
+    def release_response(raw_pointer: object) -> None:
+        released.append(raw_pointer)
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(kmipkit_ttlv_structure_release=release_response))
+
+    try:
+        with pytest.raises(errors.ClientExecutionError) as caught:
+            client._raise_client_status(8, pointer)
+
+        assert caught.value.response_ttlv is None
+        assert response.closed
+        assert len(released) == 1
+    finally:
+        ttlv.lib.kmipkit_ttlv_structure_release(ttlv_pointer)
+
+
+def test_client_status_does_not_retain_ttlv_for_ordinary_protocol_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        client,
+        "_read_last_error",
+        lambda: (
+            8,
+            int(errors.ClientErrorCategory.PROTOCOL),
+            int(errors.ClientErrorCause.PROTOCOL_OTHER),
+            int(errors.DeliveryState.RESPONSE_STARTED),
+        ),
+    )
+
+    with pytest.raises(errors.ClientExecutionError) as caught:
+        client._raise_client_status(8, ttlv.ffi.NULL)
+
+    assert caught.value.response_ttlv is None
+
+
+def test_client_status_releases_response_when_protocol_adoption_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response, ttlv_pointer, pointer, _owner = _take_client_compatible_structure()
+    released: list[object] = []
+
+    monkeypatch.setattr(
+        client,
+        "_read_last_error",
+        lambda: (
+            8,
+            int(errors.ClientErrorCategory.PROTOCOL),
+            int(errors.ClientErrorCause.PROTOCOL_OTHER),
+            int(errors.DeliveryState.RESPONSE_STARTED),
+        ),
+    )
+
+    def fail_adoption(_address: int) -> ttlv.Structure:
+        raise ValueError("test adoption failure")
+
+    def release_response(raw_pointer: object) -> None:
+        released.append(raw_pointer)
+
+    monkeypatch.setattr(ttlv, "_structure_from_native_address", fail_adoption)
+    monkeypatch.setattr(client, "lib", SimpleNamespace(kmipkit_ttlv_structure_release=release_response))
+
+    try:
+        with pytest.raises(errors.KmipKitError):
+            client._raise_client_status(8, pointer)
+
+        assert response.closed
+        assert len(released) == 1
+    finally:
+        ttlv.lib.kmipkit_ttlv_structure_release(ttlv_pointer)
+
+
+def test_client_status_closes_adopted_response_if_error_construction_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response, ttlv_pointer, pointer, _owner = _take_client_compatible_structure()
+    adopted: list[ttlv.Structure] = []
+    adopt = ttlv._structure_from_native_address
+
+    monkeypatch.setattr(
+        client,
+        "_read_last_error",
+        lambda: (
+            8,
+            int(errors.ClientErrorCategory.PROTOCOL),
+            int(errors.ClientErrorCause.PROTOCOL_OTHER),
+            int(errors.DeliveryState.RESPONSE_STARTED),
+        ),
+    )
+
+    def adopt_response(address: int) -> ttlv.Structure:
+        adopted_response = adopt(address)
+        adopted.append(adopted_response)
+        return adopted_response
+
+    def fail_error_construction(**_values: object) -> errors.ClientExecutionError:
+        raise MemoryError("test error-construction failure")
+
+    monkeypatch.setattr(ttlv, "_structure_from_native_address", adopt_response)
+    monkeypatch.setattr(errors, "ClientExecutionError", fail_error_construction)
+
+    try:
+        with pytest.raises(MemoryError, match="test error-construction failure"):
+            client._raise_client_status(8, pointer)
+
+        assert len(adopted) == 1
+        assert adopted[0].closed
+        assert response.closed
+    finally:
+        if not adopted or not adopted[0].closed:
+            ttlv.lib.kmipkit_ttlv_structure_release(ttlv_pointer)
+
+
+def test_staging_wipe_accepts_absent_buffers() -> None:
+    _wipe_staging_buffer(None)
+    _wipe_staging_buffer(ttlv.ffi.NULL)
+
+
+def test_structure_from_native_address_rejects_null_address() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        ttlv._structure_from_native_address(0)
+
+
+@pytest.mark.parametrize("options_enabled", [False, True])
+def test_client_execution_adopts_approved_uid_shape_error_response_for_both_facades(
+    monkeypatch: pytest.MonkeyPatch, options_enabled: bool
+) -> None:
+    sentinel = b"KMIPKit-response-sentinel"
+    response = _approved_uid_shape_error_response_ttlv(sentinel)
+    response_pointer, _response_owner = response._take()
+    response_address = int(ttlv.ffi.cast("uintptr_t", response_pointer))
+    client_pointer, _client_storage = _opaque("kmipkit_client_t")
+    batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
+    handle = _wrap_owned_handle(client.Client, client_pointer)
+    batch = _wrap_owned_handle(client.Batch, batch_pointer)
+    limits = ttlv.codec_limits_defaults()
+    timeout = client.TimeoutLimit.default()
+    options = client.RequestOptions(timeout, timeout, timeout, timeout)
+
+    def execute(*arguments: object) -> int:
+        batch_slot = arguments[1]
+        batch_slot[0] = client.ffi.NULL  # type: ignore[index]
+        error_output = arguments[-1]
+        error_output[0] = client.ffi.cast(  # type: ignore[index]
+            "kmipkit_ttlv_structure_t *", response_address
+        )
+        return 8
+
+    def last_error(status: object, category: object, cause: object, delivery: object) -> int:
+        status[0] = 8  # type: ignore[index]
+        category[0] = int(errors.ClientErrorCategory.PROTOCOL)  # type: ignore[index]
+        cause[0] = int(errors.ClientErrorCause.PROTOCOL_INVALID_VALUE)  # type: ignore[index]
+        delivery[0] = int(errors.DeliveryState.RESPONSE_STARTED)  # type: ignore[index]
+        return 0
+
+    function_name = (
+        "kmipkit_client_execute_with_options_and_error_ttlv_v1"
+        if options_enabled
+        else "kmipkit_client_execute_with_error_ttlv_v1"
+    )
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                function_name: execute,
+                "kmipkit_last_error_get": last_error,
+                "kmipkit_client_release": lambda _ptr: None,
+                "kmipkit_client_batch_release": lambda _ptr: None,
+            }
+        ),
+    )
+    try:
+        with pytest.raises(errors.ClientExecutionError) as caught:
+            if options_enabled:
+                handle.execute_with_options(batch, limits, options)
+            else:
+                handle.execute(batch, limits)
+
+        failure = caught.value
+        assert batch.closed
+        assert failure.response_ttlv is not None
+        assert "KMIPKit-response-sentinel" not in str(failure)
+        assert "KMIPKit-response-sentinel" not in repr(failure)
+        with ttlv.ttlv_structure_view(failure.response_ttlv) as root:
+            assert _contains_ttlv_byte_string(root, 0x540001, sentinel)
+        failure.response_ttlv.close()
+        assert failure.response_ttlv.closed
+    finally:
+        limits.close()
+        batch.close()
+        handle.close()
+
+
+def _approved_uid_shape_error_response_ttlv(sentinel: bytes) -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+
+    def item(tag_value: int, value: ttlv.Value) -> ttlv.TtlvItem:
+        raw_tag = ttlv.raw_tag_from_raw(tag_value)
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+
+    def integer_item(tag_value: int, value: int) -> ttlv.TtlvItem:
+        return item(tag_value, ttlv.ttlv_value_integer(value))
+
+    def enumeration_item(tag_value: int, value: int) -> ttlv.TtlvItem:
+        return item(tag_value, ttlv.ttlv_value_enumeration(value))
+
+    def bytes_item(tag_value: int, value: bytes) -> ttlv.TtlvItem:
+        return item(tag_value, ttlv.ttlv_value_byte_string(value, limits))
+
+    def text_item(tag_value: int, value: str) -> ttlv.TtlvItem:
+        return item(
+            tag_value,
+            ttlv.ttlv_value_text_string(value.encode("utf-8"), limits),
+        )
+
+    def structure_item(tag_value: int, items: tuple[ttlv.TtlvItem, ...]) -> ttlv.TtlvItem:
+        structure = ttlv.ttlv_structure_create()
+        for child in items:
+            structure = ttlv.ttlv_structure_with_item(structure, child, limits)
+        return item(tag_value, ttlv.ttlv_value_structure(structure, limits))
+
+    try:
+        protocol_version = structure_item(
+            0x420069,
+            (integer_item(0x42006A, 2), integer_item(0x42006B, 1)),
+        )
+        header = structure_item(
+            0x42007A,
+            (
+                protocol_version,
+                item(0x420092, ttlv.ttlv_value_long_integer(1)),
+                integer_item(0x42000D, 1),
+            ),
+        )
+        payload = structure_item(
+            0x42007C,
+            (
+                bytes_item(0x4200C4, b"\x5a"),
+                bytes_item(0x540001, sentinel),
+            ),
+        )
+        response_item = structure_item(
+            0x42000F,
+            (
+                enumeration_item(0x42005C, 35),
+                text_item(0x420093, "item-0"),
+                enumeration_item(0x42007F, 0),
+                payload,
+            ),
+        )
+        root = ttlv.ttlv_structure_create()
+        root = ttlv.ttlv_structure_with_item(root, header, limits)
+        root = ttlv.ttlv_structure_with_item(root, response_item, limits)
+        return root
+    finally:
+        limits.close()
+
+
+def _contains_ttlv_byte_string(
+    structure: ttlv.TtlvStructureView, raw_tag: int, expected: bytes
+) -> bool:
+    for index in range(ttlv.ttlv_structure_view_item_count(structure)):
+        item_view = ttlv.ttlv_structure_view_item_at(structure, index)
+        try:
+            tag = ttlv.ttlv_item_view_tag(item_view)
+            try:
+                item_tag = ttlv.tag_value(tag)
+            finally:
+                tag.close()
+            item_type = ttlv.ttlv_item_view_type(item_view)
+            value = ttlv.ttlv_item_view_value(item_view)
+            try:
+                if item_tag == raw_tag and item_type is ttlv.ItemType.ByteString:
+                    actual = bytes(
+                        ttlv.ttlv_value_view_byte_at(value, byte_index)
+                        for byte_index in range(ttlv.ttlv_value_view_byte_length(value))
+                    )
+                    if actual == expected:
+                        return True
+                if item_type is ttlv.ItemType.Structure:
+                    nested = ttlv.ttlv_value_view_structure(value)
+                    try:
+                        if _contains_ttlv_byte_string(nested, raw_tag, expected):
+                            return True
+                    finally:
+                        nested.close()
+            finally:
+                value.close()
+        finally:
+            item_view.close()
+    return False
 
 
 def test_client_execute_with_options_preserves_timeout_kinds_and_consumes_batch(
@@ -1714,6 +2097,7 @@ def test_client_execute_with_options_preserves_timeout_kinds_and_consumes_batch(
         _limits: object,
         request_options: object,
         output: object,
+        error_output: object,
     ) -> int:
         observed.extend(
             (
@@ -1730,13 +2114,14 @@ def test_client_execute_with_options_preserves_timeout_kinds_and_consumes_batch(
         )
         batch_slot[0] = client.ffi.NULL  # type: ignore[index]
         output[0] = response_pointer  # type: ignore[index]
+        assert error_output[0] == client.ffi.NULL  # type: ignore[index]
         return 0
 
     monkeypatch.setattr(
         client,
         "lib",
         SimpleNamespace(
-            kmipkit_client_execute_with_options_v1=execute,
+            kmipkit_client_execute_with_options_and_error_ttlv_v1=execute,
             kmipkit_client_batch_response_item_count=lambda _response, count: count.__setitem__(0, 0) or 0,
             kmipkit_client_batch_response_release=lambda _ptr: None,
             kmipkit_client_release=lambda _ptr: None,
@@ -1817,7 +2202,7 @@ def test_client_execute_with_options_restores_batch_on_ffi_conversion_error(
         client,
         "lib",
         SimpleNamespace(
-            kmipkit_client_execute_with_options_v1=execute,
+            kmipkit_client_execute_with_options_and_error_ttlv_v1=execute,
             kmipkit_client_release=lambda _ptr: None,
             kmipkit_client_batch_release=lambda _ptr: None,
         ),
@@ -1847,7 +2232,7 @@ def test_client_execute_with_options_restores_batch_if_native_success_omits_resp
         client,
         "lib",
         SimpleNamespace(
-            kmipkit_client_execute_with_options_v1=lambda *_arguments: 0,
+            kmipkit_client_execute_with_options_and_error_ttlv_v1=lambda *_arguments: 0,
             kmipkit_client_release=lambda _ptr: None,
             kmipkit_client_batch_release=lambda _ptr: None,
         ),
@@ -1875,7 +2260,7 @@ def test_client_execute_restores_batch_on_ffi_conversion_error(
     batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
     fake = SimpleNamespace(
-        kmipkit_client_execute=lambda *_args: (_ for _ in ()).throw(TypeError("secret")),
+        kmipkit_client_execute_with_error_ttlv_v1=lambda *_args: (_ for _ in ()).throw(TypeError("secret")),
         kmipkit_client_release=lambda _ptr: None,
         kmipkit_client_batch_release=lambda _ptr: None,
     )
@@ -1941,7 +2326,7 @@ def test_client_execute_maps_failure_delivery_and_restores_unconsumed_batch(
     delivery_state = delivery
 
     fake = SimpleNamespace(
-        kmipkit_client_execute=lambda _client, _batch, _limits, _output: status_code,
+        kmipkit_client_execute_with_error_ttlv_v1=lambda *_arguments: status_code,
         kmipkit_last_error_get=last_error,
         kmipkit_client_release=lambda _ptr: None,
         kmipkit_client_batch_release=lambda _ptr: None,
@@ -1971,16 +2356,23 @@ def test_client_execute_consumes_batch_and_returns_owned_empty_response(
     batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
 
-    def execute(_client: object, batch_slot: object, _limits: object, output: object) -> int:
+    def execute(
+        _client: object,
+        batch_slot: object,
+        _limits: object,
+        output: object,
+        error_output: object,
+    ) -> int:
         batch_slot[0] = client.ffi.NULL  # type: ignore[index]
         output[0] = response_pointer  # type: ignore[index]
+        assert error_output[0] == client.ffi.NULL  # type: ignore[index]
         return 0
 
     monkeypatch.setattr(
         client,
         "lib",
         SimpleNamespace(
-            kmipkit_client_execute=execute,
+            kmipkit_client_execute_with_error_ttlv_v1=execute,
             kmipkit_client_batch_response_item_count=lambda _response, count: count.__setitem__(0, 0) or 0,
             kmipkit_client_batch_response_release=lambda _ptr: None,
             kmipkit_client_release=lambda _ptr: None,
@@ -2225,7 +2617,7 @@ def test_client_execute_rejects_wrong_facade_types_and_null_response(
             client,
             "lib",
             SimpleNamespace(
-                kmipkit_client_execute=lambda _client, _slot, _limits, _output: 0,
+                kmipkit_client_execute_with_error_ttlv_v1=lambda *_arguments: 0,
                 kmipkit_client_release=lambda _ptr: None,
                 kmipkit_client_batch_release=lambda _ptr: None,
             ),
@@ -2253,10 +2645,10 @@ def test_client_execute_rejects_closed_borrowed_handles_before_consuming_batch(
     fake = SimpleNamespace(
         kmipkit_client_release=lambda pointer: released.append(("client", pointer)),
         kmipkit_client_batch_release=lambda pointer: released.append(("batch", pointer)),
-        kmipkit_client_execute=lambda *_arguments: pytest.fail(
+        kmipkit_client_execute_with_error_ttlv_v1=lambda *_arguments: pytest.fail(
             "closed client inputs must fail before native execution"
         ),
-        kmipkit_client_execute_with_options_v1=lambda *_arguments: pytest.fail(
+        kmipkit_client_execute_with_options_and_error_ttlv_v1=lambda *_arguments: pytest.fail(
             "closed client inputs must fail before native execution"
         ),
     )

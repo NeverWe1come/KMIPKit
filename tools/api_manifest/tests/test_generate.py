@@ -258,49 +258,24 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn("kmipkit_ttlv_item_create", private_header)
         self.assertNotIn("kmipkit_ttlv_item_create", public_header)
 
-    def test_public_header_keeps_shared_client_abi_blocked_until_binding_mapping(self) -> None:
+    def test_public_header_exposes_error_ttlv_after_t081_mapping(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
         public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
 
-        t076_declarations = [
+        t081_declaration = next(
             row
             for row in manifest["publicDeclarations"]
-            if row["declarationId"].startswith("T076:")
-        ]
-        blocked_t076_names = {
-            row["exportName"]
-            for row in t076_declarations
-            if row["packageId"] == "c-kmipkit"
-            and row["kind"] == "c-symbol"
-            and row["declarationState"] == "blocked"
-        }
-        approved_t076_exclusions = {
-            row["exportName"]
-            for row in manifest["approvedExclusions"]
-            if row["packageId"] == "c-kmipkit"
-        }
-        self.assertEqual({"kmipkit_client_execute_with_error_ttlv_v1"}, blocked_t076_names)
-        self.assertFalse(blocked_t076_names & approved_t076_exclusions)
-        for row in t076_declarations:
-            if row["packageId"] != "c-kmipkit" or row["kind"] not in {"c-symbol", "type"}:
-                continue
-            if row["declarationState"] == "blocked" and row["kind"] == "type":
-                self.assertNotIn(
-                    f"typedef struct {row['exportName']} {row['exportName']};",
-                    public_header,
-                )
-            elif row["declarationState"] == "blocked" and row["kind"] == "c-symbol":
-                self.assertNotIn(f"{row['exportName']}(", public_header)
-            elif row["declarationState"] in {"declared", "verified"} and row["kind"] == "type":
-                self.assertIn(
-                    f"typedef struct {row['exportName']} {row['exportName']};",
-                    public_header,
-                )
-            elif row["declarationState"] in {"declared", "verified"} and row["kind"] == "c-symbol":
-                self.assertIn(f"{row['exportName']}(", public_header)
-
-        self.assertIn("kmipkit_client_execute_with_error_ttlv_v1", blocked_t076_names)
+            if row["declarationId"] == "T081:client-execute-error-ttlv:c"
+        )
+        self.assertEqual("declared", t081_declaration["declarationState"])
+        self.assertEqual("crypto_response_ttlv", t081_declaration["capabilityId"])
+        self.assertIn("KMIPKIT-0021-FR-015", t081_declaration["requirementIds"])
+        self.assertEqual(
+            {"rust", "c", "java", "python"},
+            set(t081_declaration["languageMappings"]),
+        )
+        self.assertIn("kmipkit_client_execute_with_error_ttlv_v1(", public_header)
         self.assertIn("kmipkit_client_execute(", public_header)
         self.assertIn("typedef struct kmipkit_client_t kmipkit_client_t;", public_header)
         self.assertIn("kmipkit_transport_config_create_v1(", public_header)
@@ -351,6 +326,45 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                     f"typedef struct {handle_type} {handle_type};" in public_header,
                     f"generated public C header is missing {handle_type}",
                 )
+
+    def test_t081_error_ttlv_helper_maps_to_its_distinct_python_abi_symbol(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        helper = next(
+            row for row in manifest["functions"]
+            if row["id"] == "client_execute_with_error_ttlv"
+        )
+
+        self.assertEqual(
+            "kmipkit_client_execute_with_error_ttlv_v1",
+            helper["c"]["symbol"],
+        )
+        self.assertEqual(
+            "kmipkit_client_execute_with_error_ttlv_v1",
+            helper["python"]["cffiSymbol"],
+            "Python must call the additive ABI that returns the retained error TTLV",
+        )
+        self.assertEqual("Client.execute", helper["python"]["function"])
+        documentation = " ".join(helper["c"]["documentation"])
+        self.assertIn("only for an approved missing, repeated, or malformed Unique Identifier", documentation)
+        self.assertNotIn("when typed response validation fails", documentation)
+
+        declaration = next(
+            row for row in manifest["publicDeclarations"]
+            if row["declarationId"] == "T081:client-execute-error-ttlv:c"
+        )
+        self.assertEqual("declared", declaration["declarationState"])
+        self.assertEqual("crypto_response_ttlv", declaration["capabilityId"])
+        self.assertEqual(
+            {"rust", "c", "java", "python"},
+            set(declaration["languageMappings"]),
+        )
+
+        python_abi_symbols = [row["python"]["cffiSymbol"] for row in manifest["functions"]]
+        self.assertEqual(
+            len(python_abi_symbols),
+            len(set(python_abi_symbols)),
+            "each Python facade function must resolve to its actual CFFI ABI symbol",
+        )
 
     def test_t076_batch_metadata_carrier_is_not_approved_or_public(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

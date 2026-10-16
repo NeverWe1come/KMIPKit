@@ -26,6 +26,15 @@ class SignatureTypeReadinessTests(unittest.TestCase):
             if function["id"] == "extension_registry_limits_defaults"
         )
         defaults["java"]["returnType"] = "TtlvItemView"
+        blocked_type = next(
+            declaration
+            for declaration in manifest["publicDeclarations"]
+            if declaration["packageId"] == "java-kmipkit"
+            and declaration["exportName"] == "org.kmipkit.ttlv.TtlvItemView"
+        )
+        blocked_type["declarationState"] = "blocked"
 
         with self.assertRaisesRegex(generate.ManifestError, "signature.*type.*TtlvItemView"):
-            generate._validate_v2_readiness(manifest, ROOT)
+            generate._validate_signature_type_readiness(
+                manifest, manifest["publicDeclarations"]
+            )

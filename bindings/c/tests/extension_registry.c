@@ -8,10 +8,10 @@
  * KMIP Specification v2.1 §11.56 permits the 0x54 extension Tag range; the
  * catalog policy accepts those unknown Tags for generic preservation.
  *
- * The public C header exposes the mapped shared-client batch surface but keeps
- * per-operation builders and the generic error-TTLV fallback blocked. The C
- * ABI exposes only stable int32_t error categories, not diagnostic strings,
- * so payload redaction is constrained to stable category-only results.
+ * The public C header exposes the mapped shared-client batch surface and the
+ * generic error-TTLV fallback. The C ABI exposes only stable int32_t error
+ * categories, not diagnostic strings, so payload redaction is constrained to
+ * stable category-only results.
  * Use-after-release, dangling, and foreign pointers are caller-precondition
  * violations and are deliberately not probed here.
  */
@@ -42,9 +42,7 @@ _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, has_resu
                "T076 metadata keeps the reason presence flag at offset sixteen");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, result_reason) == 20,
                "T076 metadata keeps the result reason at offset twenty");
-/* T076 declarations remain test-local while Java/Python parity is blocked.
- * They exercise the binary symbols but are not public-header or readiness
- * evidence. */
+/* T076 declarations for still-unmapped ABI helpers remain test-local. */
 struct kmipkit_transport_config_t;
 struct kmipkit_client_t;
 struct kmipkit_client_batch_t;
@@ -459,7 +457,7 @@ static bool test_t076_validated_client_reports_delivery_state(
     struct kmipkit_client_batch_item_response_t *response_item = NULL;
     struct kmipkit_client_batch_item_response_t *response_item_2 = NULL;
     struct kmipkit_ttlv_structure_t *error_response_ttlv = NULL;
-    struct kmipkit_ttlv_structure_view_t *error_response_view = NULL;
+    kmipkit_request_options_v1_t request_options = {0};
     struct kmipkit_client_batch_item_metadata_v1_t metadata = {0};
     struct kmipkit_byte_span_v1_t value = {0};
     uint64_t response_count = UINT64_C(0);
@@ -664,8 +662,7 @@ static bool test_t076_validated_client_reports_delivery_state(
     kmipkit_client_batch_item_response_release(response_item_2);
     response_item_2 = NULL;
 
-    /* A typed response-shape error keeps the complete generic ResponseMessage
-     * available as an independent, owned TTLV structure. */
+    /* A Discover Versions validation failure must not retain arbitrary response data. */
     REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);
     {
@@ -677,23 +674,16 @@ static bool test_t076_validated_client_reports_delivery_state(
         item = identified_item;
     }
     REQUIRE_STATUS(kmipkit_client_batch_add_item(batch, &item), KMIPKIT_SUCCESS);
-    status = kmipkit_client_execute_with_error_ttlv_v1(
-        client, &batch, limits, &response, &error_response_ttlv);
+    request_options.struct_size = (uint32_t)sizeof(request_options);
+    request_options.abi_version = UINT32_C(1);
+    status = kmipkit_client_execute_with_options_and_error_ttlv_v1(
+        client, &batch, limits, &request_options, &response, &error_response_ttlv);
     REQUIRE(status == (int32_t)8); /* original sanitized protocol status */
-    REQUIRE(batch == NULL && response == NULL && error_response_ttlv != NULL);
+    REQUIRE(batch == NULL && response == NULL && error_response_ttlv == NULL);
     REQUIRE_STATUS(kmipkit_last_error_get(&status, &category, &cause, &delivery),
                    KMIPKIT_SUCCESS);
     REQUIRE(status == (int32_t)8 && category == UINT32_C(2));
     REQUIRE(delivery == UINT32_C(3)); /* response started */
-    REQUIRE_STATUS(kmipkit_ttlv_structure_view(error_response_ttlv, &error_response_view),
-                   KMIPKIT_SUCCESS);
-    REQUIRE_STATUS(kmipkit_ttlv_structure_view_item_count(error_response_view, &response_count),
-                   KMIPKIT_SUCCESS);
-    REQUIRE(response_count >= UINT64_C(2)); /* ResponseHeader and ResponseBatchItem */
-    kmipkit_ttlv_structure_view_release(error_response_view);
-    error_response_view = NULL;
-    kmipkit_ttlv_structure_release(error_response_ttlv);
-    error_response_ttlv = NULL;
 
     /* A local validation failure keeps both optional output slots null. */
     REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
@@ -705,7 +695,6 @@ static bool test_t076_validated_client_reports_delivery_state(
     response_item = NULL;
     kmipkit_client_batch_item_response_release(response_item_2);
     response_item_2 = NULL;
-
     /* Duplicate and missing IDs are rejected before a request reaches the peer. */
     REQUIRE_STATUS(kmipkit_client_batch_create(&batch), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_batch_item_discover_versions(&item), KMIPKIT_SUCCESS);

@@ -538,7 +538,9 @@ def _feature_directory(root: Path, feature_id: Any) -> Path:
 
 
 def _status_from_document(content: str) -> str:
-    match = re.search(r"(?m)^\*\*Status\*\*:\s*(Approved|Accepted)\b", content)
+    match = re.search(
+        r"(?m)^(?:\*\*Status\*\*|Status):\s*(Approved|Accepted)\b", content
+    )
     if match is None:
         raise ManifestError("manifest owner source is not approved or accepted")
     return match.group(1)

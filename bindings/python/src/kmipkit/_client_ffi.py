@@ -23,6 +23,7 @@ ffi.cdef(
     typedef unsigned long long uint64_t;
     typedef long long int64_t;
     typedef unsigned short uint16_t;
+    typedef unsigned long long uintptr_t;
 
     typedef struct kmipkit_client_configuration_t kmipkit_client_configuration_t;
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
@@ -166,6 +167,20 @@ ffi.cdef(
         kmipkit_codec_limits_t *limits,
         const kmipkit_request_options_v1_t *options,
         kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_with_error_ttlv_v1(
+        kmipkit_client_t *client,
+        kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_client_batch_response_t **out_response,
+        kmipkit_ttlv_structure_t **out_error_response_ttlv);
+    int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(
+        kmipkit_client_t *client,
+        kmipkit_client_batch_t **batch,
+        kmipkit_codec_limits_t *limits,
+        const kmipkit_request_options_v1_t *options,
+        kmipkit_client_batch_response_t **out_response,
+        kmipkit_ttlv_structure_t **out_error_response_ttlv);
+    void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
     void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
     int32_t kmipkit_client_batch_response_item_count(
         kmipkit_client_batch_response_t *response, uint64_t *out_count);

@@ -1266,7 +1266,7 @@ fn read_response_error<E: Error + 'static>(error: E) -> ProtocolError {
 
 struct ResponseValidationError {
     error: ProtocolError,
-    response_ttlv: ClientErrorResponseTtlv,
+    response_ttlv: Option<ClientErrorResponseTtlv>,
 }
 
 fn read_operation_outcome<T, E>(
@@ -3879,12 +3879,13 @@ impl Client {
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
-        .map_err(|failure| {
-            ClientError::protocol_response(
+        .map_err(|failure| match failure.response_ttlv {
+            Some(response_ttlv) => ClientError::protocol_response(
                 failure.error,
                 response_delivery_state,
-                failure.response_ttlv,
-            )
+                response_ttlv,
+            ),
+            None => ClientError::protocol(failure.error, response_delivery_state),
         })
     }
 
@@ -6388,9 +6389,14 @@ fn validate_response(
         #[cfg(test)]
         pending_owner_observer,
     );
-    result.map_err(|error| ResponseValidationError {
-        error,
-        response_ttlv: ClientErrorResponseTtlv::new(response),
+    result.map_err(|error| {
+        let response_ttlv = error
+            .retains_generic_response()
+            .then(|| ClientErrorResponseTtlv::new(response));
+        ResponseValidationError {
+            error,
+            response_ttlv,
+        }
     })
 }
 

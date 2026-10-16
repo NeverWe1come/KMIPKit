@@ -80,6 +80,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
         "api_level_discovery"
             | "client_batch_model"
             | "client_execution"
+            | "crypto_response_ttlv"
             | "ffi_runtime_metadata"
             | "generic_ttlv_model"
             | "production_transport"

@@ -12,6 +12,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
@@ -25,9 +27,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManagerFactory;
@@ -51,8 +53,15 @@ import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItemType;
+import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
+import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TtlvValueView;
 
 /** Exercises the T076 client ABI through the Java facade against a local TLS 1.3 peer. */
 final class ClientFacadeTlsIntegrationTest {
@@ -180,6 +189,18 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure splitAttributes = TtlvStructure.create()) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, null));
+            assertNativeRequestOptionsRejected(client, new long[11]);
+            long[] invalidTimeoutKind = new long[12];
+            invalidTimeoutKind[0] = 3;
+            assertNativeRequestOptionsRejected(client, invalidTimeoutKind);
+            long[] invalidTimeoutNanoseconds = new long[12];
+            invalidTimeoutNanoseconds[2] = 1_000_000_000L;
+            assertNativeRequestOptionsRejected(client, invalidTimeoutNanoseconds);
+            long[] unboundedTimeoutWithDuration = new long[12];
+            unboundedTimeoutWithDuration[0] = 2;
+            unboundedTimeoutWithDuration[1] = 1;
+            assertNativeRequestOptionsRejected(client, unboundedTimeoutWithDuration);
+
             ClientBatch batch = ClientBatch.create();
             batch.asynchronousIndicator(2)
                     .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)))
@@ -293,6 +314,72 @@ final class ClientFacadeTlsIntegrationTest {
             assertTrue(request.length >= 8);
             assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
                     new byte[] {request[0], request[1], request[2]});
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test
+    void cryptoOperationResponsesConvertSuccessfullyOverMutualTls() throws Exception {
+        List<?> operations = cryptoOperations();
+        Path serverStorePath = temporaryDirectory.resolve("crypto-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("crypto-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, cryptoOperationResponseMessage(operations)));
+        Thread peerThread = new Thread(peer, "kmipkit-java-crypto-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            int index = 0;
+            for (Object operation : operations) {
+                batch.add(cryptoOperationItem(operation)
+                        .withUniqueBatchItemId(uniqueBatchItemId(index++)));
+            }
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults())) {
+                assertEquals(operations.size(), response.itemCount());
+                for (int operationIndex = 0; operationIndex < operations.size(); operationIndex++) {
+                    Object operation = operations.get(operationIndex);
+                    try (ClientBatchItemResult result = response.itemAt(operationIndex)) {
+                        assertEquals(0, result.resultStatus());
+                        Object typedResponse = cryptoTypedResponse(cryptoOperationName(operation), result);
+                        boolean validityIndicatorPresent = !cryptoOperationName(operation).endsWith("Verify");
+                        invokeCryptoFixture(null, "assertSuccessfulOutput",
+                                new Class<?>[] {operation.getClass(), Object.class, boolean.class},
+                                operation, typedResponse, validityIndicatorPresent);
+                    }
+                }
+            }
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
         } finally {
             listener.close();
         }
@@ -514,6 +601,7 @@ final class ClientFacadeTlsIntegrationTest {
 
             assertEquals(8, failure.statusCode());
             assertTrue(failure instanceof ProtocolException);
+            assertTrue(((ProtocolException) failure).responseTtlv().isEmpty());
             assertEquals(2, failure.categoryCode());
             assertEquals(3, failure.deliveryStateCode());
             assertFalse(failure.getMessage().contains("protocol-error-server.p12"));
@@ -544,7 +632,7 @@ final class ClientFacadeTlsIntegrationTest {
             listener.setEnabledProtocols(new String[] {"TLSv1.3"});
             listener.setNeedClientAuth(true);
             listener.setSoTimeout(10_000);
-            byte[] response = responseShapeInvalidDiscoverVersionsWithSentinel();
+            byte[] response = macResponseMissingUniqueIdentifierWithSentinel();
             FutureTask<byte[]> peer = peerThatRespondsAfterOneRequest(listener, response);
             Thread peerThread = new Thread(peer, "kmipkit-java-shape-error-fixture");
             peerThread.setDaemon(true);
@@ -564,42 +652,192 @@ final class ClientFacadeTlsIntegrationTest {
                             .build();
                     Client client = Client.create(extensions, transport);
                     ClientBatch batch = ClientBatch.create()) {
-                batch.add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)));
+                CodecLimits limits = CodecLimits.defaults();
+                try (TtlvValue macData = TtlvValue.ByteString(new byte[] {0x41, 0x42}, limits)) {
+                    batch.add(ClientBatchItem.mac(null, null, macData, null, null, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(0)));
+                }
 
                 ProtocolException failure = assertThrows(ProtocolException.class, () -> {
                     if (withOptions) {
-                        client.executeWithOptions(batch, CodecLimits.defaults(), RequestOptions.defaults());
+                        client.executeWithOptions(batch, limits, RequestOptions.defaults());
                     } else {
-                        client.execute(batch, CodecLimits.defaults());
+                        client.execute(batch, limits);
                     }
                 });
                 assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
                 assertFalse(failure.getMessage().contains("KMIPKit-response-sentinel"));
                 assertFalse(failure.toString().contains("KMIPKit-response-sentinel"));
 
-                Method responseAccessor = ProtocolException.class.getMethod("responseTtlv");
-                Object optionalValue = responseAccessor.invoke(failure);
-                assertTrue(optionalValue instanceof Optional<?>);
-                Object retainedValue = ((Optional<?>) optionalValue).orElseThrow();
-                assertTrue(retainedValue instanceof TtlvStructure);
-                ((TtlvStructure) retainedValue).close();
+                byte[] sentinel = "KMIPKit-response-sentinel".getBytes(StandardCharsets.US_ASCII);
+                try (TtlvStructure retained = failure.responseTtlv().orElseThrow();
+                        TtlvStructureView retainedView = retained.view()) {
+                    assertTrue(containsByteString(retainedView, 0x540001, sentinel));
+                }
             } finally {
                 listener.close();
             }
         }
     }
 
-    private static byte[] responseShapeInvalidDiscoverVersionsWithSentinel() throws Exception {
+    private static byte[] macResponseMissingUniqueIdentifierWithSentinel() throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
         byte[] sentinel = "KMIPKit-response-sentinel".getBytes(StandardCharsets.US_ASCII);
         byte[] payload = structure(0x42007c,
-                item(0x420069, 8, sentinel), item(0x540001, 8, sentinel));
-        byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(30)),
+                item(0x4200c4, 8, new byte[] {0x5a}), item(0x540001, 8, sentinel));
+        byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(35)),
                 item(0x420093, 8, uniqueBatchItemId(0)), item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);
+    }
+
+    private static boolean containsByteString(
+            TtlvStructureView structure, int rawTag, byte[] expected) {
+        for (long index = 0; index < structure.itemCount(); index++) {
+            try (TtlvItemView item = structure.itemAt(index);
+                    Tag tag = item.tag()) {
+                if (tag.raw() == rawTag && item.itemType() == TtlvItemType.ByteString) {
+                    try (TtlvValueView value = item.value()) {
+                        if (value.byteLength() == expected.length) {
+                            boolean matches = true;
+                            for (int byteIndex = 0; byteIndex < expected.length; byteIndex++) {
+                                if ((byte) value.byteAt(byteIndex) != expected[byteIndex]) {
+                                    matches = false;
+                                    break;
+                                }
+                            }
+                            if (matches) return true;
+                        }
+                    }
+                }
+                if (item.itemType() == TtlvItemType.Structure) {
+                    try (TtlvValueView value = item.value();
+                            TtlvStructureView nested = value.structure()) {
+                        if (containsByteString(nested, rawTag, expected)) return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static List<?> cryptoOperations() throws Exception {
+        Field operations = CryptoOperationsJavaFacadeTest.class.getDeclaredField("OPERATIONS");
+        if (!operations.trySetAccessible()) {
+            throw new AssertionError("crypto operation table must remain accessible to TLS integration tests");
+        }
+        return (List<?>) operations.get(null);
+    }
+
+    private static void assertNativeRequestOptionsRejected(Client client, long[] requestTimeouts)
+            throws ReflectiveOperationException {
+        Field clientHandleField = Client.class.getDeclaredField("handle");
+        if (!clientHandleField.trySetAccessible()) {
+            throw new AssertionError("client handle must remain accessible to JNI boundary tests");
+        }
+        NativeHandle handle = (NativeHandle) clientHandleField.get(client);
+        long nativeBatch = NativeExtensionRegistry.clientBatchCreate();
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientExecuteWithOptions(
+                handle.get(), nativeBatch, NativeExtensionRegistry.codecLimitValues(CodecLimits.defaults()),
+                requestTimeouts));
+    }
+
+    private static ClientBatchItem cryptoOperationItem(Object operation) throws Exception {
+        String operationName = cryptoOperationName(operation);
+        byte[] previousPartCorrelation = new byte[] {0x41, 0x00, (byte) 0xf2};
+        if ("macVerify".equals(operationName)) {
+            return ClientBatchItem.macVerify(null, null, null, null,
+                    previousPartCorrelation, Boolean.FALSE, Boolean.TRUE);
+        }
+        if ("signatureVerify".equals(operationName)) {
+            return ClientBatchItem.signatureVerify(null, null, null, null, null,
+                    previousPartCorrelation, Boolean.FALSE, Boolean.TRUE);
+        }
+        Class<?> valueKindType = Class.forName(
+                CryptoOperationsJavaFacadeTest.class.getName() + "$TtlvValueKind");
+        Object byteStringKind = null;
+        for (Object constant : valueKindType.getEnumConstants()) {
+            if ("BYTE_STRING".equals(constant.toString())) {
+                byteStringKind = constant;
+                break;
+            }
+        }
+        if (byteStringKind == null) {
+            throw new AssertionError("crypto operation input fixture must expose BYTE_STRING");
+        }
+        Method factory = CryptoOperationsJavaFacadeTest.class.getDeclaredMethod(
+                "newItem", operation.getClass(), valueKindType, boolean.class, boolean.class);
+        if (!factory.trySetAccessible()) {
+            throw new AssertionError("crypto operation item fixture must remain accessible to TLS tests");
+        }
+        return (ClientBatchItem) invokeCryptoFixture(null, factory,
+                operation, byteStringKind, false, true);
+    }
+
+    private static byte[] cryptoOperationResponseMessage(List<?> operations) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(operations.size())));
+        CryptoOperationsJavaFacadeTest fixture = new CryptoOperationsJavaFacadeTest();
+        List<byte[]> responseItems = new ArrayList<>();
+        for (int index = 0; index < operations.size(); index++) {
+            Object operation = operations.get(index);
+            Method successResponse = CryptoOperationsJavaFacadeTest.class.getDeclaredMethod(
+                    "successResponse", operation.getClass(), int.class, boolean.class);
+            if (!successResponse.trySetAccessible()) {
+                throw new AssertionError("crypto success response fixture must remain accessible to TLS tests");
+            }
+            responseItems.add((byte[]) invokeCryptoFixture(
+                    fixture, successResponse, operation, index, false));
+        }
+        List<byte[]> messageItems = new ArrayList<>();
+        messageItems.add(header);
+        messageItems.addAll(responseItems);
+        return structure(0x42007b, messageItems.toArray(byte[][]::new));
+    }
+
+    private static String cryptoOperationName(Object operation) throws Exception {
+        return (String) invokeCryptoFixture(operation, "name", new Class<?>[0]);
+    }
+
+    private static Object cryptoTypedResponse(String operationName, ClientBatchItemResult result) {
+        return switch (operationName) {
+            case "hash" -> result.hashResponse().orElseThrow();
+            case "mac" -> result.macResponse().orElseThrow();
+            case "macVerify" -> result.macVerifyResponse().orElseThrow();
+            case "sign" -> result.signResponse().orElseThrow();
+            case "signatureVerify" -> result.signatureVerifyResponse().orElseThrow();
+            default -> throw new IllegalArgumentException("unknown crypto operation: " + operationName);
+        };
+    }
+
+    private static Object invokeCryptoFixture(Object receiver, String name, Class<?>[] parameterTypes,
+            Object... arguments) throws Exception {
+        Class<?> owner = receiver == null ? CryptoOperationsJavaFacadeTest.class : receiver.getClass();
+        Method method = owner.getDeclaredMethod(name, parameterTypes);
+        return invokeCryptoFixture(receiver, method, arguments);
+    }
+
+    private static Object invokeCryptoFixture(Object receiver, Method method, Object... arguments)
+            throws Exception {
+        if (!method.trySetAccessible()) {
+            throw new AssertionError("crypto operation fixture must remain accessible to TLS integration tests");
+        }
+        try {
+            return method.invoke(receiver, arguments);
+        } catch (InvocationTargetException failure) {
+            Throwable cause = failure.getCause();
+            if (cause instanceof Exception exception) {
+                throw exception;
+            }
+            if (cause instanceof Error error) {
+                throw error;
+            }
+            throw new AssertionError("crypto operation fixture failed", cause);
+        }
     }
 
     private static void createKeyStore(Path path, String alias) throws Exception {

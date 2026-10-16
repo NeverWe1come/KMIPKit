@@ -886,6 +886,40 @@ pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
     })
 }
 
+/// Executes a batch with request options and returns its generic TTLV on a typed response error.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_options_and_error_ttlv_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    out_error_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        // Clear both output slots before validating any caller-provided options.
+        let _ = out_slot!(out_response);
+        let _ = out_slot!(out_error_response_ttlv);
+        if options.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the non-null options pointer must reference a readable v1 record.
+        let options = unsafe { &*options };
+        let request_options = match request_options_from_v1(options) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            Some(out_error_response_ttlv),
+            &request_options,
+        )
+    })
+}
+
 /// Makes the optional protocol-error response independent of the temporary client error.
 fn clone_error_response_ttlv(error: &ClientError) -> Result<Option<Structure>, i32> {
     error

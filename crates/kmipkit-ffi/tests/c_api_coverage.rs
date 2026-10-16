@@ -300,9 +300,12 @@ fn generated_public_c_consumer_traverses_retained_error_ttlv_over_mtls() {
         pki.client_identity().private_key_der(),
         pki.authority_certificate_der(),
     ]);
-    let listener = TcpListener::bind(("127.0.0.1", 0))
-        .expect("an ephemeral local TCP port is available");
-    let port = listener.local_addr().expect("listener has an address").port();
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has an address")
+        .port();
     let port = CString::new(port.to_string()).expect("port contains no NUL byte");
     let server_config = mtls_server_config(&pki);
     let peer = thread::spawn(move || {
@@ -318,7 +321,7 @@ fn generated_public_c_consumer_traverses_retained_error_ttlv_over_mtls() {
         let mut tls = StreamOwned::new(connection, stream);
         let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
         assert!(request.starts_with(&[0x42, 0x00, 0x78]));
-        tls.write_all(&mismatched_discover_versions_response())
+        tls.write_all(&mac_response_missing_unique_identifier())
             .expect("the malformed typed response is written");
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -345,9 +348,8 @@ fn generated_public_c_consumer_traverses_retained_error_ttlv_over_mtls() {
     let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot for this call.
-    let status = unsafe {
-        kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits)
-    };
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
     assert_eq!(status, 0, "configured codec limits must succeed");
     assert!(!limits.is_null(), "configured codec limits return a handle");
     // SAFETY: argv strings and the limits handle remain live for this synchronous C call.
@@ -361,7 +363,10 @@ fn generated_public_c_consumer_traverses_retained_error_ttlv_over_mtls() {
     // SAFETY: the test created this handle and the C consumer only borrowed it.
     unsafe { kmipkit_codec_limits_release(limits) };
 
-    assert_eq!(result, 0, "public C consumer must inspect and release retained TTLV");
+    assert_eq!(
+        result, 0,
+        "public C consumer must inspect and release retained TTLV"
+    );
     peer.join().expect("the loopback TLS peer completes");
 }
 
@@ -609,6 +614,8 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
+// This TLS batch returns 14 ordered items: the original eight, five crypto
+// operations, and Certify for the generated C consumer to inspect.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -619,7 +626,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 8),
+            integer(0x0042_000D, 14),
         ],
     );
     let response_payload = structure(
@@ -630,8 +637,108 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         0x0042_007B,
         std::iter::once(header)
             .chain(discover_version_response_items(response_payload))
-            .chain(creation_response_items()),
+            .chain(creation_response_items())
+            .chain(cryptographic_response_items()),
     )
+}
+
+fn cryptographic_response_items() -> [Vec<u8>; 6] {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 39),
+                ttlv_item(0x0042_0093, 0x08, b"hash-0"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_00C2, 0x08, b"hash-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 35),
+                ttlv_item(0x0042_0093, 0x08, b"mac-00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        ttlv_item(0x0042_00C4, 0x08, b"mac-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 36),
+                ttlv_item(0x0042_0093, 0x08, b"macvfy"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        enumeration(0x0042_0128, 1),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 33),
+                ttlv_item(0x0042_0093, 0x08, b"sign00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        ttlv_item(0x0042_00C7, 0x08, b"signature-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 34),
+                ttlv_item(0x0042_0093, 0x08, b"sigvfy"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        enumeration(0x0042_0128, 1),
+                        ttlv_item(0x0042_00C2, 0x08, b"recovered-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 6),
+                ttlv_item(0x0042_0093, 0x08, b"certif"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [ttlv_item(0x0042_0094, 0x07, b"issued-certificate")],
+                ),
+            ],
+        ),
+    ]
 }
 
 fn discover_version_response_items(response_payload: Vec<u8>) -> [Vec<u8>; 4] {
@@ -763,6 +870,38 @@ fn mismatched_discover_versions_response() -> Vec<u8> {
             ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
         ],
     )
+}
+
+fn mac_response_missing_unique_identifier() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = structure(
+        0x0042_007C,
+        [
+            ttlv_item(0x0042_00C4, 0x08, &[0x5a]),
+            ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 35),
+            ttlv_item(0x0042_0093, 0x08, b"item-0"),
+            enumeration(0x0042_007F, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007B, [header, item])
 }
 
 fn structure(tag: u32, children: impl IntoIterator<Item = Vec<u8>>) -> Vec<u8> {

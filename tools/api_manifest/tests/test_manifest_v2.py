@@ -882,7 +882,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if exclusion["packageId"] in rust_packages
         ]
         self.assertEqual(len(declarations), 9510)
-        self.assertEqual(len(exclusions), 22)
+        self.assertEqual(len(exclusions), 24)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -1134,7 +1134,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 22)
+        self.assertEqual(len(rust_exclusions), 23)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -1146,7 +1146,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 item["approvalSource"]["path"]
                 for item in rust_exclusions
             },
-            {"specs/029-opaque-object-context/spec.md"},
+            {
+                "docs/adr/0003-layered-cargo-workspace.md",
+                "specs/029-opaque-object-context/spec.md",
+            },
         )
 
         public_exports = {
@@ -1240,13 +1243,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 150)
+        self.assertEqual(len(ttlv_declarations), 234)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            126,
+            210,
         )
         self.assertEqual(
             sum(
@@ -1258,7 +1261,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 521)
+        self.assertEqual(len(declarations), 522)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1282,7 +1285,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )
         ]
 
-        self.assertEqual(len(close_declarations), 19)
+        self.assertEqual(len(close_declarations), 16)
         self.assertTrue(
             all(declaration["declarationState"] == "blocked" for declaration in close_declarations)
         )
@@ -1292,6 +1295,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 == ["KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021"]
                 for declaration in close_declarations
             )
+        )
+        generic_ttlv_closes = [
+            declaration
+            for declaration in declarations
+            if declaration["exportName"].endswith(".close")
+            and declaration["capabilityId"] == "generic_ttlv_model"
+        ]
+        self.assertEqual(
+            {declaration["exportName"] for declaration in generic_ttlv_closes},
+            {
+                "org.kmipkit.ttlv.Tag.close",
+                "org.kmipkit.ttlv.TtlvItemView.close",
+                "org.kmipkit.ttlv.TtlvStructure.close",
+                "org.kmipkit.ttlv.TtlvStructureView.close",
+                "org.kmipkit.ttlv.TtlvValueView.close",
+            },
+        )
+        self.assertTrue(
+            all(declaration["declarationState"] == "declared" for declaration in generic_ttlv_closes)
         )
 
     def test_checked_in_manifest_accounts_for_every_ready_c_header_declaration(self) -> None:
@@ -1559,7 +1581,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 493)
+        self.assertEqual(len(declarations), 494)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")

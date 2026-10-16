@@ -40,11 +40,8 @@ T076_SYMBOLS = {
     "kmipkit_transport_config_create_v1",
     "kmipkit_transport_config_release",
     "kmipkit_transport_config_t",
-    "kmipkit_client_execute_with_error_ttlv_v1",
 }
-T076_BLOCKED = {
-    "kmipkit_client_execute_with_error_ttlv_v1",
-}
+T076_BLOCKED: set[str] = set()
 T076_EXCLUDED = {
     "kmipkit_client_batch_item_response_metadata_v1",
     "kmipkit_client_batch_item_response_release",
@@ -253,7 +250,7 @@ class T076ClientMappingTests(unittest.TestCase):
             if row.get("declarationId", "").startswith("T076:")
         ]
 
-    def test_all_28_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
+    def test_all_27_t076_exports_are_mapped_or_remain_exactly_blocked(self) -> None:
         c_rows = [
             row
             for row in self.declarations
@@ -273,7 +270,7 @@ class T076ClientMappingTests(unittest.TestCase):
             T076_SYMBOLS,
             {row["exportName"] for row in c_rows} | {row["exportName"] for row in exclusions},
         )
-        self.assertEqual(28, len(c_rows) + len(exclusions))
+        self.assertEqual(27, len(c_rows) + len(exclusions))
 
         ready = {
             row["exportName"]
@@ -288,13 +285,6 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertEqual(T076_READY, ready)
         self.assertEqual(T076_BLOCKED, blocked)
         self.assertEqual(T076_EXCLUDED, {row["exportName"] for row in exclusions})
-        blocked_ttlv = next(
-            row
-            for row in c_rows
-            if row["exportName"] == "kmipkit_client_execute_with_error_ttlv_v1"
-        )
-        self.assertIn("no approved Java/Python mapping contract", blocked_ttlv["blockedReason"])
-
         for row in c_rows:
             if row["declarationState"] == "blocked":
                 self.assertTrue(row["blockedReason"])
@@ -1266,21 +1256,15 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
                 self.assertIn("T024", exclusion["evidence"])
 
-        blocked_wrappers = {
-            "kmipkit.ttlv.TtlvItemView",
-            "kmipkit.ttlv.TtlvValueView",
-        }
         for wrapper in wrapper_types:
             with self.subTest(wrapper=wrapper):
                 declaration = declarations[wrapper]
                 self.assertEqual("type", declaration["kind"])
-                expected_state = "blocked" if wrapper in blocked_wrappers else "declared"
-                self.assertEqual(expected_state, declaration["declarationState"])
-                if expected_state == "declared":
-                    self.assertEqual(
-                        {"rust", "c", "java", "python"},
-                        set(declaration["languageMappings"]),
-                    )
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(declaration["languageMappings"]),
+                )
 
         factories = {
             "kmipkit.client.Batch.create",
@@ -1298,6 +1282,7 @@ class T076ClientMappingTests(unittest.TestCase):
             "kmipkit.ttlv.raw_tag_from_raw",
             "kmipkit.ttlv.raw_tag_try_checked",
             "kmipkit.ttlv.ttlv_structure_create",
+            "kmipkit.ttlv.ttlv_structure_view",
             "kmipkit.ttlv.ttlv_value_integer",
         }
         for path in factories:
@@ -1308,10 +1293,7 @@ class T076ClientMappingTests(unittest.TestCase):
                     {"rust", "c", "java", "python"},
                     set(declaration["languageMappings"]),
                 )
-        for path in (
-            "kmipkit.ttlv.ttlv_item_create",
-            "kmipkit.ttlv.ttlv_structure_view",
-        ):
+        for path in ("kmipkit.ttlv.ttlv_item_create",):
             with self.subTest(blocked_factory=path):
                 self.assertEqual("blocked", declarations[path]["declarationState"])
 
@@ -2103,13 +2085,6 @@ class T076ClientMappingTests(unittest.TestCase):
         header = generate.render_c_header(self.manifest)
         self.assertIn("kmipkit_request_options_v1_t", header)
         self.assertIn("kmipkit_client_execute_with_options_v1", header)
-        generic_ttlv = next(
-            row
-            for row in self.manifest["publicDeclarations"]
-            if row["exportName"] == "kmipkit_client_execute_with_error_ttlv_v1"
-        )
-        self.assertEqual("blocked", generic_ttlv["declarationState"])
-        self.assertNotIn("kmipkit_client_execute_with_error_ttlv_v1(", header)
 
     def test_request_options_type_maps_all_four_timeout_overrides(self) -> None:
         request_options = next(

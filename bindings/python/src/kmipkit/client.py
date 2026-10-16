@@ -993,6 +993,7 @@ class Client(_ClientHandle):
         if not isinstance(batch, Batch) or not isinstance(limits, ttlv.CodecLimits):
             errors.raise_for_status(4)
         response_output = ffi.new("kmipkit_client_batch_response_t **")
+        error_response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
         with _NATIVE_CALL_LOCK:
             batch._acquire_ownership_lock()
             try:
@@ -1004,18 +1005,19 @@ class Client(_ClientHandle):
                 batch_slot = ffi.new("kmipkit_client_batch_t **", original)
                 original, owner = batch._take()
                 try:
-                    status = lib.kmipkit_client_execute(
+                    status = lib.kmipkit_client_execute_with_error_ttlv_v1(
                         client_pointer,
                         batch_slot,
                         limits_pointer,
                         response_output,
+                        error_response_ttlv_output,
                     )
                 except (OverflowError, TypeError, ValueError):
                     batch._restore(original, owner)
                     raise errors.InvalidInputError() from None
                 if batch_slot[0] != ffi.NULL:
                     batch._restore(original, owner)
-                _raise_client_status(status)
+                _raise_client_status(status, error_response_ttlv_output[0])
             finally:
                 batch._release_ownership_lock()
             if response_output[0] == ffi.NULL:
@@ -1037,6 +1039,7 @@ class Client(_ClientHandle):
             errors.raise_for_status(4)
         request_options = _request_options_record(options)
         response_output = ffi.new("kmipkit_client_batch_response_t **")
+        error_response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
         with _NATIVE_CALL_LOCK:
             batch._acquire_ownership_lock()
             try:
@@ -1048,19 +1051,20 @@ class Client(_ClientHandle):
                 batch_slot = ffi.new("kmipkit_client_batch_t **", original)
                 original, owner = batch._take()
                 try:
-                    status = lib.kmipkit_client_execute_with_options_v1(
+                    status = lib.kmipkit_client_execute_with_options_and_error_ttlv_v1(
                         client_pointer,
                         batch_slot,
                         limits_pointer,
                         request_options,
                         response_output,
+                        error_response_ttlv_output,
                     )
                 except (OverflowError, TypeError, ValueError):
                     batch._restore(original, owner)
                     raise errors.InvalidInputError() from None
                 if batch_slot[0] != ffi.NULL:
                     batch._restore(original, owner)
-                _raise_client_status(status)
+                _raise_client_status(status, error_response_ttlv_output[0])
             finally:
                 batch._release_ownership_lock()
             if response_output[0] == ffi.NULL:
@@ -1700,16 +1704,37 @@ def _read_last_error() -> tuple[int, int, int, int]:
     return int(status[0]), int(category[0]), int(cause[0]), int(delivery[0])
 
 
-def _raise_client_status(status: int) -> None:
+def _raise_client_status(status: int, error_response_ttlv: Any = ffi.NULL) -> None:
     if status == 0:
+        if error_response_ttlv != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(error_response_ttlv)
+            errors.raise_for_status(7)
         return
     _status, category, cause, delivery = _read_last_error()
-    raise errors.ClientExecutionError(
-        status=status,
-        category=_known_enum(errors.ClientErrorCategory, category),
-        cause=_known_enum(errors.ClientErrorCause, cause),
-        delivery=_known_enum(errors.DeliveryState, delivery),
-    )
+    response_ttlv = None
+    if error_response_ttlv != ffi.NULL:
+        if category == int(errors.ClientErrorCategory.PROTOCOL):
+            address = int(ffi.cast("uintptr_t", error_response_ttlv))
+            try:
+                response_ttlv = ttlv._structure_from_native_address(address)
+            except Exception:
+                lib.kmipkit_ttlv_structure_release(error_response_ttlv)
+                errors.raise_for_status(7)
+        else:
+            lib.kmipkit_ttlv_structure_release(error_response_ttlv)
+    try:
+        failure = errors.ClientExecutionError(
+            status=status,
+            category=_known_enum(errors.ClientErrorCategory, category),
+            cause=_known_enum(errors.ClientErrorCause, cause),
+            delivery=_known_enum(errors.DeliveryState, delivery),
+            response_ttlv=response_ttlv,
+        )
+    except Exception:
+        if response_ttlv is not None:
+            response_ttlv.close()
+        raise
+    raise failure
 
 
 def _known_enum(enum_type: type[IntEnum], value: int) -> IntEnum | int:

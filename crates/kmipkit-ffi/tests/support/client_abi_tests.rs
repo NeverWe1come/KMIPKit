@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 
 use base64::Engine;
-use kmipkit_client::{ClientBatchResponse, ClientError, ClientErrorCategory};
+use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateSplitKeyRequest, LocateRequest,
     ObjectType, OperationData, SecretBytes, SplitKeyMethod, UniqueIdentifier,
@@ -1313,6 +1313,74 @@ fn execute_single_abi_response(
     result
 }
 
+fn client_with_one_response(response: Vec<u8>) -> (Client, thread::JoinHandle<()>) {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let listener = TcpListener::bind(("127.0.0.1", 0)).expect("loopback binds");
+    let port = listener
+        .local_addr()
+        .expect("loopback has an address")
+        .port();
+    listener
+        .set_nonblocking(true)
+        .expect("test listener accepts with a bounded wait");
+    let server_config = tls13_mtls_server_config(&pki);
+    let peer = thread::spawn(move || {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        let (stream, _) = loop {
+            match listener.accept() {
+                Ok(connection) => break connection,
+                Err(error)
+                    if error.kind() == io::ErrorKind::WouldBlock
+                        && std::time::Instant::now() < deadline =>
+                {
+                    thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => return,
+                Err(error) => panic!("accepting the client connection: {error}"),
+            }
+        };
+        stream
+            .set_nonblocking(false)
+            .expect("accepted test stream uses blocking reads");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("peer read timeout is set");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("peer write timeout is set");
+        let connection = ServerConnection::new(server_config).expect("TLS 1.3 connection builds");
+        let mut tls = StreamOwned::new(connection, stream);
+        receive_ttlv_frame(&mut tls).expect("the typed request frame is bounded");
+        tls.write_all(&response)
+            .expect("the scripted response is written");
+        tls.flush().expect("the response is flushed");
+    });
+
+    let identity = pki.client_identity();
+    let certificates = identity
+        .certificate_chain_der()
+        .into_iter()
+        .map(<[u8]>::to_vec)
+        .collect();
+    let transport = TransportConfig::builder(Endpoint::raw_tls("127.0.0.1", port))
+        .client_identity(ClientIdentity::new(
+            CertificateInput::from_der(certificates),
+            PrivateKeyInput::from_der(identity.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .tls_server_name("server.kmipkit.test")
+        .timeouts(TimeoutPolicy::default())
+        .build()
+        .expect("the validated local transport configuration builds");
+    let registry = client_extension::client_extension_registry(Vec::new(), extension::defaults())
+        .expect("the empty approved extension registry is valid");
+    let configuration = client_extension::ClientConfiguration::new(registry);
+    let client = Client::new(configuration, transport).expect("client construction succeeds");
+    (client, peer)
+}
+
 fn empty_unique_identifier_output_v1() -> kmipkit_unique_identifier_v1_t {
     kmipkit_unique_identifier_v1_t {
         struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
@@ -1597,6 +1665,12 @@ fn assert_creation_result_getters_return_status(
         expected_status
     );
 
+    let mut certify_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_certify(item, &mut present, &mut certify_identifier),
+        expected_status
+    );
+
     let mut private_identifier = empty_unique_identifier_output_v1();
     let mut public_identifier = empty_unique_identifier_output_v1();
     assert_eq!(
@@ -1743,6 +1817,111 @@ fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
 }
 
 #[test]
+fn ffi_certify_getter_reports_absent_result_and_rejects_invalid_output_record() {
+    let response = Arc::new(
+        create_key_pair_success_response()
+            .expect("the valid successful typed response is associated with its request"),
+    );
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &mut item),
+        SUCCESS
+    );
+
+    let mut present = 1;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_certify(item, &mut present, &mut identifier),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+
+    identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_certify(item, &mut present, &mut identifier),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut first_present = 0;
+    let mut first_span = byte_span(&[]);
+    let mut correlation_present = 0;
+    let mut correlation = byte_span(&[]);
+    identifier = empty_unique_identifier_output_v1();
+    identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_mac(
+            item,
+            &mut present,
+            &mut identifier,
+            &mut first_present,
+            &mut first_span,
+            &mut correlation_present,
+            &mut correlation,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut validity_present = 0;
+    let mut validity = 0;
+    identifier = empty_unique_identifier_output_v1();
+    identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_mac_verify(
+            item,
+            &mut present,
+            &mut identifier,
+            &mut validity_present,
+            &mut validity,
+            &mut correlation_present,
+            &mut correlation,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    identifier = empty_unique_identifier_output_v1();
+    identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_sign(
+            item,
+            &mut present,
+            &mut identifier,
+            &mut first_present,
+            &mut first_span,
+            &mut correlation_present,
+            &mut correlation,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut recovered_present = 0;
+    let mut recovered = byte_span(&[]);
+    identifier = empty_unique_identifier_output_v1();
+    identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_signature_verify(
+            item,
+            &mut present,
+            &mut identifier,
+            &mut validity_present,
+            &mut validity,
+            &mut recovered_present,
+            &mut recovered,
+            &mut correlation_present,
+            &mut correlation,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_client_batch_response_release(response_handle);
+}
+
+#[test]
 fn ffi_creation_requests_reject_missing_attributes_and_malformed_structure_handles() {
     let mut create_item = ptr::null_mut();
     assert_eq!(
@@ -1788,6 +1967,42 @@ fn ffi_creation_requests_reject_missing_attributes_and_malformed_structure_handl
         Err(ERROR_INVALID_INPUT)
     ));
     release(malformed_structure, Kind::Structure);
+}
+
+#[test]
+fn ffi_create_key_pair_preserves_each_supplied_attribute_set() {
+    let common = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let private_key = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let public_key = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_create_key_pair(
+            common,
+            private_key,
+            public_key,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        )
+    );
+    let stored = reference_handle(item, Kind::BatchItem).expect("Create Key Pair item is live");
+    let HandleValue::BatchItem(stored) = &stored.value else {
+        panic!("Create Key Pair item contains a request");
+    };
+    let ClientRequest::CreateKeyPair(request) = stored.request() else {
+        panic!("Create Key Pair item contains the matching operation");
+    };
+    assert!(request.has_common_attributes());
+    assert!(request.has_private_key_attributes());
+    assert!(request.has_public_key_attributes());
+
+    release(item, Kind::BatchItem);
+    release(common, Kind::Structure);
+    release(private_key, Kind::Structure);
+    release(public_key, Kind::Structure);
 }
 
 #[test]
@@ -1865,6 +2080,63 @@ fn ffi_pending_metadata_preserves_exact_binary_identifier_and_correlation() {
         },
         expected_correlation
     );
+    kmipkit_client_batch_item_response_release(item_handle);
+    kmipkit_client_batch_response_release(response_handle);
+}
+
+#[test]
+fn ffi_unique_batch_item_id_is_absent_when_response_omits_the_optional_identifier() {
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            ttlv_structure(
+                0x0042_0069,
+                [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+            ),
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let failed_item = ttlv_structure(
+        0x0042_000f,
+        [
+            ttlv_enumeration(0x0042_005c, 30),
+            ttlv_enumeration(0x0042_007f, 1),
+            ttlv_enumeration(0x0042_007e, 6),
+        ],
+    );
+    let (mut client, peer) =
+        client_with_one_response(ttlv_structure(0x0042_007b, [header, failed_item]));
+    let batch = ClientBatch::from_items([ClientBatchItem::discover_versions()]);
+    let response = client.execute(batch, &CodecLimits::defaults());
+    peer.join()
+        .expect("the local TLS peer completes the KMIP exchange");
+    let response = response.expect("a failed item remains a typed batch response");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item_handle = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &mut item_handle),
+        SUCCESS
+    );
+
+    let sentinel = [0x41];
+    let mut present = 1;
+    let mut span = byte_span(&sentinel);
+    assert_eq!(
+        kmipkit_client_batch_item_response_unique_batch_item_id(
+            item_handle,
+            &mut present,
+            &mut span,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(span.data.is_null());
+    assert_eq!(span.length, 0);
+
     kmipkit_client_batch_item_response_release(item_handle);
     kmipkit_client_batch_response_release(response_handle);
 }
@@ -2349,61 +2621,72 @@ fn versioned_transport_config_rejects_invalid_headers_limits_and_timeout_fields(
     );
 
     config.abi_version = 2;
-    assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_INVALID_INPUT)
-    );
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
     config.abi_version = 1;
 
     config.struct_size -= 1;
-    assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_INVALID_INPUT)
-    );
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
     config.struct_size += 1;
 
     config.reserved = 1;
-    assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_INVALID_INPUT)
-    );
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
     config.reserved = 0;
 
     config.flags = u32::MAX;
-    assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_INVALID_INPUT)
-    );
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
     config.flags = 0;
 
     config.connect_timeout = timeout(TRANSPORT_TIMEOUT_BOUNDED, 0, 1_000_000_000);
-    assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_INVALID_INPUT)
-    );
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
     config.connect_timeout = timeout(0, 0, 0);
 
     config.client_certificate_count = MAX_TRANSPORT_CONFIG_ITEMS + 1;
-    assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_RESOURCE_LIMIT)
-    );
+    assert_config_rejected(&config, ERROR_RESOURCE_LIMIT);
     config.client_certificate_count =
         u64::try_from(certificates.len()).expect("test certificate count fits the ABI");
 
     config.endpoint.data = ptr::null();
     config.endpoint.length = MAX_TRANSPORT_TEXT_BYTES + 1;
-    assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_RESOURCE_LIMIT)
-    );
+    assert_config_rejected(&config, ERROR_RESOURCE_LIMIT);
     config.endpoint = byte_span(b"127.0.0.1");
 
     config.max_request_bytes = 0;
+    assert_config_rejected(&config, ERROR_INVALID_INPUT);
+
+    config.max_request_bytes = 1_048_576;
+    config.client_certificates = ptr::null();
+    config.client_certificate_count = 0;
+    let mut output = std::ptr::NonNull::<kmipkit_transport_config_t>::dangling().as_ptr();
     assert_eq!(
-        transport_config_from_v1(&config).err(),
-        Some(ERROR_INVALID_INPUT)
+        kmipkit_transport_config_create_v1(&config, &mut output),
+        ERROR_INVALID_INPUT
     );
+    assert!(output.is_null());
+
+    config.client_certificates = certificates.as_ptr();
+    config.client_certificate_count =
+        u64::try_from(certificates.len()).expect("test certificate count fits the ABI");
+    let invalid_root = input(INPUT_MEMORY, 99, pki.authority_certificate_der());
+    config.trust_certificates = &raw const invalid_root;
+    let mut output = std::ptr::NonNull::<kmipkit_transport_config_t>::dangling().as_ptr();
+    assert_eq!(
+        kmipkit_transport_config_create_v1(&config, &mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert!(output.is_null());
+
+    config.trust_certificates = ptr::null();
+    config.trust_certificate_count = 0;
+    let mut output = std::ptr::NonNull::<kmipkit_transport_config_t>::dangling().as_ptr();
+    assert_eq!(
+        kmipkit_transport_config_create_v1(&config, &mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert!(output.is_null());
+}
+
+fn assert_config_rejected(config: &kmipkit_transport_config_v1_t, expected: i32) {
+    assert_eq!(transport_config_from_v1(config).err(), Some(expected));
 }
 
 #[test]
@@ -2747,8 +3030,8 @@ fn ffi_execute_with_error_ttlv_rejects_null_slots_and_wrong_handle_kinds() {
 
 #[test]
 fn ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validation() {
-    let mut response = 1_usize as *mut kmipkit_client_batch_response_t;
-    let mut error_response = 1_usize as *mut kmipkit_ttlv_structure_t;
+    let mut response = ptr::dangling_mut::<kmipkit_client_batch_response_t>();
+    let mut error_response = ptr::dangling_mut::<kmipkit_ttlv_structure_t>();
     assert_eq!(
         kmipkit_client_execute_with_options_and_error_ttlv_v1(
             ptr::null_mut(),
@@ -2762,6 +3045,124 @@ fn ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validat
     );
     assert!(response.is_null());
     assert!(error_response.is_null());
+}
+
+#[test]
+fn ffi_execute_with_options_and_error_ttlv_does_not_retain_non_uid_error_response() {
+    const SENTINEL: &[u8] = b"KMIPKit-response-sentinel";
+    let version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006A, 2), ttlv_integer(0x0042_006B, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007A,
+        [
+            version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = ttlv_structure(
+        0x0042_007C,
+        [
+            ttlv_item(0x0042_0069, 0x08, SENTINEL),
+            ttlv_item(0x0054_0001, 0x08, SENTINEL),
+        ],
+    );
+    let response_item = ttlv_structure(
+        0x0042_000F,
+        [
+            ttlv_enumeration(0x0042_005C, 30),
+            ttlv_enumeration(0x0042_007F, 0),
+            payload,
+        ],
+    );
+    let response_message = ttlv_structure(0x0042_007B, [header, response_item]);
+    let (client, peer) = client_with_one_response(response_message);
+    let client = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(std::sync::Mutex::new(client))),
+    );
+    let limits = default_codec_limits_handle();
+    let mut batch = ptr::null_mut();
+    assert_eq!(kmipkit_client_batch_create(&mut batch), SUCCESS);
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_discover_versions(&mut item),
+        SUCCESS
+    );
+    assert_eq!(kmipkit_client_batch_add_item(batch, &mut item), SUCCESS);
+    let options = request_options(
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+    );
+    let mut response = ptr::null_mut();
+    let mut error_response = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_execute_with_options_and_error_ttlv_v1(
+            client,
+            &mut batch,
+            limits,
+            &options,
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_PROTOCOL
+    );
+    assert!(batch.is_null());
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_release(client);
+    kmipkit_codec_limits_release(limits);
+    peer.join().expect("the controlled TLS peer completes");
+}
+
+#[test]
+fn batch_add_item_rejects_null_slots_and_released_items_without_consuming_the_batch() {
+    let mut batch = ptr::null_mut();
+    assert_eq!(kmipkit_client_batch_create(&mut batch), SUCCESS);
+    assert!(!batch.is_null());
+
+    assert_eq!(
+        kmipkit_client_batch_add_item(batch, ptr::null_mut()),
+        ERROR_INVALID_INPUT
+    );
+    let mut empty_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_add_item(batch, &mut empty_item),
+        ERROR_INVALID_INPUT
+    );
+    assert!(empty_item.is_null());
+
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_discover_versions(&mut item),
+        SUCCESS
+    );
+    let released_item = item;
+    kmipkit_client_batch_item_release(item);
+    assert_eq!(
+        kmipkit_client_batch_add_item(batch, &mut item),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(item, released_item);
+
+    let mut valid_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_discover_versions(&mut valid_item),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_client_batch_add_item(batch, &mut valid_item),
+        SUCCESS
+    );
+    assert!(valid_item.is_null());
+    kmipkit_client_batch_release(batch);
 }
 
 #[test]
