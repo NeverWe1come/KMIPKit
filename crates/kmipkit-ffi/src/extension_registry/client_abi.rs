@@ -1336,6 +1336,332 @@ pub extern "C" fn kmipkit_client_batch_item_response_pending_correlation_value(
     })
 }
 
+fn set_borrowed_span(
+    present: &mut u8,
+    output: &mut crate::kmipkit_byte_span_v1_t,
+    bytes: Option<&[u8]>,
+) -> FfiResult<()> {
+    if let Some(bytes) = bytes {
+        *present = 1;
+        *output = crate::kmipkit_byte_span_v1_t {
+            data: if bytes.is_empty() {
+                ptr::null()
+            } else {
+                bytes.as_ptr()
+            },
+            length: u64::try_from(bytes.len()).map_err(|_| ERROR_INTERNAL)?,
+        };
+    } else {
+        *present = 0;
+        *output = crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+    }
+    Ok(())
+}
+
+/// Reads the typed Hash result fields. Returned byte spans are borrowed from `item`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_hash(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_data_present: *mut u8,
+    out_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let data_present = scalar_out!(out_data_present);
+        let data = scalar_out!(out_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        try_ffi!(set_borrowed_span(data_present, data, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().hash_response() {
+            *present = 1;
+            if let Some(bytes) = value.data() {
+                let status =
+                    bytes.with_bytes(|bytes| set_borrowed_span(data_present, data, Some(bytes)));
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed MAC result fields. Returned byte spans are borrowed from `item`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_mac(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_mac_data_present: *mut u8,
+    out_mac_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let mac_present = scalar_out!(out_mac_data_present);
+        let mac_data = scalar_out!(out_mac_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        try_ffi!(set_borrowed_span(mac_present, mac_data, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().mac_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(bytes) = value.mac_data() {
+                let status =
+                    bytes.with_bytes(|bytes| set_borrowed_span(mac_present, mac_data, Some(bytes)));
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed MAC Verify result fields and preserves unknown Validity Indicator values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_mac_verify(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_validity_present: *mut u8,
+    out_validity_indicator: *mut u32,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let validity_present = scalar_out!(out_validity_present);
+        let validity = scalar_out!(out_validity_indicator);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        *validity_present = 0;
+        *validity = 0;
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().mac_verify_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(indicator) = value.validity_indicator() {
+                *validity_present = 1;
+                *validity = indicator.raw();
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed Sign result fields. Returned byte spans are borrowed from `item`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_sign(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_signature_data_present: *mut u8,
+    out_signature_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let signature_present = scalar_out!(out_signature_data_present);
+        let signature_data = scalar_out!(out_signature_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        try_ffi!(set_borrowed_span(signature_present, signature_data, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().sign_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(bytes) = value.signature_data() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(signature_present, signature_data, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed Signature Verify result and preserves unknown indicator values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_validity_present: *mut u8,
+    out_validity_indicator: *mut u32,
+    out_recovered_data_present: *mut u8,
+    out_recovered_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let validity_present = scalar_out!(out_validity_present);
+        let validity = scalar_out!(out_validity_indicator);
+        let recovered_present = scalar_out!(out_recovered_data_present);
+        let recovered = scalar_out!(out_recovered_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        *validity_present = 0;
+        *validity = 0;
+        try_ffi!(set_borrowed_span(recovered_present, recovered, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().signature_verify_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(indicator) = value.validity_indicator() {
+                *validity_present = 1;
+                *validity = indicator.raw();
+            }
+            if let Some(bytes) = value.recovered_data() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(recovered_present, recovered, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
 /// Copies the typed supported-version list from a successful Discover Versions result.
 ///
 /// Call with `out_versions == NULL` and `capacity == 0` to query presence and

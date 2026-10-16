@@ -843,6 +843,11 @@ class BatchItemResult:
     split_key_unique_identifiers: tuple[extensions.UniqueIdentifier, ...] | None = field(
         default=None, repr=False
     )
+    hash_response: HashResponse | None = field(default=None, repr=False)
+    mac_response: MacResponse | None = field(default=None, repr=False)
+    mac_verify_response: MacVerifyResponse | None = field(default=None, repr=False)
+    sign_response: SignResponse | None = field(default=None, repr=False)
+    signature_verify_response: SignatureVerifyResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -854,6 +859,51 @@ class BatchItemResult:
             self.result_reason,
             self.result_message,
         )
+
+
+@dataclass(frozen=True, slots=True)
+class HashResponse:
+    """Typed Hash response fields copied from the matching successful batch item."""
+
+    data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class MacResponse:
+    """Typed MAC response fields; byte payloads are omitted from repr output."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    mac_data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class MacVerifyResponse:
+    """Typed MAC Verify result with a forward-compatible raw Validity Indicator."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    validity_indicator_raw: int | None
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class SignResponse:
+    """Typed Sign response fields; signature bytes are omitted from repr output."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    signature_data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class SignatureVerifyResponse:
+    """Typed Signature Verify result preserving unknown raw Validity Indicator values."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    validity_indicator_raw: int | None
+    recovered_data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
 
 
 class BatchResult(_ClientHandle):
@@ -1076,6 +1126,11 @@ def _batch_result(handle: Any) -> BatchResult:
                 create_object_type, create_identifier = _create_response(item)
                 private_identifier, public_identifier = _create_key_pair_response(item)
                 split_identifiers = _create_split_key_response(item)
+                cryptographic_responses = (None, None, None, None, None)
+                if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
+                    cryptographic_responses = _cryptographic_responses(
+                        item, int(metadata.operation)
+                    )
                 items.append(
                     BatchItemResult(
                         outcome,
@@ -1091,6 +1146,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         private_identifier,
                         public_identifier,
                         split_identifiers,
+                        *cryptographic_responses,
                     )
                 )
             finally:
@@ -1228,6 +1284,195 @@ def _create_split_key_response(
         )
         identifiers.append(_read_unique_identifier(output))
     return tuple(identifiers)
+
+
+def _optional_output_span(present: Any, value: Any) -> bytes | None:
+    if present[0] == 0:
+        if value.data != ffi.NULL or value.length != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1 or value.length > _MAX_INPUT_BYTES:
+        errors.raise_for_status(4)
+    if value.length and value.data == ffi.NULL:
+        errors.raise_for_status(4)
+    return bytes(ffi.buffer(value.data, int(value.length))) if value.length else b""
+
+
+def _optional_output_identifier(value: Any) -> extensions.UniqueIdentifier | None:
+    if value.kind == 0:
+        if value.text_data != ffi.NULL or value.text_length != 0:
+            errors.raise_for_status(4)
+        return None
+    return _read_unique_identifier(value)
+
+
+def _hash_response(item: _ClientBatchItemResponse) -> HashResponse | None:
+    present = ffi.new("uint8_t *")
+    data_present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_hash(
+            item._pointer(), present, data_present, data, correlation_present, correlation
+        )
+    )
+    if present[0] == 0:
+        if data_present[0] != 0 or correlation_present[0] != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(data_present, data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return HashResponse(
+        _optional_output_span(data_present, data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _mac_response(item: _ClientBatchItemResponse) -> MacResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    mac_present = ffi.new("uint8_t *")
+    mac_data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_mac(
+            item._pointer(), present, identifier, mac_present, mac_data,
+            correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if mac_present[0] != 0 or correlation_present[0] != 0 or identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(mac_present, mac_data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return MacResponse(
+        _optional_output_identifier(identifier),
+        _optional_output_span(mac_present, mac_data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _mac_verify_response(item: _ClientBatchItemResponse) -> MacVerifyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    validity_present = ffi.new("uint8_t *")
+    validity = ffi.new("uint32_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_mac_verify(
+            item._pointer(), present, identifier, validity_present, validity,
+            correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if validity_present[0] != 0 or validity[0] != 0 or correlation_present[0] != 0 or identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1 or validity_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    return MacVerifyResponse(
+        _optional_output_identifier(identifier),
+        int(validity[0]) if validity_present[0] == 1 else None,
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _sign_response(item: _ClientBatchItemResponse) -> SignResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    signature_present = ffi.new("uint8_t *")
+    signature_data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_sign(
+            item._pointer(), present, identifier, signature_present, signature_data,
+            correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if signature_present[0] != 0 or correlation_present[0] != 0 or identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(signature_present, signature_data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return SignResponse(
+        _optional_output_identifier(identifier),
+        _optional_output_span(signature_present, signature_data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _signature_verify_response(
+    item: _ClientBatchItemResponse,
+) -> SignatureVerifyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    validity_present = ffi.new("uint8_t *")
+    validity = ffi.new("uint32_t *")
+    recovered_present = ffi.new("uint8_t *")
+    recovered_data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_signature_verify(
+            item._pointer(), present, identifier, validity_present, validity,
+            recovered_present, recovered_data, correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if (
+            validity_present[0] != 0
+            or validity[0] != 0
+            or recovered_present[0] != 0
+            or correlation_present[0] != 0
+            or identifier.kind != 0
+        ):
+            errors.raise_for_status(4)
+        _optional_output_span(recovered_present, recovered_data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1 or validity_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    return SignatureVerifyResponse(
+        _optional_output_identifier(identifier),
+        int(validity[0]) if validity_present[0] == 1 else None,
+        _optional_output_span(recovered_present, recovered_data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _cryptographic_responses(
+    item: _ClientBatchItemResponse, operation: int
+) -> tuple[
+    HashResponse | None,
+    MacResponse | None,
+    MacVerifyResponse | None,
+    SignResponse | None,
+    SignatureVerifyResponse | None,
+]:
+    if operation == 0x27:
+        return _hash_response(item), None, None, None, None
+    if operation == 0x23:
+        return None, _mac_response(item), None, None, None
+    if operation == 0x24:
+        return None, None, _mac_verify_response(item), None, None
+    if operation == 0x21:
+        return None, None, None, _sign_response(item), None
+    if operation == 0x22:
+        return None, None, None, None, _signature_verify_response(item)
+    return None, None, None, None, None
 
 
 def _discover_versions_supported_versions(
@@ -1471,7 +1716,12 @@ __all__ = [
     "CredentialEncoding",
     "Endpoint",
     "EndpointKind",
+    "HashResponse",
+    "MacResponse",
+    "MacVerifyResponse",
     "RequestOptions",
+    "SignResponse",
+    "SignatureVerifyResponse",
     "TimeoutKind",
     "TimeoutLimit",
     "TransportConfig",

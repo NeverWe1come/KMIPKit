@@ -28,6 +28,7 @@ def _capture_constructor(
     monkeypatch: pytest.MonkeyPatch,
 ) -> list[tuple[str, tuple[object, ...]]]:
     calls: list[tuple[str, tuple[object, ...]]] = []
+    span_owners: list[object] = []
 
     def make_handle(
         _c_type: str,
@@ -36,7 +37,21 @@ def _capture_constructor(
         *_args: object,
         **_kwargs: object,
     ) -> object:
-        calls.append((function_name, arguments))
+        captured: list[object] = []
+        for argument in arguments:
+            if not _is_span(argument):
+                captured.append(argument)
+                continue
+            span = argument[0] if extensions.ffi.typeof(argument).kind == "pointer" else argument
+            length = int(span.length)
+            raw = bytes(extensions.ffi.buffer(span.data, length)) if length else b""
+            data = extensions.ffi.new("uint8_t[]", raw) if raw else extensions.ffi.NULL
+            snapshot = extensions.ffi.new(
+                "kmipkit_byte_span_v1_t *", {"data": data, "length": length}
+            )
+            span_owners.extend((data, snapshot))
+            captured.append(snapshot)
+        calls.append((function_name, tuple(captured)))
         return object()
 
     monkeypatch.setattr(extensions, "_make_handle", make_handle)
@@ -88,7 +103,10 @@ def _span_fields(value: object) -> tuple[object, int]:
 
 
 def _is_span(value: object) -> bool:
-    ctype = extensions.ffi.typeof(value)
+    try:
+        ctype = extensions.ffi.typeof(value)
+    except TypeError:
+        return False
     if ctype.kind == "pointer":
         ctype = ctype.item
     return ctype.kind == "struct" and ctype.cname.endswith(
@@ -425,9 +443,11 @@ def test_request_builders_preserve_optional_octet_span_presence_and_bool_codes(
             assert _name == f"kmipkit_client_batch_item_{operation}"
             # The C ABI uses a non-null span pointer for a present empty value;
             # an omitted value is represented by a null span pointer.
-            spans = [_span_fields(argument) for argument in _span_arguments(arguments)]
-            assert spans
-            assert all(pointer != extensions.ffi.NULL and length == 0 for pointer, length in spans)
+            span_arguments = _span_arguments(arguments)
+            span_counts = {"hash": 1, "mac": 1, "mac_verify": 2, "sign": 2, "signature_verify": 3}
+            assert len(span_arguments) == span_counts[operation]
+            assert all(argument != extensions.ffi.NULL for argument in span_arguments)
+            assert all(_span_fields(argument)[1] == 0 for argument in span_arguments)
             assert arguments[-2:] == (1, 2)
             data_position = 1 if operation == "hash" else 2
             assert arguments[data_position] == data._pointer()
@@ -462,10 +482,16 @@ def test_omitted_optional_octet_spans_remain_null(
 
         assert len(calls) == len(_OPERATIONS)
         data_positions = {"hash": 1, "mac": 2, "mac_verify": 2, "sign": 2, "signature_verify": 2}
+        span_positions = {
+            "hash": (2,),
+            "mac": (3,),
+            "mac_verify": (3, 4),
+            "sign": (3, 4),
+            "signature_verify": (3, 4, 5),
+        }
         for operation, (_name, arguments) in zip(_OPERATIONS, calls, strict=True):
-            spans = [_span_fields(argument) for argument in _span_arguments(arguments)]
-            assert spans
-            assert all(pointer == extensions.ffi.NULL and length == 0 for pointer, length in spans)
+            assert _span_arguments(arguments) == ()
+            assert all(arguments[index] == extensions.ffi.NULL for index in span_positions[operation])
             assert arguments[data_positions[operation]] == extensions.ffi.NULL
             assert arguments[-2:] == (2, 1)
     finally:

@@ -1035,11 +1035,14 @@ def _validate_capability_mapping_inventories(
         for language in language_scope:
             expected = sorted(
                 {
-                    row["exportName"]
+                    row["languageMappings"][language]["name"]
                     for row in declarations
                     if row.get("capabilityId") == capability.get("capabilityId")
                     and row.get("declarationState") in {"declared", "verified"}
-                    and package_languages.get(row.get("packageId")) == language
+                    and language in row.get("languageMappings", {})
+                    and package_languages.get(
+                        row["languageMappings"][language].get("packageId")
+                    ) == language
                 }
             )
             if mappings.get(language) != expected:
@@ -1276,6 +1279,31 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                     raise ManifestError("function consumed handle slot references an unknown opaque type")
                 if param["type"] != f"{handle_name} **":
                     raise ManifestError("function consumed handle slot does not match its opaque type")
+            elif param["kind"] == "input-value-pointer":
+                value_name = param["valueType"]
+                regular_value = next(
+                    (
+                        record["c"]
+                        for record in manifest["types"]
+                        if record["c"]["name"] == value_name
+                    ),
+                    None,
+                )
+                carrier_value = next(
+                    (
+                        carrier
+                        for carrier in _ordered_approved_c_type_layouts(manifest)
+                        if carrier["name"] == value_name
+                    ),
+                    None,
+                )
+                if not any(
+                    value is not None and value.get("kind") == "fixed-width-value"
+                    for value in (regular_value, carrier_value)
+                ):
+                    raise ManifestError("function input value pointer references an unknown fixed-width type")
+                if param["type"] != f"const {value_name} *" or param["ownership"] != "borrowed":
+                    raise ManifestError("function input value pointer does not match its borrowed const layout")
             elif param["kind"] == "output-value-pointer":
                 value_name = param["valueType"]
                 regular_value = next(

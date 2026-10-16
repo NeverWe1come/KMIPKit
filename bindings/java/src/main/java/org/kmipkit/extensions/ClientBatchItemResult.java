@@ -8,6 +8,7 @@ import java.util.OptionalLong;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
+import org.jspecify.annotations.Nullable;
 
 /** Common, operation-independent metadata for one response batch item. */
 public final class ClientBatchItemResult implements AutoCloseable {
@@ -64,6 +65,47 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseCreateKeyPairResponse(values);
     }
 
+    /** Returns the typed Hash response only for a successful Hash operation. */
+    public Optional<HashResponse> hashResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseHash);
+        return parseHashResponse(values);
+    }
+
+    /** Returns the typed MAC response only for a successful MAC operation. */
+    public Optional<MacResponse> macResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseMac);
+        return parseMacResponse(values);
+    }
+
+    /** Returns the typed MAC Verify response only for a successful operation. */
+    public Optional<MacVerifyResponse> macVerifyResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseMacVerify);
+        return parseMacVerifyResponse(values);
+    }
+
+    /** Returns the typed Sign response only for a successful Sign operation. */
+    public Optional<SignResponse> signResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseSign);
+        return parseSignResponse(values);
+    }
+
+    /** Returns the typed Signature Verify response only for a successful operation. */
+    public Optional<SignatureVerifyResponse> signatureVerifyResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseSignatureVerify);
+        return parseSignatureVerifyResponse(values);
+    }
+
     /** Returns the one-or-more Create Split Key identifiers in response wire order. */
     public Optional<List<UniqueIdentifier>> createSplitKeyUniqueIdentifiers() {
         NativeExtensionRegistry.ensureLoaded();
@@ -101,6 +143,240 @@ public final class ClientBatchItemResult implements AutoCloseable {
         public UniqueIdentifier publicKeyUniqueIdentifier() { return publicKeyUniqueIdentifier; }
 
         @Override public String toString() { return "CreateKeyPairResponse[identifiers=redacted]"; }
+    }
+
+    /** Successful Hash response fields, copied from the native result. */
+    public static final class HashResponse {
+        private final @Nullable byte[] data;
+        private final @Nullable byte[] correlationValue;
+
+        private HashResponse(@Nullable byte[] data, @Nullable byte[] correlationValue) {
+            this.data = copyBytes(data);
+            this.correlationValue = copyBytes(correlationValue);
+        }
+
+        public Optional<byte[]> data() { return copiedBytes(data); }
+        public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+
+        @Override public String toString() { return "HashResponse[fields=redacted]"; }
+    }
+
+    /** Successful MAC response fields, copied from the native result. */
+    public static final class MacResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final @Nullable byte[] macData;
+        private final @Nullable byte[] correlationValue;
+
+        private MacResponse(UniqueIdentifier uniqueIdentifier,
+                @Nullable byte[] macData, @Nullable byte[] correlationValue) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.macData = copyBytes(macData);
+            this.correlationValue = copyBytes(correlationValue);
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+        public Optional<byte[]> macData() { return copiedBytes(macData); }
+        public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+
+        @Override public String toString() { return "MacResponse[fields=redacted]"; }
+    }
+
+    /** Successful MAC Verify response fields, including an unknown raw Validity Indicator. */
+    public static final class MacVerifyResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final OptionalLong validityIndicatorRaw;
+        private final @Nullable byte[] correlationValue;
+
+        private MacVerifyResponse(UniqueIdentifier uniqueIdentifier,
+                OptionalLong validityIndicatorRaw, @Nullable byte[] correlationValue) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.validityIndicatorRaw = validityIndicatorRaw;
+            this.correlationValue = copyBytes(correlationValue);
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+        public OptionalLong validityIndicatorRaw() { return validityIndicatorRaw; }
+        public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+
+        @Override public String toString() { return "MacVerifyResponse[fields=redacted]"; }
+    }
+
+    /** Successful Sign response fields, copied from the native result. */
+    public static final class SignResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final @Nullable byte[] signatureData;
+        private final @Nullable byte[] correlationValue;
+
+        private SignResponse(UniqueIdentifier uniqueIdentifier,
+                @Nullable byte[] signatureData, @Nullable byte[] correlationValue) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.signatureData = copyBytes(signatureData);
+            this.correlationValue = copyBytes(correlationValue);
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+        public Optional<byte[]> signatureData() { return copiedBytes(signatureData); }
+        public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+
+        @Override public String toString() { return "SignResponse[fields=redacted]"; }
+    }
+
+    /** Successful Signature Verify response fields, including an unknown raw Validity Indicator. */
+    public static final class SignatureVerifyResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final OptionalLong validityIndicatorRaw;
+        private final @Nullable byte[] recoveredData;
+        private final @Nullable byte[] correlationValue;
+
+        private SignatureVerifyResponse(UniqueIdentifier uniqueIdentifier,
+                OptionalLong validityIndicatorRaw, @Nullable byte[] recoveredData,
+                @Nullable byte[] correlationValue) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.validityIndicatorRaw = validityIndicatorRaw;
+            this.recoveredData = copyBytes(recoveredData);
+            this.correlationValue = copyBytes(correlationValue);
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+        public OptionalLong validityIndicatorRaw() { return validityIndicatorRaw; }
+        public Optional<byte[]> recoveredData() { return copiedBytes(recoveredData); }
+        public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+
+        @Override public String toString() { return "SignatureVerifyResponse[fields=redacted]"; }
+    }
+
+    static Optional<HashResponse> parseHashResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Hash response is invalid");
+        long[] fields = requireLongArray(tuple[0], 3, "native Hash response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new HashResponse(
+                responseBytes(fields[1], tuple[1]), responseBytes(fields[2], tuple[2])));
+    }
+
+    static Optional<MacResponse> parseMacResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 4, "native MAC response is invalid");
+        long[] fields = requireLongArray(tuple[0], 7, "native MAC response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new MacResponse(
+                requiredResponseIdentifier(fields, 1, tuple[1]),
+                responseBytes(fields[5], tuple[2]), responseBytes(fields[6], tuple[3])));
+    }
+
+    static Optional<MacVerifyResponse> parseMacVerifyResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native MAC Verify response is invalid");
+        long[] fields = requireLongArray(tuple[0], 8, "native MAC Verify response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new MacVerifyResponse(
+                requiredResponseIdentifier(fields, 1, tuple[1]),
+                optionalUnsigned(fields[5], fields[6]), responseBytes(fields[7], tuple[2])));
+    }
+
+    static Optional<SignResponse> parseSignResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 4, "native Sign response is invalid");
+        long[] fields = requireLongArray(tuple[0], 7, "native Sign response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new SignResponse(
+                requiredResponseIdentifier(fields, 1, tuple[1]),
+                responseBytes(fields[5], tuple[2]), responseBytes(fields[6], tuple[3])));
+    }
+
+    static Optional<SignatureVerifyResponse> parseSignatureVerifyResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 4, "native Signature Verify response is invalid");
+        long[] fields = requireLongArray(tuple[0], 9, "native Signature Verify response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new SignatureVerifyResponse(
+                requiredResponseIdentifier(fields, 1, tuple[1]),
+                optionalUnsigned(fields[5], fields[6]),
+                responseBytes(fields[7], tuple[2]), responseBytes(fields[8], tuple[3])));
+    }
+
+    private static boolean responsePresent(long[] fields) {
+        return responseFlag(fields[0]);
+    }
+
+    private static boolean responseFlag(long value) {
+        if (value == 0) return false;
+        if (value == 1) return true;
+        throw new InvalidInputException("native response presence flag is invalid");
+    }
+
+    private static void requireNoResponseFields(long[] fields, Object[] tuple) {
+        for (int index = 1; index < fields.length; index++) {
+            if (fields[index] != 0) {
+                throw new InvalidInputException("native absent response contains fields");
+            }
+        }
+        for (int index = 1; index < tuple.length; index++) {
+            if (tuple[index] != null) {
+                throw new InvalidInputException("native absent response contains fields");
+            }
+        }
+    }
+
+    private static UniqueIdentifier requiredResponseIdentifier(
+            long[] fields, int presenceIndex, Object value) {
+        if (!responseFlag(fields[presenceIndex])) {
+            if (fields[presenceIndex + 1] != 0 || fields[presenceIndex + 2] != 0
+                    || fields[presenceIndex + 3] != 0 || value != null) {
+                throw new InvalidInputException("native Unique Identifier presence is invalid");
+            }
+            throw new InvalidInputException("native successful response omitted its Unique Identifier");
+        }
+        long kind = fields[presenceIndex + 1];
+        byte[] text = null;
+        if (kind == 1) {
+            text = requireBytes(value);
+        } else if (value != null) {
+            throw new InvalidInputException("native Unique Identifier text is invalid");
+        }
+        return UniqueIdentifier.fromNative(kind, text,
+                fields[presenceIndex + 2], fields[presenceIndex + 3]);
+    }
+
+    private static OptionalLong optionalUnsigned(long present, long value) {
+        if (!responseFlag(present)) {
+            if (value != 0) {
+                throw new InvalidInputException("native unsigned response value is invalid");
+            }
+            return OptionalLong.empty();
+        }
+        if (value < 0 || value > 0xffff_ffffL) {
+            throw new InvalidInputException("native unsigned response value is invalid");
+        }
+        return OptionalLong.of(value);
+    }
+
+    private static @Nullable byte[] responseBytes(long present, Object value) {
+        if (!responseFlag(present)) {
+            if (value != null) {
+                throw new InvalidInputException("native absent response bytes are invalid");
+            }
+            return null;
+        }
+        return requireBytes(value);
+    }
+
+    private static @Nullable byte[] copyBytes(@Nullable byte[] value) {
+        return value == null ? null : value.clone();
+    }
+
+    private static Optional<byte[]> copiedBytes(@Nullable byte[] value) {
+        return value == null ? Optional.empty() : Optional.of(value.clone());
     }
 
     static ClientBatchItemMetadataV2 parseMetadataV2(Object[] values) {

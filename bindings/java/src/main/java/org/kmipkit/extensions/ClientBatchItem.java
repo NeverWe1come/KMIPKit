@@ -1,13 +1,16 @@
 package org.kmipkit.extensions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.jspecify.annotations.Nullable;
 
 /** Typed request batch item with caller-ordered registry-validated extensions. */
 public final class ClientBatchItem implements AutoCloseable {
@@ -89,6 +92,122 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates a Hash request with required Cryptographic Parameters and optional Data/framing fields. */
+    public static ClientBatchItem hash(
+            TtlvStructure parameters,
+            @Nullable TtlvValue data,
+            @Nullable byte[] correlationValue,
+            @Nullable Boolean initIndicator,
+            @Nullable Boolean finalIndicator) {
+        requireStructure(parameters, "Hash Cryptographic Parameters");
+        byte[] correlationCopy = copyForNative(correlationValue);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemHash(
+                    parameters.handle(), handleOrNull(data), correlationCopy,
+                    optionalIndicator(initIndicator), optionalIndicator(finalIndicator)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(correlationCopy);
+        }
+    }
+
+    /** Creates a MAC request, preserving absent and present-empty optional fields. */
+    public static ClientBatchItem mac(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure parameters,
+            @Nullable TtlvValue data,
+            @Nullable byte[] correlationValue,
+            @Nullable Boolean initIndicator,
+            @Nullable Boolean finalIndicator) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] correlationCopy = copyForNative(correlationValue);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemMac(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    handleOrNull(parameters), handleOrNull(data), correlationCopy,
+                    optionalIndicator(initIndicator), optionalIndicator(finalIndicator)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, correlationCopy);
+        }
+    }
+
+    /** Creates a MAC Verify request with optional MAC data and asynchronous framing fields. */
+    public static ClientBatchItem macVerify(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure parameters,
+            @Nullable TtlvValue data,
+            @Nullable byte[] macData,
+            @Nullable byte[] correlationValue,
+            @Nullable Boolean initIndicator,
+            @Nullable Boolean finalIndicator) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] macCopy = copyForNative(macData);
+        byte[] correlationCopy = copyForNative(correlationValue);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemMacVerify(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    handleOrNull(parameters), handleOrNull(data), macCopy, correlationCopy,
+                    optionalIndicator(initIndicator), optionalIndicator(finalIndicator)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, macCopy, correlationCopy);
+        }
+    }
+
+    /** Creates a Sign request with optional Digested Data and asynchronous framing fields. */
+    public static ClientBatchItem sign(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure parameters,
+            @Nullable TtlvValue data,
+            @Nullable byte[] digestedData,
+            @Nullable byte[] correlationValue,
+            @Nullable Boolean initIndicator,
+            @Nullable Boolean finalIndicator) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] digestedCopy = copyForNative(digestedData);
+        byte[] correlationCopy = copyForNative(correlationValue);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemSign(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    handleOrNull(parameters), handleOrNull(data), digestedCopy, correlationCopy,
+                    optionalIndicator(initIndicator), optionalIndicator(finalIndicator)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, digestedCopy, correlationCopy);
+        }
+    }
+
+    /** Creates a Signature Verify request with optional digest, signature, and framing fields. */
+    public static ClientBatchItem signatureVerify(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure parameters,
+            @Nullable TtlvValue data,
+            @Nullable byte[] digestedData,
+            @Nullable byte[] signatureData,
+            @Nullable byte[] correlationValue,
+            @Nullable Boolean initIndicator,
+            @Nullable Boolean finalIndicator) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] digestedCopy = copyForNative(digestedData);
+        byte[] signatureCopy = copyForNative(signatureData);
+        byte[] correlationCopy = copyForNative(correlationValue);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemSignatureVerify(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    handleOrNull(parameters), handleOrNull(data), digestedCopy, signatureCopy,
+                    correlationCopy, optionalIndicator(initIndicator), optionalIndicator(finalIndicator)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, digestedCopy, signatureCopy, correlationCopy);
+        }
+    }
+
     private static void requireStructure(TtlvStructure structure, String label) {
         if (structure == null) {
             throw new InvalidInputException(label + " are required");
@@ -97,6 +216,34 @@ public final class ClientBatchItem implements AutoCloseable {
 
     private static long handleOrNull(TtlvStructure structure) {
         return structure == null ? 0 : structure.handle();
+    }
+
+    private static long handleOrNull(TtlvValue value) {
+        return value == null ? 0 : value.handle();
+    }
+
+    private static int optionalIndicator(Boolean indicator) {
+        return indicator == null ? 0 : indicator ? 2 : 1;
+    }
+
+    private static int identifierKind(UniqueIdentifier identifier) {
+        return identifier == null ? 0 : identifier.nativeKind();
+    }
+
+    private static long identifierNumber(UniqueIdentifier identifier) {
+        return identifier == null ? 0 : identifier.nativeNumber();
+    }
+
+    private static byte[] copyForNative(byte[] value) {
+        return value == null ? null : value.clone();
+    }
+
+    private static void clearNativeCopies(byte[]... values) {
+        for (byte[] value : values) {
+            if (value != null) {
+                Arrays.fill(value, (byte) 0);
+            }
+        }
     }
 
     private static void requireU32(long value, String label) {

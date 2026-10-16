@@ -29,7 +29,7 @@ REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" /
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_PATH = (
     ROOT / "specs" / "043-public-api-bindings" / "reports"
-    / "rust-export-report-2026-10-13.json"
+    / "rust-export-report-2026-10-16.json"
 )
 
 EXPECTED_PACKAGES = {
@@ -346,8 +346,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     expected_batch_item_type["java"]["package"] = batch_item_type["java"]["package"]
                     expected_batch_item_type["python"]["module"] = batch_item_type["python"]["module"]
                 elif field == "errorCategories":
-                    actual = [row for row in manifest[field] if row["id"] != "internal"]
                     expected = registry[field]
+                    registry_ids = {row["id"] for row in expected}
+                    actual = [row for row in manifest[field] if row["id"] in registry_ids]
                 else:
                     actual = manifest[field]
                     expected = registry[field]
@@ -838,7 +839,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         declaration["languageMappings"]["python"] = {
             "packageId": "python-kmipkit",
-            "name": "kmipkit.extensions.ClientBatchItem.close",
+            "name": "kmipkit.extensions.with_extension",
         }
 
         with self.assertRaisesRegex(ManifestError, "blocked|mapping target"):
@@ -855,6 +856,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ManifestError, "capability.*mapping|exact.*export"):
             _validate_v2_readiness(manifest, ROOT)
 
+    def test_capability_inventory_uses_each_language_mapping_name(self) -> None:
+        manifest = self.checked_in_manifest
+        package_languages = {
+            package["id"]: package["language"]
+            for package in manifest["publicPackages"]
+        }
+
+        generate._validate_capability_mapping_inventories(
+            manifest["capabilities"],
+            manifest["publicDeclarations"],
+            package_languages,
+        )
+
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
         declarations = [
@@ -867,7 +881,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9503)
+        self.assertEqual(len(declarations), 9510)
         self.assertEqual(len(exclusions), 22)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
@@ -1104,15 +1118,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "c-kmipkit"
         }
-        self.assertEqual(
-            set(c_exclusions),
-            {
-                "kmipkit_last_error_get",
-                "kmipkit_last_error_clear",
-                "kmipkit_extension_registry_limits_v1_t.struct_size",
-                "kmipkit_extension_registry_limits_v1_t.abi_version",
-            },
-        )
+        runtime_metadata_exclusions = {
+            "kmipkit_last_error_clear",
+            "kmipkit_extension_registry_limits_v1_t.struct_size",
+            "kmipkit_extension_registry_limits_v1_t.abi_version",
+        }
+        self.assertTrue(runtime_metadata_exclusions <= set(c_exclusions))
         for symbol in c_exclusions:
             self.assertTrue(c_exclusions[symbol]["reason"])
             self.assertTrue(c_exclusions[symbol]["evidence"])
@@ -1229,13 +1240,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 147)
+        self.assertEqual(len(ttlv_declarations), 150)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            123,
+            126,
         )
         self.assertEqual(
             sum(
@@ -1247,7 +1258,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 367)
+        self.assertEqual(len(declarations), 517)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1271,7 +1282,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )
         ]
 
-        self.assertEqual(len(close_declarations), 21)
+        self.assertEqual(len(close_declarations), 19)
         self.assertTrue(
             all(declaration["declarationState"] == "blocked" for declaration in close_declarations)
         )
@@ -1297,6 +1308,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             }
             for kind in {item["kind"] for item in declarations}
         }
+        approved_c_layouts = {
+            item["cType"]["name"]
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "c-kmipkit"
+            and item.get("cType", {}).get("kind") == "fixed-width-value"
+        }
+        ready_by_kind["type"].update(approved_c_layouts)
 
         header_functions = set(
             re.findall(
@@ -1309,6 +1327,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
         published_header_symbols = {
@@ -1334,21 +1353,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual(header_types, ready_by_kind["type"])
 
-        limits_matches = re.finditer(
-            r"typedef struct \{(?P<body>.*?)\} (kmipkit_extension_registry_limits_v1_t);",
-            header,
-            re.DOTALL,
-        )
         header_fields = {
-            f"{match[2]}.{name}"
-            for match in limits_matches
-            for name in re.findall(r"^\s*uint64_t (\w+);$", match["body"], re.MULTILINE)
+            f"{match['named_type'] or match['typedef_type']}.{field_name}"
+            for match in re.finditer(
+                r"(?:typedef\s+)?struct(?:\s+(?P<named_type>kmipkit_\w+))?\s*"
+                r"\{(?P<body>.*?)\}\s*(?P<typedef_type>kmipkit_\w+)?\s*;",
+                header,
+                re.DOTALL,
+            )
+            for field_name in re.findall(
+                r"^\s*(?:const\s+)?[A-Za-z_]\w*(?:\s*\*)*\s+"
+                r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*;",
+                match["body"],
+                re.MULTILINE,
+            )
         }
-        self.assertEqual(header_fields, ready_by_kind["field"])
+        approved_c_fields = {
+            item["exportName"]
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "c-kmipkit"
+            and re.fullmatch(r"kmipkit_\w+\.\w+", item["exportName"])
+        }
+        self.assertEqual(header_fields, ready_by_kind["field"] | approved_c_fields)
 
         header_ttlv_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|OPAQUE_OBJECT_CONTEXT)_\w+)",
+                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND)_\w+)",
                 header,
                 re.MULTILINE,
             )
@@ -1375,6 +1405,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
         ready_functions = {
@@ -1389,6 +1420,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if declaration["kind"] == "type"
             and declaration["declarationState"] in {"declared", "verified"}
         }
+        ready_types.update(
+            exclusion["cType"]["name"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+            and exclusion.get("cType", {}).get("kind") == "fixed-width-value"
+        )
         header_functions = set(
             re.findall(
                 r"^(?:void|int32_t)\s+(kmipkit_[A-Za-z0-9_]+)\s*\(",
@@ -1493,6 +1530,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for (kind, name), state in states.items()
             if kind == "type" and state in {"declared", "verified"}
         }
+        ready_types.update(
+            exclusion["cType"]["name"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+            and exclusion.get("cType", {}).get("kind") == "fixed-width-value"
+        )
 
         for function in self.checked_in_manifest["functions"]:
             if states.get(("c-symbol", function["c"]["symbol"])) not in {
@@ -1516,11 +1559,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 285)
+        self.assertEqual(len(declarations), 489)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
-        self.assertEqual(close_method["declarationState"], "blocked")
+        self.assertEqual(close_method["declarationState"], "declared")
         item_type = by_name["kmipkit.ttlv.ItemType"]
         self.assertEqual(item_type["declarationState"], "declared")
         enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]

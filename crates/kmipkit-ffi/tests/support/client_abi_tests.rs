@@ -11,13 +11,14 @@ use base64::Engine;
 use kmipkit_client::{ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
     AttributeSet, CreateKeyPairRequest, CreateSplitKeyRequest, LocateRequest, ObjectType,
-    SplitKeyMethod,
+    OperationData, SecretBytes, SplitKeyMethod,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
     RequestOptions, TimeoutLimit, TimeoutPolicy, TransportConfig, TrustSource,
 };
+use kmipkit_ttlv::{Item, RawTag, Value};
 use rcgen::{
     BasicConstraints, CertificateParams, CertificateRevocationListParams, IsCa, Issuer,
     KeyIdMethod, KeyPair, KeyUsagePurpose, SerialNumber, date_time_ymd,
@@ -284,6 +285,256 @@ fn pending_locate_response(unique_id: &[u8], correlation: &[u8]) -> Vec<u8> {
         ],
     );
     ttlv_structure(0x0042_007B, [header, item])
+}
+
+fn failed_cryptographic_response(operation: u32, unique_id: &[u8]) -> Vec<u8> {
+    ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, operation),
+                    ttlv_item(0x0042_0093, 0x08, unique_id),
+                    ttlv_enumeration(0x0042_007f, 1),
+                    ttlv_enumeration(0x0042_007e, 6),
+                ],
+            ),
+        ],
+    )
+}
+
+fn failed_cryptographic_item(
+    request: ClientRequest,
+    operation: u32,
+    unique_id: &[u8],
+) -> *mut kmipkit_client_batch_item_response_t {
+    let response = execute_single_abi_response(
+        request,
+        unique_id,
+        failed_cryptographic_response(operation, unique_id),
+    )
+    .expect("the KMIP failure response remains a typed completed result");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+    item
+}
+
+#[test]
+fn ffi_cryptographic_response_getters_do_not_report_failed_payloads_as_present() {
+    let mut hash_parameters = Structure::new();
+    hash_parameters
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0038)
+                    .expect("Hashing Algorithm tag fits the KMIP tag field")
+                    .try_checked()
+                    .expect("Hashing Algorithm is allocated in KMIP 2.1"),
+                Value::enumeration(6),
+            )
+            .expect("valid Hashing Algorithm test item builds"),
+        )
+        .expect("Hashing Algorithm item fits within the test structure limit");
+    let hash = failed_cryptographic_item(
+        ClientRequest::Hash(HashRequest::new(hash_parameters).with_data(
+            OperationData::ByteString(SecretBytes::new(b"failure-test-data".to_vec())),
+        )),
+        0x27,
+        b"hash-failure",
+    );
+    let mut present = 9;
+    let mut data_present = 9;
+    let mut data = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 9;
+    let mut correlation = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_response_hash(
+            hash,
+            &raw mut present,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, data_present, correlation_present), (0, 0, 0));
+    kmipkit_client_batch_item_response_release(hash);
+
+    let mac = failed_cryptographic_item(
+        ClientRequest::Mac(MacRequest::new().with_data(OperationData::ByteString(
+            SecretBytes::new(b"failure-test-data".to_vec()),
+        ))),
+        0x23,
+        b"mac-failure",
+    );
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut data_present = 9;
+    let mut data = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 9;
+    let mut correlation = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_response_mac(
+            mac,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, data_present, correlation_present), (0, 0, 0));
+    kmipkit_client_batch_item_response_release(mac);
+
+    let mac_verify = failed_cryptographic_item(
+        ClientRequest::MacVerify(
+            MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"failure-test-mac".to_vec())),
+        ),
+        0x24,
+        b"mac-verify-failure",
+    );
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut validity_present = 9;
+    let mut validity = 9;
+    let mut correlation_present = 9;
+    let mut correlation = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_response_mac_verify(
+            mac_verify,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut validity_present,
+            &raw mut validity,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        (present, validity_present, validity, correlation_present),
+        (0, 0, 0, 0)
+    );
+    kmipkit_client_batch_item_response_release(mac_verify);
+
+    let sign = failed_cryptographic_item(
+        ClientRequest::Sign(SignRequest::new().with_data(OperationData::ByteString(
+            SecretBytes::new(b"failure-test-data".to_vec()),
+        ))),
+        0x21,
+        b"sign-failure",
+    );
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut data_present = 9;
+    let mut data = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 9;
+    let mut correlation = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_response_sign(
+            sign,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, data_present, correlation_present), (0, 0, 0));
+    kmipkit_client_batch_item_response_release(sign);
+
+    let signature_verify = failed_cryptographic_item(
+        ClientRequest::SignatureVerify(
+            SignatureVerifyRequest::new()
+                .with_signature_data(SecretBytes::new(b"failure-test-signature".to_vec())),
+        ),
+        0x22,
+        b"signature-verify-failure",
+    );
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut validity_present = 9;
+    let mut validity = 9;
+    let mut recovered_present = 9;
+    let mut recovered = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    let mut correlation_present = 9;
+    let mut correlation = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_response_signature_verify(
+            signature_verify,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut validity_present,
+            &raw mut validity,
+            &raw mut recovered_present,
+            &raw mut recovered,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        (
+            present,
+            validity_present,
+            validity,
+            recovered_present,
+            correlation_present
+        ),
+        (0, 0, 0, 0, 0)
+    );
+    kmipkit_client_batch_item_response_release(signature_verify);
 }
 
 fn ttlv_structure<const N: usize>(tag: u32, children: [Vec<u8>; N]) -> Vec<u8> {

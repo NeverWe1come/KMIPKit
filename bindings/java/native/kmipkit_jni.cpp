@@ -7,6 +7,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <limits>
 #include <new>
 #include <string>
@@ -59,6 +60,24 @@ void kmipkit_client_release(kmipkit_client_t*);
 int32_t kmipkit_client_batch_create(kmipkit_client_batch_t**);
 int32_t kmipkit_client_batch_add_item(kmipkit_client_batch_t*, kmipkit_client_batch_item_t**);
 int32_t kmipkit_client_batch_set_asynchronous_indicator(kmipkit_client_batch_t*, uint32_t);
+int32_t kmipkit_client_batch_item_hash(
+        kmipkit_ttlv_structure_t*, kmipkit_ttlv_value_t*, const kmipkit_byte_span_v1_t*,
+        uint8_t, uint8_t, kmipkit_client_batch_item_t**);
+int32_t kmipkit_client_batch_item_mac(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_structure_t*, kmipkit_ttlv_value_t*,
+        const kmipkit_byte_span_v1_t*, uint8_t, uint8_t, kmipkit_client_batch_item_t**);
+int32_t kmipkit_client_batch_item_mac_verify(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_structure_t*, kmipkit_ttlv_value_t*,
+        const kmipkit_byte_span_v1_t*, const kmipkit_byte_span_v1_t*, uint8_t, uint8_t,
+        kmipkit_client_batch_item_t**);
+int32_t kmipkit_client_batch_item_sign(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_structure_t*, kmipkit_ttlv_value_t*,
+        const kmipkit_byte_span_v1_t*, const kmipkit_byte_span_v1_t*, uint8_t, uint8_t,
+        kmipkit_client_batch_item_t**);
+int32_t kmipkit_client_batch_item_signature_verify(
+        const kmipkit_unique_identifier_v1_t*, kmipkit_ttlv_structure_t*, kmipkit_ttlv_value_t*,
+        const kmipkit_byte_span_v1_t*, const kmipkit_byte_span_v1_t*,
+        const kmipkit_byte_span_v1_t*, uint8_t, uint8_t, kmipkit_client_batch_item_t**);
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t*);
 void kmipkit_client_batch_release(kmipkit_client_batch_t*);
 int32_t kmipkit_client_execute(kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*, kmipkit_client_batch_response_t**);
@@ -68,6 +87,21 @@ void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_respon
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t*, uint64_t*);
 int32_t kmipkit_client_batch_response_item_at(kmipkit_client_batch_response_t*, uint64_t, kmipkit_client_batch_item_response_t**);
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t*, kmipkit_client_batch_item_metadata_v1_t*);
+int32_t kmipkit_client_batch_item_response_hash(
+        kmipkit_client_batch_item_response_t*, uint8_t*, uint8_t*, kmipkit_byte_span_v1_t*,
+        uint8_t*, kmipkit_byte_span_v1_t*);
+int32_t kmipkit_client_batch_item_response_mac(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_unique_identifier_v1_t*,
+        uint8_t*, kmipkit_byte_span_v1_t*, uint8_t*, kmipkit_byte_span_v1_t*);
+int32_t kmipkit_client_batch_item_response_mac_verify(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_unique_identifier_v1_t*,
+        uint8_t*, uint32_t*, uint8_t*, kmipkit_byte_span_v1_t*);
+int32_t kmipkit_client_batch_item_response_sign(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_unique_identifier_v1_t*,
+        uint8_t*, kmipkit_byte_span_v1_t*, uint8_t*, kmipkit_byte_span_v1_t*);
+int32_t kmipkit_client_batch_item_response_signature_verify(
+        kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_unique_identifier_v1_t*,
+        uint8_t*, uint32_t*, uint8_t*, kmipkit_byte_span_v1_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_unique_batch_item_id(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(
@@ -621,6 +655,89 @@ bool read_java_bytes(JNIEnv* env, jbyteArray input, std::vector<uint8_t>& output
     return !env->ExceptionCheck();
 }
 
+bool read_optional_java_bytes(JNIEnv* env, jbyteArray input,
+        std::vector<uint8_t>& output, bool* present) {
+    if (present == nullptr) {
+        throw_invalid_input(env);
+        return false;
+    }
+    if (input == nullptr) {
+        output.clear();
+        *present = false;
+        return true;
+    }
+    *present = true;
+    return read_bytes(env, input, kMaximumTransportInputBytes, output);
+}
+
+kmipkit_byte_span_v1_t byte_span(const std::vector<uint8_t>& bytes) {
+    return {bytes.empty() ? nullptr : bytes.data(), static_cast<uint64_t>(bytes.size())};
+}
+
+bool read_optional_identifier(JNIEnv* env, jint raw_kind, jbyteArray raw_text,
+        jlong raw_number, kmipkit_unique_identifier_v1_t* output,
+        std::vector<uint8_t>& text, bool* present) {
+    if (output == nullptr || present == nullptr) {
+        throw_invalid_input(env);
+        return false;
+    }
+    *output = {};
+    *present = false;
+    if (raw_kind == 0) {
+        if (raw_text != nullptr || raw_number != 0) {
+            throw_invalid_input(env);
+            return false;
+        }
+        return true;
+    }
+
+    output->struct_size = static_cast<uint32_t>(sizeof(kmipkit_unique_identifier_v1_t));
+    output->abi_version = 1;
+    output->kind = static_cast<kmipkit_unique_identifier_kind_t>(raw_kind);
+    if (raw_kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+        bool text_present = false;
+        if (raw_number != 0
+                || !read_optional_java_bytes(env, raw_text, text, &text_present)
+                || !text_present) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return false;
+        }
+        output->text_data = text.empty() ? nullptr : text.data();
+        output->text_length = static_cast<uint64_t>(text.size());
+    } else if (raw_kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
+        if (raw_text != nullptr || raw_number < 0
+                || static_cast<uint64_t>(raw_number) > std::numeric_limits<uint32_t>::max()) {
+            throw_invalid_input(env);
+            return false;
+        }
+        output->enumeration_value = static_cast<uint32_t>(raw_number);
+    } else if (raw_kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER) {
+        if (raw_text != nullptr || raw_number < std::numeric_limits<int32_t>::min()
+                || raw_number > std::numeric_limits<int32_t>::max()) {
+            throw_invalid_input(env);
+            return false;
+        }
+        output->integer_value = static_cast<int32_t>(raw_number);
+    } else {
+        throw_invalid_input(env);
+        return false;
+    }
+    *present = true;
+    return true;
+}
+
+bool read_optional_indicators(JNIEnv* env, jint raw_init, jint raw_final,
+        uint8_t* init, uint8_t* final_value) {
+    if (init == nullptr || final_value == nullptr
+            || raw_init < 0 || raw_init > 2 || raw_final < 0 || raw_final > 2) {
+        throw_invalid_input(env);
+        return false;
+    }
+    *init = static_cast<uint8_t>(raw_init);
+    *final_value = static_cast<uint8_t>(raw_final);
+    return true;
+}
+
 bool read_transport_inputs(JNIEnv* env, jintArray raw_sources, jintArray raw_encodings,
         jobjectArray raw_bytes, bool allow_files, std::vector<OwnedTransportInput>& output) {
     if (raw_sources == nullptr || raw_encodings == nullptr || raw_bytes == nullptr) {
@@ -733,6 +850,24 @@ jobjectArray make_object_pair(JNIEnv* env, jobject first, jobject second) {
     return env->ExceptionCheck() ? nullptr : result;
 }
 
+jobjectArray make_object_array(JNIEnv* env, std::initializer_list<jobject> values) {
+    if (values.size() > static_cast<size_t>(std::numeric_limits<jsize>::max())) {
+        throw_java(env, "org/kmipkit/ResourceLimitException", "native result exceeds Java array limits");
+        return nullptr;
+    }
+    jclass object_class = env->FindClass("java/lang/Object");
+    if (object_class == nullptr) return nullptr;
+    jobjectArray result = env->NewObjectArray(static_cast<jsize>(values.size()), object_class, nullptr);
+    env->DeleteLocalRef(object_class);
+    if (result == nullptr) return nullptr;
+    jsize index = 0;
+    for (jobject value : values) {
+        env->SetObjectArrayElement(result, index++, value);
+        if (env->ExceptionCheck()) return nullptr;
+    }
+    return result;
+}
+
 jobjectArray identifier_to_java(JNIEnv* env, const kmipkit_unique_identifier_v1_t& value,
         uint8_t present) {
     const std::vector<jlong> fields {static_cast<jlong>(present),
@@ -751,6 +886,57 @@ jobjectArray identifier_to_java(JNIEnv* env, const kmipkit_unique_identifier_v1_
     env->DeleteLocalRef(scalar_fields);
     if (text != nullptr) env->DeleteLocalRef(text);
     return result;
+}
+
+bool response_identifier_to_java(JNIEnv* env, uint8_t response_present,
+        const kmipkit_unique_identifier_v1_t& value, jlong* fields, jbyteArray* text) {
+    if (fields == nullptr || text == nullptr || response_present > 1) {
+        throw_invalid_input(env);
+        return false;
+    }
+    *text = nullptr;
+    fields[0] = 0;
+    fields[1] = 0;
+    fields[2] = 0;
+    fields[3] = 0;
+    if (value.kind == 0) {
+        if (value.text_data != nullptr || value.text_length != 0
+                || value.enumeration_value != 0 || value.integer_value != 0) {
+            throw_invalid_input(env);
+            return false;
+        }
+        return true;
+    }
+    if (response_present == 0) {
+        throw_invalid_input(env);
+        return false;
+    }
+    if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+        if (value.enumeration_value != 0 || value.integer_value != 0) {
+            throw_invalid_input(env);
+            return false;
+        }
+        *text = span_to_java_bytes(env, 1, {value.text_data, value.text_length});
+        if (*text == nullptr) return false;
+    } else if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
+        if (value.text_data != nullptr || value.text_length != 0 || value.integer_value != 0) {
+            throw_invalid_input(env);
+            return false;
+        }
+    } else if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER) {
+        if (value.text_data != nullptr || value.text_length != 0 || value.enumeration_value != 0) {
+            throw_invalid_input(env);
+            return false;
+        }
+    } else {
+        throw_invalid_input(env);
+        return false;
+    }
+    fields[0] = 1;
+    fields[1] = static_cast<jlong>(value.kind);
+    fields[2] = static_cast<jlong>(value.enumeration_value);
+    fields[3] = static_cast<jlong>(value.integer_value);
+    return !env->ExceptionCheck();
 }
 
 } // namespace
@@ -904,6 +1090,192 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
         return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
             return kmipkit_client_batch_item_register(
                     from_java_handle<kmipkit_register_request_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemHash(
+        JNIEnv* env, jclass, jlong raw_parameters, jlong raw_data,
+        jbyteArray raw_correlation, jint raw_init, jint raw_final) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        bool correlation_present = false;
+        uint8_t init = 0;
+        uint8_t final_value = 0;
+        if (!read_optional_java_bytes(env, raw_correlation, correlation, &correlation_present)
+                || !read_optional_indicators(env, raw_init, raw_final, &init, &final_value)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_byte_span_v1_t correlation_span = byte_span(correlation);
+        const kmipkit_byte_span_v1_t* correlation_pointer =
+                correlation_present ? &correlation_span : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_hash(
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_parameters),
+                    from_java_handle<kmipkit_ttlv_value_t>(raw_data),
+                    correlation_pointer, init, final_value, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemMac(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number, jlong raw_parameters, jlong raw_data,
+        jbyteArray raw_correlation, jint raw_init, jint raw_final) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        bool correlation_present = false;
+        uint8_t init = 0;
+        uint8_t final_value = 0;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)
+                || !read_optional_java_bytes(env, raw_correlation, correlation, &correlation_present)
+                || !read_optional_indicators(env, raw_init, raw_final, &init, &final_value)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_byte_span_v1_t correlation_span = byte_span(correlation);
+        const kmipkit_byte_span_v1_t* correlation_pointer =
+                correlation_present ? &correlation_span : nullptr;
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_mac(identifier_pointer,
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_parameters),
+                    from_java_handle<kmipkit_ttlv_value_t>(raw_data),
+                    correlation_pointer, init, final_value, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemMacVerify(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number, jlong raw_parameters, jlong raw_data,
+        jbyteArray raw_mac_data, jbyteArray raw_correlation, jint raw_init, jint raw_final) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        std::vector<uint8_t> mac_data;
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit::secure::VectorWiper mac_data_wiper(mac_data);
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        bool mac_present = false;
+        bool correlation_present = false;
+        uint8_t init = 0;
+        uint8_t final_value = 0;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)
+                || !read_optional_java_bytes(env, raw_mac_data, mac_data, &mac_present)
+                || !read_optional_java_bytes(env, raw_correlation, correlation, &correlation_present)
+                || !read_optional_indicators(env, raw_init, raw_final, &init, &final_value)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_byte_span_v1_t mac_span = byte_span(mac_data);
+        const kmipkit_byte_span_v1_t correlation_span = byte_span(correlation);
+        const kmipkit_byte_span_v1_t* mac_pointer = mac_present ? &mac_span : nullptr;
+        const kmipkit_byte_span_v1_t* correlation_pointer =
+                correlation_present ? &correlation_span : nullptr;
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_mac_verify(identifier_pointer,
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_parameters),
+                    from_java_handle<kmipkit_ttlv_value_t>(raw_data), mac_pointer,
+                    correlation_pointer, init, final_value, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemSign(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number, jlong raw_parameters, jlong raw_data,
+        jbyteArray raw_digested_data, jbyteArray raw_correlation, jint raw_init, jint raw_final) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        std::vector<uint8_t> digested_data;
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit::secure::VectorWiper digested_data_wiper(digested_data);
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        bool digested_present = false;
+        bool correlation_present = false;
+        uint8_t init = 0;
+        uint8_t final_value = 0;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)
+                || !read_optional_java_bytes(env, raw_digested_data, digested_data, &digested_present)
+                || !read_optional_java_bytes(env, raw_correlation, correlation, &correlation_present)
+                || !read_optional_indicators(env, raw_init, raw_final, &init, &final_value)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_byte_span_v1_t digested_span = byte_span(digested_data);
+        const kmipkit_byte_span_v1_t correlation_span = byte_span(correlation);
+        const kmipkit_byte_span_v1_t* digested_pointer = digested_present ? &digested_span : nullptr;
+        const kmipkit_byte_span_v1_t* correlation_pointer =
+                correlation_present ? &correlation_span : nullptr;
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_sign(identifier_pointer,
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_parameters),
+                    from_java_handle<kmipkit_ttlv_value_t>(raw_data), digested_pointer,
+                    correlation_pointer, init, final_value, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemSignatureVerify(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number, jlong raw_parameters, jlong raw_data,
+        jbyteArray raw_digested_data, jbyteArray raw_signature_data, jbyteArray raw_correlation,
+        jint raw_init, jint raw_final) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        std::vector<uint8_t> digested_data;
+        std::vector<uint8_t> signature_data;
+        std::vector<uint8_t> correlation;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit::secure::VectorWiper digested_data_wiper(digested_data);
+        kmipkit::secure::VectorWiper signature_data_wiper(signature_data);
+        kmipkit::secure::VectorWiper correlation_wiper(correlation);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        bool digested_present = false;
+        bool signature_present = false;
+        bool correlation_present = false;
+        uint8_t init = 0;
+        uint8_t final_value = 0;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)
+                || !read_optional_java_bytes(env, raw_digested_data, digested_data, &digested_present)
+                || !read_optional_java_bytes(env, raw_signature_data, signature_data, &signature_present)
+                || !read_optional_java_bytes(env, raw_correlation, correlation, &correlation_present)
+                || !read_optional_indicators(env, raw_init, raw_final, &init, &final_value)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_byte_span_v1_t digested_span = byte_span(digested_data);
+        const kmipkit_byte_span_v1_t signature_span = byte_span(signature_data);
+        const kmipkit_byte_span_v1_t correlation_span = byte_span(correlation);
+        const kmipkit_byte_span_v1_t* digested_pointer = digested_present ? &digested_span : nullptr;
+        const kmipkit_byte_span_v1_t* signature_pointer = signature_present ? &signature_span : nullptr;
+        const kmipkit_byte_span_v1_t* correlation_pointer =
+                correlation_present ? &correlation_span : nullptr;
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_signature_verify(identifier_pointer,
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_parameters),
+                    from_java_handle<kmipkit_ttlv_value_t>(raw_data), digested_pointer,
+                    signature_pointer, correlation_pointer, init, final_value, output);
         });
     });
 }
@@ -2581,6 +2953,263 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         jobjectArray result = make_object_pair(env, fields, identifiers);
         env->DeleteLocalRef(fields);
         env->DeleteLocalRef(identifiers);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseHash(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t data_present = 0;
+        uint8_t correlation_present = 0;
+        kmipkit_byte_span_v1_t data{};
+        kmipkit_byte_span_v1_t correlation{};
+        const int32_t status = kmipkit_client_batch_item_response_hash(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &data_present, &data, &correlation_present, &correlation);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || data_present > 1 || correlation_present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), static_cast<jlong>(data_present),
+                static_cast<jlong>(correlation_present)});
+        if (fields == nullptr) return static_cast<jobjectArray>(nullptr);
+        jbyteArray data_value = span_to_java_bytes(env, data_present, data);
+        jbyteArray correlation_value = span_to_java_bytes(env, correlation_present, correlation);
+        if (env->ExceptionCheck()) {
+            env->DeleteLocalRef(fields);
+            if (data_value != nullptr) env->DeleteLocalRef(data_value);
+            if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, data_value, correlation_value});
+        env->DeleteLocalRef(fields);
+        if (data_value != nullptr) env->DeleteLocalRef(data_value);
+        if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseMac(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t mac_present = 0;
+        uint8_t correlation_present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        kmipkit_byte_span_v1_t mac_data{};
+        kmipkit_byte_span_v1_t correlation{};
+        const int32_t status = kmipkit_client_batch_item_response_mac(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier, &mac_present, &mac_data,
+                &correlation_present, &correlation);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || mac_present > 1 || correlation_present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlong identifier_fields[4]{};
+        jbyteArray identifier_text = nullptr;
+        if (!response_identifier_to_java(env, present, identifier, identifier_fields, &identifier_text)) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), identifier_fields[0], identifier_fields[1],
+                identifier_fields[2], identifier_fields[3], static_cast<jlong>(mac_present),
+                static_cast<jlong>(correlation_present)});
+        if (fields == nullptr) {
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jbyteArray mac_value = span_to_java_bytes(env, mac_present, mac_data);
+        jbyteArray correlation_value = span_to_java_bytes(env, correlation_present, correlation);
+        if (env->ExceptionCheck()) {
+            env->DeleteLocalRef(fields);
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            if (mac_value != nullptr) env->DeleteLocalRef(mac_value);
+            if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, identifier_text, mac_value, correlation_value});
+        env->DeleteLocalRef(fields);
+        if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+        if (mac_value != nullptr) env->DeleteLocalRef(mac_value);
+        if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseMacVerify(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t validity_present = 0;
+        uint32_t validity = 0;
+        uint8_t correlation_present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        kmipkit_byte_span_v1_t correlation{};
+        const int32_t status = kmipkit_client_batch_item_response_mac_verify(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier, &validity_present, &validity,
+                &correlation_present, &correlation);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || validity_present > 1 || correlation_present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlong identifier_fields[4]{};
+        jbyteArray identifier_text = nullptr;
+        if (!response_identifier_to_java(env, present, identifier, identifier_fields, &identifier_text)) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), identifier_fields[0], identifier_fields[1],
+                identifier_fields[2], identifier_fields[3], static_cast<jlong>(validity_present),
+                static_cast<jlong>(validity), static_cast<jlong>(correlation_present)});
+        if (fields == nullptr) {
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jbyteArray correlation_value = span_to_java_bytes(env, correlation_present, correlation);
+        if (env->ExceptionCheck()) {
+            env->DeleteLocalRef(fields);
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, identifier_text, correlation_value});
+        env->DeleteLocalRef(fields);
+        if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+        if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseSign(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t signature_present = 0;
+        uint8_t correlation_present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        kmipkit_byte_span_v1_t signature_data{};
+        kmipkit_byte_span_v1_t correlation{};
+        const int32_t status = kmipkit_client_batch_item_response_sign(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier, &signature_present, &signature_data,
+                &correlation_present, &correlation);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || signature_present > 1 || correlation_present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlong identifier_fields[4]{};
+        jbyteArray identifier_text = nullptr;
+        if (!response_identifier_to_java(env, present, identifier, identifier_fields, &identifier_text)) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), identifier_fields[0], identifier_fields[1],
+                identifier_fields[2], identifier_fields[3], static_cast<jlong>(signature_present),
+                static_cast<jlong>(correlation_present)});
+        if (fields == nullptr) {
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jbyteArray signature_value = span_to_java_bytes(env, signature_present, signature_data);
+        jbyteArray correlation_value = span_to_java_bytes(env, correlation_present, correlation);
+        if (env->ExceptionCheck()) {
+            env->DeleteLocalRef(fields);
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            if (signature_value != nullptr) env->DeleteLocalRef(signature_value);
+            if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env,
+                {fields, identifier_text, signature_value, correlation_value});
+        env->DeleteLocalRef(fields);
+        if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+        if (signature_value != nullptr) env->DeleteLocalRef(signature_value);
+        if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseSignatureVerify(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t validity_present = 0;
+        uint32_t validity = 0;
+        uint8_t recovered_present = 0;
+        uint8_t correlation_present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        kmipkit_byte_span_v1_t recovered_data{};
+        kmipkit_byte_span_v1_t correlation{};
+        const int32_t status = kmipkit_client_batch_item_response_signature_verify(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier, &validity_present, &validity,
+                &recovered_present, &recovered_data, &correlation_present, &correlation);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || validity_present > 1 || recovered_present > 1 || correlation_present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlong identifier_fields[4]{};
+        jbyteArray identifier_text = nullptr;
+        if (!response_identifier_to_java(env, present, identifier, identifier_fields, &identifier_text)) {
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), identifier_fields[0], identifier_fields[1],
+                identifier_fields[2], identifier_fields[3], static_cast<jlong>(validity_present),
+                static_cast<jlong>(validity), static_cast<jlong>(recovered_present),
+                static_cast<jlong>(correlation_present)});
+        if (fields == nullptr) {
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jbyteArray recovered_value = span_to_java_bytes(env, recovered_present, recovered_data);
+        jbyteArray correlation_value = span_to_java_bytes(env, correlation_present, correlation);
+        if (env->ExceptionCheck()) {
+            env->DeleteLocalRef(fields);
+            if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+            if (recovered_value != nullptr) env->DeleteLocalRef(recovered_value);
+            if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env,
+                {fields, identifier_text, recovered_value, correlation_value});
+        env->DeleteLocalRef(fields);
+        if (identifier_text != nullptr) env->DeleteLocalRef(identifier_text);
+        if (recovered_value != nullptr) env->DeleteLocalRef(recovered_value);
+        if (correlation_value != nullptr) env->DeleteLocalRef(correlation_value);
         return result;
     });
 }

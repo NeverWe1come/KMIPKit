@@ -77,6 +77,7 @@ def _native_limits(values: tuple[int, ...]) -> Any:
 _MAX_TEXT_BYTES_PER_FIELD = 4_096
 _MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024
 _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
+_MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024
 
 
 class ExtensionIdentity(NativeHandle):
@@ -1337,6 +1338,34 @@ def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -
     return value._pointer()
 
 
+def _native_value(value: ttlv.Value | None) -> Any:
+    if value is None:
+        return ffi.NULL
+    if not isinstance(value, ttlv.Value):
+        errors.raise_for_status(4)
+    return value._pointer()
+
+
+def _native_optional_span(value: bytes | bytearray | memoryview | None) -> tuple[Any, Any]:
+    """Create a borrowed span record while preserving omitted versus empty input."""
+    if value is None:
+        return ffi.NULL, None
+    raw, data = _owned_bytes(value, _MAX_OPERATION_INPUT_BYTES)
+    span = ffi.new(
+        "kmipkit_byte_span_v1_t *",
+        {"data": data if raw else ffi.NULL, "length": len(raw)},
+    )
+    return span, (data, span)
+
+
+def _native_optional_indicator(value: bool | None) -> int:
+    if value is None:
+        return 0
+    if not isinstance(value, bool):
+        errors.raise_for_status(4)
+    return 2 if value else 1
+
+
 def _native_unique_identifier(
     value: UniqueIdentifier | None,
 ) -> tuple[Any, Any]:
@@ -1462,6 +1491,155 @@ def client_batch_item_create_split_key(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_hash(
+    parameters: ttlv.Structure,
+    data: ttlv.Value | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a Hash request item without performing local cryptography."""
+    correlation, correlation_owner = _native_optional_span(correlation_value)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_hash",
+        (
+            _native_structure(parameters, required=True),
+            _native_value(data),
+            correlation,
+            _native_optional_indicator(init_indicator),
+            _native_optional_indicator(final_indicator),
+        ),
+    )
+    _ = correlation_owner
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_mac(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a MAC request item while preserving optional wire fields."""
+    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
+    correlation, correlation_owner = _native_optional_span(correlation_value)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_mac",
+        (
+            identifier,
+            _native_structure(parameters),
+            _native_value(data),
+            correlation,
+            _native_optional_indicator(init_indicator),
+            _native_optional_indicator(final_indicator),
+        ),
+    )
+    _ = identifier_owner, correlation_owner
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_mac_verify(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    mac_data: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a MAC Verify request item and copy opaque MAC bytes at the ABI boundary."""
+    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
+    mac_span, mac_owner = _native_optional_span(mac_data)
+    correlation, correlation_owner = _native_optional_span(correlation_value)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_mac_verify",
+        (
+            identifier,
+            _native_structure(parameters),
+            _native_value(data),
+            mac_span,
+            correlation,
+            _native_optional_indicator(init_indicator),
+            _native_optional_indicator(final_indicator),
+        ),
+    )
+    _ = identifier_owner, mac_owner, correlation_owner
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_sign(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    digested_data: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a Sign request item; KMIPKit never computes a digest or signature locally."""
+    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
+    digest_span, digest_owner = _native_optional_span(digested_data)
+    correlation, correlation_owner = _native_optional_span(correlation_value)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_sign",
+        (
+            identifier,
+            _native_structure(parameters),
+            _native_value(data),
+            digest_span,
+            correlation,
+            _native_optional_indicator(init_indicator),
+            _native_optional_indicator(final_indicator),
+        ),
+    )
+    _ = identifier_owner, digest_owner, correlation_owner
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_signature_verify(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    digested_data: bytes | bytearray | memoryview | None = None,
+    signature_data: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a Signature Verify request item using opaque signature inputs."""
+    identifier, identifier_owner = _native_unique_identifier(unique_identifier)
+    digest_span, digest_owner = _native_optional_span(digested_data)
+    signature_span, signature_owner = _native_optional_span(signature_data)
+    correlation, correlation_owner = _native_optional_span(correlation_value)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_signature_verify",
+        (
+            identifier,
+            _native_structure(parameters),
+            _native_value(data),
+            digest_span,
+            signature_span,
+            correlation,
+            _native_optional_indicator(init_indicator),
+            _native_optional_indicator(final_indicator),
+        ),
+    )
+    _ = identifier_owner, digest_owner, signature_owner, correlation_owner
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_extension_count(item: ClientBatchItem) -> int:
     """Return the number of attached request extensions."""
     return _scalar(
@@ -1530,6 +1708,11 @@ __all__ = [
     "TtlvPath",
     "ValidatedExtensionValue",
     "client_batch_item_discover_versions",
+    "client_batch_item_hash",
+    "client_batch_item_mac",
+    "client_batch_item_mac_verify",
+    "client_batch_item_sign",
+    "client_batch_item_signature_verify",
     "client_batch_item_register",
     "client_batch_item_create",
     "client_batch_item_create_key_pair",

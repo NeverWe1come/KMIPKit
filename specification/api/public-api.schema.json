@@ -14,7 +14,7 @@
   "$defs": {
     "requirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-[0-9]{4}-(FR|SC)-[0-9]{3}$",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-6\\.1\\.[0-9]+-[0-9]{3}(?:-[0-9]{3})?)$",
       "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
     },
     "requirementIds": {
@@ -659,6 +659,37 @@
             }
           },
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "input-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^const kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "borrowed"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Borrowed pointer to a caller-owned fixed-width C value that does not carry embedded size and ABI-version fields."
         },
         {
           "type": "object",
@@ -1920,7 +1951,7 @@
     },
     "v2RequirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-[0-9]{4}-(FR|SC)-[0-9]{3}$"
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-6\\.1\\.[0-9]+-[0-9]{3}(?:-[0-9]{3})?)$"
     },
     "v2RequirementIds": {
       "type": "array",

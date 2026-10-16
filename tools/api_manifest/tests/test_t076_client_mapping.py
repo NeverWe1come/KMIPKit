@@ -1657,6 +1657,52 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("dataclass", exclusion["reason"].lower())
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
+    def test_crypto_response_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
+        response_types = (
+            "HashResponse",
+            "MacResponse",
+            "MacVerifyResponse",
+            "SignResponse",
+            "SignatureVerifyResponse",
+        )
+        generated_members = (
+            "__dataclass_fields__",
+            "__dataclass_params__",
+            "__delattr__",
+            "__eq__",
+            "__hash__",
+            "__init__",
+            "__match_args__",
+            "__repr__",
+            "__setattr__",
+            "__slots__",
+        )
+        expected = {
+            f"kmipkit.client.{response_type}.{member}"
+            for response_type in response_types
+            for member in generated_members
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and any(
+                row["exportName"].startswith(f"kmipkit.client.{response_type}.")
+                for response_type in response_types
+            )
+        }
+        self.assertEqual(expected, set(exclusions))
+        for path, exclusion in exclusions.items():
+            with self.subTest(excluded_export=path):
+                self.assertEqual(path, exclusion["exportName"])
+                self.assertIn("KMIPKIT-0021", exclusion["evidence"])
+                if path.endswith(".__init__"):
+                    self.assertIn("constructor", exclusion["reason"].lower())
+                elif path.endswith(".__repr__"):
+                    self.assertIn("presentation", exclusion["reason"].lower())
+                else:
+                    self.assertIn("dataclass", exclusion["reason"].lower())
+
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:
         capability = next(
             row

@@ -337,7 +337,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
         })
         .collect();
 
-    assert_eq!(exports.len(), 166, "update the count when adding C exports");
+    assert_eq!(exports.len(), 176, "update the count when adding C exports");
     assert!(
         exports.iter().all(|uses_boundary| *uses_boundary),
         "every exported C function must enter the shared panic boundary first"

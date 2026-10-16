@@ -119,6 +119,25 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemCreateSplitKey(long objectType, int parts, int threshold,
             long method, int identifierKind, byte[] identifierText, long identifierNumber,
             byte[] primeFieldSize, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemHash(
+            long parameters, long data, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemMac(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemMacVerify(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] macData, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemSign(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] digestedData, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator);
+    public static native long clientBatchItemSignatureVerify(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] digestedData, @Nullable byte[] signatureData,
+            @Nullable byte[] correlationValue, int initIndicator, int finalIndicator);
     public static native long registerRequestCreate(int objectType, long attributes, long object);
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long clientBatchItemRegister(long request);
@@ -155,6 +174,11 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseCreate(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateKeyPair(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateSplitKey(long itemResponse);
+    public static native Object[] clientBatchItemResponseHash(long itemResponse);
+    public static native Object[] clientBatchItemResponseMac(long itemResponse);
+    public static native Object[] clientBatchItemResponseMacVerify(long itemResponse);
+    public static native Object[] clientBatchItemResponseSign(long itemResponse);
+    public static native Object[] clientBatchItemResponseSignatureVerify(long itemResponse);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);

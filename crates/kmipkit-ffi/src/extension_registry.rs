@@ -34,9 +34,10 @@ use kmipkit_client::{
 };
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, ObjectType,
-    OpaqueObjectContext, ProtocolError, ProtocolErrorKind, RegisterRequest, SplitKeyMethod,
-    UniqueIdentifier,
+    AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, HashRequest,
+    MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext, OperationData, ProtocolError,
+    ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -47,6 +48,9 @@ use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::time::Duration;
 
+#[cfg(test)]
+#[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
+mod cryptographic_operation_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
@@ -2639,6 +2643,311 @@ fn copy_optional_bytes(data: *const u8, length: u64, present: u8) -> FfiResult<O
         .map_err(|_| ERROR_RESOURCE_LIMIT)?;
     owned.extend_from_slice(bytes);
     Ok(Some(owned))
+}
+
+fn copy_optional_secret_span(
+    span: *const crate::kmipkit_byte_span_v1_t,
+) -> FfiResult<Option<SecretBytes>> {
+    if span.is_null() {
+        return Ok(None);
+    }
+    // SAFETY: the C caller promises a readable byte-span record for this call.
+    let span = unsafe { span.read() };
+    let bytes = input_span(span.data, span.length, MAX_FFI_INPUT_BYTES)?;
+    let mut owned = Vec::new();
+    owned
+        .try_reserve_exact(bytes.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    owned.extend_from_slice(bytes);
+    Ok(Some(SecretBytes::new(owned)))
+}
+
+fn copy_operation_data(value: *mut kmipkit_ttlv_value_t) -> FfiResult<Option<OperationData>> {
+    if value.is_null() {
+        return Ok(None);
+    }
+    let handle = reference_handle(value, Kind::Value)?;
+    let HandleValue::Value(value) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    value.with_value(|view| match view {
+        ValueView::ByteString(bytes) => {
+            let mut owned = Vec::new();
+            owned
+                .try_reserve_exact(bytes.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            owned.extend_from_slice(bytes);
+            Ok(Some(OperationData::ByteString(SecretBytes::new(owned))))
+        }
+        ValueView::Enumeration(value) => Ok(Some(OperationData::Enumeration(*value))),
+        ValueView::Integer(value) => Ok(Some(OperationData::Integer(*value))),
+        _ => Err(ERROR_INVALID_INPUT),
+    })
+}
+
+fn optional_indicator(value: u8) -> FfiResult<Option<bool>> {
+    match value {
+        0 => Ok(None),
+        1 => Ok(Some(false)),
+        2 => Ok(Some(true)),
+        _ => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn with_cryptographic_framing<T>(
+    mut request: T,
+    correlation: Option<SecretBytes>,
+    init_indicator: Option<bool>,
+    final_indicator: Option<bool>,
+) -> T
+where
+    T: CryptographicRequestFraming,
+{
+    if let Some(value) = correlation {
+        request = request.with_correlation_value(value);
+    }
+    if let Some(value) = init_indicator {
+        request = request.with_init_indicator(value);
+    }
+    if let Some(value) = final_indicator {
+        request = request.with_final_indicator(value);
+    }
+    request
+}
+
+trait CryptographicRequestFraming: Sized {
+    fn with_correlation_value(self, value: SecretBytes) -> Self;
+    fn with_init_indicator(self, value: bool) -> Self;
+    fn with_final_indicator(self, value: bool) -> Self;
+}
+
+macro_rules! impl_cryptographic_request_framing {
+    ($($request:ty),+ $(,)?) => {
+        $(
+            impl CryptographicRequestFraming for $request {
+                fn with_correlation_value(self, value: SecretBytes) -> Self {
+                    <$request>::with_correlation_value(self, value)
+                }
+
+                fn with_init_indicator(self, value: bool) -> Self {
+                    <$request>::with_init_indicator(self, value)
+                }
+
+                fn with_final_indicator(self, value: bool) -> Self {
+                    <$request>::with_final_indicator(self, value)
+                }
+            }
+        )+
+    };
+}
+
+impl_cryptographic_request_framing!(
+    HashRequest,
+    MacRequest,
+    MacVerifyRequest,
+    SignRequest,
+    SignatureVerifyRequest,
+);
+
+fn copy_optional_identifier(
+    identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<Option<UniqueIdentifier>> {
+    if identifier.is_null() {
+        return Ok(None);
+    }
+    copy_unique_identifier(identifier)
+}
+
+fn batch_item_handle(request: ClientRequest) -> FfiResult<*mut kmipkit_client_batch_item_t> {
+    try_make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
+    )
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_hash(
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let parameters = try_ffi!(copy_structure_handle(parameters, true));
+        let Some(parameters) = parameters else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let data = try_ffi!(copy_operation_data(data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = HashRequest::new(parameters);
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::Hash(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_mac(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = MacRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::Mac(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_mac_verify(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    mac_data: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let mac_data = try_ffi!(copy_optional_secret_span(mac_data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = MacVerifyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        if let Some(mac_data) = mac_data {
+            request = request.with_mac_data(mac_data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::MacVerify(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_sign(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    digested_data: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let digested_data = try_ffi!(copy_optional_secret_span(digested_data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = SignRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        if let Some(digested_data) = digested_data {
+            request = request.with_digested_data(digested_data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::Sign(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_signature_verify(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    digested_data: *const crate::kmipkit_byte_span_v1_t,
+    signature_data: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let digested_data = try_ffi!(copy_optional_secret_span(digested_data));
+        let signature_data = try_ffi!(copy_optional_secret_span(signature_data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = SignatureVerifyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        if let Some(digested_data) = digested_data {
+            request = request.with_digested_data(digested_data);
+        }
+        if let Some(signature_data) = signature_data {
+            request = request.with_signature_data(signature_data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::SignatureVerify(request)));
+        SUCCESS
+    })
 }
 
 #[unsafe(no_mangle)]

@@ -558,6 +558,46 @@ int32_t kmipkit_client_batch_item_response_create_split_key_count(kmipkit_client
  */
 /* KMIPKIT-0014-FR-005, KMIPKIT-0014-FR-007, KMIPKIT-0014-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(kmipkit_client_batch_item_response_t * item, uint64_t index, kmipkit_unique_identifier_v1_t * out_identifier);
+/* Creates a typed Hash request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_hash(kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-002, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_hash(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed MAC request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.32-001 */
+int32_t kmipkit_client_batch_item_mac(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.32-001 */
+int32_t kmipkit_client_batch_item_response_mac(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_mac_data_present, kmipkit_byte_span_v1_t * out_mac_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed MAC Verify request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.33-001-001, KMIPKIT-REQ-SPEC-6.1.33-001-002 */
+int32_t kmipkit_client_batch_item_mac_verify(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * mac_data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.33-001-001, KMIPKIT-REQ-SPEC-6.1.33-001-002 */
+int32_t kmipkit_client_batch_item_response_mac_verify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_validity_present, uint32_t * out_validity_indicator, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed Sign request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.55-001 */
+int32_t kmipkit_client_batch_item_sign(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * digested_data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-004, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-006, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.55-001 */
+int32_t kmipkit_client_batch_item_response_sign(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_signature_data_present, kmipkit_byte_span_v1_t * out_signature_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
+/* Creates a typed Signature Verify request and copies caller-supplied opaque bytes at the ABI boundary.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.56-001-001, KMIPKIT-REQ-SPEC-6.1.56-002 */
+int32_t kmipkit_client_batch_item_signature_verify(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * parameters, kmipkit_ttlv_value_t * data, const kmipkit_byte_span_v1_t * digested_data, const kmipkit_byte_span_v1_t * signature_data, const kmipkit_byte_span_v1_t * correlation_value, uint8_t init_indicator, uint8_t final_indicator, kmipkit_client_batch_item_t ** out_item);
+/* Returns typed response fields only when the KMIP result is Success; byte spans are borrowed from the response-item handle.
+ */
+/* KMIPKIT-0021-FR-001, KMIPKIT-0021-FR-005, KMIPKIT-0021-FR-007, KMIPKIT-0021-FR-009, KMIPKIT-0021-FR-010, KMIPKIT-0021-FR-011, KMIPKIT-0021-FR-012, KMIPKIT-0021-FR-013, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.56-001-001, KMIPKIT-REQ-SPEC-6.1.56-002 */
+int32_t kmipkit_client_batch_item_response_signature_verify(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_validity_present, uint32_t * out_validity_indicator, uint8_t * out_recovered_data_present, kmipkit_byte_span_v1_t * out_recovered_data, uint8_t * out_correlation_present, kmipkit_byte_span_v1_t * out_correlation_value);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

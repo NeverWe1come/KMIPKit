@@ -213,6 +213,87 @@ static int creation_rejects_missing_required_attributes(void) {
     return 1;
 }
 
+static int crypto_constructor_result_is_valid(
+    int32_t status, kmipkit_client_batch_item_t **item) {
+    if ((status != 0 && status != T076_ERROR_INVALID_INPUT) ||
+        (status == 0 && *item == 0) ||
+        (status != 0 && *item != 0)) {
+        kmipkit_client_batch_item_release(*item);
+        *item = 0;
+        return 0;
+    }
+    kmipkit_client_batch_item_release(*item);
+    *item = 0;
+    return 1;
+}
+
+static int cryptographic_abi_symbols_are_callable(void) {
+    static const uint8_t correlation_bytes[] = {0x71, 0x00, 0x72};
+    static const uint8_t mac_bytes[] = {0x81, 0x82, 0x83};
+    static const uint8_t digest_bytes[] = {0x91, 0x92};
+    static const uint8_t signature_bytes[] = {0xa1, 0xa2, 0xa3};
+    kmipkit_byte_span_v1_t correlation = {correlation_bytes, sizeof(correlation_bytes)};
+    kmipkit_byte_span_v1_t mac = {mac_bytes, sizeof(mac_bytes)};
+    kmipkit_byte_span_v1_t digest = {digest_bytes, sizeof(digest_bytes)};
+    kmipkit_byte_span_v1_t signature = {signature_bytes, sizeof(signature_bytes)};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = (const uint8_t *)"ffi-key";
+    identifier.text_length = 7;
+    kmipkit_client_batch_item_t *item = 0;
+
+    if (!crypto_constructor_result_is_valid(
+            kmipkit_client_batch_item_hash(0, 0, &correlation, 1, 2, &item), &item) ||
+        !crypto_constructor_result_is_valid(
+            kmipkit_client_batch_item_mac(&identifier, 0, 0, &correlation, 1, 2, &item), &item) ||
+        !crypto_constructor_result_is_valid(
+            kmipkit_client_batch_item_mac_verify(
+                &identifier, 0, 0, &mac, &correlation, 1, 2, &item), &item) ||
+        !crypto_constructor_result_is_valid(
+            kmipkit_client_batch_item_sign(
+                &identifier, 0, 0, &digest, &correlation, 1, 2, &item), &item) ||
+        !crypto_constructor_result_is_valid(
+            kmipkit_client_batch_item_signature_verify(
+                &identifier, 0, 0, &digest, &signature, &correlation, 1, 2, &item), &item)) {
+        return 0;
+    }
+
+    kmipkit_client_batch_item_response_t *response_item = 0;
+    uint8_t present = 0xff;
+    uint8_t data_present = 0xff;
+    uint8_t correlation_present = 0xff;
+    uint8_t validity_present = 0xff;
+    uint8_t signature_present = 0xff;
+    uint8_t recovered_present = 0xff;
+    uint32_t indicator = UINT32_MAX;
+    kmipkit_byte_span_v1_t data = {0};
+    kmipkit_byte_span_v1_t correlation_value = {0};
+    kmipkit_byte_span_v1_t signature_value = {0};
+    kmipkit_byte_span_v1_t recovered_data = {0};
+    if (kmipkit_client_batch_item_response_hash(
+            response_item, &present, &data_present, &data,
+            &correlation_present, &correlation_value) !=
+            T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_mac(
+            response_item, &present, &identifier, &data_present, &data,
+            &correlation_present, &correlation_value) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_mac_verify(
+            response_item, &present, &identifier, &validity_present, &indicator,
+            &correlation_present, &correlation_value) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_sign(
+            response_item, &present, &identifier, &signature_present, &signature_value,
+            &correlation_present, &correlation_value) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_signature_verify(
+            response_item, &present, &identifier, &validity_present, &indicator,
+            &recovered_present, &recovered_data,
+            &correlation_present, &correlation_value) != T076_ERROR_INVALID_INPUT) {
+        return 0;
+    }
+    return 1;
+}
+
 static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limits) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
@@ -715,7 +796,8 @@ int main(int argc, char **argv) {
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||
         !creation_rejects_malformed_split_key_inputs() ||
-        !creation_rejects_missing_required_attributes()) {
+        !creation_rejects_missing_required_attributes() ||
+        !cryptographic_abi_symbols_are_callable()) {
         return 7;
     }
 

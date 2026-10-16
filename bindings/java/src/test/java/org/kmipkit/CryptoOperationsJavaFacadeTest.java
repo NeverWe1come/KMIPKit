@@ -39,6 +39,9 @@ import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
@@ -154,6 +157,7 @@ final class CryptoOperationsJavaFacadeTest {
                         .build();
                 Client client = Client.create(extensions, transport);
                 ClientBatch batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(2);
             int index = 0;
             for (Operation operation : OPERATIONS) {
                 for (int outcome = 0; outcome < 3; outcome++) {
@@ -206,7 +210,7 @@ final class CryptoOperationsJavaFacadeTest {
             for (int index = 0; index < parameterTypes.length; index++) {
                 Class<?> type = parameterTypes[index];
                 if (type == TtlvStructure.class && operation.name().equals("hash")) {
-                    parameters = TtlvStructure.create();
+                    parameters = hashParameters();
                     arguments[index] = parameters;
                 } else if (type == TtlvValue.class) {
                     if (dataKind != TtlvValueKind.NONE) {
@@ -243,6 +247,16 @@ final class CryptoOperationsJavaFacadeTest {
         };
     }
 
+    private static TtlvStructure hashParameters() {
+        try (RawTag rawTag = RawTag.fromRaw(0x420038);
+                Tag tag = rawTag.checked();
+                TtlvStructure empty = TtlvStructure.create();
+                TtlvValue algorithm = TtlvValue.Enumeration(6);
+                TtlvItem item = TtlvItem.create(tag, algorithm, CodecLimits.defaults())) {
+            return TtlvStructure.withItem(empty, item, CodecLimits.defaults());
+        }
+    }
+
     private static Method operationFactory(Operation operation) {
         return publicMethod(ClientBatchItem.class, operation.name(), operation.parameters());
     }
@@ -276,10 +290,10 @@ final class CryptoOperationsJavaFacadeTest {
         assertFalse(response.toString().contains(new String(SECRET_MARKER, StandardCharsets.UTF_8)),
                 operation.name() + " response display must redact output bytes");
         if (!operation.name().equals("hash")) {
-            Object identifier = publicMethod(response.getClass(), "uniqueIdentifier").invoke(response);
-            if (identifier instanceof Optional<?> optional) {
-                identifier = optional.orElseThrow();
-            }
+            Method accessor = publicMethod(response.getClass(), "uniqueIdentifier");
+            assertEquals(UniqueIdentifier.class, accessor.getReturnType(),
+                    operation.name() + " successful response must require its Unique Identifier");
+            Object identifier = accessor.invoke(response);
             assertNotNull(identifier, operation.name() + " success response must expose its Unique Identifier");
             assertFalse(response.toString().contains("response-id-secret"),
                     operation.name() + " response display must redact its Unique Identifier");
@@ -289,30 +303,30 @@ final class CryptoOperationsJavaFacadeTest {
 
         switch (operation.name()) {
             case "hash" -> {
-                assertCopiedResponseBytes(response, "data");
-                assertCopiedResponseBytes(response, "correlationValue");
+                assertCopiedResponseBytes(response, "data", SECRET_MARKER);
+                assertCopiedResponseBytes(response, "correlationValue", new byte[] {0x01, 0x00, (byte) 0xfd});
             }
-            case "mac" -> assertCopiedResponseBytes(response, "macData");
+            case "mac" -> assertCopiedResponseBytes(response, "macData", SECRET_MARKER);
             case "macVerify" -> assertUnknownValidityIndicator(response);
-            case "sign" -> assertCopiedResponseBytes(response, "signatureData");
+            case "sign" -> assertCopiedResponseBytes(response, "signatureData", SECRET_MARKER);
             case "signatureVerify" -> {
                 assertUnknownValidityIndicator(response);
-                assertCopiedResponseBytes(response, "recoveredData");
+                assertCopiedResponseBytes(response, "recoveredData", SECRET_MARKER);
             }
             default -> throw new AssertionError("unknown crypto response");
         }
     }
 
-    private static void assertCopiedResponseBytes(Object response, String fieldName) throws Exception {
+    private static void assertCopiedResponseBytes(Object response, String fieldName, byte[] expected) throws Exception {
         Method accessor = publicMethod(response.getClass(), fieldName);
         Object value = accessor.invoke(response);
         assertTrue(value instanceof Optional<?>, fieldName + " must be an optional byte field");
         Optional<?> first = (Optional<?>) value;
-        assertArrayEquals(SECRET_MARKER, (byte[]) first.orElseThrow());
+        assertArrayEquals(expected, (byte[]) first.orElseThrow());
         byte[] callerCopy = (byte[]) first.orElseThrow();
         callerCopy[0] ^= 0x7f;
         Optional<?> second = (Optional<?>) accessor.invoke(response);
-        assertArrayEquals(SECRET_MARKER, (byte[]) second.orElseThrow(),
+        assertArrayEquals(expected, (byte[]) second.orElseThrow(),
                 fieldName + " must be copied from the borrowed JNI span");
     }
 
@@ -369,11 +383,11 @@ final class CryptoOperationsJavaFacadeTest {
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
                 fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
             }
-            case "mac" -> fields.add(ttlvItem(0x4200c6, 8, SECRET_MARKER));
-            case "macVerify" -> fields.add(ttlvEnumeration(0x42009b, 0xffff_fffe));
-            case "sign" -> fields.add(ttlvItem(0x4200c3, 8, SECRET_MARKER));
+            case "mac" -> fields.add(ttlvItem(0x4200c4, 8, SECRET_MARKER));
+            case "macVerify" -> fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
+            case "sign" -> fields.add(ttlvItem(0x4200c7, 8, SECRET_MARKER));
             case "signatureVerify" -> {
-                fields.add(ttlvEnumeration(0x42009b, 0xffff_fffe));
+                fields.add(ttlvEnumeration(0x420128, 0xffff_fffe));
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
             }
             default -> throw new AssertionError("unknown crypto response");

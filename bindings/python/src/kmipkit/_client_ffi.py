@@ -34,6 +34,7 @@ ffi.cdef(
     typedef struct kmipkit_register_request_t kmipkit_register_request_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
+    typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
     typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
 
     typedef struct {
@@ -211,6 +212,47 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint64_t index,
         kmipkit_unique_identifier_v1_t *out_identifier);
+    int32_t kmipkit_client_batch_item_response_hash(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_data_present,
+        kmipkit_byte_span_v1_t *out_data,
+        uint8_t *out_correlation_present,
+        kmipkit_byte_span_v1_t *out_correlation_value);
+    int32_t kmipkit_client_batch_item_response_mac(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint8_t *out_mac_data_present,
+        kmipkit_byte_span_v1_t *out_mac_data,
+        uint8_t *out_correlation_present,
+        kmipkit_byte_span_v1_t *out_correlation_value);
+    int32_t kmipkit_client_batch_item_response_mac_verify(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint8_t *out_validity_present,
+        uint32_t *out_validity_indicator,
+        uint8_t *out_correlation_present,
+        kmipkit_byte_span_v1_t *out_correlation_value);
+    int32_t kmipkit_client_batch_item_response_sign(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint8_t *out_signature_data_present,
+        kmipkit_byte_span_v1_t *out_signature_data,
+        uint8_t *out_correlation_present,
+        kmipkit_byte_span_v1_t *out_correlation_value);
+    int32_t kmipkit_client_batch_item_response_signature_verify(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint8_t *out_validity_present,
+        uint32_t *out_validity_indicator,
+        uint8_t *out_recovered_data_present,
+        kmipkit_byte_span_v1_t *out_recovered_data,
+        uint8_t *out_correlation_present,
+        kmipkit_byte_span_v1_t *out_correlation_value);
     int32_t kmipkit_client_batch_item_create(
         uint32_t object_type,
         kmipkit_ttlv_structure_t *attributes,
@@ -235,6 +277,49 @@ ffi.cdef(
         uint64_t prime_field_size_length,
         kmipkit_ttlv_structure_t *attributes,
         kmipkit_ttlv_structure_t *protection_storage_masks,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_hash(
+        kmipkit_ttlv_structure_t *parameters,
+        kmipkit_ttlv_value_t *data,
+        const kmipkit_byte_span_v1_t *correlation_value,
+        uint8_t init_indicator,
+        uint8_t final_indicator,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_mac(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *parameters,
+        kmipkit_ttlv_value_t *data,
+        const kmipkit_byte_span_v1_t *correlation_value,
+        uint8_t init_indicator,
+        uint8_t final_indicator,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_mac_verify(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *parameters,
+        kmipkit_ttlv_value_t *data,
+        const kmipkit_byte_span_v1_t *mac_data,
+        const kmipkit_byte_span_v1_t *correlation_value,
+        uint8_t init_indicator,
+        uint8_t final_indicator,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_sign(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *parameters,
+        kmipkit_ttlv_value_t *data,
+        const kmipkit_byte_span_v1_t *digested_data,
+        const kmipkit_byte_span_v1_t *correlation_value,
+        uint8_t init_indicator,
+        uint8_t final_indicator,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_signature_verify(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *parameters,
+        kmipkit_ttlv_value_t *data,
+        const kmipkit_byte_span_v1_t *digested_data,
+        const kmipkit_byte_span_v1_t *signature_data,
+        const kmipkit_byte_span_v1_t *correlation_value,
+        uint8_t init_indicator,
+        uint8_t final_indicator,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_discover_versions(
         kmipkit_client_batch_item_t **out_item);
