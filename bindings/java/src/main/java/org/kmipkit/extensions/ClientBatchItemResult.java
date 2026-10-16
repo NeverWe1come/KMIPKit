@@ -168,8 +168,12 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     private static long[] requireLongArray(Object value, int length) {
+        return requireLongArray(value, length, "native creation response fields are invalid");
+    }
+
+    private static long[] requireLongArray(Object value, int length, String message) {
         if (!(value instanceof long[] values) || values.length != length) {
-            throw new InvalidInputException("native creation response fields are invalid");
+            throw new InvalidInputException(message);
         }
         return values;
     }
@@ -243,10 +247,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     static long[] parseMetadata(long[] values) {
-        if (values == null || values.length != 4) {
-            throw new InvalidInputException("native batch result metadata is invalid");
-        }
-        return values;
+        return requireLongArray(values, 4, "native batch result metadata is invalid");
     }
 
     private static int checkedVersionComponent(long value) {
