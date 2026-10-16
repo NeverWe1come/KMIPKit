@@ -64,6 +64,43 @@ cleanup:
     return result;
 }
 
+static int certify_constructor_is_callable_from_c(void) {
+    static const uint8_t request_value[] = {0x30, 0x82, 0x01, 0x00};
+    kmipkit_byte_span_v1_t request_span = {
+        request_value,
+        (uint64_t)sizeof(request_value),
+    };
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *masks = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    if (kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&masks) != 0 ||
+        kmipkit_client_batch_item_certify(
+            0, 1, UINT32_C(0xfedcba98), &request_span, attributes, masks, &item) != 0) {
+        goto cleanup;
+    }
+    result = item != 0;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(masks);
+    kmipkit_ttlv_structure_release(attributes);
+    return result;
+}
+
+static int certify_response_accessor_is_callable_from_c(void) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    uint8_t present = 9;
+    const int32_t status = kmipkit_client_batch_item_response_certify(
+        0, &present, &identifier);
+    return status == T076_ERROR_INVALID_INPUT && present == 0 &&
+        identifier.kind == 0 && identifier.text_data == 0 &&
+        identifier.text_length == 0 && identifier.enumeration_value == 0 &&
+        identifier.integer_value == 0;
+}
+
 static int creation_create_key_pair_matches_shared_fixture(void) {
     kmipkit_ttlv_structure_t *groups[6] = {0};
     kmipkit_client_batch_item_t *item = 0;
@@ -462,7 +499,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     }
     batch = 0; /* consumed by execution */
     if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
-        response_count != 8) {
+        response_count != 14) {
         goto cleanup;
     }
     for (uint64_t index = 0; index < response_count; ++index) {
@@ -793,6 +830,8 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (!creation_create_matches_shared_fixture() ||
+        !certify_constructor_is_callable_from_c() ||
+        !certify_response_accessor_is_callable_from_c() ||
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||
         !creation_rejects_malformed_split_key_inputs() ||
