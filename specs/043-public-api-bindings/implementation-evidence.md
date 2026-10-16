@@ -1890,10 +1890,13 @@ logs, default errors, and diagnostics.
 | Rust lint and format | `cargo clippy -p kmipkit-client -p kmipkit-protocol -p kmipkit-ffi -p kmipkit --all-targets --all-features -- -D warnings`; `cargo fmt --all --check` | PASS. AWS-LC emitted its existing Windows compiler/NASM probe warnings. |
 | Manifest generation and export audit | `python -B tools/api_manifest/generate.py --check`; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check` | PASS: 12 generated outputs verified; export audit exited 0 with zero issues. |
 
-T032 closes the operation mapping, parity, documentation, and evidence scope.
-T034 remains open because its Red/Green/Refactor evidence spans T031 through
-T033, and T033 is not part of this change. The branch still requires the
-separate coverage-gate repair and final remote CI on the reviewed head.
+The operation mapping, parity, documentation, and original evidence are
+implemented locally. QA later found the fixed 100,000-identifier response cap
+described below, so T032 remains unchecked until all four consumers preserve
+the larger response and the final remote CI passes on the reviewed head. T034
+remains open because its Red/Green/Refactor evidence spans T031 through T033,
+and T033 is not part of this change. The separate changed-code coverage gate
+also remains a required final CI check.
 
 ## Coverage gate follow-up
 
@@ -2028,7 +2031,22 @@ coverage remains in Rust/C and Java.
 |---|---|---|
 | Red | `717eb3f1` | `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#createSplitKeyResponsePreservesMoreThanOneHundredThousandIdentifiersOverTls test`: expected failure at `clientBatchItemResponseCreateSplitKey` with `InvalidInputException` after the TLS response decoded. `uv run --directory bindings/python --with-requirements requirements-coverage.txt -- python -m pytest -q tests/test_client.py::test_create_split_key_response_preserves_more_than_one_hundred_thousand_identifiers`: expected `ResourceLimitError` from `_create_split_key_response`. Both failures identify the second fixed cap, not decoder limits. |
 | Green | this Green commit | Removed the wrapper-only 100,000 response cap. JNI now checks the Java `jsize` representable length before array conversion; Python checks `sys.maxsize` before iteration and leaves allocation behavior to the Python runtime. Generic JNI/C input caps and caller-configured response byte/element limits remain enforced. The focused Rust response test, C ABI TLS consumer, Java TLS test, and two Python adapter tests all pass. Commands: `cargo test -p kmipkit-client --lib create_split_key_preserves_more_than_one_hundred_thousand_response_identifiers`; `cargo test -p kmipkit-ffi --test c_api_coverage --features coverage-c-consumer generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls`; `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#createSplitKeyResponsePreservesMoreThanOneHundredThousandIdentifiersOverTls test`; and `uv run --directory bindings/python --with-requirements requirements-coverage.txt -- python -m pytest -q tests/test_client.py::test_create_split_key_response_preserves_more_than_one_hundred_thousand_identifiers tests/test_client.py::test_create_split_key_response_rejects_count_above_python_collection_limit`. |
-| Refactor | pending | Verify cardinality and order across Rust, C ABI, Java TLS, and Python consumers; record all focused and full checks. |
+| Refactor | this evidence/refactor commit | `cargo test --workspace --all-features`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `mvn --batch-mode --file bindings/java/pom.xml verify`; `uv run --directory bindings/python --with-requirements requirements-coverage.txt -- python -m pytest -q`; `python -B tools/api_manifest/generate.py --check`; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`; `git diff --check` | PASS: Rust workspace tests and doctests, including the 100,001-identifier Rust and C ABI consumers; Clippy and rustfmt; Java 165 tests (3 documented skips) with JaCoCo gate; Python 242 tests; 12 generated outputs; binding audit 274/274 C, 487/487 Java, and 459/459 Python declarations. AWS-LC emits existing Windows compiler-probe and missing-NASM warnings; they do not fail Cargo. |
+
+#### Historical aggregate for head `43b418af`
+
+The latest completed CI run before the cardinality correction is
+`38848345465`. Its exact coverage artifacts were re-aggregated with the pinned
+gate against the run's merge commit `c9a025a1a0e008625f8168952c02b51405a8221d`
+and base `550a864840c727afa2bdf20b5a5e25aa3e2b9dff`, using the original
+`coverage-*` artifact directory without modifying its contents. The aggregate
+reproduced the CI failure: changed production coverage was 2,400/2,668, below
+95 percent. At least 2,535 hits are required, a deficit of 135. The gate emits
+only the aggregate count for this failure, so this result does not attribute
+the misses to individual files or lines. The run predates Red `717eb3f1` and
+Green `fbbf3f72`; it cannot validate the cardinality correction. A fresh full
+CI aggregate on the reviewed final head remains required, and T032 stays
+unchecked until that gate and the complete CI matrix pass.
 
 The same CI run also failed both macOS Core jobs while compiling the C ABI
 consumer: the test calls `kmipkit_ttlv_structure_release`, but that symbol was

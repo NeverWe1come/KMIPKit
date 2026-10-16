@@ -97,7 +97,7 @@ constexpr uint64_t kMaximumTransportInputBytes = 16 * 1024 * 1024;
 constexpr uint64_t kMaximumTransportInputCount = 4096;
 
 constexpr uint64_t kMaximumTextBytes = 4096;
-constexpr uint64_t kMaximumNativeArrayElements = 100000;
+constexpr uint64_t kMaximumNativeInputArrayElements = 100000;
 
 void throw_java(JNIEnv* env, const char* class_name, const char* message) noexcept {
     if (env->ExceptionCheck()) {
@@ -349,7 +349,8 @@ bool utf8_to_java_string(JNIEnv* env, const uint8_t* bytes, uint64_t length, jst
 }
 
 bool read_long_array(JNIEnv* env, jlongArray input, jsize expected_length,
-                     std::vector<uint64_t>& output, uint64_t max_elements = kMaximumNativeArrayElements) {
+                     std::vector<uint64_t>& output,
+                     uint64_t max_elements = kMaximumNativeInputArrayElements) {
     if (input == nullptr) {
         throw_invalid_input(env);
         return false;
@@ -386,7 +387,7 @@ bool read_handle_array(JNIEnv* env, jlongArray input, std::vector<Handle*>& outp
         return false;
     }
     const jsize length = env->GetArrayLength(input);
-    if (length < 0 || static_cast<uint64_t>(length) > kMaximumNativeArrayElements) {
+    if (length < 0 || static_cast<uint64_t>(length) > kMaximumNativeInputArrayElements) {
         throw_java(env, "org/kmipkit/ResourceLimitException", "handle array exceeds the bridge limit");
         return false;
     }
@@ -2530,12 +2531,12 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             throw_status(env, status);
             return static_cast<jobjectArray>(nullptr);
         }
-        if (count > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
-            throw_status(env, KMIPKIT_ERROR_RESOURCE_LIMIT);
-            return static_cast<jobjectArray>(nullptr);
-        }
         if (present > 1 || (present == 0 && count != 0) || (present == 1 && count == 0)) {
             throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (count > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+            throw_status(env, KMIPKIT_ERROR_RESOURCE_LIMIT);
             return static_cast<jobjectArray>(nullptr);
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present), static_cast<jlong>(count)});
