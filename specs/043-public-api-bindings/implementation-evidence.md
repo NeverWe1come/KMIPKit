@@ -2129,6 +2129,33 @@ normative inventory checks.
 
 T032 is complete: the approved creation mappings preserve optional Result
 Message semantics, the additive C metadata v2 ABI, and 100,001 ordered Create
-Split Key identifiers; the final remote matrix and coverage gate pass. T034
-remains open until the corresponding Red/Green/Refactor and convergence work
-for T033 is complete.
+Split Key identifiers; the final remote matrix and coverage gate pass.
+
+## T033 — Hash, MAC, and signature operation mappings
+
+The four-language API now declares typed Hash, MAC, MAC Verify, Sign, and
+Signature Verify batch items and response accessors from approved
+`specs/021-hash-mac-signature-operations/spec.md`. Rust requests remain the
+canonical contract; C, Java/JNI, and Python/CFFI preserve the opaque byte
+values, optional correlation data, unknown validity-indicator values, and
+redacted diagnostics. The manifest maps each exact language export and links
+the operation-specific normative requirements.
+
+| Phase | Commits | Verification | Result |
+|---|---|---|---|
+| Red | `1e7636c3`, `3bffd2ae`, `3d2421c7`, `df68f00a` | Rust/C, Java, Python, and generated-manifest parity specifications | Tests specified the five operations and four-language result mappings before implementation. |
+| Green | `021c29a2` | `cargo test -p kmipkit-ffi --all-features --locked`; `mvn --batch-mode --file bindings/java/pom.xml test`; `uv run --project bindings/python --python 3.12 --with pytest --locked -- python -m pytest -q bindings/python/tests` | PASS: Rust FFI 71 tests and 4 C consumer tests; Java/JNI 180 tests (3 skipped); Python 292 tests. Added the five operation builders, response projections, FFI bridges, and parity fixtures. |
+| Red | `524e4915` | `uv run --with jsonschema==4.26.0 -- python -B -m unittest tools.api_manifest.tests.test_binding_exports.BindingExportAuditTests.test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions` | Expected failure: five redacted Java response `toString()` members lacked exact classifications. |
+| Green | `32de2826` | The same focused test; `python tools/api_manifest/audit_binding_exports.py --check` | PASS: the five exact redacted methods are classified; C 284/284, Java 517/517, and Python 489/489 manifest paths reconcile with no missing or unobserved paths. |
+| Refactor | this evidence commit | `uv run --with jsonschema==4.26.0 -- python -B -m unittest discover -s tools/api_manifest/tests -p 'test_*.py'`; `uv run --with jsonschema==4.26.0 -- python -B -m unittest tools.api_manifest.tests.test_binding_exports`; `uv run --with jsonschema==4.26.0 -- python -B -m unittest tools.api_manifest.tests.test_manifest_v2`; `python tools/api_manifest/generate.py --check`; `python tools/api_manifest/audit_binding_exports.py --check`; `python tools/api_manifest/audit_rust_exports.py --check`; `python tools/api_manifest/audit_shared_rust_inventory.py --check`; `git diff --check` | PASS: 339 tool tests (3 skipped) before the five final exclusions; after those exclusions, binding tests 43/43 and manifest tests 50/50 pass, generation verifies all 12 outputs, and C/Java/Python export inventories have no missing or unobserved paths. The Rust export audit reports 9,510/9,510 manifest paths, 22 exact exclusions, and zero discrepancies; the shared inventory report is current. |
+
+The focused generator regression reproduced a second issue in the capability
+inventory check: it compared each language against the Rust primary name
+instead of that language's mapped export. The validator now checks exact
+language-specific names. The shared Rust inventory separately treats
+operation-owned rows as operation mappings rather than shared capability
+records. These changes keep the 245 mapped shared Rust declarations distinct
+from the operation API rows.
+
+T033 and T034 are complete. T011 remains open until the final cross-platform CI
+run confirms the refreshed binding audit and generated artifacts on the branch.

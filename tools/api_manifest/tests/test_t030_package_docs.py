@@ -140,7 +140,18 @@ class PackageDocumentationContractTests(unittest.TestCase):
             operation for operation in operations if operation["apiState"] == "declared"
         ]
         self.assertEqual(
-            [operation["name"] for operation in declared_operations], ["Discover Versions"]
+            [operation["name"] for operation in declared_operations],
+            [
+                "Create",
+                "Create Key Pair",
+                "Create Split Key",
+                "Discover Versions",
+                "Hash",
+                "MAC",
+                "MAC Verify",
+                "Sign",
+                "Signature Verify",
+            ],
         )
         self.assertEqual(len(operations), blocked_operations + len(declared_operations))
 

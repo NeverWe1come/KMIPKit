@@ -26,7 +26,7 @@ class SharedRustInventoryTests(unittest.TestCase):
                 / "specs"
                 / "043-public-api-bindings"
                 / "reports"
-                / "rust-export-report-2026-10-13.json"
+                / "rust-export-report-2026-10-16.json"
             ).read_text(encoding="utf-8")
         )
 
@@ -51,12 +51,20 @@ class SharedRustInventoryTests(unittest.TestCase):
             - inventory["approvedExcludedRustDeclarationCount"],
         )
 
+    def test_operation_mappings_are_not_counted_as_shared_capabilities(self) -> None:
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+        operation_ids = {row["operationId"] for row in self.manifest["operations"]}
+
+        self.assertFalse(
+            any(row["capabilityId"] in operation_ids for row in inventory["mappedDeclarations"])
+        )
+
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 9525)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 143)
-        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 9532)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 245)
+        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 32)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
@@ -169,7 +177,12 @@ class SharedRustInventoryTests(unittest.TestCase):
         )
 
         operation = next(row for row in self.manifest["operations"] if row["name"] == "Discover Versions")
-        self.assertEqual(operation["apiState"], "blocked")
+        self.assertEqual(operation["apiState"], "declared")
+        self.assertEqual(operation["featureSpecId"], "KMIPKIT-0007")
+        self.assertEqual(
+            set(operation["declarations"]),
+            {"rust", "c", "java", "python"},
+        )
 
     def test_all_ready_capability_mappings_match_exact_ready_exports(self) -> None:
         language_packages = {
@@ -188,11 +201,12 @@ class SharedRustInventoryTests(unittest.TestCase):
                     continue
                 expected = sorted(
                     {
-                        row["exportName"]
+                        row["languageMappings"][language]["name"]
                         for row in self.manifest["publicDeclarations"]
                         if row["capabilityId"] == capability["capabilityId"]
                         and row["declarationState"] in {"declared", "verified"}
-                        and row["packageId"] in packages
+                        and language in row.get("languageMappings", {})
+                        and row["languageMappings"][language]["packageId"] in packages
                     }
                 )
                 self.assertEqual(
@@ -249,10 +263,10 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         blocked = inventory["blockedUnreconciledDeclarations"]
 
-        self.assertEqual(len(blocked), 36)
+        self.assertEqual(len(blocked), 32)
         self.assertEqual(
             sum("callable public declaration" in row["blockedReason"] for row in blocked),
-            22,
+            18,
         )
         self.assertEqual(
             sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),

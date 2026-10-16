@@ -68,13 +68,16 @@ changes to this table.
 | `production_transport` | declared | Rust and the three adapters expose the approved TLS 1.3 client transport configuration; interoperability evidence remains pending. |
 | `api_level_discovery` | declared | Rust, C, Java, and Python expose the local API-level taxonomy without network access. |
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
+| `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **55 / 56** remain `blocked`; the
-Discover Versions row is `declared` because its four-language request and
-response mapping is present. `declared` is not evidence of complete operation
-conformance. Do not infer operation availability from types or implementation
-code elsewhere in the repository. KMIPKit does not claim full operation
-parity, a supported profile, or formal certification from this snapshot.
+Of the **56** KMIP `client_1_0` operation rows, **47 / 56** remain `blocked`.
+Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
+Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
+request and response mappings are recorded; `declared` is not evidence of
+complete operation conformance. Do not infer operation availability from types
+or implementation code elsewhere in the repository. KMIPKit does not claim full
+operation parity, a supported profile, or formal certification from this
+snapshot.
 
 For the authoritative operation owners and per-capability mappings, see the
 [manifest](../../../specification/api/public-api.json) and the [public API

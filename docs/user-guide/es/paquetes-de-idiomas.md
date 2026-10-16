@@ -72,14 +72,16 @@ tabla.
 | `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
 | `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
+| `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **55 / 56** siguen en estado
-`blocked`; la fila de Discover Versions está `declared` porque su mapeo de
-solicitud y respuesta en cuatro lenguajes ya existe. `declared` no demuestra
-la conformidad completa de la operación. No se debe inferir que una operación
-está disponible porque haya tipos o código en otra parte del repositorio. Esta
-instantánea no afirma paridad completa de operaciones, compatibilidad con un
-perfil ni certificación formal de KMIPKit.
+De las **56** filas de operaciones KMIP `client_1_0`, **47 / 56** siguen en
+estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair,
+Create Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature
+Verify. Sus mapeos de solicitud y respuesta para cuatro lenguajes están
+registrados; `declared` no demuestra la conformidad completa de las operaciones.
+No se debe inferir que una operación está disponible porque haya tipos o código
+en otra parte del repositorio. Esta instantánea no afirma paridad completa de
+operaciones, compatibilidad con un perfil ni certificación formal de KMIPKit.
 
 El [manifiesto](../../../specification/api/public-api.json) y el [diseño de
 la API pública](../../architecture/public-api.md) contienen los propietarios
