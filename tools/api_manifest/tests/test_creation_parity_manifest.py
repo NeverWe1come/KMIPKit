@@ -74,6 +74,27 @@ class CreationParityManifestTests(unittest.TestCase):
             {"UniqueIdentifierV1", "ClientBatchItemMetadataV2"} <= types
         )
 
+    def test_creation_response_text_identifiers_document_borrowed_lifetime(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        symbols = {
+            "kmipkit_client_batch_item_response_create",
+            "kmipkit_client_batch_item_response_create_key_pair",
+            "kmipkit_client_batch_item_response_create_split_key_unique_identifier_at",
+        }
+        functions = {
+            row["c"]["symbol"]: row["c"].get("documentation", [])
+            for row in manifest["functions"]
+            if row.get("c", {}).get("symbol") in symbols
+        }
+
+        self.assertEqual(symbols, set(functions))
+        for symbol, documentation in functions.items():
+            with self.subTest(symbol=symbol):
+                text = " ".join(documentation).lower()
+                self.assertIn("borrowed", text)
+                self.assertIn("response handle", text)
+                self.assertIn("copy", text)
+
 
 if __name__ == "__main__":
     unittest.main()
