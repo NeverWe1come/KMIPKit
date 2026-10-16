@@ -136,7 +136,13 @@ class PackageDocumentationContractTests(unittest.TestCase):
         blocked_operations = sum(
             operation["apiState"] == "blocked" for operation in operations
         )
-        self.assertEqual(len(operations), blocked_operations)
+        declared_operations = [
+            operation for operation in operations if operation["apiState"] == "declared"
+        ]
+        self.assertEqual(
+            [operation["name"] for operation in declared_operations], ["Discover Versions"]
+        )
+        self.assertEqual(len(operations), blocked_operations + len(declared_operations))
 
         for guide, operation_phrase in (
             (self.english, "full operation parity"),

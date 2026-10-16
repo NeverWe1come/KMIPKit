@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import sys
 from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
@@ -33,7 +34,6 @@ _MAX_INPUT_BYTES = 16 * 1024 * 1024
 _MAX_TEXT_BYTES = 4_096
 _MAX_BATCH_ITEMS = 4_096
 _MAX_TRANSPORT_CONFIG_ITEMS = 4_096
-_MAX_PROTOCOL_VERSIONS = 100_000
 _MAX_U64 = (1 << 64) - 1
 _MIN_I64 = -(1 << 63)
 _MAX_I64 = (1 << 63) - 1
@@ -1037,9 +1037,9 @@ def _discover_versions_supported_versions(
         return None
     if present[0] != 1:
         errors.raise_for_status(4)
-    if count[0] > _MAX_PROTOCOL_VERSIONS:
-        errors.raise_for_status(6)
     required = int(count[0])
+    if required > sys.maxsize // ffi.sizeof("kmipkit_protocol_version_v1_t"):
+        errors.raise_for_status(6)
     if required == 0:
         return ()
 

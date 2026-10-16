@@ -2937,7 +2937,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge; its low-level native handle method only carries the typed facade call to the stable C ABI.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 in docs/architecture/ffi-and-bindings.md. The NativeExtensionRegistry class is the internal JNI bridge; its low-level native handle method only carries the typed facade call to the stable C ABI.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions",
       "packageId": "java-kmipkit",
       "reason": "This exact native method is a raw-handle JNI bridge entry point. Java applications use the typed ClientBatchItemResult facade; the bridge method has no independent product-level capability."

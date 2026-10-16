@@ -222836,7 +222836,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge; its low-level native handle method only carries the typed facade call to the stable C ABI."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 in docs/architecture/ffi-and-bindings.md. The NativeExtensionRegistry class is the internal JNI bridge; its low-level native handle method only carries the typed facade call to the stable C ABI."
     },
     {
       "packageId": "java-kmipkit",

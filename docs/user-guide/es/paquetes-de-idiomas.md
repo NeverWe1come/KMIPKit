@@ -66,14 +66,20 @@ tabla.
 | `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
 | `public_binding_surface` | blocked | El inventario completo de declaraciones públicas y sus mapeos aún no está reconciliado. |
 | `vendor_extension_registry` | declared | Hay mapeos compartidos exactos; falta verificar la paridad y las declaraciones no reconciliadas siguen bloqueadas. |
-| `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la ejecución completa y la paridad de respuesta de Discover Versions siguen bloqueadas. |
+| `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
+| `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
+| `client_execution` | declared | Los mapeos de solicitud y respuesta de Discover Versions están presentes en Rust, C, Java y Python; falta completar la conformidad de operaciones 1.0. |
+| `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
+| `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
 
-Las **56 / 56** filas de operaciones KMIP `client_1_0` tienen actualmente el
-estado `blocked` en el manifiesto. No se debe inferir que una operación está
-disponible porque haya tipos o código de implementación en otra parte del
-repositorio. Esta instantánea no afirma paridad completa de operaciones,
-compatibilidad con un perfil ni certificación formal de KMIPKit.
+De las **56** filas de operaciones KMIP `client_1_0`, **55 / 56** siguen en estado
+`blocked`; la fila de Discover Versions está `declared` porque su mapeo de
+solicitud y respuesta en cuatro lenguajes ya existe. `declared` no demuestra
+la conformidad completa de la operación. No se debe inferir que una operación
+está disponible porque haya tipos o código en otra parte del repositorio. Esta
+instantánea no afirma paridad completa de operaciones, compatibilidad con un
+perfil ni certificación formal de KMIPKit.
 
 El [manifiesto](../../../specification/api/public-api.json) y el [diseño de
 la API pública](../../architecture/public-api.md) contienen los propietarios

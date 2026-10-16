@@ -57,6 +57,7 @@ SHARED_PARITY_CASES = {
     "client-configuration.registry-isolation.v1",
     "errors.schema-redaction.v1",
     "batch.ordered-completed-pending-failed.v1",
+    "discover-versions.supported-versions.v1",
     "ttlv.open-values-and-child-order.v1",
     "extensions.recognition-and-generic-preservation.v1",
 }

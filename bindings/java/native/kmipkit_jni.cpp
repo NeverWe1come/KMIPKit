@@ -2304,9 +2304,8 @@ JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatc
             }
             return static_cast<jlongArray>(nullptr);
         }
-        if (present != 1 || count > kMaximumNativeArrayElements ||
-            count > static_cast<uint64_t>(std::numeric_limits<jsize>::max() / 2)) {
-            throw_status(env, count > kMaximumNativeArrayElements
+        if (present != 1 || count > static_cast<uint64_t>(std::numeric_limits<jsize>::max() / 2)) {
+            throw_status(env, count > static_cast<uint64_t>(std::numeric_limits<jsize>::max() / 2)
                     ? KMIPKIT_ERROR_RESOURCE_LIMIT : KMIPKIT_ERROR_INVALID_INPUT);
             return static_cast<jlongArray>(nullptr);
         }

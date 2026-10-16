@@ -655,6 +655,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientExecuteWithOptions",
             "clientBatchCreate", "clientBatchItemResponseMetadata",
             "clientBatchItemResponsePendingCorrelationValue",
+            "clientBatchItemResponseDiscoverVersionsSupportedVersions",
             "clientBatchItemResponseUniqueBatchItemId",
             "clientBatchItemWithUniqueBatchItemId", "clientBatchResponseItemAt",
             "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
