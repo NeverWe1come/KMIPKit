@@ -313,6 +313,39 @@ final class NativeLibraryLoaderTest {
     }
 
     @Test
+    void preservesAbiMismatchWhenLoadingAnExplicitNativeLibrary() throws Exception {
+        Path fixture = Path.of("..", "..", "tools", "native_package_smoke", "wrong_abi.rs")
+                .toAbsolutePath().normalize();
+        assertTrue(Files.isRegularFile(fixture), "The wrong-ABI native fixture must exist");
+        Path library = temporaryDirectory.resolve(wrongAbiLibraryName()).toAbsolutePath();
+        Process compiler = new ProcessBuilder("rustc", "--edition=2024", "--crate-name",
+                "kmipkit_wrong_abi", "--crate-type", "cdylib", fixture.toString(), "-o",
+                library.toString()).redirectErrorStream(true).start();
+        String compilerOutput = new String(compiler.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, compiler.waitFor(), compilerOutput);
+
+        Path testClasses = classLocation(NativeLibraryLoadProbe.class);
+        Path mainClasses = classLocation(NativeExtensionRegistry.class);
+        Path java = Path.of(System.getProperty("java.home"), "bin",
+                System.getProperty("os.name", "").startsWith("Windows") ? "java.exe" : "java");
+        String classPath = String.join(File.pathSeparator, testClasses.toString(), mainClasses.toString());
+        List<String> command = new java.util.ArrayList<>(List.of(
+                java.toString(), "-Dkmipkit.nativeLibrary=" + library,
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName(), "abi-mismatch"));
+        String jacocoAgent = childJacocoAgentArgument(ManagementFactory.getRuntimeMXBean().getInputArguments());
+        if (jacocoAgent != null) {
+            command.add(1, jacocoAgent);
+        }
+
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        assertNotEquals(0, process.waitFor(), output);
+        assertTrue(output.contains(NativeLibraryLoader.ABI_FAILURE_MESSAGE), output);
+        assertFalse(output.contains(NativeLibraryLoader.LOAD_FAILURE_MESSAGE), output);
+    }
+
+    @Test
     void loadRedactsExplicitLibraryLoadingFailure() {
         String previous = System.getProperty("kmipkit.nativeLibrary");
         String invalidLibrary = temporaryDirectory.resolve("missing-native-library.dll").toString();
@@ -1031,6 +1064,17 @@ final class NativeLibraryLoaderTest {
     }
 
     private record ProcessResult(int exitCode, String output) {}
+
+    private static String wrongAbiLibraryName() {
+        String osName = System.getProperty("os.name", "");
+        if (osName.startsWith("Windows")) {
+            return "kmipkit_wrong_abi.dll";
+        }
+        if (osName.startsWith("Mac")) {
+            return "libkmipkit_wrong_abi.dylib";
+        }
+        return "libkmipkit_wrong_abi.so";
+    }
 
     private static String childJacocoAgentArgument(List<String> inputArguments) {
         for (String argument : inputArguments) {

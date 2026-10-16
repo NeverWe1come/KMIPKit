@@ -5,7 +5,8 @@ public final class NativeLibraryLoadProbe {
     private NativeLibraryLoadProbe() {}
 
     public static void main(String[] args) {
-        if (System.getProperty("kmipkit.nativeLibrary") != null) {
+        boolean abiMismatchProbe = args.length == 1 && args[0].equals("abi-mismatch");
+        if (System.getProperty("kmipkit.nativeLibrary") != null && !abiMismatchProbe) {
             throw new IllegalStateException("The explicit library override must be absent");
         }
         if (args.length == 1 && args[0].equals("version")) {

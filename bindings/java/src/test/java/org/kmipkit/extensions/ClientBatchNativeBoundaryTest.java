@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -56,5 +57,42 @@ final class ClientBatchNativeBoundaryTest {
             assertEquals(0, textIdentifier.extensionCount());
             assertEquals(0, enumerationIdentifier.extensionCount());
         }
+    }
+
+    @Test
+    void splitKeyJniAcceptsEnumerationIdentifiersAndRejectsOutOfRangeNativeNumbers() {
+        long attributes = NativeExtensionRegistry.ttlvStructureCreate();
+        long item = 0;
+        try {
+            item = NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                    7, 2, 2, 1, UniqueIdentifier.Kind.ENUMERATION.raw(), null,
+                    0xffff_ffffL, null, attributes, 0);
+            assertNotEquals(0, item);
+            NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, item);
+            item = 0;
+
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                            7, 2, 2, 1, UniqueIdentifier.Kind.ENUMERATION.raw(), null,
+                            0x1_0000_0000L, null, attributes, 0));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                            7, 2, 2, 1, 4, null, 0, null, attributes, 0));
+        } finally {
+            if (item != 0) {
+                NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, item);
+            }
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, attributes);
+        }
+    }
+
+    @Test
+    void executeWithOptionsReleasesBatchWhenJniRejectsTheClientHandle() {
+        long batch = NativeExtensionRegistry.clientBatchCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientExecuteWithOptions(0, batch, new long[0], new long[0]));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchAddErrorContinuationValue(batch, 0));
     }
 }
