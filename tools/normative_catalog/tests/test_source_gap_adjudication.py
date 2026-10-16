@@ -48,6 +48,56 @@ AUDITED_REQUIREMENTS = {
     "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE": "KMIPKIT-REQ-SPEC-5.7-002",
 }
 
+PROCEDURE_GAP_CONTEXT = {
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011": ([22429, 22431], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-012": ([22437, 22439], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-013": ([22441, 22443], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-014": ([22449, 22451], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-015": ([22457, 22459], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-016": ([22465, 22467], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-017": ([22469, 22471], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-018": ([22473, 22475], "multi-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-019": ([22485, 22488], "single-part"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-020": ([22494, 22496], "single-part"),
+}
+AMBIGUOUS_SOURCE_GAPS = {
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE": ([22417, 22420], "force_and_actor_unresolved"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009": ([22498, 22499], "unresolved_source_interpretation"),
+    "KMIPKIT-SOURCE-GAP-SPEC-9.17-001": ([45156, 45158], "scope_unresolved"),
+}
+OUTSIDE_CLIENT_1_0_SOURCE_GAPS = frozenset(
+    {
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4076",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4089",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204",
+        "KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217",
+        "KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260",
+        "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5139",
+        "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5141",
+        "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5149",
+        "KMIPKIT-SOURCE-GAP-PROF-5.4.2-5980",
+        "KMIPKIT-SOURCE-GAP-PROF-5.5.2-6613",
+        "KMIPKIT-SOURCE-GAP-PROF-5.12.3-8658",
+        "KMIPKIT-SOURCE-GAP-PROF-5.18.3-10411",
+        "KMIPKIT-SOURCE-GAP-PROF-6.6-10708",
+        "KMIPKIT-SOURCE-GAP-PROF-6.8-10746",
+        "KMIPKIT-SOURCE-GAP-SPEC-8.4-002",
+        "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
+        "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
+        "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
+        "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
+        "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
+        "KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION",
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.42-RECOVER-AUTHENTICATION-SHOULD-ACTOR-UNRESOLVED",
+        "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED",
+    }
+)
+
 
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -642,21 +692,8 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         oracle = _load_json(ORACLE_PATH)
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         spec_lines = SPEC_SOURCE_PATH.read_text(encoding="cp1252").splitlines()
-        procedure_ranges = {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011": [22429, 22431],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-012": [22437, 22439],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-013": [22441, 22443],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-014": [22449, 22451],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-015": [22457, 22459],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-016": [22465, 22467],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-017": [22469, 22471],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-018": [22473, 22475],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-019": [22485, 22488],
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-020": [22494, 22496],
-        }
-        for gap_id, line_range in procedure_ranges.items():
+        for gap_id, (line_range, mode) in PROCEDURE_GAP_CONTEXT.items():
             gap = gaps[gap_id]
-            mode = "multi-part" if gap_id.endswith(tuple(f"-{number:03}" for number in range(11, 19))) else "single-part"
             with self.subTest(gap_id=gap_id):
                 self.assertEqual(gap["html_line_range"], line_range)
                 self.assertEqual(
@@ -679,27 +716,13 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertIsNone(gap["proposed_requirement_id"])
                 self.assertIn("standalone requirement ID", gap["review_note"])
 
-        ambiguous_gap_details = {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE": (
-                [22417, 22420],
-                "force_and_actor_unresolved",
-            ),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009": (
-                [22498, 22499],
-                "unresolved_source_interpretation",
-            ),
-            "KMIPKIT-SOURCE-GAP-SPEC-9.17-001": (
-                [45156, 45158],
-                "scope_unresolved",
-            ),
-        }
         unresolved_ids = {
             gap_id
             for gap_id, gap in gaps.items()
             if gap["scope_disposition"] == "unresolved"
         }
-        self.assertEqual(unresolved_ids, set(ambiguous_gap_details))
-        for gap_id, (line_range, status) in ambiguous_gap_details.items():
+        self.assertEqual(unresolved_ids, set(AMBIGUOUS_SOURCE_GAPS))
+        for gap_id, (line_range, status) in AMBIGUOUS_SOURCE_GAPS.items():
             gap = gaps[gap_id]
             with self.subTest(gap_id=gap_id):
                 self.assertEqual(gap["html_line_range"], line_range)
@@ -712,43 +735,13 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertIsNone(gap["candidate_requirement_id"])
                 self.assertIsNone(gap["proposed_requirement_id"])
 
-        outside_scope_ids = {
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4009",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.1-4023",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4060",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4076",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.2-4089",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4196",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4200",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.3-4204",
-            "KMIPKIT-SOURCE-GAP-PROF-3.1.4-4217",
-            "KMIPKIT-SOURCE-GAP-PROF-3.2.4-4260",
-            "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5139",
-            "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5141",
-            "KMIPKIT-SOURCE-GAP-PROF-5.3.1-5149",
-            "KMIPKIT-SOURCE-GAP-PROF-5.4.2-5980",
-            "KMIPKIT-SOURCE-GAP-PROF-5.5.2-6613",
-            "KMIPKIT-SOURCE-GAP-PROF-5.12.3-8658",
-            "KMIPKIT-SOURCE-GAP-PROF-5.18.3-10411",
-            "KMIPKIT-SOURCE-GAP-PROF-6.6-10708",
-            "KMIPKIT-SOURCE-GAP-PROF-6.8-10746",
-            "KMIPKIT-SOURCE-GAP-SPEC-8.4-002",
-            "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
-            "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
-            "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
-            "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
-            "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
-            "KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.42-RECOVER-AUTHENTICATION-SHOULD-ACTOR-UNRESOLVED",
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED",
-        }
         actual_outside_scope_ids = {
             gap_id
             for gap_id, gap in gaps.items()
             if gap["scope_disposition"]
             in {"server_only", "out_of_scope", "mixed_server_and_out_of_scope", "client_1_1"}
         }
-        self.assertEqual(actual_outside_scope_ids, outside_scope_ids)
+        self.assertEqual(actual_outside_scope_ids, OUTSIDE_CLIENT_1_0_SOURCE_GAPS)
 
     def test_t002_maps_all_requirements_without_clause_ids_to_exact_table_rows(self) -> None:
         catalog = _load_json(CATALOG_PATH)
