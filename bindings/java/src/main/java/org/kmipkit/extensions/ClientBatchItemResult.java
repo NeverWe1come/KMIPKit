@@ -59,12 +59,17 @@ public final class ClientBatchItemResult implements AutoCloseable {
     public Optional<CreateResponse> createResponse() {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCreate);
-        long[] fields = requireLongArray(values, 5);
+        if (values == null || values.length != 2) {
+            throw new InvalidInputException("native Create response is invalid");
+        }
+        long[] fields = requireLongArray(values[0], 5);
         if (fields[0] == 0) {
             return Optional.empty();
         }
         requirePresent(fields[0]);
-        return Optional.of(new CreateResponse(fields[1], identifier(fields[2], fields[3], fields[4], values[1])));
+        byte[] text = values[1] == null ? null : requireBytes(values[1]);
+        return Optional.of(new CreateResponse(
+                fields[1], identifier(fields[2], fields[3], fields[4], text)));
     }
 
     /** Returns distinct private and public identifiers for a successful Create Key Pair response. */
