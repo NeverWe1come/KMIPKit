@@ -1955,6 +1955,47 @@ and JNI reports must be combined by the CI aggregate against the pushed head.
 | Refactor | this evidence commit | `python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v`; `python -B tools/extension_fixtures/generate.py --check`; `python -B scripts/coverage_gate.py preflight --workspace .`; `cargo doc --workspace --all-features --no-deps --locked`; `python scripts/test_user_guide_examples.py`; `git diff --check` | PASS: normative catalog 222 tests (7 platform skips); fixture generator current; source preflight found executable/ambiguous functions in 121 of 202 Rust files; Rust docs built; all 20 marked guide examples compiled; no whitespace errors. Windows AWS-LC compiler/NASM probe warnings remain environmental and did not fail Cargo. |
 | Aggregate gate | pending | A fresh full CI aggregate on the pushed head is required to establish the 95 percent changed-code result; the Windows Rust report cannot substitute for Linux/macOS, C/JNI, Java, and Python producer reports. |
 
+#### 2026-10-16 creation coverage follow-up
+
+The new cross-language coverage consumers exercise the existing creation
+response paths with a real C ABI mTLS batch, a Java TLS exchange, and Python
+CFFI response values. They also check every client operation discriminant,
+distinct Create Key Pair identifiers, mixed ordered Create Split Key
+identifiers, and the exact failure-only Result Message. The Java integration
+test exposed a T032 response-decoding defect: JNI returns an outer
+`Object[]` containing a five-element `long[]` and optional identifier text
+bytes, but `ClientBatchItemResult.createResponse()` treated the outer array
+as the `long[]`. The Green change now validates and unwraps that shape before
+building the public result.
+
+| Phase | Commit | Command / result |
+|---|---|---|
+| Red | `3203dbbd` | `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange test` failed as expected with `InvalidInputException: native creation response fields are invalid` at `requireLongArray`. The other new adapter tests passed. |
+| Green | `0f88c336` | Unwrapped the JNI result into its scalar array and optional UTF-8 bytes. The same focused Java TLS integration command passed 1/1; the full `mvn --batch-mode --file bindings/java/pom.xml verify` passed 164 tests (3 skipped) and its JaCoCo check. |
+| Refactor | this evidence commit | Recorded the boundary shape and added coverage results below; no public API/ABI or fixture contract changed. |
+
+Verification on the current local head: `cargo test --workspace --all-features`
+passed, including doctests; the focused C ABI consumer passed 1/1; Rust
+creation parity passed 6/6; Python passed 240 tests with 96.63 percent package
+coverage; Java passed 164 tests with 3 skips and its 85 percent JaCoCo gate;
+`cargo fmt --all --check`, workspace Clippy, the 47 manifest/parity tests,
+the 12-output API generator check, and source preflight passed. The first
+instrumented Windows `cargo llvm-cov --workspace --all-features --locked
+--json` attempt hit a pre-existing timing-sensitive DNS test in
+`kmipkit-test-support` (expected retry count 2, observed 30); the isolated test
+passed, and an identical full retry passed. The retained raw Windows report
+shows 29,438/30,863 workspace Rust lines covered (95.38 percent), and the
+normalized report and artifacts are stored outside the repository under
+`%TEMP%\kmipkit-t032-new-coverage`.
+
+The fresh changed-code aggregate remains pending. This Windows run does not
+produce the current Linux/macOS, instrumented C consumer, and JNI artifacts
+required by the CI aggregate, so it cannot establish the 95 percent changed
+line gate. The latest exact remote aggregate remains run `38843857297` at
+`7c4d817c` (1,995/2,650, 75.28 percent); it predates these new consumers and
+the Java decoding fix. A fresh aggregate on this exact head is needed before
+claiming the coverage gate is green.
+
 #### T032 manifest correction discovered by run `38840021567`
 
 The Ubuntu Script contracts job on head `2eca0100` exposed two manifest
