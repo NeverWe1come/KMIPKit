@@ -216,3 +216,56 @@ fn cryptographic_batch_item_constructors_reject_invalid_indicator_codes() {
 
     release(parameters, Kind::Structure);
 }
+
+#[test]
+fn certify_batch_item_constructor_preserves_open_request_type_and_redacts_request_value() {
+    let mut secret = *b"certify-request-sentinel";
+    let request_value = kmipkit_byte_span_v1_t {
+        data: secret.as_ptr(),
+        length: u64::try_from(secret.len()).expect("test request value fits the ABI"),
+    };
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_certify(
+            ptr::null(),
+            1,
+            0xfedc_ba98,
+            &raw const request_value,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        )
+    );
+    assert_operation(item, |request| matches!(request, ClientRequest::Certify(_)));
+    let stored = reference_handle(item, Kind::BatchItem).expect("Certify item is live");
+    let HandleValue::BatchItem(stored) = &stored.value else {
+        panic!("Certify item contains a request");
+    };
+    let formatted = format!("{:?}", stored.request());
+    assert!(formatted.contains("certificate_request_type: Some(4275878552)"));
+    assert!(formatted.contains("has_certificate_request_value: true"));
+    assert!(!formatted.contains("certify-request-sentinel"));
+
+    secret.fill(0);
+    release(item, Kind::BatchItem);
+}
+
+#[test]
+fn certify_batch_item_constructor_rejects_invalid_presence_discriminators() {
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_certify(
+            ptr::null(),
+            2,
+            0,
+            ptr::null(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+}

@@ -14,18 +14,30 @@ OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-CERTIFY"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.6-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-    "KMIPKIT-REQ-SPEC-6.1.6-007",
+    "KMIPKIT-0036-FR-001",
+    "KMIPKIT-0036-FR-002",
+    "KMIPKIT-0036-FR-003",
+    "KMIPKIT-0036-FR-004",
+    "KMIPKIT-0036-FR-005",
+    "KMIPKIT-0036-FR-006",
+    "KMIPKIT-0036-FR-008",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-007",
+    "KMIPKIT-0043-FR-008",
+    "KMIPKIT-0043-FR-009",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-013",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-018",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022",
 }
 EXPECTED_MAPPINGS = {
     "rust": {
         "kmipkit_client::ClientRequest::Certify",
         "kmipkit_client::ClientBatchOutcome::certify_response",
-        "kmipkit_protocol::CertifyRequest",
         "kmipkit_protocol::CertifyResponse",
+        "kmipkit_protocol::CertifyResponse::unique_identifier",
     },
     "c": {
         "kmipkit_client_batch_item_certify",

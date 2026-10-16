@@ -10,8 +10,8 @@ use std::thread;
 use base64::Engine;
 use kmipkit_client::{ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
-    AttributeSet, CreateKeyPairRequest, CreateSplitKeyRequest, LocateRequest, ObjectType,
-    OperationData, SecretBytes, SplitKeyMethod,
+    AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateSplitKeyRequest, LocateRequest,
+    ObjectType, OperationData, SecretBytes, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -385,6 +385,30 @@ fn ffi_hash_response_getters_do_not_report_failed_payloads_as_present() {
     );
     assert_eq!((present, data_present, correlation_present), (0, 0, 0));
     kmipkit_client_batch_item_response_release(hash);
+}
+
+#[test]
+fn ffi_certify_response_getter_does_not_report_failure_as_a_generated_identifier() {
+    let certify = CertifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("public-key".to_owned()))
+        .with_certificate_request_type(0xfedc_ba98);
+    let item = failed_cryptographic_item(
+        ClientRequest::Certify(certify),
+        0x06,
+        b"certify-failure",
+    );
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_certify(item, &raw mut present, &raw mut identifier)
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+    assert_eq!(identifier.text_length, 0);
+    kmipkit_client_batch_item_response_release(item);
 }
 
 #[test]
