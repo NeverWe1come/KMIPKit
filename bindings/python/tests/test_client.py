@@ -1662,6 +1662,35 @@ def test_last_error_metadata_preserves_unknown_discriminators_and_fallback(
     assert client._read_last_error() == (7, 5, 10, 0)
 
 
+def test_client_execution_error_retains_owned_generic_response_without_disclosing_it() -> None:
+    response = ttlv.ttlv_structure_create()
+    try:
+        failure = errors.ClientExecutionError(
+            status=8,
+            category=errors.ClientErrorCategory.PROTOCOL,
+            cause=errors.ClientErrorCause.PROTOCOL_OTHER,
+            delivery=errors.DeliveryState.RESPONSE_STARTED,
+            response_ttlv=response,
+        )
+
+        assert failure.response_ttlv is response
+        assert "KMIPKit-response-sentinel" not in str(failure)
+        assert "KMIPKit-response-sentinel" not in repr(failure)
+        assert failure.args == (str(failure),)
+        failure.response_ttlv.close()
+        assert failure.response_ttlv.closed
+    finally:
+        response.close()
+
+    absent = errors.ClientExecutionError(
+        status=9,
+        category=errors.ClientErrorCategory.TRANSPORT,
+        cause=errors.ClientErrorCause.IO,
+        delivery=errors.DeliveryState.POSSIBLY_SENT,
+    )
+    assert absent.response_ttlv is None
+
+
 def test_client_execute_with_options_preserves_timeout_kinds_and_consumes_batch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

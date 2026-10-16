@@ -6,6 +6,22 @@
 
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
+extern int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(
+    kmipkit_client_t *client,
+    kmipkit_client_batch_t **batch,
+    kmipkit_codec_limits_t *limits,
+    const kmipkit_request_options_v1_t *options,
+    kmipkit_client_batch_response_t **out_response,
+    kmipkit_ttlv_structure_t **out_error_response_ttlv);
+
+static int execute_with_options_and_error_ttlv_clears_outputs(void) {
+    kmipkit_client_batch_response_t *response = (kmipkit_client_batch_response_t *)(uintptr_t)1;
+    kmipkit_ttlv_structure_t *error_response = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    const int32_t status = kmipkit_client_execute_with_options_and_error_ttlv_v1(
+        0, 0, 0, 0, &response, &error_response);
+    return status == T076_ERROR_INVALID_INPUT && response == 0 && error_response == 0;
+}
+
 static int execute_with_options_returns(
     const kmipkit_request_options_v1_t *options, int32_t expected_status) {
     kmipkit_client_batch_response_t *response = 0;
@@ -819,6 +835,9 @@ int kmipkit_client_abi_c_consumer_execute_tls(
 }
 
 int main(int argc, char **argv) {
+    if (!execute_with_options_and_error_ttlv_clears_outputs()) {
+        return 22;
+    }
     kmipkit_client_t *client = 0;
     if (!api_level_query_matches_shared_fixture_locally(argc, argv)) {
         return 100;

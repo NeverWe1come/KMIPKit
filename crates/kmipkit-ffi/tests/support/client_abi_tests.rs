@@ -2746,6 +2746,25 @@ fn ffi_execute_with_error_ttlv_rejects_null_slots_and_wrong_handle_kinds() {
 }
 
 #[test]
+fn ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validation() {
+    let mut response = 1_usize as *mut kmipkit_client_batch_response_t;
+    let mut error_response = 1_usize as *mut kmipkit_ttlv_structure_t;
+    assert_eq!(
+        kmipkit_client_execute_with_options_and_error_ttlv_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null(),
+            &mut response,
+            &mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+}
+
+#[test]
 fn ffi_execute_fails_closed_for_poisoned_batch_and_client_locks() {
     let client = unconnected_client_handle();
     let limits = default_codec_limits_handle();

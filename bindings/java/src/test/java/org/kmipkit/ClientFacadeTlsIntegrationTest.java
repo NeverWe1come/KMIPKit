@@ -12,6 +12,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +27,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManagerFactory;
@@ -518,6 +520,86 @@ final class ClientFacadeTlsIntegrationTest {
         } finally {
             listener.close();
         }
+    }
+
+    @Test
+    void typedResponseShapeFailureRetainsGenericTtlvForDefaultAndOptionsExecution() throws Exception {
+        for (boolean withOptions : new boolean[] {false, true}) {
+            Path serverStorePath = temporaryDirectory.resolve(
+                    withOptions ? "shape-options-server.p12" : "shape-default-server.p12");
+            Path clientStorePath = temporaryDirectory.resolve(
+                    withOptions ? "shape-options-client.p12" : "shape-default-client.p12");
+            createKeyStore(serverStorePath, "server");
+            createKeyStore(clientStorePath, "client");
+
+            KeyStore serverStore = loadKeyStore(serverStorePath);
+            KeyStore clientStore = loadKeyStore(clientStorePath);
+            X509Certificate serverCertificate = certificate(serverStore, "server");
+            X509Certificate clientCertificate = certificate(clientStore, "client");
+            PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+            SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                    .getServerSocketFactory()
+                    .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+            listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+            listener.setNeedClientAuth(true);
+            listener.setSoTimeout(10_000);
+            byte[] response = responseShapeInvalidDiscoverVersionsWithSentinel();
+            FutureTask<byte[]> peer = peerThatRespondsAfterOneRequest(listener, response);
+            Thread peerThread = new Thread(peer, "kmipkit-java-shape-error-fixture");
+            peerThread.setDaemon(true);
+            peerThread.start();
+
+            try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                            List.of(), ExtensionRegistryLimits.defaults());
+                    ClientConfiguration extensions = ClientConfiguration.create(registry);
+                    TransportConfiguration transport = TransportConfiguration.builder()
+                            .rawTls("127.0.0.1", listener.getLocalPort())
+                            .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                            .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                            .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                    TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                    TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                    TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                            .build();
+                    Client client = Client.create(extensions, transport);
+                    ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)));
+
+                ProtocolException failure = assertThrows(ProtocolException.class, () -> {
+                    if (withOptions) {
+                        client.executeWithOptions(batch, CodecLimits.defaults(), RequestOptions.defaults());
+                    } else {
+                        client.execute(batch, CodecLimits.defaults());
+                    }
+                });
+                assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
+                assertFalse(failure.getMessage().contains("KMIPKit-response-sentinel"));
+                assertFalse(failure.toString().contains("KMIPKit-response-sentinel"));
+
+                Method responseAccessor = ProtocolException.class.getMethod("responseTtlv");
+                Object optionalValue = responseAccessor.invoke(failure);
+                assertTrue(optionalValue instanceof Optional<?>);
+                Object retainedValue = ((Optional<?>) optionalValue).orElseThrow();
+                assertTrue(retainedValue instanceof TtlvStructure);
+                ((TtlvStructure) retainedValue).close();
+            } finally {
+                listener.close();
+            }
+        }
+    }
+
+    private static byte[] responseShapeInvalidDiscoverVersionsWithSentinel() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] sentinel = "KMIPKit-response-sentinel".getBytes(StandardCharsets.US_ASCII);
+        byte[] payload = structure(0x42007c,
+                item(0x420069, 8, sentinel), item(0x540001, 8, sentinel));
+        byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(30)),
+                item(0x420093, 8, uniqueBatchItemId(0)), item(0x42007f, 5, integer(0)), payload);
+        return structure(0x42007b, header, responseItem);
     }
 
     private static void createKeyStore(Path path, String alias) throws Exception {

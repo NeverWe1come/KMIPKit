@@ -2271,3 +2271,24 @@ payloads fail before the JNI library is initialized.
 | Red | `8f1324f5` | `mvn -q '-Dtest=NativeLibraryLoaderTest#exactLimitOperationInputsAreAcceptedWithoutMutatingCallerArrays+oversizedOperationInputsAreRejectedBeforeJni' test` | Expected failure: 2 tests ran; exact-limit construction passed, while the oversized child-JVM probe reached `NativeExtensionRegistry` and failed loading the deliberately unavailable native library before any `ResourceLimitException`. |
 | Green | `206dd24d` | Same focused Maven command | PASS: 2 tests, 0 failures/errors/skips. Exact 16 MiB payloads constructed without mutating caller arrays; payloads above the limit were rejected before native loading. |
 | Refactor | `ec91ffbc` | Same focused command; `mvn -q verify`; `git diff --check HEAD~3..HEAD` | PASS: final checks cover the five payload byte-array positions only. Root reran `mvn -q verify` successfully on Windows; the implementer reports 192 Java tests, 3 skipped, no failures/errors, and the JaCoCo gate passing. |
+
+## T081 — Retain generic response TTLV on typed response failures
+
+The initial failure-first tests use a structurally complete KMIP 2.1
+`ResponseMessage` whose Discover Versions payload has a malformed Protocol
+Version value and an opaque vendor-tagged ByteString sentinel. The request
+reaches the local TLS 1.3 mutual-authentication peer, and typed response
+validation rejects the payload. The tests require an owned generic TTLV handle
+for both default and options-enabled Java execution, an optional owned Python
+error field, and a separate options-enabled C ABI entry point whose output
+slots are cleared before option validation.
+
+| Phase | Command | Expected Red result |
+|---|---|---|
+| Red | `mvn -q '-Dtest=ClientFacadeTlsIntegrationTest#typedResponseShapeFailureRetainsGenericTtlvForDefaultAndOptionsExecution' test` | One TLS integration test reached the typed protocol exception, then errored with `NoSuchMethodException: org.kmipkit.ProtocolException.responseTtlv()`; response retention is not exposed by the Java facade. |
+| Red | `bindings/python/.venv/Scripts/python.exe -m pytest -q --tb=short bindings/python/tests/test_client.py::test_client_execution_error_retains_owned_generic_response_without_disclosing_it` | One test failed at `ClientExecutionError(..., response_ttlv=...)` because the exception constructor does not accept or retain the optional owned structure. |
+| Red | `cargo test -p kmipkit-ffi --all-features ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validation` | Compilation failed with E0425 because the options-enabled error-TTLV ABI function is not implemented. |
+
+The compiled C consumer now includes a caller for the new versioned symbol; its
+link/build verification remains pending with the Green implementation. No
+production files or generated outputs changed in Red.
