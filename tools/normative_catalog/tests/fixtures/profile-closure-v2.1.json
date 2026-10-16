@@ -92658,7 +92658,7 @@
       "audited_statement": "The field MAY be returned in a response and MAY be provided to an end user or used for logging/auditing.",
       "source_force": "MAY",
       "actor": "unspecified",
-      "direction": "server_to_client",
+      "direction": "unspecified",
       "condition": "The field is returned in a server-to-client response; the paragraph’s separate use MAY does not identify its endpoint.",
       "scope_disposition": "unresolved",
       "candidate_requirement_id": null,
