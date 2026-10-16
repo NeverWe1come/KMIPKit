@@ -29,10 +29,13 @@ const SYMMETRIC_KEY: u32 = 0x0042_007F;
 const KEY_USAGE_MAC_GENERATE_VERIFY: i32 = 384;
 const RAW_KEY_FORMAT_TYPE: u32 = 1;
 const FIXTURE_KEY: [u8; 32] = [0x5A; 32];
-const EXPECTED_TARGET_ROWS: usize = 942;
+const EXPECTED_TARGET_ROWS: usize = 1_320;
 const EXPECTED_EXECUTABLE_ROWS: usize = 95;
 
-const OPERATIONS: [&str; 7] = [
+const OPERATIONS: [&str; 10] = [
+    "Certify",
+    "Create",
+    "Create Key Pair",
     "Decrypt",
     "Encrypt",
     "Hash",
@@ -216,7 +219,10 @@ fn cosmian_cryptographic_sign_and_verify_rows_require_executable_dispatch() {
             Some("Sign") => {
                 sign_rows += 1;
                 assert!(
-                    !matches!(disposition(row), Ok(CaseDisposition::DeliberatelyUnmapped(_))),
+                    !matches!(
+                        disposition(row),
+                        Ok(CaseDisposition::DeliberatelyUnmapped(_))
+                    ),
                     "Sign typed_success case {id} needs an executable request builder"
                 );
             }
@@ -226,13 +232,19 @@ fn cosmian_cryptographic_sign_and_verify_rows_require_executable_dispatch() {
                     == Some(INDEPENDENT_SIGNER_SOURCE)
                 {
                     assert!(
-                        matches!(disposition(row), Ok(CaseDisposition::DeliberatelyUnmapped(_))),
+                        matches!(
+                            disposition(row),
+                            Ok(CaseDisposition::DeliberatelyUnmapped(_))
+                        ),
                         "case {id} requires the independent signer named by its matrix setup"
                     );
                     independent_signer_ids.insert(id);
                 } else {
                     assert!(
-                        !matches!(disposition(row), Ok(CaseDisposition::DeliberatelyUnmapped(_))),
+                        !matches!(
+                            disposition(row),
+                            Ok(CaseDisposition::DeliberatelyUnmapped(_))
+                        ),
                         "Signature Verify typed_success case {id} needs executable dispatch"
                     );
                 }
@@ -241,12 +253,18 @@ fn cosmian_cryptographic_sign_and_verify_rows_require_executable_dispatch() {
         }
     }
 
-    assert_eq!(sign_rows, 110, "reviewed Sign typed_success inventory changed");
+    assert_eq!(
+        sign_rows, 110,
+        "reviewed Sign typed_success inventory changed"
+    );
     assert_eq!(
         verify_rows, 224,
         "reviewed Signature Verify typed_success inventory changed"
     );
-    assert_eq!(independent_signer_ids.len(), INDEPENDENT_SIGNER_CASE_IDS.len());
+    assert_eq!(
+        independent_signer_ids.len(),
+        INDEPENDENT_SIGNER_CASE_IDS.len()
+    );
     assert_eq!(
         independent_signer_ids,
         INDEPENDENT_SIGNER_CASE_IDS.into_iter().collect(),
@@ -308,10 +326,15 @@ fn target_rows() -> Result<Vec<JsonValue>, Box<dyn Error>> {
     Ok(rows
         .into_iter()
         .filter(|row| {
-            row["expected_outcome"].as_str() == Some("typed_success")
+            [
+                "typed_success",
+                "source_documentation_discrepancy",
+                "documented_but_source_gap",
+            ]
+            .contains(&row["expected_outcome"].as_str().unwrap_or_default())
                 && row["operation"]
-                .as_str()
-                .is_some_and(|operation| OPERATIONS.contains(&operation))
+                    .as_str()
+                    .is_some_and(|operation| OPERATIONS.contains(&operation))
         })
         .collect())
 }
