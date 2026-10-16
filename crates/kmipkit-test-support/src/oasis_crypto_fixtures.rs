@@ -950,7 +950,6 @@ fn parse_date_time(
 fn parse_rfc3339_date_time(value: &str) -> Result<i64, ()> {
     let bytes = value.as_bytes();
     if bytes.len() < 20
-        || bytes[4] != b'-'
         || bytes[7] != b'-'
         || bytes[10] != b'T'
         || bytes[13] != b':'

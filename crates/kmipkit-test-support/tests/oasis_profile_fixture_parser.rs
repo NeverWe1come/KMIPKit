@@ -158,4 +158,16 @@ fn rejects_unknown_symbols_operations_malformed_pairs_and_reordered_steps() {
         .err(),
         Some(OasisCryptoFixtureError::ReorderedSteps)
     );
+
+    let dated = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml");
+    let malformed_date = dated.replacen("2000-02-01T", "2000x02-01T", 1);
+    assert_eq!(
+        OasisProfileFixture::from_xml(
+            "BL-M-3-21",
+            &malformed_date,
+            OasisProfileFixtureBindings::default()
+        )
+        .err(),
+        Some(OasisCryptoFixtureError::InvalidValue)
+    );
 }
