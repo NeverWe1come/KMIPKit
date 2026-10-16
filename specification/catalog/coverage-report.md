@@ -98,8 +98,8 @@ This report records inventory coverage and evidence state. It does not claim pro
 | non\_applicable | 389 |
 | profile\_conditional | 184 |
 | requirement | 218 |
-| server\_only | 436 |
-| source\_discrepancy | 25 |
+| server\_only | 435 |
+| source\_discrepancy | 26 |
 
 ## Source clause review by section
 
@@ -524,7 +524,7 @@ Every row summarizes audited candidate locators by their pinned source section. 
 | KMIPKIT-SRC-spec | 9.13 | 1 | requirement: 1 |
 | KMIPKIT-SRC-spec | 9.14 | 1 | non\_applicable: 1 |
 | KMIPKIT-SRC-spec | 9.16 | 1 | source\_discrepancy: 1 |
-| KMIPKIT-SRC-spec | 9.17 | 1 | server\_only: 1 |
+| KMIPKIT-SRC-spec | 9.17 | 1 | source\_discrepancy: 1 |
 | KMIPKIT-SRC-spec | 9.18 | 1 | server\_only: 1 |
 | KMIPKIT-SRC-spec | 9.19 | 2 | requirement: 1, server\_only: 1 |
 | KMIPKIT-SRC-spec | 9.20 | 1 | requirement: 1 |

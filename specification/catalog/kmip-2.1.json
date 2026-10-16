@@ -27630,13 +27630,13 @@
       "source_keywords": [
         "MAY"
       ],
-      "disposition": "server_only",
+      "disposition": "source_discrepancy",
       "requirement_ids": [],
-      "exclusion_rationale": "Server behavior or output; no 1.0 client requirement.",
+      "exclusion_rationale": "The paragraph includes a server-to-client response-field MAY and a separate use MAY with no named endpoint; no client requirement can be represented without choosing an actor.",
       "role": "unclear",
-      "direction": "server_to_client",
-      "scope_state": "server_only",
-      "condition": null
+      "direction": "unclear",
+      "scope_state": "mixed",
+      "condition": "The Result Message MAY be returned in a server-to-client response; the separate MAY permitting end-user or logging/auditing use does not identify its endpoint."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-9.18-001",
