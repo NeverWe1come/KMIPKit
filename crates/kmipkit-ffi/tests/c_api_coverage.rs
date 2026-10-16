@@ -38,6 +38,12 @@ unsafe extern "C" {
 #[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
+    fn kmipkit_codec_limits_create(
+        max_message_bytes: u64,
+        max_structure_depth: u64,
+        max_elements: u64,
+        out_limits: *mut *mut kmipkit_codec_limits_t,
+    ) -> i32;
     fn kmipkit_codec_limits_release(limits: *mut kmipkit_codec_limits_t);
     fn kmipkit_last_error_get(
         out_status: *mut i32,
@@ -237,18 +243,19 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot and the successful handle is
     // retained for the C call, then released by this Rust test harness.
-    let status = unsafe { kmipkit_codec_limits_defaults(&raw mut limits) };
-    assert_eq!(status, 0, "codec limits defaults must succeed");
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
     assert!(
         !limits.is_null(),
-        "codec limits defaults must return a handle"
+        "configured codec limits must return a handle"
     );
     // SAFETY: all argv entries remain live and NUL terminated for the synchronous
     // C call; the consumer is compiled against the generated public header only.
     let result = unsafe {
         kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
     };
-    // SAFETY: the defaults call returned this live handle and the C consumer only
+    // SAFETY: the configured limits call returned this live handle and the C consumer only
     // borrowed it while synchronously executing the batch.
     unsafe {
         kmipkit_codec_limits_release(limits);
@@ -603,12 +610,7 @@ fn creation_response_items() -> [Vec<u8>; 4] {
     );
     let create_split_key_payload = structure(
         0x0042_007C,
-        [
-            ttlv_item(0x0042_0094, 0x07, b"part-a"),
-            enumeration(0x0042_0094, u32::MAX),
-            integer(0x0042_0094, -7),
-            ttlv_item(0x0042_0094, 0x07, b"part-a"),
-        ],
+        (0..100_001).map(|index| integer(0x0042_0094, index)),
     );
     [
         structure(

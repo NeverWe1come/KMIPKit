@@ -33,7 +33,6 @@ from ._handles import (
 _MAX_INPUT_BYTES = 16 * 1024 * 1024
 _MAX_TEXT_BYTES = 4_096
 _MAX_BATCH_ITEMS = 4_096
-_MAX_SPLIT_KEY_IDENTIFIERS = 100_000
 _MAX_TRANSPORT_CONFIG_ITEMS = 4_096
 _MAX_U64 = (1 << 64) - 1
 _MIN_I64 = -(1 << 63)
@@ -1217,7 +1216,7 @@ def _create_split_key_response(
         return None
     if present[0] != 1 or count[0] < 1:
         errors.raise_for_status(4)
-    if count[0] > _MAX_SPLIT_KEY_IDENTIFIERS:
+    if count[0] > sys.maxsize:
         errors.raise_for_status(6)
     identifiers: list[extensions.UniqueIdentifier] = []
     for index in range(int(count[0])):

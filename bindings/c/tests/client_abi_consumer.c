@@ -381,37 +381,36 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
             kmipkit_client_batch_item_metadata_v2_t metadata_v2 = {0};
             uint8_t split_present = 0;
             uint64_t split_count = 0;
-            static const uint8_t expected_part[] = {'p', 'a', 'r', 't', '-', 'a'};
-            kmipkit_unique_identifier_v1_t identifiers[4] = {{0}};
+            kmipkit_unique_identifier_v1_t first_identifier = {0};
+            kmipkit_unique_identifier_v1_t middle_identifier = {0};
+            kmipkit_unique_identifier_v1_t last_identifier = {0};
             metadata_v2.struct_size = (uint32_t)sizeof(metadata_v2);
             metadata_v2.abi_version = 2;
             if (kmipkit_client_batch_item_response_metadata_v2(
                     response_item, &metadata_v2) != 0 || metadata_v2.operation != 40 ||
                 kmipkit_client_batch_item_response_create_split_key_count(
                     response_item, &split_present, &split_count) != 0 ||
-                split_present != 1 || split_count != 4) {
+                split_present != 1 || split_count != UINT64_C(100001)) {
                 goto cleanup;
             }
-            for (uint64_t identifier_index = 0; identifier_index < 4; ++identifier_index) {
-                identifiers[identifier_index].struct_size =
-                    (uint32_t)sizeof(identifiers[identifier_index]);
-                identifiers[identifier_index].abi_version = 1;
-                if (kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
-                        response_item, identifier_index,
-                        &identifiers[identifier_index]) != 0) {
-                    goto cleanup;
-                }
-            }
-            if (identifiers[0].kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-                identifiers[0].text_length != sizeof(expected_part) ||
-                memcmp(identifiers[0].text_data, expected_part, sizeof(expected_part)) != 0 ||
-                identifiers[1].kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ||
-                identifiers[1].enumeration_value != UINT32_MAX ||
-                identifiers[2].kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ||
-                identifiers[2].integer_value != -7 ||
-                identifiers[3].kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-                identifiers[3].text_length != sizeof(expected_part) ||
-                memcmp(identifiers[3].text_data, expected_part, sizeof(expected_part)) != 0) {
+            first_identifier.struct_size = (uint32_t)sizeof(first_identifier);
+            first_identifier.abi_version = 1;
+            middle_identifier.struct_size = (uint32_t)sizeof(middle_identifier);
+            middle_identifier.abi_version = 1;
+            last_identifier.struct_size = (uint32_t)sizeof(last_identifier);
+            last_identifier.abi_version = 1;
+            if (kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+                    response_item, 0, &first_identifier) != 0 ||
+                kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+                    response_item, UINT64_C(50000), &middle_identifier) != 0 ||
+                kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+                    response_item, split_count - 1, &last_identifier) != 0 ||
+                first_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ||
+                first_identifier.integer_value != 0 ||
+                middle_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ||
+                middle_identifier.integer_value != 50000 ||
+                last_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ||
+                last_identifier.integer_value != 100000) {
                 goto cleanup;
             }
         }

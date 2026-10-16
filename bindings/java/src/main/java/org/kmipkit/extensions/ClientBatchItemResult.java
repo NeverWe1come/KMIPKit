@@ -7,7 +7,6 @@ import java.util.OptionalLong;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
-import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 
 /** Common, operation-independent metadata for one response batch item. */
@@ -99,10 +98,9 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return Optional.empty();
         }
         requirePresent(fields[0]);
-        if (fields[1] < 1 || fields[1] > 16L * 1024L * 1024L
-                || !(values[1] instanceof Object[] identifiers)
+        if (fields[1] < 1 || !(values[1] instanceof Object[] identifiers)
                 || identifiers.length != fields[1]) {
-            throw new ResourceLimitException("native Create Split Key identifiers exceed the configured limit");
+            throw new InvalidInputException("native Create Split Key identifiers are invalid");
         }
         List<UniqueIdentifier> result = new ArrayList<>(identifiers.length);
         for (Object identifier : identifiers) {

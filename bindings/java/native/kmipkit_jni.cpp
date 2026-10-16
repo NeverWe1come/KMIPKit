@@ -2530,8 +2530,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             throw_status(env, status);
             return static_cast<jobjectArray>(nullptr);
         }
-        if (present > 1 || count > kMaximumNativeArrayElements
-                || (present == 0 && count != 0) || (present == 1 && count == 0)) {
+        if (count > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+            throw_status(env, KMIPKIT_ERROR_RESOURCE_LIMIT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || (present == 0 && count != 0) || (present == 1 && count == 0)) {
             throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
             return static_cast<jobjectArray>(nullptr);
         }

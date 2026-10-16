@@ -377,10 +377,11 @@ final class ClientFacadeTlsIntegrationTest {
                 List<UniqueIdentifier> identifiers = result.createSplitKeyUniqueIdentifiers()
                         .orElseThrow();
                 assertEquals(identifierCount, identifiers.size());
-                assertEquals(UniqueIdentifier.integer(0), identifiers.get(0));
-                assertEquals(UniqueIdentifier.integer(50_000), identifiers.get(50_000));
-                assertEquals(UniqueIdentifier.integer(identifierCount - 1),
-                        identifiers.get(identifiers.size() - 1));
+                assertEquals(UniqueIdentifier.Kind.INTEGER, identifiers.get(0).kind());
+                assertEquals(0, identifiers.get(0).number());
+                assertEquals(50_000, identifiers.get(50_000).number());
+                assertEquals(identifierCount - 1,
+                        identifiers.get(identifiers.size() - 1).number());
             }
             assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
         } finally {

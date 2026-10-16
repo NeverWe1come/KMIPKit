@@ -10,6 +10,7 @@ from __future__ import annotations
 import gc
 import importlib
 import json
+import sys
 import weakref
 from dataclasses import replace
 from pathlib import Path
@@ -1389,6 +1390,41 @@ def test_create_split_key_response_preserves_more_than_one_hundred_thousand_iden
     finally:
         item.close()
     assert released == ["item"]
+
+
+def test_create_split_key_response_rejects_count_above_python_collection_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+    accessed_indices: list[int] = []
+
+    def split_count(_item: object, present: object, count: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        count[0] = sys.maxsize + 1  # type: ignore[index]
+        return 0
+
+    def split_identifier(_item: object, index: int, _output: object) -> int:
+        accessed_indices.append(index)
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_create_split_key_count=split_count,
+            kmipkit_client_batch_item_response_create_split_key_unique_identifier_at=(
+                split_identifier
+            ),
+        ),
+    )
+    try:
+        with pytest.raises(errors.ResourceLimitError):
+            client._create_split_key_response(item)
+    finally:
+        item.close()
+    assert accessed_indices == []
 
 
 def test_batch_result_accepts_absent_spans_and_no_result_reason(
