@@ -1525,6 +1525,64 @@ class T076ClientMappingTests(unittest.TestCase):
                     set(declaration["languageMappings"]),
                 )
 
+    def test_creation_result_fields_have_exact_four_language_mappings(self) -> None:
+        expected = {
+            "kmipkit.client.BatchItemResult.operation": {
+                "rust": ("rust-kmipkit-client", "kmipkit_client::ClientBatchOutcome::operation"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_metadata_v2_t.operation"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.operation"),
+                "python": ("python-kmipkit", "kmipkit.client.BatchItemResult.operation"),
+            },
+            "kmipkit.client.BatchItemResult.result_message": {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::KmipOperationResult::message"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_metadata_v2_t.result_message_data"),
+                "java": ("java-kmipkit", "org.kmipkit.extensions.ClientBatchItemResult.resultMessage"),
+                "python": ("python-kmipkit", "kmipkit.client.BatchItemResult.result_message"),
+            },
+            "kmipkit.client.BatchItemResult.unique_identifier": {
+                "rust": ("rust-kmipkit-protocol", "kmipkit_protocol::CreateResponse::unique_identifier"),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_response_create"),
+                "java": (
+                    "java-kmipkit",
+                    "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.uniqueIdentifier",
+                ),
+                "python": ("python-kmipkit", "kmipkit.client.BatchItemResult.unique_identifier"),
+            },
+            "kmipkit.client.BatchItemResult.public_key_unique_identifier": {
+                "rust": (
+                    "rust-kmipkit-protocol",
+                    "kmipkit_protocol::CreateKeyPairResponse::public_key_unique_identifier",
+                ),
+                "c": ("c-kmipkit", "kmipkit_client_batch_item_response_create_key_pair"),
+                "java": (
+                    "java-kmipkit",
+                    "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.publicKeyUniqueIdentifier",
+                ),
+                "python": (
+                    "python-kmipkit",
+                    "kmipkit.client.BatchItemResult.public_key_unique_identifier",
+                ),
+            },
+        }
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        for export_name, expected_mappings in expected.items():
+            with self.subTest(export=export_name):
+                declaration = declarations.get(("python-kmipkit", export_name))
+                self.assertIsNotNone(declaration, f"missing result field mapping: {export_name}")
+                if declaration is None:
+                    continue
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual(
+                    expected_mappings,
+                    {
+                        language: (target["packageId"], target["name"])
+                        for language, target in declaration["languageMappings"].items()
+                    },
+                )
+
     def test_request_options_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
         expected = {
             f"kmipkit.client.RequestOptions.{member}"

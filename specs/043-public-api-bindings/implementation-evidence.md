@@ -1959,6 +1959,14 @@ alter a C layout.
 | Green | pending | Add exact four-language manifest mappings and regenerate with the pinned tool; rerun the focused tests and macOS C consumer compilation. |
 | Refactor | pending | Update final traceability and record the verified cross-language/script-contract checks. |
 
+An additional focused contract test now fixes the intended mappings for
+`BatchItemResult.operation`, `result_message`, `unique_identifier`, and
+`public_key_unique_identifier` across all four languages. Its Red command,
+`python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_creation_result_fields_have_exact_four_language_mappings -v`,
+fails four times because those Python field declarations are not yet in the
+manifest; this is the Red evidence for their exact mapping rather than an
+implementation failure.
+
 ## T031 — Discover Versions response mapping
 
 The four-language mapping now exposes the successful Discover Versions
