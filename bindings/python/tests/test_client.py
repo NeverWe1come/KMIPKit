@@ -3075,3 +3075,401 @@ def test_transport_input_preserves_dataclass_replace_and_hash_behavior() -> None
     replaced_source = replace(original, source=b"replacement-key")
     assert replaced_source.source == b"replacement-key"
     assert original.source == b"private-key-sentinel"
+
+
+@pytest.mark.parametrize(
+    ("kind", "text", "number"),
+    (
+        (0, None, None),
+        (extensions.UniqueIdentifierKind.TEXT_STRING, None, None),
+        (extensions.UniqueIdentifierKind.TEXT_STRING, "id", 1),
+        (extensions.UniqueIdentifierKind.ENUMERATION, "id", 1),
+        (extensions.UniqueIdentifierKind.ENUMERATION, None, None),
+        (extensions.UniqueIdentifierKind.INTEGER, "id", 1),
+        (extensions.UniqueIdentifierKind.INTEGER, None, None),
+    ),
+    ids=(
+        "unknown-kind",
+        "missing-text",
+        "text-and-number",
+        "enum-with-text",
+        "missing-enum",
+        "integer-with-text",
+        "missing-integer",
+    ),
+)
+def test_unique_identifier_rejects_inconsistent_python_values(
+    kind: object, text: str | None, number: int | None
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        extensions.UniqueIdentifier(kind, text, number)  # type: ignore[arg-type]
+
+
+def test_unique_identifier_repr_redacts_text_value() -> None:
+    identifier = extensions.UniqueIdentifier.text_string("secret-identifier-α")
+
+    assert "value=redacted" in repr(identifier)
+    assert "secret-identifier-α" not in repr(identifier)
+
+
+def test_native_unique_identifier_preserves_wire_kind_and_copies_text() -> None:
+    null_record, null_owner = extensions._native_unique_identifier(None)
+    assert null_record == extensions.ffi.NULL
+    assert null_owner is None
+
+    text = "key-α"
+    text_record, text_owner = extensions._native_unique_identifier(
+        extensions.UniqueIdentifier.text_string(text)
+    )
+    assert text_owner is not None
+    assert text_record.abi_version == 1
+    assert text_record.kind == int(extensions.UniqueIdentifierKind.TEXT_STRING)
+    assert text_record.text_length == len(b"key-\xce\xb1")
+    assert bytes(extensions.ffi.buffer(text_record.text_data, text_record.text_length)) == (
+        b"key-\xce\xb1"
+    )
+
+    enum_record, enum_owner = extensions._native_unique_identifier(
+        extensions.UniqueIdentifier.enumeration(0xFFFF_FFFF)
+    )
+    assert enum_record.kind == int(extensions.UniqueIdentifierKind.ENUMERATION)
+    assert enum_record.text_data == extensions.ffi.NULL
+    assert enum_record.text_length == 0
+    assert enum_record.enumeration_value == 0xFFFF_FFFF
+    assert enum_record.integer_value == 0
+    assert enum_owner is None
+
+    integer_record, integer_owner = extensions._native_unique_identifier(
+        extensions.UniqueIdentifier.integer(-7)
+    )
+    assert integer_record.kind == int(extensions.UniqueIdentifierKind.INTEGER)
+    assert integer_record.text_data == extensions.ffi.NULL
+    assert integer_record.text_length == 0
+    assert integer_record.enumeration_value == 0
+    assert integer_record.integer_value == -7
+    assert integer_owner is None
+
+    with pytest.raises(errors.InvalidInputError):
+        extensions._native_unique_identifier("not-an-identifier")  # type: ignore[arg-type]
+
+
+def test_native_structure_checks_required_and_typed_inputs() -> None:
+    assert extensions._native_structure(None) == extensions.ffi.NULL
+    with pytest.raises(errors.InvalidInputError):
+        extensions._native_structure(None, required=True)
+    with pytest.raises(errors.InvalidInputError):
+        extensions._native_structure(object())  # type: ignore[arg-type]
+
+    structure = ttlv.ttlv_structure_create()
+    try:
+        assert extensions._native_structure(structure) == structure._pointer()
+    finally:
+        structure.close()
+
+
+@pytest.mark.parametrize(
+    ("prime_field_size", "expected_bytes"),
+    (
+        (b"\x01\x02", b"\x01\x02"),
+        (bytearray(b"\x03"), b"\x03"),
+        (memoryview(b"\x04"), b"\x04"),
+        (b"", b""),
+    ),
+    ids=("bytes", "bytearray", "memoryview", "empty"),
+)
+def test_split_key_prime_field_is_copied_to_native_input(
+    monkeypatch: pytest.MonkeyPatch,
+    prime_field_size: bytes | bytearray | memoryview,
+    expected_bytes: bytes,
+) -> None:
+    attributes = ttlv.ttlv_structure_create()
+    captured: list[tuple[object, ...]] = []
+    sentinel = object()
+
+    def make_handle(
+        _c_type: str,
+        _function_name: str,
+        arguments: tuple[object, ...],
+        *_args: object,
+        **_kwargs: object,
+    ) -> object:
+        captured.append(arguments)
+        return sentinel
+
+    monkeypatch.setattr(extensions, "_make_handle", make_handle)
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, handle: handle)
+    try:
+        item = extensions.client_batch_item_create_split_key(
+            7,
+            2,
+            1,
+            0,
+            attributes,
+            prime_field_size=prime_field_size,
+        )
+        assert item is sentinel
+        arguments = captured[0]
+        assert arguments[5] == 1
+        assert arguments[7] == len(expected_bytes)
+        if expected_bytes:
+            assert bytes(extensions.ffi.buffer(arguments[6], len(expected_bytes))) == expected_bytes
+        else:
+            assert arguments[6] == extensions.ffi.NULL
+    finally:
+        attributes.close()
+
+
+def test_split_key_prime_field_rejects_non_byte_inputs() -> None:
+    attributes = ttlv.ttlv_structure_create()
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            extensions.client_batch_item_create_split_key(
+                7,
+                2,
+                1,
+                0,
+                attributes,
+                prime_field_size="not-bytes",  # type: ignore[arg-type]
+            )
+    finally:
+        attributes.close()
+
+
+@pytest.mark.parametrize(
+    "malformation",
+    (
+        "struct-size",
+        "abi-version",
+        "reserved",
+        "text-too-large",
+        "text-null-data",
+        "text-invalid-utf8",
+        "enum-extra-text-length",
+        "integer-extra-enum-value",
+        "unknown-kind",
+    ),
+)
+def test_read_unique_identifier_rejects_malformed_native_records(
+    malformation: str,
+) -> None:
+    output = client._initialize_unique_identifier_output()
+    storage: object | None = None
+    if malformation == "struct-size":
+        output.struct_size = 0
+    elif malformation == "abi-version":
+        output.abi_version = 2
+    elif malformation == "reserved":
+        output.reserved = 1
+    elif malformation in ("text-too-large", "text-null-data", "text-invalid-utf8"):
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        if malformation == "text-too-large":
+            output.text_length = client._MAX_INPUT_BYTES + 1
+        elif malformation == "text-null-data":
+            output.text_length = 1
+        else:
+            storage = client.ffi.new("uint8_t[]", b"\xff")
+            output.text_data = storage
+            output.text_length = 1
+    elif malformation == "enum-extra-text-length":
+        output.kind = int(extensions.UniqueIdentifierKind.ENUMERATION)
+        output.text_length = 1
+    elif malformation == "integer-extra-enum-value":
+        output.kind = int(extensions.UniqueIdentifierKind.INTEGER)
+        output.enumeration_value = 1
+    else:
+        output.kind = 99
+
+    with pytest.raises(errors.InvalidInputError):
+        client._read_unique_identifier(output)
+    if storage is not None:
+        assert output.text_data == storage
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    (
+        SimpleNamespace(
+            has_result_message=0,
+            result_message_data=client.ffi.NULL,
+            result_message_length=1,
+        ),
+        SimpleNamespace(
+            has_result_message=0,
+            result_message_data=client.ffi.NULL,
+            result_message_length=0,
+        ),
+    ),
+    ids=("absent-with-length", "absent-valid"),
+)
+def test_metadata_result_message_checks_absent_pointer_and_length_consistency(
+    metadata: object,
+) -> None:
+    if metadata.result_message_length == 0:
+        assert client._metadata_result_message(metadata) is None
+    else:
+        with pytest.raises(errors.InvalidInputError):
+            client._metadata_result_message(metadata)
+
+
+def test_metadata_result_message_rejects_oversize_and_null_data() -> None:
+    with pytest.raises(errors.ResourceLimitError):
+        client._metadata_result_message(
+            SimpleNamespace(
+                has_result_message=1,
+                result_message_data=client.ffi.NULL,
+                result_message_length=client._MAX_INPUT_BYTES + 1,
+            )
+        )
+    with pytest.raises(errors.InvalidInputError):
+        client._metadata_result_message(
+            SimpleNamespace(
+                has_result_message=1,
+                result_message_data=client.ffi.NULL,
+                result_message_length=1,
+            )
+        )
+
+
+@pytest.mark.parametrize("malformation", ("reserved", "presence", "invalid-utf8"))
+def test_batch_result_rejects_malformed_native_metadata(
+    monkeypatch: pytest.MonkeyPatch, malformation: str
+) -> None:
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    released: list[str] = []
+    message_storage: list[object] = []
+
+    def metadata(_item: object, output: object) -> int:
+        _initialize_metadata_v2(output)
+        if malformation == "reserved":
+            output.reserved = 1  # type: ignore[attr-defined]
+        elif malformation == "presence":
+            output.has_result_message = 2  # type: ignore[attr-defined]
+        else:
+            message = client.ffi.new("uint8_t[]", b"\xff")
+            message_storage.append(message)
+            output.has_result_message = 1  # type: ignore[attr-defined]
+            output.result_message_data = message  # type: ignore[attr-defined]
+            output.result_message_length = 1  # type: ignore[attr-defined]
+        return 0
+
+    def absent_span(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output.data = client.ffi.NULL  # type: ignore[attr-defined]
+        output.length = 0  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_response_release=lambda _response: released.append("response"),
+            kmipkit_client_batch_item_response_release=lambda _item: released.append("item"),
+            kmipkit_client_batch_response_item_count=lambda _response, count: (
+                count.__setitem__(0, 1) or 0
+            ),
+            kmipkit_client_batch_response_item_at=lambda _response, _index, output: (
+                output.__setitem__(0, item_pointer) or 0
+            ),
+            kmipkit_client_batch_item_response_metadata_v2=metadata,
+            kmipkit_client_batch_item_response_unique_batch_item_id=absent_span,
+            kmipkit_client_batch_item_response_pending_correlation_value=absent_span,
+            kmipkit_client_batch_item_response_discover_versions_supported_versions=(
+                _no_supported_versions
+            ),
+            **_no_creation_response_symbols(),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._batch_result(response_pointer)
+    assert released == ["item", "response"]
+
+
+def test_batch_item_metadata_rejects_non_string_result_message() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        client.BatchItemMetadataV2(1, 1, 0, None, object())  # type: ignore[arg-type]
+
+
+def test_creation_response_rejects_invalid_presence_flags(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+
+    def create(_item: object, present: object, object_type: object, _identifier: object) -> int:
+        present[0] = 2  # type: ignore[index]
+        object_type[0] = 0  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_create=create,
+        ),
+    )
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._create_response(item)
+    finally:
+        item.close()
+
+
+def test_create_key_pair_response_rejects_invalid_presence_flag(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+
+    def create_pair(
+        _item: object, present: object, _private: object, _public: object
+    ) -> int:
+        present[0] = 2  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_create_key_pair=create_pair,
+        ),
+    )
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._create_key_pair_response(item)
+    finally:
+        item.close()
+
+
+@pytest.mark.parametrize(
+    ("present_value", "count_value"),
+    ((0, 1), (2, 1), (1, 0)),
+    ids=("absent-with-count", "invalid-presence", "present-with-zero-count"),
+)
+def test_create_split_key_response_rejects_invalid_presence_and_count(
+    monkeypatch: pytest.MonkeyPatch, present_value: int, count_value: int
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+
+    def split_count(_item: object, present: object, count: object) -> int:
+        present[0] = present_value  # type: ignore[index]
+        count[0] = count_value  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_create_split_key_count=split_count,
+        ),
+    )
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._create_split_key_response(item)
+    finally:
+        item.close()

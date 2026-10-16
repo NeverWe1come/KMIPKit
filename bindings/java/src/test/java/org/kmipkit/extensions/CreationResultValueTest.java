@@ -75,4 +75,28 @@ final class CreationResultValueTest {
         assertEquals(0xffff_ffffL, enumeration.number());
         assertEquals(-7, integer.number());
     }
+
+    @Test
+    void uniqueIdentifierFactoriesAndAccessorsRejectInvalidValuesAndKinds() {
+        assertThrows(InvalidInputException.class, () -> UniqueIdentifier.textString("\uD800"));
+        assertThrows(InvalidInputException.class, () -> UniqueIdentifier.enumeration(-1));
+        assertThrows(InvalidInputException.class, () -> UniqueIdentifier.enumeration(0x1_0000_0000L));
+
+        UniqueIdentifier text = UniqueIdentifier.textString("key-id");
+        UniqueIdentifier enumeration = UniqueIdentifier.enumeration(7);
+        UniqueIdentifier integer = UniqueIdentifier.integer(-7);
+        assertThrows(InvalidInputException.class, text::number);
+        assertThrows(InvalidInputException.class, enumeration::text);
+        assertThrows(InvalidInputException.class, integer::text);
+    }
+
+    @Test
+    void uniqueIdentifierRejectsMalformedNativeUtf8WithoutExposingBytes() {
+        InvalidInputException failure = assertThrows(InvalidInputException.class,
+                () -> UniqueIdentifier.fromNative(1, new byte[] {(byte) 0xff}, 0, 0));
+
+        assertEquals("native Unique Identifier is not valid UTF-8 text", failure.getMessage());
+        assertThrows(InvalidInputException.class,
+                () -> UniqueIdentifier.fromNative(4, null, 0, 0));
+    }
 }
