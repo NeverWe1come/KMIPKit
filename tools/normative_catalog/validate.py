@@ -1067,8 +1067,12 @@ def _check_semantics(
             if requirement["requirement_id"] not in decision.get("requirement_ids", []):
                 _fail("decision does not name the deviated requirement")
     for clause in catalog["source_clauses"]:
-        if any(item not in requirements for item in clause["requirement_ids"]):
-            _fail("source clause has an unresolved requirement reference")
+        for requirement_id in clause["requirement_ids"]:
+            if requirement_id not in requirements:
+                _fail(
+                    f"source clause {clause['clause_id']} has an unresolved requirement reference: "
+                    f"{requirement_id}"
+                )
         expected_scope = _linked_clause_scope(clause, requirements)
         if expected_scope is not None and clause["scope_state"] != expected_scope:
             _fail("source clause scope does not match linked requirement scopes")
