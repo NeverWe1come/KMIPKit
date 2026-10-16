@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -98,5 +99,102 @@ final class CreationResultValueTest {
         assertEquals("native Unique Identifier is not valid UTF-8 text", failure.getMessage());
         assertThrows(InvalidInputException.class,
                 () -> UniqueIdentifier.fromNative(4, null, 0, 0));
+    }
+
+    @Test
+    void batchItemParsersRejectMalformedMetadataAndCreateTuples() {
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseMetadataV2(null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseMetadataV2(new Object[] {new long[6]}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseMetadataV2(new Object[] {"metadata", null}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseMetadataV2(new Object[] {new long[6], "message"}));
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseCreateResponse(null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateResponse(new Object[] {new long[5]}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateResponse(new Object[] {"fields", null}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateResponse(new Object[] {new long[4], null}));
+    }
+
+    @Test
+    void createResponseParserValidatesPresenceAndIdentifierFields() {
+        assertEquals(Optional.empty(), ClientBatchItemResult.parseCreateResponse(
+                new Object[] {new long[] {0, 0, 0, 0, 0}, "ignored when absent"}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateResponse(
+                        new Object[] {new long[] {2, 0, 0, 0, 0}, null}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateResponse(
+                        new Object[] {new long[] {1, 0, 1, 0, 0}, "not bytes"}));
+
+        ClientBatchItemResult.CreateResponse response = ClientBatchItemResult.parseCreateResponse(
+                new Object[] {new long[] {1, 2, 3, 0, -7}, null}).orElseThrow();
+        assertEquals(2, response.objectType());
+        assertEquals(UniqueIdentifier.Kind.INTEGER, response.uniqueIdentifier().kind());
+        assertEquals(-7, response.uniqueIdentifier().number());
+    }
+
+    @Test
+    void createKeyPairAndSplitKeyParsersValidateNestedIdentifierRecords() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateKeyPairResponse(new Object[] {new long[] {1}, null}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateKeyPairResponse(
+                        new Object[] {new long[] {2}, null, null}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateKeyPairResponse(
+                        new Object[] {new long[] {1}, "not a record", null}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateKeyPairResponse(
+                        new Object[] {new long[] {1}, new Object[] {new long[] {2, 2, 0, 0}, null}, null}));
+
+        ClientBatchItemResult.CreateKeyPairResponse pair = ClientBatchItemResult.parseCreateKeyPairResponse(
+                new Object[] {new long[] {1}, identifierRecord(2, 7), identifierRecord(3, 0, -9)})
+                .orElseThrow();
+        assertEquals(7, pair.privateKeyUniqueIdentifier().number());
+        assertEquals(-9, pair.publicKeyUniqueIdentifier().number());
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(
+                        new Object[] {new long[] {1, 1}}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(
+                        new Object[] {new long[] {1, 0}, new Object[0]}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(
+                        new Object[] {new long[] {1, 2}, new Object[] {identifierRecord(2, 1)}}));
+
+        assertEquals(List.of(UniqueIdentifier.enumeration(1), UniqueIdentifier.enumeration(2)),
+                ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(new Object[] {
+                        new long[] {1, 2}, new Object[] {identifierRecord(2, 1), identifierRecord(2, 2)}})
+                        .orElseThrow());
+    }
+
+    @Test
+    void supportedVersionParserRejectsOddAndOutOfRangeComponents() {
+        assertEquals(Optional.empty(), ClientBatchItemResult.parseSupportedVersions(null));
+        assertEquals(Optional.of(List.of()), ClientBatchItemResult.parseSupportedVersions(new long[0]));
+        assertEquals(Optional.of(List.of(new ProtocolVersion(2, 1), new ProtocolVersion(1, 4))),
+                ClientBatchItemResult.parseSupportedVersions(new long[] {2, 1, 1, 4}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseSupportedVersions(new long[] {2}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseSupportedVersions(new long[] {Integer.MAX_VALUE + 1L, 0}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseSupportedVersions(new long[] {0, Integer.MIN_VALUE - 1L}));
+    }
+
+    private static Object[] identifierRecord(long kind, long number) {
+        return identifierRecord(kind, number, 0);
+    }
+
+    private static Object[] identifierRecord(long kind, long enumeration, long integer) {
+        return new Object[] {new long[] {1, kind, enumeration, integer}, null};
     }
 }
