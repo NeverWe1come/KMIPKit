@@ -525,6 +525,42 @@ def test_transport_input_copies_mutable_memory_and_transport_config_normalizes_l
     assert configuration.revocation_lists == ()
 
 
+def test_secret_and_file_transport_inputs_keep_equality_hash_and_redaction_contracts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    secret = client._SecretBytes(b"private-material")
+    equal_secret = client._SecretBytes(b"private-material")
+    other_secret = client._SecretBytes(b"different-material")
+
+    assert secret == equal_secret
+    assert secret != other_secret
+    assert client._SecretBytes.__eq__(secret, object()) is NotImplemented
+    assert secret.to_bytes() == b"private-material"
+
+    def fail_wipe(_self: client._SecretBytes) -> None:
+        raise RuntimeError("synthetic wipe failure")
+
+    monkeypatch.setattr(client._SecretBytes, "wipe", fail_wipe)
+    secret.__del__()
+
+    file_input = client.TransportInput.file(
+        Path("trust-material.pem"), client.CredentialEncoding.PEM
+    )
+    assert client.TransportInput.__eq__(file_input, object()) is NotImplemented
+    assert isinstance(hash(file_input), int)
+
+
+def test_transport_input_rejects_path_stringification_failures() -> None:
+    concrete_path = type(Path("ignored"))
+
+    class InvalidStringPath(concrete_path):
+        def __str__(self) -> str:
+            raise TypeError("synthetic path conversion failure")
+
+    with pytest.raises(errors.InvalidInputError):
+        client.TransportInput(InvalidStringPath("ignored"), client.CredentialEncoding.PEM)
+
+
 def test_timeout_and_unsigned_validation_cover_boundary_values() -> None:
     assert client.TimeoutLimit.bounded(0, 1).nanoseconds == 1
     assert client.TimeoutLimit.unbounded().kind is client.TimeoutKind.UNBOUNDED
@@ -1216,6 +1252,74 @@ def test_discover_versions_response_accepts_more_than_default_codec_elements(
         assert len(versions) == supported_count
         assert versions[0] == client.ProtocolVersion(2, 1)
         assert versions[-1] == client.ProtocolVersion(2, 1)
+    finally:
+        item.close()
+
+
+@pytest.mark.parametrize(
+    ("present_value", "count_value"),
+    [(0, 1), (2, 0), (1, (1 << 64) - 1)],
+)
+def test_discover_versions_rejects_inconsistent_first_pass_metadata(
+    monkeypatch: pytest.MonkeyPatch, present_value: int, count_value: int
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+
+    def malformed_versions(
+        _item: object, present: object, _output: object, _capacity: int, count: object
+    ) -> int:
+        present[0] = present_value  # type: ignore[index]
+        count[0] = count_value  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_discover_versions_supported_versions=(
+                malformed_versions
+            ),
+        ),
+    )
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+    try:
+        with pytest.raises(errors.KmipKitError):
+            client._discover_versions_supported_versions(item)
+    finally:
+        item.close()
+
+
+def test_discover_versions_rejects_changed_second_pass_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    calls = 0
+
+    def changing_versions(
+        _item: object, present: object, _output: object, capacity: int, count: object
+    ) -> int:
+        nonlocal calls
+        calls += 1
+        present[0] = 1 if capacity == 0 else 0  # type: ignore[index]
+        count[0] = 1  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_release=lambda _item: None,
+            kmipkit_client_batch_item_response_discover_versions_supported_versions=(
+                changing_versions
+            ),
+        ),
+    )
+    item = _wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._discover_versions_supported_versions(item)
+        assert calls == 2
     finally:
         item.close()
 

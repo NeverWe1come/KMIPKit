@@ -161,6 +161,38 @@ final class TransportConfigurationBoundaryTest {
     }
 
     @Test
+    void typedClientIdentityRejectsIncompleteAndOversizedCertificateGroups() {
+        TransportConfiguration.TransportInput certificate = TransportConfiguration.TransportInput.memory(
+                new byte[] {1}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                new byte[] {2}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.Builder builder = TransportConfiguration.builder();
+
+        assertThrows(InvalidInputException.class, () -> builder.clientIdentity(null, privateKey));
+        assertThrows(InvalidInputException.class, () -> builder.clientIdentity(List.of(), privateKey));
+        assertThrows(InvalidInputException.class,
+                () -> builder.clientIdentity(List.of(certificate), null));
+        assertThrows(InvalidInputException.class,
+                () -> builder.clientIdentity(Arrays.asList(certificate, null), privateKey));
+        assertThrows(ResourceLimitException.class,
+                () -> builder.clientIdentity(Collections.nCopies(4_097, certificate), privateKey));
+    }
+
+    @Test
+    void typedClientIdentityCountsCertificateBytesBeforeSnapshotting() {
+        TransportConfiguration.TransportInput maximumCertificate = TransportConfiguration.TransportInput.memory(
+                new byte[MAX_TRANSPORT_INPUT_BYTES], TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput extraCertificate = TransportConfiguration.TransportInput.memory(
+                new byte[] {1}, TransportConfiguration.Encoding.PEM);
+        TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(
+                new byte[] {2}, TransportConfiguration.Encoding.PEM);
+
+        assertThrows(ResourceLimitException.class,
+                () -> TransportConfiguration.builder().clientIdentity(
+                        List.of(maximumCertificate, extraCertificate), privateKey));
+    }
+
+    @Test
     void closingUnbuiltBuilderZeroizesItsOwnedPrivateKeyCopy() throws Exception {
         byte[] marker = {0x31, 0x42, 0x53};
         TransportConfiguration.TransportInput privateKey = TransportConfiguration.TransportInput.memory(

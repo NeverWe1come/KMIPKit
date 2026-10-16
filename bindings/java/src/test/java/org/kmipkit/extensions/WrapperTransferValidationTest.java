@@ -18,6 +18,11 @@ final class WrapperTransferValidationTest {
     private static final int PRIVATE_TAG = 0x420001;
 
     @Test
+    void nullFirstTagIsRejectedBeforeNativePathCreation() {
+        assertThrows(InvalidInputException.class, () -> TtlvPath.create(null));
+    }
+
+    @Test
     void nullTagDoesNotConsumeTtlvPath() {
         try (RawTag rawTag = RawTag.fromRaw(PRIVATE_TAG);
                 Tag tag = rawTag.checked();

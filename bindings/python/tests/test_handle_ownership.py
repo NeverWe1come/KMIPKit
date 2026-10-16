@@ -91,6 +91,34 @@ def _load_ttlv_adapter(package_name: str) -> types.ModuleType:
 
 
 class ConsumedHandleTests(unittest.TestCase):
+    def test_integer_normalization_ignores_noninteger_c_types_and_signatures(self) -> None:
+        handles, native, package_name = _load_adapter()
+        try:
+            native.ffi.sizeof = lambda _argument_type: 4
+            self.assertIsNone(
+                handles._fixed_width_integer_bounds(
+                    types.SimpleNamespace(kind="pointer", cname="uint32_t")
+                )
+            )
+            self.assertIsNone(
+                handles._fixed_width_integer_bounds(
+                    types.SimpleNamespace(kind="primitive", cname="uint32")
+                )
+            )
+            self.assertIsNone(
+                handles._fixed_width_integer_bounds(
+                    types.SimpleNamespace(kind="primitive", cname="float_t")
+                )
+            )
+
+            native.ffi.typeof = lambda _function: types.SimpleNamespace(kind="pointer")
+            arguments = (object(),)
+            self.assertIs(
+                handles._normalize_integer_arguments(lambda: 0, arguments), arguments
+            )
+        finally:
+            _unload_adapter(package_name)
+
     def test_native_view_call_pins_handle_until_cffi_returns(self) -> None:
         handles, native, package_name = _load_adapter()
         try:
