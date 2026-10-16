@@ -411,28 +411,23 @@ def _make_handle(
     arguments: tuple[object, ...],
     out_index: int | None = None,
     consumed_indices: tuple[int, ...] = (),
-    staging_buffers: tuple[Any, ...] = (),
 ) -> Any:
-    try:
-        output = ffi.new(f"{c_type} **")
-        call_arguments = list(arguments)
-        if out_index is None:
-            call_arguments.append(output)
-        else:
-            call_arguments.insert(out_index, output)
-        function = getattr(lib, function_name)
-        status = (
-            _invoke_consuming(function, tuple(call_arguments), consumed_indices)
-            if consumed_indices
-            else _invoke(function, *call_arguments)
-        )
-        errors.raise_for_status(status)
-        if output[0] == ffi.NULL:
-            errors.raise_for_status(4)
-        return output[0]
-    finally:
-        for buffer in staging_buffers:
-            _wipe_staging_buffer(buffer)
+    output = ffi.new(f"{c_type} **")
+    call_arguments = list(arguments)
+    if out_index is None:
+        call_arguments.append(output)
+    else:
+        call_arguments.insert(out_index, output)
+    function = getattr(lib, function_name)
+    status = (
+        _invoke_consuming(function, tuple(call_arguments), consumed_indices)
+        if consumed_indices
+        else _invoke(function, *call_arguments)
+    )
+    errors.raise_for_status(status)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(4)
+    return output[0]
 
 
 @contextmanager
@@ -1315,14 +1310,15 @@ def with_unique_batch_item_id(
         identifier, (bytes, bytearray, memoryview)
     ):
         errors.raise_for_status(4)
-    raw, data = _owned_bytes(identifier, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
-    handle = _make_handle(
-        "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_with_unique_batch_item_id",
-        (item, data, len(raw)),
-        consumed_indices=(0,),
-        staging_buffers=(data,),
-    )
+    with _staging_buffer_scope() as staging_buffers:
+        raw, data = _owned_bytes(identifier, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        staging_buffers.append(data)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_with_unique_batch_item_id",
+            (item, data, len(raw)),
+            consumed_indices=(0,),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -1515,7 +1511,6 @@ def client_batch_item_create_split_key(
                 _native_structure(attributes, required=True),
                 _native_structure(protection_storage_masks),
             ),
-            staging_buffers=tuple(staging_buffers),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -1551,7 +1546,6 @@ def client_batch_item_certify(
                 _native_structure(attributes),
                 _native_structure(protection_storage_masks),
             ),
-            staging_buffers=tuple(staging_buffers),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -1577,7 +1571,6 @@ def client_batch_item_hash(
                 _native_optional_indicator(init_indicator),
                 _native_optional_indicator(final_indicator),
             ),
-            staging_buffers=tuple(staging_buffers),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -1606,7 +1599,6 @@ def client_batch_item_mac(
                 _native_optional_indicator(init_indicator),
                 _native_optional_indicator(final_indicator),
             ),
-            staging_buffers=tuple(staging_buffers),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -1638,7 +1630,6 @@ def client_batch_item_mac_verify(
                 _native_optional_indicator(init_indicator),
                 _native_optional_indicator(final_indicator),
             ),
-            staging_buffers=tuple(staging_buffers),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -1670,7 +1661,6 @@ def client_batch_item_sign(
                 _native_optional_indicator(init_indicator),
                 _native_optional_indicator(final_indicator),
             ),
-            staging_buffers=tuple(staging_buffers),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -1705,7 +1695,6 @@ def client_batch_item_signature_verify(
                 _native_optional_indicator(init_indicator),
                 _native_optional_indicator(final_indicator),
             ),
-            staging_buffers=tuple(staging_buffers),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
