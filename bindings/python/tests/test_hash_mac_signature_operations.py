@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import fields
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -37,7 +38,7 @@ _OPERATIONS = (
     ),
 )
 def test_crypto_response_parsers_accept_omitted_optional_outputs(
-    monkeypatch: pytest.MonkeyPatch, operation: str, parser: object, symbol: str
+    monkeypatch: pytest.MonkeyPatch, operation: str, parser: Any, symbol: str
 ) -> None:
     def get_response(_item: object, *outputs: object) -> int:
         outputs[0][0] = 1
@@ -78,10 +79,110 @@ def test_crypto_response_helpers_reject_malformed_native_optional_values() -> No
     with pytest.raises(errors.InvalidInputError):
         client._optional_output_span(extensions.ffi.new("uint8_t *", 1), span)
 
+    span.data = extensions.ffi.new("uint8_t[]", b"x")
+    span.length = 0
+    with pytest.raises(errors.InvalidInputError):
+        client._optional_output_span(extensions.ffi.new("uint8_t *", 0), span)
+
     identifier = extensions.ffi.new("kmipkit_unique_identifier_v1_t *")
     identifier.text_length = 1
     with pytest.raises(errors.InvalidInputError):
         client._optional_output_identifier(identifier)
+
+
+@pytest.mark.parametrize(
+    ("parser", "symbol"),
+    (
+        (client._hash_response, "kmipkit_client_batch_item_response_hash"),
+        (client._certify_response,
+            "kmipkit_client_batch_item_response_certify"),
+        (client._mac_response, "kmipkit_client_batch_item_response_mac"),
+        (client._mac_verify_response,
+            "kmipkit_client_batch_item_response_mac_verify"),
+        (client._sign_response, "kmipkit_client_batch_item_response_sign"),
+        (client._signature_verify_response,
+            "kmipkit_client_batch_item_response_signature_verify"),
+    ),
+)
+def test_crypto_response_parsers_reject_invalid_presence_flags(
+    monkeypatch: pytest.MonkeyPatch, parser: Any, symbol: str
+) -> None:
+    def get_response(_item: object, *outputs: object) -> int:
+        outputs[0][0] = 2
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
+
+    with pytest.raises(errors.InvalidInputError):
+        parser(SimpleNamespace(_pointer=lambda: object()))
+
+
+@pytest.mark.parametrize(
+    ("operation", "parser", "symbol"),
+    (
+        ("hash", client._hash_response, "kmipkit_client_batch_item_response_hash"),
+        ("mac", client._mac_response, "kmipkit_client_batch_item_response_mac"),
+        ("mac_verify", client._mac_verify_response,
+            "kmipkit_client_batch_item_response_mac_verify"),
+        ("sign", client._sign_response, "kmipkit_client_batch_item_response_sign"),
+        ("signature_verify", client._signature_verify_response,
+            "kmipkit_client_batch_item_response_signature_verify"),
+    ),
+)
+def test_crypto_response_parsers_reject_fields_on_absent_responses(
+    monkeypatch: pytest.MonkeyPatch, operation: str, parser: Any, symbol: str
+) -> None:
+    def get_response(_item: object, *outputs: object) -> int:
+        outputs[0][0] = 0
+        flag_index = 1 if operation == "hash" else 2
+        outputs[flag_index][0] = 1
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
+
+    with pytest.raises(errors.InvalidInputError):
+        parser(SimpleNamespace(_pointer=lambda: object()))
+
+
+@pytest.mark.parametrize(
+    ("parser", "symbol"),
+    (
+        (client._hash_response, "kmipkit_client_batch_item_response_hash"),
+        (client._certify_response, "kmipkit_client_batch_item_response_certify"),
+        (client._mac_response, "kmipkit_client_batch_item_response_mac"),
+        (client._mac_verify_response,
+            "kmipkit_client_batch_item_response_mac_verify"),
+        (client._sign_response, "kmipkit_client_batch_item_response_sign"),
+        (client._signature_verify_response,
+            "kmipkit_client_batch_item_response_signature_verify"),
+    ),
+)
+def test_crypto_response_parsers_preserve_clean_absent_responses(
+    monkeypatch: pytest.MonkeyPatch, parser: Any, symbol: str
+) -> None:
+    def get_response(_item: object, *_outputs: object) -> int:
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
+
+    assert parser(SimpleNamespace(_pointer=lambda: object())) is None
+
+
+def test_certify_response_rejects_success_without_an_identifier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def get_response(_item: object, present: object, _identifier: object) -> int:
+        present[0] = 1
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_certify=get_response),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._certify_response(SimpleNamespace(_pointer=lambda: object()))
 
 
 def test_crypto_builder_helpers_reject_values_outside_the_typed_api() -> None:
