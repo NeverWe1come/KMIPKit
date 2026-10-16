@@ -119,7 +119,7 @@ The coverage preflight initially exceeded 30 seconds on `profiles_generated.rs` 
 
 ### T036 — pinned official fixture availability
 
-The offline inventory found 203 official Test Cases records, all with `fixture_availability: unavailable` and no `fixture_path`; `rg --files | rg '(fixtures?|test-cases?)/'` found no local pinned fixture files. The Baseline subset remains 16 unavailable mandatory cases. Therefore zero official profile fixtures were executable in this worktree; no missing case was reconstructed or counted as passing. `python -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_baseline_catalog_state_is_incomplete_while_required_fixtures_are_unavailable` passed (1 test), and `python tools/normative_catalog/validate.py --repo-root .` passed (4 sources, 1,411 clauses, 4,026 records). This records the fixture gate result only and makes no conformance claim.
+Historical offline inventory before the 2026-10-13 fixture acquisition found 203 official Test Cases records with no pinned files. The 16 Baseline cases were then pinned byte-for-byte and later replayed as detailed in the current T036 evidence section near the end of this document. No missing case was reconstructed or counted as passing. The earlier catalog-state test and validation command recorded the inventory gate only and made no conformance claim.
 
 ### T032–T035 — guidance, Rustdoc, and generated outputs
 
@@ -2194,7 +2194,7 @@ The official KMIP Profiles v2.1 OASIS Standard links enumerate Baseline cases BL
 | Green - pin the official bytes and map catalog records | `0fa1548e`; the two focused tests above | PASS: both tests verify fixture paths and recorded SHA-256 values, XML root/pair structure and Baseline case IDs, Baseline readiness stays `evidence_incomplete`, and available fixtures are not emitted as a Baseline blocker. All 16 Git blobs match their `SOURCES.md` digests. |
 | Refactor - deterministic generated outputs and current docs | `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check`<br>`py -3 -B tools/normative_catalog/report.py --repo-root . --check`<br>`py -3 -B tools/normative_catalog/validate.py --repo-root .`<br>`git diff --check` | PASS: both generated outputs match their pinned generators; catalog validation reports 4 sources, 1,411 clauses, and 4,111 records; whitespace validation passes. The full normative-catalog suite passed 505 tests with 8 platform skips after the oracle and fixture-availability corrections. These fixtures remain inputs only and T036 stays open. |
 
-These are pinned test inputs, not conformance results. The 16 XMLs contain multi-operation stateful conversations and variable placeholders; the existing `kmipkit-test-support` OASIS fixture adapter is scoped to specific cryptographic Test Cases, and no full Baseline profile-case execution harness is present in this feature. Therefore T036 is reopened and remains incomplete until every available profile fixture is executed through suitable test infrastructure and each result is linked to its exact official case ID. No Baseline conformance claim is made.
+These are pinned test inputs, not conformance results. The 16 XMLs contain multi-operation stateful conversations and variable placeholders. At the time of the initial inventory the existing `kmipkit-test-support` OASIS fixture adapter was scoped to specific cryptographic Test Cases and no full Baseline profile-case runner existed. The T036 replay update below adds that runner and records exact case dispositions; T036 remains incomplete because three available fixtures conflict with source-backed typed validation. No Baseline conformance claim is made.
 
 ### Windows Script Contracts diagnosis - 2026-10-13
 
@@ -2220,7 +2220,7 @@ This audit closes only implementation and verification tasks with directly check
 | T026, T043 | Keep open: live read-only `GET /repos/NeverWe1come/KMIPKit/branches/release%2F1.0.0/protection` returned `404 Branch not protected` on 2026-10-13. Therefore the required protected-ref evidence cannot be established; the protected Actions App credential/control is administrator-owned and unavailable to this PR workflow. Pull-request CI success is not eligible release-push evidence. |
 | T030 | Keep open: independent traceability tests and assignments do not yet cover every requirement in the required complete inherited closure; current catalog-wide closure and selected-capability gates remain incomplete. |
 | T031 | Complete in signed commit `be6efd19`; client preflight regressions now cover redaction of a server-supplied Result Message, explicit empty Defaults Information preservation after Query reports server defaults, no retries, exact exchange counts with no implicit Query/Discover Versions, no profile inference from either explicit response, and `NotSent`/`ResponseStarted` delivery state. |
-| T036 | Keep open: 16 official Baseline XML fixtures are now pinned byte-for-byte, but are inputs only. There is no general stateful Baseline profile-case execution harness for their multi-operation conversations and variables. No official case pass is inferred from fixture availability. |
+| T036 | Updated by the later T036 replay section: 13 pinned cases fully replay through typed `Client::execute`; 3 stop at source-backed typed validation; 77 cases have no local fixture. Keep open because all 16 available fixtures cannot be faithfully sent under current normative rules. |
 | T040 | Keep open: complete implementation/verification links for the full selected-profile clause/subclause closure are absent while the closure oracle and capability mappings remain incomplete. Preserve the five exact Baseline MAY/OPTIONAL blockers above; do not synthesize assignments. |
 | T041 | Keep open: independent QA confirmed remaining functional evidence gaps and an unresolved DCO-history issue. A local audit of `origin/release/1.0.0..HEAD` found 759 commits, 63 without a `Signed-off-by` trailer (including historical feature commits); this PR history must not be rewritten or retrospectively signed. |
 
@@ -3451,11 +3451,11 @@ The pinned KMIP Specification v2.1 §9.17 paragraph contains separate MAY atoms:
 
 ### KMIPKIT-0010 T036 — pinned client-profile fixture execution assessment (2026-10-16)
 
-The fixture inventory was audited against the checked-in catalog and local files. OASIS case IDs are defined by the pinned KMIP Profiles v2.1 source in §§5.1.3.1–5.1.3.13 and §5.6.3.1–§5.6.3.3. The catalog has 93 profile-fixture case records: 16 have pinned local XML files and 77 are explicitly unavailable with no local fixture path. The 16 local files are available evidence inputs only; none has been executed as a complete official profile case in this work. There are no official execution results to map to a pass or fail (0/16 executed).
+The fixture inventory was audited against the checked-in catalog and local files. OASIS case IDs are defined by the pinned KMIP Profiles v2.1 source in §§5.1.3.1–5.1.3.13 and §5.6.3.1–§5.6.3.3. The catalog has 93 profile-fixture case records: 16 have pinned local XML files and 77 are explicitly unavailable with no local fixture path. At the initial audit, no complete official profile case had been executed (0/16); the initial inventory and dispositions are preserved below as historical evidence. The current replay outcome matrix follows that table.
 
-The local code audit found no full client-profile fixture runner or test invoking these profile XML paths. `crates/kmipkit-test-support/src/oasis_crypto_fixtures.rs` is a narrower Encrypt/Decrypt adapter, and its module documentation explicitly says it does not validate complete Test Case flows; the client tests include only separate derived operation examples. `crates/kmipkit-client/tests/unit/interop_execution_tests.rs` exercises typed Interop requests over a fake transport but does not load or execute profile fixtures. A representative available profile XML is a multi-message conversation with Interop Begin/End and variable response values such as `$NOW`; no generic complete-flow parser, documented variable substitution contract, or profile-case runner exists to produce a faithful case result. Running a parser or isolated derived operation test would not count as executing the official case. The separate pinned `TC-*` operation examples are not replacements for the profile case fixtures.
+At the initial audit, the local code had no full client-profile fixture runner or test invoking these profile XML paths. `crates/kmipkit-test-support/src/oasis_crypto_fixtures.rs` was a narrower Encrypt/Decrypt adapter, and its module documentation explicitly said it did not validate complete Test Case flows. `crates/kmipkit-client/tests/unit/interop_execution_tests.rs` exercised typed Interop requests over a fake transport but did not load or execute profile fixtures. That audit led to the parser and replay implementation recorded below; the separate pinned `TC-*` operation examples were not used as replacements for profile case fixtures.
 
-#### Pinned locally, but unexecuted
+#### Initial audit: pinned locally, but unexecuted (historical)
 
 | Official case ID | Catalog test ID | Pinned fixture | Result |
 | --- | --- | --- | --- |
@@ -3475,6 +3475,51 @@ The local code audit found no full client-profile fixture runner or test invokin
 | `SKLC-M-1-21` | `KMIPKIT-TEST-PROF-5-6-3-1` | `specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml` | Not executed; no full-case runner |
 | `SKLC-M-2-21` | `KMIPKIT-TEST-PROF-5-6-3-2` | `specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml` | Not executed; no full-case runner |
 | `SKLC-M-3-21` | `KMIPKIT-TEST-PROF-5-6-3-3` | `specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml` | Not executed; no full-case runner |
+
+#### Typed fake-transport replay update (2026-10-16)
+
+The test `every_available_profile_fixture_records_replay_or_typed_blocker` in `crates/kmipkit-client/tests/unit/profile_fixture_replay_tests.rs` parses every locally pinned XML file in source order. It binds `$NOW` to `1700000000` and `$UNIQUE_IDENTIFIER_0` to `kmipkit-test-unique-id-0`, constructs each request through the public typed request models, and calls `Client::execute` with a deterministic fake transport. The fake transport supplies the encoded fixture response. For every sent exchange, the test recursively compares the complete emitted BatchItem TTLV tree and order with the fixture request, including Unique Batch Item ID, and compares the selected Batch Error Continuation Option and Client Correlation Value. It also verifies that the typed response operation and Result Status match the fixture response. It records only case IDs, counts, categories, and delivery state; request and response bodies are never logged. This is fixture replay evidence only, not server interoperability, profile conformance, or certification.
+
+| Official case ID | Catalog test ID | Result |
+| --- | --- | --- |
+| `BL-M-1-21` | `KMIPKIT-TEST-PROF-5-1-3-1` | Replayed: 7 exchanges, 7 operations |
+| `BL-M-2-21` | `KMIPKIT-TEST-PROF-5-1-3-2` | Replayed: 5 exchanges, 7 operations |
+| `BL-M-3-21` | `KMIPKIT-TEST-PROF-5-1-3-3` | Replayed: 7 exchanges, 7 operations |
+| `BL-M-4-21` | `KMIPKIT-TEST-PROF-5-1-3-4` | Pinned but unexecuted at step 1: `Validation/InvalidInput/NotSent`; 1 prior exchange sent; 5 later exchanges not attempted |
+| `BL-M-5-21` | `KMIPKIT-TEST-PROF-5-1-3-5` | Replayed: 7 exchanges, 7 operations |
+| `BL-M-6-21` | `KMIPKIT-TEST-PROF-5-1-3-6` | Replayed: 6 exchanges, 6 operations |
+| `BL-M-7-21` | `KMIPKIT-TEST-PROF-5-1-3-7` | Pinned but unexecuted at step 2: `Validation/InvalidInput/NotSent`; 2 prior exchanges sent; 3 later exchanges not attempted |
+| `BL-M-8-21` | `KMIPKIT-TEST-PROF-5-1-3-8` | Replayed: 7 exchanges, 7 operations |
+| `BL-M-9-21` | `KMIPKIT-TEST-PROF-5-1-3-9` | Replayed: 5 exchanges, 5 operations |
+| `BL-M-10-21` | `KMIPKIT-TEST-PROF-5-1-3-10` | Pinned but unexecuted at step 1: `Validation/InvalidInput/NotSent`; 1 prior exchange sent; 3 later exchanges not attempted |
+| `BL-M-11-21` | `KMIPKIT-TEST-PROF-5-1-3-11` | Replayed: 5 exchanges, 5 operations |
+| `BL-M-12-21` | `KMIPKIT-TEST-PROF-5-1-3-12` | Replayed: 5 exchanges, 5 operations |
+| `BL-M-13-21` | `KMIPKIT-TEST-PROF-5-1-3-13` | Replayed: 6 exchanges, 6 operations |
+| `SKLC-M-1-21` | `KMIPKIT-TEST-PROF-5-6-3-1` | Replayed: 3 exchanges, 3 operations |
+| `SKLC-M-2-21` | `KMIPKIT-TEST-PROF-5-6-3-2` | Replayed: 8 exchanges, 8 operations |
+| `SKLC-M-3-21` | `KMIPKIT-TEST-PROF-5-6-3-3` | Replayed: 8 exchanges, 8 operations |
+
+Thirteen cases completed all 79 fixture exchanges and typed 81 operations. Three pinned fixtures reached typed client preflight but could not be faithfully sent under the current source-backed rules:
+
+- `BL-M-4-21`, step 1, requests Register of Secret Data with only Protect Stop Date in Attributes. KMIP Specification v2.1 §2.7 classifies Secret Data as a Managed Cryptographic Object, and §6.1.43 Table 293 requires Cryptographic Usage Mask for a Managed Cryptographic Object. The typed client rejects the request before sending it. No fixture mutation or validation bypass was used.
+- `BL-M-7-21`, step 2, requests Modify Attribute with `State=Compromised`. KMIP Specification v2.1 §4.57 says State SHALL NOT be changed using Modify Attribute and SHALL only be changed by the server. Source-backed client validation rejects the request before sending it.
+- `BL-M-10-21`, step 1, requests Register of a Certificate with Certificate Type but no Certificate Length. KMIP Specification v2.1 §6.1.43 Table 293 requires Certificate Length for Certificate registration. The typed client rejects the request before sending it.
+
+The command `cargo test -p kmipkit-client --lib profile_fixture_replay_tests --all-features --locked -- --nocapture` passes and prints the 16 exact IDs with replay/blocker dispositions. The recorded status assertions ensure the three blockers remain associated with those exact case IDs and steps. The other 77 case IDs remain `unavailable` with no local fixture path, as listed below; none was fetched or reconstructed. T036 remains open because the acceptance criterion requires executing all available pinned cases and three are source-conflicting under current rules.
+
+#### T036 Red/Green/Refactor evidence
+
+| Phase | Signed commit | Command and observed result |
+| --- | --- | --- |
+| Red — require strict parsing of every pinned ordered profile stream | `869c694e` | `cargo test -p kmipkit-test-support --test oasis_profile_fixture_parser --all-features --locked` failed as expected because the parser type/API did not yet exist; the committed test requires all 16 pinned fixture IDs to parse in source order. |
+| Green — parse pinned profile fixture streams | `1a841989` | `cargo test -p kmipkit-test-support --test oasis_profile_fixture_parser --all-features --locked` passed: 2 tests, including parsing all 16 pinned files in exact source order and rejecting unsupported symbols, operations, malformed pairing, and reordered steps. |
+| Red — require an execution disposition for all 16 pinned cases | `d4ad73c4` | `cargo test -p kmipkit-client --lib profile_fixture_replay_tests --all-features --locked -- --nocapture` failed as expected: the committed placeholder returned zero case results, while the assertion required 16. |
+| Red — reject malformed RFC 3339 date separators | `5121166b` | `cargo test -p kmipkit-test-support --test oasis_profile_fixture_parser --all-features --locked` failed as expected for `2000x02-01T...`: the parser returned `None` rather than `Some(InvalidValue)` because the fixed-position `-` separator was not validated. |
+| Green — replay pinned fixtures through typed client execution | `0ef0cbb4` | `cargo test -p kmipkit-client --lib profile_fixture_replay_tests --all-features --locked -- --nocapture` passed: 1 test, 0 failures, 16 exact case IDs printed; 13 complete replays and 3 typed preflight blockers. This commit also restores strict date-separator validation and wires parsed fixture messages into typed request/response execution. |
+| Refactor — move the pinned case inventory and exact expected results to module constants | `0fbf66ca` | `cargo fmt --all --check`; `cargo test -p kmipkit-client --lib profile_fixture_replay_tests --all-features --locked -- --nocapture`; `cargo test -p kmipkit-test-support --all-features --locked`; `cargo clippy -p kmipkit-client -p kmipkit-test-support --all-targets --all-features --locked -- -D warnings`; `git diff --check`. PASS: formatting and linting passed; the same 16 dispositions and 13 full replay results were preserved; all 67 test-support unit, integration, and redaction/zeroization tests passed. AWS-LC emitted environment/toolchain warnings for `stdalign_check.c` and missing NASM, but all requested Rust commands exited successfully. |
+| Refactor evidence — record exact outcomes, clause conflicts, and reproducibility | This signed documentation commit | `cargo fmt --all --check`; focused replay command above; `git diff --check`; `git verify-commit` with the local SSH allowed-signers file. Exact outcomes remain separated from the 77 unavailable cases, with no payloads recorded. |
+
+The Red, Green, and Refactor commits are SSH-signed and contain a `Signed-off-by` trailer. After discovering the original local Red commits lacked `gpgsig`, the seven-commit local T036 tail was recreated with signatures; each new T036 commit was then verified using `git -c gpg.ssh.allowedSignersFile=<temporary-file> verify-commit <commit>`. The temporary allowed-signers file is outside the repository. The test output is deterministic and contains only official case IDs, operation/exchange counts, and redacted blocker state.
 
 #### Unavailable locally
 
@@ -3560,10 +3605,10 @@ These catalogued official profile cases have no pinned local fixture (`fixture_a
 | `TL-M-2-21` | `KMIPKIT-TEST-PROF-5-12-6-2` | Unavailable; no local fixture |
 | `TL-M-3-21` | `KMIPKIT-TEST-PROF-5-12-6-3` | Unavailable; no local fixture |
 
-#### Audit commands and outcome
+#### Initial audit commands and outcome (historical)
 
 - PowerShell here-string piped to `py -3 -`: filtered catalog `test_cases` by `source_id == KMIPKIT-SRC-profiles`, checked each catalog `fixture_path` with `Path.is_file()`, and listed unavailable records. Result: 93 records, 16 locally pinned and present, 77 unavailable; no availability/path mismatches.
-- `rg` search over `crates`, `tools`, and `scripts` for the profile fixture paths and case IDs found no full-profile client fixture runner; matches were source-audit tests and catalog tooling.
-- `rg` search over Rust client/protocol/test-support source and tests for `BL-M-*` and `SKLC-M-*` fixture inclusions found no profile case execution. Existing pinned XML adapters cover other fixture scopes.
+- At that initial audit, `rg` search over `crates`, `tools`, and `scripts` for the profile fixture paths and case IDs found no full-profile client fixture runner; matches were source-audit tests and catalog tooling.
+- At that initial audit, `rg` search over Rust client/protocol/test-support source and tests for `BL-M-*` and `SKLC-M-*` fixture inclusions found no profile case execution. Existing pinned XML adapters covered other fixture scopes.
 
-No official fixture execution command was run because no faithful execution path exists. This is an execution blocker, not a failed case result. T036 remains open; the fixtures remain available-but-unexecuted or unavailable as listed above, and no profile conformance claim is made.
+No official fixture execution command was run during that initial audit because no faithful execution path then existed. The subsequent replay command and exact results are recorded above. The three source-conflicting cases remain pinned-but-unexecuted; 77 other cases remain unavailable. T036 stays open and no profile conformance claim is made.
