@@ -705,18 +705,18 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     test_path = reference.split("::", 1)[0]
                     self.assertTrue((ROOT / test_path).is_file(), reference)
 
-    def test_result_response_clauses_and_elements_use_server_to_client_direction(self) -> None:
+    def test_result_response_clause_directions_preserve_source_scope(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-        response_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-9.17-001",
-            "KMIPKIT-CLAUSE-SPEC-9.18-001",
-            "KMIPKIT-CLAUSE-SPEC-9.19-001",
+        expected_clause_directions = {
+            "KMIPKIT-CLAUSE-SPEC-9.17-001": "unclear",
+            "KMIPKIT-CLAUSE-SPEC-9.18-001": "server_to_client",
+            "KMIPKIT-CLAUSE-SPEC-9.19-001": "server_to_client",
         }
         clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
-        self.assertTrue(response_clause_ids.issubset(clauses_by_id))
-        for clause_id in sorted(response_clause_ids):
+        self.assertTrue(set(expected_clause_directions).issubset(clauses_by_id))
+        for clause_id, expected_direction in sorted(expected_clause_directions.items()):
             with self.subTest(clause_id=clause_id):
-                self.assertEqual(clauses_by_id[clause_id]["direction"], "server_to_client")
+                self.assertEqual(clauses_by_id[clause_id]["direction"], expected_direction)
 
         result_element_ids = _result_element_ids(catalog["elements"])
         elements_by_id = {element["element_id"]: element for element in catalog["elements"]}
