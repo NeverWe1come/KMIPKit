@@ -146,6 +146,7 @@ fn cosmian_capability_manifest_is_complete() {
         "material-citation:",
         "MGF-citation:",
         "ECDSA-digest:",
+        "CSR-exclusion:",
     ]
     .into_iter()
     .filter_map(|kind| {
@@ -237,6 +238,13 @@ fn reviewed_inventory_issues(rows: &[serde_json::Value]) -> Vec<String> {
     review_additional_wrapping_paths(rows, &mut issues);
     for row in rows {
         review_material_citations(row, &mut issues);
+        if csr_subject_cannot_sign(row) && row["expected_outcome"] != "standards_invalid_exclusion"
+        {
+            issues.push(format!(
+                "CSR-exclusion: {} needs a non-executable PKCS10 proof-of-possession exclusion",
+                manifest_text(row, "case_id")
+            ));
+        }
         let p = &row["parameters"];
         if row["operation"] == "Sign"
             && row["algorithm"] == "ECDSA"
@@ -257,6 +265,18 @@ fn reviewed_inventory_issues(rows: &[serde_json::Value]) -> Vec<String> {
         }
     }
     issues
+}
+
+fn csr_subject_cannot_sign(row: &serde_json::Value) -> bool {
+    row["operation"] == "Certify"
+        && row["object_type"] == "CertificateRequest"
+        && (matches!(
+            row["algorithm"].as_str(),
+            Some("MLKEM_512" | "MLKEM_768" | "MLKEM_1024")
+        ) || matches!(
+            row["parameters"]["curve"].as_str(),
+            Some("CURVE25519" | "CURVE448")
+        ))
 }
 
 fn demand_review_case(
@@ -1123,7 +1143,12 @@ fn review_material_citations(row: &serde_json::Value, issues: &mut Vec<String>) 
             .as_array()
             .expect("resolved citations")
             .iter()
-            .any(|source| source["section"] == "11.30")
+            .any(|source| {
+                source["section"] == "11.30"
+                    && source["tables"].as_array().is_some_and(Vec::is_empty)
+                    && source["table_title"] == "Mask Generator"
+                    && source["numbering"] == "unnumbered"
+            })
         {
             issues.push(format!(
                 "MGF-citation: {} needs unnumbered 11.30 Mask Generator",
@@ -1497,10 +1522,43 @@ fn validate_capability_row(row: &serde_json::Value) {
     assert_eq!(manifest_text(row, "encoding"), "binary-TTLV");
     // Case families are an explicit plan until Tasks 4–7 implement execution
     // and parity. Source existence must never become an observation.
-    assert_eq!(
-        manifest_text(row, "execution_status"),
-        "planned_for_tasks_4_6"
-    );
+    if row["expected_outcome"] == "standards_invalid_exclusion" {
+        assert!(csr_subject_cannot_sign(row));
+        assert_eq!(
+            manifest_text(row, "execution_status"),
+            "non_executable_normative_exclusion"
+        );
+        assert_eq!(row["exclusion"]["request_may_be_sent"], false);
+        manifest_text(&row["exclusion"], "reason");
+        assert_eq!(
+            row["exclusion"]["normative_sources"],
+            serde_json::json!([{
+                "document": "RFC 2986",
+                "sections": ["3", "4.2"],
+                "url": "https://www.rfc-editor.org/rfc/rfc2986.html",
+                "referenced_from": "OASIS KMIP Specification v2.1 section 1.3 [PKCS#10]/[RFC2986]; CSR structure section 2.2/Table 3; request types section 11.8/Table 439"
+            }])
+        );
+        assert!(row["setup"].as_array().expect("exclusion setup").is_empty());
+        assert_eq!(row["observed_result"]["classification"], "not_run");
+        assert_eq!(
+            manifest_text(row, "test_family"),
+            "cosmian_kms::cosmian_capability_manifest_is_complete"
+        );
+        assert!(
+            row["oasis_source"]
+                .as_array()
+                .expect("exclusion citations")
+                .iter()
+                .any(|citation| citation["section"] == "2.2"
+                    && citation["tables"] == serde_json::json!([3]))
+        );
+    } else {
+        assert_eq!(
+            manifest_text(row, "execution_status"),
+            "planned_for_tasks_4_6"
+        );
+    }
     manifest_text(row, "expected_semantics");
     for field in ["object_type", "algorithm", "key_format", "encoding"] {
         assert!(
@@ -1534,6 +1592,7 @@ fn validate_capability_row(row: &serde_json::Value) {
                 | "unsupported_probe"
                 | "client_blocked"
                 | "setup_blocked"
+                | "standards_invalid_exclusion"
         ),
         "invalid expected_outcome"
     );
@@ -1570,12 +1629,17 @@ fn validate_capability_row(row: &serde_json::Value) {
         let tables = citation["tables"]
             .as_array()
             .expect("OASIS citation tables must be an array");
+        let unnumbered_mask_generator = citation["section"] == "11.30"
+            && tables.is_empty()
+            && citation["table_title"] == "Mask Generator"
+            && citation["numbering"] == "unnumbered";
         assert!(
-            !tables.is_empty()
-                && tables
-                    .iter()
-                    .all(|table| table.as_u64().is_some_and(|number| number > 0)),
-            "OASIS citations require exact positive table numbers"
+            unnumbered_mask_generator
+                || (!tables.is_empty()
+                    && tables
+                        .iter()
+                        .all(|table| table.as_u64().is_some_and(|number| number > 0))),
+            "OASIS citations require exact table numbers, or the explicitly unnumbered 11.30 Mask Generator table"
         );
     }
     let cosmian = &row["cosmian_source"];
