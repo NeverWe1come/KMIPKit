@@ -33,19 +33,70 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.kmipkit.extensions.ClientBatchItem;
 
 final class NativeLibraryLoaderTest {
     private static final String WINDOWS_TARGET = "windows-x86_64-msvc";
     private static final String WINDOWS_LIBRARY = "kmipkit_jni.dll";
+    private static final int MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024;
 
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    void exactLimitOperationInputsAreAcceptedWithoutMutatingCallerArrays() {
+        byte[] input = new byte[MAX_OPERATION_INPUT_BYTES];
+        java.util.Arrays.fill(input, (byte) 0x5a);
+        byte[] original = input.clone();
+        List<Function<byte[], ClientBatchItem>> factories = List.of(
+                value -> ClientBatchItem.certify(null, null, value, null, null),
+                value -> ClientBatchItem.macVerify(null, null, null, value, null, null, null),
+                value -> ClientBatchItem.macVerify(null, null, null, null, value, null, null),
+                value -> ClientBatchItem.sign(null, null, null, value, null, null, null),
+                value -> ClientBatchItem.sign(null, null, null, null, value, null, null),
+                value -> ClientBatchItem.signatureVerify(null, null, null, value, null, null, null, null),
+                value -> ClientBatchItem.signatureVerify(null, null, null, null, value, null, null, null),
+                value -> ClientBatchItem.signatureVerify(null, null, null, null, null, value, null, null));
+
+        for (Function<byte[], ClientBatchItem> factory : factories) {
+            try (ClientBatchItem item = factory.apply(input)) {
+                assertNotNull(item);
+            }
+            assertArrayEquals(original, input);
+        }
+    }
+
+    @Test
+    void oversizedOperationInputsAreRejectedBeforeJni() throws Exception {
+        Path testClasses = classLocation(NativeLibraryLoadProbe.class);
+        Path mainClasses = classLocation(NativeExtensionRegistry.class);
+        Path nullableClasses = classLocation(org.jspecify.annotations.Nullable.class);
+        Path java = Path.of(System.getProperty("java.home"), "bin",
+                System.getProperty("os.name", "").startsWith("Windows") ? "java.exe" : "java");
+        String classPath = String.join(File.pathSeparator,
+                testClasses.toString(), mainClasses.toString(), nullableClasses.toString());
+        Path unavailableLibrary = temporaryDirectory.resolve("native-library-must-not-load.dll");
+        List<String> command = new java.util.ArrayList<>(List.of(
+                java.toString(), "-Dkmipkit.nativeLibrary=" + unavailableLibrary,
+                "--class-path", classPath, NativeLibraryLoadProbe.class.getName(), "operation-input-limit"));
+        String jacocoAgent = childJacocoAgentArgument(ManagementFactory.getRuntimeMXBean().getInputArguments());
+        if (jacocoAgent != null) {
+            command.add(1, jacocoAgent);
+        }
+
+        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        assertEquals(0, process.waitFor(), output);
+        assertTrue(output.contains("OPERATION_INPUT_LIMIT_REJECTED_BEFORE_NATIVE_LOAD"), output);
+    }
 
     @Test
     void selectsOnlyPublishedNativeTargets() {
