@@ -702,9 +702,18 @@ class BindingExportAuditTests(unittest.TestCase):
             "org.kmipkit.extensions.TransportConfiguration.Timeout.toString",
             "org.kmipkit.extensions.TransportConfiguration.Encoding.valueOf",
             "org.kmipkit.extensions.TransportConfiguration.Encoding.values",
+            "org.kmipkit.extensions.ClientBatchItemResult.HashResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.MacResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.MacVerifyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SignResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse.toString",
         }
         for path in java_boilerplate:
             self.assertIn(("java-kmipkit", path), exclusions)
+
+        for path in java_boilerplate:
+            if path.endswith("Response.toString"):
+                self.assertIn("redacted", exclusions[("java-kmipkit", path)]["reason"])
 
         dataclass_names = (
             "kmipkit.client.BatchItemResult",
