@@ -145,6 +145,16 @@ class CertifyParityManifestTests(unittest.TestCase):
             self.assertTrue(exclusion["reason"].strip(), export_name)
             self.assertTrue(exclusion["evidence"].strip(), export_name)
 
+    def test_certify_c_response_documentation_states_borrowed_identifier_lifetime(self) -> None:
+        response_function = next(
+            row
+            for row in self.manifest["functions"]
+            if row["id"] == "client_batch_item_response_certify"
+        )
+        documentation = " ".join(response_function["c"]["documentation"])
+        self.assertIn("borrowed from the response-item handle", documentation)
+        self.assertIn("until that handle is released", documentation)
+
 
 if __name__ == "__main__":
     unittest.main()
