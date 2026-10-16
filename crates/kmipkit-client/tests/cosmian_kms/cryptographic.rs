@@ -191,6 +191,70 @@ fn cosmian_cryptographic_case_ids_cover_typed_success_rows_and_dispatch_registry
 }
 
 #[test]
+fn cosmian_cryptographic_sign_and_verify_rows_require_executable_dispatch() {
+    const INDEPENDENT_SIGNER_SOURCE: &str =
+        "independent signer using requested digest; never reuse affected server raw Sign as proof";
+    const INDEPENDENT_SIGNER_CASE_IDS: [&str; 8] = [
+        "cosmian-528-signature-verify-publickey-ecdsa-p256-sha-384-raw",
+        "cosmian-528-signature-verify-privatekey-ecdsa-p256-sha-384-raw",
+        "cosmian-528-signature-verify-publickey-ecdsa-p256-sha-512-raw",
+        "cosmian-528-signature-verify-privatekey-ecdsa-p256-sha-512-raw",
+        "cosmian-528-signature-verify-publickey-ecdsa-secp256k1-sha-384-raw",
+        "cosmian-528-signature-verify-privatekey-ecdsa-secp256k1-sha-384-raw",
+        "cosmian-528-signature-verify-publickey-ecdsa-secp256k1-sha-512-raw",
+        "cosmian-528-signature-verify-privatekey-ecdsa-secp256k1-sha-512-raw",
+    ];
+
+    let rows = target_rows().expect("cryptographic target rows");
+    let mut sign_rows = 0;
+    let mut verify_rows = 0;
+    let mut independent_signer_ids = BTreeSet::new();
+
+    for row in &rows {
+        let id = case_id(row).expect("case ID");
+        match row["operation"].as_str() {
+            Some("Sign") => {
+                sign_rows += 1;
+                assert!(
+                    !matches!(disposition(row), Ok(CaseDisposition::DeliberatelyUnmapped(_))),
+                    "Sign typed_success case {id} needs an executable request builder"
+                );
+            }
+            Some("Signature Verify") => {
+                verify_rows += 1;
+                if row["parameters"]["setup_signature_source"].as_str()
+                    == Some(INDEPENDENT_SIGNER_SOURCE)
+                {
+                    assert!(
+                        matches!(disposition(row), Ok(CaseDisposition::DeliberatelyUnmapped(_))),
+                        "case {id} requires the independent signer named by its matrix setup"
+                    );
+                    independent_signer_ids.insert(id);
+                } else {
+                    assert!(
+                        !matches!(disposition(row), Ok(CaseDisposition::DeliberatelyUnmapped(_))),
+                        "Signature Verify typed_success case {id} needs executable dispatch"
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+
+    assert_eq!(sign_rows, 110, "reviewed Sign typed_success inventory changed");
+    assert_eq!(
+        verify_rows, 224,
+        "reviewed Signature Verify typed_success inventory changed"
+    );
+    assert_eq!(independent_signer_ids.len(), INDEPENDENT_SIGNER_CASE_IDS.len());
+    assert_eq!(
+        independent_signer_ids,
+        INDEPENDENT_SIGNER_CASE_IDS.into_iter().collect(),
+        "only matrix rows that explicitly require an independent signer remain unmapped"
+    );
+}
+
+#[test]
 #[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
 // The exact OASIS operation citation for every row is validated against that
 // row's `oasis_source` in the offline contract test.
