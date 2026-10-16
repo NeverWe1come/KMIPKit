@@ -37,11 +37,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
     public ClientBatchItemMetadataV2 metadataV2() {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseMetadataV2);
-        if (values == null || values.length != 2 || !(values[0] instanceof long[] metadata)) {
-            throw new InvalidInputException("native batch result metadata v2 is invalid");
-        }
-        byte[] message = values[1] == null ? null : requireBytes(values[1]);
-        return new ClientBatchItemMetadataV2(metadata, message);
+        return parseMetadataV2(values);
     }
 
     /** Returns the raw unsigned KMIP operation value, preserving unknown operations. */
@@ -58,55 +54,21 @@ public final class ClientBatchItemResult implements AutoCloseable {
     public Optional<CreateResponse> createResponse() {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCreate);
-        if (values == null || values.length != 2) {
-            throw new InvalidInputException("native Create response is invalid");
-        }
-        long[] fields = requireLongArray(values[0], 5);
-        if (fields[0] == 0) {
-            return Optional.empty();
-        }
-        requirePresent(fields[0]);
-        byte[] text = values[1] == null ? null : requireBytes(values[1]);
-        return Optional.of(new CreateResponse(
-                fields[1], identifier(fields[2], fields[3], fields[4], text)));
+        return parseCreateResponse(values);
     }
 
     /** Returns distinct private and public identifiers for a successful Create Key Pair response. */
     public Optional<CreateKeyPairResponse> createKeyPairResponse() {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCreateKeyPair);
-        if (values == null || values.length != 3) {
-            throw new InvalidInputException("native Create Key Pair response is invalid");
-        }
-        long[] fields = requireLongArray(values[0], 1);
-        if (fields[0] == 0) {
-            return Optional.empty();
-        }
-        requirePresent(fields[0]);
-        return Optional.of(new CreateKeyPairResponse(identifierRecord(values[1]), identifierRecord(values[2])));
+        return parseCreateKeyPairResponse(values);
     }
 
     /** Returns the one-or-more Create Split Key identifiers in response wire order. */
     public Optional<List<UniqueIdentifier>> createSplitKeyUniqueIdentifiers() {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCreateSplitKey);
-        if (values == null || values.length != 2) {
-            throw new InvalidInputException("native Create Split Key response is invalid");
-        }
-        long[] fields = requireLongArray(values[0], 2);
-        if (fields[0] == 0) {
-            return Optional.empty();
-        }
-        requirePresent(fields[0]);
-        if (fields[1] < 1 || !(values[1] instanceof Object[] identifiers)
-                || identifiers.length != fields[1]) {
-            throw new InvalidInputException("native Create Split Key identifiers are invalid");
-        }
-        List<UniqueIdentifier> result = new ArrayList<>(identifiers.length);
-        for (Object identifier : identifiers) {
-            result.add(identifierRecord(identifier));
-        }
-        return Optional.of(List.copyOf(result));
+        return parseCreateSplitKeyUniqueIdentifiers(values);
     }
 
     /** Successful Create response fields. */
@@ -139,6 +101,60 @@ public final class ClientBatchItemResult implements AutoCloseable {
         public UniqueIdentifier publicKeyUniqueIdentifier() { return publicKeyUniqueIdentifier; }
 
         @Override public String toString() { return "CreateKeyPairResponse[identifiers=redacted]"; }
+    }
+
+    static ClientBatchItemMetadataV2 parseMetadataV2(Object[] values) {
+        if (values == null || values.length != 2 || !(values[0] instanceof long[] metadata)) {
+            throw new InvalidInputException("native batch result metadata v2 is invalid");
+        }
+        byte[] message = values[1] == null ? null : requireBytes(values[1]);
+        return new ClientBatchItemMetadataV2(metadata, message);
+    }
+
+    static Optional<CreateResponse> parseCreateResponse(Object[] values) {
+        if (values == null || values.length != 2) {
+            throw new InvalidInputException("native Create response is invalid");
+        }
+        long[] fields = requireLongArray(values[0], 5);
+        if (fields[0] == 0) {
+            return Optional.empty();
+        }
+        requirePresent(fields[0]);
+        byte[] text = values[1] == null ? null : requireBytes(values[1]);
+        return Optional.of(new CreateResponse(
+                fields[1], identifier(fields[2], fields[3], fields[4], text)));
+    }
+
+    static Optional<CreateKeyPairResponse> parseCreateKeyPairResponse(Object[] values) {
+        if (values == null || values.length != 3) {
+            throw new InvalidInputException("native Create Key Pair response is invalid");
+        }
+        long[] fields = requireLongArray(values[0], 1);
+        if (fields[0] == 0) {
+            return Optional.empty();
+        }
+        requirePresent(fields[0]);
+        return Optional.of(new CreateKeyPairResponse(identifierRecord(values[1]), identifierRecord(values[2])));
+    }
+
+    static Optional<List<UniqueIdentifier>> parseCreateSplitKeyUniqueIdentifiers(Object[] values) {
+        if (values == null || values.length != 2) {
+            throw new InvalidInputException("native Create Split Key response is invalid");
+        }
+        long[] fields = requireLongArray(values[0], 2);
+        if (fields[0] == 0) {
+            return Optional.empty();
+        }
+        requirePresent(fields[0]);
+        if (fields[1] < 1 || !(values[1] instanceof Object[] identifiers)
+                || identifiers.length != fields[1]) {
+            throw new InvalidInputException("native Create Split Key identifiers are invalid");
+        }
+        List<UniqueIdentifier> result = new ArrayList<>(identifiers.length);
+        for (Object identifier : identifiers) {
+            result.add(identifierRecord(identifier));
+        }
+        return Optional.of(List.copyOf(result));
     }
 
     private static UniqueIdentifier identifierRecord(Object value) {
@@ -199,6 +215,10 @@ public final class ClientBatchItemResult implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         long[] values = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponseDiscoverVersionsSupportedVersions);
+        return parseSupportedVersions(values);
+    }
+
+    static Optional<List<ProtocolVersion>> parseSupportedVersions(long[] values) {
         if (values == null) {
             return Optional.empty();
         }

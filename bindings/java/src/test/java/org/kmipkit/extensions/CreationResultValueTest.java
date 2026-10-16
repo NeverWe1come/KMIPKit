@@ -170,10 +170,13 @@ final class CreationResultValueTest {
                 () -> ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(
                         new Object[] {new long[] {1, 2}, new Object[] {identifierRecord(2, 1)}}));
 
-        assertEquals(List.of(UniqueIdentifier.enumeration(1), UniqueIdentifier.enumeration(2)),
-                ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(new Object[] {
-                        new long[] {1, 2}, new Object[] {identifierRecord(2, 1), identifierRecord(2, 2)}})
-                        .orElseThrow());
+        List<UniqueIdentifier> identifiers = ClientBatchItemResult.parseCreateSplitKeyUniqueIdentifiers(
+                new Object[] {new long[] {1, 2},
+                        new Object[] {identifierRecord(2, 1), identifierRecord(2, 2)}})
+                .orElseThrow();
+        assertEquals(2, identifiers.size());
+        assertEquals(1, identifiers.get(0).number());
+        assertEquals(2, identifiers.get(1).number());
     }
 
     @Test
