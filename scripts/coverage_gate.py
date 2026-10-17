@@ -7,11 +7,13 @@ import argparse
 from bisect import bisect_left, bisect_right
 from functools import lru_cache
 import html
+import io
 import json
 import os
 import re
 import subprocess
 import sys
+import tokenize
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 import xml.etree.ElementTree as ET
@@ -1108,29 +1110,192 @@ def _is_executable_changed_line(
     if line < 1 or line > len(source_lines):
         raise CoverageDataError(f"Changed production line is outside its source file: {source}:{line}.")
     source_line = source_lines[line - 1]
-    if _has_documented_coverage_exclusion(source, source_line):
+    if _has_documented_coverage_exclusion(source, tuple(source_lines), line):
         return False
     if source.endswith(".rs") and line in _rust_function_signature_lines(tuple(source_lines)):
         return False
     return not _is_structural_only_source_line(source_line)
 
 
-def _has_documented_coverage_exclusion(source: str, source_line: str) -> bool:
-    """Recognize only explicit per-line exclusions with an adjacent reason."""
-    comment_prefix = "#" if source.endswith(".py") else "//"
-    marker = f"{comment_prefix} COVERAGE-EXCLUDE:"
-    marker_index = source_line.find(marker)
-    if marker_index < 0:
-        return False
+def _has_documented_coverage_exclusion(source: str, source_lines: tuple[str, ...], line: int) -> bool:
+    """Recognize only explicit line-comment exclusions with an adjacent reason."""
     if not source.endswith((".rs", ".cpp", ".java", ".py")):
-        raise CoverageDataError(f"Coverage exclusion marker is unsupported for source file: {source}.")
-    code = source_line[:marker_index].rstrip()
-    reason = source_line[marker_index + len(marker) :].strip()
+        if any("COVERAGE-EXCLUDE:" in source_line for source_line in source_lines):
+            raise CoverageDataError(f"Coverage exclusion marker is unsupported for source file: {source}.")
+        return False
+
+    line_comment = next(
+        ((column, comment_text) for comment_line, column, comment_text in _source_line_comments(source, source_lines)
+         if comment_line == line),
+        None,
+    )
+    if line_comment is None:
+        return False
+    comment_start, comment_text = line_comment
+    comment_prefix = "#" if source.endswith(".py") else "//"
+    comment_body = comment_text[len(comment_prefix) :].lstrip()
+    marker = "COVERAGE-EXCLUDE:"
+    if not comment_body.startswith(marker):
+        return False
+    reason = comment_body[len(marker) :].strip()
+    code = source_lines[line - 1][:comment_start].rstrip()
     if not code or not reason or _is_structural_only_source_line(code):
         raise CoverageDataError(
             f"Coverage exclusion at {source} requires a reason on an executable source line."
         )
     return True
+
+
+_RUST_RAW_STRING_START = re.compile(r"(?:br|cr|r)(?P<hashes>#*)\"")
+_RUST_LIFETIME_START = re.compile(r"'[A-Za-z_][A-Za-z0-9_]*")
+_CPP_RAW_STRING_START = re.compile(r'(?:u8|u|U|L)?R"([^ ()\\\t\r\n]{0,16})\(')
+
+
+@lru_cache(maxsize=32)
+def _source_line_comments(source: str, source_lines: tuple[str, ...]) -> tuple[tuple[int, int, str], ...]:
+    """Return actual line-comment spans while skipping literals and block comments."""
+    text = "\n".join(source_lines)
+    if source.endswith(".py"):
+        comments: list[tuple[int, int, str]] = []
+        try:
+            for token in tokenize.generate_tokens(io.StringIO(text).readline):
+                if token.type == tokenize.COMMENT:
+                    comments.append((token.start[0], token.start[1], token.string))
+        except (IndentationError, tokenize.TokenError) as error:
+            raise CoverageDataError(f"Python source could not be tokenized for coverage exclusions: {source}.") from error
+        return tuple(comments)
+
+    comments = []
+    line = 1
+    column = 0
+    index = 0
+    block_comment_depth = 0
+    quote: str | None = None
+    raw_end: str | None = None
+    text_block = False
+
+    while index < len(text):
+        if text[index] == "\n":
+            line += 1
+            column = 0
+            index += 1
+            continue
+
+        if block_comment_depth:
+            if text.startswith("*/", index):
+                block_comment_depth -= 1
+                index += 2
+                column += 2
+            elif source.endswith(".rs") and text.startswith("/*", index):
+                block_comment_depth += 1
+                index += 2
+                column += 2
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if raw_end is not None:
+            if text.startswith(raw_end, index):
+                index += len(raw_end)
+                column += len(raw_end)
+                raw_end = None
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if text_block:
+            backslashes = 0
+            preceding = index - 1
+            while preceding >= 0 and text[preceding] == "\\":
+                backslashes += 1
+                preceding -= 1
+            if text.startswith('"""', index) and backslashes % 2 == 0:
+                index += 3
+                column += 3
+                text_block = False
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if quote is not None:
+            if text[index] == "\\":
+                index += 1
+                column += 1
+                if index < len(text):
+                    if text[index] == "\n":
+                        line += 1
+                        column = 0
+                    else:
+                        column += 1
+                    index += 1
+            elif text[index] == quote:
+                quote = None
+                index += 1
+                column += 1
+            else:
+                index += 1
+                column += 1
+            continue
+
+        if text.startswith("/*", index):
+            block_comment_depth = 1
+            index += 2
+            column += 2
+            continue
+        if text.startswith("//", index):
+            end = text.find("\n", index)
+            if end < 0:
+                end = len(text)
+            comments.append((line, column, text[index:end]))
+            column += end - index
+            index = end
+            continue
+
+        rust_raw = _RUST_RAW_STRING_START.match(text, index) if source.endswith(".rs") else None
+        if rust_raw is not None:
+            hashes = rust_raw.group(1) or ""
+            raw_end = f'"{hashes}'
+            index += rust_raw.end()
+            column += rust_raw.end()
+            continue
+
+        cpp_raw = (
+            _CPP_RAW_STRING_START.match(text, index)
+            if source.endswith(".cpp")
+            else None
+        )
+        if cpp_raw is not None:
+            raw_end = f'){cpp_raw.group(1)}"'
+            index += cpp_raw.end()
+            column += cpp_raw.end()
+            continue
+
+        if source.endswith(".java") and text.startswith('"""', index):
+            text_block = True
+            index += 3
+            column += 3
+            continue
+
+        if source.endswith(".rs") and text[index] == "'":
+            lifetime = _RUST_LIFETIME_START.match(text, index)
+            if lifetime is not None and (lifetime.end() == len(text) or text[lifetime.end()] != "'"):
+                index += 1
+                column += 1
+                continue
+
+        if text[index] in "\"'":
+            quote = text[index]
+            index += 1
+            column += 1
+            continue
+
+        index += 1
+        column += 1
+
+    return tuple(comments)
 
 
 @lru_cache(maxsize=32)
@@ -1151,8 +1316,8 @@ def _rust_function_signature_lines(source_lines: tuple[str, ...]) -> frozenset[i
             code_line = _mask_rust_non_code(declaration_line).rstrip()
             opening_brace = code_line.find("{")
             if opening_brace >= 0:
-                body = declaration_line[opening_brace + 1 :].split("//", 1)[0]
-                if body.replace("}", "").strip():
+                body = code_line[opening_brace + 1 :]
+                if body.replace("}", "").strip() or "}" in body:
                     declaration_lines.update(range(start + 1, end + 1))
                 else:
                     declaration_lines.update(range(start + 1, end + 2))
