@@ -634,6 +634,15 @@ int32_t kmipkit_client_batch_item_response_get_usage_allocation(kmipkit_client_b
  */
 /* KMIPKIT-0039-FR-004, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_get_usage_allocation_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Returns the derived object Unique Identifier only for a successful Derive Key result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-REQ-SPEC-6.1.14-001-001, KMIPKIT-REQ-SPEC-6.1.14-001-002, KMIPKIT-REQ-SPEC-6.1.14-001-003, KMIPKIT-REQ-SPEC-6.1.14-001-004, KMIPKIT-REQ-SPEC-6.1.14-002, KMIPKIT-REQ-SPEC-6.1.14-006-001, KMIPKIT-REQ-SPEC-6.1.14-006-002, KMIPKIT-REQ-SPEC-6.1.14-007-001, KMIPKIT-REQ-SPEC-6.1.14-007-002, KMIPKIT-REQ-SPEC-7.12-003, KMIPKIT-REQ-SPEC-7.12-005-001 */
+int32_t kmipkit_client_batch_item_response_derive_key(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Derive Key result. Unknown fields and their order are preserved.
+ * For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-REQ-SPEC-6.1.14-001-001, KMIPKIT-REQ-SPEC-6.1.14-001-002, KMIPKIT-REQ-SPEC-6.1.14-001-003, KMIPKIT-REQ-SPEC-6.1.14-001-004, KMIPKIT-REQ-SPEC-6.1.14-002, KMIPKIT-REQ-SPEC-6.1.14-006-001, KMIPKIT-REQ-SPEC-6.1.14-006-002, KMIPKIT-REQ-SPEC-6.1.14-007-001, KMIPKIT-REQ-SPEC-6.1.14-007-002, KMIPKIT-REQ-SPEC-7.12-003, KMIPKIT-REQ-SPEC-7.12-005-001 */
+int32_t kmipkit_client_batch_item_response_derive_key_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Creates a typed Check item from KMIP 2.1 §6.1.7, Table 183. Each 0/1 presence discriminator selects its corresponding optional raw value.
  */
 /* KMIPKIT-0036-FR-001, KMIPKIT-0036-FR-002, KMIPKIT-0036-FR-003, KMIPKIT-0036-FR-004, KMIPKIT-0036-FR-005, KMIPKIT-0036-FR-006, KMIPKIT-0036-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.7-001, KMIPKIT-REQ-SPEC-6.1.7-002-001, KMIPKIT-REQ-SPEC-6.1.7-002-002, KMIPKIT-REQ-SPEC-6.1.7-003, KMIPKIT-REQ-SPEC-6.1.7-004-001, KMIPKIT-REQ-SPEC-6.1.7-004-002, KMIPKIT-REQ-SPEC-6.1.7-005 */

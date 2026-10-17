@@ -1392,6 +1392,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::derive_key",
     ),
     (
+        "T046:response:rustVariant",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::DeriveKey",
+    ),
+    (
         "rust-observed-397ee0115e79bd8b9749",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
@@ -1410,6 +1415,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-a40c51b3bd1698599d9b",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::delegated_login_response",
+    ),
+    (
+        "T046:response:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::derive_key_response",
     ),
     (
         "rust-observed-ebae376c3db55930fe72",
@@ -1545,6 +1555,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-8539a6fd04ac7debc581",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DelegatedLoginResponse::ticket",
+    ),
+    (
+        "T046:result:type:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeriveKeyResponse",
+    ),
+    (
+        "T046:result:uniqueIdentifier:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeriveKeyResponse::unique_identifier",
+    ),
+    (
+        "T046:result:responseTtlv:rust",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::DeriveKeyResponse::with_ttlv",
     ),
     (
         "rust-observed-e1f8406907aaf65d7c1e",

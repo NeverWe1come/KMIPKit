@@ -103,6 +103,17 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetUsageAllocationResponse(values);
     }
 
+    /**
+     * Returns the resolved identifier and complete generic TTLV from a successful Derive Key
+     * response. The returned response owns an independent TTLV copy; callers must close it.
+     */
+    public Optional<DeriveKeyResponse> deriveKeyResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseDeriveKey);
+        return parseDeriveKeyResponse(values);
+    }
+
     /** Returns distinct private and public identifiers for a successful Create Key Pair response. */
     public Optional<CreateKeyPairResponse> createKeyPairResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -280,6 +291,28 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
         @Override public String toString() {
             return "GetUsageAllocationResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful Derive Key response with its owned complete generic TTLV. */
+    public static final class DeriveKeyResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final TtlvStructure responseTtlv;
+
+        private DeriveKeyResponse(UniqueIdentifier uniqueIdentifier, TtlvStructure responseTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.responseTtlv = responseTtlv;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns the complete ordered response structure owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() {
+            return "DeriveKeyResponse[uniqueIdentifier=redacted]";
         }
     }
 
@@ -768,6 +801,34 @@ public final class ClientBatchItemResult implements AutoCloseable {
         TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
         try {
             return Optional.of(new GetUsageAllocationResponse(
+                    identifierRecord(tuple[1]), responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<DeriveKeyResponse> parseDeriveKeyResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Derive Key response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 1, "native Derive Key response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Derive Key response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null || responseTtlvHandle[0] != 0) {
+                if (responseTtlvHandle[0] > 0) {
+                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+                }
+                throw new InvalidInputException("native absent response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (responseTtlvHandle[0] <= 0) {
+            throw new InvalidInputException("native Derive Key response is invalid");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            return Optional.of(new DeriveKeyResponse(
                     identifierRecord(tuple[1]), responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
