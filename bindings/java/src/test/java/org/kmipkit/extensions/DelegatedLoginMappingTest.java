@@ -94,4 +94,26 @@ final class DelegatedLoginMappingTest {
                 }));
         assertArrayEquals(new byte[secret.length], secret);
     }
+
+    @Test
+    void responseMappingClosesTicketWhenAnErrorInterruptsOwnershipTransfer() {
+        NativeExtensionRegistry.ensureLoaded();
+        long ticketTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        byte[] secret = "ticket-error-cleanup-secret".getBytes();
+        ClientBatchItemResult.DelegatedLoginResponse[] captured = new ClientBatchItemResult.DelegatedLoginResponse[1];
+
+        AssertionError thrown = assertThrows(AssertionError.class,
+                () -> ClientBatchItemResult.parseDelegatedLoginResponse(new Object[] {
+                    new long[] {1, 1, 0xfeed_beefL}, secret,
+                    new long[] {ticketTtlv}
+                }, response -> {
+                    captured[0] = response;
+                    throw new AssertionError("injected result transfer failure");
+                }));
+
+        assertEquals("injected result transfer failure", thrown.getMessage());
+        assertArrayEquals(new byte[secret.length], secret);
+        assertTrue(captured[0].ticketValue().isEmpty());
+        assertTrue(captured[0].ticketTtlv().isEmpty());
+    }
 }

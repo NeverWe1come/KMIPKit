@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.function.Function;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -638,6 +639,12 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     static Optional<DelegatedLoginResponse> parseDelegatedLoginResponse(Object[] values) {
+        return parseDelegatedLoginResponse(values, Optional::of);
+    }
+
+    static Optional<DelegatedLoginResponse> parseDelegatedLoginResponse(
+            Object[] values,
+            Function<DelegatedLoginResponse, Optional<DelegatedLoginResponse>> resultTransfer) {
         Object[] tuple = values;
         long rawHandle = 0;
         TtlvStructure ownedTtlv = null;
@@ -671,7 +678,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
             DelegatedLoginResponse response = new DelegatedLoginResponse(
                     OptionalLong.of(fields[2]), value, ownedTtlv);
             Arrays.fill(value, (byte) 0);
-            return Optional.of(response);
+            return resultTransfer.apply(response);
         } catch (RuntimeException exception) {
             if (ownedTtlv != null) {
                 ownedTtlv.close();
