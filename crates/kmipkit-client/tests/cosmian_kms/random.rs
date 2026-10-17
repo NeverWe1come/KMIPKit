@@ -318,10 +318,7 @@ fn cosmian_528_random_matrix_no_parameter_cases() {
         match run_live_case(case) {
             Ok(()) => println!("case_id={} classification=typed_success", case.case_id),
             Err(error) => {
-                println!(
-                    "case_id={} classification=failed detail={error}",
-                    case.case_id
-                );
+                println!("{}", rng_failure_observation_line(case.case_id, error.as_ref()));
                 failures.push(case.case_id);
             }
         }
@@ -333,6 +330,10 @@ fn cosmian_528_random_matrix_no_parameter_cases() {
         selected_cases.len(),
         failures.join(", ")
     );
+}
+
+fn rng_failure_observation_line(case_id: &str, error: &dyn Error) -> String {
+    format!("case_id={case_id} classification=failed detail={error}")
 }
 
 fn selected_live_cases() -> Result<Vec<MatrixCase>, String> {
@@ -448,6 +449,21 @@ fn manifest_row<'a>(rows: &'a [serde_json::Value], case_id: &str) -> &'a serde_j
 #[cfg(test)]
 mod filter_tests {
     use super::*;
+
+    #[test]
+    fn malformed_typed_rng_response_is_reported_as_response_validation_failure() {
+        let case_id = "cosmian-528-rng-retrieve-32-parameters-false";
+        let error = std::io::Error::other(format!(
+            "case {case_id} RNG Retrieve: typed response rejected by KMIPKit; wire operation None, Result Status Some(1), Result Reason Some(4)"
+        ));
+
+        assert_eq!(
+            rng_failure_observation_line(case_id, &error),
+            format!(
+                "case_id={case_id} classification=response_validation_failed expected_outcome=typed_success observed=response_validation_failed request_sent=true response_received=true interoperability=false detail={error}"
+            )
+        );
+    }
 
     #[test]
     fn case_filter_selects_a_known_executable_case() {
