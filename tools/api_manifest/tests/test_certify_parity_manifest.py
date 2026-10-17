@@ -14,6 +14,12 @@ OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-CERTIFY"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-6.1.6-001",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+    "KMIPKIT-REQ-SPEC-6.1.6-003",
+    "KMIPKIT-REQ-SPEC-6.1.6-007",
     "KMIPKIT-0036-FR-001",
     "KMIPKIT-0036-FR-002",
     "KMIPKIT-0036-FR-003",
@@ -32,6 +38,14 @@ REQUIREMENTS = {
     "KMIPKIT-0043-FR-021",
     "KMIPKIT-0043-FR-022",
 }
+OWNER_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-6.1.6-001",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+    "KMIPKIT-REQ-SPEC-6.1.6-003",
+    "KMIPKIT-REQ-SPEC-6.1.6-007",
+}
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
@@ -49,20 +63,26 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientBatchOutcome::certify_response",
         "kmipkit_protocol::CertifyResponse",
         "kmipkit_protocol::CertifyResponse::unique_identifier",
+        "kmipkit_protocol::CertifyResponse::with_ttlv",
     },
     "c": {
         "kmipkit_client_batch_item_certify",
         "kmipkit_client_batch_item_response_certify",
+        "kmipkit_client_batch_item_response_certify_ttlv",
     },
     "java": {
         "org.kmipkit.extensions.ClientBatchItem.certify",
         "org.kmipkit.extensions.ClientBatchItemResult.CertifyResponse",
         "org.kmipkit.extensions.ClientBatchItemResult.certifyResponse",
+        "org.kmipkit.extensions.ClientBatchItemResult.CertifyResponse.responseTtlv",
+        "org.kmipkit.extensions.ClientBatchItemResult.CertifyResponse.close",
     },
     "python": {
         "kmipkit.extensions.client_batch_item_certify",
         "kmipkit.client.CertifyResponse",
         "kmipkit.client.BatchItemResult.certify_response",
+        "kmipkit.client.CertifyResponse.response_ttlv",
+        "kmipkit.client.CertifyResponse.close",
     },
 }
 EXPECTED_IMPLEMENTATION_EXCLUSIONS = {
@@ -131,9 +151,28 @@ class CertifyParityManifestTests(unittest.TestCase):
                 )
                 linked_requirements.update(declaration["requirementIds"])
 
-        for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertTrue(expected <= actual_mappings[language], language)
+        missing = {
+            language: sorted(expected - actual_mappings[language])
+            for language, expected in EXPECTED_MAPPINGS.items()
+            if expected - actual_mappings[language]
+        }
+        self.assertEqual({}, missing)
         self.assertTrue(REQUIREMENTS <= linked_requirements)
+
+    def test_certify_public_declarations_link_owner_requirement_ids(self) -> None:
+        operation = self.operations[0]
+        declaration_ids = {
+            declaration_id
+            for language_ids in operation["declarations"].values()
+            for declaration_id in language_ids
+        }
+        for declaration_id in declaration_ids:
+            declaration = self.declarations[declaration_id]
+            if declaration["capabilityId"] == OPERATION_ID:
+                self.assertTrue(
+                    OWNER_REQUIREMENTS <= set(declaration["requirementIds"]),
+                    declaration_id,
+                )
 
     def test_generated_parity_inventory_contains_certify_mappings(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
