@@ -405,7 +405,9 @@ fn documented_cipher_gap_rows_have_exact_typed_target_probes() {
 
     let decrypt = rows
         .iter()
-        .find(|row| row["case_id"] == "cosmian-528-decrypt-privatekey-aes-rsa-aes-selection-discrepancy")
+        .find(|row| {
+            row["case_id"] == "cosmian-528-decrypt-privatekey-aes-rsa-aes-selection-discrepancy"
+        })
         .expect("AES/RSA Decrypt discrepancy row");
     let ciphertext_fixture = asymmetric_ciphertext_fixture_row(decrypt)
         .expect("AES/RSA Decrypt finding must have a typed RSA ciphertext setup");
@@ -1323,7 +1325,7 @@ fn certificate_encrypt_rows_have_matching_local_round_trip_key_fixtures() {
 }
 
 #[test]
-fn aes_rsa_gap_probe_is_not_rewritten_as_an_rsa_target_request() {
+fn aes_rsa_decrypt_finding_uses_rsa_fixture_without_rewriting_target_axes() {
     let rows = target_rows().expect("cryptographic target rows");
     let row = rows
         .iter()
@@ -1331,14 +1333,20 @@ fn aes_rsa_gap_probe_is_not_rewritten_as_an_rsa_target_request() {
             row["case_id"] == "cosmian-528-decrypt-privatekey-aes-rsa-aes-selection-discrepancy"
         })
         .expect("AES/RSA Decrypt discrepancy row");
-    assert!(
-        asymmetric_ciphertext_fixture_row(row).is_err(),
-        "the Decrypt/AES-vs-RSA gap must not synthesize a target ciphertext fixture"
-    );
+    let ciphertext_fixture = asymmetric_ciphertext_fixture_row(row)
+        .expect("the AES/RSA Decrypt finding needs a matching RSA ciphertext fixture");
     assert_eq!(
         row["algorithm"], "AES",
         "target Decrypt axes must be preserved"
     );
+    assert_eq!(row["operation"], "Decrypt");
+    assert_eq!(ciphertext_fixture["operation"], "Encrypt");
+    assert_eq!(ciphertext_fixture["algorithm"], "RSA");
+    assert_eq!(
+        ciphertext_fixture["wire_enum_values"]["cryptographic_algorithm"]["value"],
+        "0x00000004"
+    );
+    assert_eq!(ciphertext_fixture["parameters"]["padding"], "OAEP");
 }
 
 #[test]

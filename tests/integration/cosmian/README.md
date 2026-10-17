@@ -12,10 +12,7 @@ paths in Cosmian's 34 published support rows (Set and Modify are separate),
 plus separate Ping, Adjust Attribute and Re-certify probes. It crosses
 valid operation/object/format/encoding/algorithm/parameter dimensions, follows
 pinned source restrictions, and records each case independently. The ledger
-has 6,429 records: 6,417 executable cases and 12 normative exclusions. Fifteen
-cryptographic finding rows are explicitly marked `fixture_unavailable`; they
-were not sent. A typed response on a finding row is not an interoperability
-success.
+has 6,429 records: 6,417 executable cases and 12 normative exclusions. A targeted follow-up sent all 15 previously fixture-blocked cryptographic findings: 12 ConfigurableKEM probes completed typed postconditions and three AES/RSA hybrid probes received typed rejections. These findings are not counted as KMIP 2.1 interoperability successes.
 
 ## Prerequisites and local files
 
@@ -132,16 +129,18 @@ ps --all` returned no services.
 | Test family | Cases | Typed successes | Interoperability successes | Other measured outcomes |
 |---|---:|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 80 | 3 rejected; 2 response-validation failures; 2 malformed responses; 1 setup-blocked; 1 unsupported |
-| Cryptographic | 1,466 | 648 | 616 | 384 rejected; 331 setup-rejected; 88 response-validation failures; 15 fixture-unavailable |
+| Cryptographic | 1,466 | 660 | 616 | 387 rejected; 331 setup-rejected; 88 response-validation failures |
 | Key management | 216 | 12 | 12 | 201 rejected; 3 setup-rejected |
 | Import/Export/Register transfer | 4,640 | 2,722 | 2,668 | 890 rejected; 978 setup-rejected; 50 response-validation failures |
 | RNG | 6 | 0 | 0 | 6 malformed responses |
-| **Total executable rows** | **6,417** | **3,462** | **3,376** | **All other rows remain non-success outcomes or explicit blockers** |
+| **Total executable rows** | **6,417** | **3,474** | **3,376** | **1,481 rejected; 1,312 setup-rejected; 140 response-validation failures; 10 other findings** |
 
 Twelve normative exclusions were not sent: six invalid RNG Parameters
 combinations and six invalid Certify subject-OID-only CSR combinations. Of the
-3,462 typed responses, 86 belong to source-gap/discrepancy finding rows and
-therefore have `interoperability=false`. The matrix stores all per-case
+3,474 typed responses, 98 belong to source-gap/discrepancy finding rows and
+therefore have `interoperability=false`. The 15 targeted cipher probes add 12
+typed responses and three target rejections; none counts as advertised KMIP
+2.1 interoperability. The matrix stores all per-case
 classifications and safe reason codes.
 
 Notable results include: Discover Versions passes; Check SplitKey passes with

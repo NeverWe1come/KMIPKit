@@ -85,7 +85,7 @@ than calling the run green.
 | Family | Cases | Interoperability successes | Main non-success observations |
 |---|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 3 rejected; Query/Locate validation failures; Ping/Adjust malformed responses; Activate setup blocked; Re-certify unsupported |
-| Cryptographic | 1,466 | 616 | 384 rejected; 331 setup rejected; 88 response validation failed; 15 exact fixtures unavailable |
+| Cryptographic | 1,466 | 616 | 387 rejected; 331 setup rejected; 88 response validation failed; 44 typed finding responses |
 | Key management | 216 | 12 | 201 rejected; 3 setup rejected |
 | Import/Export/Register transfer | 4,640 | 2,668 | 890 rejected; 978 setup rejected; 50 response validation failed |
 | RNG | 6 | 0 | 6 malformed typed responses |

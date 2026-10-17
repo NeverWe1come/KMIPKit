@@ -192,8 +192,10 @@ Compose y pruebas reales ignoradas por defecto que usan el cliente Rust tipado
 con TLS mutuo. Consulta la [guía de pruebas locales con Cosmian](../../../tests/integration/cosmian/README.md)
 para ver la configuración, los comandos de la suite completa y de cada familia,
 la matriz exhaustiva por caso y los resultados actuales. La última ejecución
-completa registró 3.376 intercambios tipados exitosos y 10 funciones de test con
-fallos; los fallos y bloqueos permanecen visibles en la matriz.
+completa registró 3.376 éxitos de interoperabilidad y 9 funciones de test con
+fallos. Una prueba posterior midió las 15 combinaciones criptográficas que antes
+no disponían de fixture: 12 respuestas `ConfigurableKEM` tipadas y 3 rechazos AES/RSA.
+Los hallazgos permanecen visibles en la matriz y no cuentan como interoperabilidad.
 
 ## Ejemplo local y ejecutable de una petición
 

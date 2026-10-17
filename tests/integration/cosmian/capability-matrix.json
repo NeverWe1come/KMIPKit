@@ -222017,12 +222017,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "rejected",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "Cosmian returned a typed KMIP rejection after receiving the standards-valid AES/RSA hybrid request; this remains a documentation/source discrepancy observation."
       },
       "notes": "Standards-valid Cryptographic Parameters selecting a hybrid scheme with an RSA key; vendor docs select AES, source RSA handler accepts only RSA. Record actual rejection as failed interoperability.",
       "wire_enum_values": {
@@ -222153,12 +222153,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "rejected",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "Cosmian returned a typed KMIP rejection after receiving the standards-valid AES/RSA hybrid request; this remains a documentation/source discrepancy observation."
       },
       "notes": "Standards-valid Cryptographic Parameters selecting a hybrid scheme with an RSA key; vendor docs select AES, source RSA handler accepts only RSA. Record actual rejection as failed interoperability.",
       "wire_enum_values": {
@@ -222290,12 +222290,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "rejected",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "Cosmian returned a typed KMIP rejection after receiving the standards-valid AES/RSA hybrid request; this remains a documentation/source discrepancy observation."
       },
       "notes": "Standards-valid Cryptographic Parameters selecting a hybrid scheme with an RSA key; vendor docs select AES, source RSA handler accepts only RSA. Record actual rejection as failed interoperability.",
       "wire_enum_values": {
@@ -542071,12 +542071,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -542584,12 +542584,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -543552,12 +543552,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -544065,12 +544065,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -545033,12 +545033,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -545546,12 +545546,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -546514,12 +546514,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -547027,12 +547027,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -547995,12 +547995,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -548508,12 +548508,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -549476,12 +549476,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
@@ -549989,12 +549989,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "fixture_unavailable",
-        "request_sent": false,
-        "response_received": false,
-        "target_request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
+        "response_received": true,
+        "target_request_sent": true,
         "interoperability": false,
-        "reason": "The exact test fixture was unavailable, so the target request was not sent and no server outcome was measured."
+        "reason": "A typed response and operation-specific postconditions were observed for this vendor-extension discrepancy probe; it is not counted as KMIP 2.1 advertised-operation interoperability."
       },
       "notes": "Opaque vendor key fixture/internal KEM tags, no reserved TTLV algorithm. Wrapped-TTLV Import is a source-permitted alternative; no source-only assumption of client/setup blockage. Get/Export conversion and provider availability require individual observation.",
       "wire_enum_values": {
