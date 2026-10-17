@@ -3658,3 +3658,17 @@ The Python API fixture contract suite required its pinned test dependencies beca
 | GitHub Actions PR #90 run `38850988212` at `bcb5783851babfb7336d76ea870936af8372be22` | PASS: 34 checks succeeded and 3 were skipped by workflow conditions; aggregate run conclusion is `success`. This includes Script contracts on Ubuntu, Windows, and macOS, the selected-scope coverage gate, Rust core jobs, C consumers, Java/JNI, Python, sanitizers, normative inventory, documentation contracts, and fuzz smoke. |
 
 This clears the earlier Script contracts failures for the corrected T002 research contracts. It does not resolve the broader normative crosswalk or fixture evidence gaps; T002/T036 remain open and PR #90 remains a draft.
+
+### KMIPKIT-0010 T043 — live release protection recheck (2026-10-17)
+
+The read-only GitHub API check was repeated against `release/1.0.0`. `GET /repos/NeverWe1come/KMIPKit/branches/release%2F1.0.0/protection` returned HTTP 404 (`Branch not protected`); the strict `scripts/branch_protection.py` contract therefore has no valid protected-policy evidence. The repository rulesets endpoint returned an empty list, the Actions secret-name endpoint returned no secrets (including no `PROFILE_EVIDENCE_APP_PRIVATE_KEY`), and the Actions environments endpoint returned HTTP 404, so the required release-evidence environment could not be verified. Protected-release readiness remains fail-closed and blocked. No repository settings, secrets, or environments were changed.
+
+The feature branch was clean at `4c7e5311` before updating. The current `origin/release/1.0.0` was `d5d5ab75ec9318d7d646c6ba85c5e56559ace21e`, one commit after the PR base `550a864840c727afa2bdf20b5a5e25aa3e2b9dff`. Merging that release commit produced signed-off merge commit `c3c10305a61a6927449083cd935ccd3dd3eb5348`; it added the already-merged KMIPKIT-0045 Rustls advisory remediation without conflicts. PR #90 is still a draft; CI and final clean-branch verification are pending this evidence update.
+
+| Observation | Command | Result |
+|---|---|---|
+| Branch protection | `gh api repos/NeverWe1come/KMIPKit/branches/release%2F1.0.0/protection` | BLOCKED: HTTP 404, `Branch not protected`. |
+| Strict policy normalization | `scripts/branch_protection.py` contract in CI | BLOCKED as designed: a missing protection response cannot become readiness evidence. |
+| Repository rulesets | `gh api repos/NeverWe1come/KMIPKit/rulesets --jq 'length'` | `0`. |
+| Protected App secret names | `gh api repos/NeverWe1come/KMIPKit/actions/secrets --jq '.secrets[].name'` | Empty; `PROFILE_EVIDENCE_APP_PRIVATE_KEY` is absent. No secret values were requested. |
+| Release evidence environment | `gh api repos/NeverWe1come/KMIPKit/actions/environments --jq '.environments[].name'` | BLOCKED: HTTP 404; environment configuration is unavailable for verification. |
