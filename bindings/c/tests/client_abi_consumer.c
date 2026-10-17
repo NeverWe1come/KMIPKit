@@ -153,6 +153,35 @@ static int check_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int derive_key_constructor_is_callable_from_c(void) {
+    static const uint8_t source_identifier[] = {'s', 'o', 'u', 'r', 'c', 'e', '-', 'a'};
+    kmipkit_unique_identifier_v1_t identifiers[2] = {{0}};
+    kmipkit_ttlv_structure_t *derivation_parameters = 0;
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+
+    for (uint64_t index = 0; index < 2; ++index) {
+        identifiers[index].struct_size = (uint32_t)sizeof(identifiers[index]);
+        identifiers[index].abi_version = 1;
+        identifiers[index].kind = 1;
+        identifiers[index].text_data = source_identifier;
+        identifiers[index].text_length = sizeof(source_identifier);
+    }
+    if (kmipkit_ttlv_structure_create(&derivation_parameters) != 0 ||
+        kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_client_batch_item_derive_key(
+            2, identifiers, 2, UINT32_C(0xfeedbeef),
+            derivation_parameters, attributes, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_ttlv_structure_release(derivation_parameters);
+    return result;
+}
 static int delegated_login_constructor_is_callable_from_c(void) {
     kmipkit_ttlv_structure_t *rights = 0;
     kmipkit_ttlv_structure_t *usage_limits = 0;
@@ -1594,6 +1623,7 @@ int main(int argc, char **argv) {
         !certify_response_accessor_is_callable_from_c() ||
         !check_constructor_is_callable_from_c() ||
         !delegated_login_constructor_is_callable_from_c() ||
+        !derive_key_constructor_is_callable_from_c() ||
         !delegated_login_response_accessors_clear_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
