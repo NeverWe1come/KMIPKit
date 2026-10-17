@@ -380,17 +380,12 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
                             deriveKeyResponse.uniqueIdentifier().kind());
                     assertEquals("derived-key", deriveKeyResponse.uniqueIdentifier().text());
-                    assertEquals(4, deriveKeyTtlv.itemCount());
-                    assertEquals(0x0042_005c, tagAt(deriveKeyTtlv, 0));
-                    assertEquals(0x0042_0093, tagAt(deriveKeyTtlv, 1));
-                    assertEquals(0x0042_007f, tagAt(deriveKeyTtlv, 2));
-                    assertEquals(0x0042_007c, tagAt(deriveKeyTtlv, 3));
+                    assertTagOrder(deriveKeyTtlv,
+                            0x0042_005c, 0x0042_0093, 0x0042_007f, 0x0042_007c);
                     try (TtlvItemView responsePayload = deriveKeyTtlv.itemAt(3);
                             TtlvValueView responsePayloadValue = responsePayload.value();
                             TtlvStructureView payload = responsePayloadValue.structure()) {
-                        assertEquals(2, payload.itemCount());
-                        assertEquals(0x0042_0094, tagAt(payload, 0));
-                        assertEquals(0x0054_0001, tagAt(payload, 1));
+                        assertTagOrder(payload, 0x0042_0094, 0x0054_0001);
                     }
                     assertFalse(deriveKeyResponse.toString().contains("derived-key"));
                 }
@@ -811,6 +806,13 @@ final class ClientFacadeTlsIntegrationTest {
     private static long tagAt(TtlvStructureView structure, long index) {
         try (TtlvItemView item = structure.itemAt(index); Tag tag = item.tag()) {
             return tag.raw();
+        }
+    }
+
+    private static void assertTagOrder(TtlvStructureView structure, long... expectedTags) {
+        assertEquals(expectedTags.length, structure.itemCount());
+        for (int index = 0; index < expectedTags.length; index++) {
+            assertEquals(expectedTags[index], tagAt(structure, index));
         }
     }
 
