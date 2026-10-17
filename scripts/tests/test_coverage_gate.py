@@ -976,6 +976,31 @@ trait Example { fn declaration(&self); }
 
                     self.assertTrue(is_executable)
 
+    def test_rust_coverage_markers_respect_lifetimes_and_nested_comments(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "fn process<'a>() { consume(); } // COVERAGE-EXCLUDE: test rationale\n",
+                False,
+            ),
+            (
+                "let value = 1; /* outer /* inner */ // COVERAGE-EXCLUDE: comment text */\n",
+                True,
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            for source_text, expected in cases:
+                with self.subTest(source_text=source_text):
+                    source.write_text(source_text, encoding="utf-8")
+
+                    is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+                    self.assertEqual(expected, is_executable)
+
     def test_changed_rust_line_parser_decodes_git_quoted_unicode_paths(self) -> None:
         self.require_gate()
         diff = r'''diff --git "a/crates/kmipkit-ttlv/src/parser-\303\261 name.rs" "b/crates/kmipkit-ttlv/src/parser-\303\261 name.rs"
