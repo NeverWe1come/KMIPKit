@@ -852,6 +852,7 @@ class BatchItemResult:
     get_usage_allocation_response: GetUsageAllocationResponse | None = field(
         default=None, repr=False
     )
+    check_response: CheckResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -878,6 +879,21 @@ class CertifyResponse:
     """Successful Certify response and its owned complete generic TTLV."""
 
     unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class CheckResponse:
+    """Typed Check fields and the owned complete response TTLV, including failures."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    usage_limits_count: int | None
+    cryptographic_usage_mask: int | None
+    lease_time: int | None
     response_ttlv: ttlv.Structure = field(repr=False)
 
     def close(self) -> None:
@@ -1165,6 +1181,9 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x06
                 ):
                     certify_response = _certify_response(item)
+                check_response = None
+                if int(metadata.operation) == 0x09:
+                    check_response = _check_response(item)
                 allocation_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -1195,6 +1214,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         *cryptographic_responses,
                         certify_response,
                         allocation_response,
+                        check_response,
                     )
                 )
             finally:
@@ -1415,6 +1435,81 @@ def _certify_response(item: _ClientBatchItemResponse) -> CertifyResponse | None:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return CertifyResponse(unique_identifier, response_ttlv)
+
+
+def _check_response(item: _ClientBatchItemResponse) -> CheckResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier_present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    count_present = ffi.new("uint8_t *")
+    count = ffi.new("int64_t *")
+    mask_present = ffi.new("uint8_t *")
+    usage_mask = ffi.new("int32_t *")
+    lease_present = ffi.new("uint8_t *")
+    lease = ffi.new("uint32_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_check(
+            item._pointer(), present, identifier_present, identifier,
+            count_present, count, mask_present, usage_mask, lease_present, lease,
+        )
+    )
+    if present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if identifier_present[0] not in (0, 1) or bool(identifier_present[0]) != (
+        unique_identifier is not None
+    ):
+        errors.raise_for_status(4)
+    count_value = _optional_output_integer(count_present, count[0])
+    mask_value = _optional_output_integer(mask_present, usage_mask[0])
+    lease_value = _optional_output_integer(lease_present, lease[0])
+    if present[0] == 0:
+        if any(value is not None for value in (unique_identifier, count_value, mask_value, lease_value)):
+            errors.raise_for_status(4)
+        response_ttlv_present = ffi.new("uint8_t *")
+        response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_check_ttlv(
+                item._pointer(), response_ttlv_present, response_ttlv_output
+            )
+        )
+        if response_ttlv_present[0] != 0 or response_ttlv_output[0] != ffi.NULL:
+            if response_ttlv_output[0] != ffi.NULL:
+                lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+            errors.raise_for_status(4)
+        return None
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_check_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return CheckResponse(
+        unique_identifier, count_value, mask_value, lease_value, response_ttlv
+    )
+
+
+def _optional_output_integer(present: Any, value: int) -> int | None:
+    if present[0] == 0:
+        if value != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return int(value)
 
 
 def _get_usage_allocation_response(
@@ -1862,6 +1957,7 @@ __all__ = [
     "BatchOutcome",
     "BatchResult",
     "CertifyResponse",
+    "CheckResponse",
     "Client",
     "CredentialEncoding",
     "Endpoint",

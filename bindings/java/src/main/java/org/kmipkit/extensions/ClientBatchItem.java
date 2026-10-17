@@ -120,6 +120,29 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Check request with optional §6.1.7 Usage Limits Count, usage mask, and lease. */
+    public static ClientBatchItem check(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable Long usageLimitsCount,
+            @Nullable Integer cryptographicUsageMask,
+            @Nullable Long leaseTime) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            long lease = leaseTime == null ? 0 : leaseTime;
+            if (leaseTime != null) requireU32(lease, "Lease Time");
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemCheck(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    usageLimitsCount != null, usageLimitsCount == null ? 0 : usageLimitsCount,
+                    cryptographicUsageMask != null,
+                    cryptographicUsageMask == null ? 0 : cryptographicUsageMask,
+                    leaseTime != null, lease));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Get Usage Allocation request with an optional object identifier and exact count. */
     public static ClientBatchItem getUsageAllocation(
             @Nullable UniqueIdentifier uniqueIdentifier, long usageLimitsCount) {

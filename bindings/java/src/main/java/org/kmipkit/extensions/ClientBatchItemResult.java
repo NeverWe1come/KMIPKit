@@ -67,6 +67,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseCertifyResponse(values);
     }
 
+    /** Returns the typed Check result, including policy fields and generic TTLV on failure. */
+    public Optional<CheckResponse> checkResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCheck);
+        return parseCheckResponse(values);
+    }
+
     /**
      * Returns the resolved identifier and complete generic TTLV from a successful Get Usage
      * Allocation response. The returned response owns an independent TTLV copy; callers must
@@ -169,6 +176,37 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "CertifyResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Typed Check fields with the caller-owned complete ordered response TTLV. */
+    public static final class CheckResponse implements AutoCloseable {
+        private final Optional<UniqueIdentifier> uniqueIdentifier;
+        private final OptionalLong usageLimitsCount;
+        private final OptionalLong cryptographicUsageMask;
+        private final OptionalLong leaseTime;
+        private final TtlvStructure responseTtlv;
+
+        private CheckResponse(Optional<UniqueIdentifier> uniqueIdentifier,
+                OptionalLong usageLimitsCount, OptionalLong cryptographicUsageMask,
+                OptionalLong leaseTime, TtlvStructure responseTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.usageLimitsCount = usageLimitsCount;
+            this.cryptographicUsageMask = cryptographicUsageMask;
+            this.leaseTime = leaseTime;
+            this.responseTtlv = responseTtlv;
+        }
+
+        public Optional<UniqueIdentifier> uniqueIdentifier() { return uniqueIdentifier; }
+        public OptionalLong usageLimitsCount() { return usageLimitsCount; }
+        public OptionalLong cryptographicUsageMask() { return cryptographicUsageMask; }
+        public OptionalLong leaseTime() { return leaseTime; }
+
+        /** Returns the complete ordered response structure owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "CheckResponse[fields=redacted]"; }
     }
 
     /** Successful Get Usage Allocation response with its owned complete generic TTLV. */
@@ -426,6 +464,34 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return OptionalLong.of(value);
     }
 
+    private static OptionalLong optionalSigned(long present, long value) {
+        if (!responseFlag(present)) {
+            if (value != 0) {
+                throw new InvalidInputException("native absent signed response value is invalid");
+            }
+            return OptionalLong.empty();
+        }
+        return OptionalLong.of(value);
+    }
+
+    private static OptionalLong optionalSignedInt(long present, long value) {
+        OptionalLong result = optionalSigned(present, value);
+        if (result.isPresent() && (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE)) {
+            throw new InvalidInputException("native Check usage mask is invalid");
+        }
+        return result;
+    }
+
+    private static Optional<UniqueIdentifier> optionalResponseIdentifier(long[] fields, Object value) {
+        if (!responseFlag(fields[1])) {
+            if (value != null) {
+                throw new InvalidInputException("native absent Check identifier is invalid");
+            }
+            return Optional.empty();
+        }
+        return Optional.of(identifierRecord(value));
+    }
+
     private static @Nullable byte[] responseBytes(long present, Object value) {
         if (!responseFlag(present)) {
             if (value != null) {
@@ -485,6 +551,41 @@ public final class ClientBatchItemResult implements AutoCloseable {
         TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
         try {
             return Optional.of(new CertifyResponse(identifierRecord(tuple[1]), responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<CheckResponse> parseCheckResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Check response is invalid");
+        long[] fields = requireLongArray(tuple[0], 8, "native Check response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Check response is invalid");
+        if (!responsePresent(fields)) {
+            for (int index = 1; index < fields.length; index++) {
+                if (fields[index] != 0) {
+                    throw new InvalidInputException("native absent Check response contains fields");
+                }
+            }
+            if (tuple[1] != null || responseTtlvHandle[0] != 0) {
+                if (responseTtlvHandle[0] > 0) {
+                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+                }
+                throw new InvalidInputException("native absent Check response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (responseTtlvHandle[0] <= 0) {
+            throw new InvalidInputException("native Check response is invalid");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            Optional<UniqueIdentifier> identifier = optionalResponseIdentifier(fields, tuple[1]);
+            OptionalLong count = optionalSigned(fields[2], fields[3]);
+            OptionalLong usageMask = optionalSignedInt(fields[4], fields[5]);
+            OptionalLong lease = optionalUnsigned(fields[6], fields[7]);
+            return Optional.of(new CheckResponse(identifier, count, usageMask, lease, responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
             throw exception;

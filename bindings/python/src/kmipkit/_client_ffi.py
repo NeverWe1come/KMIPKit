@@ -218,6 +218,21 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_check(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_unique_identifier_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint8_t *out_usage_limits_count_present,
+        int64_t *out_usage_limits_count,
+        uint8_t *out_cryptographic_usage_mask_present,
+        int32_t *out_cryptographic_usage_mask,
+        uint8_t *out_lease_time_present,
+        uint32_t *out_lease_time);
+    int32_t kmipkit_client_batch_item_response_check_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_get_usage_allocation(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -319,6 +334,15 @@ ffi.cdef(
         const kmipkit_byte_span_v1_t *certificate_request_value,
         kmipkit_ttlv_structure_t *attributes,
         kmipkit_ttlv_structure_t *protection_storage_masks,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_check(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        uint8_t has_usage_limits_count,
+        int64_t usage_limits_count,
+        uint8_t has_cryptographic_usage_mask,
+        int32_t cryptographic_usage_mask,
+        uint8_t has_lease_time,
+        uint32_t lease_time,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_get_usage_allocation(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

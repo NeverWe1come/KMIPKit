@@ -1397,6 +1397,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::certify_response",
     ),
     (
+        "rust-observed-9c85f0a1c8e96cd12570",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::check_response",
+    ),
+    (
         "rust-observed-ebae376c3db55930fe72",
         "rust-kmipkit-client",
         "kmipkit_client::ClientError::ProtocolResponse::response_ttlv",
@@ -1410,6 +1415,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-9365e579da298db8f315",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::GetUsageAllocation",
+    ),
+    (
+        "rust-observed-1cc0c37b6e3da35277b2",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::check",
     ),
     (
         "rust-observed-08ebb047e2dc8a7d19bc",
@@ -1445,6 +1455,41 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ddfdae60511a2ab6af44",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CertifyResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-50da56cfa738b87c984a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CheckRequest",
+    ),
+    (
+        "rust-observed-0fd8c5ef209f0b7b858a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CheckResponse",
+    ),
+    (
+        "rust-observed-898c6cd0ea0ac2d196f8",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CheckResponse::cryptographic_usage_mask",
+    ),
+    (
+        "rust-observed-3b942de7e654e6442cae",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CheckResponse::lease_time",
+    ),
+    (
+        "rust-observed-503ffe823ed9d9d46964",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CheckResponse::unique_identifier",
+    ),
+    (
+        "rust-observed-d94f87ac743f24345f2e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CheckResponse::usage_limits_count",
+    ),
+    (
+        "rust-observed-f729e1072f0b7754dc97",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CheckResponse::with_ttlv",
     ),
     (
         "rust-observed-e1f8406907aaf65d7c1e",

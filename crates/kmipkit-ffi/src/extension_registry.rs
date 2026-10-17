@@ -34,10 +34,11 @@ use kmipkit_client::{
 };
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest, ObjectType,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
-    SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
+    AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
+    CreateSplitKeyRequest, GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest,
+    ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
+    RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -2766,6 +2767,54 @@ fn batch_item_handle(request: ClientRequest) -> FfiResult<*mut kmipkit_client_ba
         Kind::BatchItem,
         HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
     )
+}
+
+/// Creates a typed Check request from KMIP 2.1 §6.1.7, Table 183.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_check(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_usage_limits_count: u8,
+    usage_limits_count: i64,
+    has_cryptographic_usage_mask: u8,
+    cryptographic_usage_mask: i32,
+    has_lease_time: u8,
+    lease_time: u32,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let usage_limits_count = match has_usage_limits_count {
+            0 => None,
+            1 => Some(usage_limits_count),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let cryptographic_usage_mask = match has_cryptographic_usage_mask {
+            0 => None,
+            1 => Some(cryptographic_usage_mask),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let lease_time = match has_lease_time {
+            0 => None,
+            1 => Some(lease_time),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let mut request = CheckRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(count) = usage_limits_count {
+            request = request.with_usage_limits_count(count);
+        }
+        if let Some(mask) = cryptographic_usage_mask {
+            request = request.with_cryptographic_usage_mask(mask);
+        }
+        if let Some(lease_time) = lease_time {
+            request = request.with_lease_time(lease_time);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::check(request)));
+        SUCCESS
+    })
 }
 
 /// Creates a typed Certify request and copies the certificate request as sensitive bytes.

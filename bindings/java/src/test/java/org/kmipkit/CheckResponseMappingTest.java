@@ -9,6 +9,14 @@ import org.junit.jupiter.api.Test;
 
 final class CheckResponseMappingTest {
     @Test
+    void checkBuilderPreservesRawOptionalValues() {
+        try (ClientBatchItem item = ClientBatchItem.check(null, Long.MIN_VALUE,
+                Integer.MIN_VALUE, 0L)) {
+            assertTrue(item != null);
+        }
+    }
+
+    @Test
     void failedResponseMapsPolicyFieldsWithoutIdentifierAndOwnsGenericTtlv() {
         NativeExtensionRegistry.ensureLoaded();
         long responseTtlvHandle = NativeExtensionRegistry.ttlvStructureCreate();

@@ -1552,6 +1552,50 @@ def client_batch_item_certify(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_check(
+    unique_identifier: UniqueIdentifier | None = None,
+    *,
+    usage_limits_count: int | None = None,
+    cryptographic_usage_mask: int | None = None,
+    lease_time: int | None = None,
+) -> ClientBatchItem:
+    """Create one typed Check item with optional KMIP 2.1 §6.1.7 fields."""
+    if usage_limits_count is None:
+        has_usage_limits_count = 0
+        count = 0
+    else:
+        has_usage_limits_count = 1
+        count = _integer_range(usage_limits_count, -(1 << 63), (1 << 63) - 1)
+    if cryptographic_usage_mask is None:
+        has_cryptographic_usage_mask = 0
+        usage_mask = 0
+    else:
+        has_cryptographic_usage_mask = 1
+        usage_mask = _integer_range(cryptographic_usage_mask, -(1 << 31), (1 << 31) - 1)
+    if lease_time is None:
+        has_lease_time = 0
+        lease = 0
+    else:
+        has_lease_time = 1
+        lease = _integer_range(lease_time, 0, (1 << 32) - 1)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_check",
+            (
+                identifier,
+                has_usage_limits_count,
+                count,
+                has_cryptographic_usage_mask,
+                usage_mask,
+                has_lease_time,
+                lease,
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_get_usage_allocation(
     unique_identifier: UniqueIdentifier | None,
     usage_limits_count: int,
@@ -1795,6 +1839,7 @@ __all__ = [
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",
     "client_batch_item_certify",
+    "client_batch_item_check",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",

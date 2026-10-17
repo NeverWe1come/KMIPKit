@@ -1225,6 +1225,104 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify(
     })
 }
 
+/// Copies typed Check fields, preserving policy values on failure and hiding any failure identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_check(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_usage_limits_count_present: *mut u8,
+    out_usage_limits_count: *mut i64,
+    out_cryptographic_usage_mask_present: *mut u8,
+    out_cryptographic_usage_mask: *mut i32,
+    out_lease_time_present: *mut u8,
+    out_lease_time: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let identifier_present = scalar_out!(out_unique_identifier_present);
+        let count_present = scalar_out!(out_usage_limits_count_present);
+        let count = scalar_out!(out_usage_limits_count);
+        let mask_present = scalar_out!(out_cryptographic_usage_mask_present);
+        let mask = scalar_out!(out_cryptographic_usage_mask);
+        let lease_present = scalar_out!(out_lease_time_present);
+        let lease = scalar_out!(out_lease_time);
+        *present = 0;
+        *identifier_present = 0;
+        *count_present = 0;
+        *count = 0;
+        *mask_present = 0;
+        *mask = 0;
+        *lease_present = 0;
+        *lease = 0;
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(check) = item.outcome().check_response() {
+            if let Some(identifier) = check.unique_identifier() {
+                if let Err(status) =
+                    write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+                {
+                    return record_ffi_error(status);
+                }
+                *identifier_present = 1;
+            }
+            if let Some(value) = check.usage_limits_count() {
+                *count = value;
+                *count_present = 1;
+            }
+            if let Some(value) = check.cryptographic_usage_mask() {
+                *mask = value;
+                *mask_present = 1;
+            }
+            if let Some(value) = check.lease_time() {
+                *lease = value;
+                *lease_present = 1;
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Returns a caller-owned copy of the complete ordered Check response TTLV, including failures.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_check_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(check) = item.outcome().check_response() {
+            let structure = try_ffi!(check.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Copies the complete generic response only from a successful Certify result.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_certify_ttlv(

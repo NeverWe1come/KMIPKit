@@ -10,7 +10,7 @@ use std::thread;
 use base64::Engine;
 use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
-    AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
+    AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
     SplitKeyMethod, UniqueIdentifier,
 };
@@ -310,6 +310,47 @@ fn failed_cryptographic_response(operation: u32, unique_id: &[u8]) -> Vec<u8> {
                     ttlv_item(0x0042_0093, 0x08, unique_id),
                     ttlv_enumeration(0x0042_007f, 1),
                     ttlv_enumeration(0x0042_007e, 6),
+                ],
+            ),
+        ],
+    )
+}
+
+fn failed_check_response(unique_id: &[u8]) -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let payload = ttlv_structure(
+        0x0042_007c,
+        [
+            ttlv_item(0x0042_0094, 0x07, b"failure-identifier"),
+            ttlv_item(0x0042_0096, 0x03, &(-9_i64).to_be_bytes()),
+            ttlv_item(0x0042_002c, 0x02, &(-1_i32).to_be_bytes()),
+            ttlv_item(0x0042_0049, 0x0a, &0_u32.to_be_bytes()),
+            ttlv_item(0x0054_1234, 0x02, &(-7_i32).to_be_bytes()),
+        ],
+    );
+    ttlv_structure(
+        0x0042_007b,
+        [
+            header,
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 9),
+                    ttlv_item(0x0042_0093, 0x08, unique_id),
+                    ttlv_enumeration(0x0042_007f, 1),
+                    ttlv_enumeration(0x0042_007e, 0x29),
+                    payload,
                 ],
             ),
         ],
@@ -845,6 +886,93 @@ fn ffi_certify_response_getter_returns_successful_generated_identifier() {
     let actual = unsafe { std::slice::from_raw_parts(identifier.text_data, identifier_length) };
     assert_eq!(actual, b"issued-certificate");
     kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_check_constructor_validates_each_presence_discriminator_and_accepts_raw_values() {
+    for (count_flag, mask_flag, lease_flag) in [(2, 0, 0), (0, 2, 0), (0, 0, 2)] {
+        let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+        assert_eq!(
+            kmipkit_client_batch_item_check(
+                ptr::null(),
+                count_flag,
+                i64::MIN,
+                mask_flag,
+                i32::MIN,
+                lease_flag,
+                u32::MAX,
+                &mut item,
+            ),
+            ERROR_INVALID_INPUT
+        );
+        assert!(item.is_null());
+    }
+
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_check(
+            ptr::null(),
+            1,
+            i64::MIN,
+            1,
+            i32::MIN,
+            1,
+            u32::MAX,
+            &mut item,
+        ),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    kmipkit_client_batch_item_release(item);
+}
+
+#[test]
+fn ffi_failed_check_keeps_policy_fields_and_complete_ttlv_available_to_c() {
+    let response_bytes = failed_check_response(b"check-failure");
+    let decoded = kmipkit_ttlv::codec::decode(&response_bytes)
+        .expect("the Check response fixture is valid TTLV");
+    let response_tree = decoded
+        .with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(structure) => Some(
+                structure
+                    .try_clone()
+                    .expect("the Check response fixture is within the model depth limit"),
+            ),
+            _ => None,
+        })
+        .expect("the Check response fixture is a Structure");
+    let validated = kmipkit_protocol::ResponseMessage::try_from_ttlv(response_tree)
+        .unwrap_or_else(|error| panic!("Check response fixture fails KMIP validation: {error:?}"));
+    let response_item = validated
+        .batch_items()
+        .next()
+        .expect("the Check response fixture contains one batch item");
+    kmipkit_protocol::CheckResponse::try_from_response_item(response_item)
+        .unwrap_or_else(|error| panic!("Check response fixture fails typed mapping: {error:?}"));
+    let item = execute_single_abi_response(
+        ClientRequest::Check(
+            CheckRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("check-request".to_owned())),
+        ),
+        b"check-failure",
+        response_bytes,
+    )
+    .expect("the policy-denial Check result remains typed");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(item)),
+    );
+    let mut response_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &mut response_item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+
+    // SAFETY: the compiled C consumer owns the response-item handle and releases it after copying TTLV.
+    let result =
+        unsafe { kmipkit_client_abi_c_consumer_validate_failed_check_response(response_item) };
+    assert_eq!(result, 1);
 }
 
 #[test]
@@ -1734,6 +1862,9 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_validate_failed_check_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
