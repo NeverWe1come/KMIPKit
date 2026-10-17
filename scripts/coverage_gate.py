@@ -1114,7 +1114,7 @@ def _is_executable_changed_line(
 
 @lru_cache(maxsize=32)
 def _rust_function_signature_lines(source_lines: tuple[str, ...]) -> frozenset[int]:
-    """Return one-based Rust function declaration lines that contain no body code."""
+    """Return one-based multiline Rust function declaration lines without body code."""
     declaration_lines: set[int] = set()
     declaration_start = re.compile(
         r"^\s*(?:(?:pub(?:\([^)]*\))?|unsafe|async|const|default|extern(?:\s+\"[^\"]+\")?)\s+)*fn\s+[A-Za-z_][A-Za-z0-9_]*\b"
@@ -1124,63 +1124,15 @@ def _rust_function_signature_lines(source_lines: tuple[str, ...]) -> frozenset[i
         if not declaration_start.match(source_lines[line_index]):
             line_index += 1
             continue
-
         start = line_index
-        paren_depth = 0
-        bracket_depth = 0
-        angle_depth = 0
-        in_string = False
-        escaped = False
-        body_location: tuple[int, int] | None = None
-        for candidate_index in range(start, len(source_lines)):
-            candidate = source_lines[candidate_index]
-            column = 0
-            while column < len(candidate):
-                character = candidate[column]
-                following = candidate[column + 1] if column + 1 < len(candidate) else ""
-                if in_string:
-                    if escaped:
-                        escaped = False
-                    elif character == "\\":
-                        escaped = True
-                    elif character == '"':
-                        in_string = False
-                    column += 1
-                    continue
-                if character == "/" and following == "/":
-                    break
-                if character == '"':
-                    in_string = True
-                elif character == "(":
-                    paren_depth += 1
-                elif character == ")":
-                    paren_depth = max(0, paren_depth - 1)
-                elif character == "[":
-                    bracket_depth += 1
-                elif character == "]":
-                    bracket_depth = max(0, bracket_depth - 1)
-                elif character == "<":
-                    angle_depth += 1
-                elif character == ">":
-                    angle_depth = max(0, angle_depth - 1)
-                elif character == "{" and not (paren_depth or bracket_depth or angle_depth):
-                    body_location = (candidate_index, column)
-                    break
-                column += 1
-            if body_location is not None:
+        for end in range(start, len(source_lines)):
+            declaration_line = source_lines[end].split("//", 1)[0].rstrip()
+            if declaration_line.endswith(("{", ";")):
+                declaration_lines.update(range(start + 1, end + 2))
+                line_index = end + 1
                 break
-
-        if body_location is None:
+        else:
             line_index += 1
-            continue
-
-        body_line, body_column = body_location
-        body_tail = source_lines[body_line][body_column + 1 :].split("//", 1)[0].strip()
-        inline_body_has_code = bool(body_tail and any(char not in "}; " for char in body_tail))
-        if body_line > start:
-            declaration_end = body_line - 1 if inline_body_has_code else body_line
-            declaration_lines.update(range(start + 1, declaration_end + 2))
-        line_index = body_line + 1
 
     return frozenset(declaration_lines)
 

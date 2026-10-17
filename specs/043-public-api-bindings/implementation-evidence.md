@@ -2786,8 +2786,9 @@ Focused verification results:
 | `cargo test -p kmipkit-ffi --no-default-features --lib every_exported_c_function_starts_inside_the_shared_panic_boundary` | PASS: 1 test on Windows after adding the build script's C-consumer output directory to the process-local MSVC `LIB` search path. |
 | `git diff --check` | PASS. |
 
-The new full-head CI result and coverage report are still pending. The local
-Rust command emits existing aws-lc stdalign/NASM warnings but passes; no
+At this checkpoint, full-head CI run `39034660780` was pending. The later
+result from run `39034695699` is recorded in the coverage follow-up below. The
+local Rust command emits existing aws-lc stdalign/NASM warnings but passes; no
 coverage or cross-platform result is inferred from it.
 
 ### T045 follow-up — response-path coverage
@@ -2823,7 +2824,44 @@ Focused verification:
 | `cargo test -p kmipkit-ffi --no-default-features --lib ffi_delegated_login_constructor_validates_typed_fields_and_requires_rights` | PASS: 1 test. |
 | `cargo fmt --all --check`; `git diff --check` | PASS. |
 
-Current-head CI run `39034660780` is pending. The worktree's Windows toolchain
-cannot measure the Linux-only aggregate coverage collector, so no new coverage
-percentage is claimed locally. The previous 92.84% result remains the latest
-measured value until that run completes.
+The worktree's Windows toolchain cannot measure the Linux-only aggregate
+coverage collector, so no coverage percentage is claimed locally for this
+response-path change. The then-current aggregate result was 92.84%; the later
+94.75% result from run `39034695699` and its follow-up are recorded below.
+
+### T045 follow-up — executable-line coverage classification
+
+Run `39034695699` passed its Rust, binding, JNI, and platform coverage producer
+jobs, but the aggregate gate measured 4,981/5,257 changed-production lines
+(94.75%). Inspection of the same downloaded CI reports showed that the
+uncovered direct source-line entries were in Rust FFI. Ten of them were
+multiline `pub extern "C" fn` declaration headers: the gate's previous
+line-level classifier counted each parameter and closing signature line as
+executable even though none contains an instruction. The classifier now
+recognizes and excludes Rust function declaration headers while leaving the
+95% threshold and executable function bodies intact. Regression tests cover
+multiline signatures, body lines, and inline function bodies. The FFI response
+tests also exercise validly registered handles with an invalid payload kind,
+out-of-range response indices, and a missing Get Usage Allocation output
+record, covering reachable ABI error branches identified in the report.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `e725a51e` | Focused declaration-classifier tests | Expected failure: all four multiline declaration/signature lines were classified as executable. |
+| Green | `62013aa5` | Coverage classifier, response getter, and ABI-output regression tests | PASS locally; the classifier excludes declaration-only headers and retains executable inline bodies. |
+| Refactor | this commit | Task/evidence review; `git diff --check` | T045 stays open until current-head aggregate and cross-platform CI pass at the unchanged thresholds. |
+
+Focused verification:
+
+| Command | Result |
+|---|---|
+| `python -B -m unittest scripts.tests.test_coverage_gate` | PASS: 57 tests, 3 skipped. |
+| `python -B -m unittest test_multilanguage_coverage` from `scripts/tests` | PASS: 24 tests. |
+| `cargo test -p kmipkit-ffi --no-default-features --lib ffi_delegated_login_response_getters_clear_outputs_for_invalid_item` | PASS: 1 test. |
+| `cargo test -p kmipkit-ffi --no-default-features --lib ffi_delegated_login_response_getters_return_ticket_fields_and_owned_ttlv` | PASS: 1 test. |
+| `cargo test -p kmipkit-ffi --no-default-features --lib ffi_get_usage_allocation_getter_rejects_a_missing_output_record` | PASS: 1 test. |
+| `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+The declaration classifier only changes how non-executable Rust signature
+lines are measured. Current-head cross-platform CI and the aggregate coverage
+result remain pending; no passing threshold is inferred from the prior run.
