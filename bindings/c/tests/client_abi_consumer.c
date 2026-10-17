@@ -144,6 +144,44 @@ static int certify_response_accessor_is_callable_from_c(void) {
         identifier.integer_value == 0;
 }
 
+static int check_constructor_is_callable_from_c(void) {
+    kmipkit_client_batch_item_t *item = 0;
+    const int32_t status = kmipkit_client_batch_item_check(
+        0, 1, INT64_MIN, 1, INT32_MIN, 1, 0, &item);
+    const int result = status == 0 && item != 0;
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
+static int check_response_accessors_clear_outputs_from_c(void) {
+    uint8_t present = 9;
+    uint8_t identifier_present = 9;
+    uint8_t count_present = 9;
+    uint8_t mask_present = 9;
+    uint8_t lease_present = 9;
+    int64_t count = 9;
+    int32_t mask = 9;
+    uint32_t lease = 9;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    const int32_t status = kmipkit_client_batch_item_response_check(
+        0, &present, &identifier_present, &identifier,
+        &count_present, &count, &mask_present, &mask, &lease_present, &lease);
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 || identifier_present != 0 ||
+        count_present != 0 || count != 0 || mask_present != 0 || mask != 0 ||
+        lease_present != 0 || lease != 0 || identifier.kind != 0 ||
+        identifier.text_data != 0 || identifier.text_length != 0 ||
+        identifier.enumeration_value != 0 || identifier.integer_value != 0) {
+        return 0;
+    }
+    present = 9;
+    kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    const int32_t ttlv_status = kmipkit_client_batch_item_response_check_ttlv(
+        0, &present, &response_ttlv);
+    return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
+
 static int get_usage_allocation_constructor_is_callable_from_c(void) {
     static const uint8_t identifier_text[] = "allocation-object";
     kmipkit_unique_identifier_v1_t identifier = {0};
@@ -1434,6 +1472,8 @@ int main(int argc, char **argv) {
     if (!creation_create_matches_shared_fixture() ||
         !certify_constructor_is_callable_from_c() ||
         !certify_response_accessor_is_callable_from_c() ||
+        !check_constructor_is_callable_from_c() ||
+        !check_response_accessors_clear_outputs_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
         !creation_create_key_pair_matches_shared_fixture() ||

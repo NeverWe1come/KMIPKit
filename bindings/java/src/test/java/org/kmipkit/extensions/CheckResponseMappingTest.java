@@ -1,0 +1,37 @@
+package org.kmipkit.extensions;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.kmipkit.NativeExtensionRegistry;
+import org.junit.jupiter.api.Test;
+
+final class CheckResponseMappingTest {
+    @Test
+    void failedResponseMapsPolicyFieldsWithoutIdentifierAndOwnsGenericTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlvHandle = NativeExtensionRegistry.ttlvStructureCreate();
+
+        try (ClientBatchItemResult.CheckResponse response = ClientBatchItemResult
+                .parseCheckResponse(new Object[] {
+                    new long[] {1, 0, 1, -9, 1, -1, 1, 0}, null,
+                    new long[] {responseTtlvHandle}})
+                .orElseThrow()) {
+            assertTrue(response.uniqueIdentifier().isEmpty());
+            assertEquals(-9L, response.usageLimitsCount().orElseThrow());
+            assertEquals(-1, response.cryptographicUsageMask().orElseThrow());
+            assertEquals(0L, response.leaseTime().orElseThrow());
+            assertTrue(response.responseTtlv().handle() > 0);
+            assertFalse(response.toString().contains("-9"));
+        }
+    }
+
+    @Test
+    void absentResponseHasNoTypedFieldsOrOwnedTtlv() {
+        assertTrue(ClientBatchItemResult
+                .parseCheckResponse(new Object[] {
+                    new long[] {0, 0, 0, 0, 0, 0, 0, 0}, null, new long[] {0}})
+                .isEmpty());
+    }
+}
