@@ -1639,6 +1639,47 @@ def client_batch_item_delegated_login(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_derive_key(
+    object_type: int,
+    unique_identifiers: list[UniqueIdentifier] | tuple[UniqueIdentifier, ...],
+    derivation_method: int,
+    derivation_parameters: ttlv.Structure,
+    attributes: ttlv.Structure,
+) -> ClientBatchItem:
+    """Create one typed KMIP 2.1 §6.1.14 Derive Key item."""
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    raw_method = _integer_range(derivation_method, 0, 0xFFFF_FFFF)
+    identifiers = _bounded_snapshot(unique_identifiers, 100_000)
+    if not identifiers or any(not isinstance(value, UniqueIdentifier) for value in identifiers):
+        errors.raise_for_status(4)
+    if not isinstance(derivation_parameters, ttlv.Structure) or not isinstance(
+        attributes, ttlv.Structure
+    ):
+        errors.raise_for_status(4)
+
+    with _staging_buffer_scope() as staging_buffers:
+        native_identifiers = ffi.new("kmipkit_unique_identifier_v1_t[]", len(identifiers))
+        total_identifier_bytes = 0
+        for index, identifier in enumerate(identifiers):
+            native_identifier, _owner = _native_unique_identifier(identifier, staging_buffers)
+            total_identifier_bytes += native_identifier.text_length
+            if total_identifier_bytes > _MAX_OPERATION_INPUT_BYTES:
+                errors.raise_for_status(6)
+            native_identifiers[index] = native_identifier[0]
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_derive_key",
+            (
+                raw_object_type,
+                native_identifiers,
+                len(identifiers),
+                raw_method,
+                _native_structure(derivation_parameters, required=True),
+                _native_structure(attributes, required=True),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
 def client_batch_item_get_usage_allocation(
     unique_identifier: UniqueIdentifier | None,
     usage_limits_count: int,

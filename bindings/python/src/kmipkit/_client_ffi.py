@@ -362,7 +362,14 @@ ffi.cdef(
         int32_t request_count,
         kmipkit_ttlv_structure_t *usage_limits,
         kmipkit_client_batch_item_t **out_item);
-    int32_t kmipkit_client_batch_item_get_usage_allocation(
+    int32_t kmipkit_client_batch_item_derive_key(
+        uint32_t object_type,
+        const kmipkit_unique_identifier_v1_t *unique_identifiers,
+        uint64_t unique_identifier_count,
+        uint32_t derivation_method,
+        kmipkit_ttlv_structure_t *derivation_parameters,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_client_batch_item_t **out_item);    int32_t kmipkit_client_batch_item_get_usage_allocation(
         const kmipkit_unique_identifier_v1_t *unique_identifier,
         int64_t usage_limits_count,
         kmipkit_client_batch_item_t **out_item);

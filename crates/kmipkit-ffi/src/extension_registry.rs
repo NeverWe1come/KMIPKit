@@ -35,10 +35,11 @@ use kmipkit_client::{
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, DelegatedLoginRequest, GetUsageAllocationRequest, HashRequest,
-    MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext, OperationData, ProtocolError,
-    ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, UniqueIdentifier,
+    CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
+    DeriveKeyRequest, GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest,
+    ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
+    RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -113,6 +114,7 @@ const MAX_TRANSPORT_CONFIG_ITEMS: u64 = 4_096;
 const MAX_TRANSPORT_TEXT_BYTES: u64 = 4_096;
 // Facade-local allocation guard; KMIPKIT-0013 does not set a material size cap.
 const MAX_FFI_INPUT_BYTES: u64 = 16 * 1024 * 1024;
+const MAX_DERIVE_KEY_SOURCE_IDENTIFIERS: u64 = 100_000;
 const MAX_TRANSPORT_MATERIAL_BYTES: u64 = MAX_FFI_INPUT_BYTES;
 const TRANSPORT_ENDPOINT_RAW_TLS: u32 = 1;
 const TRANSPORT_ENDPOINT_HTTPS: u32 = 2;
@@ -1053,6 +1055,95 @@ fn clone_structure_view(structure: &kmipkit_ttlv::StructureView<'_>) -> FfiResul
     Ok(clone)
 }
 
+fn derive_key_parameters_from_handle(
+    structure: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<DerivationParameters> {
+    if structure.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+
+    const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+    const INITIALIZATION_VECTOR: u32 = 0x0042_003A;
+    const DERIVATION_DATA: u32 = 0x0042_0030;
+    const SALT: u32 = 0x0042_0084;
+    const ITERATION_COUNT: u32 = 0x0042_003C;
+    let mut seen = [false; 4];
+    let mut parameters = DerivationParameters::new();
+    for item in source.view().children() {
+        match item.tag().raw() {
+            CRYPTOGRAPHIC_PARAMETERS => {
+                if seen[0] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[0] = true;
+                let value = item.with_value(|value| match value {
+                    ValueView::Structure(value) => Some(clone_structure_view(&value)),
+                    _ => None,
+                });
+                let structure = value.ok_or(ERROR_INVALID_INPUT)??;
+                parameters = parameters.with_cryptographic_parameters(structure);
+            }
+            INITIALIZATION_VECTOR => {
+                if seen[1] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[1] = true;
+                let bytes = item
+                    .with_value(|value| match value {
+                        ValueView::ByteString(value) => Some(value.to_vec()),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_initialization_vector(SecretBytes::new(bytes));
+            }
+            DERIVATION_DATA => {
+                let bytes = item
+                    .with_value(|value| match value {
+                        ValueView::ByteString(value) => Some(value.to_vec()),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_derivation_data(SecretBytes::new(bytes));
+            }
+            SALT => {
+                if seen[2] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[2] = true;
+                let bytes = item
+                    .with_value(|value| match value {
+                        ValueView::ByteString(value) => Some(value.to_vec()),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_salt(SecretBytes::new(bytes));
+            }
+            ITERATION_COUNT => {
+                if seen[3] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[3] = true;
+                let value = item
+                    .with_value(|value| match value {
+                        ValueView::Integer(value) => Some(*value),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_iteration_count(value);
+            }
+            _ => {
+                parameters = parameters
+                    .with_extension(item.try_clone().map_err(model_status)?)
+                    .map_err(|error| protocol_status(&error))?;
+            }
+        }
+    }
+    Ok(parameters)
+}
 fn limits_from_fields(fields: [u64; 12]) -> FfiResult<extension::ExtensionRegistryLimits> {
     extension::with_values(
         fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7],
@@ -2924,6 +3015,84 @@ pub extern "C" fn kmipkit_client_batch_item_certify(
     })
 }
 
+/// Creates a typed Derive Key request from KMIP 2.1 §6.1.14, Table 205.
+///
+/// The ordered Unique Identifier records may contain repeated identifiers.
+/// Derivation Parameters and Attributes are copied from generic TTLV structures;
+/// secret derivation byte strings are moved into zeroizing protocol storage.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_derive_key(
+    object_type: u32,
+    unique_identifiers: *const kmipkit_unique_identifier_v1_t,
+    unique_identifier_count: u64,
+    derivation_method: u32,
+    derivation_parameters: *mut kmipkit_ttlv_structure_t,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        if unique_identifier_count == 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if unique_identifier_count > MAX_DERIVE_KEY_SOURCE_IDENTIFIERS {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        if unique_identifiers.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let count = match usize::try_from(unique_identifier_count) {
+            Ok(count) => count,
+            Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+        };
+        // SAFETY: non-null and bounded above; the caller supplies `count` readable ABI records.
+        let source_identifiers = unsafe { std::slice::from_raw_parts(unique_identifiers, count) };
+        let mut identifiers = Vec::new();
+        if identifiers.try_reserve_exact(count).is_err() {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        let mut total_identifier_bytes = 0_u64;
+        for identifier in source_identifiers {
+            let identifier = match copy_unique_identifier(ptr::from_ref(identifier)) {
+                Ok(Some(identifier)) => identifier,
+                Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+                Err(status) => return record_ffi_error(status),
+            };
+            if let UniqueIdentifier::TextString(value) = &identifier {
+                let length = match u64::try_from(value.len()) {
+                    Ok(length) => length,
+                    Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+                };
+                total_identifier_bytes = match total_identifier_bytes.checked_add(length) {
+                    Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
+                    _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+                };
+            }
+            identifiers.push(identifier);
+        }
+        let parameters = match derive_key_parameters_from_handle(derivation_parameters) {
+            Ok(parameters) => parameters,
+            Err(status) => return record_ffi_error(status),
+        };
+        let attributes = match copy_attribute_set_handle(attributes, true) {
+            Ok(Some(attributes)) => attributes,
+            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        let request = DeriveKeyRequest::new(
+            ObjectType::from_raw(object_type),
+            identifiers,
+            DerivationMethod::from_raw(derivation_method),
+            parameters,
+            attributes,
+        );
+        *out = match batch_item_handle(ClientRequest::DeriveKey(request)) {
+            Ok(item) => item,
+            Err(status) => return record_ffi_error(status),
+        };
+        SUCCESS
+    })
+}
 /// Creates a typed Get Usage Allocation request from KMIP 2.1 §6.1.23, Table 232.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
