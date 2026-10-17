@@ -81,7 +81,8 @@ public final class ClientBatchItemResult implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponseDelegatedLogin);
-        return parseDelegatedLoginResponse(values);
+        return parseDelegatedLoginResponseAfterNativeReturn(
+                values, ClientBatchItemResult::parseDelegatedLoginResponse);
     }
 
     /**
@@ -640,6 +641,12 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
     static Optional<DelegatedLoginResponse> parseDelegatedLoginResponse(Object[] values) {
         return parseDelegatedLoginResponse(values, Optional::of);
+    }
+
+    static Optional<DelegatedLoginResponse> parseDelegatedLoginResponseAfterNativeReturn(
+            Object[] values,
+            Function<Object[], Optional<DelegatedLoginResponse>> parser) {
+        return parser.apply(values);
     }
 
     static Optional<DelegatedLoginResponse> parseDelegatedLoginResponse(

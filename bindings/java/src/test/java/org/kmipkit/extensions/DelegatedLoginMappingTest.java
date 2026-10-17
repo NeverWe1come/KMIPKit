@@ -116,4 +116,26 @@ final class DelegatedLoginMappingTest {
         assertTrue(captured[0].ticketValue().isEmpty());
         assertTrue(captured[0].ticketTtlv().isEmpty());
     }
+
+    @Test
+    void responseMappingCleansNativeResultWhenErrorPreventsParserEntry() {
+        NativeExtensionRegistry.ensureLoaded();
+        long ticketTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        byte[] secret = "ticket-handoff-error-secret".getBytes();
+
+        AssertionError thrown = assertThrows(AssertionError.class,
+                () -> ClientBatchItemResult.parseDelegatedLoginResponseAfterNativeReturn(
+                        new Object[] {
+                            new long[] {1, 1, 0xfeed_beefL}, secret,
+                            new long[] {ticketTtlv}
+                        }, values -> {
+                            throw new AssertionError("injected pre-parser handoff failure");
+                        }));
+
+        assertEquals("injected pre-parser handoff failure", thrown.getMessage());
+        assertArrayEquals(new byte[secret.length], secret);
+        TtlvStructure stale = TtlvStructure.fromNative(ticketTtlv, null);
+        assertThrows(IllegalStateException.class, stale::view);
+        stale.close();
+    }
 }
