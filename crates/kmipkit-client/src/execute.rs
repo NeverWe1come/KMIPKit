@@ -29,15 +29,17 @@ use kmipkit_protocol::{
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
     ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
     PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
-    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
-    QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
-    ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
-    RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
-    RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView, ResponseMessage,
-    ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest, RngRetrieveResponse,
-    RngSeedRequest, RngSeedResponse, SetAttributeRequest, SetAttributeResponse,
-    SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest, SetDefaultsResponse,
-    SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
+    ProcessResponse, ProfileTransport, ProfileValidationError, ProfileValidationResult,
+    ProfileValidationSelection, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    ProtocolVersion, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest,
+    QueryResponse, ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse,
+    RecoverRequest, RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest,
+    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RequestMessage, ResponseBatchItemView,
+    ResponseMessage, ResultStatus, RevokeRequest, RevokeResponse, RngRetrieveRequest,
+    RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
+    SetAttributeResponse, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest,
+    SetDefaultsResponse, SignRequest, SignResponse, SignatureVerifyRequest,
+    SignatureVerifyResponse,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
@@ -3632,11 +3634,59 @@ enum ClientTransport {
     Test(TestTransport),
 }
 
+/// Internal profile checks applied at distinct exchange boundaries.
+///
+/// Keeping this contract inside the client crate lets the fake-transport tests
+/// exercise post-response delivery handling without registering synthetic
+/// rules in the production profile registry.
+pub(super) trait ProfileExchangeValidator {
+    fn validate_transport(&self, transport: ProfileTransport)
+    -> Result<(), ProfileValidationError>;
+
+    fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError>;
+
+    fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError>;
+}
+
+impl ProfileExchangeValidator for ProfileValidationResult {
+    fn validate_transport(
+        &self,
+        transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        Self::validate_transport(self, transport)
+    }
+
+    fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        Self::validate_request(self, request)
+    }
+
+    fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        Self::validate_response(self, request, response)
+    }
+}
+
 #[cfg(test)]
 #[path = "../tests/unit/production_transport_selection_tests.rs"]
 mod production_transport_selection_tests;
 
 impl ClientTransport {
+    fn profile_transport(&self) -> ProfileTransport {
+        match self {
+            Self::RawTls(_) => ProfileTransport::RawTtlvTls,
+            Self::Https(_) => ProfileTransport::Https,
+            #[cfg(test)]
+            Self::Test(_) => ProfileTransport::RawTtlvTls,
+        }
+    }
+
     fn from_configuration(configuration: TransportConfig) -> Result<Self, ClientError> {
         if configuration.target_uri().is_some() {
             HttpsTransport::new(configuration)
@@ -3755,6 +3805,69 @@ impl Client {
         limits: &CodecLimits,
         request_options: &RequestOptions,
     ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_inner(batch, limits, request_options, None)
+    }
+
+    /// Executes one typed request batch after explicitly validating a client
+    /// profile selection for this exchange.
+    ///
+    /// The selection is validated before request encoding or transport I/O.
+    /// A profile remains unavailable until every applicable requirement has a
+    /// complete typed rule and category-appropriate executable test. The
+    /// ordinary [`Self::execute`] method remains unprofiled.
+    ///
+    /// # Errors
+    ///
+    /// Returns stable profile error IDs with `NotSent` for selection or
+    /// outbound-rule failures, and preserves the exchange delivery state for
+    /// response-rule failures.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_with_profiles(
+        &mut self,
+        batch: ClientBatch,
+        selection: &ProfileValidationSelection,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_with_profiles_and_options(batch, selection, limits, &RequestOptions::default())
+    }
+
+    /// Executes one typed request batch with explicit profile selection and
+    /// per-exchange timeout overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same profile, protocol, and transport failures as
+    /// [`Self::execute_with_profiles`], preserving the strongest delivery
+    /// evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn execute_with_profiles_and_options(
+        &mut self,
+        batch: ClientBatch,
+        selection: &ProfileValidationSelection,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        let profiles = selection.validate().map_err(|error| {
+            ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+        })?;
+        self.execute_inner(batch, limits, request_options, Some(&profiles))
+    }
+
+    /// Executes the shared exchange path with an already selected profile validator.
+    pub(super) fn execute_inner(
+        &mut self,
+        batch: ClientBatch,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+        profiles: Option<&dyn ProfileExchangeValidator>,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        if let Some(profiles) = profiles {
+            profiles
+                .validate_transport(self.transport.profile_transport())
+                .map_err(|error| {
+                    ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+                })?;
+        }
         let options = validate_batch(&batch).map_err(|error| {
             ClientError::validation(
                 ClientCauseCategory::InvalidInput,
@@ -3780,10 +3893,33 @@ impl Client {
         let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
         let request_message = build_request_message(batch, &options, maximum_response_size)
             .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let profile_request = if profiles.is_some() {
+            Some(
+                clone_request_message(&request_message, limits)
+                    .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?,
+            )
+        } else {
+            None
+        };
+        if let Some(profiles) = profiles {
+            profiles
+                .validate_request(&request_message)
+                .map_err(|error| {
+                    ClientError::profile_validation(error, RequestDeliveryState::NotSent)
+                })?;
+        }
         let (response_message, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
+        let profile_response = if profiles.is_some() {
+            Some(
+                clone_response_message(&response_message)
+                    .map_err(|error| protocol_failure_at(error, response_delivery_state))?,
+            )
+        } else {
+            None
+        };
 
-        validate_response(
+        let validated_response = validate_response(
             &request_identities,
             &options,
             response_message,
@@ -3798,7 +3934,17 @@ impl Client {
                 response_delivery_state,
                 failure.response_ttlv,
             )
-        })
+        })?;
+
+        if let (Some(profiles), Some(profile_request), Some(profile_response)) =
+            (profiles, profile_request, profile_response)
+        {
+            profiles
+                .validate_response(&profile_request, &profile_response)
+                .map_err(|error| ClientError::profile_validation(error, response_delivery_state))?;
+        }
+
+        Ok(validated_response)
     }
 
     /// Executes one Encrypt, MAC, or Sign request through an explicit local
@@ -5930,6 +6076,44 @@ fn build_request_message(
     })
 }
 
+fn clone_request_message(
+    request: &RequestMessage,
+    limits: &CodecLimits,
+) -> Result<RequestMessage, ProtocolError> {
+    request
+        .with_ttlv(|message| private_wire_writer::validate_structure_limits(message, limits))
+        .map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidEncoding,
+                error,
+            )
+        })?;
+    let tree = request
+        .with_ttlv(|message| message.try_clone())
+        .map_err(model_protocol_error)?;
+    RequestMessage::try_from_ttlv(tree).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::MalformedMessage,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })
+}
+
+fn clone_response_message(response: &ResponseMessage) -> Result<ResponseMessage, ProtocolError> {
+    let tree = response
+        .with_ttlv(|message| message.try_clone())
+        .map_err(model_protocol_error)?;
+    ResponseMessage::try_from_ttlv(tree).map_err(|error| {
+        ProtocolError::new(
+            ProtocolErrorKind::MalformedMessage,
+            ProtocolCauseCategory::InvalidValue,
+            error,
+        )
+    })
+}
+
 fn build_request_header(
     batch: &ClientBatch,
     options: &ValidatedBatchOptions,
@@ -7515,6 +7699,10 @@ mod private_error_tests;
 #[cfg(test)]
 #[path = "../tests/unit/execute_provenance_order_tests.rs"]
 mod provenance_order_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/profile_message_clone_tests.rs"]
+mod profile_message_clone_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/single_response_tests.rs"]

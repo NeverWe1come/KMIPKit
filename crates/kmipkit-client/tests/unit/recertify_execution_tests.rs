@@ -121,6 +121,42 @@ fn request_fields(bytes: &[u8], batch_index: usize) -> (Option<u32>, Vec<u32>, u
     })
 }
 
+fn request_unique_identifier(bytes: &[u8], batch_index: usize) -> Option<String> {
+    let message = decode(bytes).expect("the captured request has valid TTLV framing");
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return None;
+        };
+        let batch = message
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == BATCH_ITEM)
+            .nth(batch_index)?;
+        batch.with_value(|value| {
+            let ValueView::Structure(batch) = value else {
+                return None;
+            };
+            let payload = batch
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == REQUEST_PAYLOAD)?;
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return None;
+                };
+                let identifier = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == UNIQUE_IDENTIFIER)?;
+                identifier.with_value(|value| match value {
+                    ValueView::TextString(value) => Some(value.to_owned()),
+                    _ => None,
+                })
+            })
+        })
+    })
+}
+
 fn structure_contains_tag(view: &StructureView<'_>, raw_tag: u32) -> bool {
     view.children().iter().any(|field| {
         field.tag().raw() == raw_tag
@@ -199,6 +235,42 @@ fn recertify_sends_one_table_300_request_and_exposes_table_301_identifier() {
         fake.borrow().exchange_count(),
         1,
         "Re-certify is never retried"
+    );
+}
+
+#[test]
+fn recertify_sends_explicit_unique_identifier_without_certificate_request_fields() {
+    let request = RecertifyRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+        "existing-certificate".to_owned(),
+    ));
+    let response = asynchronous_response_bytes(
+        RECERTIFY_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(response_payload("replacement-certificate")),
+    );
+    let (mut client, _fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+
+    let _ = client
+        .recertify(request, &CodecLimits::defaults())
+        .expect("the response fixture completes the client exchange");
+
+    let captured = captured.borrow();
+    let captured = captured
+        .as_deref()
+        .expect("the fake transport captured the Re-certify request");
+    assert_eq!(
+        request_fields(captured, 0),
+        (Some(RECERTIFY_OPERATION), vec![UNIQUE_IDENTIFIER], 0),
+        "the request contains the explicit Unique Identifier and omits the Certificate Request fields"
+    );
+    assert_eq!(
+        request_unique_identifier(captured, 0),
+        Some("existing-certificate".to_owned())
     );
 }
 

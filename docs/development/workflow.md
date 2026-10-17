@@ -73,6 +73,34 @@ The PR records commands, expected failure reason, results, and final evidence.
 The permanent verification record maps requirements to tests. Raw logs are
 kept only when needed to explain a failure.
 
+## Protected release evidence prerequisites
+
+The `release-summary` job evaluates current profile readiness only after a
+push to a protected `release/1.0.0` branch. A repository administrator must
+configure the `release-evidence` Actions environment to allow deployments
+from `release/1.0.0` only, then add:
+
+- Environment variable `PROFILE_EVIDENCE_APP_CLIENT_ID` with the GitHub App's
+  client ID.
+- Environment secret `PROFILE_EVIDENCE_APP_PRIVATE_KEY` with that App's
+  private key.
+
+Install the App on `NeverWe1come/KMIPKit` with repository
+`Administration: read` as its only permission. The workflow requests an
+installation token scoped to this repository and uses it only to query the
+current protection policy for `release/1.0.0`. The environment restriction
+keeps its private key unavailable to pull-request and scheduled runs. The
+workflow must fail closed if the environment, credentials, App permission,
+branch protection, or required policy settings are missing or insufficient.
+
+Configure branch protection to require at least one approving review, dismiss
+stale approvals, enforce rules for administrators, disable force pushes and
+deletions, and leave the pull-request bypass lists for users, teams, and Apps
+empty. The API response is checked on each eligible push; a prior successful
+check is not reused. This setup is an administrator-owned repository control;
+agents document and verify it but do not change repository protections,
+credentials, or secrets.
+
 ## Agent handoff
 
 A draft PR must contain:

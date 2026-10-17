@@ -134,10 +134,10 @@ As a KMIPKit caller, I can inspect operation metadata and results without diagno
 | KMIPKIT-REQ-SPEC-4.16-002 | §4.16 | FR-003 / KMIPKIT-0019 | Variable-IV mode requires IV Length when supplied parameters expose that mode |
 | KMIPKIT-REQ-SPEC-4.16-003 | §4.16 | FR-003 / KMIPKIT-0019 | GCM requires Tag Length when supplied parameters expose GCM |
 | KMIPKIT-REQ-SPEC-6.1.11-001-001, KMIPKIT-REQ-SPEC-6.1.11-001-002 | §6.1.11; Table 196 | FR-002, FR-003 / KMIPKIT-0019 | Decrypt omission and exact-preservation tests |
-| KMIPKIT-REQ-SPEC-6.1.11-004-001, KMIPKIT-REQ-SPEC-6.1.11-004-002 | §6.1.11; Table 196 | FR-003 / KMIPKIT-0019 | Preserve supplied parameters; server failure passthrough if server-held parameters are unavailable |
+| KMIPKIT-REQ-SPEC-6.1.11-004-002 | §6.1.11; Table 196 | FR-003 / KMIPKIT-0019 | Server failure passthrough if server-held parameters are unavailable |
 | KMIPKIT-REQ-SPEC-6.1.11-005, KMIPKIT-REQ-SPEC-6.1.11-006 | §6.1.11; Table 196 | FR-006 / KMIPKIT-0019 | Multipart initial-part placement tests for AAD and AEAD Tag |
 | KMIPKIT-REQ-SPEC-6.1.17-001-001, KMIPKIT-REQ-SPEC-6.1.17-001-002 | §6.1.17; Table 214 | FR-002, FR-003 / KMIPKIT-0019 | Encrypt omission and exact-preservation tests |
-| KMIPKIT-REQ-SPEC-6.1.17-005-001, KMIPKIT-REQ-SPEC-6.1.17-005-002 | §6.1.17; Table 214 | FR-003 / KMIPKIT-0019 | Preserve supplied parameters; server failure passthrough if server-held parameters are unavailable |
+| KMIPKIT-REQ-SPEC-6.1.17-005-002 | §6.1.17; Table 214 | FR-003 / KMIPKIT-0019 | Server failure passthrough if server-held parameters are unavailable |
 | KMIPKIT-REQ-SPEC-6.1.17-006 | §6.1.17; Table 214 | FR-006 / KMIPKIT-0019 | Multipart initial-part AAD placement |
 | KMIPKIT-REQ-SPEC-7.8-001 | §7.8 | FR-004 / KMIPKIT-0019 | Continuation/final requests include the first server Correlation Value |
 | KMIPKIT-REQ-SPEC-6.1-001-003 | §6.1; §§8.1–8.6 | FR-001 / KMIPKIT-0019; shared batch mechanics inherited from KMIPKIT-0006 | Client fake-transport test places Encrypt/Decrypt with another operation in one ordered batch and checks item outcomes remain associated |

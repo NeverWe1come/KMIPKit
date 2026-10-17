@@ -21,6 +21,7 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002c;
 const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_VALUE: u32 = 0x0042_0045;
 const OPAQUE_OBJECT: u32 = 0x0042_005b;
 const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
 const OPAQUE_DATA_VALUE: u32 = 0x0042_005a;
@@ -356,15 +357,14 @@ fn cryptographic_algorithm_and_length_satisfy_register_requirements(
 ) -> bool {
     let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
     let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
-    if has_algorithm != has_length {
-        return false;
-    }
 
-    has_algorithm
-        || object.is_some_and(|object| {
-            key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
-                && key_block_has(object, CRYPTOGRAPHIC_LENGTH)
-        })
+    // The paired values may be split between direct and Key Value Attributes.
+    let algorithm_available = has_algorithm
+        || object.is_some_and(|object| key_block_has(object, CRYPTOGRAPHIC_ALGORITHM));
+    let length_available =
+        has_length || object.is_some_and(|object| key_block_has(object, CRYPTOGRAPHIC_LENGTH));
+
+    algorithm_available && length_available
 }
 
 fn opaque_object_has_required_fields(object: &Item) -> bool {
@@ -417,13 +417,47 @@ fn key_block_has(object: &Item, raw_tag: u32) -> bool {
         object.children().iter().any(|field| {
             field.tag().raw() == KEY_BLOCK
                 && field.with_value(|value| match value {
-                    ValueView::Structure(block) => block
-                        .children()
-                        .iter()
-                        .any(|entry| entry.tag().raw() == raw_tag),
+                    ValueView::Structure(block) => key_block_contains_attribute(&block, raw_tag),
                     _ => false,
                 })
         })
+    })
+}
+
+fn key_block_contains_attribute(block: &StructureView<'_>, raw_tag: u32) -> bool {
+    block.children().iter().any(|entry| {
+        if entry.tag().raw() == raw_tag {
+            return cryptographic_metadata_has_expected_type(entry, raw_tag);
+        }
+        entry.tag().raw() == KEY_VALUE && key_value_has_attribute(entry, raw_tag)
+    })
+}
+
+fn key_value_has_attribute(key_value: &Item, raw_tag: u32) -> bool {
+    key_value.with_value(|value| {
+        let ValueView::Structure(key_value) = value else {
+            return false;
+        };
+        key_value.children().iter().any(|field| {
+            field.tag().raw() == ATTRIBUTES
+                && field.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        attributes.children().iter().any(|attribute| {
+                            attribute.tag().raw() == raw_tag
+                                && cryptographic_metadata_has_expected_type(attribute, raw_tag)
+                        })
+                    }
+                    _ => false,
+                })
+        })
+    })
+}
+
+fn cryptographic_metadata_has_expected_type(attribute: &Item, raw_tag: u32) -> bool {
+    attribute.with_value(|value| match raw_tag {
+        CRYPTOGRAPHIC_ALGORITHM => matches!(value, ValueView::Enumeration(_)),
+        CRYPTOGRAPHIC_LENGTH => matches!(value, ValueView::Integer(_)),
+        _ => false,
     })
 }
 

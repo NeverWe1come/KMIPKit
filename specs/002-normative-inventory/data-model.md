@@ -40,8 +40,9 @@ Each of the five range rows in Specification §11.56 is a separate record with s
 | Field | Rule |
 |---|---|
 | `requirement_id` | Stable identifier such as `KMIPKIT-REQ-SPEC-8.3-001`; when a single source block contains multiple separable obligations, append a stable three-digit subrecord suffix such as `KMIPKIT-REQ-SPEC-8.3-001-002`. IDs are never recycled. |
-| `source_clause_ids`, `source_refs` | One or more exact ledger IDs and document sections; table/paragraph anchors distinguish clauses. |
-| `source_keyword`, `normative_strength` | Preserve the exact keyword (`MUST`, `MUST NOT`, `REQUIRED`, `SHALL`, `SHALL NOT`, `SHOULD`, `SHOULD NOT`, `RECOMMENDED`, `MAY`, or `OPTIONAL`) and store its canonical strength (`mandatory`, `prohibited`, `recommended`, `discouraged`, or `permission_or_optional`) using the mapping above. |
+| `source_clause_ids`, `source_refs` | Exact ledger IDs and document sections. Keyword-backed requirements link one or more clauses; typed table-field requirements use no clause ID and instead cite their exact row through `source_gap_id` and `source_locator`. |
+| `source_keyword`, `normative_strength` | For a keyword-backed requirement, preserve the exact keyword (`MUST`, `MUST NOT`, `REQUIRED`, `SHALL`, `SHALL NOT`, `SHOULD`, `SHOULD NOT`, `RECOMMENDED`, `MAY`, or `OPTIONAL`) and its canonical strength. For a table-field requirement, `source_keyword` is `null`; the typed table force and canonical strength remain separate. |
+| `source_force`, `source_gap_id`, `source_locator` | A source table body field with Required=Yes uses `required_table_body_value`; Required=No uses `optional_table_body_value`. These values are table semantics, not RFC keywords. Such a requirement has an empty `source_clause_ids` array, a stable source-gap ID, and the exact `table_body_row` locator (section, row label, and pinned HTML line range). It must not borrow a table-header or unrelated paragraph keyword. |
 | `subject`, `summary` | Exact subject plus a concise, non-copyrighted paraphrase of the obligation or permission. |
 | `role`, `direction`, `condition` | Client/server/both and message direction, plus profile or protocol condition when applicable. |
 | `scope_state` | `client_1_0`, `client_1_1`, `profile_conditional`, `server_only`, or `out_of_scope`, with rationale. |
@@ -78,7 +79,7 @@ Coverage links connect requirement or protocol-element IDs to feature specificat
 ## Catalog and report invariants
 
 - Every record ID is unique and every relationship points to an existing record.
-- Every normative requirement links to at least one source-clause ledger entry and exact source section.
+- Every keyword-backed requirement links to its source-clause ledger entry; a typed table-field requirement instead links to the exact source section, gap ID, and body-row locator.
 - The source auditor's candidate ID set and checked-in source-clause ledger ID set match exactly.
 - All official source case IDs and raw fixture `href` values remain unchanged, even if headings or links appear malformed; display labels and local fixture paths are separate fields.
 - Source paths are exact allowlisted repository-relative POSIX paths. Fixture presence is checked only against pinned Git tree metadata; catalog-supplied paths are never opened or filesystem-resolved. Reject absolute, traversal-based, symlink, and reparse-point paths.

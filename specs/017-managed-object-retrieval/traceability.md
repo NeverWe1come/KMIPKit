@@ -30,10 +30,16 @@ The historical release-contract snapshot reviewed for the design refresh was `re
 | KMIPKIT-REQ-SPEC-6.1.28-008-002 | §6.1.28 | Retired extraction per DEC-005; Default sentence has no separate SHALL | FR-007; US2 AC-5 | No normative code destination | Client forwards Group Member Default under the Table 247 request model |
 | KMIPKIT-REQ-SPEC-6.1.28-009-001 | §6.1.28 | SHALL NOT; server-only destroyed response rule per DEC-005 | FR-009; US2 AC-6; Edge Cases | No client filtering | Client vector proves no invented mask/filtering; it cannot prove server conformance |
 | KMIPKIT-REQ-SPEC-6.1.28-009-002 | §6.1.28 | SHALL NOT; server-only archived response rule per DEC-005 | FR-009; US2 AC-6; Edge Cases | No client filtering | Client vector proves no invented mask/filtering; it cannot prove server conformance |
-| KMIPKIT-REQ-SPEC-6.1.28-011 | §6.1.28 | MAY; client request | FR-006; US2 AC-1 | locate.rs Maximum Items | Preserve omission and explicit value |
+| KMIPKIT-REQ-SPEC-6.1.28-001 | §6.1.28 | MAY; client request | FR-006; US2 AC-1 | locate.rs Maximum Items | Preserve omission and explicit value |
 | KMIPKIT-REQ-SPEC-6.1.28-012 | §6.1.28 Table 247 | SHALL; server-only online default per DEC-005 | FR-009; US2 AC-6 | No client filtering | Preserve omitted mask and returned values; no claim about server's returned IDs |
 | KMIPKIT-REQ-SPEC-6.1.28-013-001 | §6.1.28 | MUST; client request | FR-007; US2 AC-4 | locate.rs AttributeSet encoding | Exact ordered criteria; no local matching |
 | KMIPKIT-REQ-SPEC-6.1.28-013-002 | §6.1.28 | MAY; client request | FR-006; US2 AC-3 | locate.rs required Attributes Structure | Preserve present empty structure |
+
+## Optional Table 247 request field evidence
+
+| Source row | Approved feature mapping | Implementation and verification | Evidence boundary |
+| --- | --- | --- | --- |
+| KMIP v2.1 §6.1.28, Table 247, Storage Status Mask (Required=No) | KMIPKIT-ELEM-OP-C2S-LOCATE; KMIPKIT-0017 FR-006 and FR-009 | `crates/kmipkit-protocol/src/locate.rs::LocateRequest::to_ttlv_payload`; protocol tests `request_emits_supplied_optional_fields_in_table_247_order` and `storage_status_mask_preserves_assigned_and_unknown_bits`; client tests `locate_forwards_assigned_and_unknown_storage_status_bits_unchanged` and `locate_without_storage_status_mask_preserves_all_server_returned_identifiers` | Verifies client request omission/value and bit preservation only. Omission defaults and archived/destroyed response exclusions are server duties; no per-cell REQ identifier or server conformance claim is created. |
 
 ## Pinned OASIS and profile test-case evidence
 

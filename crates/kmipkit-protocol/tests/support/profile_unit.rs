@@ -1,0 +1,3569 @@
+use std::fmt;
+use std::fmt::Write as _;
+
+use super::{
+    CLIENT_REQUIREMENTS, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
+    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
+    ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
+    TYPED_RULE_MAPPINGS, TypedRuleMapping,
+    client_create_key_pair_domain_parameters_have_valid_wire_types,
+    client_get_or_export_key_compression_type_is_enumeration,
+    client_opaque_object_context_custom_attributes,
+    client_register_key_value_location_requires_omitted_key_value,
+    discover_versions_advertises_only_client_supported_versions,
+    import_preserves_pgp_key_versions_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
+    protocol_version_is_kmip_2_1, reconcile_effective_state,
+    type_specific_parameters_do_not_infer_remote_object_type, validate_mapping,
+    validate_selection_with_registry,
+};
+use crate::profiles_generated::{
+    GeneratedClientProfile, GeneratedClientRequirement, GeneratedVerificationCategory,
+};
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
+
+const REQUEST_HEADER_TAG: u32 = 0x0042_0077;
+const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
+const PROTOCOL_VERSION_TAG: u32 = 0x0042_0069;
+const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
+const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
+const BATCH_COUNT_TAG: u32 = 0x0042_000D;
+const BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const OPERATION_TAG: u32 = 0x0042_005C;
+const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
+const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
+const RESULT_STATUS_TAG: u32 = 0x0042_007F;
+const TIME_STAMP_TAG: u32 = 0x0042_0092;
+const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
+const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
+const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
+const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
+const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
+const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
+const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
+const OPAQUE_DATA_VALUE_TAG: u32 = 0x0042_005A;
+const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
+const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+const CRYPTOGRAPHIC_USAGE_MASK_TAG: u32 = 0x0042_002C;
+const CRYPTOGRAPHIC_ALGORITHM_TAG: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_LENGTH_TAG: u32 = 0x0042_002A;
+
+struct RejectingWriter;
+
+impl fmt::Write for RejectingWriter {
+    fn write_str(&mut self, _value: &str) -> fmt::Result {
+        Err(fmt::Error)
+    }
+}
+
+static CONSTRAINTS_HTTPS: [RuleConstraint; 1] = [RuleConstraint {
+    key: "transport",
+    value: "https",
+}];
+static CONSTRAINTS_RAW_TLS: [RuleConstraint; 1] = [RuleConstraint {
+    key: "transport",
+    value: "raw_tls",
+}];
+static UNKNOWN_CONSTRAINT: [RuleConstraint; 1] = [RuleConstraint {
+    key: "untyped-policy",
+    value: "opaque",
+}];
+static POSITIVE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-positive-test",
+    kind: RuleTestKind::PositiveBehavior,
+}];
+static NEGATIVE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-negative-test",
+    kind: RuleTestKind::NegativeBehavior,
+}];
+static RECOMMENDED_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-recommended-test",
+    kind: RuleTestKind::RecommendedBehavior,
+}];
+static DISCOURAGED_ABSENCE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-discouraged-absence-test",
+    kind: RuleTestKind::DiscouragedBehaviorAbsent,
+}];
+static OPTIONAL_CAPABILITY_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "profile-rule-optional-capability-test",
+    kind: RuleTestKind::OptionalCapabilityUsable,
+}];
+
+fn passing_rule(
+    _request: Option<&crate::RequestMessage>,
+    _response: Option<(&crate::RequestMessage, &crate::ResponseMessage)>,
+) -> bool {
+    true
+}
+
+fn reject_outbound_rule(
+    _request: Option<&crate::RequestMessage>,
+    response: Option<(&crate::RequestMessage, &crate::ResponseMessage)>,
+) -> bool {
+    response.is_some()
+}
+
+fn reject_response_rule(
+    _request: Option<&crate::RequestMessage>,
+    response: Option<(&crate::RequestMessage, &crate::ResponseMessage)>,
+) -> bool {
+    response.is_none()
+}
+
+fn tagged(raw_tag: u32, value: Value) -> Item {
+    let tag: Tag = RawTag::new(raw_tag)
+        .expect("test tag fits the TTLV width")
+        .try_checked()
+        .expect("test tag is allocated");
+    Item::new(tag, value).expect("test item is valid")
+}
+
+fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
+    let mut result = Structure::new();
+    for item in items {
+        result
+            .try_push(item)
+            .expect("test structure depth is valid");
+    }
+    result
+}
+
+fn test_protocol_version() -> Item {
+    tagged(
+        PROTOCOL_VERSION_TAG,
+        Value::structure(structure([
+            tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+            tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+        ])),
+    )
+}
+
+fn request_message() -> crate::RequestMessage {
+    request_message_with_unique_batch_item_id(None)
+}
+
+fn request_message_with_unique_batch_item_id(
+    unique_batch_item_id: Option<&[u8]>,
+) -> crate::RequestMessage {
+    let mut batch_item_fields = vec![tagged(OPERATION_TAG, Value::enumeration(0x1E))];
+    if let Some(identifier) = unique_batch_item_id {
+        batch_item_fields.push(tagged(
+            UNIQUE_BATCH_ITEM_ID_TAG,
+            Value::byte_string(identifier.to_vec()),
+        ));
+    }
+    batch_item_fields.push(tagged(
+        REQUEST_PAYLOAD_TAG,
+        Value::structure(Structure::new()),
+    ));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure(batch_item_fields)),
+        ),
+    ]))
+    .expect("test single-item Request Message is valid")
+}
+
+fn request_message_with_operation_payload(
+    operation: u32,
+    payload: Structure,
+) -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(payload)),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message with operation payload is valid")
+}
+
+fn register_key_value_location_request(
+    include_location: bool,
+    include_key_value: bool,
+) -> crate::RequestMessage {
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+
+    let location = include_location.then(|| {
+        tagged(
+            KEY_VALUE_LOCATION,
+            Value::structure(structure([
+                tagged(
+                    KEY_VALUE_LOCATION_VALUE,
+                    Value::text_string("pkcs11:object=key-1".to_owned()),
+                ),
+                tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+            ])),
+        )
+    });
+    register_request_with_key_value_location(location, include_key_value)
+}
+
+fn register_request_with_key_value_location(
+    location: Option<Item>,
+    include_key_value: bool,
+) -> crate::RequestMessage {
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0044;
+
+    let mut key_block = vec![tagged(KEY_FORMAT_TYPE, Value::enumeration(1))];
+    if include_key_value {
+        key_block.push(tagged(
+            KEY_VALUE,
+            Value::structure(structure([tagged(
+                KEY_MATERIAL,
+                Value::byte_string(b"synthetic-key-material".to_vec()),
+            )])),
+        ));
+    }
+
+    let attributes = location.into_iter().collect::<Vec<_>>();
+
+    request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(2)),
+            tagged(ATTRIBUTES, Value::structure(structure(attributes))),
+            tagged(
+                SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    KEY_BLOCK,
+                    Value::structure(structure(key_block)),
+                )])),
+            ),
+        ]),
+    )
+}
+
+fn register_wrapped_key_value_request(encoding_option: Value) -> crate::RequestMessage {
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const ENCODING_OPTION: u32 = 0x0042_00A3;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+
+    request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES,
+                Value::structure(structure([
+                    tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                    tagged(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                ])),
+            ),
+            tagged(
+                SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    KEY_BLOCK,
+                    Value::structure(structure([
+                        tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                        tagged(
+                            KEY_VALUE,
+                            Value::byte_string(b"test-only wrapped TTLV bytes".to_vec()),
+                        ),
+                        tagged(
+                            KEY_WRAPPING_DATA,
+                            Value::structure(structure([
+                                tagged(WRAPPING_METHOD, Value::enumeration(1)),
+                                tagged(
+                                    ENCRYPTION_KEY_INFORMATION,
+                                    Value::structure(structure([tagged(
+                                        UNIQUE_IDENTIFIER,
+                                        Value::text_string("wrapping-key".to_owned()),
+                                    )])),
+                                ),
+                                tagged(ENCODING_OPTION, encoding_option),
+                            ])),
+                        ),
+                    ])),
+                )])),
+            ),
+        ]),
+    )
+}
+
+fn discover_versions_payload(versions: &[(i32, i32)]) -> Structure {
+    let mut payload = Structure::new();
+    for &(major, minor) in versions {
+        payload
+            .try_push(tagged(
+                PROTOCOL_VERSION_TAG,
+                Value::structure(structure([
+                    tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(major)),
+                    tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(minor)),
+                ])),
+            ))
+            .expect("test Discover Versions payload remains valid");
+    }
+    payload
+}
+
+fn response_message() -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Response Message is valid")
+}
+
+fn get_attributes_x509_response() -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("x509-object".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure([
+                                tagged(
+                                    ISSUER_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"issuer-name-a".to_vec()),
+                                ),
+                                tagged(
+                                    SUBJECT_DISTINGUISHED_NAME_TAG,
+                                    Value::byte_string(Vec::new()),
+                                ),
+                                tagged(
+                                    SUBJECT_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"subject-name-a".to_vec()),
+                                ),
+                                tagged(
+                                    ISSUER_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"issuer-name-b".to_vec()),
+                                ),
+                                tagged(
+                                    SUBJECT_ALTERNATIVE_NAME_TAG,
+                                    Value::byte_string(b"subject-name-b".to_vec()),
+                                ),
+                            ])),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("test Get Attributes response carries valid X.509 Byte String attributes")
+}
+
+fn opaque_context_vendor_attribute(value: &[u8]) -> Item {
+    tagged(
+        VENDOR_ATTRIBUTE_TAG,
+        Value::structure(structure([
+            tagged(
+                VENDOR_IDENTIFICATION_TAG,
+                Value::text_string("example.invalid".to_owned()),
+            ),
+            tagged(
+                ATTRIBUTE_NAME_TAG,
+                Value::text_string("KMIPKit.Context".to_owned()),
+            ),
+            tagged(ATTRIBUTE_VALUE_TAG, Value::byte_string(value.to_vec())),
+        ])),
+    )
+}
+
+fn opaque_object_register_payload(include_context: bool) -> Structure {
+    let mut attributes = crate::AttributeSet::new();
+    if include_context {
+        attributes
+            .try_push(opaque_context_vendor_attribute(b"context-a"))
+            .expect("the first synthetic Custom Attribute uses a valid Vendor Attribute shape");
+        attributes
+            .try_push(opaque_context_vendor_attribute(b"context-b"))
+            .expect("a repeated synthetic Custom Attribute retains its value");
+    }
+
+    crate::RegisterRequest::new(
+        crate::ObjectType::from_raw(8),
+        attributes,
+        tagged(
+            OPAQUE_OBJECT_TAG,
+            Value::structure(structure([
+                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(0xF123_4567)),
+                tagged(
+                    OPAQUE_DATA_VALUE_TAG,
+                    Value::byte_string(b"synthetic-opaque-object-data".to_vec()),
+                ),
+            ])),
+        ),
+    )
+    .into_ttlv_payload()
+    .expect("the Opaque Object and its optional Attributes have valid TTLV shapes")
+}
+
+fn managed_opaque_object_register_payload() -> Structure {
+    let mut attributes = crate::AttributeSet::new();
+    for attribute in [
+        tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+        tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+        tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+    ] {
+        attributes
+            .try_push(attribute)
+            .expect("managed Opaque Object attributes have valid TTLV shapes");
+    }
+
+    crate::RegisterRequest::new(
+        crate::ObjectType::from_raw(8),
+        attributes,
+        tagged(
+            OPAQUE_OBJECT_TAG,
+            Value::structure(structure([
+                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
+                tagged(
+                    OPAQUE_DATA_VALUE_TAG,
+                    Value::byte_string(b"managed-opaque-object-data".to_vec()),
+                ),
+            ])),
+        ),
+    )
+    .with_opaque_object_context(crate::OpaqueObjectContext::ManagedCryptographicObject)
+    .into_ttlv_payload()
+    .expect("managed Opaque Object attributes serialize without adding a context marker")
+}
+
+fn managed_opaque_register_payload_with_attributes(attributes: Structure) -> Structure {
+    structure([
+        tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+        tagged(ATTRIBUTES_TAG, Value::structure(attributes)),
+        tagged(
+            OPAQUE_OBJECT_TAG,
+            Value::structure(structure([
+                tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(7)),
+                tagged(
+                    OPAQUE_DATA_VALUE_TAG,
+                    Value::byte_string(b"managed-opaque-object-data".to_vec()),
+                ),
+            ])),
+        ),
+    ])
+}
+
+fn opaque_context_get_attributes_response() -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(GET_ATTRIBUTES_OPERATION)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([
+                        tagged(
+                            UNIQUE_IDENTIFIER_TAG,
+                            Value::text_string("opaque-object".to_owned()),
+                        ),
+                        tagged(
+                            ATTRIBUTES_TAG,
+                            Value::structure(structure([
+                                opaque_context_vendor_attribute(b"context-a"),
+                                opaque_context_vendor_attribute(b"context-b"),
+                            ])),
+                        ),
+                    ])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("the Get Attributes response preserves repeated Vendor Attributes")
+}
+
+fn get_attributes_response_with_payload(
+    operation: u32,
+    payload: Structure,
+) -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(RESPONSE_PAYLOAD_TAG, Value::structure(payload)),
+            ])),
+        ),
+    ]))
+    .expect("test Get Attributes response payload has a valid message envelope")
+}
+
+fn opaque_object_attributes_ttlv(attributes: impl IntoIterator<Item = Item>) -> Item {
+    tagged(ATTRIBUTES_TAG, Value::structure(structure(attributes)))
+}
+
+fn malformed_opaque_register_metadata_payloads() -> Vec<Structure> {
+    let valid_attributes =
+        || opaque_object_attributes_ttlv([opaque_context_vendor_attribute(b"context")]);
+    let invalid_vendor_attribute = tagged(
+        VENDOR_ATTRIBUTE_TAG,
+        Value::text_string("not a Vendor Attribute structure".to_owned()),
+    );
+
+    vec![
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            valid_attributes(),
+            valid_attributes(),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::text_string("not a Structure".to_owned()),
+            ),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            opaque_object_attributes_ttlv([invalid_vendor_attribute]),
+        ]),
+    ]
+}
+
+fn vendor_attribute_value_bytes(attribute: &Item) -> Option<Vec<u8>> {
+    attribute.with_value(|value| {
+        let ValueView::Structure(vendor_attribute) = value else {
+            return None;
+        };
+        vendor_attribute
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == ATTRIBUTE_VALUE_TAG)
+            .and_then(|field| {
+                field.with_value(|value| match value {
+                    ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                    _ => None,
+                })
+            })
+    })
+}
+
+fn profile(
+    profile_id: &'static str,
+    requirement_ids: &'static [&'static str],
+    dependency_profile_ids: &'static [&'static str],
+) -> GeneratedClientProfile {
+    GeneratedClientProfile {
+        profile_id,
+        name: "synthetic test profile",
+        applicability: "client_1_0",
+        claim_state: "not_claimed",
+        selected_target: false,
+        direct_source_clause_ids: &["TEST-CLAUSE"],
+        source_clause_ids: &["TEST-CLAUSE"],
+        requirement_ids,
+        unresolved_scope_obligations: &[],
+        dependency_profile_ids,
+        transport_requirements: &[],
+        encoding_requirements: &[],
+        test_cases: &[],
+    }
+}
+
+fn requirement(
+    requirement_id: &'static str,
+    category: GeneratedVerificationCategory,
+    has_accepted_deviation: bool,
+) -> GeneratedClientRequirement {
+    GeneratedClientRequirement {
+        requirement_id,
+        source_keyword: Some("SHALL"),
+        source_force: None,
+        source_gap_id: None,
+        verification_category: category,
+        scope_state: "client_1_0",
+        source_clause_ids: &["TEST-CLAUSE"],
+        profile_ids: &[],
+        official_test_case_ids: &[],
+        has_accepted_deviation,
+    }
+}
+
+fn mapping(
+    requirement_id: &'static str,
+    category: GeneratedVerificationCategory,
+    test_kind: RuleTestKind,
+    constraints: &'static [RuleConstraint],
+) -> TypedRuleMapping {
+    let test_evidence = match test_kind {
+        RuleTestKind::PositiveBehavior => &POSITIVE_TEST,
+        RuleTestKind::NegativeBehavior => &NEGATIVE_TEST,
+        RuleTestKind::RecommendedBehavior => &RECOMMENDED_TEST,
+        RuleTestKind::DiscouragedBehaviorAbsent => &DISCOURAGED_ABSENCE_TEST,
+        RuleTestKind::OptionalCapabilityUsable => &OPTIONAL_CAPABILITY_TEST,
+    };
+    TypedRuleMapping {
+        requirement_id,
+        source_clause_id: "TEST-CLAUSE",
+        verification_category: category,
+        evaluator: Some(passing_rule),
+        test_evidence,
+        constraints,
+    }
+}
+
+#[test]
+fn each_keyword_category_requires_the_matching_test_form() {
+    let cases = [
+        (
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+        ),
+        (
+            GeneratedVerificationCategory::ProhibitedBehavior,
+            RuleTestKind::NegativeBehavior,
+        ),
+        (
+            GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+            RuleTestKind::RecommendedBehavior,
+        ),
+        (
+            GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation,
+            RuleTestKind::DiscouragedBehaviorAbsent,
+        ),
+        (
+            GeneratedVerificationCategory::OptionalCapability,
+            RuleTestKind::OptionalCapabilityUsable,
+        ),
+    ];
+
+    for (category, test_kind) in cases {
+        let requirement = requirement("TEST-REQ", category, false);
+        let good_mapping = mapping("TEST-REQ", category, test_kind, &[]);
+        assert!(validate_mapping("TEST-PROFILE", &requirement, &good_mapping).is_ok());
+
+        let wrong_test_kind = match test_kind {
+            RuleTestKind::PositiveBehavior => RuleTestKind::NegativeBehavior,
+            _ => RuleTestKind::PositiveBehavior,
+        };
+        let mapping = mapping("TEST-REQ", category, wrong_test_kind, &[]);
+        let error = validate_mapping("TEST-PROFILE", &requirement, &mapping)
+            .expect_err("a different test category cannot cover the rule");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::MissingCategoryTest
+        );
+    }
+}
+
+#[test]
+fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Discover Versions capability has a production typed rule mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Discover Versions capability resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the production rule matches its generated clause and optional-test category");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    assert!(!discover_versions_advertises_only_client_supported_versions(None, None));
+
+    let supported_request = request_message_with_operation_payload(
+        0x0000_001E,
+        crate::DiscoverVersionsRequest::new()
+            .to_ttlv_payload()
+            .expect("the typed request advertises KMIP 2.1"),
+    );
+    assert!(result.validate_request(&supported_request).is_ok());
+
+    let omitted_optional_list =
+        request_message_with_operation_payload(0x0000_001E, Structure::new());
+    assert!(result.validate_request(&omitted_optional_list).is_ok());
+
+    let other_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    assert!(result.validate_request(&other_operation).is_ok());
+
+    let malformed_version = request_message_with_operation_payload(
+        0x0000_001E,
+        structure([tagged(
+            PROTOCOL_VERSION_TAG,
+            Value::text_string("2.1".to_owned()),
+        )]),
+    );
+    assert!(result.validate_request(&malformed_version).is_err());
+
+    let unsupported_request =
+        request_message_with_operation_payload(0x0000_001E, discover_versions_payload(&[(3, 0)]));
+    let error = result
+        .validate_request(&unsupported_request)
+        .expect_err("a 1.0 client must not advertise a protocol version it does not support");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.16-001")
+    );
+
+    let mixed_versions = request_message_with_operation_payload(
+        0x0000_001E,
+        discover_versions_payload(&[(2, 1), (3, 0)]),
+    );
+    assert!(result.validate_request(&mixed_versions).is_err());
+}
+
+#[test]
+fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-4.1.2-007";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-PROF-4.1.2-007";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("single-item Unique Batch Item ID has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional profile capability resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the capability has a category-matched positive test");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for expected_id in [None, Some(b"single-item-id".as_slice())] {
+        let request = request_message_with_unique_batch_item_id(expected_id);
+        let item = request
+            .batch_items()
+            .next()
+            .expect("the test request has one batch item");
+        let actual_id = item.with_unique_batch_item_id(<[u8]>::to_vec);
+        assert_eq!(actual_id, expected_id.map(<[u8]>::to_vec));
+        result
+            .validate_request(&request)
+            .expect("the profile capability allows the ID to be included or omitted");
+    }
+}
+
+#[test]
+fn profile_maps_client_get_key_compression_type_selector() {
+    // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
+    // §6.1.19 Table 220 exposes the caller-selected Get request field.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const GET_OPERATION: u32 = 0x0000_000A;
+    const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type has an explicit production profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the rule is linked to this capability and its positive test");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    assert!(!client_get_or_export_key_compression_type_is_enumeration(
+        None, None
+    ));
+    let selected_compression = request_message_with_operation_payload(
+        GET_OPERATION,
+        crate::GetRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(1))
+            .to_ttlv_payload()
+            .expect("the typed Get request encodes the caller-selected value"),
+    );
+    result
+        .validate_request(&selected_compression)
+        .expect("the selected client profile permits an explicit compression selector");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
+        Some(&selected_compression),
+        None
+    ));
+
+    let omitted_optional_selector = request_message_with_operation_payload(
+        GET_OPERATION,
+        crate::GetRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
+            .to_ttlv_payload()
+            .expect("the optional compression selector remains absent by default"),
+    );
+    result
+        .validate_request(&omitted_optional_selector)
+        .expect("profile validation does not synthesize or require this optional selector");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
+        Some(&omitted_optional_selector),
+        None
+    ));
+
+    let malformed_selector = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
+            tagged(
+                KEY_COMPRESSION_TYPE_TAG,
+                Value::text_string("compressed".to_owned()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed_selector).is_err());
+    assert!(!client_get_or_export_key_compression_type_is_enumeration(
+        Some(&malformed_selector),
+        None
+    ));
+
+    let duplicate_selector = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(1)),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(2)),
+        ]),
+    );
+    assert!(result.validate_request(&duplicate_selector).is_err());
+    assert!(!client_get_or_export_key_compression_type_is_enumeration(
+        Some(&duplicate_selector),
+        None
+    ));
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the retrieval selector rule leaves other operations unchanged");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
+        Some(&unrelated_operation),
+        None
+    ));
+}
+
+#[test]
+fn profile_maps_client_export_key_compression_type_selector() {
+    // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
+    // §6.1.18 Table 217 exposes the caller-selected Export request field.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const EXPORT_OPERATION: u32 = 0x0000_002B;
+    const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type has an explicit production profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Key Compression Type resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the rule links the Get and Export selector evidence");
+
+    let selected_compression = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
+            .with_key_compression_type(crate::KeyCompressionType::from_raw(0xFFFF_FF01))
+            .into_ttlv_payload()
+            .expect("the typed Export request encodes the caller-selected value"),
+    );
+    result
+        .validate_request(&selected_compression)
+        .expect("the profile permits an explicit Export compression selector");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
+        Some(&selected_compression),
+        None
+    ));
+
+    let omitted_optional_selector = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        crate::ExportRequest::new()
+            .with_unique_identifier(crate::UniqueIdentifier::TextString("ec-key-id".to_owned()))
+            .into_ttlv_payload()
+            .expect("the optional Export selector remains absent by default"),
+    );
+    result
+        .validate_request(&omitted_optional_selector)
+        .expect("profile validation does not synthesize or require the optional selector");
+    assert!(client_get_or_export_key_compression_type_is_enumeration(
+        Some(&omitted_optional_selector),
+        None
+    ));
+
+    let malformed_selector = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
+            tagged(
+                KEY_COMPRESSION_TYPE_TAG,
+                Value::text_string("compressed".to_owned()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed_selector).is_err());
+
+    let duplicate_selector = request_message_with_operation_payload(
+        EXPORT_OPERATION,
+        structure([
+            tagged(0x0042_0094, Value::text_string("ec-key-id".to_owned())),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(1)),
+            tagged(KEY_COMPRESSION_TYPE_TAG, Value::enumeration(2)),
+        ]),
+    );
+    assert!(result.validate_request(&duplicate_selector).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the selector rule does not constrain unrelated operations");
+}
+
+#[test]
+fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
+    // KMIP Specification v2.1 §2.4/Table 5 permits PGP Key versions 3 and 4;
+    // its Key Value is caller-owned opaque ASCII-armored data.
+    const REQUIREMENT_OBJECT_FORM: &str = "KMIPKIT-REQ-SPEC-2.4-001-001";
+    const REQUIREMENT_VERSION: &str = "KMIPKIT-REQ-SPEC-2.4-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let requirement_ids = [REQUIREMENT_OBJECT_FORM, REQUIREMENT_VERSION];
+    for requirement_id in requirement_ids {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("the PGP Key capability has an explicit production profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("the PGP Key capability resolves to normative metadata");
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .expect("the PGP Key rule has source-linked positive evidence");
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: requirement_ids.map(str::to_owned).to_vec(),
+    };
+    let public_key_only = pgp_key_import_request(3, b"synthetic-pgp-public-key-only");
+    let public_and_private_key = pgp_key_import_request(4, b"synthetic-pgp-public-and-private-key");
+
+    result
+        .validate_request(&public_key_only)
+        .expect("profile validation preserves caller-supplied PGP version 3 key bytes");
+    result
+        .validate_request(&public_and_private_key)
+        .expect("profile validation preserves caller-supplied PGP version 4 key bytes");
+
+    let malformed_key_value = request_message_with_operation_payload(
+        0x0000_002A,
+        structure([
+            tagged(0x0042_0057, Value::enumeration(9)),
+            tagged(
+                0x0042_00BD,
+                Value::structure(structure([
+                    tagged(0x0042_00BE, Value::integer(3)),
+                    tagged(
+                        0x0042_0040,
+                        Value::structure(structure([
+                            tagged(0x0042_0042, Value::enumeration(1)),
+                            tagged(0x0042_0045, Value::text_string("not bytes".to_owned())),
+                        ])),
+                    ),
+                ])),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed_key_value).is_err());
+    assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+        Some(&malformed_key_value),
+        None
+    ));
+    assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+        None, None
+    ));
+    assert!(import_preserves_pgp_key_versions_and_opaque_bytes(
+        Some(&request_message_with_operation_payload(
+            0x0000_0003,
+            Structure::new()
+        )),
+        None
+    ));
+}
+
+#[test]
+fn profile_rejects_malformed_pgp_key_import_shapes() {
+    let valid_version = || pgp_key_version_item(Value::integer(3));
+    let valid_block = || valid_pgp_key_block_item();
+    let key_without_version = pgp_key_item([valid_block()]);
+    let key_with_wrong_version = pgp_key_item([
+        pgp_key_version_item(Value::text_string("three".to_owned())),
+        valid_block(),
+    ]);
+    let key_with_duplicate_versions =
+        pgp_key_item([valid_version(), valid_version(), valid_block()]);
+    let key_without_block = pgp_key_item([valid_version()]);
+    let key_with_wrong_block = pgp_key_item([
+        valid_version(),
+        tagged(
+            0x0042_0040,
+            Value::text_string("not a structure".to_owned()),
+        ),
+    ]);
+    let key_with_missing_format = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([pgp_key_value_item(Value::byte_string(Vec::new()))]),
+    ]);
+    let key_with_wrong_format = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([
+            pgp_key_format_item(Value::integer(1)),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+        ]),
+    ]);
+    let key_with_duplicate_formats = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([
+            pgp_key_format_item(Value::enumeration(1)),
+            pgp_key_format_item(Value::enumeration(1)),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+        ]),
+    ]);
+    let key_with_missing_value = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([pgp_key_format_item(Value::enumeration(1))]),
+    ]);
+    let key_with_duplicate_values = pgp_key_item([
+        valid_version(),
+        pgp_key_block_item([
+            pgp_key_format_item(Value::enumeration(1)),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+            pgp_key_value_item(Value::byte_string(Vec::new())),
+        ]),
+    ]);
+
+    let malformed_requests = [
+        request_message_with_operation_payload(0x0000_002A, Structure::new()),
+        request_message_with_operation_payload(
+            0x0000_002A,
+            structure([tagged(
+                0x0042_0057,
+                Value::text_string("not an enumeration".to_owned()),
+            )]),
+        ),
+        request_message_with_operation_payload(
+            0x0000_002A,
+            structure([
+                tagged(0x0042_0057, Value::enumeration(9)),
+                tagged(0x0042_0057, Value::enumeration(9)),
+            ]),
+        ),
+        pgp_import_request_with_fields([]),
+        pgp_import_request_with_fields([tagged(
+            0x0042_00BD,
+            Value::text_string("not a structure".to_owned()),
+        )]),
+        pgp_import_request_with_fields([valid_pgp_key_item(), valid_pgp_key_item()]),
+        pgp_import_request_with_fields([key_without_version]),
+        pgp_import_request_with_fields([key_with_wrong_version]),
+        pgp_import_request_with_fields([key_with_duplicate_versions]),
+        pgp_import_request_with_fields([key_without_block]),
+        pgp_import_request_with_fields([key_with_wrong_block]),
+        pgp_import_request_with_fields([key_with_missing_format]),
+        pgp_import_request_with_fields([key_with_wrong_format]),
+        pgp_import_request_with_fields([key_with_duplicate_formats]),
+        pgp_import_request_with_fields([key_with_missing_value]),
+        pgp_import_request_with_fields([key_with_duplicate_values]),
+    ];
+
+    for malformed in malformed_requests {
+        assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+            Some(&malformed),
+            None
+        ));
+    }
+    assert!(import_preserves_pgp_key_versions_and_opaque_bytes(
+        Some(&request_message_with_operation_payload(
+            0x0000_002A,
+            structure([tagged(0x0042_0057, Value::enumeration(2))]),
+        )),
+        None
+    ));
+}
+
+#[test]
+fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    assert!(!type_specific_parameters_do_not_infer_remote_object_type(
+        None, None
+    ));
+
+    let parameters = structure([tagged(
+        CRYPTOGRAPHIC_PARAMETERS_TAG,
+        Value::structure(structure([tagged(
+            DIGITAL_SIGNATURE_ALGORITHM_TAG,
+            Value::enumeration(1),
+        )])),
+    )]);
+    let payload = crate::EncryptRequest::new(
+        Some(crate::UniqueIdentifier::TextString(
+            "profile-key-id".to_owned(),
+        )),
+        Some(crate::OperationData::Integer(7)),
+    )
+    .with_cryptographic_parameters(parameters)
+    .to_ttlv_payload()
+    .expect("the caller-supplied type-specific parameter is structurally valid");
+    let request = request_message_with_operation_payload(0x0000_001F, payload);
+
+    result
+        .validate_request(&request)
+        .expect("profile validation does not infer a server-held object type");
+
+    let omitted_parameters = request_message_with_operation_payload(
+        0x0000_001F,
+        crate::EncryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "profile-key-id".to_owned(),
+            )),
+            Some(crate::OperationData::Integer(7)),
+        )
+        .to_ttlv_payload()
+        .expect("omitted optional parameters remain a valid Encrypt request"),
+    );
+    result
+        .validate_request(&omitted_parameters)
+        .expect("the optional Cryptographic Parameters structure may be omitted");
+
+    let other_operation = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&other_operation)
+        .expect("the rule leaves unrelated operation payloads unaffected");
+}
+
+#[test]
+fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const DECRYPT_OPERATION: u32 = 0x0000_0020;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Cryptographic Parameters has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional fields resolve to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("omission evidence matches the OPTIONAL category");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let requests = [
+        request_message_with_operation_payload(
+            ENCRYPT_OPERATION,
+            crate::EncryptRequest::new(
+                Some(crate::UniqueIdentifier::TextString(
+                    "profile-key-id".to_owned(),
+                )),
+                Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                    vec![0x41, 0x42],
+                ))),
+            )
+            .to_ttlv_payload()
+            .expect("Encrypt payload retains omitted Cryptographic Parameters"),
+        ),
+        request_message_with_operation_payload(
+            DECRYPT_OPERATION,
+            crate::DecryptRequest::new(
+                Some(crate::UniqueIdentifier::TextString(
+                    "profile-key-id".to_owned(),
+                )),
+                Some(crate::OperationData::ByteString(crate::SecretBytes::new(
+                    vec![0x24, 0x68],
+                ))),
+            )
+            .to_ttlv_payload()
+            .expect("Decrypt payload retains omitted Cryptographic Parameters"),
+        ),
+    ];
+
+    for request in requests {
+        let item = request
+            .batch_items()
+            .next()
+            .expect("the test request contains one batch item");
+        let has_parameters = item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS_TAG)
+            })
+            .expect("the test request contains a Request Payload");
+        assert!(!has_parameters);
+        result
+            .validate_request(&request)
+            .expect("profile validation permits caller omission of optional parameters");
+    }
+}
+
+#[test]
+fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+    const QLENGTH: u32 = 0x0042_0073;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let domain_parameters = structure([tagged(QLENGTH, Value::integer(256))]);
+    let common_attributes = structure([
+        // KMIP Specification v2.1 §11.12, Table 443: DSA is enumeration 5.
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(domain_parameters),
+        ),
+    ]);
+    let payload = structure([tagged(
+        COMMON_ATTRIBUTES,
+        Value::structure(common_attributes),
+    )]);
+    let request = request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, payload);
+
+    result
+        .validate_request(&request)
+        .expect("the optional Qlength value is usable in a Create Key Pair request");
+
+    let omitted =
+        request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, Structure::new());
+    result
+        .validate_request(&omitted)
+        .expect("the client may omit Cryptographic Domain Parameters");
+
+    let unrelated = request_message_with_operation_payload(0x0000_0001, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("the Create Key Pair rule leaves other operations unaffected");
+
+    let malformed_domain_parameters =
+        structure([tagged(CRYPTOGRAPHIC_DOMAIN_PARAMETERS, Value::integer(256))]);
+    let malformed_attributes = structure([tagged(
+        COMMON_ATTRIBUTES,
+        Value::structure(malformed_domain_parameters),
+    )]);
+    let malformed =
+        request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, malformed_attributes);
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("Table 55 requires Cryptographic Domain Parameters to be a Structure");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
+}
+
+#[test]
+fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
+    // KMIP Specification v2.1 §4.14 and Tables 55–56; §11.12, Table 443.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+    const QLENGTH: u32 = 0x0042_0073;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("type-applicable domain parameters have an explicit production rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the type-applicable field resolves to generated normative metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the typed rule links this requirement to its optional-capability evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let parameters = structure([tagged(QLENGTH, Value::integer(256))]);
+    let common_attributes = structure([
+        // KMIP Specification v2.1 §11.12, Table 443: DSA is enumeration 5.
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(parameters),
+        ),
+    ]);
+    let request = request_message_with_operation_payload(
+        CREATE_KEY_PAIR_OPERATION,
+        structure([tagged(
+            COMMON_ATTRIBUTES,
+            Value::structure(common_attributes),
+        )]),
+    );
+    result
+        .validate_request(&request)
+        .expect("the caller-selected DSA Qlength Integer is usable in Create Key Pair");
+
+    let omitted =
+        request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, Structure::new());
+    result
+        .validate_request(&omitted)
+        .expect("the client may omit the optional domain-parameter field");
+
+    let malformed_parameters = structure([tagged(QLENGTH, Value::text_string("256".to_owned()))]);
+    let malformed_attributes = structure([
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(malformed_parameters),
+        ),
+    ]);
+    let malformed = request_message_with_operation_payload(
+        CREATE_KEY_PAIR_OPERATION,
+        structure([tagged(
+            COMMON_ATTRIBUTES,
+            Value::structure(malformed_attributes),
+        )]),
+    );
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("Table 55 encodes Qlength as an Integer");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
+}
+
+#[test]
+fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
+    // KMIP Specification v2.1 §4.14, Table 55; KMIPKIT-REQ-SPEC-4.14-001-001.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+    const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+    const QLENGTH: u32 = 0x0042_0073;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let domain_parameters = structure([tagged(QLENGTH, Value::text_string("256".to_owned()))]);
+    let common_attributes = structure([
+        tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        tagged(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(domain_parameters),
+        ),
+    ]);
+    let payload = structure([tagged(
+        COMMON_ATTRIBUTES,
+        Value::structure(common_attributes),
+    )]);
+    let request = request_message_with_operation_payload(CREATE_KEY_PAIR_OPERATION, payload);
+
+    let error = result
+        .validate_request(&request)
+        .expect_err("Table 55 encodes Qlength as an Integer");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
+}
+
+#[test]
+fn public_profile_result_entrypoints_validate_transport_and_responses() {
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
+    const PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    result
+        .validate_transport(ProfileTransport::Https)
+        .expect("the Discover Versions rule has no incompatible transport constraint");
+
+    let supported_request = request_message_with_operation_payload(
+        0x0000_001E,
+        crate::DiscoverVersionsRequest::new()
+            .to_ttlv_payload()
+            .expect("the typed request advertises KMIP 2.1"),
+    );
+    result
+        .validate_response(&supported_request, &response_message())
+        .expect("a KMIP 2.1 Discover Versions response satisfies the selected rule");
+
+    let unsupported_request =
+        request_message_with_operation_payload(0x0000_001E, discover_versions_payload(&[(3, 0)]));
+    let error = result
+        .validate_response(&unsupported_request, &response_message())
+        .expect_err("a response cannot validate a request advertising an unsupported version");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some(PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.16-001")
+    );
+
+    let unmapped = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let error = unmapped
+        .validate_transport(ProfileTransport::Https)
+        .expect_err("a selected result with a missing typed mapping fails closed");
+    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), None);
+}
+
+#[test]
+fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+
+    let missing = result
+        .evaluate_rules(
+            None,
+            None,
+            &[],
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect_err("runtime evaluation fails closed when a mapping is absent");
+    assert_eq!(
+        missing.code(),
+        ProfileValidationErrorCode::MissingRuleMapping
+    );
+    assert_eq!(missing.source_clause_id(), None);
+
+    let incomplete = [TypedRuleMapping {
+        evaluator: None,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    }];
+    let error = result
+        .evaluate_rules(
+            None,
+            None,
+            &incomplete,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect_err("runtime evaluation rejects a mapping without executable code");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::IncompleteRuleMapping
+    );
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
+fn selection_rejects_a_requirement_without_a_typed_rule_mapping() {
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
+    let requirements = [requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    )];
+    let error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-PROFILE"]),
+        &profiles,
+        &requirements,
+        &[],
+    )
+    .expect_err("selection fails closed when its applicable rule has no typed mapping");
+
+    assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
+fn discover_versions_protocol_version_requires_one_integer_major_minor_pair() {
+    let valid = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(protocol_version_is_kmip_2_1(&valid.view()));
+
+    let missing_minor = structure([tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2))]);
+    assert!(!protocol_version_is_kmip_2_1(&missing_minor.view()));
+
+    let duplicate_major = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&duplicate_major.view()));
+
+    let duplicate_minor = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&duplicate_minor.view()));
+
+    let wrong_major_type = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::enumeration(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&wrong_major_type.view()));
+
+    let wrong_minor_type = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::enumeration(1)),
+    ]);
+    assert!(!protocol_version_is_kmip_2_1(&wrong_minor_type.view()));
+
+    let unknown_version_field = structure([
+        tagged(PROTOCOL_VERSION_MAJOR_TAG, Value::integer(2)),
+        tagged(PROTOCOL_VERSION_MINOR_TAG, Value::integer(1)),
+        tagged(PROTOCOL_VERSION_TAG, Value::integer(99)),
+    ]);
+    assert!(protocol_version_is_kmip_2_1(&unknown_version_field.view()));
+}
+
+#[test]
+fn accepted_deviations_cover_only_recommended_and_discouraged_categories() {
+    for category in [
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation,
+    ] {
+        let requirement = requirement("TEST-REQ", category, true);
+        let mapping = TypedRuleMapping {
+            test_evidence: &[],
+            ..mapping("TEST-REQ", category, RuleTestKind::PositiveBehavior, &[])
+        };
+        assert!(validate_mapping("TEST-PROFILE", &requirement, &mapping).is_ok());
+    }
+
+    let requirement = requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        true,
+    );
+    let mapping = TypedRuleMapping {
+        test_evidence: &[],
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &mapping)
+        .expect_err("a deviation cannot replace required behavior verification");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::MissingCategoryTest
+    );
+}
+
+#[test]
+fn a_complete_synthetic_mapping_allows_selection_without_target_membership() {
+    let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
+    let requirements = [requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    )];
+    let mappings = [mapping(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        RuleTestKind::PositiveBehavior,
+        &CONSTRAINTS_HTTPS,
+    )];
+    let selection = ProfileValidationSelection::new(["TEST-PROFILE"]);
+    assert_eq!(&["TEST-PROFILE".to_owned()], selection.profile_ids());
+    assert_eq!(
+        format!("{selection:?}"),
+        "ProfileValidationSelection { profile_count: 1 }"
+    );
+
+    let result = validate_selection_with_registry(&selection, &profiles, &requirements, &mappings)
+        .expect("complete synthetic code and verification evidence is selectable");
+
+    assert_eq!(result.profile_ids(), &["TEST-PROFILE"]);
+    assert_eq!(result.requirement_ids(), &["TEST-REQ"]);
+}
+
+#[test]
+fn mapped_request_and_response_rejections_keep_stable_source_metadata() {
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let required = requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    );
+    let outbound_mapping = [TypedRuleMapping {
+        evaluator: Some(reject_outbound_rule),
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    }];
+    assert!(validate_mapping("TEST-PROFILE", &required, &outbound_mapping[0]).is_ok());
+    let request = request_message();
+    let error = result
+        .evaluate_rules(
+            Some(&request),
+            None,
+            &outbound_mapping,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect_err("an outbound rule can reject the request before transport");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+
+    let response_mapping = [TypedRuleMapping {
+        evaluator: Some(reject_response_rule),
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    }];
+    assert!(validate_mapping("TEST-PROFILE", &required, &response_mapping[0]).is_ok());
+    let error = result
+        .evaluate_rules(
+            Some(&request),
+            Some((&request, &response_message())),
+            &response_mapping,
+            ProfileValidationErrorCode::ResponseRuleRejected,
+        )
+        .expect_err("a response rule can reject a received response");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
+fn minimum_capability_rules_do_not_reject_an_extra_base_protocol_operation() {
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let mapping = [mapping(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        RuleTestKind::PositiveBehavior,
+        &[],
+    )];
+    let request = request_message();
+    assert_eq!(
+        request
+            .batch_items()
+            .next()
+            .and_then(crate::RequestBatchItemView::operation),
+        Some(0x1E),
+        "the synthetic extra operation is Discover Versions"
+    );
+
+    result
+        .evaluate_rules(
+            Some(&request),
+            None,
+            &mapping,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect("an operation outside a profile minimum is not an allowlist violation");
+}
+
+#[test]
+fn selected_transport_constraints_match_or_reject_with_source_ids() {
+    let result = ProfileValidationResult {
+        profile_ids: vec!["TEST-PROFILE".to_owned()],
+        requirement_ids: vec!["TEST-REQ".to_owned()],
+    };
+    let mappings = [mapping(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        RuleTestKind::PositiveBehavior,
+        &CONSTRAINTS_HTTPS,
+    )];
+
+    result
+        .validate_transport_with_mappings(ProfileTransport::Https, &mappings)
+        .expect("HTTPS satisfies its selected typed constraint");
+    let error = result
+        .validate_transport_with_mappings(ProfileTransport::RawTtlvTls, &mappings)
+        .expect_err("raw TTLV/TLS violates the selected HTTPS constraint");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::TransportConstraintRejected
+    );
+    assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
+    assert_eq!(error.requirement_id(), Some("TEST-REQ"));
+    assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
+fn dependency_cycles_and_constraint_conflicts_fail_deterministically() {
+    let cyclic_profiles = [
+        profile("TEST-A", &[], &["TEST-B"]),
+        profile("TEST-B", &[], &["TEST-A"]),
+    ];
+    let cycle_error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-A"]),
+        &cyclic_profiles,
+        &[],
+        &[],
+    )
+    .expect_err("cyclic dependencies are rejected");
+    assert_eq!(
+        cycle_error.code(),
+        ProfileValidationErrorCode::DependencyCycle
+    );
+
+    let profiles = [
+        profile("TEST-A", &["TEST-REQ-A"], &[]),
+        profile("TEST-B", &["TEST-REQ-B"], &[]),
+    ];
+    let requirements = [
+        requirement(
+            "TEST-REQ-A",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+        requirement(
+            "TEST-REQ-B",
+            GeneratedVerificationCategory::RequiredBehavior,
+            false,
+        ),
+    ];
+    let mappings = [
+        mapping(
+            "TEST-REQ-A",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_HTTPS,
+        ),
+        mapping(
+            "TEST-REQ-B",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_RAW_TLS,
+        ),
+    ];
+    let error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-B", "TEST-A"]),
+        &profiles,
+        &requirements,
+        &mappings,
+    )
+    .expect_err("conflicting selected constraints have no order-based resolution");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ConflictingConstraints
+    );
+}
+
+#[test]
+fn missing_evaluator_and_wrong_source_link_fail_closed() {
+    let requirement = requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    );
+    let missing_evaluator = TypedRuleMapping {
+        evaluator: None,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &missing_evaluator)
+        .expect_err("rule metadata without executable code is incomplete");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::IncompleteRuleMapping
+    );
+
+    let wrong_clause = TypedRuleMapping {
+        source_clause_id: "OTHER-CLAUSE",
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &wrong_clause)
+        .expect_err("rule source links must match the catalog");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RuleMappingMismatch
+    );
+
+    let untyped_constraint = TypedRuleMapping {
+        constraints: &UNKNOWN_CONSTRAINT,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &[],
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &untyped_constraint)
+        .expect_err("unknown constraint keys cannot appear executable");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RuleMappingMismatch
+    );
+}
+
+#[test]
+fn validation_error_codes_and_readiness_blockers_have_stable_text() {
+    let validation_codes = [
+        (
+            ProfileValidationErrorCode::EmptySelection,
+            "empty_selection",
+        ),
+        (
+            ProfileValidationErrorCode::DuplicateProfile,
+            "duplicate_profile",
+        ),
+        (
+            ProfileValidationErrorCode::UnknownProfile,
+            "unknown_profile",
+        ),
+        (
+            ProfileValidationErrorCode::ProfileUnavailable,
+            "profile_unavailable",
+        ),
+        (
+            ProfileValidationErrorCode::ConditionalProfileUnsatisfied,
+            "conditional_profile_unsatisfied",
+        ),
+        (
+            ProfileValidationErrorCode::DependencyCycle,
+            "dependency_cycle",
+        ),
+        (
+            ProfileValidationErrorCode::MissingRequirementMetadata,
+            "missing_requirement_metadata",
+        ),
+        (
+            ProfileValidationErrorCode::UnresolvedRequirementScope,
+            "unresolved_requirement_scope",
+        ),
+        (
+            ProfileValidationErrorCode::MissingRuleMapping,
+            "missing_rule_mapping",
+        ),
+        (
+            ProfileValidationErrorCode::IncompleteRuleMapping,
+            "incomplete_rule_mapping",
+        ),
+        (
+            ProfileValidationErrorCode::RuleMappingMismatch,
+            "rule_mapping_mismatch",
+        ),
+        (
+            ProfileValidationErrorCode::MissingCategoryTest,
+            "missing_category_test",
+        ),
+        (
+            ProfileValidationErrorCode::ConflictingConstraints,
+            "conflicting_constraints",
+        ),
+        (
+            ProfileValidationErrorCode::RequestRuleRejected,
+            "request_rule_rejected",
+        ),
+        (
+            ProfileValidationErrorCode::ResponseRuleRejected,
+            "response_rule_rejected",
+        ),
+        (
+            ProfileValidationErrorCode::TransportConstraintRejected,
+            "transport_constraint_rejected",
+        ),
+    ];
+    for (code, expected) in validation_codes {
+        assert_eq!(expected, code.as_str());
+    }
+}
+
+#[test]
+fn readiness_blockers_have_stable_text_and_requirement_ids() {
+    let blockers = [
+        (
+            ProfileReadinessBlocker::MissingRequirementRecord {
+                requirement_id: "REQ-MISSING",
+            },
+            "required requirement evidence is missing",
+            Some("REQ-MISSING"),
+        ),
+        (
+            ProfileReadinessBlocker::FailedRequirementRecord {
+                requirement_id: "REQ-FAILED",
+            },
+            "required requirement evidence failed",
+            Some("REQ-FAILED"),
+        ),
+        (
+            ProfileReadinessBlocker::DuplicateRequirementRecord {
+                requirement_id: "REQ-DUPLICATE",
+            },
+            "requirement evidence record is duplicated",
+            Some("REQ-DUPLICATE"),
+        ),
+        (
+            ProfileReadinessBlocker::UnknownRequirementRecord,
+            "requirement evidence record is unknown",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::RuntimeValidationUnavailable,
+            "runtime profile validation is unavailable",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::MandatoryFixtureUnavailable {
+                test_id: "FIXTURE-1",
+            },
+            "mandatory profile fixture is unavailable",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::ConditionalProfileUnsatisfied,
+            "conditional profile is unsatisfied",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+                profile_id: "PROFILE-DEPENDENCY",
+            },
+            "dependency profile evidence is incomplete",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::VerificationManifestUnavailable,
+            "current verification manifest is unavailable",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::StaleCatalogEvidenceState,
+            "catalog evidence-complete state is stale",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::CatalogEvidenceReviewRequired,
+            "catalog evidence state requires human review",
+            None,
+        ),
+        (
+            ProfileReadinessBlocker::ProfileUnavailable,
+            "profile is outside the KMIPKit 1.0 client scope",
+            None,
+        ),
+    ];
+    for (blocker, expected, requirement_id) in blockers {
+        assert_eq!(expected, blocker.as_str());
+        assert_eq!(requirement_id, blocker.requirement_id());
+        assert_eq!(None, blocker.source_clause_id());
+    }
+    let unresolved = ProfileReadinessBlocker::UnresolvedRequirementScope {
+        requirement_id: "REQ-SCOPE-UNCLEAR",
+        source_clause_id: "CLAUSE-SCOPE-UNCLEAR",
+    };
+    assert_eq!(
+        "profile requirement applicability is unresolved",
+        unresolved.as_str()
+    );
+    assert_eq!(Some("REQ-SCOPE-UNCLEAR"), unresolved.requirement_id());
+    assert_eq!(Some("CLAUSE-SCOPE-UNCLEAR"), unresolved.source_clause_id());
+}
+
+#[test]
+fn validation_error_display_contains_only_stable_identifiers() {
+    let code_only = ProfileValidationError::new(ProfileValidationErrorCode::EmptySelection);
+    assert_eq!(
+        "profile validation failed: empty_selection",
+        code_only.to_string()
+    );
+    assert_eq!(None, code_only.profile_id());
+    assert_eq!(None, code_only.requirement_id());
+    assert_eq!(None, code_only.source_clause_id());
+
+    let profile = ProfileValidationError::for_profile(
+        ProfileValidationErrorCode::UnknownProfile,
+        "TEST-PROFILE",
+    );
+    assert_eq!(Some("TEST-PROFILE"), profile.profile_id());
+    assert_eq!(
+        "profile validation failed: unknown_profile; profile TEST-PROFILE",
+        profile.to_string()
+    );
+
+    let requirement = ProfileValidationError::for_requirement(
+        ProfileValidationErrorCode::MissingRuleMapping,
+        "TEST-PROFILE",
+        "TEST-REQ",
+        Some("TEST-CLAUSE"),
+    );
+    assert_eq!(Some("TEST-REQ"), requirement.requirement_id());
+    assert_eq!(Some("TEST-CLAUSE"), requirement.source_clause_id());
+    assert_eq!(
+        "profile validation failed: missing_rule_mapping; profile TEST-PROFILE; requirement TEST-REQ; source clause TEST-CLAUSE",
+        requirement.to_string()
+    );
+
+    assert!(write!(&mut RejectingWriter, "{code_only}").is_err());
+}
+
+#[test]
+fn readiness_records_classify_duplicates_and_unknown_ids() {
+    let baseline = super::CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == "KMIPKIT-PROFILE-BASELINE-CLIENT")
+        .expect("generated catalog contains Baseline Client");
+    let first = baseline.requirement_ids[0];
+    let records: Vec<_> = baseline
+        .requirement_ids
+        .iter()
+        .map(|requirement_id| ProfileEvidenceRecord::passed(*requirement_id))
+        .chain([ProfileEvidenceRecord::passed(first)])
+        .chain([ProfileEvidenceRecord::passed("UNKNOWN-REQ")])
+        .collect();
+
+    let readiness = ProfileReadiness::evaluate(baseline.profile_id, &records)
+        .expect("generated Baseline Client resolves");
+
+    assert!(!readiness.requirement_records_complete());
+    assert!(
+        readiness
+            .blockers()
+            .contains(&ProfileReadinessBlocker::DuplicateRequirementRecord {
+                requirement_id: first
+            })
+    );
+    assert!(
+        readiness
+            .blockers()
+            .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
+    );
+    assert!(readiness.target_selected());
+    assert!(!readiness.runtime_validation_available());
+    assert!(
+        readiness
+            .blockers()
+            .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
+    );
+    assert_eq!(baseline.profile_id, readiness.profile_id());
+    assert_eq!("evidence_incomplete", readiness.effective_state());
+    assert!(!readiness.published_claim());
+    assert!(ProfileReadiness::evaluate("UNKNOWN-PROFILE", &[]).is_none());
+
+    let failed =
+        ProfileReadiness::evaluate(baseline.profile_id, &[ProfileEvidenceRecord::failed(first)])
+            .expect("generated Baseline Client resolves");
+    assert!(
+        failed
+            .blockers()
+            .contains(&ProfileReadinessBlocker::FailedRequirementRecord {
+                requirement_id: first
+            })
+    );
+}
+
+#[test]
+fn readiness_blocks_conditional_out_of_scope_and_dependent_profiles() {
+    let conditional = ProfileReadiness::evaluate("KMIPKIT-PROFILE-HTTPS-CLIENT", &[])
+        .expect("generated HTTPS Client resolves");
+    assert!(
+        conditional
+            .blockers()
+            .contains(&ProfileReadinessBlocker::ConditionalProfileUnsatisfied)
+    );
+
+    let unavailable = ProfileReadiness::evaluate("KMIPKIT-PROFILE-JSON-CLIENT", &[])
+        .expect("generated JSON Client resolves");
+    assert!(
+        unavailable
+            .blockers()
+            .contains(&ProfileReadinessBlocker::ProfileUnavailable)
+    );
+
+    let dependent = ProfileReadiness::evaluate("KMIPKIT-PROFILE-AES-XTS-CLIENT", &[])
+        .expect("generated AES-XTS Client resolves");
+    assert!(dependent.blockers().contains(
+        &ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+            profile_id: "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        }
+    ));
+}
+
+#[test]
+fn readiness_reconciles_catalog_states_with_blockers() {
+    let mut stale = vec![ProfileReadinessBlocker::RuntimeValidationUnavailable];
+    assert_eq!(
+        "evidence_incomplete",
+        reconcile_effective_state("evidence_complete", &mut stale)
+    );
+    assert!(stale.contains(&ProfileReadinessBlocker::StaleCatalogEvidenceState));
+
+    let mut review_required = Vec::new();
+    assert_eq!(
+        "not_claimed",
+        reconcile_effective_state("not_claimed", &mut review_required)
+    );
+    assert_eq!(
+        vec![ProfileReadinessBlocker::CatalogEvidenceReviewRequired],
+        review_required
+    );
+
+    let repeated = ProfileReadinessBlocker::VerificationManifestUnavailable;
+    let mut unchanged_with_duplicates = vec![repeated, repeated];
+    assert_eq!(
+        "evidence_incomplete",
+        reconcile_effective_state("evidence_incomplete", &mut unchanged_with_duplicates)
+    );
+    assert_eq!(vec![repeated], unchanged_with_duplicates);
+}
+
+#[test]
+fn selection_rejects_missing_catalog_metadata_and_skips_resolved_dependencies() {
+    let empty = validate_selection_with_registry(
+        &ProfileValidationSelection::new(std::iter::empty::<&str>()),
+        &[],
+        &[],
+        &[],
+    )
+    .expect_err("an empty explicit profile selection is invalid");
+    assert_eq!(ProfileValidationErrorCode::EmptySelection, empty.code());
+
+    let unknown_duplicate = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["UNKNOWN", "UNKNOWN"]),
+        &[],
+        &[],
+        &[],
+    )
+    .expect_err("duplicate unknown identifiers are still duplicates");
+    assert_eq!(
+        ProfileValidationErrorCode::DuplicateProfile,
+        unknown_duplicate.code()
+    );
+    assert_eq!(None, unknown_duplicate.profile_id());
+
+    let known_duplicate = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-PROFILE", "TEST-PROFILE"]),
+        &[profile("TEST-PROFILE", &[], &[])],
+        &[],
+        &[],
+    )
+    .expect_err("a known profile cannot be selected twice");
+    assert_eq!(
+        ProfileValidationErrorCode::DuplicateProfile,
+        known_duplicate.code()
+    );
+    assert_eq!(Some("TEST-PROFILE"), known_duplicate.profile_id());
+
+    let unknown = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["UNKNOWN"]),
+        &[],
+        &[],
+        &[],
+    )
+    .expect_err("unknown profiles do not resolve");
+    assert_eq!(ProfileValidationErrorCode::UnknownProfile, unknown.code());
+
+    let empty_requirements = [profile("EMPTY", &[], &[])];
+    let missing_list = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["EMPTY"]),
+        &empty_requirements,
+        &[],
+        &[],
+    )
+    .expect_err("a selected profile must list applicable requirements");
+    assert_eq!(
+        ProfileValidationErrorCode::MissingRequirementMetadata,
+        missing_list.code()
+    );
+
+    let missing_record_profiles = [profile("MISSING-RECORD", &["TEST-REQ"], &[])];
+    let missing_record = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["MISSING-RECORD"]),
+        &missing_record_profiles,
+        &[],
+        &[],
+    )
+    .expect_err("every profile requirement must resolve to metadata");
+    assert_eq!(
+        ProfileValidationErrorCode::MissingRequirementMetadata,
+        missing_record.code()
+    );
+
+    let shared_dependency_profiles = [
+        profile("SHARED", &[], &[]),
+        profile("ROOT-A", &[], &["SHARED"]),
+        profile("ROOT-B", &[], &["SHARED"]),
+    ];
+    let dependency_error = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["ROOT-A", "ROOT-B"]),
+        &shared_dependency_profiles,
+        &[],
+        &[],
+    )
+    .expect_err("empty requirement metadata remains fail-closed after closure resolution");
+    assert_eq!(
+        ProfileValidationErrorCode::MissingRequirementMetadata,
+        dependency_error.code()
+    );
+}
+
+#[test]
+fn passing_evaluator_is_safe_for_absent_and_present_exchange_contexts() {
+    assert!(passing_rule(None, None));
+}
+
+fn secret_data_import_request(
+    key_value: Value,
+    wrapping_data: Option<Value>,
+) -> crate::RequestMessage {
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SECRET_DATA: u32 = 0x0042_0085;
+    const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+
+    let mut key_block_fields = vec![
+        tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+        tagged(KEY_VALUE, key_value),
+    ];
+    if let Some(wrapping_data) = wrapping_data {
+        key_block_fields.push(tagged(KEY_WRAPPING_DATA, wrapping_data));
+    }
+
+    request_message_with_operation_payload(
+        IMPORT_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("secret-data".to_owned()),
+            ),
+            tagged(OBJECT_TYPE, Value::enumeration(7)),
+            tagged(ATTRIBUTES, Value::structure(Structure::new())),
+            tagged(
+                SECRET_DATA,
+                Value::structure(structure([
+                    tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                    tagged(KEY_BLOCK, Value::structure(structure(key_block_fields))),
+                ])),
+            ),
+        ]),
+    )
+}
+
+fn pgp_key_import_request(version: i32, key_bytes: &[u8]) -> crate::RequestMessage {
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const PGP_KEY: u32 = 0x0042_00BD;
+    const PGP_KEY_VERSION: u32 = 0x0042_00BE;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+
+    request_message_with_operation_payload(
+        IMPORT_OPERATION,
+        structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string("pgp-key".to_owned())),
+            tagged(OBJECT_TYPE, Value::enumeration(9)),
+            tagged(ATTRIBUTES, Value::structure(Structure::new())),
+            tagged(
+                PGP_KEY,
+                Value::structure(structure([
+                    tagged(PGP_KEY_VERSION, Value::integer(version)),
+                    tagged(
+                        KEY_BLOCK,
+                        Value::structure(structure([
+                            tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                            tagged(KEY_VALUE, Value::byte_string(key_bytes.to_vec())),
+                        ])),
+                    ),
+                ])),
+            ),
+        ]),
+    )
+}
+
+fn pgp_key_item(fields: impl IntoIterator<Item = Item>) -> Item {
+    tagged(0x0042_00BD, Value::structure(structure(fields)))
+}
+
+fn pgp_key_block_item(fields: impl IntoIterator<Item = Item>) -> Item {
+    tagged(0x0042_0040, Value::structure(structure(fields)))
+}
+
+fn pgp_import_request_with_fields(fields: impl IntoIterator<Item = Item>) -> crate::RequestMessage {
+    let mut payload = vec![tagged(0x0042_0057, Value::enumeration(9))];
+    payload.extend(fields);
+    request_message_with_operation_payload(0x0000_002A, structure(payload))
+}
+
+fn pgp_key_version_item(value: Value) -> Item {
+    tagged(0x0042_00BE, value)
+}
+
+fn pgp_key_format_item(value: Value) -> Item {
+    tagged(0x0042_0042, value)
+}
+
+fn pgp_key_value_item(value: Value) -> Item {
+    tagged(0x0042_0045, value)
+}
+
+fn valid_pgp_key_block_item() -> Item {
+    pgp_key_block_item([
+        pgp_key_format_item(Value::enumeration(1)),
+        pgp_key_value_item(Value::byte_string(b"synthetic-pgp-key".to_vec())),
+    ])
+}
+
+fn valid_pgp_key_item() -> Item {
+    pgp_key_item([
+        pgp_key_version_item(Value::integer(3)),
+        valid_pgp_key_block_item(),
+    ])
+}
+
+fn valid_secret_data_wrapping() -> Value {
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+
+    Value::structure(structure([
+        tagged(WRAPPING_METHOD, Value::enumeration(1)),
+        tagged(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        ),
+    ]))
+}
+
+#[test]
+fn typed_rule_evaluators_fail_closed_without_a_request() {
+    // KMIP Specification v2.1 §§2.7, 4.14, and 4.27; the rules must fail closed
+    // when no request is available to evaluate.
+    assert!(!import_preserves_wrapped_secret_data_shape(None, None));
+    assert!(!client_create_key_pair_domain_parameters_have_valid_wire_types(None, None));
+    assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
+}
+
+#[test]
+fn profile_maps_client_import_of_wrapped_secret_data() {
+    // KMIP Specification v2.1 §2.7/Table 8 permits a wrapped Secret Data Key Value;
+    // §3.1/Table 12 selects its encoding, and §3.3/Table 14 requires key information.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let wrapped_secret_data = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(valid_secret_data_wrapping()),
+    );
+
+    result
+        .validate_request(&wrapped_secret_data)
+        .expect("the selected profile accepts a wrapped Secret Data Import request");
+
+    let unwrapped_secret_data =
+        secret_data_import_request(Value::structure(Structure::new()), None);
+    result.validate_request(&unwrapped_secret_data).expect(
+        "the optional wrapping capability does not require every Secret Data value to be wrapped",
+    );
+
+    let invalid_unwrapped_secret_data = secret_data_import_request(
+        Value::byte_string(b"synthetic-plaintext-secret-data".to_vec()),
+        None,
+    );
+    let error = result
+        .validate_request(&invalid_unwrapped_secret_data)
+        .expect_err("plaintext Key Value must use its Structure encoding");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
+
+    let malformed_wrapping_data = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(Value::integer(1)),
+    );
+    let error = result
+        .validate_request(&malformed_wrapping_data)
+        .expect_err("present Key Wrapping Data must keep its structure type");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
+
+    let incomplete_wrapping_data = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(Value::structure(Structure::new())),
+    );
+    let error = result
+        .validate_request(&incomplete_wrapping_data)
+        .expect_err("wrapped Key Value requires Encryption or MAC/Signature Key Information");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
+}
+
+#[test]
+fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
+    // KMIP Specification v2.1 §§2.7, 3.1, and 3.3; KMIPKIT-REQ-SPEC-2.7-001.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const IMPORT_OPERATION: u32 = 0x0000_002A;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for (label, payload) in malformed_secret_data_import_payloads() {
+        let error = result
+            .validate_request(&request_message_with_operation_payload(
+                IMPORT_OPERATION,
+                payload,
+            ))
+            .expect_err(label);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected,
+            "{label}"
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{label}");
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001"),
+            "{label}"
+        );
+    }
+
+    result
+        .validate_request(&request_message_with_operation_payload(
+            0x0000_0003,
+            Structure::new(),
+        ))
+        .expect("an unrelated Register request is outside the Secret Data Import rule");
+}
+
+fn malformed_secret_data_import_payloads() -> Vec<(&'static str, Structure)> {
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const SECRET_DATA: u32 = 0x0042_0085;
+    const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+
+    let import_payload = |extra_fields: Vec<Item>| {
+        let mut fields = vec![tagged(OBJECT_TYPE, Value::enumeration(7))];
+        fields.extend(extra_fields);
+        structure(fields)
+    };
+    let secret_data = |fields: Vec<Item>| tagged(SECRET_DATA, Value::structure(structure(fields)));
+    let key_block = |fields: Vec<Item>| tagged(KEY_BLOCK, Value::structure(structure(fields)));
+
+    vec![
+        ("missing Object Type", structure([secret_data(Vec::new())])),
+        (
+            "wrong Object Type value type",
+            structure([tagged(
+                OBJECT_TYPE,
+                Value::text_string("Secret Data".to_owned()),
+            )]),
+        ),
+        ("missing Secret Data", import_payload(Vec::new())),
+        (
+            "wrong Secret Data value type",
+            import_payload(vec![tagged(SECRET_DATA, Value::integer(1))]),
+        ),
+        (
+            "missing Secret Data Type",
+            import_payload(vec![secret_data(vec![key_block(Vec::new())])]),
+        ),
+        (
+            "wrong Secret Data Type value type",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::text_string("Password".to_owned())),
+                key_block(Vec::new()),
+            ])]),
+        ),
+        (
+            "missing Key Block",
+            import_payload(vec![secret_data(vec![tagged(
+                SECRET_DATA_TYPE,
+                Value::enumeration(1),
+            )])]),
+        ),
+        (
+            "wrong Key Block value type",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                tagged(KEY_BLOCK, Value::integer(1)),
+            ])]),
+        ),
+        (
+            "missing Key Value",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                key_block(vec![tagged(KEY_FORMAT_TYPE, Value::enumeration(1))]),
+            ])]),
+        ),
+        (
+            "duplicate Key Wrapping Data",
+            import_payload(vec![secret_data(vec![
+                tagged(SECRET_DATA_TYPE, Value::enumeration(1)),
+                key_block(vec![
+                    tagged(
+                        KEY_VALUE,
+                        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+                    ),
+                    tagged(KEY_WRAPPING_DATA, valid_secret_data_wrapping()),
+                    tagged(KEY_WRAPPING_DATA, valid_secret_data_wrapping()),
+                ]),
+            ])]),
+        ),
+    ]
+}
+
+#[test]
+fn profile_rejects_wrapped_secret_data_without_one_wrapping_method() {
+    // KMIP Specification v2.1 §3.3/Table 15 requires one Wrapping Method Enumeration.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let encryption_key_information = || {
+        tagged(
+            ENCRYPTION_KEY_INFORMATION,
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("wrapping-key".to_owned()),
+            )])),
+        )
+    };
+    let malformed_wrapping_data = [
+        Value::structure(structure([encryption_key_information()])),
+        Value::structure(structure([
+            tagged(WRAPPING_METHOD, Value::integer(1)),
+            encryption_key_information(),
+        ])),
+        Value::structure(structure([
+            tagged(WRAPPING_METHOD, Value::enumeration(1)),
+            tagged(WRAPPING_METHOD, Value::enumeration(2)),
+            encryption_key_information(),
+        ])),
+    ];
+
+    for wrapping_data in malformed_wrapping_data {
+        let request = secret_data_import_request(
+            Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+            Some(wrapping_data),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("wrapped Key Value must have exactly one Enumeration Wrapping Method");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+        );
+    }
+}
+
+#[test]
+fn profile_rejects_wrapping_key_information_without_one_text_identifier() {
+    // KMIP Specification v2.1 §3.3 Tables 15–17 define the required key-info identifier.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+    const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let wrapping_data = |information: Vec<Item>| {
+        let mut fields = vec![tagged(WRAPPING_METHOD, Value::enumeration(1))];
+        fields.extend(information);
+        Value::structure(structure(fields))
+    };
+    let encryption_information = |value: Value| tagged(ENCRYPTION_KEY_INFORMATION, value);
+    let mac_signature_information = |value: Value| tagged(MAC_SIGNATURE_KEY_INFORMATION, value);
+    let valid_mac_only = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(wrapping_data(vec![mac_signature_information(
+            Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("mac-key".to_owned()),
+            )])),
+        )])),
+    );
+    result
+        .validate_request(&valid_mac_only)
+        .expect("MAC/Signature Key Information alone is permitted");
+
+    let malformed_wrapping_data = [
+        wrapping_data(vec![encryption_information(Value::structure(
+            Structure::new(),
+        ))]),
+        wrapping_data(vec![encryption_information(Value::structure(structure([
+            tagged(UNIQUE_IDENTIFIER, Value::integer(7)),
+        ])))]),
+        wrapping_data(vec![encryption_information(Value::structure(structure([
+            tagged(UNIQUE_IDENTIFIER, Value::text_string("one".to_owned())),
+            tagged(UNIQUE_IDENTIFIER, Value::text_string("two".to_owned())),
+        ])))]),
+        wrapping_data(vec![encryption_information(Value::integer(1))]),
+        wrapping_data(vec![
+            encryption_information(Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("one".to_owned()),
+            )]))),
+            encryption_information(Value::structure(structure([tagged(
+                UNIQUE_IDENTIFIER,
+                Value::text_string("two".to_owned()),
+            )]))),
+        ]),
+    ];
+
+    for data in malformed_wrapping_data {
+        let request = secret_data_import_request(
+            Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+            Some(data),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("key information needs one Text String Unique Identifier");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+        );
+    }
+}
+
+#[test]
+fn profile_maps_client_register_key_value_location_only_without_key_value() {
+    // KMIP Specification v2.1 §4.27/Table 82 and §6.1.43/Table 291.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let external_key = register_key_value_location_request(true, false);
+    result
+        .validate_request(&external_key)
+        .expect("Register may carry Key Value Location when its Key Block omits Key Value");
+
+    let ordinary_key = register_key_value_location_request(false, true);
+    result
+        .validate_request(&ordinary_key)
+        .expect("Key Value Location remains optional for a request containing Key Value");
+
+    let conflicting_location = register_key_value_location_request(true, true);
+    let error = result
+        .validate_request(&conflicting_location)
+        .expect_err("Key Value Location is scoped to a Register object with no Key Value");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
+    );
+}
+
+#[test]
+fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
+    // KMIP Specification v2.1 §§3.2–3.3, Tables 13–15; §11.18 Table 450; §6.1.43 Table 291.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&register_wrapped_key_value_request(Value::enumeration(2)))
+        .expect(
+            "caller-supplied TTLV-encoded wrapped Key Value with embedded attributes is usable",
+        );
+    result
+        .validate_request(&register_request_with_key_value_location(None, true))
+        .expect("wrapping remains optional for a Register request");
+
+    let malformed = register_wrapped_key_value_request(Value::integer(2));
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("Encoding Option must use its source-defined Enumeration wire type");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.43-005")
+    );
+}
+
+#[test]
+fn profile_maps_client_register_opaque_object_context_custom_attributes() {
+    // KMIP Specification v2.1 §2.3, §4.60/Table 150, and §6.1.43/Table 291.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let payload = opaque_object_register_payload(true);
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    assert_eq!(
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [OBJECT_TYPE_TAG, ATTRIBUTES_TAG, OPAQUE_OBJECT_TAG]
+    );
+    let context_values = fields[1].with_value(|value| match value {
+        ValueView::Structure(attributes) => attributes
+            .children()
+            .iter()
+            .map(vendor_attribute_value_bytes)
+            .collect::<Vec<_>>(),
+        _ => Vec::new(),
+    });
+    assert_eq!(
+        context_values,
+        [Some(b"context-a".to_vec()), Some(b"context-b".to_vec())],
+        "Register preserves repeated caller-supplied Opaque Object context values in order"
+    );
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            opaque_object_register_payload(true),
+        ))
+        .expect("the client can Register an Opaque Object with legacy Custom Attribute context");
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            opaque_object_register_payload(false),
+        ))
+        .expect("using the optional context capability does not make it mandatory");
+}
+
+#[test]
+fn profile_maps_client_register_opaque_object_context_managed_attributes() {
+    // KMIP Specification v2.1 §2.3 and §6.1.43, Tables 291/293.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let managed_payload = managed_opaque_object_register_payload();
+    let managed_payload_view = managed_payload.view();
+    let fields = managed_payload_view.children();
+    assert_eq!(
+        fields
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [OBJECT_TYPE_TAG, ATTRIBUTES_TAG, OPAQUE_OBJECT_TAG],
+        "managed client context is not transmitted as a wire marker"
+    );
+
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            managed_payload,
+        ))
+        .expect("the client can Register an Opaque Object using managed cryptographic attributes");
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            opaque_object_register_payload(false),
+        ))
+        .expect("the optional managed context does not make attributes mandatory");
+}
+
+#[test]
+fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
+    // KMIP Specification v2.1 §2.3 and §6.1.43, Tables 291/293.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for managed_attributes in [
+        structure([
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::integer(3)),
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+        ]),
+        structure([
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::enumeration(3)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+        ]),
+        structure([
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::enumeration(256)),
+        ]),
+    ] {
+        let error = validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                managed_opaque_register_payload_with_attributes(managed_attributes),
+            ))
+            .expect_err("managed cryptographic attributes use their required TTLV wire types");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
+        );
+    }
+}
+
+#[test]
+fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for payload in [
+        Structure::new(),
+        structure([tagged(
+            OBJECT_TYPE_TAG,
+            Value::text_string("not an Enumeration".to_owned()),
+        )]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+        ]),
+    ] {
+        let error = validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect_err("Register requires one well-formed Object Type selector");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
+        );
+    }
+
+    for payload in [
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(8))]),
+    ] {
+        validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect("non-Opaque and attribute-free Register metadata remain outside this capability check");
+    }
+
+    let malformed_attributes = [
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            tagged(ATTRIBUTES_TAG, Value::integer(1)),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            opaque_object_attributes_ttlv([
+                tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+                tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(3)),
+            ]),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+            opaque_object_attributes_ttlv([]),
+            opaque_object_attributes_ttlv([]),
+        ]),
+    ];
+
+    for payload in malformed_attributes {
+        let error = validation
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect_err("malformed managed Opaque Object attribute metadata fails closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+
+    validation
+        .validate_request(&request_message())
+        .expect("the managed Opaque Object rule does not constrain other client operations");
+
+    let register_request = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        managed_opaque_object_register_payload(),
+    );
+    validation
+        .validate_response(
+            &register_request,
+            &get_attributes_response_with_payload(REGISTER_OPERATION_TAG, Structure::new()),
+        )
+        .expect("the client-side capability rule does not revalidate server responses");
+
+    assert!(!crate::profile::client_opaque_object_context_managed_attributes(None, None));
+}
+
+#[test]
+fn profile_opaque_context_capability_does_not_require_or_revalidate_other_register_fields() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let out_of_scope_register_payloads = [
+        Structure::new(),
+        structure([tagged(
+            OBJECT_TYPE_TAG,
+            Value::text_string("not an Enumeration".to_owned()),
+        )]),
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(8))]),
+    ];
+
+    for payload in out_of_scope_register_payloads {
+        result
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect("the optional context rule only checks an Opaque Register's Attributes");
+    }
+}
+
+#[test]
+fn profile_maps_client_get_attributes_opaque_object_custom_context() {
+    // KMIP Specification v2.1 §2.3 and §6.1.20/Table 224.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("opaque-object".to_owned()),
+        )]),
+    );
+    let response = opaque_context_get_attributes_response();
+    let response_item = response
+        .batch_items()
+        .next()
+        .expect("the Get Attributes response contains one result item");
+    let typed_response = crate::GetAttributesResponse::try_from_response_item(response_item)
+        .expect("Get Attributes retains generic Vendor Attribute values");
+    let attributes = typed_response
+        .attributes()
+        .expect("the successful response contains its ordered attributes");
+    assert_eq!(
+        attributes
+            .as_items()
+            .iter()
+            .map(vendor_attribute_value_bytes)
+            .collect::<Vec<_>>(),
+        [Some(b"context-a".to_vec()), Some(b"context-b".to_vec())]
+    );
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    validation
+        .validate_response(&request, &response)
+        .expect("the client can retrieve the same ordered Opaque Object context attributes");
+}
+
+#[test]
+fn profile_rejects_malformed_opaque_object_context_shapes() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let invalid_payloads = malformed_opaque_register_metadata_payloads();
+
+    for payload in invalid_payloads {
+        let error = result
+            .validate_request(&request_message_with_operation_payload(
+                REGISTER_OPERATION_TAG,
+                payload,
+            ))
+            .expect_err("malformed Opaque Object context must fail closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-001")
+        );
+    }
+
+    result
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+        ))
+        .expect("the Opaque Object capability rule does not constrain other object types");
+    result
+        .validate_request(&request_message())
+        .expect("the Opaque Object capability rule does not constrain unrelated operations");
+    assert!(!client_opaque_object_context_custom_attributes(None, None));
+}
+
+#[test]
+fn profile_rejects_malformed_opaque_context_get_attributes_responses() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("opaque-object".to_owned()),
+        )]),
+    );
+
+    result
+        .validate_response(
+            &request,
+            &get_attributes_response_with_payload(
+                GET_ATTRIBUTES_OPERATION,
+                structure([tagged(
+                    UNIQUE_IDENTIFIER_TAG,
+                    Value::text_string("opaque-object".to_owned()),
+                )]),
+            ),
+        )
+        .expect("the optional Attributes field may be absent from a Get Attributes response");
+
+    let malformed_responses = [
+        get_attributes_response_with_payload(
+            GET_ATTRIBUTES_OPERATION,
+            structure([
+                tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+                tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+            ]),
+        ),
+        get_attributes_response_with_payload(
+            GET_ATTRIBUTES_OPERATION,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::text_string("not a Structure".to_owned()),
+            )]),
+        ),
+        get_attributes_response_with_payload(
+            GET_ATTRIBUTES_OPERATION,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    VENDOR_ATTRIBUTE_TAG,
+                    Value::text_string("not a Vendor Attribute structure".to_owned()),
+                )])),
+            )]),
+        ),
+    ];
+
+    for response in malformed_responses {
+        let error = result
+            .validate_response(&request, &response)
+            .expect_err("malformed returned Vendor Attributes must fail closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::ResponseRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-001")
+        );
+    }
+
+    result
+        .validate_response(
+            &request_message(),
+            &opaque_context_get_attributes_response(),
+        )
+        .expect("a response to another operation is outside this optional capability");
+    let mismatched_operation = get_attributes_response_with_payload(0x0000_001E, Structure::new());
+    let error = result
+        .validate_response(&request, &mismatched_operation)
+        .expect_err("a Get Attributes request requires its matching response operation");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::ResponseRuleRejected
+    );
+}
+
+#[test]
+fn profile_maps_client_get_attributes_response_x509_values() {
+    let request =
+        request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, Structure::new());
+    let response = get_attributes_x509_response();
+    let response_item = response
+        .batch_items()
+        .next()
+        .expect("test response contains one Get Attributes batch item");
+    let typed_response = crate::GetAttributesResponse::try_from_response_item(response_item)
+        .expect("the typed response model accepts the X.509 Byte String attributes");
+    let attributes = typed_response
+        .attributes()
+        .expect("successful Get Attributes exposes its attributes");
+    let retained_values = attributes
+        .as_items()
+        .iter()
+        .map(|attribute| {
+            let value = attribute.with_value(|value| match value {
+                ValueView::ByteString(bytes) => Some(bytes.to_vec()),
+                _ => None,
+            });
+            (attribute.tag().raw(), value)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        retained_values,
+        [
+            (ISSUER_ALTERNATIVE_NAME_TAG, Some(b"issuer-name-a".to_vec())),
+            (SUBJECT_DISTINGUISHED_NAME_TAG, Some(Vec::new())),
+            (
+                SUBJECT_ALTERNATIVE_NAME_TAG,
+                Some(b"subject-name-a".to_vec())
+            ),
+            (ISSUER_ALTERNATIVE_NAME_TAG, Some(b"issuer-name-b".to_vec())),
+            (
+                SUBJECT_ALTERNATIVE_NAME_TAG,
+                Some(b"subject-name-b".to_vec())
+            ),
+        ],
+        "the response model preserves empty and repeated X.509 values in source order"
+    );
+
+    let selected = ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-TEST-CLIENT".to_owned()],
+        requirement_ids: [
+            "KMIPKIT-REQ-SPEC-4.62-003",
+            "KMIPKIT-REQ-SPEC-4.63-004",
+            "KMIPKIT-REQ-SPEC-4.63-005",
+        ]
+        .into_iter()
+        .map(str::to_owned)
+        .collect(),
+    };
+    selected
+        .validate_request(&request)
+        .expect("response-only optional rules do not reject the matching outbound request");
+    selected
+        .validate_response(&request, &response)
+        .expect("mapped client response rules accept the retained optional X.509 values");
+    selected
+        .validate_response(&request_message(), &response_message())
+        .expect("X.509 response rules do not constrain unrelated operations");
+}
+
+#[test]
+fn profile_rejects_malformed_register_key_value_location_members() {
+    // KMIP Specification v2.1 §4.27/Table 82 requires both typed members.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let malformed_attributes = [
+        structure([tagged(
+            KEY_VALUE_LOCATION_VALUE,
+            Value::text_string("pkcs11:object=key-1".to_owned()),
+        )]),
+        structure([tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2))]),
+        structure([
+            tagged(
+                KEY_VALUE_LOCATION_VALUE,
+                Value::byte_string(b"pkcs11:object=key-1".to_vec()),
+            ),
+            tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+        ]),
+        structure([
+            tagged(
+                KEY_VALUE_LOCATION_VALUE,
+                Value::text_string("pkcs11:object=key-1".to_owned()),
+            ),
+            tagged(KEY_VALUE_LOCATION_TYPE, Value::integer(2)),
+        ]),
+    ];
+
+    for malformed in malformed_attributes {
+        let location = tagged(KEY_VALUE_LOCATION, Value::structure(malformed));
+        let request = register_request_with_key_value_location(Some(location), false);
+        let error = result
+            .validate_request(&request)
+            .expect_err("Key Value Location must contain one required field of each type");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
+        );
+    }
+}
+
+#[test]
+fn profile_rejects_malformed_register_object_key_block_shapes_for_key_value_location() {
+    // KMIP Specification v2.1 §4.27/Table 82 and §6.1.43/Table 291.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_VALUE: u32 = 0x0042_0045;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let key_value_location = || {
+        tagged(
+            KEY_VALUE_LOCATION,
+            Value::structure(structure([
+                tagged(
+                    KEY_VALUE_LOCATION_VALUE,
+                    Value::text_string("pkcs11:object=key-1".to_owned()),
+                ),
+                tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+            ])),
+        )
+    };
+    let valid_key_block = || tagged(KEY_BLOCK, Value::structure(Structure::new()));
+    let malformed_objects = [
+        tagged(SYMMETRIC_KEY, Value::structure(Structure::new())),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([valid_key_block(), valid_key_block()])),
+        ),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                KEY_BLOCK,
+                Value::structure(structure([
+                    tagged(KEY_VALUE, Value::byte_string(b"key-a".to_vec())),
+                    tagged(KEY_VALUE, Value::byte_string(b"key-b".to_vec())),
+                ])),
+            )])),
+        ),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                KEY_BLOCK,
+                Value::text_string("not a Structure".to_owned()),
+            )])),
+        ),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::text_string("not an Object Structure".to_owned()),
+        ),
+    ];
+
+    for object in malformed_objects {
+        let request = request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([
+                tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+                tagged(
+                    ATTRIBUTES_TAG,
+                    Value::structure(structure([key_value_location()])),
+                ),
+                object,
+            ]),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("Key Value Location requires one well-formed Key Block without Key Value");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+}

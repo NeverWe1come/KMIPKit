@@ -24,7 +24,7 @@ const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const DATA: u32 = 0x0042_00C2;
-const SIGNATURE_DATA: u32 = 0x0042_00C7;
+const SIGNATURE_DATA: u32 = 0x0042_00C3;
 const CORRELATION_VALUE: u32 = 0x0042_00D6;
 const INIT_INDICATOR: u32 = 0x0042_00D7;
 const FINAL_INDICATOR: u32 = 0x0042_00D8;
@@ -123,6 +123,10 @@ fn request_requires_signature_data_for_single_part_and_omits_it_for_multipart() 
     assert_eq!(
         field_tags(&actual),
         [CORRELATION_VALUE, INIT_INDICATOR, FINAL_INDICATOR]
+    );
+    assert!(
+        !field_tags(&actual).contains(&SIGNATURE_DATA),
+        "multi-part requests omit Signature Data"
     );
 }
 

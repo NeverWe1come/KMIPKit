@@ -133,6 +133,8 @@ fn synthetic_big_integer_fixture_item_is_parsed_without_exposing_its_bytes() {
         1,
         &mut item_count,
         true,
+        OasisProfileFixtureBindings::default(),
+        false,
     )
     .expect("synthetic BigInteger fixture item parses");
 

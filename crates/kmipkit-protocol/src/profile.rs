@@ -1,0 +1,2138 @@
+//! Explicit, fail-closed client profile selection.
+//!
+//! Generated catalog records describe applicability and source obligations.
+//! Only explicitly mapped rules with category-matched executable verification
+//! are enforced; remaining unresolved or unmapped obligations keep a profile
+//! unavailable for runtime validation. The profile prerequisite is KMIP
+//! Specification v2.1 §14.1; Baseline Client's inherited profile closure
+//! follows KMIP Profiles v2.1 §6.1.
+
+use std::collections::{BTreeSet, HashMap};
+use std::error::Error;
+use std::fmt;
+
+use kmipkit_ttlv::{Item, StructureView, ValueView};
+
+use crate::profiles_generated::{
+    CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedClientProfile, GeneratedClientRequirement,
+    GeneratedVerificationCategory,
+};
+use crate::{RequestMessage, ResponseMessage};
+
+/// Stable reason that explicit profile validation could not be prepared.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ProfileValidationErrorCode {
+    /// No profile was explicitly selected.
+    EmptySelection,
+    /// The selection repeats a profile identifier.
+    DuplicateProfile,
+    /// The identifier does not resolve to a generated client profile.
+    UnknownProfile,
+    /// The profile is outside the approved client product scope.
+    ProfileUnavailable,
+    /// A conditional profile has no satisfied typed condition in this release.
+    ConditionalProfileUnsatisfied,
+    /// The generated dependency graph contains a cycle.
+    DependencyCycle,
+    /// A profile closure references a missing generated requirement record.
+    MissingRequirementMetadata,
+    /// A linked client obligation has no reviewed applicability disposition.
+    UnresolvedRequirementScope,
+    /// An applicable requirement has no complete typed rule mapping.
+    MissingRuleMapping,
+    /// A typed mapping is present but lacks an executable evaluator.
+    IncompleteRuleMapping,
+    /// A typed mapping does not cite the exact requirement category or clause.
+    RuleMappingMismatch,
+    /// A mapping does not contain the category-appropriate test reference.
+    MissingCategoryTest,
+    /// Selected rules require incompatible values for the same typed constraint.
+    ConflictingConstraints,
+    /// A mapped rule rejected the outbound request.
+    RequestRuleRejected,
+    /// A mapped rule rejected the received response.
+    ResponseRuleRejected,
+    /// The configured transport violates a selected profile rule.
+    TransportConstraintRejected,
+}
+
+impl ProfileValidationErrorCode {
+    /// Returns the stable machine-readable error code.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::EmptySelection => "empty_selection",
+            Self::DuplicateProfile => "duplicate_profile",
+            Self::UnknownProfile => "unknown_profile",
+            Self::ProfileUnavailable => "profile_unavailable",
+            Self::ConditionalProfileUnsatisfied => "conditional_profile_unsatisfied",
+            Self::DependencyCycle => "dependency_cycle",
+            Self::MissingRequirementMetadata => "missing_requirement_metadata",
+            Self::UnresolvedRequirementScope => "unresolved_requirement_scope",
+            Self::MissingRuleMapping => "missing_rule_mapping",
+            Self::IncompleteRuleMapping => "incomplete_rule_mapping",
+            Self::RuleMappingMismatch => "rule_mapping_mismatch",
+            Self::MissingCategoryTest => "missing_category_test",
+            Self::ConflictingConstraints => "conflicting_constraints",
+            Self::RequestRuleRejected => "request_rule_rejected",
+            Self::ResponseRuleRejected => "response_rule_rejected",
+            Self::TransportConstraintRejected => "transport_constraint_rejected",
+        }
+    }
+}
+
+/// The KMIP 1.0 transport selected for one client exchange.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ProfileTransport {
+    /// Raw TTLV records over TLS.
+    RawTtlvTls,
+    /// TTLV over HTTPS using HTTP/1.1.
+    Https,
+}
+
+impl ProfileTransport {
+    const fn as_rule_value(self) -> &'static str {
+        match self {
+            Self::RawTtlvTls => "raw_tls",
+            Self::Https => "https",
+        }
+    }
+}
+
+/// Explicit profile IDs requested for one client exchange.
+#[derive(Clone, Eq, PartialEq)]
+pub struct ProfileValidationSelection {
+    profile_ids: Vec<String>,
+}
+
+impl ProfileValidationSelection {
+    /// Creates an explicit selection. Validation resolves the IDs and their
+    /// dependencies against generated catalog metadata.
+    #[must_use]
+    pub fn new<I, S>(profile_ids: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        Self {
+            profile_ids: profile_ids.into_iter().map(Into::into).collect(),
+        }
+    }
+
+    /// Returns the explicitly selected profile IDs in caller order.
+    #[must_use]
+    pub fn profile_ids(&self) -> &[String] {
+        &self.profile_ids
+    }
+
+    /// Resolves profile dependencies and verifies that every applicable
+    /// requirement has a typed rule mapping. Product target membership is not
+    /// consulted. Profiles fail closed while any applicable requirement
+    /// remains unresolved or unmapped.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable source-backed error for unknown, duplicate,
+    /// unavailable, conditional, unresolved-scope, cyclic, incomplete, or
+    /// empty selections.
+    pub fn validate(&self) -> Result<ProfileValidationResult, ProfileValidationError> {
+        validate_selection(self, CLIENT_PROFILES, CLIENT_REQUIREMENTS)
+    }
+}
+
+impl fmt::Debug for ProfileValidationSelection {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ProfileValidationSelection")
+            .field("profile_count", &self.profile_ids.len())
+            .finish()
+    }
+}
+
+/// A profile selection that has resolved all dependencies and rule coverage.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProfileValidationResult {
+    profile_ids: Vec<String>,
+    requirement_ids: Vec<String>,
+}
+
+impl ProfileValidationResult {
+    /// Returns the selected profiles and their dependency closure in stable order.
+    #[must_use]
+    pub fn profile_ids(&self) -> &[String] {
+        &self.profile_ids
+    }
+
+    /// Returns all applicable requirement IDs in stable order.
+    #[must_use]
+    pub fn requirement_ids(&self) -> &[String] {
+        &self.requirement_ids
+    }
+
+    /// Checks typed transport constraints attached to the selected rules.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable source-backed error when a selected rule requires a
+    /// different transport or its mapping is no longer present.
+    pub fn validate_transport(
+        &self,
+        transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        self.validate_transport_with_mappings(transport, TYPED_RULE_MAPPINGS)
+    }
+
+    fn validate_transport_with_mappings(
+        &self,
+        transport: ProfileTransport,
+        rule_mappings: &[TypedRuleMapping],
+    ) -> Result<(), ProfileValidationError> {
+        for requirement_id in &self.requirement_ids {
+            let profile_id = self.profile_id_for_requirement(requirement_id);
+            let Some(mapping) = rule_mappings
+                .iter()
+                .find(|mapping| mapping.requirement_id == requirement_id.as_str())
+            else {
+                return Err(ProfileValidationError::for_requirement(
+                    ProfileValidationErrorCode::MissingRuleMapping,
+                    profile_id,
+                    requirement_id,
+                    None,
+                ));
+            };
+            for constraint in mapping.constraints {
+                if constraint.key == "transport" && constraint.value != transport.as_rule_value() {
+                    return Err(ProfileValidationError::for_requirement(
+                        ProfileValidationErrorCode::TransportConstraintRejected,
+                        profile_id,
+                        requirement_id,
+                        Some(mapping.source_clause_id),
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Evaluates the selected typed rules against one complete outbound KMIP
+    /// request before the client sends it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable requirement and source-clause error when a mapped
+    /// evaluator rejects the request or the validated registry is no longer
+    /// complete.
+    pub fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        self.evaluate_rules(
+            Some(request),
+            None,
+            TYPED_RULE_MAPPINGS,
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+    }
+
+    /// Evaluates the selected typed rules against one received response while
+    /// retaining its original request context.
+    ///
+    /// # Errors
+    ///
+    /// Returns a stable requirement and source-clause error when a mapped
+    /// evaluator rejects the response or the validated registry is no longer
+    /// complete.
+    pub fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        self.evaluate_rules(
+            Some(request),
+            Some((request, response)),
+            TYPED_RULE_MAPPINGS,
+            ProfileValidationErrorCode::ResponseRuleRejected,
+        )
+    }
+
+    fn evaluate_rules(
+        &self,
+        request: Option<&RequestMessage>,
+        response: Option<(&RequestMessage, &ResponseMessage)>,
+        rule_mappings: &[TypedRuleMapping],
+        rejection_code: ProfileValidationErrorCode,
+    ) -> Result<(), ProfileValidationError> {
+        for requirement_id in &self.requirement_ids {
+            let profile_id = self.profile_id_for_requirement(requirement_id);
+            let Some(mapping) = rule_mappings
+                .iter()
+                .find(|mapping| mapping.requirement_id == requirement_id.as_str())
+            else {
+                return Err(ProfileValidationError::for_requirement(
+                    ProfileValidationErrorCode::MissingRuleMapping,
+                    profile_id,
+                    requirement_id,
+                    None,
+                ));
+            };
+            let Some(evaluator) = mapping.evaluator else {
+                return Err(ProfileValidationError::for_requirement(
+                    ProfileValidationErrorCode::IncompleteRuleMapping,
+                    profile_id,
+                    requirement_id,
+                    Some(mapping.source_clause_id),
+                ));
+            };
+            if !evaluator(request, response) {
+                return Err(ProfileValidationError::for_requirement(
+                    rejection_code,
+                    profile_id,
+                    requirement_id,
+                    Some(mapping.source_clause_id),
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn profile_id_for_requirement(&self, requirement_id: &str) -> &str {
+        self.profile_ids
+            .iter()
+            .find(|profile_id| {
+                find_profile(CLIENT_PROFILES, profile_id)
+                    .is_some_and(|profile| profile.requirement_ids.contains(&requirement_id))
+            })
+            .map_or_else(
+                || self.profile_ids.first().map_or("", String::as_str),
+                String::as_str,
+            )
+    }
+}
+
+/// One caller-visible local record for a stable profile requirement.
+///
+/// These records help diagnose catalog and implementation coverage. They are
+/// not CI results and cannot establish release evidence or publish a claim.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProfileEvidenceRecord {
+    requirement_id: String,
+    passed: bool,
+}
+
+impl ProfileEvidenceRecord {
+    /// Creates a local record that reports its requirement check passed.
+    #[must_use]
+    pub fn passed(requirement_id: impl Into<String>) -> Self {
+        Self {
+            requirement_id: requirement_id.into(),
+            passed: true,
+        }
+    }
+
+    /// Creates a local record that reports its requirement check failed.
+    #[must_use]
+    pub fn failed(requirement_id: impl Into<String>) -> Self {
+        Self {
+            requirement_id: requirement_id.into(),
+            passed: false,
+        }
+    }
+}
+
+/// Stable reasons that local profile evidence cannot be considered complete.
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum ProfileReadinessBlocker {
+    /// A required catalog requirement has no local record.
+    MissingRequirementRecord { requirement_id: &'static str },
+    /// A required catalog requirement has a failing local record.
+    FailedRequirementRecord { requirement_id: &'static str },
+    /// A client obligation in the source closure has unresolved applicability.
+    UnresolvedRequirementScope {
+        requirement_id: &'static str,
+        source_clause_id: &'static str,
+    },
+    /// Local evidence repeats one required requirement.
+    DuplicateRequirementRecord { requirement_id: &'static str },
+    /// Local evidence names a requirement outside the generated closure.
+    UnknownRequirementRecord,
+    /// The profile's typed runtime rule registry is incomplete.
+    RuntimeValidationUnavailable,
+    /// A required official fixture is unavailable.
+    MandatoryFixtureUnavailable { test_id: &'static str },
+    /// The profile is conditional and has no satisfied typed condition.
+    ConditionalProfileUnsatisfied,
+    /// A dependency has not reached the catalog evidence-complete state.
+    DependencyEvidenceIncomplete { profile_id: &'static str },
+    /// The required current-run protected-release-push manifest is unavailable.
+    VerificationManifestUnavailable,
+    /// The catalog lifecycle says complete while recomputed evidence is blocked.
+    StaleCatalogEvidenceState,
+    /// Complete local evidence still requires a reviewed catalog lifecycle update.
+    CatalogEvidenceReviewRequired,
+    /// The profile is outside the approved 1.0 client scope.
+    ProfileUnavailable,
+}
+
+impl ProfileReadinessBlocker {
+    /// Returns a stable, redacted diagnostic message.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::MissingRequirementRecord { .. } => "required requirement evidence is missing",
+            Self::FailedRequirementRecord { .. } => "required requirement evidence failed",
+            Self::UnresolvedRequirementScope { .. } => {
+                "profile requirement applicability is unresolved"
+            }
+            Self::DuplicateRequirementRecord { .. } => "requirement evidence record is duplicated",
+            Self::UnknownRequirementRecord => "requirement evidence record is unknown",
+            Self::RuntimeValidationUnavailable => "runtime profile validation is unavailable",
+            Self::MandatoryFixtureUnavailable { .. } => "mandatory profile fixture is unavailable",
+            Self::ConditionalProfileUnsatisfied => "conditional profile is unsatisfied",
+            Self::DependencyEvidenceIncomplete { .. } => {
+                "dependency profile evidence is incomplete"
+            }
+            Self::VerificationManifestUnavailable => "current verification manifest is unavailable",
+            Self::StaleCatalogEvidenceState => "catalog evidence-complete state is stale",
+            Self::CatalogEvidenceReviewRequired => "catalog evidence state requires human review",
+            Self::ProfileUnavailable => "profile is outside the KMIPKit 1.0 client scope",
+        }
+    }
+
+    /// Returns the requirement ID for a requirement-specific blocker.
+    #[must_use]
+    pub const fn requirement_id(self) -> Option<&'static str> {
+        match self {
+            Self::MissingRequirementRecord { requirement_id }
+            | Self::FailedRequirementRecord { requirement_id }
+            | Self::DuplicateRequirementRecord { requirement_id }
+            | Self::UnresolvedRequirementScope { requirement_id, .. } => Some(requirement_id),
+            _ => None,
+        }
+    }
+
+    /// Returns the exact source clause for an unresolved applicability blocker.
+    #[must_use]
+    pub const fn source_clause_id(self) -> Option<&'static str> {
+        match self {
+            Self::UnresolvedRequirementScope {
+                source_clause_id, ..
+            } => Some(source_clause_id),
+            _ => None,
+        }
+    }
+}
+
+/// Read-only local readiness view for one generated client profile.
+///
+/// The result never publishes a claim. Local records, generated metadata, and
+/// runtime rule completeness are insufficient without the repository's
+/// current protected-release-push verification manifest. KMIP Specification
+/// v2.1 §14.1 and Profiles v2.1 §6.1 remain the source for client profile
+/// obligations; this local view is diagnostic evidence only.
+///
+/// # Examples
+///
+/// ```
+/// use kmipkit_protocol::{ProfileReadiness, ProfileReadinessBlocker};
+///
+/// let readiness = ProfileReadiness::evaluate("KMIPKIT-PROFILE-BASELINE-CLIENT", &[])
+///     .expect("Baseline Client is in the generated catalog");
+///
+/// assert!(readiness.target_selected());
+/// assert!(!readiness.runtime_validation_available());
+/// assert_eq!(readiness.effective_state(), "evidence_incomplete");
+/// assert!(!readiness.published_claim());
+/// assert!(readiness
+///     .blockers()
+///     .contains(&ProfileReadinessBlocker::VerificationManifestUnavailable));
+/// ```
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProfileReadiness {
+    profile_id: String,
+    target_selected: bool,
+    runtime_validation_available: bool,
+    effective_state: String,
+    requirement_records_complete: bool,
+    blockers: Vec<ProfileReadinessBlocker>,
+}
+
+fn reconcile_effective_state(
+    catalog_state: &str,
+    blockers: &mut Vec<ProfileReadinessBlocker>,
+) -> String {
+    let effective_state = if catalog_state == "evidence_complete" && !blockers.is_empty() {
+        blockers.push(ProfileReadinessBlocker::StaleCatalogEvidenceState);
+        "evidence_incomplete"
+    } else if catalog_state != "evidence_complete" && blockers.is_empty() {
+        blockers.push(ProfileReadinessBlocker::CatalogEvidenceReviewRequired);
+        catalog_state
+    } else {
+        catalog_state
+    };
+    blockers.sort();
+    blockers.dedup();
+    effective_state.to_owned()
+}
+
+impl ProfileReadiness {
+    /// Evaluates local evidence records against a generated client profile.
+    ///
+    /// Returns `None` when `profile_id` does not resolve to generated client
+    /// metadata. A complete set of local records does not advance catalog state
+    /// or replace a current CI verification manifest.
+    #[must_use]
+    pub fn evaluate(profile_id: &str, records: &[ProfileEvidenceRecord]) -> Option<Self> {
+        let profile = find_profile(CLIENT_PROFILES, profile_id)?;
+        let required_ids: BTreeSet<_> = profile.requirement_ids.iter().copied().collect();
+        let mut evidence_by_requirement: HashMap<&str, Vec<bool>> = HashMap::new();
+        let mut has_unexpected_requirement = false;
+        for record in records {
+            if required_ids.contains(record.requirement_id.as_str()) {
+                evidence_by_requirement
+                    .entry(record.requirement_id.as_str())
+                    .or_default()
+                    .push(record.passed);
+            } else {
+                has_unexpected_requirement = true;
+            }
+        }
+
+        let mut blockers = Vec::new();
+        blockers.extend(
+            profile
+                .unresolved_scope_obligations
+                .iter()
+                .map(
+                    |obligation| ProfileReadinessBlocker::UnresolvedRequirementScope {
+                        requirement_id: obligation.requirement_id,
+                        source_clause_id: obligation.source_clause_id,
+                    },
+                ),
+        );
+        let mut requirement_records_complete = true;
+        for requirement_id in profile.requirement_ids {
+            match evidence_by_requirement.get(requirement_id) {
+                None => {
+                    requirement_records_complete = false;
+                    blockers
+                        .push(ProfileReadinessBlocker::MissingRequirementRecord { requirement_id });
+                }
+                Some(results) if results.len() != 1 => {
+                    requirement_records_complete = false;
+                    blockers.push(ProfileReadinessBlocker::DuplicateRequirementRecord {
+                        requirement_id,
+                    });
+                }
+                Some(results) if results[0] => {}
+                Some(_) => {
+                    requirement_records_complete = false;
+                    blockers
+                        .push(ProfileReadinessBlocker::FailedRequirementRecord { requirement_id });
+                }
+            }
+        }
+        if has_unexpected_requirement {
+            requirement_records_complete = false;
+            blockers.push(ProfileReadinessBlocker::UnknownRequirementRecord);
+        }
+
+        let runtime_validation_available = ProfileValidationSelection::new([profile_id])
+            .validate()
+            .is_ok();
+        if !runtime_validation_available {
+            blockers.push(ProfileReadinessBlocker::RuntimeValidationUnavailable);
+        }
+        if profile.applicability == "conditional" {
+            blockers.push(ProfileReadinessBlocker::ConditionalProfileUnsatisfied);
+        } else if profile.applicability != "client_1_0" {
+            blockers.push(ProfileReadinessBlocker::ProfileUnavailable);
+        }
+        blockers.extend(profile.test_cases.iter().filter_map(|test_case| {
+            (test_case.mandatory_status == "mandatory"
+                && test_case.fixture_availability != "available")
+                .then_some(ProfileReadinessBlocker::MandatoryFixtureUnavailable {
+                    test_id: test_case.test_id,
+                })
+        }));
+        blockers.extend(
+            profile
+                .dependency_profile_ids
+                .iter()
+                .filter_map(|dependency_id| {
+                    find_profile(CLIENT_PROFILES, dependency_id)
+                        .is_none_or(|dependency| dependency.claim_state != "evidence_complete")
+                        .then_some(ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+                            profile_id: dependency_id,
+                        })
+                }),
+        );
+        blockers.push(ProfileReadinessBlocker::VerificationManifestUnavailable);
+
+        let effective_state = reconcile_effective_state(profile.claim_state, &mut blockers);
+
+        Some(Self {
+            profile_id: profile_id.to_owned(),
+            target_selected: profile.selected_target,
+            runtime_validation_available,
+            effective_state,
+            requirement_records_complete,
+            blockers,
+        })
+    }
+
+    /// Returns the generated profile identifier.
+    #[must_use]
+    pub fn profile_id(&self) -> &str {
+        &self.profile_id
+    }
+
+    /// Returns whether the fixed project target manifest selects this profile.
+    #[must_use]
+    pub const fn target_selected(&self) -> bool {
+        self.target_selected
+    }
+
+    /// Returns whether a complete typed rule registry permits runtime validation.
+    #[must_use]
+    pub const fn runtime_validation_available(&self) -> bool {
+        self.runtime_validation_available
+    }
+
+    /// Returns the effective catalog evidence lifecycle without upgrading it.
+    #[must_use]
+    pub fn effective_state(&self) -> &str {
+        &self.effective_state
+    }
+
+    /// Returns whether every local requirement record is present and passing.
+    #[must_use]
+    pub const fn requirement_records_complete(&self) -> bool {
+        self.requirement_records_complete
+    }
+
+    /// Returns deterministic stable blockers for this local readiness view.
+    #[must_use]
+    pub fn blockers(&self) -> &[ProfileReadinessBlocker] {
+        &self.blockers
+    }
+
+    /// Returns `false`; readiness evaluation never publishes a conformance claim.
+    #[must_use]
+    pub const fn published_claim(&self) -> bool {
+        false
+    }
+}
+
+/// Compatibility name emphasizing that this is evidence metadata, not support status.
+pub type ProfileEvidenceReadiness = ProfileReadiness;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum RuleTestKind {
+    PositiveBehavior,
+    NegativeBehavior,
+    RecommendedBehavior,
+    DiscouragedBehaviorAbsent,
+    OptionalCapabilityUsable,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct RuleTestEvidence {
+    test_id: &'static str,
+    kind: RuleTestKind,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct RuleConstraint {
+    key: &'static str,
+    value: &'static str,
+}
+
+type RuleEvaluator = for<'a> fn(
+    Option<&'a RequestMessage>,
+    Option<(&'a RequestMessage, &'a ResponseMessage)>,
+) -> bool;
+
+#[derive(Clone, Copy)]
+struct TypedRuleMapping {
+    requirement_id: &'static str,
+    source_clause_id: &'static str,
+    verification_category: GeneratedVerificationCategory,
+    evaluator: Option<RuleEvaluator>,
+    test_evidence: &'static [RuleTestEvidence],
+    constraints: &'static [RuleConstraint],
+}
+
+const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const PROTOCOL_VERSION: u32 = 0x0042_0069;
+const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
+const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
+const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+const IMPORT_OPERATION: u32 = 0x0000_002A;
+const IMPORT_OBJECT_TYPE: u32 = 0x0042_0057;
+const PGP_KEY_OBJECT_TYPE: u32 = 9;
+const SECRET_DATA_OBJECT_TYPE: u32 = 7;
+const SECRET_DATA: u32 = 0x0042_0085;
+const SECRET_DATA_TYPE: u32 = 0x0042_0086;
+const KEY_BLOCK: u32 = 0x0042_0040;
+const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const KEY_VALUE: u32 = 0x0042_0045;
+const PGP_KEY: u32 = 0x0042_00BD;
+const PGP_KEY_VERSION: u32 = 0x0042_00BE;
+const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+const WRAPPING_METHOD: u32 = 0x0042_009E;
+const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
+const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const ATTRIBUTES: u32 = 0x0042_0125;
+const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
+const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
+const SUBJECT_DISTINGUISHED_NAME: u32 = 0x0042_00B4;
+const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
+const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const ENCODING_OPTION: u32 = 0x0042_00A3;
+const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
+const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
+const REGISTER_OPERATION: u32 = 0x0000_0003;
+const GET_OPERATION: u32 = 0x0000_000A;
+const EXPORT_OPERATION: u32 = 0x0000_002B;
+const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
+const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
+const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const OPAQUE_OBJECT_TYPE: u32 = 8;
+const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
+const GET_KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
+const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+
+fn discover_versions_advertises_only_client_supported_versions(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DISCOVER_VERSIONS_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == PROTOCOL_VERSION)
+                    .all(|field| {
+                        field.with_value(|value| match value {
+                            ValueView::Structure(version) => protocol_version_is_kmip_2_1(&version),
+                            _ => false,
+                        })
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn type_specific_parameters_do_not_infer_remote_object_type(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS)
+                    .all(|field| field.with_value(|value| matches!(value, ValueView::Structure(_))))
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_get_or_export_key_compression_type_is_enumeration(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(operation, GET_OPERATION | EXPORT_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut selector_seen = false;
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == GET_KEY_COMPRESSION_TYPE)
+                    .all(|field| {
+                        !std::mem::replace(&mut selector_seen, true)
+                            && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_may_include_or_omit_unique_batch_item_id(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // Profiles §4.1.2 grants a client choice for a single-item request. This
+    // optional-capability rule must not synthesize or require the identifier;
+    // positive evidence checks that both caller-selected forms remain usable.
+    request.is_some()
+}
+
+fn client_response_preserves_x509_optional_values(
+    _request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some((request, response)) = response else {
+        return true;
+    };
+
+    request
+        .batch_items()
+        .zip(response.batch_items())
+        .all(|(request_item, response_item)| {
+            if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                return true;
+            }
+            if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                return false;
+            }
+
+            response_item
+                .with_response_payload(|payload| {
+                    payload
+                        .children()
+                        .iter()
+                        .filter(|field| field.tag().raw() == ATTRIBUTES)
+                        .all(|field| {
+                            field.with_value(|value| match value {
+                                ValueView::Structure(attributes) => attributes
+                                    .children()
+                                    .iter()
+                                    .filter(|attribute| {
+                                        matches!(
+                                            attribute.tag().raw(),
+                                            ISSUER_ALTERNATIVE_NAME
+                                                | SUBJECT_ALTERNATIVE_NAME
+                                                | SUBJECT_DISTINGUISHED_NAME
+                                        )
+                                    })
+                                    .all(|attribute| {
+                                        attribute.with_value(|value| {
+                                            matches!(value, ValueView::ByteString(_))
+                                        })
+                                    }),
+                                _ => false,
+                            })
+                        })
+                })
+                .unwrap_or(true)
+        })
+}
+
+fn client_create_key_pair_domain_parameters_have_valid_wire_types(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CREATE_KEY_PAIR_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| CREATE_KEY_PAIR_ATTRIBUTE_GROUPS.contains(&field.tag().raw()))
+                    .all(|group| {
+                        group.with_value(|value| match value {
+                            ValueView::Structure(attributes) => attributes
+                                .children()
+                                .iter()
+                                .filter(|attribute| {
+                                    attribute.tag().raw() == CRYPTOGRAPHIC_DOMAIN_PARAMETERS
+                                })
+                                .all(|attribute| {
+                                    attribute.with_value(|value| match value {
+                                        ValueView::Structure(parameters) => parameters
+                                            .children()
+                                            .iter()
+                                            .filter(|parameter| {
+                                                parameter.tag().raw() == QLENGTH_DOMAIN_PARAMETER
+                                            })
+                                            .all(|parameter| {
+                                                parameter.with_value(|value| {
+                                                    matches!(value, ValueView::Integer(_))
+                                                })
+                                            }),
+                                        _ => false,
+                                    })
+                                }),
+                            _ => false,
+                        })
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_opaque_object_context_custom_attributes(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if let Some((request, response)) = response {
+        return request.batch_items().zip(response.batch_items()).all(
+            |(request_item, response_item)| {
+                if request_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return true;
+                }
+                if response_item.operation() != Some(GET_ATTRIBUTES_OPERATION) {
+                    return false;
+                }
+
+                response_item
+                    .with_response_payload(|payload| match field_presence(&payload, ATTRIBUTES) {
+                        FieldPresence::Missing => true,
+                        FieldPresence::Unique(attributes) => attributes.with_value(|value| {
+                            matches!(value, ValueView::Structure(attributes)
+                                    if vendor_attributes_are_well_formed(&attributes))
+                        }),
+                        FieldPresence::Duplicate => false,
+                    })
+                    .unwrap_or(true)
+            },
+        );
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| register_opaque_context_is_well_formed(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn register_opaque_context_is_well_formed(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
+        return true;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return true;
+    };
+    if object_type != OPAQUE_OBJECT_TYPE {
+        return true;
+    }
+
+    match field_presence(payload, REGISTER_ATTRIBUTES) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => vendor_attributes_are_well_formed(&attributes),
+            _ => false,
+        }),
+        FieldPresence::Duplicate => false,
+    }
+}
+
+fn client_opaque_object_context_managed_attributes(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if response.is_some() {
+        return true;
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        if batch_item.operation() != Some(REGISTER_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                register_managed_opaque_attributes_are_well_formed(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn register_managed_opaque_attributes_are_well_formed(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    if object_type != OPAQUE_OBJECT_TYPE {
+        return true;
+    }
+
+    match field_presence(payload, REGISTER_ATTRIBUTES) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                managed_opaque_attribute_types_are_well_formed(&attributes)
+            }
+            _ => false,
+        }),
+        FieldPresence::Duplicate => false,
+    }
+}
+
+fn managed_opaque_attribute_types_are_well_formed(attributes: &StructureView<'_>) -> bool {
+    [
+        (CRYPTOGRAPHIC_USAGE_MASK, false),
+        (CRYPTOGRAPHIC_ALGORITHM, true),
+        (CRYPTOGRAPHIC_LENGTH, false),
+    ]
+    .into_iter()
+    .all(|(tag, enumeration)| match field_presence(attributes, tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(field) => field.with_value(|value| {
+            if enumeration {
+                matches!(value, ValueView::Enumeration(_))
+            } else {
+                matches!(value, ValueView::Integer(_))
+            }
+        }),
+        FieldPresence::Duplicate => false,
+    })
+}
+
+fn vendor_attributes_are_well_formed(attributes: &StructureView<'_>) -> bool {
+    attributes
+        .children()
+        .iter()
+        .filter(|attribute| attribute.tag().raw() == VENDOR_ATTRIBUTE)
+        .all(|attribute| {
+            attribute.with_value(|value| match value {
+                ValueView::Structure(vendor_attribute) => {
+                    crate::attribute::validate_vendor_attribute(&vendor_attribute).is_ok()
+                }
+                _ => false,
+            })
+        })
+}
+
+fn import_preserves_wrapped_secret_data_shape(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != IMPORT_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| import_payload_preserves_secret_data_wrapping(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn import_preserves_pgp_key_versions_and_opaque_bytes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != IMPORT_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| import_payload_preserves_pgp_key(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn import_payload_preserves_pgp_key(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, IMPORT_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    if object_type != PGP_KEY_OBJECT_TYPE {
+        return true;
+    }
+
+    let FieldPresence::Unique(pgp_key) = field_presence(payload, PGP_KEY) else {
+        return false;
+    };
+    pgp_key.with_value(|value| match value {
+        ValueView::Structure(pgp_key) => pgp_key_preserves_required_fields(&pgp_key),
+        _ => false,
+    })
+}
+
+fn pgp_key_preserves_required_fields(pgp_key: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(version) = field_presence(pgp_key, PGP_KEY_VERSION) else {
+        return false;
+    };
+    if !version.with_value(|value| matches!(value, ValueView::Integer(_))) {
+        return false;
+    }
+
+    let FieldPresence::Unique(key_block) = field_presence(pgp_key, KEY_BLOCK) else {
+        return false;
+    };
+    key_block.with_value(|value| match value {
+        ValueView::Structure(key_block) => pgp_key_block_preserves_opaque_value(&key_block),
+        _ => false,
+    })
+}
+
+fn pgp_key_block_preserves_opaque_value(key_block: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(key_format) = field_presence(key_block, KEY_FORMAT_TYPE) else {
+        return false;
+    };
+    if !key_format.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+        return false;
+    }
+
+    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+        return false;
+    };
+    key_value.with_value(|value| matches!(value, ValueView::ByteString(_)))
+}
+
+fn client_register_key_value_location_requires_omitted_key_value(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| register_key_value_location_is_valid(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn client_register_preserves_optional_wrapped_key_value(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                register_payload_preserves_optional_key_wrapping(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn register_payload_preserves_optional_key_wrapping(payload: &StructureView<'_>) -> bool {
+    for object in payload.children().iter().filter(|field| {
+        !matches!(
+            field.tag().raw(),
+            REGISTER_OBJECT_TYPE | REGISTER_ATTRIBUTES | REGISTER_PROTECTION_STORAGE_MASKS
+        )
+    }) {
+        let object_has_valid_key_block = object.with_value(|value| match value {
+            ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+                FieldPresence::Missing => true,
+                FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                    ValueView::Structure(key_block) => {
+                        register_key_block_preserves_optional_wrapping(&key_block)
+                    }
+                    _ => false,
+                }),
+                FieldPresence::Duplicate => false,
+            },
+            _ => true,
+        });
+        if !object_has_valid_key_block {
+            return false;
+        }
+    }
+    true
+}
+
+fn register_key_block_preserves_optional_wrapping(key_block: &StructureView<'_>) -> bool {
+    match field_presence(key_block, KEY_WRAPPING_DATA) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(wrapping_data) => {
+            let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+                return false;
+            };
+            if !key_value.with_value(|value| matches!(value, ValueView::ByteString(_))) {
+                return false;
+            }
+            wrapping_data.with_value(|value| match value {
+                ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                _ => false,
+            })
+        }
+        FieldPresence::Duplicate => false,
+    }
+}
+
+fn register_key_value_location_is_valid(payload: &StructureView<'_>) -> bool {
+    let location = match field_presence(payload, REGISTER_ATTRIBUTES) {
+        FieldPresence::Missing => return true,
+        FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                match field_presence(&attributes, KEY_VALUE_LOCATION) {
+                    FieldPresence::Missing => None,
+                    FieldPresence::Unique(location) => {
+                        Some(location.with_value(|value| match value {
+                            ValueView::Structure(location) => {
+                                key_value_location_members_are_valid(&location)
+                            }
+                            _ => false,
+                        }))
+                    }
+                    FieldPresence::Duplicate => Some(false),
+                }
+            }
+            _ => Some(false),
+        }),
+        FieldPresence::Duplicate => return false,
+    };
+    let Some(location_is_valid) = location else {
+        return true;
+    };
+    location_is_valid && register_object_omits_key_value(payload)
+}
+
+fn key_value_location_members_are_valid(location: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(value) = field_presence(location, KEY_VALUE_LOCATION_VALUE) else {
+        return false;
+    };
+    let FieldPresence::Unique(location_type) = field_presence(location, KEY_VALUE_LOCATION_TYPE)
+    else {
+        return false;
+    };
+
+    value.with_value(|value| matches!(value, ValueView::TextString(_)))
+        && location_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+}
+
+fn register_object_omits_key_value(payload: &StructureView<'_>) -> bool {
+    let mut key_block_count = 0_u8;
+    let mut every_key_block_omits_key_value = true;
+
+    for field in payload.children() {
+        if matches!(
+            field.tag().raw(),
+            REGISTER_OBJECT_TYPE | REGISTER_ATTRIBUTES | REGISTER_PROTECTION_STORAGE_MASKS
+        ) {
+            continue;
+        }
+
+        match register_object_key_value_state(field) {
+            RegisterObjectKeyValueState::NoKeyBlock => {}
+            RegisterObjectKeyValueState::KeyValueOmitted => {
+                key_block_count = key_block_count.saturating_add(1);
+            }
+            RegisterObjectKeyValueState::KeyValuePresent
+            | RegisterObjectKeyValueState::Malformed => {
+                key_block_count = key_block_count.saturating_add(1);
+                every_key_block_omits_key_value = false;
+            }
+        }
+    }
+
+    key_block_count == 1 && every_key_block_omits_key_value
+}
+
+fn register_object_key_value_state(field: &Item) -> RegisterObjectKeyValueState {
+    field.with_value(|value| match value {
+        ValueView::Structure(object) => match field_presence(&object, KEY_BLOCK) {
+            FieldPresence::Missing => RegisterObjectKeyValueState::NoKeyBlock,
+            FieldPresence::Duplicate => RegisterObjectKeyValueState::Malformed,
+            FieldPresence::Unique(key_block) => key_block.with_value(|value| match value {
+                ValueView::Structure(key_block) => match field_presence(&key_block, KEY_VALUE) {
+                    FieldPresence::Missing => RegisterObjectKeyValueState::KeyValueOmitted,
+                    FieldPresence::Unique(_) => RegisterObjectKeyValueState::KeyValuePresent,
+                    FieldPresence::Duplicate => RegisterObjectKeyValueState::Malformed,
+                },
+                _ => RegisterObjectKeyValueState::Malformed,
+            }),
+        },
+        _ => RegisterObjectKeyValueState::NoKeyBlock,
+    })
+}
+
+#[derive(Clone, Copy)]
+enum RegisterObjectKeyValueState {
+    NoKeyBlock,
+    KeyValueOmitted,
+    KeyValuePresent,
+    Malformed,
+}
+
+#[derive(Clone, Copy)]
+enum FieldPresence<'a> {
+    Missing,
+    Unique(&'a Item),
+    Duplicate,
+}
+
+fn field_presence<'a>(structure: &'a StructureView<'_>, tag: u32) -> FieldPresence<'a> {
+    let mut found = None;
+    for field in structure.children() {
+        if field.tag().raw() == tag {
+            if found.is_some() {
+                return FieldPresence::Duplicate;
+            }
+            found = Some(field);
+        }
+    }
+    found.map_or(FieldPresence::Missing, FieldPresence::Unique)
+}
+
+fn import_payload_preserves_secret_data_wrapping(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, IMPORT_OBJECT_TYPE) else {
+        return false;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return false;
+    };
+    if object_type != SECRET_DATA_OBJECT_TYPE {
+        return true;
+    }
+
+    let FieldPresence::Unique(secret_data) = field_presence(payload, SECRET_DATA) else {
+        return false;
+    };
+    secret_data.with_value(|value| match value {
+        ValueView::Structure(secret_data) => secret_data_preserves_wrapping(&secret_data),
+        _ => false,
+    })
+}
+
+fn secret_data_preserves_wrapping(secret_data: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(secret_data_type) = field_presence(secret_data, SECRET_DATA_TYPE)
+    else {
+        return false;
+    };
+    if !secret_data_type.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+        return false;
+    }
+
+    let FieldPresence::Unique(key_block) = field_presence(secret_data, KEY_BLOCK) else {
+        return false;
+    };
+    key_block.with_value(|value| match value {
+        ValueView::Structure(key_block) => key_block_preserves_wrapping(&key_block),
+        _ => false,
+    })
+}
+
+fn key_block_preserves_wrapping(key_block: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+        return false;
+    };
+    let key_value_is_byte_string =
+        key_value.with_value(|value| matches!(value, ValueView::ByteString(_)));
+    match field_presence(key_block, KEY_WRAPPING_DATA) {
+        FieldPresence::Missing => {
+            key_value.with_value(|value| matches!(value, ValueView::Structure(_)))
+        }
+        FieldPresence::Unique(wrapping_data) => {
+            key_value_is_byte_string
+                && wrapping_data.with_value(|value| match value {
+                    ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                    _ => false,
+                })
+        }
+        FieldPresence::Duplicate => false,
+    }
+}
+
+fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(wrapping_method) = field_presence(data, WRAPPING_METHOD) else {
+        return false;
+    };
+    if !wrapping_method.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+        return false;
+    }
+
+    if !key_wrapping_data_has_valid_encoding_option(data) {
+        return false;
+    }
+
+    let mut has_key_information = false;
+    for tag in [ENCRYPTION_KEY_INFORMATION, MAC_SIGNATURE_KEY_INFORMATION] {
+        match field_presence(data, tag) {
+            FieldPresence::Missing => {}
+            FieldPresence::Unique(field) => {
+                if !field.with_value(|value| match value {
+                    ValueView::Structure(information) => {
+                        key_information_has_unique_identifier(&information)
+                    }
+                    _ => false,
+                }) {
+                    return false;
+                }
+                has_key_information = true;
+            }
+            FieldPresence::Duplicate => return false,
+        }
+    }
+    has_key_information
+}
+
+fn key_wrapping_data_has_valid_encoding_option(data: &StructureView<'_>) -> bool {
+    match field_presence(data, ENCODING_OPTION) {
+        FieldPresence::Missing => {}
+        FieldPresence::Unique(encoding_option) => {
+            if !encoding_option.with_value(|value| matches!(value, ValueView::Enumeration(_))) {
+                return false;
+            }
+        }
+        FieldPresence::Duplicate => return false,
+    }
+    true
+}
+
+fn key_information_has_unique_identifier(information: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(unique_identifier) = field_presence(information, UNIQUE_IDENTIFIER)
+    else {
+        return false;
+    };
+    unique_identifier.with_value(|value| matches!(value, ValueView::TextString(_)))
+}
+
+fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
+    let mut major_seen = false;
+    let mut minor_seen = false;
+    let mut major = None;
+    let mut minor = None;
+
+    for field in version.children() {
+        match field.tag().raw() {
+            PROTOCOL_VERSION_MAJOR => {
+                if major_seen {
+                    return false;
+                }
+                major_seen = true;
+                major = field.with_value(|value| match value {
+                    ValueView::Integer(value) => Some(*value),
+                    _ => None,
+                });
+            }
+            PROTOCOL_VERSION_MINOR => {
+                if minor_seen {
+                    return false;
+                }
+                minor_seen = true;
+                minor = field.with_value(|value| match value {
+                    ValueView::Integer(value) => Some(*value),
+                    _ => None,
+                });
+            }
+            _ => {}
+        }
+    }
+
+    major_seen && minor_seen && major == Some(2) && minor == Some(1)
+}
+
+const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_opaque_object_context_custom_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.3-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-002",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_opaque_object_context_managed_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_managed_attributes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.7-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.7-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(import_preserves_wrapped_secret_data_shape),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_import_of_wrapped_secret_data",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_key_compression_type_selector",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_preserves_the_optional_key_compression_type_enumeration",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_supplied_create_key_pair_domain_parameters",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_type_applicable_dsa_q_length_domain_parameter",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.27-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.27-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_key_value_location_requires_omitted_key_value),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_preserves_optional_wrapped_key_value),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_wrapped_key_value_with_embedded_attributes",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.62-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.62-003",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_response_preserves_x509_optional_values),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.63-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-004",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_response_preserves_x509_optional_values),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.63-005",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-005",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_response_preserves_x509_optional_values),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-4.1.2-007",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-007",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_may_include_or_omit_unique_batch_item_id),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_single_item_unique_batch_item_id_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(type_specific_parameters_do_not_infer_remote_object_type),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(type_specific_parameters_do_not_infer_remote_object_type),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(discover_versions_advertises_only_client_supported_versions),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+];
+
+/// Redacted validation failure containing only stable IDs and a fixed code.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProfileValidationError {
+    code: ProfileValidationErrorCode,
+    profile_id: Option<String>,
+    requirement_id: Option<String>,
+    source_clause_id: Option<&'static str>,
+}
+
+impl ProfileValidationError {
+    fn new(code: ProfileValidationErrorCode) -> Self {
+        Self {
+            code,
+            profile_id: None,
+            requirement_id: None,
+            source_clause_id: None,
+        }
+    }
+
+    /// Constructs a stable validation error for cross-crate client tests.
+    #[cfg(feature = "test-support")]
+    #[doc(hidden)]
+    #[must_use]
+    pub fn for_test(
+        code: ProfileValidationErrorCode,
+        profile_id: &'static str,
+        requirement_id: &'static str,
+        source_clause_id: &'static str,
+    ) -> Self {
+        Self::for_requirement(code, profile_id, requirement_id, Some(source_clause_id))
+    }
+
+    fn for_profile(code: ProfileValidationErrorCode, profile_id: &str) -> Self {
+        Self {
+            code,
+            profile_id: Some(profile_id.to_owned()),
+            requirement_id: None,
+            source_clause_id: None,
+        }
+    }
+
+    fn for_requirement(
+        code: ProfileValidationErrorCode,
+        profile_id: &str,
+        requirement_id: &str,
+        source_clause_id: Option<&'static str>,
+    ) -> Self {
+        Self {
+            code,
+            profile_id: Some(profile_id.to_owned()),
+            requirement_id: Some(requirement_id.to_owned()),
+            source_clause_id,
+        }
+    }
+
+    /// Returns the stable machine-readable failure code.
+    #[must_use]
+    pub const fn code(&self) -> ProfileValidationErrorCode {
+        self.code
+    }
+
+    /// Returns the profile involved in the failure, when it resolved.
+    #[must_use]
+    pub fn profile_id(&self) -> Option<&str> {
+        self.profile_id.as_deref()
+    }
+
+    /// Returns the source-backed requirement involved in the failure.
+    #[must_use]
+    pub fn requirement_id(&self) -> Option<&str> {
+        self.requirement_id.as_deref()
+    }
+
+    /// Returns the exact source clause for a requirement failure.
+    #[must_use]
+    pub const fn source_clause_id(&self) -> Option<&'static str> {
+        self.source_clause_id
+    }
+}
+
+impl fmt::Display for ProfileValidationError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "profile validation failed: {}",
+            self.code.as_str()
+        )?;
+        if let Some(profile_id) = &self.profile_id {
+            write!(formatter, "; profile {profile_id}")?;
+        }
+        if let Some(requirement_id) = &self.requirement_id {
+            write!(formatter, "; requirement {requirement_id}")?;
+        }
+        if let Some(source_clause_id) = self.source_clause_id {
+            write!(formatter, "; source clause {source_clause_id}")?;
+        }
+        Ok(())
+    }
+}
+
+impl Error for ProfileValidationError {}
+
+fn validate_selection(
+    selection: &ProfileValidationSelection,
+    profiles: &[GeneratedClientProfile],
+    requirements: &[GeneratedClientRequirement],
+) -> Result<ProfileValidationResult, ProfileValidationError> {
+    validate_selection_with_registry(selection, profiles, requirements, TYPED_RULE_MAPPINGS)
+}
+
+fn validate_selection_with_registry(
+    selection: &ProfileValidationSelection,
+    profiles: &[GeneratedClientProfile],
+    requirements: &[GeneratedClientRequirement],
+    rule_mappings: &[TypedRuleMapping],
+) -> Result<ProfileValidationResult, ProfileValidationError> {
+    if selection.profile_ids.is_empty() {
+        return Err(ProfileValidationError::new(
+            ProfileValidationErrorCode::EmptySelection,
+        ));
+    }
+
+    let mut unique_ids = BTreeSet::new();
+    for profile_id in &selection.profile_ids {
+        if !unique_ids.insert(profile_id.as_str()) {
+            return Err(if find_profile(profiles, profile_id).is_some() {
+                ProfileValidationError::for_profile(
+                    ProfileValidationErrorCode::DuplicateProfile,
+                    profile_id,
+                )
+            } else {
+                ProfileValidationError::new(ProfileValidationErrorCode::DuplicateProfile)
+            });
+        }
+    }
+
+    let mut ordered_roots = selection.profile_ids.clone();
+    ordered_roots.sort();
+    let mut resolved_ids = BTreeSet::new();
+    let mut visiting_ids = BTreeSet::new();
+    let mut dependency_order = Vec::new();
+    for profile_id in &ordered_roots {
+        resolve_profile(
+            profile_id,
+            profiles,
+            &mut resolved_ids,
+            &mut visiting_ids,
+            &mut dependency_order,
+        )?;
+    }
+
+    let mut requirement_ids = BTreeSet::new();
+    let mut constraints = std::collections::BTreeMap::new();
+    for profile_id in &dependency_order {
+        let profile = find_profile(profiles, profile_id).ok_or_else(|| {
+            ProfileValidationError::for_profile(
+                ProfileValidationErrorCode::UnknownProfile,
+                profile_id,
+            )
+        })?;
+        if let Some(obligation) = profile.unresolved_scope_obligations.first() {
+            return Err(ProfileValidationError::for_requirement(
+                ProfileValidationErrorCode::UnresolvedRequirementScope,
+                profile_id,
+                obligation.requirement_id,
+                Some(obligation.source_clause_id),
+            ));
+        }
+        if profile.requirement_ids.is_empty() {
+            return Err(ProfileValidationError::for_profile(
+                ProfileValidationErrorCode::MissingRequirementMetadata,
+                profile_id,
+            ));
+        }
+        for requirement_id in profile.requirement_ids {
+            let requirement = requirements
+                .iter()
+                .find(|requirement| requirement.requirement_id == *requirement_id)
+                .ok_or_else(|| {
+                    ProfileValidationError::for_profile(
+                        ProfileValidationErrorCode::MissingRequirementMetadata,
+                        profile_id,
+                    )
+                })?;
+            let Some(mapping) = rule_mappings
+                .iter()
+                .find(|mapping| mapping.requirement_id == requirement.requirement_id)
+            else {
+                return Err(ProfileValidationError::for_requirement(
+                    ProfileValidationErrorCode::MissingRuleMapping,
+                    profile_id,
+                    requirement.requirement_id,
+                    requirement.source_clause_ids.first().copied(),
+                ));
+            };
+            validate_mapping(profile_id, requirement, mapping)?;
+            for constraint in mapping.constraints {
+                if let Some(existing_value) = constraints.get(constraint.key) {
+                    if *existing_value != constraint.value {
+                        return Err(ProfileValidationError::for_requirement(
+                            ProfileValidationErrorCode::ConflictingConstraints,
+                            profile_id,
+                            requirement.requirement_id,
+                            Some(mapping.source_clause_id),
+                        ));
+                    }
+                } else {
+                    constraints.insert(constraint.key, constraint.value);
+                }
+            }
+            requirement_ids.insert(requirement.requirement_id);
+        }
+    }
+
+    Ok(ProfileValidationResult {
+        profile_ids: resolved_ids.into_iter().collect(),
+        requirement_ids: requirement_ids.into_iter().map(str::to_owned).collect(),
+    })
+}
+
+fn resolve_profile(
+    profile_id: &str,
+    profiles: &[GeneratedClientProfile],
+    resolved_ids: &mut BTreeSet<String>,
+    visiting_ids: &mut BTreeSet<String>,
+    dependency_order: &mut Vec<String>,
+) -> Result<(), ProfileValidationError> {
+    if resolved_ids.contains(profile_id) {
+        return Ok(());
+    }
+    if !visiting_ids.insert(profile_id.to_owned()) {
+        return Err(ProfileValidationError::for_profile(
+            ProfileValidationErrorCode::DependencyCycle,
+            profile_id,
+        ));
+    }
+    let Some(profile) = find_profile(profiles, profile_id) else {
+        return Err(ProfileValidationError::new(
+            ProfileValidationErrorCode::UnknownProfile,
+        ));
+    };
+    match profile.applicability {
+        "client_1_0" => {}
+        "conditional" => {
+            return Err(ProfileValidationError::for_profile(
+                ProfileValidationErrorCode::ConditionalProfileUnsatisfied,
+                profile_id,
+            ));
+        }
+        _ => {
+            return Err(ProfileValidationError::for_profile(
+                ProfileValidationErrorCode::ProfileUnavailable,
+                profile_id,
+            ));
+        }
+    }
+
+    let mut dependencies = profile.dependency_profile_ids.to_vec();
+    dependencies.sort_unstable();
+    for dependency_id in dependencies {
+        resolve_profile(
+            dependency_id,
+            profiles,
+            resolved_ids,
+            visiting_ids,
+            dependency_order,
+        )?;
+    }
+    visiting_ids.remove(profile_id);
+    resolved_ids.insert(profile_id.to_owned());
+    dependency_order.push(profile_id.to_owned());
+    Ok(())
+}
+
+fn find_profile<'a>(
+    profiles: &'a [GeneratedClientProfile],
+    profile_id: &str,
+) -> Option<&'a GeneratedClientProfile> {
+    profiles
+        .iter()
+        .find(|profile| profile.profile_id == profile_id)
+}
+
+fn validate_mapping(
+    profile_id: &str,
+    requirement: &GeneratedClientRequirement,
+    mapping: &TypedRuleMapping,
+) -> Result<(), ProfileValidationError> {
+    let error = |code| {
+        ProfileValidationError::for_requirement(
+            code,
+            profile_id,
+            requirement.requirement_id,
+            Some(mapping.source_clause_id),
+        )
+    };
+    if !requirement
+        .source_clause_ids
+        .contains(&mapping.source_clause_id)
+        || mapping.verification_category != requirement.verification_category
+    {
+        return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
+    }
+    if mapping.evaluator.is_none() {
+        return Err(error(ProfileValidationErrorCode::IncompleteRuleMapping));
+    }
+    if mapping.constraints.iter().any(|constraint| {
+        !matches!(
+            (constraint.key, constraint.value),
+            ("transport", "raw_tls" | "https") | ("encoding", "ttlv")
+        )
+    }) {
+        return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
+    }
+
+    let required_test_kind = match requirement.verification_category {
+        GeneratedVerificationCategory::RequiredBehavior => RuleTestKind::PositiveBehavior,
+        GeneratedVerificationCategory::ProhibitedBehavior => RuleTestKind::NegativeBehavior,
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
+        | GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation
+            if requirement.has_accepted_deviation =>
+        {
+            return Ok(());
+        }
+        GeneratedVerificationCategory::RecommendedBehaviorOrDeviation => {
+            RuleTestKind::RecommendedBehavior
+        }
+        GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation => {
+            RuleTestKind::DiscouragedBehaviorAbsent
+        }
+        GeneratedVerificationCategory::OptionalCapability => RuleTestKind::OptionalCapabilityUsable,
+    };
+    if !mapping
+        .test_evidence
+        .iter()
+        .any(|evidence| !evidence.test_id.trim().is_empty() && evidence.kind == required_test_kind)
+    {
+        return Err(error(ProfileValidationErrorCode::MissingCategoryTest));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[path = "../tests/support/profile_unit.rs"]
+mod tests;

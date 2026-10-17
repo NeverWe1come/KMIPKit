@@ -16,6 +16,9 @@ from typing import Any, Iterable, Mapping
 import xml.etree.ElementTree as ET
 
 
+_RUST_RAW_STRING_PREFIX = re.compile(r'(?:br|cr|r)(?P<hashes>#{0,})"')
+
+
 class CoverageDataError(RuntimeError):
     """Raised when required coverage input is missing, unsafe, or malformed."""
 
@@ -110,7 +113,7 @@ def _mask_rust_non_code(source: str) -> str:
             continue
 
         # Rust raw strings may be prefixed with b or c. Hash count is unbounded.
-        raw_match = re.match(r"(?:br|cr|r)(?P<hashes>#{0,})\"", source[index:])
+        raw_match = _RUST_RAW_STRING_PREFIX.match(source, index)
         if raw_match:
             start = index
             hashes = raw_match.group("hashes")

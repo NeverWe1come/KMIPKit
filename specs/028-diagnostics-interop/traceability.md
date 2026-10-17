@@ -5,7 +5,7 @@ The tables link each source row, stable element, requirement, implementation loc
 | Stable catalog element / requirement | Exact source | Coverage | Implementation / executable verification |
 |---|---|---|---|
 | KMIPKIT-ELEM-OP-C2S-INTEROP; KMIPKIT-ELEM-ENUM-VALUE-OPERATION-INTEROP-00000034 | §6.1.26 Tables 241–243; §11.36 | Interop payload and Operation value | interop.rs; protocol/client Interop suites |
-| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION | §6.1.26 Table 241; §7.15 | Required open Enumeration | Required/type/unknown round trip |
+| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION | §6.1.26 Table 241; §7.15 | Required open Enumeration; KMIPKIT-0042 FR-001/FR-008 | Required/type/unknown round trip; client serialization evidence only, no production-server availability claim |
 | KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER | §6.1.26 Table 241; §7.16 | Required Text String | Missing/type/round-trip tests |
 | Table 242 empty success; Table 243 errors | §6.1.26 | Empty payload and server result | Empty success and common-result preservation |
 | KMIPKIT-ELEM-OP-C2S-LOG; KMIPKIT-ELEM-ENUM-VALUE-OPERATION-LOG-0000002C | §6.1.29 Tables 250–252; §11.36 | Log payload and Operation value | log.rs; protocol/client Log suites |
@@ -14,16 +14,16 @@ The tables link each source row, stable element, requirement, implementation loc
 | KMIPKIT-ELEM-OP-C2S-VALIDATE; KMIPKIT-ELEM-ENUM-VALUE-OPERATION-VALIDATE-00000017 | §6.1.57 Tables 340–342; §11.36 | Validate payload and Operation value | validate.rs; protocol/client Validate suites |
 | KMIPKIT-ELEM-TAG-420013 | §6.1.57 Table 340 | Repeated Certificate material | Repeated field/type/order cases |
 | KMIPKIT-ELEM-TAG-420094 | §6.1.57 Table 340 | Repeated Managed Certificate identifier | Repeated field/type/order cases |
-| KMIPKIT-ELEM-TAG-42009A | §6.1.57 Table 340 | Optional Validity Date | Present/absent and server-default interpretation tests |
+| KMIPKIT-ELEM-TAG-42009A | §6.1.57 Table 340 | Optional Validity Date | Present/absent request serialization tests; no evaluation test |
 | KMIPKIT-ELEM-TAG-42009B | §6.1.57 Table 341 | Required open Validity Indicator | Missing/type/unknown value tests |
 | KMIPKIT-REQ-SPEC-6.1.57-001 | §6.1.57 opening paragraph; SHALL | A request contains only one certificate chain | Two ordered lists compose one chain; malformed Certificate wrapper rejected by Table 2 checks |
 | KMIPKIT-REQ-SPEC-6.1.57-002-001 | §6.1.57 second paragraph; MAY | Chain may use Certificate objects, identifiers, or both | Certificate-only, identifier-only, mixed input cases |
 | KMIPKIT-REQ-SPEC-6.1.57-002-002 | §6.1.57 second paragraph; MAY | Caller may specify evaluation date | Supplied Validity Date round trip |
 | KMIPKIT-REQ-SPEC-6.1.57-004 | §6.1.57 Table 340 / repeated field; MAY | Repeated Certificates | Multiple Certificate values preserved |
 | KMIPKIT-REQ-SPEC-6.1.57-005 | §6.1.57 Table 340 / repeated field; MAY | Repeated Unique Identifiers | Multiple identifiers preserved |
-| KMIPKIT-REQ-SPEC-6.1.57-006 | §6.1.57 Validity Date rule; SHALL | Omitted date means server assumes current date/time | Omission remains absent; request test does not synthesize local time |
+| KMIPKIT-REQ-SPEC-6.1.57-006 | §6.1.57 Validity Date rule; SHALL, actor unspecified | The source passively states that current date/time is assumed when omitted | Client request serialization preserves omission; source actor and date evaluation are unverified |
 
-The Interop production-availability sentence is server-only; no KMIPKit client test claims a server implementation. There are no direct catalog Test Cases for these operations. FR-001–FR-008, SC-001–SC-004, all six Validate requirements, approved DISC-017, source-derived vectors, redaction, and required repository gates must be evidenced before review.
+The Interop production-availability sentence is server-only; no KMIPKit client test claims a server implementation. There are no direct catalog Test Cases for these operations. FR-001–FR-008, SC-001–SC-004, the five actor-attributed Validate client requirements plus 006 request-serialization evidence, approved DISC-017, source-derived vectors, redaction, and required repository gates must be evidenced before review.
 
 
 ## Source verification before implementation
@@ -62,7 +62,7 @@ operations in the catalog.
 | KMIPKIT-028-T252-ERROR | Table 252 per approved DISC-017; KMIPKIT-ELEM-OP-C2S-LOG | log_operation_tests::table_252_failure_pending_and_unknown_results_are_preserved; log_execution_tests::failure_reason_message_and_diagnostics_are_lossless_and_redacted |
 | KMIPKIT-028-T340-CERTIFICATE | Table 340 Certificate; KMIPKIT-ELEM-TAG-420013 | validate_operation_tests::req_004_repeated_certificate_values_preserve_order; validate_operation_tests::table_2_certificate_structure_rejects_missing_wrong_and_duplicate_fields |
 | KMIPKIT-028-T340-IDENTIFIER | Table 340 Unique Identifier; KMIPKIT-ELEM-TAG-420094 | validate_operation_tests::req_005_repeated_identifiers_preserve_order_and_open_values |
-| KMIPKIT-028-T340-DATE | Table 340 Validity Date; KMIPKIT-ELEM-TAG-42009A | validate_operation_tests::req_002_002_optional_validity_date_preserves_exact_value; validate_operation_tests::req_006_omitted_date_remains_absent_for_server_default |
+| KMIPKIT-028-T340-DATE | Table 340 Validity Date; KMIPKIT-ELEM-TAG-42009A | validate_operation_tests::req_002_002_optional_validity_date_preserves_exact_value; validate_operation_tests::req_006_omitted_date_remains_absent_in_request_serialization |
 | KMIPKIT-028-T341-INDICATOR | Table 341 Validity Indicator; KMIPKIT-ELEM-TAG-42009B | validate_operation_tests::table_341_requires_one_open_indicator_and_retains_unknown_fields; validate_execution_tests::validate_sends_chain_and_date_and_returns_open_indicator |
 | KMIPKIT-028-T342-ERROR | Table 342 common result; KMIPKIT-ELEM-OP-C2S-VALIDATE | validate_operation_tests::table_342_failure_and_pending_preserve_results_without_indicator; validate_execution_tests::failure_reason_message_and_diagnostics_are_lossless_and_redacted |
 
@@ -74,7 +74,7 @@ Interop and Log constructors require the exact mandatory typed fields, so
 omission and wrong request types are unrepresentable through those constructors.
 Raw message parsing and resource limits remain the common message/TTLV contract.
 
-## Six normative Validate client requirements
+## Validate client requirements and unspecified-actor evidence
 
 | Requirement | Implementation | Executable verification |
 |---|---|---|
@@ -83,11 +83,15 @@ Raw message parsing and resource limits remain the common message/TTLV contract.
 | KMIPKIT-REQ-SPEC-6.1.57-002-002 | ValidateRequest::with_validity_date | validate_operation_tests::req_002_002_optional_validity_date_preserves_exact_value |
 | KMIPKIT-REQ-SPEC-6.1.57-004 | Ordered Certificate entries in one chain | validate_operation_tests::req_004_repeated_certificate_values_preserve_order |
 | KMIPKIT-REQ-SPEC-6.1.57-005 | Ordered typed identifier entries in one chain | validate_operation_tests::req_005_repeated_identifiers_preserve_order_and_open_values |
-| KMIPKIT-REQ-SPEC-6.1.57-006 | Optional date retained absent; no local timestamp | validate_operation_tests::req_006_omitted_date_remains_absent_for_server_default |
+| KMIPKIT-REQ-SPEC-6.1.57-006 | Source actor unspecified; client serialization preserves absence only | validate_operation_tests::req_006_omitted_date_remains_absent_in_request_serialization |
 
-All six are cataloged as `scoped_verified`: Rust client structure and
-forwarding are verified. No test claims that a server applied its own policy,
-evaluated a certificate, or used its current time.
+The catalog records all six IDs as `scoped_verified` for feature traceability:
+five have `role=client` and track client obligations or capabilities; 006 has
+`role=unspecified` and tracks request-serialization evidence only. Its
+`client_1_0` scope denotes feature/API serialization applicability, not source
+actor attribution. The passive SHALL's actor is unspecified, and date
+evaluation is unverified. No test claims server conformance or current-date
+evaluation.
 
 ## Common results, security and remaining gates
 

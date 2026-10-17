@@ -108,8 +108,10 @@ As a KMIPKit caller, I can send the §6.1.57 Validate request and inspect the ty
 | --- | --- | --- | --- |
 | Request | Certificate | No, MAY be repeated | One or more Certificates. |
 | Request | Unique Identifier | No, MAY be repeated | One or more Unique Identifiers of Certificate Objects. |
-| Request | Validity Date | No | A Date-Time object indicating when the certificate chain needs to be valid. If omitted, the current date and time SHALL be assumed. |
+| Request | Validity Date | No | An optional Date-Time object indicating when the certificate chain needs to be valid. Section 6.1.57 states that if omitted, the current date and time SHALL be assumed; the passive SHALL does not identify an actor. |
 | Response | Validity Indicator | Yes | An Enumeration object indicating whether the certificate chain is valid, invalid, or unknown. |
+
+For KMIPKit's client feature, verification of KMIPKIT-REQ-SPEC-6.1.57-006 covers only preserving Validity Date omission in request serialization. The approved `client_1_0` scope denotes this feature/API serialization applicability; it does not attribute the source SHALL to the client. Evaluation using the assumed current date and time is outside client verification and remains unproven.
 
 ---
 
@@ -133,18 +135,18 @@ As a KMIPKit caller, I can send the §6.1.57 Validate request and inspect the ty
 - **FR-007**: Do not claim profile support, official test-vector passes, interoperability, or certification without corresponding pinned evidence.
 - **FR-008**: Map every mandatory or conditional payload-table row to a stable catalog element or requirement ID and to verification; assign a stable spec-scoped trace ID when no suitable catalog ID exists.
 
-### Client normative requirement ledger
+### Client requirements and scoped source evidence
 
-Stable IDs and summaries below come from the checked-in normative catalog. The implementation PR must link each ID to code and verification and regenerate traceability with the pinned repository tool. Source sections are exact; payload tables above remain binding for operations with no separate client-clause records.
+Stable IDs and summaries below come from the checked-in normative catalog. Five of the six Validate requirement records have `role=client` and state client obligations or capabilities. KMIPKIT-REQ-SPEC-6.1.57-006 retains the §6.1.57 SHALL with `role=unspecified` and an unresolved source actor; its `client_1_0` scope records feature/API serialization applicability only. Its client evidence is limited to preserving an absent Validity Date in request serialization and does not establish server evaluation or conformance. The implementation PR must link each ID to code and verification and regenerate traceability with the pinned repository tool. Source sections are exact; payload tables above remain binding for operations with no separate client-clause records.
 
-| Requirement ID | OASIS Specification section | Keyword | Client obligation or capability |
+| Requirement ID | OASIS Specification section | Keyword | Client obligation, capability, or scoped evidence |
 | --- | --- | --- | --- |
 | KMIPKIT-REQ-SPEC-6.1.57-001 | §6.1.57 | SHALL | A Validate Certificate request must contain only one certificate chain. |
 | KMIPKIT-REQ-SPEC-6.1.57-002-001 | §6.1.57 | MAY | A client may build the chain from certificate objects, Managed Certificate identifiers, or both. |
 | KMIPKIT-REQ-SPEC-6.1.57-002-002 | §6.1.57 | MAY | A client may specify the date at which the chain must be valid. |
 | KMIPKIT-REQ-SPEC-6.1.57-004 | §6.1.57 | MAY | A client may include repeated Certificate objects in the chain. |
 | KMIPKIT-REQ-SPEC-6.1.57-005 | §6.1.57 | MAY | A client may include repeated Unique Identifiers for Managed Certificate objects in the chain. |
-| KMIPKIT-REQ-SPEC-6.1.57-006 | §6.1.57 | SHALL | If Validity Date is omitted, the chain is evaluated at the current date and time. |
+| KMIPKIT-REQ-SPEC-6.1.57-006 | §6.1.57 | SHALL (source actor unspecified) | The client preserves an omitted Validity Date in request serialization. The source's assumed-current-date behavior is not verified by the client test. |
 
 ### Key Entities
 
@@ -158,7 +160,7 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 ### Measurable Outcomes
 
 - **SC-001**: All 3 operations have typed request/response, an explicit client call, generic TTLV access, and Rust/C/Java/Python parity before 1.0.0.
-- **SC-002**: All Table-defined fields and error forms and all 6 catalog client requirement IDs have positive/relevant negative verification and exact source-to-test links.
+- **SC-002**: All Table-defined fields and error forms and the five actor-attributed client requirement IDs have positive/relevant negative verification and exact source-to-test links; §6.1.57-006 has request-serialization evidence for preserving Validity Date omission. No server evaluation or conformance claim is made for the source's assumed-current-date behavior.
 - **SC-003**: Fake-transport cases confirm one exchange and preserved Success, Failure, Pending, unknown values, malformed response behavior, and delivery state.
 - **SC-004**: Required repository coverage, formatting, lint, security, generated-artifact, and two-independent-server integration gates pass before release.
 

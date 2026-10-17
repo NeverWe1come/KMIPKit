@@ -11,7 +11,7 @@ use kmipkit_protocol::{AttributeSet, CreateKeyPairRequest};
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
-use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value};
+use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::ClientErrorCategory;
 use crate::asynchronous_execution_test_support::{
@@ -35,7 +35,12 @@ const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006b;
 const TIME_STAMP: u32 = 0x0042_0092;
 const BATCH_COUNT: u32 = 0x0042_000d;
 const BATCH_ITEM: u32 = 0x0042_000f;
+const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const OPERATION: u32 = 0x0042_005c;
+const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
+const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
+const QLENGTH: u32 = 0x0042_0073;
 const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const RESULT_STATUS: u32 = 0x0042_007f;
 const RESULT_REASON: u32 = 0x0042_007e;
@@ -126,6 +131,46 @@ fn response_bytes(items: impl IntoIterator<Item = Item>) -> Vec<u8> {
     message.extend(items);
     encode_message_for_test(test_structure(message), &CodecLimits::defaults())
         .expect("fixture response message is encodable")
+}
+
+fn contains_integer_at_path(structure: &StructureView<'_>, path: &[u32], expected: i32) -> bool {
+    let Some((head, tail)) = path.split_first() else {
+        return false;
+    };
+    structure.children().iter().any(|field| {
+        field.tag().raw() == *head
+            && field.with_value(|value| {
+                if tail.is_empty() {
+                    matches!(value, ValueView::Integer(value) if *value == expected)
+                } else if let ValueView::Structure(nested) = value {
+                    contains_integer_at_path(&nested, tail, expected)
+                } else {
+                    false
+                }
+            })
+    })
+}
+
+fn contains_enumeration_at_path(
+    structure: &StructureView<'_>,
+    path: &[u32],
+    expected: u32,
+) -> bool {
+    let Some((head, tail)) = path.split_first() else {
+        return false;
+    };
+    structure.children().iter().any(|field| {
+        field.tag().raw() == *head
+            && field.with_value(|value| {
+                if tail.is_empty() {
+                    matches!(value, ValueView::Enumeration(value) if *value == expected)
+                } else if let ValueView::Structure(nested) = value {
+                    contains_enumeration_at_path(&nested, tail, expected)
+                } else {
+                    false
+                }
+            })
+    })
 }
 
 fn empty_request() -> CreateKeyPairRequest {
@@ -650,5 +695,86 @@ fn create_key_pair_keeps_repeated_registered_message_extensions_in_caller_order(
     let decoded = decode_with_limits(captured, &CodecLimits::defaults())
         .expect("the captured request remains valid TTLV");
     assert_eq!(decoded.item_type(), ItemType::Structure);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength() {
+    // KMIP Specification v2.1 §4.14, Tables 55–56, and §11.12.
+    const BATCH_ID: &[u8] = b"create-key-pair-dsa-qlength";
+    let response = response_bytes([response_batch_item(
+        Some(BATCH_ID),
+        SUCCESS,
+        None,
+        None,
+        None,
+        Some(success_payload("private-dsa", "public-dsa")),
+    )]);
+    let fake = Rc::new(RefCell::new(ScriptedTransport::new(
+        ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        },
+    )));
+    let captured_request = Rc::new(RefCell::new(None));
+    let mut client = Client::for_test(CapturingFakeTransport {
+        fake: Rc::clone(&fake),
+        captured_request: Rc::clone(&captured_request),
+    });
+    let domain_parameters = test_structure([test_item(QLENGTH, Value::integer(256))]);
+    let attributes = AttributeSet::try_new([
+        // KMIP Specification v2.1 §11.12, Table 443: DSA is enumeration 5.
+        test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(5)),
+        test_item(
+            CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+            Value::structure(domain_parameters),
+        ),
+    ])
+    .expect("the Common Attributes contain distinct fields");
+    let request = CreateKeyPairRequest::new().with_common_attributes(attributes);
+    let batch = ClientBatch::new(
+        ClientBatchItem::new(ClientRequest::CreateKeyPair(request))
+            .with_unique_batch_item_id(BATCH_ID.to_vec()),
+    );
+
+    client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("the scripted transport returns the configured success response");
+
+    let capture_guard = captured_request.borrow();
+    let captured = capture_guard
+        .as_deref()
+        .expect("the fake transport captures the encoded request");
+    let decoded = decode_with_limits(captured, &CodecLimits::defaults())
+        .expect("the client emits a structurally valid TTLV message");
+    let (dsa_algorithm_was_preserved, qlength_was_preserved) =
+        decoded.with_value(|value| match value {
+            ValueView::Structure(message) => (
+                contains_enumeration_at_path(
+                    &message,
+                    &[
+                        BATCH_ITEM,
+                        REQUEST_PAYLOAD,
+                        COMMON_ATTRIBUTES,
+                        CRYPTOGRAPHIC_ALGORITHM,
+                    ],
+                    5,
+                ),
+                contains_integer_at_path(
+                    &message,
+                    &[
+                        BATCH_ITEM,
+                        REQUEST_PAYLOAD,
+                        COMMON_ATTRIBUTES,
+                        CRYPTOGRAPHIC_DOMAIN_PARAMETERS,
+                        QLENGTH,
+                    ],
+                    256,
+                ),
+            ),
+            _ => (false, false),
+        });
+    assert!(dsa_algorithm_was_preserved);
+    assert!(qlength_was_preserved);
     assert_eq!(fake.borrow().exchange_count(), 1);
 }

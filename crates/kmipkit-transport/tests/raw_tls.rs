@@ -1091,6 +1091,11 @@ fn raw_tls_rejects_tls12_server_hello_before_request_dispatch() {
         peer.client_hello_offers_tls13_only,
         "the client offered exactly TLS 1.3 in supported_versions"
     );
+    assert_eq!(
+        peer.client_hello_cipher_suites,
+        Some(vec![0x1302, 0x1303]),
+        "Profiles §3.1.2 permits only TLS13-AES-256-GCM-SHA384 and TLS13-CHACHA20-POLY1305-SHA256"
+    );
     assert!(peer.server_hello_sent, "the peer selected TLS 1.2");
     assert!(
         !peer.application_data_received,
@@ -1479,6 +1484,7 @@ struct PeerObservation {
 struct Tls12PeerObservation {
     client_hello_received: bool,
     client_hello_offers_tls13_only: bool,
+    client_hello_cipher_suites: Option<Vec<u16>>,
     server_hello_sent: bool,
     application_data_received: bool,
 }
@@ -1507,6 +1513,7 @@ fn spawn_tls12_only_peer(listener: TcpListener) -> thread::JoinHandle<Tls12PeerO
                     .is_some_and(|message_type| *message_type == 1),
             client_hello_offers_tls13_only: offered_tls_versions(&client_hello)
                 .is_some_and(|versions| versions == [0x0304]),
+            client_hello_cipher_suites: offered_cipher_suites(&client_hello),
             server_hello_sent: false,
             application_data_received: false,
         };
@@ -1542,7 +1549,19 @@ fn spawn_tls12_only_peer(listener: TcpListener) -> thread::JoinHandle<Tls12PeerO
     })
 }
 
-fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
+fn offered_cipher_suites(client_hello: &[u8]) -> Option<Vec<u16>> {
+    let (cipher_suites, _) = client_hello_sections(client_hello)?;
+    Some(
+        cipher_suites
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|suite| u16::from_be_bytes([suite[0], suite[1]]))
+            .collect(),
+    )
+}
+
+fn client_hello_sections(client_hello: &[u8]) -> Option<(&[u8], &[u8])> {
     if client_hello.first().copied()? != 1 {
         return None;
     }
@@ -1561,7 +1580,13 @@ fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
     let session_id_len = usize::from(*client_hello.get(cursor)?);
     cursor = cursor.checked_add(1 + session_id_len)?;
     let cipher_suites_len = read_u16(client_hello, &mut cursor)?;
-    cursor = cursor.checked_add(cipher_suites_len)?;
+    let cipher_suites_end = cursor.checked_add(cipher_suites_len)?;
+    let cipher_suites = client_hello.get(cursor..cipher_suites_end)?;
+    if cipher_suites_len < 2 || cipher_suites_len % 2 != 0 {
+        return None;
+    }
+
+    cursor = cipher_suites_end;
     let compression_methods_len = usize::from(*client_hello.get(cursor)?);
     cursor = cursor.checked_add(1 + compression_methods_len)?;
     let all_extensions_len = read_u16(client_hello, &mut cursor)?;
@@ -1570,11 +1595,20 @@ fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
         return None;
     }
 
+    let extensions = client_hello.get(cursor..all_extensions_end)?;
+    Some((cipher_suites, extensions))
+}
+
+fn offered_tls_versions(client_hello: &[u8]) -> Option<Vec<u16>> {
+    let (_, extensions) = client_hello_sections(client_hello)?;
+    let mut cursor = 0;
+    let all_extensions_end = extensions.len();
+
     while cursor < all_extensions_end {
-        let extension_type = read_u16(client_hello, &mut cursor)?;
-        let one_extension_len = read_u16(client_hello, &mut cursor)?;
+        let extension_type = read_u16(extensions, &mut cursor)?;
+        let one_extension_len = read_u16(extensions, &mut cursor)?;
         let one_extension_end = cursor.checked_add(one_extension_len)?;
-        let extension = client_hello.get(cursor..one_extension_end)?;
+        let extension = extensions.get(cursor..one_extension_end)?;
         if extension_type == 0x002b {
             let versions_len = usize::from(*extension.first()?);
             if versions_len != extension.len().checked_sub(1)? || versions_len % 2 != 0 {

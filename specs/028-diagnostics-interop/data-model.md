@@ -27,7 +27,7 @@ Use Table 252 per approved KMIPKIT-DISC-017.
 |---|---|---|---|
 | Request | Certificate | 0..many | Repeated Certificate object values; preserve relative order within the Certificate list. |
 | Request | Unique Identifier | 0..many | Repeated Managed Certificate identifiers; preserve relative order within the identifier list. |
-| Request | Validity Date | 0..1 | Date-Time; preserve absence and supplied value. Omission means server assumes current date/time. |
+| Request | Validity Date | 0..1 | Date-Time; preserve absence and supplied value. Section 6.1.57 passively states that the current date and time SHALL be assumed if omitted; the source actor is unspecified and date evaluation is unverified. |
 | Success response | Validity Indicator | exactly 1 | Enumeration with unknown/future values preserved. |
 
 One Validate request represents at most one certificate chain; its two repeated field lists are the chain material. Section 10.1.2, unnumbered Type table Structure row requires Table 340 wire order: Certificate list, Unique Identifier list, optional Validity Date. Each list preserves its own relative order. Certificate inputs follow section 2.1, Table 2 with Certificate Type before Certificate Value. Do not construct/validate the chain locally, choose trust anchors, impose server policy, or add an unstated local minimum rule.

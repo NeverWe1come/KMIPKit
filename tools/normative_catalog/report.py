@@ -4,18 +4,88 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+import json
+import os
+import re
+import subprocess
 import sys
 import unicodedata
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 if __package__:
+    from .generate_profiles import _is_unresolved_client_scope
     from .safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
 else:
+    from generate_profiles import _is_unresolved_client_scope
     from safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
 
 
 REPORT_PATH = Path("specification/catalog/coverage-report.md")
+PROFILE_RULE_SOURCE = "crates/kmipkit-protocol/src/profile.rs"
+_EMPTY_TYPED_RULE_REGISTRY = re.compile(
+    r"(?m)^\s*const TYPED_RULE_MAPPINGS:\s*&\[TypedRuleMapping\]\s*=\s*&\[\];\s*$"
+)
+_TYPED_RULE_REGISTRY_DECLARATION = re.compile(
+    r"(?m)^\s*const TYPED_RULE_MAPPINGS:\s*&\[TypedRuleMapping\]\s*=\s*&\["
+)
+_TYPED_RULE_MAPPING_ENTRY = re.compile(
+    r'''\s*TypedRuleMapping\s*\{\s*
+    requirement_id:\s*"(?P<requirement_id>KMIPKIT-REQ-[A-Z0-9.-]+)",\s*
+    source_clause_id:\s*"(?P<source_clause_id>KMIPKIT-CLAUSE-[A-Z0-9.-]+)",\s*
+    verification_category:\s*GeneratedVerificationCategory::(?P<category>[A-Za-z][A-Za-z0-9_]*),\s*
+    evaluator:\s*(?P<evaluator>None|Some\([A-Za-z_][A-Za-z0-9_]*\)),\s*
+    test_evidence:\s*&\[(?P<test_evidence>.*?)\],\s*
+    constraints:\s*&\[(?P<constraints>.*?)\],?\s*
+    \}\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_RULE_TEST_EVIDENCE_ENTRY = re.compile(
+    r'''\s*RuleTestEvidence\s*\{\s*
+    test_id:\s*"(?P<test_id>[A-Za-z0-9_./:-]+)",\s*
+    kind:\s*RuleTestKind::(?P<kind>[A-Za-z][A-Za-z0-9_]*),?\s*
+    \}\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_RULE_CONSTRAINT_ENTRY = re.compile(
+    r'''\s*RuleConstraint\s*\{\s*
+    key:\s*"(?P<key>[A-Za-z][A-Za-z0-9_-]*)",\s*
+    value:\s*"(?P<value>[A-Za-z][A-Za-z0-9_-]*)",?\s*
+    \}\s*''',
+    re.DOTALL | re.VERBOSE,
+)
+_VERIFICATION_CATEGORIES = {
+    "RequiredBehavior",
+    "ProhibitedBehavior",
+    "RecommendedBehaviorOrDeviation",
+    "DiscouragedAbsenceOrDeviation",
+    "OptionalCapability",
+}
+_RULE_TEST_KINDS = {
+    "PositiveBehavior",
+    "NegativeBehavior",
+    "RecommendedBehavior",
+    "DiscouragedBehaviorAbsent",
+    "OptionalCapabilityUsable",
+}
+_RULE_CONSTRAINTS = {
+    ("transport", "raw_tls"),
+    ("transport", "https"),
+    ("encoding", "ttlv"),
+}
+_DOUBLE_QUOTED_SECRET_VALUE = r'"(?:\\.|[^"\\\r\n])*"'
+_SINGLE_QUOTED_SECRET_VALUE = r"'(?:\\.|[^'\\\r\n])*'"
+_SENSITIVE_VALUE = rf"(?:{_DOUBLE_QUOTED_SECRET_VALUE}|{_SINGLE_QUOTED_SECRET_VALUE}|[^\s,;]+)"
+_SENSITIVE_ASSIGNMENT = re.compile(
+    r"(?i)(?P<label>credential|password|secret|token|private[-_ ]?key|raw[-_ ]?kmip[-_ ]?body)"
+    r"(?P<separator>\s*[:=]\s*)"
+    rf"(?P<value>{_SENSITIVE_VALUE})"
+)
+_PEM_PRIVATE_KEY = re.compile(
+    r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
+    re.IGNORECASE,
+)
 SECTION_ORDER = (
     "Source documents",
     "Count reconciliation",
@@ -32,6 +102,14 @@ SECTION_ORDER = (
     "Open discrepancies",
     "Project policies",
 )
+BASELINE_PROFILE_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+_RULE_TEST_KIND_BY_CATEGORY = {
+    "RequiredBehavior": "PositiveBehavior",
+    "ProhibitedBehavior": "NegativeBehavior",
+    "RecommendedBehaviorOrDeviation": "RecommendedBehavior",
+    "DiscouragedAbsenceOrDeviation": "DiscouragedBehaviorAbsent",
+    "OptionalCapability": "OptionalCapabilityUsable",
+}
 
 
 def _visible_controls(value: Any) -> str:
@@ -82,6 +160,22 @@ def _escape_link_label(value: Any) -> str:
     return text
 
 
+def _redact_sensitive_values(value: str) -> str:
+    """Replace inline secret assignments and PEM keys before rendering diagnostics."""
+    redacted = _PEM_PRIVATE_KEY.sub("[redacted]", value)
+    return _SENSITIVE_ASSIGNMENT.sub(
+        lambda match: f"{match.group('label')}{match.group('separator')}[redacted]",
+        redacted,
+    )
+
+
+def _safe_diagnostic_text(value: Any, fallback: str) -> str:
+    """Keep arbitrary evidence notes out of reports when they resemble secrets."""
+    if not isinstance(value, str):
+        return fallback
+    return _redact_sensitive_values(value)
+
+
 def _table(headers: tuple[str, ...], rows: list[tuple[Any, ...]]) -> list[str]:
     lines = ["| " + " | ".join(_escape_table_text(item) for item in headers) + " |"]
     lines.append("| " + " | ".join("---" for _ in headers) + " |")
@@ -98,6 +192,165 @@ def _count_by(records: list[dict[str, Any]], field: str) -> list[tuple[str, int]
         key = str(record.get(field, "unspecified"))
         counts[key] = counts.get(key, 0) + 1
     return sorted(counts.items())
+
+
+def _profile_target_state(profile_id: Any, selected_profile_ids: set[str] | None) -> str:
+    if selected_profile_ids is None:
+        return "not evaluated"
+    return "selected" if profile_id in selected_profile_ids else "not selected"
+
+
+def _split_rust_registry_entries(source: str) -> list[str]:
+    entries: list[str] = []
+    delimiters: list[str] = []
+    matching_delimiter = {"[": "]", "{": "}", "(": ")"}
+    start = 0
+    in_string = False
+    escaped = False
+    index = 0
+    while index < len(source):
+        character = source[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            index += 1
+            continue
+        if character == '"':
+            in_string = True
+        elif source.startswith(("//", "/*"), index):
+            raise ValueError("unsupported typed profile rule mapping")
+        elif character in matching_delimiter:
+            delimiters.append(matching_delimiter[character])
+        elif character in "]})":
+            if not delimiters or delimiters.pop() != character:
+                raise ValueError("unsupported typed profile rule mapping")
+        elif character == "," and not delimiters:
+            entry = source[start:index].strip()
+            if entry:
+                entries.append(entry)
+            start = index + 1
+        index += 1
+    if in_string or escaped or delimiters:
+        raise ValueError("unsupported typed profile rule mapping")
+    final_entry = source[start:].strip()
+    if final_entry:
+        entries.append(final_entry)
+    return entries
+
+
+def _typed_rule_registry_body(text: str) -> str:
+    declaration_count = len(
+        re.findall(r"(?m)^\s*const\s+TYPED_RULE_MAPPINGS\b", text)
+    )
+    declaration = _TYPED_RULE_REGISTRY_DECLARATION.search(text)
+    if declaration_count != 1 or declaration is None:
+        raise ValueError("unsupported typed profile rule mapping")
+
+    body_start = declaration.end()
+    delimiters = ["]"]
+    matching_delimiter = {"[": "]", "{": "}", "(": ")"}
+    in_string = False
+    escaped = False
+    index = body_start
+    while index < len(text):
+        character = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            index += 1
+            continue
+        if character == '"':
+            in_string = True
+        elif text.startswith(("//", "/*"), index):
+            raise ValueError("unsupported typed profile rule mapping")
+        elif character in matching_delimiter:
+            delimiters.append(matching_delimiter[character])
+        elif character in "]})":
+            if not delimiters or delimiters.pop() != character:
+                raise ValueError("unsupported typed profile rule mapping")
+            if not delimiters:
+                suffix = text[index + 1 :].lstrip()
+                if not suffix.startswith(";"):
+                    raise ValueError("unsupported typed profile rule mapping")
+                return text[body_start:index]
+        index += 1
+    raise ValueError("unsupported typed profile rule mapping")
+
+
+def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
+    body = _typed_rule_registry_body(text)
+    if not body.strip():
+        return []
+
+    mappings: list[dict[str, Any]] = []
+    seen_requirement_ids: set[str] = set()
+    for entry in _split_rust_registry_entries(body):
+        match = _TYPED_RULE_MAPPING_ENTRY.fullmatch(entry)
+        if match is None:
+            raise ValueError("unsupported typed profile rule mapping")
+        fields = match.groupdict()
+        requirement_id = fields["requirement_id"]
+        category = fields["category"]
+        if requirement_id in seen_requirement_ids or category not in _VERIFICATION_CATEGORIES:
+            raise ValueError("unsupported typed profile rule mapping")
+        seen_requirement_ids.add(requirement_id)
+
+        evaluator = fields["evaluator"]
+        if evaluator != "None" and not re.fullmatch(
+            r"Some\([A-Za-z_][A-Za-z0-9_]*\)", evaluator
+        ):
+            raise ValueError("unsupported typed profile rule mapping")
+
+        evidence: list[dict[str, str]] = []
+        for evidence_entry in _split_rust_registry_entries(fields["test_evidence"]):
+            evidence_match = _RULE_TEST_EVIDENCE_ENTRY.fullmatch(evidence_entry)
+            if evidence_match is None:
+                raise ValueError("unsupported typed profile rule mapping")
+            evidence_fields = evidence_match.groupdict()
+            if evidence_fields["kind"] not in _RULE_TEST_KINDS:
+                raise ValueError("unsupported typed profile rule mapping")
+            evidence.append(evidence_fields)
+
+        for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
+            constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
+            if constraint_match is None:
+                raise ValueError("unsupported typed profile rule mapping")
+            constraint = constraint_match.groupdict()
+            if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
+                raise ValueError("unsupported typed profile rule mapping")
+
+        if not evidence:
+            evidence.append({"test_id": "", "kind": ""})
+        for item in evidence:
+            mappings.append({
+                "requirement_id": requirement_id,
+                "source_clause_id": fields["source_clause_id"],
+                "verification_category": category,
+                "evaluator_present": evaluator != "None",
+                "test_kind": item["kind"] or None,
+                "test_id": item["test_id"] or None,
+            })
+    return mappings
+
+
+def load_typed_rule_mappings(repository: Path) -> list[dict[str, Any]]:
+    """Read only the explicit, static Rust profile-rule registry grammar."""
+    source = safe_read_bytes(repository, PROFILE_RULE_SOURCE, max_bytes=4 * 1024 * 1024)
+    try:
+        text = source.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("typed profile rule registry is not valid UTF-8") from error
+    if _EMPTY_TYPED_RULE_REGISTRY.search(text):
+        return []
+    return _parse_typed_rule_registry(text)
 
 
 def _clause_section_rows(clauses: list[dict[str, Any]]) -> list[tuple[str, str, int, str]]:
@@ -128,7 +381,463 @@ def _source_reference(record: dict[str, Any]) -> str:
     return ", ".join(f"{item.get('source_id', '?')} §{item.get('section', '?')}" for item in references)
 
 
-def render_report(catalog: dict[str, Any]) -> str:
+def _typed_rule_coverage(
+    requirement: dict[str, Any],
+    source_clause_ids: list[str],
+    candidates: list[dict[str, Any]],
+    typed_rule_mappings: list[dict[str, Any]] | None,
+    accepted_deviation_id: str | None = None,
+) -> tuple[str, str, str, list[str], list[dict[str, Any]], bool | None]:
+    if __package__:
+        from .generate_profiles import _verification_category
+    else:
+        from generate_profiles import _verification_category
+
+    source_keyword = requirement.get("source_keyword")
+    source_force = requirement.get("source_force")
+    category_source = source_keyword if isinstance(source_keyword, str) else source_force
+    try:
+        category = _verification_category(category_source) if isinstance(category_source, str) else "unknown"
+    except ValueError:
+        category = "unknown"
+
+    valid_mappings = [
+        mapping
+        for mapping in candidates
+        if mapping.get("source_clause_id") in source_clause_ids
+        and mapping.get("verification_category") == category
+        and mapping.get("evaluator_present") is True
+    ]
+    if typed_rule_mappings is None:
+        mapping_status = "not evaluated"
+        test_status = "not evaluated"
+        complete = None
+    else:
+        mapping_status = (
+            "Typed rule mapping: present"
+            if valid_mappings
+            else "Invalid typed rule mapping"
+            if candidates
+            else "No typed rule mapping"
+        )
+        expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY.get(category)
+        test_ids = sorted({
+            test_id
+            for mapping in valid_mappings
+            if mapping.get("test_kind") == expected_test_kind
+            and isinstance((test_id := mapping.get("test_id")), str)
+            and test_id.strip()
+        })
+        has_accepted_deviation = accepted_deviation_id is not None and category in {
+            "RecommendedBehaviorOrDeviation",
+            "DiscouragedAbsenceOrDeviation",
+        }
+        if has_accepted_deviation:
+            test_status = f"Accepted deviation: {accepted_deviation_id}"
+            complete = bool(valid_mappings)
+        else:
+            test_status = (
+                "Category test reference: present"
+                if test_ids
+                else "No category-appropriate rule test"
+            )
+            complete = bool(valid_mappings and test_ids)
+
+    mapping_test_ids = sorted({
+        value
+        for mapping in candidates
+        if isinstance((value := mapping.get("test_id")), str) and value.strip()
+    })
+    return (
+        f"{category_source or 'unknown'} / {category}",
+        mapping_status,
+        test_status,
+        mapping_test_ids,
+        valid_mappings,
+        complete,
+    )
+
+
+def _profile_requirement_coverage(
+    catalog: dict[str, Any],
+    typed_rule_mappings: list[dict[str, Any]] | None,
+) -> tuple[list[tuple[Any, ...]], dict[str, bool | None]]:
+    profiles = [row for row in catalog.get("profiles", []) if row.get("role") == "client"]
+    requirements_by_id = {
+        row.get("requirement_id"): row
+        for row in catalog.get("requirements", [])
+        if row.get("requirement_id")
+    }
+    profiles_by_requirement: dict[str, set[str]] = defaultdict(set)
+    profiles_by_id = {row.get("profile_id"): row for row in profiles if row.get("profile_id")}
+    unresolved_scope_by_profile = {
+        profile_id: _unresolved_profile_scope_blockers(catalog, profile)
+        for profile_id, profile in profiles_by_id.items()
+        if isinstance(profile_id, str)
+    }
+    for profile in profiles:
+        profile_id = profile.get("profile_id")
+        if not isinstance(profile_id, str):
+            continue
+        for requirement_id in profile.get("requirement_ids") or []:
+            if isinstance(requirement_id, str):
+                profiles_by_requirement[requirement_id].add(profile_id)
+
+    mappings_by_requirement: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for mapping in typed_rule_mappings or []:
+        requirement_id = mapping.get("requirement_id")
+        if isinstance(requirement_id, str):
+            mappings_by_requirement[requirement_id].append(mapping)
+    decisions_by_id = {
+        row.get("decision_id"): row
+        for row in catalog.get("decisions", [])
+        if isinstance(row.get("decision_id"), str)
+    }
+
+    rows: list[tuple[Any, ...]] = []
+    requirement_complete: dict[str, bool | None] = {}
+    for requirement_id in sorted(profiles_by_requirement):
+        requirement = requirements_by_id.get(requirement_id)
+        if requirement is None:
+            rows.append((
+                requirement_id,
+                "unresolved catalog requirement",
+                "unknown",
+                "not evaluated" if typed_rule_mappings is None else "No typed rule mapping",
+                "not evaluated" if typed_rule_mappings is None else "No category-appropriate rule test",
+                "—", "—", "—", "—", "—", "—",
+            ))
+            requirement_complete[requirement_id] = False if typed_rule_mappings is not None else None
+            continue
+
+        source_clause_ids = sorted(
+            value for value in requirement.get("source_clause_ids") or [] if isinstance(value, str)
+        )
+        candidates = mappings_by_requirement.get(requirement_id, [])
+        decision_id = requirement.get("decision_id")
+        decision = decisions_by_id.get(decision_id)
+        accepted_deviation_id = (
+            decision_id
+            if isinstance(decision_id, str)
+            and decision is not None
+            and decision.get("status") == "accepted"
+            and requirement_id in decision.get("requirement_ids", [])
+            else None
+        )
+        (
+            category_label,
+            mapping_status,
+            test_status,
+            mapping_test_ids,
+            valid_mappings,
+            requirement_complete[requirement_id],
+        ) = _typed_rule_coverage(
+            requirement,
+            source_clause_ids,
+            candidates,
+            typed_rule_mappings,
+            accepted_deviation_id,
+        )
+
+        implementation_refs = sorted(
+            value for value in requirement.get("implementation_refs") or [] if isinstance(value, str)
+        )
+        verification_refs = sorted(
+            value for value in requirement.get("verification_refs") or [] if isinstance(value, str)
+        )
+        official_test_ids = sorted(
+            value for value in requirement.get("test_case_ids") or [] if isinstance(value, str)
+        )
+        rule_implementation_refs = [PROFILE_RULE_SOURCE] if valid_mappings else []
+        rows.append((
+            requirement_id,
+            ", ".join(source_clause_ids),
+            category_label,
+            mapping_status,
+            test_status,
+            ", ".join(mapping_test_ids) or "—",
+            ", ".join(rule_implementation_refs) or "—",
+            ", ".join(implementation_refs) or "—",
+            ", ".join(verification_refs) or "—",
+            ", ".join(official_test_ids) or "—",
+            decision_id or "none catalogued",
+            _source_reference(requirement) or "—",
+        ))
+
+    runtime_availability: dict[str, bool | None] = {}
+    resolving: set[str] = set()
+
+    def is_runtime_available(profile_id: str) -> bool | None:
+        if profile_id in runtime_availability:
+            return runtime_availability[profile_id]
+        profile = profiles_by_id.get(profile_id)
+        if profile is None or profile.get("applicability") != "client_1_0":
+            runtime_availability[profile_id] = False
+            return False
+        if unresolved_scope_by_profile.get(profile_id):
+            runtime_availability[profile_id] = False
+            return False
+        if typed_rule_mappings is None:
+            runtime_availability[profile_id] = None
+            return None
+        if profile_id in resolving:
+            runtime_availability[profile_id] = False
+            return False
+        resolving.add(profile_id)
+        requirement_ids = profile.get("requirement_ids") or []
+        ready = bool(requirement_ids) and all(
+            requirement_complete.get(requirement_id) is True
+            for requirement_id in requirement_ids
+        )
+        ready = ready and all(
+            is_runtime_available(dependency_id)
+            for dependency_id in profile.get("dependency_profile_ids") or []
+        )
+        resolving.remove(profile_id)
+        runtime_availability[profile_id] = bool(ready)
+        return runtime_availability[profile_id]
+
+    for profile_id in profiles_by_id:
+        is_runtime_available(profile_id)
+    return rows, runtime_availability
+
+
+def _profile_applicability_blockers(profile: dict[str, Any]) -> list[str]:
+    """Return only role and applicability blockers for a profile."""
+    blockers: list[str] = []
+    if profile.get("role") != "client":
+        blockers.append("profile is not a client profile")
+    applicability = profile.get("applicability")
+    if applicability == "conditional":
+        blockers.append("conditional profile requires explicit satisfied configuration")
+    elif applicability != "client_1_0":
+        blockers.append("profile is outside the KMIPKit 1.0 client scope")
+    return blockers
+
+
+def _unresolved_profile_scope_blockers(
+    catalog: dict[str, Any],
+    profile: dict[str, Any],
+) -> list[str]:
+    """Identify unresolved client duties linked to a profile's clause closure."""
+    clause_ids = {
+        value
+        for value in profile.get("source_clause_ids") or []
+        if isinstance(value, str)
+    }
+    blockers: list[str] = []
+    for requirement in catalog.get("requirements", []):
+        if not isinstance(requirement, dict) or not _is_unresolved_client_scope(requirement):
+            continue
+        scope_state = requirement.get("scope_state")
+        requirement_id = requirement.get("requirement_id")
+        if not isinstance(requirement_id, str):
+            continue
+        linked_clauses = sorted(
+            clause_id
+            for clause_id in requirement.get("source_clause_ids") or []
+            if isinstance(clause_id, str) and clause_id in clause_ids
+        )
+        blockers.extend(
+            f"unresolved applicability scope: {requirement_id} at {clause_id} ({scope_state})"
+            for clause_id in linked_clauses
+        )
+    return sorted(set(blockers))
+
+
+def _effective_catalog_evidence_state(
+    catalog_state: str,
+    blockers: list[str],
+) -> tuple[str, list[str]]:
+    """Reconcile only the catalog evidence lifecycle against current blockers."""
+    unique_blockers = sorted(set(blockers))
+    if unique_blockers and catalog_state == "evidence_complete":
+        effective_state = "evidence_incomplete"
+        unique_blockers.append("catalog claim_state evidence_complete is stale")
+    elif not unique_blockers and catalog_state != "evidence_complete":
+        effective_state = catalog_state
+        unique_blockers.append("catalog claim_state requires a human-reviewed update")
+    else:
+        effective_state = catalog_state
+    return effective_state, sorted(set(unique_blockers))
+
+
+def evaluate_profile_readiness(
+    catalog: dict[str, Any],
+    profile_id: str,
+    *,
+    selected_profile_ids: set[str] | None,
+    typed_rule_mappings: list[dict[str, Any]] | None,
+    verification_manifest: dict[str, Any] | None,
+    current_context: dict[str, Any] | None,
+    current_head: str | None = None,
+    repository_root: Path | None = None,
+) -> dict[str, Any]:
+    """Evaluate stable catalog obligations against one current CI run, without publishing a claim."""
+    profiles_by_id = {
+        row.get("profile_id"): row
+        for row in catalog.get("profiles", [])
+        if isinstance(row.get("profile_id"), str)
+    }
+    profile = profiles_by_id.get(profile_id)
+    selected = None if selected_profile_ids is None else profile_id in selected_profile_ids
+    if profile is None:
+        return {
+            "profile_id": profile_id,
+            "target_selected": selected,
+            "runtime_validation_available": False,
+            "effective_state": "evidence_incomplete",
+            "blockers": ["profile is missing from the catalog"],
+            "published_claim": False,
+        }
+
+    blockers: list[str] = []
+    if verification_manifest is None:
+        blockers.append("current protected-release-push verification manifest is unavailable")
+    else:
+        try:
+            import sys
+
+            root = Path(repository_root or Path(__file__).resolve().parents[2]).resolve(strict=True)
+            root_text = str(root)
+            if root_text not in sys.path:
+                sys.path.insert(0, root_text)
+            from scripts.ci_summary import validate_evidence_manifest
+
+            validate_evidence_manifest(
+                verification_manifest,
+                event_name=str((current_context or {}).get("event_name", "")),
+                current_context=current_context or {},
+                current_head=current_head or "",
+            )
+        except (ImportError, OSError, TypeError, ValueError):
+            blockers.append("current verification manifest is invalid or does not match this run")
+
+    blockers.extend(_profile_applicability_blockers(profile))
+    blockers.extend(_unresolved_profile_scope_blockers(catalog, profile))
+
+    requirement_rows, runtime_by_profile = _profile_requirement_coverage(
+        catalog,
+        typed_rule_mappings,
+    )
+    requirement_coverage_by_id = {row[0]: row for row in requirement_rows}
+    requirements_by_id = {
+        row.get("requirement_id"): row
+        for row in catalog.get("requirements", [])
+        if isinstance(row.get("requirement_id"), str)
+    }
+    if typed_rule_mappings is None:
+        blockers.append("typed rule registry has not been evaluated")
+
+    requirement_ids = profile.get("requirement_ids")
+    if not isinstance(requirement_ids, list) or not requirement_ids:
+        blockers.append("profile has no normative requirements")
+        requirement_ids = []
+    for requirement_id in requirement_ids:
+        if not isinstance(requirement_id, str):
+            blockers.append("profile contains a malformed requirement link")
+            continue
+        requirement = requirements_by_id.get(requirement_id)
+        if requirement is None:
+            blockers.append(f"unresolved normative requirement: {requirement_id}")
+            continue
+        if not requirement.get("implementation_refs"):
+            blockers.append(f"missing implementation assignment: {requirement_id}")
+        if not requirement.get("verification_refs"):
+            blockers.append(f"missing verification assignment: {requirement_id}")
+        coverage = requirement_coverage_by_id.get(requirement_id)
+        if coverage is None:
+            blockers.append(f"requirement is outside the checked profile closure: {requirement_id}")
+            continue
+        if coverage[3] != "Typed rule mapping: present":
+            blockers.append(f"typed rule mapping incomplete: {requirement_id}")
+        if coverage[4] not in {"Category test reference: present"} and not coverage[4].startswith(
+            "Accepted deviation: "
+        ):
+            blockers.append(f"category-appropriate test incomplete: {requirement_id}")
+
+    test_case_ids = set(
+        value for value in profile.get("test_case_ids", []) if isinstance(value, str)
+    )
+    for requirement_id in requirement_ids:
+        requirement = requirements_by_id.get(requirement_id) if isinstance(requirement_id, str) else None
+        if requirement is not None:
+            test_case_ids.update(
+                value for value in requirement.get("test_case_ids", []) if isinstance(value, str)
+            )
+    test_cases_by_id = {
+        row.get("test_id"): row
+        for row in catalog.get("test_cases", [])
+        if isinstance(row.get("test_id"), str)
+    }
+    if not test_case_ids:
+        blockers.append("profile has no linked official or project test cases")
+    official_sources: set[str] = set()
+    for test_id in sorted(test_case_ids):
+        test_case = test_cases_by_id.get(test_id)
+        if test_case is None:
+            blockers.append(f"unresolved linked test case: {test_id}")
+            continue
+        if test_case.get("source_id") == "KMIPKIT-SRC-testcases":
+            official_sources.add("KMIPKIT-SRC-testcases")
+        if test_case.get("source_id") == "KMIPKIT-SRC-profiles":
+            official_sources.add("KMIPKIT-SRC-profiles")
+        if (
+            test_case.get("mandatory_status") == "mandatory"
+            and test_case.get("fixture_availability") != "available"
+        ):
+            blockers.append(f"mandatory fixture unavailable: {test_id}")
+    if not official_sources:
+        blockers.append("profile has no linked official test case")
+
+    visited: set[str] = set()
+    resolved: dict[str, bool] = {}
+
+    def dependencies_ready(current_id: str) -> bool:
+        if current_id in resolved:
+            return resolved[current_id]
+        if current_id in visited:
+            blockers.append(f"dependency cycle detected: {current_id}")
+            return False
+        visited.add(current_id)
+        current = profiles_by_id.get(current_id)
+        if current is None:
+            blockers.append(f"unresolved dependency profile: {current_id}")
+            visited.remove(current_id)
+            resolved[current_id] = False
+            return False
+        ready = current.get("claim_state") == "evidence_complete"
+        for dependency_id in current.get("dependency_profile_ids", []):
+            if not isinstance(dependency_id, str) or not dependencies_ready(dependency_id):
+                ready = False
+                blockers.append(f"dependency profile is not evidence complete: {dependency_id}")
+        visited.remove(current_id)
+        resolved[current_id] = ready
+        return ready
+
+    dependencies_ready(profile_id)
+    runtime_available = runtime_by_profile.get(profile_id) is True
+    if not runtime_available:
+        blockers.append("runtime profile validation is unavailable")
+
+    catalog_state = str(profile.get("claim_state", "not_claimed"))
+    effective_state, unique_blockers = _effective_catalog_evidence_state(catalog_state, blockers)
+    return {
+        "profile_id": profile_id,
+        "target_selected": selected,
+        "runtime_validation_available": runtime_available,
+        "effective_state": effective_state,
+        "blockers": sorted(set(unique_blockers)),
+        "published_claim": False,
+    }
+
+
+def render_report(
+    catalog: dict[str, Any],
+    *,
+    selected_profile_ids: set[str] | None = None,
+    typed_rule_mappings: list[dict[str, Any]] | None = None,
+) -> str:
     """Render a stable report; all catalog strings are inert escaped text."""
     lines = [
         "# KMIP 2.1 inventory coverage",
@@ -228,7 +937,10 @@ def render_report(catalog: dict[str, Any]) -> str:
         ("Requirement", "Evidence gap", "Source"),
         [(
             row.get("requirement_id"),
-            row.get("review_note") or "No requirement-level official test evidence is linked.",
+            _safe_diagnostic_text(
+                row.get("review_note"),
+                "No requirement-specific official Test Cases ID is linked.",
+            ),
             _source_reference(row),
         ) for row in requirements_without_tests],
     ))
@@ -282,20 +994,128 @@ def render_report(catalog: dict[str, Any]) -> str:
     def profile_values(profile: dict[str, Any], field: str) -> str:
         return ", ".join(sorted(str(value) for value in profile.get(field) or []))
 
+    rule_coverage_rows, runtime_validation_availability = _profile_requirement_coverage(
+        catalog, typed_rule_mappings
+    )
+    requirement_rule_status = {
+        row[0]: (row[3], row[4]) for row in rule_coverage_rows
+    }
+    test_cases_by_id = {
+        row.get("test_id"): row
+        for row in catalog.get("test_cases", [])
+        if row.get("test_id")
+    }
+    profile_rule_summary = []
+    for profile in profiles:
+        if profile.get("role") != "client":
+            continue
+        profile_id = profile.get("profile_id")
+        requirement_ids = [
+            requirement_id
+            for requirement_id in profile.get("requirement_ids") or []
+            if isinstance(requirement_id, str)
+        ]
+        if typed_rule_mappings is None:
+            mapped_count: Any = "not evaluated"
+            tested_count: Any = "not evaluated"
+            blockers = ["typed rule registry not evaluated"]
+        else:
+            mapped_count = sum(
+                requirement_rule_status.get(requirement_id, ("", ""))[0]
+                == "Typed rule mapping: present"
+                for requirement_id in requirement_ids
+            )
+            tested_count = sum(
+                requirement_rule_status.get(requirement_id, ("", ""))[1]
+                == "Category test reference: present"
+                for requirement_id in requirement_ids
+            )
+            blockers = []
+            if mapped_count < len(requirement_ids):
+                blockers.append(f"typed rule mappings missing: {len(requirement_ids) - mapped_count}")
+            if tested_count < len(requirement_ids):
+                blockers.append(f"category test references missing: {len(requirement_ids) - tested_count}")
+        unavailable_fixtures = sorted(
+            test_id
+            for test_id in profile.get("test_case_ids") or []
+            if (test_case := test_cases_by_id.get(test_id)) is not None
+            and test_case.get("mandatory_status") == "mandatory"
+            and test_case.get("fixture_availability") != "available"
+        )
+        if unavailable_fixtures:
+            blockers.append(f"mandatory fixtures unavailable: {len(unavailable_fixtures)}")
+        blockers.extend(_unresolved_profile_scope_blockers(catalog, profile))
+        if profile.get("applicability") == "conditional":
+            blockers.append("conditional profile conditions are not evaluated")
+        unavailable_dependencies = sorted(
+            dependency_id
+            for dependency_id in profile.get("dependency_profile_ids") or []
+            if runtime_validation_availability.get(dependency_id) is not True
+        )
+        if unavailable_dependencies:
+            blockers.append("unavailable dependencies: " + ", ".join(unavailable_dependencies))
+        runtime_available = runtime_validation_availability.get(profile_id)
+        profile_rule_summary.append((
+            profile_id,
+            len(requirement_ids),
+            mapped_count,
+            tested_count,
+            "not evaluated" if runtime_available is None else str(runtime_available).lower(),
+            ", ".join(unavailable_fixtures) or "none",
+            "; ".join(blockers) or "no stable-input blockers",
+        ))
+
+    lines.extend([
+        "## Profile requirement rule coverage",
+        "",
+        "Rows list each distinct requirement found in a client profile closure. Profile membership is shown in Profile states. Rule-test references describe checked-in evidence links; current pass/fail is not evaluated by this report. No public claim is published.",
+        "",
+    ])
+    lines.extend(_table(
+        (
+            "Requirement", "Source clauses", "Source keyword / category",
+            "Typed rule mapping", "Rule-test coverage", "Typed rule-test IDs",
+            "Typed rule implementation refs", "Catalog implementation refs",
+            "Catalog verification refs", "Official test IDs",
+            "Decision/deviation ref", "OASIS source",
+        ),
+        rule_coverage_rows,
+    ))
+    lines.append("")
+    lines.extend(["### Profile rule and fixture blockers", ""])
+    lines.extend(_table(
+        (
+            "Profile", "Closure requirements", "Typed rules present", "Category test refs present",
+            "Runtime validation available", "Unavailable mandatory fixture IDs", "Stable-input blockers",
+        ),
+        profile_rule_summary,
+    ))
+    lines.append("")
+
     lines.extend(["## Profile states", ""])
     lines.extend(_table(
         (
-            "Profile", "Name", "Role", "Applicability", "Claim state", "Source",
+            "Profile", "Name", "Role", "Applicability", "Selected target",
+            "Runtime validation available", "Claim state", "Source",
             "Source clauses", "Requirements", "Elements", "Dependencies",
-            "Mandatory / optional tests", "Transport", "Encoding",
+            "Mandatory / optional tests", "Transport", "Encoding", "Server prerequisites",
         ),
         [(
             row.get("profile_id"), row.get("name"), row.get("role"), row.get("applicability"),
+            _profile_target_state(row.get("profile_id"), selected_profile_ids),
+            (
+                "not applicable"
+                if row.get("role") != "client"
+                else "not evaluated"
+                if runtime_validation_availability.get(row.get("profile_id")) is None
+                else str(runtime_validation_availability.get(row.get("profile_id"))).lower()
+            ),
             row.get("claim_state"), _source_reference(row),
             profile_values(row, "source_clause_ids"), profile_values(row, "requirement_ids"),
             profile_values(row, "element_ids"), profile_values(row, "dependency_profile_ids"),
             profile_tests(row), profile_values(row, "transport_requirements"),
             profile_values(row, "encoding_requirements"),
+            profile_values(row, "server_prerequisites") or "none catalogued",
         ) for row in profiles],
     ))
     lines.append("")
@@ -339,7 +1159,10 @@ def render_report(catalog: dict[str, Any]) -> str:
                 )
                 if row.get(field)
             ) or "none linked",
-            row.get("summary"), _source_reference(row),
+            _safe_diagnostic_text(
+                row.get("summary"), "Open source discrepancy requires review."
+            ),
+            _source_reference(row),
         ) for row in open_discrepancies],
     ))
     lines.append("")
@@ -355,9 +1178,21 @@ def render_report(catalog: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def write_report(catalog: dict[str, Any], path: Path, *, check: bool, repo_root: Path | None = None) -> bool:
+def write_report(
+    catalog: dict[str, Any],
+    path: Path,
+    *,
+    check: bool,
+    repo_root: Path | None = None,
+    selected_profile_ids: set[str] | None = None,
+    typed_rule_mappings: list[dict[str, Any]] | None = None,
+) -> bool:
     """Check byte equality or write the deterministic UTF-8/LF report."""
-    expected = render_report(catalog).encode("utf-8")
+    expected = render_report(
+        catalog,
+        selected_profile_ids=selected_profile_ids,
+        typed_rule_mappings=typed_rule_mappings,
+    ).encode("utf-8")
     root = (repo_root or path.parent).resolve(strict=True)
     try:
         if repo_root is None:
@@ -379,11 +1214,114 @@ def write_report(catalog: dict[str, Any], path: Path, *, check: bool, repo_root:
     return True
 
 
+def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate verification-manifest JSON key")
+        result[key] = value
+    return result
+
+
+def render_readiness_summary(readiness: Mapping[str, Any]) -> str:
+    """Render only stable readiness blockers; never echo the ephemeral manifest."""
+    target_selected = readiness.get("target_selected")
+    selected_text = "yes" if target_selected is True else "no" if target_selected is False else "unknown"
+    runtime_available = "yes" if readiness.get("runtime_validation_available") is True else "no"
+    lines = [
+        "### Current profile readiness (ephemeral)",
+        "",
+        f"- Profile: `{_escape_table_text(readiness.get('profile_id', 'unknown'))}`",
+        f"- Target selected: {selected_text}",
+        f"- Runtime validation available: {runtime_available}",
+        f"- Effective evidence state: `{_escape_table_text(readiness.get('effective_state', 'unknown'))}`",
+        "- Public claim: no",
+        "",
+    ]
+    blockers = readiness.get("blockers")
+    if isinstance(blockers, list) and blockers:
+        lines.extend(("Blockers:", ""))
+        lines.extend(f"- {_escape_table_text(blocker)}" for blocker in blockers)
+        lines.append("")
+    else:
+        lines.extend(("No readiness blockers were reported.", ""))
+    return "\n".join(lines)
+
+
+def evaluate_current_readiness(
+    repository: Path,
+    environment: Mapping[str, str],
+) -> dict[str, Any]:
+    """Evaluate Baseline against current workflow context and an optional same-run manifest."""
+    code_root = Path(__file__).resolve().parents[2]
+    if str(code_root) not in sys.path:
+        sys.path.insert(0, str(code_root))
+    from tools.normative_catalog.validate import load_validated_catalog
+    from tools.normative_catalog.generate_profiles import load_profile_targets
+
+    raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
+    catalog = load_validated_catalog(raw, repository, require_complete=True)
+    selected_profile_ids = set(load_profile_targets(repository, catalog).profile_ids)
+    typed_rule_mappings = load_typed_rule_mappings(repository)
+    manifest_text = environment.get("PROFILE_EVIDENCE_MANIFEST", "")
+    manifest: dict[str, Any] | None = None
+    if manifest_text:
+        try:
+            if len(manifest_text.encode("utf-8")) > 64 * 1024:
+                raise ValueError("verification manifest exceeds the input limit")
+            parsed = json.loads(manifest_text, object_pairs_hook=_unique_json_object)
+            if not isinstance(parsed, dict):
+                raise ValueError("verification manifest must be an object")
+            manifest = parsed
+        except (UnicodeError, ValueError):
+            # An invalid marker is passed to the strict validator below so the
+            # readiness result is explicitly invalid, never silently absent.
+            manifest = {"invalid_manifest_input": True}
+
+    context = {
+        "event_name": environment.get("GITHUB_EVENT_NAME", ""),
+        "repository": environment.get("GITHUB_REPOSITORY", ""),
+        "ref": environment.get("GITHUB_REF", ""),
+        "ref_protected": environment.get("GITHUB_REF_PROTECTED", "") == "true",
+        "sha": environment.get("GITHUB_SHA", ""),
+        "workflow_ref": environment.get("GITHUB_WORKFLOW_REF", ""),
+        "run_id": environment.get("GITHUB_RUN_ID", ""),
+        "run_attempt": environment.get("GITHUB_RUN_ATTEMPT", ""),
+    }
+    head = subprocess.run(
+        ["git", "rev-parse", "--verify", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return evaluate_profile_readiness(
+        catalog,
+        BASELINE_PROFILE_ID,
+        selected_profile_ids=selected_profile_ids,
+        typed_rule_mappings=typed_rule_mappings,
+        verification_manifest=manifest,
+        current_context=context,
+        current_head=head,
+        repository_root=repository,
+    )
+
+
+def _append_readiness_summary(summary_path: str | None, readiness: Mapping[str, Any]) -> None:
+    markdown = render_readiness_summary(readiness)
+    if summary_path:
+        with Path(summary_path).open("a", encoding="utf-8", newline="\n") as summary:
+            summary.write(markdown)
+    else:
+        sys.stdout.write(markdown)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--write", action="store_true", help="write the generated report")
     mode.add_argument("--check", action="store_true", help="fail if the checked-in report is stale")
+    mode.add_argument("--readiness", action="store_true", help="evaluate current profile evidence ephemerally")
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument(
         "--structural-only",
@@ -398,13 +1336,32 @@ def main(argv: list[str] | None = None) -> int:
             sys.path.insert(0, str(code_root))
         from tools.normative_catalog.validate import load_validated_catalog
 
-        catalog_path = repository / "specification" / "catalog" / "kmip-2.1.json"
         report_path = repository / REPORT_PATH
+        if arguments.readiness:
+            readiness = evaluate_current_readiness(repository, os.environ)
+            _append_readiness_summary(os.environ.get("GITHUB_STEP_SUMMARY"), readiness)
+            return 0
+
         raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
         catalog = load_validated_catalog(raw, repository, require_complete=not arguments.structural_only)
-        valid = write_report(catalog, report_path, check=arguments.check, repo_root=repository)
-    except (OSError, ValueError, PathSecurityError) as error:
-        print(f"coverage report failed: {error}", file=sys.stderr)
+        selected_profile_ids = None
+        typed_rule_mappings = None
+        if not arguments.structural_only:
+            from tools.normative_catalog.generate_profiles import load_profile_targets
+
+            selected_profile_ids = set(load_profile_targets(repository, catalog).profile_ids)
+            typed_rule_mappings = load_typed_rule_mappings(repository)
+        valid = write_report(
+            catalog,
+            report_path,
+            check=arguments.check,
+            repo_root=repository,
+            selected_profile_ids=selected_profile_ids,
+            typed_rule_mappings=typed_rule_mappings,
+        )
+    except (OSError, ValueError, PathSecurityError, subprocess.CalledProcessError):
+        failure = "profile readiness evaluation failed: current evidence or repository input is invalid" if arguments.readiness else "coverage report failed: catalog or report input is invalid or unsafe"
+        print(failure, file=sys.stderr)
         return 1
     if not valid:
         print("coverage report is stale; run report.py --write", file=sys.stderr)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import locale
+import os
 import shutil
 import subprocess
 import sys
@@ -64,6 +65,250 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    def test_typed_rule_registry_reader_parses_a_complete_static_mapping(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(validate_discover_versions_rule),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+];
+""",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                [
+                    {
+                        "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+                        "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+                        "verification_category": "OptionalCapability",
+                        "evaluator_present": True,
+                        "test_kind": "OptionalCapabilityUsable",
+                        "test_id": (
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                            "production_discover_versions_rule_accepts_only_kmip_21_offers"
+                        ),
+                    }
+                ],
+                load_typed_rule_mappings(repository),
+            )
+
+    def test_typed_rule_registry_reader_rejects_executable_field_expressions(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(run_unreviewed_macro!()),
+        test_evidence: &[],
+        constraints: &[],
+    },
+];
+""",
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "unsupported typed profile rule mapping"):
+                load_typed_rule_mappings(repository)
+
+    def test_profile_readiness_blocks_unresolved_scope_in_its_clause_closure(self) -> None:
+        from tools.normative_catalog.report import evaluate_profile_readiness
+
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "dependency_profile_ids": [],
+                "test_case_ids": ["KMIPKIT-TEST-PROFILE-BASELINE"],
+            }
+        ]
+        typed_rule_mapping = {
+            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RequiredBehavior",
+            "evaluator_present": True,
+            "test_kind": "PositiveBehavior",
+            "test_id": "profile_validation::required_rule_enforces_clause",
+        }
+        resolved_readiness = evaluate_profile_readiness(
+            catalog,
+            "KMIPKIT-PROFILE-BASELINE",
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"},
+            typed_rule_mappings=[typed_rule_mapping],
+            verification_manifest=None,
+            current_context=None,
+        )
+        self.assertTrue(resolved_readiness["runtime_validation_available"])
+        catalog["requirements"].extend(
+            [
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                    "role": "client",
+                    "scope_state": "unclear",
+                    "implementation_refs": [],
+                    "verification_refs": [],
+                },
+                {
+                    "requirement_id": "KMIPKIT-REQ-SPEC-8.1-CONDITIONAL",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                    "role": "both",
+                    "scope_state": "profile_conditional",
+                    "profile_ids": [],
+                    "implementation_refs": [],
+                    "verification_refs": [],
+                },
+            ]
+        )
+
+        readiness = evaluate_profile_readiness(
+            catalog,
+            "KMIPKIT-PROFILE-BASELINE",
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"},
+            typed_rule_mappings=[typed_rule_mapping],
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        report = render_report(catalog, typed_rule_mappings=[typed_rule_mapping])
+        self.assertIn(
+            "unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
+            report,
+        )
+        self.assertTrue(any(
+            blocker.startswith("unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-UNCLEAR at ")
+            for blocker in readiness["blockers"]
+        ))
+        self.assertTrue(any(
+            blocker.startswith("unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-CONDITIONAL at ")
+            for blocker in readiness["blockers"]
+        ))
+        self.assertFalse(readiness["runtime_validation_available"])
+
+    def test_readiness_cli_reports_missing_current_run_manifest_without_publishing(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "summary.md"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": "NeverWe1come/KMIPKit",
+                "GITHUB_REF": "refs/pull/42/merge",
+                "GITHUB_REF_PROTECTED": "false",
+                "GITHUB_SHA": "a" * 40,
+                "GITHUB_WORKFLOW_REF": "NeverWe1come/KMIPKit/.github/workflows/ci.yml@refs/pull/42/merge",
+                "GITHUB_RUN_ID": "123456789",
+                "GITHUB_RUN_ATTEMPT": "1",
+                "PROFILE_EVIDENCE_MANIFEST": "",
+            }
+            with patch.dict(os.environ, environment, clear=False):
+                exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("Current profile readiness", summary)
+        self.assertIn("current protected-release-push verification manifest is unavailable", summary)
+        self.assertIn("Public claim: no", summary)
+        self.assertNotIn("123456789", summary)
+
+    def test_readiness_cli_consumes_the_same_run_manifest_ephemerally(self) -> None:
+        from scripts.ci_summary import build_evidence_manifest
+        from tools.normative_catalog import report as report_module
+
+        head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=True,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        context = {
+            "repository": "NeverWe1come/KMIPKit",
+            "ref": "refs/heads/release/1.0.0",
+            "ref_protected": True,
+            "sha": head,
+            "workflow_ref": "NeverWe1come/KMIPKit/.github/workflows/ci.yml@refs/heads/release/1.0.0",
+            "run_id": "123456789",
+            "run_attempt": "1",
+        }
+        needs = {job_id: {"result": "success"} for job_id in (
+            "core",
+            "script-contracts",
+            "normative-inventory",
+            "coverage",
+            "coverage-gate",
+            "dependency-policy",
+        )}
+        manifest = build_evidence_manifest(
+            event_name="push",
+            context=context,
+            needs=needs,
+            branch_protection={
+                "protected": True,
+                "required_pull_request_reviews": {
+                    "required_approving_review_count": 1,
+                    "dismiss_stale_reviews": True,
+                    "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
+                },
+                "enforce_admins": {"enabled": True},
+                "allow_force_pushes": {"enabled": False},
+                "allow_deletions": {"enabled": False},
+            },
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            summary_path = Path(directory) / "summary.md"
+            environment = {
+                "GITHUB_STEP_SUMMARY": str(summary_path),
+                "GITHUB_EVENT_NAME": "push",
+                "GITHUB_REPOSITORY": context["repository"],
+                "GITHUB_REF": context["ref"],
+                "GITHUB_REF_PROTECTED": "true",
+                "GITHUB_SHA": head,
+                "GITHUB_WORKFLOW_REF": context["workflow_ref"],
+                "GITHUB_RUN_ID": context["run_id"],
+                "GITHUB_RUN_ATTEMPT": context["run_attempt"],
+                "PROFILE_EVIDENCE_MANIFEST": json.dumps(manifest),
+            }
+            with patch.dict(os.environ, environment, clear=False):
+                exit_code = report_module.main(["--readiness", "--repo-root", str(ROOT)])
+
+            summary = summary_path.read_text(encoding="utf-8")
+
+        self.assertEqual(0, exit_code)
+        self.assertIn("Current profile readiness", summary)
+        self.assertNotIn("current verification manifest is invalid or does not match this run", summary)
+        self.assertIn("Public claim: no", summary)
+        self.assertNotIn("123456789", summary)
+
     def test_emits_fixed_sections_totals_and_unassigned_requirements(self) -> None:
         report = render_report(report_catalog())
         self.assertIn("## Source documents", report)
@@ -310,6 +555,335 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("TLS 1.3", report)
         self.assertIn("TTLV", report)
 
+    def test_profile_report_separates_selected_target_from_claim_state(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE",
+                "name": "Baseline",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [],
+                "source_clause_ids": [],
+                "requirement_ids": [],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+
+        report = render_report(catalog, selected_profile_ids={"KMIPKIT-PROFILE-BASELINE"})
+
+        self.assertIn("Selected target", report)
+        self.assertIn(r"not\_claimed", report)
+        self.assertIn("selected", report)
+
+    def test_profile_requirement_coverage_reports_missing_typed_rule_and_test(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "evidence_incomplete",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+
+        report = render_report(
+            catalog,
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+            typed_rule_mappings=[],
+        )
+
+        self.assertIn("## Profile requirement rule coverage", report)
+        self.assertIn("KMIPKIT-PROFILE-BASELINE-CLIENT", report)
+        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-8.1-001", report)
+        self.assertIn("RequiredBehavior", report)
+        self.assertIn("No typed rule mapping", report)
+        self.assertIn("No category-appropriate rule test", report)
+        self.assertIn("| selected | false | evidence\\_incomplete |", report)
+        self.assertIn(r"evidence\_incomplete", report)
+        self.assertIn("No public claim", report)
+
+    def test_profile_requirement_coverage_links_typed_rule_to_category_test(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+        mapping = {
+            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RequiredBehavior",
+            "evaluator_present": True,
+            "test_kind": "PositiveBehavior",
+            "test_id": "profile_validation::required_rule_enforces_clause",
+        }
+
+        report = render_report(catalog, typed_rule_mappings=[mapping])
+
+        self.assertIn("Typed rule mapping: present", report)
+        self.assertIn("Category test reference: present", report)
+        self.assertIn(r"profile\_validation::required\_rule\_enforces\_clause", report)
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", report)
+        self.assertIn("current pass/fail is not evaluated", report)
+
+    def test_profile_requirement_coverage_accepts_approved_recommended_deviation(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = report_catalog()
+        requirement = catalog["requirements"][0]
+        requirement["source_keyword"] = "SHOULD"
+        requirement["normative_strength"] = "recommended"
+        requirement["decision_id"] = "KMIPKIT-DEC-PROFILE-001"
+        catalog["source_clauses"][0]["source_keywords"] = ["SHOULD"]
+        catalog["decisions"] = [
+            {
+                "decision_id": "KMIPKIT-DEC-PROFILE-001",
+                "status": "accepted",
+                "requirement_ids": [requirement["requirement_id"]],
+            }
+        ]
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": [requirement["requirement_id"]],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+        mapping = {
+            "requirement_id": requirement["requirement_id"],
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RecommendedBehaviorOrDeviation",
+            "evaluator_present": True,
+            "test_kind": None,
+            "test_id": None,
+        }
+
+        rows, runtime_availability = report_module._profile_requirement_coverage(
+            catalog,
+            [mapping],
+        )
+
+        self.assertEqual("Accepted deviation: KMIPKIT-DEC-PROFILE-001", rows[0][4])
+        self.assertTrue(runtime_availability["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+
+    def test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        target_ids = {"KMIPKIT-PROFILE-BASELINE-CLIENT"}
+        typed_rule_mappings = report_module.load_typed_rule_mappings(ROOT)
+
+        report = render_report(
+            catalog,
+            selected_profile_ids=target_ids,
+            typed_rule_mappings=typed_rule_mappings,
+        )
+
+        self.assertEqual(
+            [
+                "KMIPKIT-REQ-SPEC-2.3-001",
+                "KMIPKIT-REQ-SPEC-2.3-001",
+                "KMIPKIT-REQ-SPEC-2.3-002",
+                "KMIPKIT-REQ-SPEC-2.3-002",
+                "KMIPKIT-REQ-SPEC-2.3-002",
+                "KMIPKIT-REQ-SPEC-2.4-001-001",
+                "KMIPKIT-REQ-SPEC-2.4-001-001",
+                "KMIPKIT-REQ-SPEC-2.4-001-002",
+                "KMIPKIT-REQ-SPEC-2.4-001-002",
+                "KMIPKIT-REQ-SPEC-2.7-001",
+                "KMIPKIT-REQ-SPEC-2.7-001",
+                "KMIPKIT-REQ-SPEC-3.1-001",
+                "KMIPKIT-REQ-SPEC-3.1-001",
+                "KMIPKIT-REQ-SPEC-3.1-001",
+                "KMIPKIT-REQ-SPEC-4.14-001-001",
+                "KMIPKIT-REQ-SPEC-4.14-001-001",
+                "KMIPKIT-REQ-SPEC-4.14-001-002",
+                "KMIPKIT-REQ-SPEC-4.14-001-002",
+                "KMIPKIT-REQ-SPEC-4.27-001",
+                "KMIPKIT-REQ-SPEC-6.1.43-005",
+                "KMIPKIT-REQ-SPEC-6.1.43-005",
+                "KMIPKIT-REQ-SPEC-4.62-003",
+                "KMIPKIT-REQ-SPEC-4.63-004",
+                "KMIPKIT-REQ-SPEC-4.63-005",
+                "KMIPKIT-REQ-PROF-4.1.2-007",
+                "KMIPKIT-REQ-PROF-4.1.2-007",
+                "KMIPKIT-REQ-SPEC-4.16-001-002",
+                "KMIPKIT-REQ-SPEC-4.16-001-001",
+                "KMIPKIT-REQ-SPEC-4.16-001-001",
+                "KMIPKIT-REQ-SPEC-4.16-001-001",
+                "KMIPKIT-REQ-SPEC-4.16-001-001",
+                "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+            ],
+            [mapping["requirement_id"] for mapping in typed_rule_mappings],
+        )
+        profile_state_section = report.split("## Profile states\n", 1)[1]
+        baseline_row = next(
+            line for line in profile_state_section.splitlines()
+            if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
+        )
+        self.assertIn("| selected | false |", baseline_row)
+        self.assertIn("| selected | false | evidence\\_incomplete |", baseline_row)
+        self.assertIn("No typed rule mapping", report)
+        self.assertIn("No category-appropriate rule test", report)
+        self.assertIn("KMIPKIT-REQ-SPEC-6.1.16-001-001", report)
+        self.assertIn("Category test reference: present", report)
+        profile_state_section = report.split("## Profile states\n", 1)[1]
+        baseline_row = next(
+            line for line in profile_state_section.splitlines()
+            if line.startswith("| KMIPKIT-PROFILE-BASELINE-CLIENT |")
+        )
+        self.assertNotIn("mandatory fixtures unavailable:", baseline_row)
+        self.assertIn("| available | 23 |", report)
+        self.assertIn("KMIPKIT-TEST-PROF-5-1-3-1", report)
+        self.assertIn("No public claim", report)
+
+    def test_stale_complete_claim_is_downgraded_without_publishing(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
+        profile["claim_state"] = "evidence_complete"
+        evaluator = getattr(report_module, "evaluate_profile_readiness", None)
+        self.assertTrue(callable(evaluator), "report.py must expose profile readiness evaluation")
+
+        readiness = evaluator(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIs(readiness["target_selected"], True)
+        self.assertIs(readiness["runtime_validation_available"], False)
+        self.assertEqual("evidence_incomplete", readiness["effective_state"])
+        self.assertIn("catalog claim_state evidence_complete is stale", readiness["blockers"])
+        self.assertIs(readiness["published_claim"], False)
+
+    def test_conditional_profile_readiness_requires_explicit_configuration(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
+        readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=[],
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIs(readiness["runtime_validation_available"], False)
+        self.assertTrue(any("conditional" in blocker for blocker in readiness["blockers"]))
+        self.assertIs(readiness["published_claim"], False)
+
+    def test_dependency_readiness_failure_blocks_dependent_profile(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+        readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=[],
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIs(readiness["runtime_validation_available"], False)
+        self.assertTrue(any("KMIPKIT-PROFILE-BASELINE-CLIENT" in blocker for blocker in readiness["blockers"]))
+        self.assertIs(readiness["published_claim"], False)
+
+    def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
+        catalog = report_catalog()
+        credential_marker = "credential=report-secret-sentinel-731"
+        private_key_marker = "private-key-sentinel-932"
+        raw_body_marker = "raw-kmip-body-sentinel-184"
+        catalog["requirements"][0]["review_note"] = (
+            f"diagnostic {credential_marker} private-key={private_key_marker} "
+            f"raw-kmip-body={raw_body_marker}"
+        )
+        catalog["discrepancies"] = [
+            {
+                "discrepancy_id": "KMIPKIT-DISC-REPORT-001",
+                "state": "open",
+                "summary": f"malformed evidence raw-kmip-body={raw_body_marker}",
+                "source_refs": [],
+                "affected_requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "affected_element_ids": [],
+                "affected_profile_ids": [],
+                "affected_policy_ids": [],
+            }
+        ]
+
+        report = render_report(catalog)
+
+        for marker in (credential_marker, private_key_marker, raw_body_marker):
+            with self.subTest(marker=marker):
+                self.assertNotIn(marker, report)
+
+    def test_report_redacts_the_complete_quoted_multword_secret_value(self) -> None:
+        catalog = report_catalog()
+        secret_suffix_marker = "report-secret-suffix-sentinel-184"
+        catalog["discrepancies"] = [
+            {
+                "discrepancy_id": "KMIPKIT-DISC-REPORT-QUOTED-SECRET",
+                "state": "open",
+                "summary": f'diagnostic credential="alpha {secret_suffix_marker}"',
+                "source_refs": [],
+                "affected_requirement_ids": [],
+                "affected_element_ids": [],
+                "affected_profile_ids": [],
+                "affected_policy_ids": [],
+            }
+        ]
+
+        report = render_report(catalog)
+
+        self.assertNotIn(secret_suffix_marker, report)
+
     def test_full_catalog_report_reconciles_tags_ranges_and_profile_cases(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         report = render_report(catalog)
@@ -395,6 +969,23 @@ class CoverageReportTests(unittest.TestCase):
             report = (root / "specification" / "catalog" / "coverage-report.md").read_text(encoding="utf-8")
             self.assertIn("KMIPKIT-SRC-profiles", report)
             self.assertIn("| Sources | 4 |", report)
+
+    def test_script_entrypoint_does_not_echo_sensitive_values_from_path_errors(self) -> None:
+        marker = "raw-kmip-body-path-sentinel-591"
+        with tempfile.TemporaryDirectory() as directory:
+            missing_root = Path(directory) / marker
+            script = Path(__file__).resolve().parents[1] / "report.py"
+            result = subprocess.run(
+                [sys.executable, str(script), "--write", "--repo-root", str(missing_root)],
+                cwd=ROOT,
+                capture_output=True,
+                check=False,
+                text=True,
+            )
+
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn(marker, result.stderr)
+        self.assertNotIn(marker, result.stdout)
 
     def test_check_detects_stale_report_and_write_replaces_it(self) -> None:
         catalog = report_catalog()

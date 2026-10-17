@@ -18,7 +18,8 @@ use std::rc::Rc;
 
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
-use kmipkit_ttlv::codec::CodecLimits;
+use kmipkit_ttlv::codec::{CodecLimits, decode};
+use kmipkit_ttlv::{Item, ValueView};
 
 use crate::ClientErrorCategory;
 use crate::execute::{Client, ClientBatch, ClientBatchItem, ClientRequest, ZeroizationObserver};
@@ -26,6 +27,8 @@ use crate::execute_test_support::{ResponseItemFixture, response_bytes};
 
 const CORRELATION_VALUE: &[u8] = b"KMIP_ASYNC_CORRELATION_SENTINEL_73";
 const CORRELATION_PREFIX: &str = "KMIP_ASYNC_CORRELATION";
+const BATCH_ITEM: u32 = 0x0042_000F;
+const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 
 #[derive(Clone)]
 struct SharedScriptedTransport {
@@ -151,6 +154,81 @@ fn public_batch_and_result_accessors_preserve_order_and_redact_identifiers() {
     assert_eq!(outcome.result().status().raw(), 0);
     assert!(format!("{outcome:?}").starts_with("Completed("));
     assert!(outcome.to_string().starts_with("Completed("));
+}
+
+#[test]
+fn single_item_request_may_include_or_omit_unique_batch_item_id() {
+    // OASIS KMIP Profiles v2.1 §4.1.2, locator 7; KMIPKIT-REQ-PROF-4.1.2-007.
+    let cases: [Option<&[u8]>; 2] = [None, Some(b"single-item-id")];
+
+    for expected_id in cases {
+        let response = response_bytes((2, 1), &[ResponseItemFixture::success(expected_id)]);
+        let (mut client, fake, captured) =
+            crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+                response,
+                request_write_chunks: Vec::new(),
+            });
+        let mut request_item = ClientBatchItem::new(ClientRequest::discover_versions());
+        if let Some(id) = expected_id {
+            request_item = request_item.with_unique_batch_item_id(id.to_vec());
+        }
+
+        client
+            .execute(ClientBatch::new(request_item), &CodecLimits::defaults())
+            .expect("the matching single-item response completes the fake exchange");
+
+        assert_eq!(fake.borrow().exchange_count(), 1);
+        let captured = captured.borrow();
+        let encoded = captured
+            .as_ref()
+            .expect("the fake transport captures the encoded request");
+        let message = decode(encoded.as_slice()).expect("the captured request is valid TTLV");
+        let (field_count, encoded_ids) = unique_batch_item_ids(&message);
+
+        assert_eq!(field_count, usize::from(expected_id.is_some()));
+        assert_eq!(
+            encoded_ids,
+            expected_id
+                .map(<[u8]>::to_vec)
+                .into_iter()
+                .collect::<Vec<_>>()
+        );
+    }
+}
+
+fn unique_batch_item_ids(message: &Item) -> (usize, Vec<Vec<u8>>) {
+    message.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return (0, Vec::new());
+        };
+        let Some(batch_item) = message
+            .children()
+            .iter()
+            .find(|child| child.tag().raw() == BATCH_ITEM)
+        else {
+            return (0, Vec::new());
+        };
+        batch_item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return (0, Vec::new());
+            };
+            let fields = batch_item
+                .children()
+                .iter()
+                .filter(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
+                .collect::<Vec<_>>();
+            let ids = fields
+                .iter()
+                .filter_map(|field| {
+                    field.with_value(|value| match value {
+                        ValueView::ByteString(id) => Some(id.to_vec()),
+                        _ => None,
+                    })
+                })
+                .collect();
+            (fields.len(), ids)
+        })
+    })
 }
 
 #[test]
