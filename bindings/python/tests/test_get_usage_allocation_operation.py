@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, extensions, ttlv
+from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit._ffi import ffi as ttlv_ffi
 
@@ -103,6 +103,97 @@ def test_get_usage_allocation_response_allows_absent_response(
     result = client._get_usage_allocation_response(SimpleNamespace(_pointer=lambda: object()))
 
     assert result is None
+
+
+@pytest.mark.parametrize(
+    ("present", "identifier_kind"), ((0, 3), (2, 0), (1, 0))
+)
+def test_get_usage_allocation_rejects_inconsistent_response_fields(
+    monkeypatch: pytest.MonkeyPatch, present: int, identifier_kind: int
+) -> None:
+    def response(_item: object, out_present: object, identifier: object) -> int:
+        out_present[0] = present  # type: ignore[index]
+        identifier.kind = identifier_kind  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_get_usage_allocation=response),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._get_usage_allocation_response(SimpleNamespace(_pointer=lambda: object()))
+
+
+def test_get_usage_allocation_releases_inconsistent_ttlv_handle(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pointer = ffi.cast("kmipkit_ttlv_structure_t *", 24)
+    released: list[object] = []
+
+    def response(_item: object, present: object, identifier: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.INTEGER)  # type: ignore[attr-defined]
+        identifier.integer_value = -17  # type: ignore[attr-defined]
+        return 0
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_get_usage_allocation=response,
+            kmipkit_client_batch_item_response_get_usage_allocation_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._get_usage_allocation_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [pointer]
+
+
+def test_get_usage_allocation_releases_ttlv_when_conversion_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pointer = ffi.cast("kmipkit_ttlv_structure_t *", 24)
+    released: list[object] = []
+
+    def response(_item: object, present: object, identifier: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.INTEGER)  # type: ignore[attr-defined]
+        identifier.integer_value = -17  # type: ignore[attr-defined]
+        return 0
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = pointer  # type: ignore[index]
+        return 0
+
+    def fail_conversion(_address: int) -> object:
+        raise RuntimeError("conversion failed")
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_get_usage_allocation=response,
+            kmipkit_client_batch_item_response_get_usage_allocation_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(client.ttlv, "_structure_from_native_address", fail_conversion)
+
+    with pytest.raises(RuntimeError, match="conversion failed"):
+        client._get_usage_allocation_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [pointer]
 
 
 def test_get_usage_allocation_exposes_owned_complete_response_ttlv(

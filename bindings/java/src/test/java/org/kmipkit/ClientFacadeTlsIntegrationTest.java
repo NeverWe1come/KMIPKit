@@ -224,7 +224,10 @@ final class ClientFacadeTlsIntegrationTest {
                             .withUniqueBatchItemId(uniqueBatchItemId(9)))
                     .add(ClientBatchItem.getUsageAllocation(
                                     UniqueIdentifier.textString("allocation-request"), 3L)
-                            .withUniqueBatchItemId(uniqueBatchItemId(10)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(10)))
+                    .add(ClientBatchItem.check(UniqueIdentifier.textString("check-key"),
+                                    3L, 2, 60L)
+                            .withUniqueBatchItemId(uniqueBatchItemId(11)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -238,8 +241,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult splitKey = response.itemAt(7);
                     ClientBatchItemResult textCreated = response.itemAt(8);
                     ClientBatchItemResult certified = response.itemAt(9);
-                    ClientBatchItemResult allocated = response.itemAt(10)) {
-                assertEquals(11, response.itemCount());
+                    ClientBatchItemResult allocated = response.itemAt(10);
+                    ClientBatchItemResult checked = response.itemAt(11)) {
+                assertEquals(12, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -331,6 +335,17 @@ final class ClientFacadeTlsIntegrationTest {
                     assertTrue(containsByteString(allocationTtlv, 0x540001,
                             "KMIPKit-allocation-sentinel".getBytes(StandardCharsets.US_ASCII)));
                     assertFalse(allocationResponse.toString().contains("allocation-object"));
+                }
+
+                try (ClientBatchItemResult.CheckResponse checkResponse =
+                                checked.checkResponse().orElseThrow();
+                        TtlvStructureView checkTtlv = checkResponse.responseTtlv().view()) {
+                    assertTrue(checkResponse.uniqueIdentifier().isEmpty());
+                    assertEquals(3L, checkResponse.usageLimitsCount().orElseThrow());
+                    assertEquals(2L, checkResponse.cryptographicUsageMask().orElseThrow());
+                    assertEquals(60L, checkResponse.leaseTime().orElseThrow());
+                    assertTrue(checkTtlv.itemCount() > 0);
+                    assertFalse(checkResponse.toString().contains("check-key"));
                 }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
@@ -986,7 +1001,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(11)));
+                item(0x42000d, 2, integer(12)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1049,9 +1064,16 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] allocationItem = structure(0x42000f,
                 enumeration(0x42005c, 17), item(0x420093, 8, uniqueBatchItemId(10)),
                 enumeration(0x42007f, 0), allocationPayload);
+        byte[] checkPayload = structure(0x42007c,
+                item(0x420096, TtlvItemType.LongInteger.code(), longInteger(3)),
+                item(0x42002c, TtlvItemType.Integer.code(), integer(2)),
+                item(0x420049, TtlvItemType.Interval.code(), integer(60)));
+        byte[] checkItem = structure(0x42000f,
+                enumeration(0x42005c, 9), item(0x420093, 8, uniqueBatchItemId(11)),
+                enumeration(0x42007f, 1), enumeration(0x42007e, 0x29), checkPayload);
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
-                certifyItem, allocationItem);
+                certifyItem, allocationItem, checkItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {

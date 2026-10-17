@@ -1030,6 +1030,69 @@ def test_batch_result_copies_metadata_unknown_outcome_and_optional_spans(
     assert released == ["item", "response"]
 
 
+def test_batch_result_dispatches_check_operation_to_typed_mapper(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    released: list[str] = []
+
+    def metadata(_item: object, out: object) -> int:
+        _initialize_metadata_v2(out)
+        out.operation = 0x09  # type: ignore[attr-defined]
+        out.result_status = 1  # type: ignore[attr-defined]
+        return 0
+
+    def absent_span(_item: object, present: object, value: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        value.data = client.ffi.NULL  # type: ignore[attr-defined]
+        value.length = 0  # type: ignore[attr-defined]
+        return 0
+
+    def absent_check(
+        _item: object, present: object, identifier_present: object,
+        identifier: object, count_present: object, count: object,
+        mask_present: object, usage_mask: object, lease_present: object, lease: object,
+    ) -> int:
+        present[0] = 0  # type: ignore[index]
+        identifier_present[0] = 0  # type: ignore[index]
+        identifier.kind = 0  # type: ignore[attr-defined]
+        count_present[0] = 0  # type: ignore[index]
+        count[0] = 0  # type: ignore[index]
+        mask_present[0] = 0  # type: ignore[index]
+        usage_mask[0] = 0  # type: ignore[index]
+        lease_present[0] = 0  # type: ignore[index]
+        lease[0] = 0  # type: ignore[index]
+        return 0
+
+    def absent_check_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = client.ffi.NULL  # type: ignore[index]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=absent_span,
+        kmipkit_client_batch_item_response_pending_correlation_value=absent_span,
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=_no_supported_versions,
+        kmipkit_client_batch_item_response_check=absent_check,
+        kmipkit_client_batch_item_response_check_ttlv=absent_check_ttlv,
+        **_no_creation_response_symbols(),
+    )
+    monkeypatch.setattr(client, "lib", fake)
+
+    result = client._batch_result(response_pointer)
+
+    assert result.items[0].operation == 0x09
+    assert result.items[0].check_response is None
+    result.close()
+    assert released == ["item", "response"]
+
+
 def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

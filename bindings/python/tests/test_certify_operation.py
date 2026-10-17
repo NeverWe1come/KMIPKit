@@ -181,6 +181,72 @@ def test_certify_response_preserves_absence_without_stale_identifier(monkeypatch
     assert client._certify_response(item) is None
 
 
+def test_certify_response_releases_inconsistent_ttlv_handle(monkeypatch) -> None:
+    response_ttlv_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 24)
+    released: list[object] = []
+
+    def response(_item, present, identifier) -> int:
+        present[0] = 1
+        identifier.kind = 3
+        identifier.integer_value = -17
+        return 0
+
+    def response_ttlv(_item, present, output) -> int:
+        present[0] = 0
+        output[0] = response_ttlv_pointer
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_certify=response,
+            kmipkit_client_batch_item_response_certify_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda pointer: released.append(pointer),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._certify_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [response_ttlv_pointer]
+
+
+def test_certify_response_releases_ttlv_when_conversion_fails(monkeypatch) -> None:
+    response_ttlv_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 24)
+    released: list[object] = []
+
+    def response(_item, present, identifier) -> int:
+        present[0] = 1
+        identifier.kind = 3
+        identifier.integer_value = -17
+        return 0
+
+    def response_ttlv(_item, present, output) -> int:
+        present[0] = 1
+        output[0] = response_ttlv_pointer
+        return 0
+
+    def fail_conversion(_address: int) -> object:
+        raise RuntimeError("conversion failed")
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_certify=response,
+            kmipkit_client_batch_item_response_certify_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda pointer: released.append(pointer),
+        ),
+    )
+    monkeypatch.setattr(client.ttlv, "_structure_from_native_address", fail_conversion)
+
+    with pytest.raises(RuntimeError, match="conversion failed"):
+        client._certify_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [response_ttlv_pointer]
+
+
 def test_batch_result_exposes_successful_certify_response(monkeypatch) -> None:
     response_pointer = ffi.cast("kmipkit_client_batch_response_t *", 1)
     item_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 2)

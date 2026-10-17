@@ -19,6 +19,13 @@ final class CheckResponseMappingTest {
     }
 
     @Test
+    void checkBuilderAllowsEveryOptionalFieldToBeOmitted() {
+        try (ClientBatchItem item = ClientBatchItem.check(null, null, null, null)) {
+            assertTrue(item != null);
+        }
+    }
+
+    @Test
     void checkBuilderAcceptsLeaseTimeU32BoundariesAndRejectsOutOfRangeValues() {
         try (ClientBatchItem zero = ClientBatchItem.check(null, null, null, 0L);
              ClientBatchItem maximum = ClientBatchItem.check(null, null, null, 0xffff_ffffL)) {
@@ -57,5 +64,65 @@ final class CheckResponseMappingTest {
                 .parseCheckResponse(new Object[] {
                     new long[] {0, 0, 0, 0, 0, 0, 0, 0}, null, new long[] {0}})
                 .isEmpty());
+    }
+
+    @Test
+    void absentResponseRejectsTypedFieldsAndGenericTtlv() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCheckResponse(new Object[] {
+                    new long[] {0, 0, 1, 0, 0, 0, 0, 0}, null, new long[] {0}
+                }));
+
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlvHandle = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCheckResponse(new Object[] {
+                    new long[] {0, 0, 0, 0, 0, 0, 0, 0}, null,
+                    new long[] {responseTtlvHandle}
+                }));
+    }
+
+    @Test
+    void absentResponseClosesTtlvWhenTypedFieldsAreInconsistent() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlvHandle = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCheckResponse(new Object[] {
+                    new long[] {0, 0, 1, 0, 0, 0, 0, 0}, null,
+                    new long[] {responseTtlvHandle}
+                }));
+
+        long viewHandle = 0;
+        boolean closed;
+        try {
+            viewHandle = NativeExtensionRegistry.ttlvStructureView(responseTtlvHandle);
+            closed = false;
+        } catch (InvalidInputException expected) {
+            closed = true;
+        } finally {
+            if (viewHandle != 0) {
+                NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE_VIEW, viewHandle);
+                NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, responseTtlvHandle);
+            }
+        }
+
+        assertTrue(closed, "the invalid Check response must release its owned TTLV handle");
+    }
+
+    @Test
+    void presentResponseRequiresOwnedTtlvAndValidPolicyFields() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCheckResponse(new Object[] {
+                    new long[] {1, 0, 0, 0, 0, 0, 0, 0}, null, new long[] {0}
+                }));
+
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlvHandle = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCheckResponse(new Object[] {
+                    new long[] {1, 0, 0, 0, 1, 0x1_0000_0000L, 0, 0}, null,
+                    new long[] {responseTtlvHandle}
+                }));
     }
 }
