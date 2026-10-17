@@ -670,6 +670,8 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponseMac", "clientBatchItemResponseMacVerify",
             "clientBatchItemResponseSign",
             "clientBatchItemResponseSignatureVerify",
+            "clientBatchItemGetUsageAllocation",
+            "clientBatchItemResponseGetUsageAllocation",
             "clientBatchItemWithUniqueBatchItemId", "clientBatchResponseItemAt",
             "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
             "clientBatchSetClientCorrelationValue", "clientBatchSetOrderOption",
@@ -709,6 +711,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "org.kmipkit.extensions.ClientBatchItemResult.MacVerifyResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.SignResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.toString",
         }
         for path in java_boilerplate:
             self.assertIn(("java-kmipkit", path), exclusions)
@@ -763,6 +766,12 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertIn("test_secret_bearing_client_records_redact_repr", repr_exclusion["evidence"])
 
         self.assertIn(("python-kmipkit", "kmipkit.client"), exclusions)
+
+        python_response_ttlv = next(
+            row for row in manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit.errors.ClientExecutionError.response_ttlv"
+        )
+        self.assertEqual(python_response_ttlv["kind"], "field")
 
         local_conveniences = {
             ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.itemCount"),
