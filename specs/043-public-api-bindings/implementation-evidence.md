@@ -2346,6 +2346,20 @@ coverage remain pending for the shared branch, and no official OASIS test
 case or formal certification claim is made. T043 remains open because its
 required current-head CI/coverage has not been supplied for the correction.
 
+### T044 Python export-audit follow-up — Red
+
+The global Python export audit run after the T044 checkpoint found ten
+unclassified generated dataclass members on `kmipkit.client.CheckResponse`.
+T044 has been reopened until each exact generated export is accounted for.
+The new focused test names the expected ten `CheckResponse` dataclass
+artifacts and currently fails because none has an approved exclusion record.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | follow-up test commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_check_response_python_dataclass_artifacts_are_exactly_excluded -v`; same command with `test_remaining_python_exports_are_mapped_or_exactly_excluded` | Expected failures enumerate all ten missing `CheckResponse` exclusions and report them as unclassified Python exports. |
+| Green | pending | Add ten exact approved exclusion rows to the manifest input; regenerate with the pinned API-manifest generator; rerun focused and global export tests | Pending. |
+| Refactor | pending | Verify generated outputs and current task/dependency/evidence status | Pending. |
+
 ## T079 — Python native staging zeroization
 
 This task implements Constitution §8, `KMIPKIT-0021-FR-012`, and
