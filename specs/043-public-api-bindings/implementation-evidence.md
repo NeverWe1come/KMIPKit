@@ -3079,3 +3079,24 @@ The pinned generator was run with `python -B tools/api_manifest/generate.py
 The feature remains unchecked pending the required current-head cross-platform
 CI run and selected coverage gate. No OASIS test-case, full conformance,
 interoperability, profile-support, or certification claim is made.
+
+### T047 post-push CI correction — 2026-10-17
+
+The first post-push full CI run `39070553552` on `ebb21490` found three
+independent issues. Clippy rejected the two newly extended Rust test functions
+for exceeding 100 lines; Refactor commit `387f9798` splits the success/failure
+FFI cases and extracts the loopback TLS peer. The Python adapter parity
+contract found that the C Export response-TTLV alias was mapped to Java's
+`ExportResponse.responseTtlv()` while reusing the JNI symbol owned by
+`ClientBatchItemResult.exportResponse()`. Red `b8bb049e` added an explicit
+manifest contract; Green `d0d751ca` maps both C functions to the one Java/JNI
+Export entrypoint and regenerates the parity outputs. The same run found the
+C panic-boundary inventory expected 192 exports while the generated ABI had
+195; `d0d751ca` updates the expected count.
+
+Local correction verification passes: the Export parity and adapter-symbol
+contracts (14 tests), all 12 manifest generator outputs, the FFI Export
+success/failure tests (2), the C ABI export-count test (1), the compiled C
+mTLS consumer test (1), workspace Clippy, rustfmt, and `git diff --check`. The
+full CI run above predates these corrections; T047 remains unchecked pending
+a new current-head cross-platform run and selected coverage gate.
