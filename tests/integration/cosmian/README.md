@@ -165,15 +165,19 @@ classifications and safe reason codes. See the
 [Decrypt case re-evaluation](../../../specs/015-cosmian-kms-integration/task-6-report.md#decrypt-case-re-evaluation)
 for evidence and attribution.
 
-For Get and Export specifically, the current ledger records **797/1,279** and
-**807/1,291** observed interoperability successes. A focused run selected 66
-cases and confirmed the legacy-PKCS#12 selector fix: the test now sends Cosmian's
-`KeyFormatType=0x88800001`; 62 target Get/Export requests returned typed
-success, including all 58 cases that newly send the selector. Four other
-selected legacy-PKCS#12 cases did not reach Get/Export because their
-password-linked PFX Import setup was rejected; these are part of 16
-password-link setup rejections, not Get/Export failures. See the Get/Export
-attribution section in `traceability.md`.
+| Operation | Interoperable / executable | Target rejections | Setup rejections | Target rejection breakdown |
+|---|---:|---:|---:|---|
+| Get | **797 / 1,279** | 382 | 100 | 160 `Operation Not Supported`; 8 `Sensitive`; 214 `Cryptographic Failure` |
+| Export | **807 / 1,291** | 384 | 100 | 160 `Operation Not Supported`; 8 `Sensitive`; 216 `Cryptographic Failure` |
+
+A focused run selected 66 cases and confirmed the legacy-PKCS#12 selector fix:
+the test sends Cosmian's `KeyFormatType=0x88800001`; 62 target requests
+returned typed success, including all 58 cases that newly send the selector.
+Four other selected cases did not reach Get/Export because password-linked PFX
+Import setup was rejected. The detailed [Get/Export attribution tables in
+KMIPKIT-0015](../../../specs/015-cosmian-kms-integration/traceability.md#get-and-export-attribution)
+classify the rejections against KMIP 2.1 and Cosmian 5.28.0 documentation and
+source.
 
 Notable results include: Discover Versions passes; Check SplitKey passes with
 the optional usage mask omitted; Query returns Success but omits the required
