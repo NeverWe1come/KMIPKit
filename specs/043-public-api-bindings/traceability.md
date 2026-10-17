@@ -53,6 +53,12 @@ The API feature itself is project-defined. Each operation inventory row maps to 
 
 For every capability that corresponds to a KMIP operation, its manifest declaration and conformance evidence cite the exact section from `contracts/operation-dependencies.md` and the owning approved operation specification's stable requirement IDs. This table is an API parity contract, not a substitute for operation requirement traceability. Do not mark an OASIS clause verified merely because generated bindings compile.
 
+## T043 — Certify mapping (reopened for generic TTLV parity)
+
+| Task | Approved owner and normative source | Contract and stable trace IDs | Four-language mapping and parity evidence |
+|---|---|---|---|
+| T043 | `specs/022-object-lifecycle/spec.md` (`KMIPKIT-0036`, approved 2026-10-11); OASIS KMIP Specification v2.1 §6.1.6, Tables 179–181 | Certify request construction, open 32-bit Certificate Request Type, sensitive Certificate Request Value, optional request structures, generated response Unique Identifier, absent-versus-present response state, success-only generic TTLV, and redacted errors; `KMIPKIT-0036-FR-001`–`FR-006` and `FR-008`, plus `KMIPKIT-REQ-SPEC-6.1.6-001`, `-002-001`–`-002-003`, `-003`, and `-007` | Rust `CertifyResponse::with_ttlv`; C `kmipkit_client_batch_item_response_certify_ttlv`; Java `CertifyResponse.responseTtlv()`/`close()`; Python `CertifyResponse.response_ttlv`/`close()`. The compiled C consumer checks order and an unknown field after releasing the item handle; Java JNI and Python return caller-owned copies. Focused language tests pass locally. T043 remains open pending current-head cross-platform CI and coverage. |
+
 ## T049 — Get Usage Allocation mapping
 
 | Task | Approved owner and normative source | Contract and stable trace IDs | Four-language mapping and parity evidence |

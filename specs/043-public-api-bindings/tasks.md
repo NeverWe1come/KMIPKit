@@ -112,7 +112,7 @@ T024 implementation checkpoint: the Python client facade exposes the shared clie
 >
 > **TDD requirement**: Every implementation task in this phase uses strict Red/Green/Refactor TDD and keeps the failing test, passing implementation, and refactor in distinct development commits.
 
-- [ ] T043 [US2] Add four-language API mapping and parity evidence for Certify after its approved contract exists; cite §6.1.6.
+- [ ] T043 [US2] Add four-language API mapping and parity evidence for Certify after its approved contract exists; cite §6.1.6. Reopened after independent QA found missing generic response TTLV access in C/Java/Python and missing owner requirement links. Red `c3a02c40`; Green `5aa1d322` adds the success-only owned TTLV path and cross-language tests. Focused Rust, C ABI, Java, Python, manifest, formatting, and Clippy checks pass locally; current-head CI and coverage remain pending. See `implementation-evidence.md` and `traceability.md`.
 - [ ] T044 [US2] Add four-language API mapping and parity evidence for Check after its approved contract exists; cite §6.1.7.
 - [ ] T045 [US2] Add four-language API mapping and parity evidence for Delegated Login after its approved contract exists; cite §6.1.12.
 - [ ] T046 [US2] Add four-language API mapping and parity evidence for Derive Key after its approved contract exists; cite §6.1.14.

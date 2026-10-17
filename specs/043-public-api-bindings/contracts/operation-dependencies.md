@@ -11,7 +11,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.3 | Adjust Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.4 | Archive | KMIPKIT-0018 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.5 | Cancel | KMIPKIT-0009 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-039` remains a typed asynchronous response gate |
-| §6.1.6 | Certify | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.6 | Certify | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; four-language typed and generic TTLV mapping is implemented and locally tested; T043 remains open pending current-head cross-platform CI and coverage; no complete OASIS conformance claim is implied |
 | §6.1.7 | Check | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
 | §6.1.8 | Create | KMIPKIT-0014 | Accepted owner; four-language request/response mapping and shared fixture added by T032; Result Message optionality follows §8.6/Table 399 and §9.17; no complete official conformance claim |
 | §6.1.9 | Create Key Pair | KMIPKIT-0014 | Accepted owner; four-language request/response mapping and shared fixture added by T032; separate attribute groups and Table 191 consistency remain in the canonical typed path; no complete official conformance claim |

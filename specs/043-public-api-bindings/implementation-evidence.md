@@ -2238,9 +2238,52 @@ measured the follow-up JNI argument cases in commit `4c499ff1`. CI run
 an increase of 48 covered lines from the previous run, but remains below the
 95-percent gate by 146 covered lines. Every other required job passed. Commit
 `4c499ff1` adds rejection cases for malformed optional identifiers and invalid
-indicator values; its focused Java/JNI boundary suite passes 7 tests. Keep T043
-and the manifest operation state open until a run including that commit passes
-the coverage threshold and remaining required checks.
+indicator values; its focused Java/JNI boundary suite passes 7 tests. At that
+checkpoint T043 remained open pending a coverage run. The later current-head
+run `39011352794` includes that code and passes the selected coverage gates.
+
+### T043 readiness-state update — superseded by independent QA
+
+The earlier readiness-state update was incomplete. It changed the manifest to
+`verified` based on the typed Certify mappings, but independent QA found that
+the generic successful response TTLV was not accessible from C, Java, or
+Python, and that operation-level owner requirement IDs were missing. The
+readiness change therefore did not satisfy T043; the task and manifest parity
+state remain open until the corrected mappings pass current-head CI and
+coverage. Run `39011352794` passed its then-current head only and is not
+evidence for the correction described below.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `7e1e2aa3` | Certify manifest/readiness tests | Expected failure for the then-missing verified state; this did not test generic TTLV parity. |
+| Green | `39b7e5ea` | Manifest generation and readiness tests | Passed the readiness-state transition only. Independent QA later showed the implementation evidence was incomplete. |
+| Refactor | `c3a02c40` | `python -B -m unittest tools.api_manifest.tests.test_certify_parity_manifest -v` | Expected failure: language-specific generic response TTLV mappings and owner requirement links were missing. |
+
+### T043 generic successful-response TTLV correction — Red/Green/Refactor in progress
+
+The Green correction is commit `5aa1d322`. `CertifyResponse::with_ttlv` now
+retains the generic response structure on successful outcomes only. C, Java,
+and Python expose owned copies, and the C consumer verifies the copy remains
+usable after releasing the item handle. Failure outcomes preserve sanitized
+metadata without exposing the response body. The manifest now links the
+operation declaration to the six stable `KMIPKIT-0036` owner requirement IDs.
+
+Focused local verification passed: `cargo test -p kmipkit-protocol certify`
+(17 tests), `cargo test -p kmipkit-client certify` (10),
+`cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_certify` (4),
+the Certify API manifest tests (5), the Java Certify mapping and mTLS client
+integration tests, Python Certify tests (7 plus 1 client test),
+`cargo fmt --all --check`, the focused Clippy command, and
+`git diff --check`. The generated API manifest check also passed for all 12
+outputs. These are local checks on `5aa1d322`; PR #104 still reports CI for
+the earlier remote head `1ade490e`. Current-head cross-platform CI and
+coverage for this correction remain pending.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `c3a02c40` | `python -B -m unittest tools.api_manifest.tests.test_certify_parity_manifest -v` | Expected failure: missing generic response-TTLV parity and owner requirement links. |
+| Green | `5aa1d322` | Focused Rust, compiled C, Java/JNI, Python, manifest, formatting, and Clippy checks listed above | PASS locally; no current-head CI claim yet. |
+| Refactor | pending | Update tasks, traceability, dependency matrix, and evidence; run `git diff --check` | In progress; T043 remains open until current-head CI and coverage pass. |
 
 ## T079 — Python native staging zeroization
 
