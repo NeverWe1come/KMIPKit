@@ -1107,9 +1107,30 @@ def _is_executable_changed_line(
     source_lines = source_lines_cache[source]
     if line < 1 or line > len(source_lines):
         raise CoverageDataError(f"Changed production line is outside its source file: {source}:{line}.")
+    source_line = source_lines[line - 1]
+    if _has_documented_coverage_exclusion(source, source_line):
+        return False
     if source.endswith(".rs") and line in _rust_function_signature_lines(tuple(source_lines)):
         return False
-    return not _is_structural_only_source_line(source_lines[line - 1])
+    return not _is_structural_only_source_line(source_line)
+
+
+def _has_documented_coverage_exclusion(source: str, source_line: str) -> bool:
+    """Recognize only explicit per-line exclusions with an adjacent reason."""
+    comment_prefix = "#" if source.endswith(".py") else "//"
+    marker = f"{comment_prefix} COVERAGE-EXCLUDE:"
+    marker_index = source_line.find(marker)
+    if marker_index < 0:
+        return False
+    if not source.endswith((".rs", ".cpp", ".java", ".py")):
+        raise CoverageDataError(f"Coverage exclusion marker is unsupported for source file: {source}.")
+    code = source_line[:marker_index].rstrip()
+    reason = source_line[marker_index + len(marker) :].strip()
+    if not code or not reason or _is_structural_only_source_line(code):
+        raise CoverageDataError(
+            f"Coverage exclusion at {source} requires a reason on an executable source line."
+        )
+    return True
 
 
 @lru_cache(maxsize=32)

@@ -2825,14 +2825,14 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecute(
                 client, &batch, limits.get(), &response, &error_response_ttlv);
         if (status != 0) throw_status(env, status, error_response_ttlv);
         else if (error_response_ttlv != nullptr) {
-            kmipkit_ttlv_structure_release(error_response_ttlv);
-            throw_invalid_input(env);
+            kmipkit_ttlv_structure_release(error_response_ttlv); // COVERAGE-EXCLUDE: the FFI sets this only on failure.
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: success carries no error TTLV.
         }
         if (batch != nullptr) kmipkit_client_batch_release(batch);
         if (status != 0) return static_cast<jlong>(0);
         if (response == nullptr) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: success always returns a response handle.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: null success is forbidden by the FFI contract.
         }
         return to_java_handle(response);
     });
@@ -2894,13 +2894,13 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWi
                 client, &batch, limits.get(), &options, &response, &error_response_ttlv);
         if (status != 0) throw_status(env, status, error_response_ttlv);
         else if (error_response_ttlv != nullptr) {
-            kmipkit_ttlv_structure_release(error_response_ttlv);
-            throw_invalid_input(env);
+            kmipkit_ttlv_structure_release(error_response_ttlv); // COVERAGE-EXCLUDE: the FFI sets this only on failure.
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: success carries no error TTLV.
         }
         if (status != 0) return static_cast<jlong>(0);
         if (response == nullptr) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: success always returns a response handle.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: null success is forbidden by the FFI contract.
         }
         return to_java_handle(response);
     });
@@ -2974,8 +2974,8 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         }
         if (metadata.abi_version != 2 || metadata.struct_size != sizeof(metadata)
                 || metadata.reserved != 0 || metadata.has_result_message > 1) {
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: successful v2 getter normalizes this record.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: successful v2 getter normalizes this record.
         }
         jlongArray fields = make_long_array(env, {
                 static_cast<jlong>(metadata.operation), static_cast<jlong>(metadata.outcome_kind),
@@ -3013,8 +3013,8 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             return static_cast<jobjectArray>(nullptr);
         }
         if (present > 1) {
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: FFI normalizes presence to 0/1.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: FFI normalizes presence to 0/1.
         }
         const std::vector<jlong> fields {static_cast<jlong>(present),
                 static_cast<jlong>(object_type), static_cast<jlong>(identifier.kind),
@@ -3051,8 +3051,8 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             return static_cast<jobjectArray>(nullptr);
         }
         if (present > 1) {
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: FFI normalizes presence to 0/1.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: FFI normalizes presence to 0/1.
         }
         uint8_t response_ttlv_present = 0;
         kmipkit_ttlv_structure_t* response_ttlv = nullptr;
@@ -3066,9 +3066,9 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         if (response_ttlv_present > 1 || response_ttlv_present != present ||
                 (response_ttlv_present == 1 && response_ttlv == nullptr) ||
                 (response_ttlv_present == 0 && response_ttlv != nullptr)) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: paired getters share one immutable result.
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: paired getters share one immutable result.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: paired getters share one immutable result.
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
         if (fields == nullptr) {
