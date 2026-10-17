@@ -813,6 +813,7 @@ fn malformed_target_response_is_not_a_target_rejection_or_interoperability_succe
 fn crypto_observation_reconciles_expected_and_observed_outcomes() {
     let finding_row = serde_json::json!({
         "case_id": "source-only-case",
+        "operation": "Sign",
         "expected_outcome": "source_documentation_discrepancy"
     });
     let finding = cryptographic_observation_line(&finding_row, "typed_success", "true");
@@ -822,6 +823,22 @@ fn crypto_observation_reconciles_expected_and_observed_outcomes() {
     );
     assert!(finding.contains("observed=typed_success"), "{finding}");
     assert!(finding.contains("interoperability=false"), "{finding}");
+
+    let create_key_pair_finding = serde_json::json!({
+        "case_id": "create-key-pair-source-probe",
+        "operation": "Create Key Pair",
+        "expected_outcome": "source_documentation_discrepancy"
+    });
+    let create_key_pair_success =
+        cryptographic_observation_line(&create_key_pair_finding, "typed_success", "true");
+    assert!(
+        create_key_pair_success.contains("classification=typed_success"),
+        "{create_key_pair_success}"
+    );
+    assert!(
+        create_key_pair_success.contains("interoperability=true"),
+        "{create_key_pair_success}"
+    );
 
     for observed in [
         "target_rejected",
