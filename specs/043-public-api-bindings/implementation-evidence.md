@@ -100,14 +100,14 @@ fixture-driven Python contract evidence is recorded under T023 above.
 | Acceptance evidence | Command or record | Result |
 |---|---|---|
 | Python behavior, lifecycle, typing, package contents, and fixture consumer | `bindings/python/.venv/Scripts/python.exe -m pytest bindings/python/tests -q` | PASS: 209 tests. |
-| Shared API declaration accounting | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-14.json --check` | PASS: 556 Python paths observed, 425 exact manifest declarations and 131 reviewed exclusions; no missing, stale, kind-mismatched, or issue paths. The generated current report also reconciles C 272 observed / 242 matches and Java 491 observed / 449 matches. |
+| Historical shared API declaration snapshot (2026-10-14) | `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-14.json --check` | PASS at that checkpoint: 556 Python paths observed, 425 exact manifest declarations and 131 reviewed exclusions; C 272 observed / 242 matches and Java 491 observed / 449 matches. The refreshed 2026-10-17 audit is recorded under T011 below. |
 | Checked-in generated API artifacts | `python -B tools/api_manifest/generate.py --check` | PASS: all 12 outputs verified. |
 | Mapping implementation TDD and review | `T021/T024 unique batch item identity mapping`; T076 Python transport, ordered-outcome, and client-mapping evidence below | Red/Green/Refactor and independent review are recorded with the implementation work; this T024 closeout adds no runtime changes. |
 
-The current binding-export snapshot also exposed a stale exact-exclusion test
-and a missing architecture-document citation on the `clientExecuteWithOptions`
-JNI bridge exclusion. The follow-up corrects the audit contract and records a
-fresh current report; it changes no runtime behavior.
+The 2026-10-14 binding-export snapshot exposed a stale exact-exclusion test and
+a missing architecture-document citation on the `clientExecuteWithOptions`
+JNI bridge exclusion. That follow-up corrected the audit contract and recorded
+the then-current report; it changed no runtime behavior.
 
 | Phase | Commit | Command | Result |
 |---|---|---|---|
@@ -119,6 +119,27 @@ This closes the Python facade mapping task only. The complete four-language
 shared-fixture comparison remains T029/T071; offline platform loading remains
 T028/T072; and API-level discovery remains T077. T024 does not claim complete
 operation-level parity or KMIP profile conformance.
+
+## T011 — refreshed declaration and export audit (2026-10-17)
+
+The T049 promotion and T081 Python response-TTLV mapping changed the observed
+language surfaces after the prior binding report. The refreshed inventory
+records the two T049 Java JNI bridge methods and the response's redacted
+formatter as exact approved exclusions, while classifying
+`ClientExecutionError.response_ttlv` as a Python field to match the source
+scanner. No runtime API behavior changed.
+
+| Phase | Commit | Command or record | Result |
+|---|---|---|---|
+| Red | `6036929a` | `python -B -m unittest tools.api_manifest.tests.test_binding_exports.BindingExportAuditTests.test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions -v` | Expected failure: both T049 JNI bridge methods were absent from the exact exclusion inventory. |
+| Green | `4b1730ac` | `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check`; pinned C/Java/Python export audit; Rust export audit | PASS: all 12 outputs are current; C 291/291, Java 528/528, Python 500/500 exact declarations; Rust 9,510/9,510, with 24 exact exclusions and zero issues. Reports: `binding-export-report-2026-10-17.json` and `rust-export-report-2026-10-17.json`. |
+| Refactor | Documentation/evidence commit | `python -B -m unittest tools.api_manifest.tests.test_binding_exports tools.api_manifest.tests.test_c_api_docs -v`; `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest discover -s tools/api_manifest/tests -p 'test_*.py' -v`; `git diff --check` | PASS: the audit/document contracts pass (46 tests) and the complete API-manifest suite passes (349 tests, 3 Windows capability skips). The Windows runner denied symlink creation; the current-head Linux/macOS CI remains required to verify those two symlink cases. |
+
+The binding reports have complete scans and zero missing, stale, kind-mismatched,
+or unclassified exports. The manifest tests also cover deterministic generation,
+stale-output detection, path traversal rejection, exact catalog parity, and the
+eight-package inventory. T011 remains open until the current-head cross-platform
+CI confirms the platform-specific audit and symlink checks.
 
 ## T002, T006, T007, and T068 — Release inventory and owner resolution
 
