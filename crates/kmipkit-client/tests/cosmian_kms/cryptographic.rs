@@ -1682,10 +1682,14 @@ fn cryptographic_observation_line(
     let expected_outcome = row["expected_outcome"]
         .as_str()
         .unwrap_or("unknown_expected_outcome");
-    let (classification, interoperability) = if expected_outcome != "typed_success" {
-        ("expected_finding_probe", false)
-    } else if observed_result_classification == "typed_success" && request_sent == "true" {
+    let operation = row["operation"].as_str().unwrap_or_default();
+    let observed_success = observed_result_classification == "typed_success"
+        && request_sent == "true"
+        && (expected_outcome == "typed_success" || operation == "Create Key Pair");
+    let (classification, interoperability) = if observed_success {
         ("typed_success", true)
+    } else if expected_outcome != "typed_success" {
+        ("expected_finding_probe", false)
     } else if observed_result_classification == "typed_success" {
         ("typed_success_without_sent_target", false)
     } else {
