@@ -17363,8 +17363,8 @@
       },
       "java": {
         "package": "org.kmipkit.extensions",
-        "class": "ExportResponse",
-        "method": "responseTtlv",
+        "class": "ClientBatchItemResult",
+        "method": "exportResponse",
         "parameters": [],
         "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseExport",
         "errorCategories": [
@@ -17372,7 +17372,7 @@
           "resource_limit",
           "internal"
         ],
-        "returnType": "TtlvStructure"
+        "returnType": "Optional<ExportResponse>"
       },
       "python": {
         "module": "kmipkit.client",

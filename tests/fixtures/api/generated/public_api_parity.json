@@ -22582,17 +22582,17 @@
       },
       "id": "client_batch_item_response_export_ttlv",
       "java": {
-        "class": "ExportResponse",
+        "class": "ClientBatchItemResult",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
         "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseExport",
-        "method": "responseTtlv",
+        "method": "exportResponse",
         "package": "org.kmipkit.extensions",
         "parameters": [],
-        "returnType": "TtlvStructure"
+        "returnType": "Optional<ExportResponse>"
       },
       "ordering": "not-applicable",
       "python": {
