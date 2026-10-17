@@ -1389,7 +1389,7 @@ fn classify_case_error(row: &JsonValue, message: &str) -> &'static str {
         }
     } else if message.contains("typed response rejected by KMIPKit") {
         if target_response {
-            "response_rejected"
+            "response_validation_failed"
         } else {
             "setup_response_rejected"
         }
