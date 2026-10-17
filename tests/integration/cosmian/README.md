@@ -124,7 +124,8 @@ remain visible; expected-finding assertions do not turn them into
 interoperability successes. The run emitted 6,412 unique `case_id` results;
 five standalone lifecycle tests have their observations recorded by test name
 in the report and manifest. The six valid RNG responses are classified as
-malformed because the typed response omitted Operation. Compose teardown
+response-validation failures because the typed response omitted Operation;
+none counts as an interoperability success. Compose teardown
 completed, and `docker compose --file tests/integration/cosmian/compose.yaml
 ps --all` returned no services.
 
