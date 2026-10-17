@@ -8,6 +8,10 @@
 mod common;
 #[path = "cosmian_kms/cryptographic.rs"]
 mod cryptographic;
+#[path = "cosmian_kms/cryptographic_cipher.rs"]
+mod cryptographic_cipher;
+#[path = "cosmian_kms/cryptographic_kem.rs"]
+mod cryptographic_kem;
 #[path = "cosmian_kms/key_management.rs"]
 mod key_management;
 #[path = "cosmian_kms/lifecycle.rs"]
