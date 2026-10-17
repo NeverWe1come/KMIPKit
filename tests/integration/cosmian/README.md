@@ -139,13 +139,13 @@ SHA-224. Hash remains 14/24 interoperable cases.
 | Lifecycle and probes | 89 | 80 | 80 | 3 rejected; 2 response-validation failures; 2 malformed responses; 1 setup-blocked; 1 unsupported |
 | Cryptographic | 1,466 | 670 | 650 | 383 rejected; 325 setup-rejected; 81 response-validation failures; 7 multipart semantic mismatches |
 | Key management | 216 | 12 | 12 | 201 rejected; 3 setup-rejected |
-| Import/Export/Register transfer | 4,640 | 2,832 | 2,832 | 830 rejected; 978 setup-rejected; 0 response-validation failures |
+| Import/Export/Register transfer | 4,640 | 2,986 | 2,986 | 778 rejected; 876 setup-rejected; 0 response-validation failures |
 | RNG | 6 | 0 | 0 | 6 response-validation failures (missing Operation) |
-| **Total executable rows** | **6,417** | **3,594** | **3,574** | **1,417 rejected; 1,306 setup-rejected; 89 response-validation failures; 7 semantic mismatches; 4 other findings** |
+| **Total executable rows** | **6,417** | **3,748** | **3,728** | **1,365 rejected; 1,204 setup-rejected; 89 response-validation failures; 7 semantic mismatches; 4 other findings** |
 
 Twelve normative exclusions were not sent: six invalid RNG Parameters
 combinations and six invalid Certify subject-OID-only CSR combinations. Of the
-3,594 typed responses, 20 cryptographic source-gap/discrepancy observations
+3,748 typed responses, 20 cryptographic source-gap/discrepancy observations
 remain outside the interoperability count. A live follow-up reran 52 native SymmetricKey Import cases after correcting the Symmetric Key and transparent Key TTLV tags in the test builder; all 52 returned typed success. The 54 transfer finding rows that
 returned typed success and passed operation postconditions now count as observed
 interoperability; their documentation/source classifications remain attached,
@@ -171,6 +171,20 @@ Cryptographic Failure before Encrypt is sent. The matrix stores all per-case
 classifications and safe reason codes. See the
 [Decrypt case re-evaluation](../../../specs/015-cosmian-kms-integration/task-6-report.md#decrypt-case-re-evaluation)
 for evidence and attribution.
+
+### Register retest
+
+The 446-case Register retest added 154 successful target outcomes: 52 former
+`Invalid Message` failures came from incorrect SymmetricKey/Key TTLV tags in the
+integration fixture and passed after correction; 102 cases previously blocked
+by setup `Cryptographic Failure` also passed. Register now records 737/1,029
+interoperable cases. The remaining 286 cases fail during prerequisite setup
+(165 `Operation Not Supported`, 115 `Cryptographic Failure`, six `Sensitive`);
+six more reach Register and receive four `Cryptographic Failure` and two
+`Operation Not Supported` responses. For the six Sensitive setup cases, typed
+Get Attributes reads back `Sensitive=False`, but unwrapped Export still rejects
+the key. The full per-case breakdown is in the
+[Register retest attribution report](../../../specs/015-cosmian-kms-integration/task-6-report.md#register-retest-and-attribution).
 
 | Operation | Interoperable / executable | Target rejections | Setup rejections | Target rejection breakdown |
 |---|---:|---:|---:|---|

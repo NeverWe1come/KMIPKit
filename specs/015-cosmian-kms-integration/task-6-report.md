@@ -11,9 +11,9 @@ The pinned target is `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa57
 | Lifecycle and probes | 89 | 80 | 80 | 3 | 0 | 2 | 2 malformed; 1 setup blocked; 1 unsupported |
 | Cryptographic | 1,466 | 670 | 650 | 383 | 325 | 81 | 7 semantic mismatches |
 | Key management | 216 | 12 | 12 | 201 | 3 | 0 | — |
-| Import/Export/Register transfer | 4,640 | 2,832 | 2,832 | 830 | 978 | 0 | — |
+| Import/Export/Register transfer | 4,640 | 2,986 | 2,986 | 778 | 876 | 0 | — |
 | RNG | 6 | 0 | 0 | 0 | 0 | 6 | — |
-| **Executable total** | **6,417** | **3,594** | **3,574** | **1,417** | **1,306** | **89** | **7 semantic mismatches; 4 fixture/setup/malformed/unsupported** |
+| **Executable total** | **6,417** | **3,748** | **3,728** | **1,365** | **1,204** | **89** | **7 semantic mismatches; 4 fixture/setup/malformed/unsupported** |
 
 Of the 98 typed-success responses on source-gap/discrepancy rows, 24 Create Key Pair cases and 54 transfer cases now count as observed interoperability because their operation-specific postconditions passed. The remaining 20 cryptographic findings stay separately classified. The 24 Create Key Pair profiles remain source-documentation discrepancies because their algorithm values are outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration; their success is not a KMIP 2.1 conformance claim. The 54 transfer findings retain their source/documentation classifications and likewise are not conformance claims. Rejection means a well-formed KMIP failure response; setup rejection means a prerequisite failed before the target operation was sent; response-validation failure means the request was delivered but KMIPKit could not accept or satisfy a typed-response postcondition; malformed response means required response shape was missing. These categories remain distinct in each matrix record.
 
@@ -46,7 +46,7 @@ These summaries count only executable cases whose typed response and operation-s
 | Import | 645 / 1,041 |
 | Join Split Key | 3 / 3 |
 | Locate | 6 / 7 |
-| Register | 583 / 1,029 |
+| Register | 737 / 1,029 |
 | Revoke | 7 / 7 |
 | Set Attribute (Modify) | 16 / 16 |
 | Validate | 4 / 6 |
@@ -74,6 +74,21 @@ For `Set Attribute (Modify)`, the matrix exercises Set Attribute and Modify Attr
 | Signature Verify | 0 / 321 | 312 cases were rejected during prerequisite setup with `Item Not Found`, before the target operation was sent; the other 9 target requests returned `Item Not Found`. |
 
 A focused live rerun of the 52 previously rejected native SymmetricKey Import cases passed 52/52 after correcting two integration-builder tags: Symmetric Key is `0x42008F` (the old `0x42007F` is Result Status), and the transparent key material child is `Key` `0x42003F` (the old `0x420044` is Key Part Identifier). The defect was in KMIPKit integration test construction; no production-library or Cosmian change was needed. The ledger and operation totals include these 52 successes. These are measured outcomes against the pinned local Cosmian KMS 5.28.0 binary TTLV/mTLS deployment. The findings and their attribution are tracked per case in [`capability-matrix.json`](../../tests/integration/cosmian/capability-matrix.json); an observed failure is not automatically attributed to KMIPKit or Cosmian without supporting evidence.
+
+### Register retest and attribution
+
+The 446 Register rows that had not previously counted as interoperable were rerun serially against the pinned Cosmian 5.28.0 image with KMIPKit's typed Rust client. The run completed all 446 rows and the Compose deployment was removed afterward. It recorded 154 typed Register successes, 286 prerequisite failures before Register was sent, and six Register target rejections. Register therefore now has **737 / 1,029** interoperable cases. The updated per-case request and response status is in the capability matrix.
+
+| Observed stage/result | Cases | Attribution |
+|---|---:|---|
+| Typed Register success | 154 | Includes 52 former `Invalid Message` target failures caused by incorrect SymmetricKey/Key tags in KMIPKit's integration fixture builder. Correcting the test TTLV made those requests valid; no production-library defect was involved. The other 102 rows previously blocked by `Cryptographic Failure` setup now completed their typed postconditions in the rerun. |
+| Setup `Operation Not Supported` | 165 | 143 failed in prerequisite Export when explicitly combining PKCS#8 with wrapping; pinned Cosmian source rejects that combination. We tried omitting the format selector from one wrapped setup Export, but For this Ed25519 PrivateKey row, Cosmian returned default KeyFormatType 20 (Transparent EC Private Key) rather than the requested PKCS#8, so that result could not be used as an equivalent Register fixture and the target was not sent. An independent wrapped PKCS#8 fixture would be needed to isolate Register. OASIS KMIP v2.1 §4.26, Tables 79–80 permits a requested format and requires the server to comply or fail, but does not require every format conversion to compose with every wrapping profile. Six ConfigurableKEM public-key formats are not listed in Cosmian's format documentation. The remaining 16 failed during prerequisite Create Key Pair: 12 ConfigurableKEM generation profiles and four DSA generation profiles. Register itself was never sent. |
+| Setup `Cryptographic Failure` | 115 | 111 prerequisite Export cases used direct RSA wrapping with TTLV encoding: 60 Ed25519 keys in transparent-EC formats, 32 AES SymmetricKeys and 19 SecretData objects. The exact underlying cryptographic cause is not exposed; these are wrapping/setup results, not Register failures. KMIP 2.1 §6.1.18–§6.1.19 error tables do not list `Cryptographic Failure`, so Cosmian should confirm the intended error mapping. Four more cases failed during prerequisite ConfigurableKEM Create Key Pair for pure-classical P-256/Curve25519 profiles. |
+| Setup `Sensitive` | 6 | For each ConfigurableKEM private key, KMIPKit sent typed Create Key Pair with `Sensitive=False`; a subsequent typed Get Attributes request for the same returned identifier read `Sensitive=False`. The following unwrapped Export still returned Status 1 / Reason 22 (`Sensitive`), so Register was not sent. This is an observable inconsistency in Cosmian 5.28.0's attribute/readback and Export behavior, not a TTLV construction or KMIPKit response-decoding failure. OASIS §4.55, Tables 139–140 says a true value prevents unwrapped retrieval and marks the attribute client-modifiable. |
+| Register target `Operation Not Supported` | 2 | Password-protected PKCS#12 cases reached Register and were rejected. Their Password Link uses the KMIP `SecretData` identifier required by §4.31, Tables 90–92; pinned Cosmian PKCS#12 processing treats the identifier text as the password. This is the previously documented Cosmian/standard discrepancy. |
+| Register target `Cryptographic Failure` | 4 | X25519MLKEM768/X448MLKEM1024 PrivateKey/PublicKey requests reached Register and were rejected. These are Cosmian vendor algorithm values, not standard KMIP 2.1 enum values; operation-level Register support does not document support for those algorithm/format intersections. Cosmian documents the hybrid algorithms and marks Register implemented, but does not explicitly document this Register/object-format intersection. Also, `Cryptographic Failure` is not listed in OASIS Register Table 294. Ask Cosmian whether these vendor objects should be accepted and why it returns that reason; the observed responses do not indicate a KMIPKit parsing defect. |
+
+The Register target and setup distinction follows OASIS KMIP v2.1 §6.1.43, Tables 291–294: a failed prerequisite means the Register request was never evaluated. The six `Sensitive` cases are recorded with the explicit false readback in the ledger. The exact pinned implementation paths are [`export_get.rs`](https://github.com/Cosmian/kms/blob/5.28.0/crate/server/src/core/operations/export_get.rs#L2277-L2352), [`create_key_pair.rs`](https://github.com/Cosmian/kms/blob/5.28.0/crate/server/src/core/operations/create_key_pair.rs#L2047-L2170), and [`import.rs`](https://github.com/Cosmian/kms/blob/5.28.0/crate/server/src/core/operations/import.rs#L3354-L3395). The six attribute/Export mismatches and four hybrid vendor failures should be raised with Cosmian; the records do not establish a KMIPKit library defect.
 
 ## Full serial run and teardown
 
@@ -126,7 +141,7 @@ The 81 crypto response-validation failures are HMAC prerequisite responses where
 
 Key management has 12 interoperability successes, 201 target rejections and three setup rejections across 216 cases.
 
-Transfer has 2,832 interoperability successes, 830 target rejections, 978 setup rejections and no response-validation failures across 4,640 rows. The full run exercised all 72 ConfigurableKEM opaque transfer cases: 48 prerequisite setup rejections and 24 target rejections. These rows are not labeled fixture-unavailable.
+Transfer now has 2,986 interoperability successes, 778 target rejections, 876 setup rejections and no response-validation failures across 4,640 rows after the focused Register retest. The full run exercised all 72 ConfigurableKEM opaque transfer cases: 48 prerequisite setup rejections and 24 target rejections. These rows are not labeled fixture-unavailable.
 
 | Operation | Interoperable / executable | Target rejections | Setup rejections | Target rejection breakdown | Setup rejection breakdown |
 |---|---:|---:|---:|---|---|
