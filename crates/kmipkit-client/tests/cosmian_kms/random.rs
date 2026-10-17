@@ -333,12 +333,20 @@ fn cosmian_528_random_matrix_no_parameter_cases() {
 }
 
 fn rng_failure_observation_line(case_id: &str, error: &dyn Error) -> String {
-    if error.to_string().contains("typed response rejected by KMIPKit") {
-        format!(
-            "case_id={case_id} classification=response_validation_failed expected_outcome=typed_success observed=response_validation_failed request_sent=true response_received=true interoperability=false detail={error}"
-        )
+    let detail = error.to_string();
+    let classification = if detail.contains("typed response rejected by KMIPKit") {
+        "response_validation_failed"
+    } else if detail.contains("KMIP Result Status") || detail.contains("Result Status") {
+        "rejected"
     } else {
-        format!("case_id={case_id} classification=failed detail={error}")
+        "failed"
+    };
+
+    match classification {
+        "response_validation_failed" | "rejected" => format!(
+            "case_id={case_id} classification={classification} expected_outcome=typed_success observed={classification} request_sent=true response_received=true interoperability=false detail={error}"
+        ),
+        _ => format!("case_id={case_id} classification=failed detail={error}"),
     }
 }
 
