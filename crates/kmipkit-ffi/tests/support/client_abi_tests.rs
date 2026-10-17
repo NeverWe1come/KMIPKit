@@ -11,8 +11,9 @@ use base64::Engine;
 use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
-    DelegatedLoginRequest, GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData,
-    SecretBytes, SplitKeyMethod, UniqueIdentifier,
+    DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
+    GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
+    SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -2236,6 +2237,130 @@ fn ffi_get_usage_allocation_getter_rejects_a_missing_output_record() {
         ERROR_INVALID_INPUT
     );
     assert_eq!(present, 9);
+}
+
+fn derive_key_response_request() -> ClientRequest {
+    let length = Item::new(
+        RawTag::new(0x0042_002a)
+            .expect("Cryptographic Length fits a KMIP tag")
+            .try_checked()
+            .expect("Cryptographic Length is allocated"),
+        Value::integer(256),
+    )
+    .expect("Cryptographic Length is a valid TTLV item");
+    let attributes = AttributeSet::try_new([length])
+        .expect("the Derive Key output length uses a catalogued attribute");
+    ClientRequest::DeriveKey(DeriveKeyRequest::new(
+        ObjectType::from_raw(4),
+        vec![
+            UniqueIdentifier::TextString("source-one".to_owned()),
+            UniqueIdentifier::TextString("source-one".to_owned()),
+        ],
+        DerivationMethod::from_raw(0xfeed_beef),
+        DerivationParameters::new(),
+        attributes,
+    ))
+}
+
+#[test]
+fn ffi_derive_key_response_getter_returns_success_identifier_and_clears_failure() {
+    let output_identifier = b"derived-key";
+    let successful_item = successful_cryptographic_item(
+        derive_key_response_request(),
+        5,
+        b"derive-key-success",
+        vec![ttlv_item(0x0042_0094, 0x07, output_identifier)],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_derive_key(
+            successful_item,
+            &mut present,
+            &mut identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_response_identifier(&identifier, output_identifier);
+    kmipkit_client_batch_item_response_release(successful_item);
+
+    let failed_item = failed_cryptographic_item(
+        derive_key_response_request(),
+        5,
+        b"derive-key-failure",
+    );
+    present = 9;
+    identifier = empty_unique_identifier_output_v1();
+    identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+    identifier.integer_value = -17;
+    assert_eq!(
+        kmipkit_client_batch_item_response_derive_key(
+            failed_item,
+            &mut present,
+            &mut identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert_eq!(identifier.integer_value, 0);
+    kmipkit_client_batch_item_response_release(failed_item);
+}
+
+#[test]
+fn ffi_derive_key_response_ttlv_returns_owned_success_copy_only() {
+    let successful_item = successful_cryptographic_item(
+        derive_key_response_request(),
+        5,
+        b"derive-key-ttlv-success",
+        vec![ttlv_item(0x0042_0094, 0x07, b"derived-key")],
+    );
+    let mut present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_derive_key_ttlv(
+            successful_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(successful_item);
+    let mut response_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(response_ttlv, &mut response_view),
+        SUCCESS
+    );
+    let mut count = 0;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(response_view, &mut count),
+        SUCCESS
+    );
+    assert_eq!(count, 4);
+    kmipkit_ttlv_structure_view_release(response_view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+
+    let failed_item = failed_cryptographic_item(
+        derive_key_response_request(),
+        5,
+        b"derive-key-ttlv-failure",
+    );
+    present = 9;
+    response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_derive_key_ttlv(
+            failed_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(failed_item);
 }
 
 #[test]
