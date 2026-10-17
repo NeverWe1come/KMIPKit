@@ -148,7 +148,6 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Create",
                 "Create Key Pair",
                 "Create Split Key",
-                "Derive Key",
                 "Discover Versions",
                 "Hash",
                 "MAC",
@@ -159,7 +158,13 @@ class PackageDocumentationContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [operation["name"] for operation in verified_operations],
-            ["Certify", "Check", "Delegated Login", "Get Usage Allocation"],
+            [
+                "Certify",
+                "Check",
+                "Delegated Login",
+                "Derive Key",
+                "Get Usage Allocation",
+            ],
         )
         self.assertEqual(
             len(operations),
