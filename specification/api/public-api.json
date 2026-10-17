@@ -108422,7 +108422,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -108447,7 +108447,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.certify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-9c85f0a1c8e96cd12570",
@@ -109367,7 +109378,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -109392,7 +109403,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_certify"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-30de307d2133d8c0d3d2",
@@ -193360,7 +193382,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -193385,7 +193407,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.CertifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-dd0b5d9e792ef9f1fc91",
@@ -193440,7 +193473,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -193465,7 +193498,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.CertifyResponse.unique_identifier"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-ddfdae60511a2ab6af44",
@@ -235780,7 +235824,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -235805,7 +235849,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_certify"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:constructor:java",
@@ -235832,7 +235887,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -235857,7 +235912,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_certify"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:constructor:python",
@@ -235884,7 +235950,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -235909,7 +235975,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_certify"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:response:c",
@@ -235936,7 +236013,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -235961,7 +236038,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.certify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:response:java",
@@ -235988,7 +236076,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -236013,7 +236101,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.certify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:response:python",
@@ -236040,7 +236139,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -236065,7 +236164,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.BatchItemResult.certify_response"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:result:type:java",
@@ -236092,7 +236202,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -236117,7 +236227,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.CertifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:result:type:python",
@@ -236144,7 +236265,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -236169,7 +236290,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.CertifyResponse"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:result:uniqueIdentifier:java",
@@ -236196,7 +236328,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -236221,7 +236353,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.CertifyResponse.unique_identifier"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T043:certify:result:uniqueIdentifier:python",
@@ -236248,7 +236391,7 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -236273,7 +236416,18 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.CertifyResponse.unique_identifier"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T081:protocol-response-ttlv:java",
@@ -242085,7 +242239,7 @@
       "name": "Certify",
       "section": "6.1.6",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0036"
@@ -242120,7 +242274,18 @@
           "T043:certify:result:type:python",
           "T043:certify:result:uniqueIdentifier:python"
         ]
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+        "bindings/python/tests/test_certify_operation.py",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-CHECK",
