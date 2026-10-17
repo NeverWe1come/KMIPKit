@@ -41,7 +41,7 @@ const PUBLIC_KEY: u32 = 0x0042_006D;
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_TYPE: u32 = 0x0042_001D;
 const CERTIFICATE_VALUE: u32 = 0x0042_001E;
-const SYMMETRIC_KEY: u32 = 0x0042_007F;
+const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const SECRET_DATA: u32 = 0x0042_0085;
 const OPAQUE_OBJECT: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
@@ -2089,6 +2089,19 @@ fn item_contains_format(item: &Item, expected: u32) -> bool {
     })
 }
 
+fn item_contains_tag(item: &Item, expected: u32) -> bool {
+    fn contains(value: ValueView<'_>, expected: u32) -> bool {
+        let ValueView::Structure(structure) = value else {
+            return false;
+        };
+        structure.children().iter().any(|field| {
+            field.tag().raw() == expected || field.with_value(|value| contains(value, expected))
+        })
+    }
+
+    item.with_value(|value| contains(value, expected))
+}
+
 fn item_key_format_values(item: &Item) -> Vec<u32> {
     fn collect(value: ValueView<'_>, formats: &mut Vec<u32>) {
         let ValueView::Structure(structure) = value else {
@@ -2883,6 +2896,14 @@ mod inventory_tests {
                 item_contains_format(&object, expected_format),
                 "{case_id}: fixture omitted its manifest Key Format Type"
             );
+            if format == "TransparentSymmetricKey" {
+                // OASIS KMIP v2.1 §3.4, Table 18 requires a Key byte string
+                // inside the transparent Key Material structure.
+                assert!(
+                    item_contains_tag(&object, 0x0042_003F),
+                    "{case_id}: transparent Key Material omitted Key tag 0x42003F"
+                );
+            }
             let (algorithm, length) = object.with_value(|value| {
                 let ValueView::Structure(fields) = value else {
                     return (None, None);
