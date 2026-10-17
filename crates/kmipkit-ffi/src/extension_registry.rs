@@ -68,6 +68,11 @@ mod registry_preflight_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
+#[cfg(test)]
+#[path = "../tests/support/test_handle_helpers.rs"]
+mod test_handle_helpers;
+#[cfg(test)]
+use self::test_handle_helpers::make_handle;
 
 #[cfg(test)]
 thread_local! {
@@ -781,14 +786,6 @@ fn try_make_handle<T>(kind: Kind, value: HandleValue) -> FfiResult<*mut T> {
         Entry::Occupied(_) => return Err(ERROR_INTERNAL),
     }
     Ok(ptr::without_provenance_mut(id))
-}
-
-#[cfg(test)]
-fn make_handle<T>(kind: Kind, value: HandleValue) -> *mut T {
-    match try_make_handle(kind, value) {
-        Ok(handle) => handle,
-        Err(status) => panic!("test handle allocation failed with status {status}"),
-    }
 }
 
 fn reference_handle<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
