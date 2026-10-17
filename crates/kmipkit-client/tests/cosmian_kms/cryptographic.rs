@@ -5124,3 +5124,33 @@ fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
     assert_eq!(format, Some(4), "Cosmian imports public SPKI using PKCS#8");
 }
 
+#[test]
+fn certify_manifest_and_attributes_use_certificate_type_enumeration() {
+    let rows = target_rows().expect("cryptographic target rows");
+    let certify_rows = rows
+        .iter()
+        .filter(|row| row["operation"] == "Certify")
+        .collect::<Vec<_>>();
+    assert_eq!(certify_rows.len(), 203);
+
+    for row in certify_rows {
+        let id = case_id(row).expect("Certify case ID");
+        assert_eq!(
+            row["wire_enum_values"]["certificate_type"]["name"],
+            "X.509",
+            "{id} must declare Certificate Type independently of Key Format Type"
+        );
+        assert_eq!(
+            wire_enum_value(row, "certificate_type").expect("Certificate Type enum"),
+            1,
+            "OASIS KMIP v2.1 Â§11.9, Table 440 assigns X.509 Certificate Type 1; {id}"
+        );
+        let attributes = certify_attributes(row).expect("Certify Attributes");
+        assert_eq!(
+            enum_field(&attributes, CERTIFICATE_TYPE),
+            Some(1),
+            "{id} must serialize Certificate Type 1"
+        );
+    }
+}
+
