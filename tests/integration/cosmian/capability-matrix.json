@@ -499225,7 +499225,7 @@
       "test_family": "cosmian_kms::random",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "malformed_response",
+        "classification": "response_validation_failed",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -499335,7 +499335,7 @@
       "test_family": "cosmian_kms::random",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "malformed_response",
+        "classification": "response_validation_failed",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -499445,7 +499445,7 @@
       "test_family": "cosmian_kms::random",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "malformed_response",
+        "classification": "response_validation_failed",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -499555,7 +499555,7 @@
       "test_family": "cosmian_kms::random",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "malformed_response",
+        "classification": "response_validation_failed",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -499665,7 +499665,7 @@
       "test_family": "cosmian_kms::random",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "malformed_response",
+        "classification": "response_validation_failed",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -499776,7 +499776,7 @@
       "test_family": "cosmian_kms::random",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "malformed_response",
+        "classification": "response_validation_failed",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
