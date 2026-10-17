@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -82,7 +83,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
         Object[] values = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponseDelegatedLogin);
         return parseDelegatedLoginResponseAfterNativeReturn(
-                values, ClientBatchItemResult::parseDelegatedLoginResponse);
+                values, () -> ClientBatchItemResult::parseDelegatedLoginResponse);
     }
 
     /**
@@ -645,12 +646,8 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
     static Optional<DelegatedLoginResponse> parseDelegatedLoginResponseAfterNativeReturn(
             Object[] values,
-            Function<Object[], Optional<DelegatedLoginResponse>> parser) {
-        try {
-            return parser.apply(values);
-        } finally {
-            cleanupDelegatedLoginResponseValues(values);
-        }
+            Supplier<Function<Object[], Optional<DelegatedLoginResponse>>> parserFactory) {
+        return parserFactory.get().apply(values);
     }
 
     private static void cleanupDelegatedLoginResponseValues(Object[] values) {

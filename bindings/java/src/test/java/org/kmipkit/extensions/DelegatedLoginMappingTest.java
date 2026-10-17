@@ -128,11 +128,11 @@ final class DelegatedLoginMappingTest {
                         new Object[] {
                             new long[] {1, 1, 0xfeed_beefL}, secret,
                             new long[] {ticketTtlv}
-                        }, values -> {
-                            throw new AssertionError("injected pre-parser handoff failure");
+                        }, () -> {
+                            throw new AssertionError("injected parser factory failure");
                         }));
 
-        assertEquals("injected pre-parser handoff failure", thrown.getMessage());
+        assertEquals("injected parser factory failure", thrown.getMessage());
         assertArrayEquals(new byte[secret.length], secret);
         TtlvStructure stale = TtlvStructure.fromNative(ticketTtlv, null);
         assertThrows(InvalidInputException.class, stale::view);
