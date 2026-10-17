@@ -333,7 +333,13 @@ fn cosmian_528_random_matrix_no_parameter_cases() {
 }
 
 fn rng_failure_observation_line(case_id: &str, error: &dyn Error) -> String {
-    format!("case_id={case_id} classification=failed detail={error}")
+    if error.to_string().contains("typed response rejected by KMIPKit") {
+        format!(
+            "case_id={case_id} classification=response_validation_failed expected_outcome=typed_success observed=response_validation_failed request_sent=true response_received=true interoperability=false detail={error}"
+        )
+    } else {
+        format!("case_id={case_id} classification=failed detail={error}")
+    }
 }
 
 fn selected_live_cases() -> Result<Vec<MatrixCase>, String> {
