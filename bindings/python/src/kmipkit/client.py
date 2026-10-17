@@ -1689,7 +1689,7 @@ def _get_usage_allocation_response(
 
 def _derive_key_response(
     item: _ClientBatchItemResponse,
-) -> DeriveKeyResponse | None:
+) -> DeriveKeyResponse:
     present = ffi.new("uint8_t *")
     identifier = _initialize_unique_identifier_output()
     _raise_abi_status(

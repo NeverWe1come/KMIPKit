@@ -28,8 +28,7 @@ final class DeriveKeyResponseMappingTest {
         ClientBatchItemResult.DeriveKeyResponse response = ClientBatchItemResult
                 .parseDeriveKeyResponse(new Object[] {
                     new long[] {1}, record, new long[] {responseTtlvHandle}
-                })
-                .orElseThrow();
+                });
 
         try (response; TtlvStructureView view = response.responseTtlv().view()) {
             assertEquals(UniqueIdentifier.Kind.TEXT_STRING, response.uniqueIdentifier().kind());

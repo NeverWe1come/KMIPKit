@@ -111,7 +111,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
         if (resultStatus() != 0) return Optional.empty();
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseDeriveKey);
-        return parseDeriveKeyResponse(values);
+        return Optional.of(parseDeriveKeyResponse(values));
     }
 
     /** Returns distinct private and public identifiers for a successful Create Key Pair response. */
@@ -808,7 +808,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
     }
 
-    static Optional<DeriveKeyResponse> parseDeriveKeyResponse(Object[] values) {
+    static DeriveKeyResponse parseDeriveKeyResponse(Object[] values) {
         Object[] tuple = requireTuple(values, 3, "native Derive Key response is invalid");
         long[] fields = requireLongArray(
                 tuple[0], 1, "native Derive Key response is invalid");
@@ -829,8 +829,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
         TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
         try {
-            return Optional.of(new DeriveKeyResponse(
-                    identifierRecord(tuple[1]), responseTtlv));
+            return new DeriveKeyResponse(identifierRecord(tuple[1]), responseTtlv);
         } catch (RuntimeException exception) {
             responseTtlv.close();
             throw exception;
