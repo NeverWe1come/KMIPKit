@@ -4712,7 +4712,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade exposes the typed GetUsageAllocationResponse; this native entry point only transfers opaque handles across the JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade passes identifier kind, optional text or numeric identifier, and usage limits count to this JNI constructor, which creates the typed request handle. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetUsageAllocation",
       "packageId": "java-kmipkit",
       "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Get Usage Allocation facade; it has no independent product capability."
@@ -4724,7 +4724,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade exposes the owned typed response and generic TTLV accessor; this native entry point only transfers opaque handles across the JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. This JNI accessor returns an Object[] tuple of presence fields, typed identifier data, and an owned response-TTLV handle. ClientBatchItemResult.parseGetUsageAllocationResponse validates the tuple and constructs the owned typed response. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation",
       "packageId": "java-kmipkit",
       "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Get Usage Allocation response facade; it has no independent product capability."

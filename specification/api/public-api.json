@@ -241969,7 +241969,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade exposes the typed GetUsageAllocationResponse; this native entry point only transfers opaque handles across the JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade passes identifier kind, optional text or numeric identifier, and usage limits count to this JNI constructor, which creates the typed request handle. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
     },
     {
       "packageId": "java-kmipkit",
@@ -241981,7 +241981,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade exposes the owned typed response and generic TTLV accessor; this native entry point only transfers opaque handles across the JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. This JNI accessor returns an Object[] tuple of presence fields, typed identifier data, and an owned response-TTLV handle. ClientBatchItemResult.parseGetUsageAllocationResponse validates the tuple and constructs the owned typed response. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
     },
     {
       "packageId": "java-kmipkit",
