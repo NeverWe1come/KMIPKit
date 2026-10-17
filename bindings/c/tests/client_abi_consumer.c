@@ -153,6 +153,43 @@ static int check_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int delegated_login_constructor_is_callable_from_c(void) {
+    kmipkit_ttlv_structure_t *rights = 0;
+    kmipkit_ttlv_structure_t *usage_limits = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    if (kmipkit_ttlv_structure_create(&rights) != 0 ||
+        kmipkit_ttlv_structure_create(&usage_limits) != 0 ||
+        kmipkit_client_batch_item_delegated_login(
+            rights, 2, INT64_MIN, 1, INT32_MIN, usage_limits, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(usage_limits);
+    kmipkit_ttlv_structure_release(rights);
+    return result;
+}
+
+static int delegated_login_response_accessors_clear_outputs_from_c(void) {
+    uint8_t present = 9;
+    uint8_t ticket_present = 9;
+    uint32_t ticket_type = UINT32_MAX;
+    kmipkit_byte_span_v1_t ticket_value = {(const uint8_t *)1, UINT64_MAX};
+    const int32_t status = kmipkit_client_batch_item_response_delegated_login(
+        0, &present, &ticket_present, &ticket_type, &ticket_value);
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 || ticket_present != 0 ||
+        ticket_type != 0 || ticket_value.data != 0 || ticket_value.length != 0) {
+        return 0;
+    }
+    present = 9;
+    kmipkit_ttlv_structure_t *ticket_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    const int32_t ttlv_status = kmipkit_client_batch_item_response_delegated_login_ttlv(
+        0, &present, &ticket_ttlv);
+    return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && ticket_ttlv == 0;
+}
+
 static int check_response_accessors_clear_outputs_from_c(void) {
     uint8_t present = 9;
     uint8_t identifier_present = 9;
@@ -1556,6 +1593,8 @@ int main(int argc, char **argv) {
         !certify_constructor_is_callable_from_c() ||
         !certify_response_accessor_is_callable_from_c() ||
         !check_constructor_is_callable_from_c() ||
+        !delegated_login_constructor_is_callable_from_c() ||
+        !delegated_login_response_accessors_clear_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||

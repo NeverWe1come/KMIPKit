@@ -990,6 +990,94 @@ fn ffi_check_constructor_validates_each_presence_discriminator_and_accepts_raw_v
 }
 
 #[test]
+fn ffi_delegated_login_constructor_validates_typed_fields_and_requires_rights() {
+    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+    assert_eq!(
+        kmipkit_client_batch_item_delegated_login(
+            ptr::null_mut(), 0, 0, 0, 0, ptr::null_mut(), &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+
+    let rights = make_handle(Kind::Structure, HandleValue::Structure(kmipkit_ttlv::Structure::new()));
+    for (lease_kind, lease_value, count_present, count) in [
+        (3, 0, 0, 0),
+        (0, 1, 0, 0),
+        (1, -1, 0, 0),
+        (1, i64::from(u32::MAX) + 1, 0, 0),
+        (0, 0, 2, 0),
+        (0, 0, 0, 1),
+    ] {
+        item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+        assert_eq!(
+            kmipkit_client_batch_item_delegated_login(
+                rights,
+                lease_kind,
+                lease_value,
+                count_present,
+                count,
+                ptr::null_mut(),
+                &mut item,
+            ),
+            ERROR_INVALID_INPUT
+        );
+        assert!(item.is_null());
+    }
+
+    item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_delegated_login(
+            rights,
+            2,
+            i64::MIN,
+            1,
+            i32::MIN,
+            ptr::null_mut(),
+            &mut item,
+        ),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    release(rights, Kind::Structure);
+    kmipkit_client_batch_item_release(item);
+}
+
+#[test]
+fn ffi_delegated_login_response_getters_clear_outputs_for_invalid_item() {
+    let mut present = 9;
+    let mut ticket_present = 9;
+    let mut ticket_type = u32::MAX;
+    let mut ticket_value = byte_span(b"secret sentinel");
+    assert_eq!(
+        kmipkit_client_batch_item_response_delegated_login(
+            ptr::null_mut(),
+            &mut present,
+            &mut ticket_present,
+            &mut ticket_type,
+            &mut ticket_value,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!((present, ticket_present, ticket_type), (0, 0, 0));
+    assert!(ticket_value.data.is_null());
+    assert_eq!(ticket_value.length, 0);
+
+    let mut ttlv_present = 9;
+    let mut ticket_ttlv = ptr::dangling_mut::<kmipkit_ttlv_structure_t>();
+    assert_eq!(
+        kmipkit_client_batch_item_response_delegated_login_ttlv(
+            ptr::null_mut(),
+            &mut ttlv_present,
+            &mut ticket_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(ticket_ttlv.is_null());
+}
+
+#[test]
 fn ffi_failed_check_keeps_policy_fields_and_complete_ttlv_available_to_c() {
     let response_bytes = failed_check_response(b"check-failure");
     let decoded = kmipkit_ttlv::codec::decode(&response_bytes)
