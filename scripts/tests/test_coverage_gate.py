@@ -976,6 +976,26 @@ trait Example { fn declaration(&self); }
 
                     self.assertTrue(is_executable)
 
+    def test_cpp_digit_separators_do_not_hide_later_coverage_exclusions(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "int maximum_port = 65'535;\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE: Unreachable invalid-input fallback.\n"
+                "    return nullptr;\n",
+                encoding="utf-8",
+            )
+
+            excluded = GATE._is_executable_changed_line(root, relative, 2, {})
+            adjacent = GATE._is_executable_changed_line(root, relative, 3, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
     def test_rust_coverage_markers_respect_lifetimes_and_nested_comments(self) -> None:
         self.require_gate()
         cases = (
