@@ -87,6 +87,24 @@ def test_get_usage_allocation_response_maps_identifier_and_redacts_repr(
     result.close()
 
 
+def test_get_usage_allocation_response_allows_absent_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def response(_item: object, present: object, _identifier: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_get_usage_allocation=response),
+    )
+
+    result = client._get_usage_allocation_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert result is None
+
+
 def test_get_usage_allocation_exposes_owned_complete_response_ttlv(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
