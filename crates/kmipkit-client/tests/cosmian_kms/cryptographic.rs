@@ -233,6 +233,7 @@ fn cosmian_crypto_finding_rows_are_not_success_dispositions() {
         .filter(|row| row["expected_outcome"] != "typed_success")
         .collect::<Vec<_>>();
     assert_eq!(findings.len(), 246, "reviewed finding inventory changed");
+
     for row in findings {
         assert!(
             matches!(
@@ -372,6 +373,34 @@ fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() 
         .collect::<Vec<_>>();
     assert_eq!(findings.len(), 246, "reviewed finding inventory changed");
 
+    let post_quantum_certify_rows = findings
+        .iter()
+        .filter(|row| {
+            row["operation"] == "Certify"
+                && row["algorithm"].as_str().is_some_and(|algorithm| {
+                    algorithm.starts_with("MLDSA_") || algorithm.starts_with("SLHDSA_")
+                })
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        post_quantum_certify_rows.len(),
+        30,
+        "the reviewed PQC CSR fixture dependency inventory changed"
+    );
+    let unavailable_post_quantum_csr_ids = post_quantum_certify_rows
+        .iter()
+        .filter_map(|row| {
+            let path = validation_fixture_path(row, "csr")
+                .unwrap_or_else(|error| panic!("PQC CSR fixture path: {error}"));
+            (!path.is_file()).then(|| case_id(row).expect("PQC CSR case ID"))
+        })
+        .collect::<BTreeSet<_>>();
+    assert!(
+        unavailable_post_quantum_csr_ids.is_empty()
+            || unavailable_post_quantum_csr_ids.len() == post_quantum_certify_rows.len(),
+        "the local PQC CSR fixture set must be complete or wholly absent"
+    );
+
     let mut runnable = BTreeSet::new();
     let mut not_sent = BTreeSet::new();
     let mut blocker_counts = BTreeSet::new();
@@ -426,6 +455,7 @@ fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() 
         &not_sent,
         &blocker_counts,
         &serialized_probe_payloads,
+        unavailable_post_quantum_csr_ids.len(),
     );
 }
 
@@ -434,6 +464,7 @@ fn assert_finding_probe_inventory(
     not_sent: &BTreeSet<&str>,
     blocker_counts: &BTreeSet<(&str, &str)>,
     serialized_probe_payloads: &std::collections::BTreeMap<&str, usize>,
+    unavailable_post_quantum_csr_count: usize,
 ) {
     eprintln!(
         "crypto probe inventory: runnable={} not_sent={} blockers={blocker_counts:?}",
@@ -442,47 +473,53 @@ fn assert_finding_probe_inventory(
     );
     assert_eq!(
         runnable.len(),
-        231,
+        231 - unavailable_post_quantum_csr_count,
         "only probes with exact request and fixture dimensions may reach the target"
     );
     assert_eq!(
         not_sent.len(),
-        15,
+        15 + unavailable_post_quantum_csr_count,
         "every unrepresentable probe stays NotSent"
     );
     assert!(runnable.is_disjoint(not_sent));
     assert_eq!(
         runnable.len(),
-        231,
+        231 - unavailable_post_quantum_csr_count,
         "all exact findings need typed payloads"
     );
     assert_eq!(
         not_sent.len(),
-        15,
-        "all 15 fixture gaps must remain NotSent"
+        15 + unavailable_post_quantum_csr_count,
+        "baseline blockers and unavailable PQC CSR probes must remain NotSent"
     );
+    let mut expected_blockers = [
+        (
+            "Decrypt",
+            "exact AES/RSA hybrid ciphertext fixture is unavailable",
+        ),
+        (
+            "Encrypt",
+            "exact AES/RSA hybrid request fixture is unavailable",
+        ),
+        (
+            "Decrypt",
+            "opaque ConfigurableKEM key fixture is unavailable",
+        ),
+        (
+            "Encrypt",
+            "opaque ConfigurableKEM key fixture is unavailable",
+        ),
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    if unavailable_post_quantum_csr_count > 0 {
+        expected_blockers.insert((
+            "Certify",
+            "matching post-quantum CSR fixture is unavailable",
+        ));
+    }
     assert_eq!(
-        *blocker_counts,
-        [
-            (
-                "Decrypt",
-                "exact AES/RSA hybrid ciphertext fixture is unavailable"
-            ),
-            (
-                "Encrypt",
-                "exact AES/RSA hybrid request fixture is unavailable"
-            ),
-            (
-                "Decrypt",
-                "opaque ConfigurableKEM key fixture is unavailable"
-            ),
-            (
-                "Encrypt",
-                "opaque ConfigurableKEM key fixture is unavailable"
-            ),
-        ]
-        .into_iter()
-        .collect::<BTreeSet<_>>(),
+        *blocker_counts, expected_blockers,
         "preflight blockers must remain operation-specific and explicit"
     );
     eprintln!(
@@ -1208,6 +1245,9 @@ fn integer_field(structure: &Structure, tag: u32) -> Option<i32> {
 
 #[test]
 fn certificate_encrypt_rows_have_matching_local_round_trip_key_fixtures() {
+    let validation_directory = super::certificate_directory().join("validation");
+    let has_local_validation_fixtures = validation_directory.is_dir();
+
     let rows = target_rows().expect("cryptographic target rows");
     for row in rows
         .iter()
@@ -1223,6 +1263,13 @@ fn certificate_encrypt_rows_have_matching_local_round_trip_key_fixtures() {
         }
         let certificate =
             validation_fixture_path(&fixture_row, "certificate").expect("certificate path");
+        assert!(
+            certificate.starts_with(&validation_directory),
+            "{id} certificate path must remain in the validation fixture directory"
+        );
+        if !has_local_validation_fixtures {
+            continue;
+        }
         let stem = validation_fixture_stem(&fixture_row).expect("fixture stem");
         let directory = certificate.parent().expect("fixture directory");
         assert!(certificate.is_file(), "{id} certificate fixture is missing");
