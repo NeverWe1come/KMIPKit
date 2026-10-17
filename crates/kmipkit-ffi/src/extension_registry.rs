@@ -3061,9 +3061,8 @@ fn derive_key_request_from_handles(
         identifiers.push(identifier);
     }
     let parameters = derive_key_parameters_from_handle(derivation_parameters)?;
-    let attributes = match copy_attribute_set_handle(attributes, true)? {
-        Some(attributes) => attributes,
-        None => return Err(ERROR_INVALID_INPUT),
+    let Some(attributes) = copy_attribute_set_handle(attributes, true)? else {
+        return Err(ERROR_INVALID_INPUT);
     };
     Ok(DeriveKeyRequest::new(
         ObjectType::from_raw(object_type),

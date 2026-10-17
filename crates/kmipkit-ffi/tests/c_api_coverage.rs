@@ -296,6 +296,10 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
 }
 
 fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const DERIVE_KEY: u32 = 5;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
     const DERIVATION_PARAMETERS: u32 = 0x0042_0032;
     const DERIVATION_DATA: u32 = 0x0042_0030;
     const SALT: u32 = 0x0042_0084;
@@ -310,30 +314,83 @@ fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
         )
     }
 
+    fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+        let mut matching = structure
+            .children()
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item.tag().raw() == tag);
+        let (index, _) = matching.next()?;
+        matching.next().is_none().then_some(index)
+    }
+
+    fn has_operation(item: &Item, expected: u32) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                return false;
+            };
+            unique_child_index(&structure, OPERATION).is_some_and(|index| {
+                structure.children()[index].with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == expected),
+                )
+            })
+        })
+    }
+
     fn has_exact_parameters(item: &Item) -> bool {
         item.with_value(|value| {
             let ValueView::Structure(structure) = value else {
                 return false;
             };
             let children = structure.children();
-            if item.tag().raw() == DERIVATION_PARAMETERS {
-                return children.len() == 4
-                    && children[0].tag().raw() == DERIVATION_DATA
-                    && byte_string_is(&children[0], FIRST_DATA)
-                    && children[1].tag().raw() == DERIVATION_DATA
-                    && byte_string_is(&children[1], SECOND_DATA)
-                    && children[2].tag().raw() == SALT
-                    && byte_string_is(&children[2], SALT_BYTES)
-                    && children[3].tag().raw() == ITERATION_COUNT
-                    && children[3].with_value(
-                        |value| matches!(value, ValueView::Integer(actual) if *actual == 4096),
-                    );
-            }
-            children.iter().any(has_exact_parameters)
+            children.len() == 4
+                && children[0].tag().raw() == DERIVATION_DATA
+                && byte_string_is(&children[0], FIRST_DATA)
+                && children[1].tag().raw() == DERIVATION_DATA
+                && byte_string_is(&children[1], SECOND_DATA)
+                && children[2].tag().raw() == SALT
+                && byte_string_is(&children[2], SALT_BYTES)
+                && children[3].tag().raw() == ITERATION_COUNT
+                && children[3].with_value(
+                    |value| matches!(value, ValueView::Integer(actual) if *actual == 4096),
+                )
         })
     }
 
-    kmipkit_ttlv::codec::decode(encoded).is_ok_and(|root| has_exact_parameters(&root))
+    fn derive_key_item_has_expected_payload(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            unique_child_index(&batch_item, REQUEST_PAYLOAD).is_some_and(|index| {
+                batch_item.children()[index].with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        return false;
+                    };
+                    unique_child_index(&payload, DERIVATION_PARAMETERS)
+                        .is_some_and(|index| has_exact_parameters(&payload.children()[index]))
+                })
+            })
+        })
+    }
+
+    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut derive_key_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| has_operation(item, DERIVE_KEY));
+        let Some(derive_key_item) = derive_key_items.next() else {
+            return false;
+        };
+        derive_key_items.next().is_none() && derive_key_item_has_expected_payload(derive_key_item)
+    })
 }
 
 #[test]

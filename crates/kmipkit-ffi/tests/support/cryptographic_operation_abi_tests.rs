@@ -43,6 +43,71 @@ fn derive_parameter_handle(items: impl IntoIterator<Item = Item>) -> *mut kmipki
     make_handle(Kind::Structure, HandleValue::Structure(structure))
 }
 
+fn derive_key_parameter_values_are_preserved(item: &Item) -> bool {
+    item.with_value(|value| {
+        let ValueView::Structure(parameters) = value else {
+            return false;
+        };
+        let items = parameters.children();
+        if items.iter().map(|item| item.tag().raw()).collect::<Vec<_>>()
+            != [
+                0x0042_002b,
+                0x0042_003a,
+                0x0042_0030,
+                0x0042_0030,
+                0x0042_0084,
+                0x0042_003c,
+                0x0054_0001,
+            ]
+        {
+            return false;
+        }
+        let cryptographic_parameters_preserved = items[0].with_value(|value| {
+            let ValueView::Structure(parameters) = value else {
+                return false;
+            };
+            let children = parameters.children();
+            children.len() == 1
+                && children[0].tag().raw() == 0x0042_0028
+                && children[0].with_value(
+                    |value| matches!(value, ValueView::Enumeration(value) if *value == 0xfeed_beef),
+                )
+        });
+        cryptographic_parameters_preserved
+            && items[1].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"iv-secret"),
+            )
+            && items[2].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"first-secret"),
+            )
+            && items[3].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"second-secret"),
+            )
+            && items[4].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"salt-secret"),
+            )
+            && items[5].with_value(|value| matches!(value, ValueView::Integer(37)))
+            && items[6].with_value(
+                |value| matches!(value, ValueView::TextString(value) if value == "vendor-extension"),
+            )
+    })
+}
+
+fn derive_key_output_attributes_are_preserved(item: &Item) -> bool {
+    item.with_value(|value| {
+        let ValueView::Structure(attributes) = value else {
+            return false;
+        };
+        let items = attributes.children();
+        items.len() == 2
+            && items[0].tag().raw() == 0x0042_0028
+            && items[0]
+                .with_value(|value| matches!(value, ValueView::Enumeration(value) if *value == 3))
+            && items[1].tag().raw() == 0x0042_002a
+            && items[1].with_value(|value| matches!(value, ValueView::Integer(128)))
+    })
+}
+
 #[test]
 fn derive_key_parameter_parser_preserves_typed_fields_repeated_data_and_extensions() {
     let structure = derive_parameter_handle([
@@ -142,71 +207,12 @@ fn derive_key_constructor_preserves_exact_ttlv_parameter_values_and_extensions()
         |value| matches!(value, ValueView::TextString(value) if value.as_bytes() == identifier_bytes)
     ));
 
-    let parameters_preserved = fields[3].with_value(|value| {
-        let ValueView::Structure(parameters) = value else {
-            return false;
-        };
-        let items = parameters.children();
-        if items.iter().map(|item| item.tag().raw()).collect::<Vec<_>>()
-            != [
-                0x0042_002b,
-                0x0042_003a,
-                0x0042_0030,
-                0x0042_0030,
-                0x0042_0084,
-                0x0042_003c,
-                0x0054_0001,
-            ]
-        {
-            return false;
-        }
-        let cryptographic_parameters_preserved = items[0].with_value(|value| {
-            let ValueView::Structure(parameters) = value else {
-                return false;
-            };
-            let children = parameters.children();
-            children.len() == 1
-                && children[0].tag().raw() == 0x0042_0028
-                && children[0].with_value(
-                    |value| matches!(value, ValueView::Enumeration(value) if *value == 0xfeed_beef),
-                )
-        });
-        cryptographic_parameters_preserved
-            && items[1].with_value(
-                |value| matches!(value, ValueView::ByteString(value) if value == b"iv-secret"),
-            )
-            && items[2].with_value(
-                |value| matches!(value, ValueView::ByteString(value) if value == b"first-secret"),
-            )
-            && items[3].with_value(
-                |value| matches!(value, ValueView::ByteString(value) if value == b"second-secret"),
-            )
-            && items[4].with_value(
-                |value| matches!(value, ValueView::ByteString(value) if value == b"salt-secret"),
-            )
-            && items[5].with_value(|value| matches!(value, ValueView::Integer(37)))
-            && items[6].with_value(
-                |value| matches!(value, ValueView::TextString(value) if value == "vendor-extension"),
-            )
-    });
     assert!(
-        parameters_preserved,
+        derive_key_parameter_values_are_preserved(&fields[3]),
         "typed parameter values and extension survive FFI mapping"
     );
-    let attribute_values_preserved = fields[4].with_value(|value| {
-        let ValueView::Structure(attributes) = value else {
-            return false;
-        };
-        let items = attributes.children();
-        items.len() == 2
-            && items[0].tag().raw() == 0x0042_0028
-            && items[0]
-                .with_value(|value| matches!(value, ValueView::Enumeration(value) if *value == 3))
-            && items[1].tag().raw() == 0x0042_002a
-            && items[1].with_value(|value| matches!(value, ValueView::Integer(128)))
-    });
     assert!(
-        attribute_values_preserved,
+        derive_key_output_attributes_are_preserved(&fields[4]),
         "output attributes survive FFI mapping"
     );
 
