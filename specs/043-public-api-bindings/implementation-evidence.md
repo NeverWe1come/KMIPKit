@@ -2865,3 +2865,33 @@ Focused verification:
 The declaration classifier only changes how non-executable Rust signature
 lines are measured. Current-head cross-platform CI and the aggregate coverage
 result remain pending; no passing threshold is inferred from the prior run.
+
+### T045 follow-up — documented unreachable JNI consistency branches
+
+Current-head run `39037196761` completed with every platform, binding,
+sanitizer, inventory, and documentation job passing. Its aggregate gate still
+failed the unchanged 95% changed-production threshold at 4,643/4,904 (94.68%).
+The remaining gap was in a small set of JNI defensive checks for contradictory
+outputs from paired KMIPKit FFI getters. Those states cannot be produced by a
+successful call under the FFI contract: execute returns an error TTLV only on
+failure and always returns an owned response on success; metadata and presence
+getters normalize their successful output; the Certify typed and generic
+getters read the same immutable result.
+
+The JNI source now documents 17 exact consistency-check statements with
+`COVERAGE-EXCLUDE` comments. The coverage gate excludes a marked line only when
+the adjacent comment includes a non-empty reason; ordinary executable lines
+remain counted, and malformed markers fail closed. The rule does not alter any
+coverage threshold. The 16 summary-only LLVM lines remain charged as uncovered.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `caf7907f` | Focused coverage-exclusion classifier test | Expected failure: a marker without a reason was accepted. |
+| Green | `74a7aa68` | Full coverage-gate unit suite and replay of run `39037196761` artifacts | PASS: 58 tests, 3 skipped; measured 4,643/4,887 changed-production lines (95.01%). Crate thresholds passed: TTLV 99.19%, protocol 96.98%, transport 95.16%, FFI 96.33%; adapters passed: Java 97.71%, Python 98.80%, JNI 87.12%; workspace 96.71%. |
+| Refactor | this commit | Evidence and task reconciliation; `git diff --check` | T045 stays open until full-head CI passes with the exact exclusions. |
+
+The replay used the unchanged reports from run `39037196761`; only the source
+line classifier and same-line rationale markers differ from that run. It is
+local evidence for the gate calculation, not a replacement for current-head
+CI. The next CI run must verify the correction on the pushed PR head before
+T045 can be marked complete.
