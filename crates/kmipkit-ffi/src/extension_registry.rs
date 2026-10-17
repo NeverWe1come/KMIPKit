@@ -3013,6 +3013,67 @@ pub extern "C" fn kmipkit_client_batch_item_certify(
     })
 }
 
+// The ordered Unique Identifier records may contain repeated identifiers.
+// Derivation Parameters and Attributes are copied from generic TTLV structures;
+// secret derivation byte strings are moved into zeroizing protocol storage.
+fn derive_key_request_from_handles(
+    object_type: u32,
+    unique_identifiers: *const kmipkit_unique_identifier_v1_t,
+    unique_identifier_count: u64,
+    derivation_method: u32,
+    derivation_parameters: *mut kmipkit_ttlv_structure_t,
+    attributes: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<DeriveKeyRequest> {
+    if unique_identifier_count == 0 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    if unique_identifier_count > MAX_DERIVE_KEY_SOURCE_IDENTIFIERS {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    if unique_identifiers.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let Ok(count) = usize::try_from(unique_identifier_count) else {
+        return Err(ERROR_RESOURCE_LIMIT);
+    };
+    // SAFETY: non-null and bounded above; the caller supplies `count` readable ABI records.
+    let source_identifiers = unsafe { std::slice::from_raw_parts(unique_identifiers, count) };
+    let mut identifiers = Vec::new();
+    if identifiers.try_reserve_exact(count).is_err() {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    let mut total_identifier_bytes = 0_u64;
+    for identifier in source_identifiers {
+        let identifier = match copy_unique_identifier(ptr::from_ref(identifier)) {
+            Ok(Some(identifier)) => identifier,
+            Ok(None) => return Err(ERROR_INVALID_INPUT),
+            Err(status) => return Err(status),
+        };
+        if let UniqueIdentifier::TextString(value) = &identifier {
+            let Ok(length) = u64::try_from(value.len()) else {
+                return Err(ERROR_RESOURCE_LIMIT);
+            };
+            total_identifier_bytes = match total_identifier_bytes.checked_add(length) {
+                Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
+                _ => return Err(ERROR_RESOURCE_LIMIT),
+            };
+        }
+        identifiers.push(identifier);
+    }
+    let parameters = derive_key_parameters_from_handle(derivation_parameters)?;
+    let attributes = match copy_attribute_set_handle(attributes, true)? {
+        Some(attributes) => attributes,
+        None => return Err(ERROR_INVALID_INPUT),
+    };
+    Ok(DeriveKeyRequest::new(
+        ObjectType::from_raw(object_type),
+        identifiers,
+        DerivationMethod::from_raw(derivation_method),
+        parameters,
+        attributes,
+    ))
+}
+
 /// Creates a typed Derive Key request from KMIP 2.1 §6.1.14, Table 205.
 ///
 /// The ordered Unique Identifier records may contain repeated identifiers.
@@ -3030,58 +3091,17 @@ pub extern "C" fn kmipkit_client_batch_item_derive_key(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        if unique_identifier_count == 0 {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        if unique_identifier_count > MAX_DERIVE_KEY_SOURCE_IDENTIFIERS {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        }
-        if unique_identifiers.is_null() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let Ok(count) = usize::try_from(unique_identifier_count) else {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        };
-        // SAFETY: non-null and bounded above; the caller supplies `count` readable ABI records.
-        let source_identifiers = unsafe { std::slice::from_raw_parts(unique_identifiers, count) };
-        let mut identifiers = Vec::new();
-        if identifiers.try_reserve_exact(count).is_err() {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        }
-        let mut total_identifier_bytes = 0_u64;
-        for identifier in source_identifiers {
-            let identifier = match copy_unique_identifier(ptr::from_ref(identifier)) {
-                Ok(Some(identifier)) => identifier,
-                Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
-                Err(status) => return record_ffi_error(status),
-            };
-            if let UniqueIdentifier::TextString(value) = &identifier {
-                let Ok(length) = u64::try_from(value.len()) else {
-                    return record_ffi_error(ERROR_RESOURCE_LIMIT);
-                };
-                total_identifier_bytes = match total_identifier_bytes.checked_add(length) {
-                    Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
-                    _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
-                };
-            }
-            identifiers.push(identifier);
-        }
-        let parameters = match derive_key_parameters_from_handle(derivation_parameters) {
-            Ok(parameters) => parameters,
-            Err(status) => return record_ffi_error(status),
-        };
-        let attributes = match copy_attribute_set_handle(attributes, true) {
-            Ok(Some(attributes)) => attributes,
-            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
-            Err(status) => return record_ffi_error(status),
-        };
-        let request = DeriveKeyRequest::new(
-            ObjectType::from_raw(object_type),
-            identifiers,
-            DerivationMethod::from_raw(derivation_method),
-            parameters,
+        let request = match derive_key_request_from_handles(
+            object_type,
+            unique_identifiers,
+            unique_identifier_count,
+            derivation_method,
+            derivation_parameters,
             attributes,
-        );
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
         *out = match batch_item_handle(ClientRequest::DeriveKey(request)) {
             Ok(item) => item,
             Err(status) => return record_ffi_error(status),

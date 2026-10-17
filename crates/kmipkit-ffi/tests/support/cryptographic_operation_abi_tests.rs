@@ -88,12 +88,15 @@ fn derive_key_constructor_preserves_exact_ttlv_parameter_values_and_extensions()
         derive_parameter_item(0x0042_0030, Value::byte_string(b"second-secret".to_vec())),
         derive_parameter_item(0x0042_0084, Value::byte_string(b"salt-secret".to_vec())),
         derive_parameter_item(0x0042_003c, Value::integer(37)),
-        derive_parameter_item(0x0054_0001, Value::text_string("vendor-extension".to_owned())),
+        derive_parameter_item(
+            0x0054_0001,
+            Value::text_string("vendor-extension".to_owned()),
+        ),
     ]);
-    let attributes = derive_parameter_handle([derive_parameter_item(
-        0x0042_002a,
-        Value::integer(128),
-    )]);
+    let attributes = derive_parameter_handle([
+        derive_parameter_item(0x0042_0028, Value::enumeration(3)),
+        derive_parameter_item(0x0042_002a, Value::integer(128)),
+    ]);
     let identifier_bytes = b"source-key";
     let identifier = kmipkit_unique_identifier_v1_t {
         struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
@@ -120,10 +123,20 @@ fn derive_key_constructor_preserves_exact_ttlv_parameter_values_and_extensions()
     let payload = request
         .into_ttlv_payload()
         .expect("the mapped request serializes as a valid Derive Key payload");
-    let fields = payload.view().children();
+    let payload_view = payload.view();
+    let fields = payload_view.children();
     assert_eq!(
-        fields.iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
-        [0x0042_0057, 0x0042_0094, 0x0042_0031, 0x0042_0032, 0x0042_0125]
+        fields
+            .iter()
+            .map(|item| item.tag().raw())
+            .collect::<Vec<_>>(),
+        [
+            0x0042_0057,
+            0x0042_0094,
+            0x0042_0031,
+            0x0042_0032,
+            0x0042_0125
+        ]
     );
     assert!(fields[1].with_value(
         |value| matches!(value, ValueView::TextString(value) if value.as_bytes() == identifier_bytes)
@@ -176,7 +189,26 @@ fn derive_key_constructor_preserves_exact_ttlv_parameter_values_and_extensions()
                 |value| matches!(value, ValueView::TextString(value) if value == "vendor-extension"),
             )
     });
-    assert!(parameters_preserved, "typed parameter values and extension survive FFI mapping");
+    assert!(
+        parameters_preserved,
+        "typed parameter values and extension survive FFI mapping"
+    );
+    let attribute_values_preserved = fields[4].with_value(|value| {
+        let ValueView::Structure(attributes) = value else {
+            return false;
+        };
+        let items = attributes.children();
+        items.len() == 2
+            && items[0].tag().raw() == 0x0042_0028
+            && items[0]
+                .with_value(|value| matches!(value, ValueView::Enumeration(value) if *value == 3))
+            && items[1].tag().raw() == 0x0042_002a
+            && items[1].with_value(|value| matches!(value, ValueView::Integer(128)))
+    });
+    assert!(
+        attribute_values_preserved,
+        "output attributes survive FFI mapping"
+    );
 
     release(attributes, Kind::Structure);
     release(structure, Kind::Structure);
