@@ -120,6 +120,22 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Get Usage Allocation request with an optional object identifier and exact count. */
+    public static ClientBatchItem getUsageAllocation(
+            @Nullable UniqueIdentifier uniqueIdentifier, long usageLimitsCount) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemGetUsageAllocation(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier), usageLimitsCount));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Hash request with required Cryptographic Parameters and optional Data/framing fields. */
     public static ClientBatchItem hash(
             TtlvStructure parameters,

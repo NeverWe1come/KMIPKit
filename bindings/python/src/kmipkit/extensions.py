@@ -1552,6 +1552,22 @@ def client_batch_item_certify(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_get_usage_allocation(
+    unique_identifier: UniqueIdentifier | None,
+    usage_limits_count: int,
+) -> ClientBatchItem:
+    """Create a Get Usage Allocation item with the exact signed 64-bit unit count."""
+    count = _integer_range(usage_limits_count, -(1 << 63), (1 << 63) - 1)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_get_usage_allocation",
+            (identifier, count),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_hash(
     parameters: ttlv.Structure,
     data: ttlv.Value | None = None,
@@ -1779,6 +1795,7 @@ __all__ = [
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",
     "client_batch_item_certify",
+    "client_batch_item_get_usage_allocation",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",

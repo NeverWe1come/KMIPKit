@@ -1382,6 +1382,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "<kmipkit_client::RequestOptions as core::default::Default>::default",
     ),
     (
+        "rust-observed-397ee0115e79bd8b9749",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+    ),
+    (
         "rust-observed-33d82d2c459bc6c85f9c",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::certify_response",
@@ -1395,6 +1400,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-9576a7e0dbcd07375fe4",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Certify",
+    ),
+    (
+        "rust-observed-9365e579da298db8f315",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::GetUsageAllocation",
     ),
     (
         "rust-observed-08ebb047e2dc8a7d19bc",
@@ -1425,6 +1435,36 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-56ad3a13e32dcb72173b",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CertifyResponse::unique_identifier",
+    ),
+    (
+        "rust-observed-e1f8406907aaf65d7c1e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetUsageAllocationRequest",
+    ),
+    (
+        "rust-observed-8a1974769b61c4c4eae5",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetUsageAllocationRequest::new",
+    ),
+    (
+        "rust-observed-e67fa5f2ea457244e060",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetUsageAllocationRequest::usage_limits_count",
+    ),
+    (
+        "rust-observed-07696fae05f99bd1ad16",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetUsageAllocationResponse",
+    ),
+    (
+        "rust-observed-4baa96ecea0508484e65",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetUsageAllocationResponse::result",
+    ),
+    (
+        "rust-observed-1b3d0b75acdff86532c8",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
     ),
     (
         "rust-observed-5d253f0403ebfd0df573",

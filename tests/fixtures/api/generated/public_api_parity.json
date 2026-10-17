@@ -4584,6 +4584,126 @@
       "exportName": "kmipkit::ProtocolError::retains_generic_response",
       "packageId": "rust-kmipkit",
       "reason": "This doc-hidden method is the internal cross-crate marker used by client execution to distinguish the specifically permitted UID-shape errors from other protocol failures. Callers use the four-language crypto_response_ttlv capability; this implementation bridge is not a separate facade operation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse formatter is a redacted Python representation detail, not an independent cross-language operation; T049 tests the redaction contract separately."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested.",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact GetUsageAllocationResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
     }
   ],
   "capabilities": [
@@ -19971,6 +20091,213 @@
         "requestBoundary": "not-applicable",
         "returnType": "Result<ClientBatchResponse, ClientError>"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed Get Usage Allocation item with the optional Unique Identifier and exact signed 64-bit Usage Limits Count from KMIP v2.1 §6.1.23, Table 232."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "input-value-pointer",
+            "name": "unique_identifier",
+            "ownership": "borrowed",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "usage_limits_count",
+            "type": "int64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_get_usage_allocation"
+      },
+      "id": "client_batch_item_get_usage_allocation",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemGetUsageAllocation",
+        "method": "getUsageAllocation",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "usageLimitsCount",
+            "type": "long"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_get_usage_allocation",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier | None"
+          },
+          {
+            "name": "usage_limits_count",
+            "type": "int"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientRequest",
+        "name": "get_usage_allocation",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "GetUsageAllocationRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientRequest"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the resolved identifier only for a successful Get Usage Allocation result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_unique_identifier",
+            "ownership": "none",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_get_usage_allocation"
+      },
+      "id": "client_batch_item_response_get_usage_allocation",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseGetUsageAllocation",
+        "method": "getUsageAllocationResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<GetUsageAllocationResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_get_usage_allocation",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "function": "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "GetUsageAllocationResponse | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchOutcome",
+        "name": "GetUsageAllocation",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "GetUsageAllocationResponse"
+      }
     }
   ],
   "languages": [
@@ -20381,6 +20708,61 @@
       },
       "scope": "client_1_0",
       "section": "6.1.16"
+    },
+    {
+      "apiState": "verified",
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T049:constructor:c",
+          "T049:response:c"
+        ],
+        "java": [
+          "T049:constructor:java",
+          "T049:response:java",
+          "T049:result:type:java",
+          "T049:result:uniqueIdentifier:java"
+        ],
+        "python": [
+          "T049:constructor:python",
+          "T049:response:python",
+          "T049:result:type:python",
+          "T049:result:uniqueIdentifier:python"
+        ],
+        "rust": [
+          "rust-observed-9365e579da298db8f315",
+          "rust-observed-397ee0115e79bd8b9749",
+          "rust-observed-e1f8406907aaf65d7c1e",
+          "rust-observed-8a1974769b61c4c4eae5",
+          "rust-observed-e67fa5f2ea457244e060",
+          "rust-observed-07696fae05f99bd1ad16",
+          "rust-observed-4baa96ecea0508484e65",
+          "rust-observed-1b3d0b75acdff86532c8"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0039",
+      "name": "Get Usage Allocation",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0039",
+        "state": "approved"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "scope": "client_1_0",
+      "section": "6.1.23"
     },
     {
       "apiState": "declared",
@@ -49688,6 +50070,71 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-397ee0115e79bd8b9749",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
         "path": "specs/022-object-lifecycle/spec.md",
@@ -49827,6 +50274,71 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-9365e579da298db8f315",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::GetUsageAllocation",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
       ]
     },
     {
@@ -50079,6 +50591,396 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-e1f8406907aaf65d7c1e",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationRequest",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-8a1974769b61c4c4eae5",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationRequest::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-e67fa5f2ea457244e060",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationRequest::usage_limits_count",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationRequest::usage_limits_count",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-07696fae05f99bd1ad16",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.GetUsageAllocationResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-4baa96ecea0508484e65",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationResponse::result",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationResponse::result",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "rust-observed-1b3d0b75acdff86532c8",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.GetUsageAllocationResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
       ]
     },
     {
@@ -72659,6 +73561,656 @@
         "KMIPKIT-0043-FR-005",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:constructor:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_get_usage_allocation",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:response:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_get_usage_allocation",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:constructor:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:response:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:result:type:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.GetUsageAllocationResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:result:uniqueIdentifier:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.uniqueIdentifier",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.GetUsageAllocationResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:constructor:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_get_usage_allocation",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:response:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:result:type:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.GetUsageAllocationResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+      "declarationId": "T049:result:uniqueIdentifier:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.GetUsageAllocationResponse.unique_identifier",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_get_usage_allocation",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.GetUsageAllocationResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+        "bindings/python/tests/test_get_usage_allocation_operation.py",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001"
       ]
     }
   ],

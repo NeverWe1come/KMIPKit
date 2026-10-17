@@ -1558,7 +1558,7 @@ fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_fail
         ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
         0x11,
         b"usage-allocation",
-        vec![ttlv_item(0x0042_006f, 0x07, response_identifier)],
+        vec![ttlv_item(0x0042_0094, 0x07, response_identifier)],
     );
     let mut present = 0;
     let mut identifier = empty_unique_identifier_output_v1();

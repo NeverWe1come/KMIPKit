@@ -122,6 +122,8 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemCertify(int identifierKind, @Nullable byte[] identifierText,
             long identifierNumber, boolean hasCertificateRequestType, long certificateRequestType,
             @Nullable byte[] certificateRequestValue, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemGetUsageAllocation(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber, long usageLimitsCount);
     public static native long clientBatchItemHash(
             long parameters, long data, @Nullable byte[] correlationValue,
             int initIndicator, int finalIndicator);
@@ -176,6 +178,7 @@ public final class NativeExtensionRegistry {
             long itemResponse);
     public static native Object[] clientBatchItemResponseCreate(long itemResponse);
     public static native Object[] clientBatchItemResponseCertify(long itemResponse);
+    public static native Object[] clientBatchItemResponseGetUsageAllocation(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateKeyPair(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateSplitKey(long itemResponse);
     public static native Object[] clientBatchItemResponseHash(long itemResponse);

@@ -35,9 +35,9 @@ use kmipkit_client::{
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    HashRequest, MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext, OperationData,
-    ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
+    GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest, ObjectType,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
+    SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -2807,6 +2807,27 @@ pub extern "C" fn kmipkit_client_batch_item_certify(
             request = request.with_protection_storage_masks(masks);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::Certify(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Get Usage Allocation request from KMIP 2.1 §6.1.23, Table 232.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    usage_limits_count: i64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let mut request = GetUsageAllocationRequest::new(usage_limits_count);
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::get_usage_allocation(
+            request
+        )));
         SUCCESS
     })
 }

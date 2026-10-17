@@ -1413,11 +1413,14 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             external_directory = parent / "outside-bindings"
             external_directory.mkdir()
             bindings = root / "bindings"
+            if bindings.is_dir():
+                shutil.rmtree(bindings)
             self._assert_symlink_creation_or_skip(bindings, external_directory, directory=True)
 
             result = self._run_generator(root, "--write")
 
             self.assertNotEqual(result.returncode, 0)
+            self.assertIn("symbolic link or reparse point", result.stderr)
             external_outputs = (
                 external_directory / Path(path).relative_to("bindings")
                 for path in V2_GENERATED_OUTPUTS

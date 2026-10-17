@@ -18,7 +18,10 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client::ClientRequest::GetUsageAllocation",
         "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
         "kmipkit_protocol::GetUsageAllocationRequest",
+        "kmipkit_protocol::GetUsageAllocationRequest::new",
+        "kmipkit_protocol::GetUsageAllocationRequest::usage_limits_count",
         "kmipkit_protocol::GetUsageAllocationResponse",
+        "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
     },
     "c": {
         "kmipkit_client_batch_item_get_usage_allocation",
@@ -27,13 +30,18 @@ EXPECTED_MAPPINGS = {
     "java": {
         "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
         "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
+        "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse",
+        "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.uniqueIdentifier",
     },
     "python": {
         "kmipkit.extensions.client_batch_item_get_usage_allocation",
         "kmipkit.client.BatchItemResult.get_usage_allocation_response",
+        "kmipkit.client.GetUsageAllocationResponse",
+        "kmipkit.client.GetUsageAllocationResponse.unique_identifier",
     },
 }
 REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-6.1.23-002-001",
     "KMIPKIT-0039-FR-001",
     "KMIPKIT-0039-FR-002",
     "KMIPKIT-0039-FR-003",
@@ -116,6 +124,7 @@ class GetUsageAllocationParityManifestTests(unittest.TestCase):
         for language, expected in EXPECTED_MAPPINGS.items():
             self.assertTrue(expected <= actual_mappings[language], language)
         self.assertTrue(REQUIREMENTS <= linked_requirements)
+        self.assertNotIn("KMIPKIT-0039-FR-009", linked_requirements)
 
     def test_generated_parity_inventory_contains_verified_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))

@@ -66,6 +66,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseCertifyResponse(values);
     }
 
+    /** Returns the resolved identifier from a successful Get Usage Allocation response. */
+    public Optional<GetUsageAllocationResponse> getUsageAllocationResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseGetUsageAllocation);
+        return parseGetUsageAllocationResponse(values);
+    }
+
     /** Returns distinct private and public identifiers for a successful Create Key Pair response. */
     public Optional<CreateKeyPairResponse> createKeyPairResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -148,6 +157,21 @@ public final class ClientBatchItemResult implements AutoCloseable {
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
 
         @Override public String toString() { return "CertifyResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Get Usage Allocation response. The resolved identifier is redacted by default. */
+    public static final class GetUsageAllocationResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private GetUsageAllocationResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "GetUsageAllocationResponse[uniqueIdentifier=redacted]";
+        }
     }
 
     /** Successful Create Key Pair response with separate identifiers. */
@@ -429,6 +453,17 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return Optional.empty();
         }
         return Optional.of(new CertifyResponse(identifierRecord(tuple[1])));
+    }
+
+    static Optional<GetUsageAllocationResponse> parseGetUsageAllocationResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Get Usage Allocation response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 1, "native Get Usage Allocation response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new GetUsageAllocationResponse(identifierRecord(tuple[1])));
     }
 
     static Optional<CreateKeyPairResponse> parseCreateKeyPairResponse(Object[] values) {

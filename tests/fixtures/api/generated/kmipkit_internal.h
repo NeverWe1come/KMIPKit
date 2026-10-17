@@ -612,6 +612,14 @@ int32_t kmipkit_client_batch_item_response_certify(kmipkit_client_batch_item_res
  */
 /* KMIPKIT-0007-FR-001, KMIPKIT-0021-FR-015, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_execute_with_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
+/* Creates a typed Get Usage Allocation item with the optional Unique Identifier and exact signed 64-bit Usage Limits Count from KMIP v2.1 §6.1.23, Table 232.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.23-002-001 */
+int32_t kmipkit_client_batch_item_get_usage_allocation(const kmipkit_unique_identifier_v1_t * unique_identifier, int64_t usage_limits_count, kmipkit_client_batch_item_t ** out_item);
+/* Returns the resolved identifier only for a successful Get Usage Allocation result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.
+ */
+/* KMIPKIT-0039-FR-001, KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-003, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-005, KMIPKIT-0039-FR-006, KMIPKIT-0039-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-015, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.23-002-001 */
+int32_t kmipkit_client_batch_item_response_get_usage_allocation(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

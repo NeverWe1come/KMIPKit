@@ -849,6 +849,9 @@ class BatchItemResult:
     sign_response: SignResponse | None = field(default=None, repr=False)
     signature_verify_response: SignatureVerifyResponse | None = field(default=None, repr=False)
     certify_response: CertifyResponse | None = field(default=None, repr=False)
+    get_usage_allocation_response: GetUsageAllocationResponse | None = field(
+        default=None, repr=False
+    )
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -873,6 +876,13 @@ class HashResponse:
 @dataclass(frozen=True, slots=True)
 class CertifyResponse:
     """Typed Certify response containing the generated certificate identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class GetUsageAllocationResponse:
+    """Typed successful Get Usage Allocation response with a redacted identifier."""
 
     unique_identifier: extensions.UniqueIdentifier = field(repr=False)
 
@@ -1145,6 +1155,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x06
                 ):
                     certify_response = _certify_response(item)
+                allocation_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x11
+                ):
+                    allocation_response = _get_usage_allocation_response(item)
                 cryptographic_responses = (None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
@@ -1167,6 +1184,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         split_identifiers,
                         *cryptographic_responses,
                         certify_response,
+                        allocation_response,
                     )
                 )
             finally:
@@ -1368,6 +1386,29 @@ def _certify_response(item: _ClientBatchItemResponse) -> CertifyResponse | None:
     if unique_identifier is None:
         errors.raise_for_status(4)
     return CertifyResponse(unique_identifier)
+
+
+def _get_usage_allocation_response(
+    item: _ClientBatchItemResponse,
+) -> GetUsageAllocationResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_get_usage_allocation(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    return GetUsageAllocationResponse(unique_identifier)
 
 
 def _mac_response(item: _ClientBatchItemResponse) -> MacResponse | None:
@@ -1778,6 +1819,7 @@ __all__ = [
     "Endpoint",
     "EndpointKind",
     "HashResponse",
+    "GetUsageAllocationResponse",
     "MacResponse",
     "MacVerifyResponse",
     "RequestOptions",
