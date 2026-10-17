@@ -563,15 +563,16 @@ public final class ClientBatchItemResult implements AutoCloseable {
         long[] responseTtlvHandle = requireLongArray(
                 tuple[2], 1, "native Check response is invalid");
         if (!responsePresent(fields)) {
+            boolean hasUnexpectedFields = tuple[1] != null || responseTtlvHandle[0] != 0;
             for (int index = 1; index < fields.length; index++) {
                 if (fields[index] != 0) {
-                    throw new InvalidInputException("native absent Check response contains fields");
+                    hasUnexpectedFields = true;
                 }
             }
-            if (tuple[1] != null || responseTtlvHandle[0] != 0) {
-                if (responseTtlvHandle[0] > 0) {
-                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
-                }
+            if (responseTtlvHandle[0] > 0) {
+                TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+            }
+            if (hasUnexpectedFields) {
                 throw new InvalidInputException("native absent Check response contains fields");
             }
             return Optional.empty();
