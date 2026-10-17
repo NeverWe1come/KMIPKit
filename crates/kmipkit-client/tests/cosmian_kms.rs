@@ -526,12 +526,16 @@ fn review_generation_cases(rows: &[serde_json::Value], issues: &mut Vec<String>)
             ("X25519MLKEM768", "0x88800006"),
             ("X448MLKEM1024", "0x88800007"),
         ] {
+            let key_format = match (operation, algorithm) {
+                ("Create Key Pair", "CoverCrypt") => Some("CoverCryptSecretKey"),
+                _ => None,
+            };
             demand_review_case(
                 rows,
                 operation,
                 "PrivateKey",
                 Some(algorithm),
-                None,
+                key_format,
                 &serde_json::json!({"vendor_algorithm_value":value}),
                 None,
                 issues,
