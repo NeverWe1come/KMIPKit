@@ -59,6 +59,12 @@ For every capability that corresponds to a KMIP operation, its manifest declarat
 |---|---|---|---|
 | T043 | `specs/022-object-lifecycle/spec.md` (`KMIPKIT-0036`, approved 2026-10-11); OASIS KMIP Specification v2.1 §6.1.6, Tables 179–181 | Certify request construction, open 32-bit Certificate Request Type, sensitive Certificate Request Value, optional request structures, generated response Unique Identifier, absent-versus-present response state, success-only generic TTLV, and redacted errors; `KMIPKIT-0036-FR-001`–`FR-006` and `FR-008`, plus `KMIPKIT-REQ-SPEC-6.1.6-001`, `-002-001`–`-002-003`, `-003`, and `-007` | Rust `CertifyResponse::with_ttlv`; C `kmipkit_client_batch_item_response_certify_ttlv`; Java `CertifyResponse.responseTtlv()`/`close()`; Python `CertifyResponse.response_ttlv`/`close()`. The compiled C consumer checks order and an unknown field after releasing the item handle; Java JNI and Python return caller-owned copies. Focused language tests pass locally. T043 remains open pending current-head cross-platform CI and coverage. |
 
+## T044 — Check mapping
+
+| Task | Approved owner and normative source | Contract and stable trace IDs | Four-language mapping and parity evidence |
+|---|---|---|---|
+| T044 | `specs/022-object-lifecycle/spec.md` (`KMIPKIT-0036`, approved 2026-10-11); OASIS KMIP Specification v2.1 §6.1.7, Tables 183–185 | Optional request Unique Identifier, Usage Limits Count, Cryptographic Usage Mask, and Lease Time; typed response policy fields on either result, Unique Identifier only on success, and complete ordered generic response TTLV; `KMIPKIT-0036-FR-001`–`FR-006` and `FR-008`, `KMIPKIT-REQ-SPEC-6.1.7-001`, `-002-001`, `-002-002`, `-003`, `-004-001`, `-004-002`, and `-005` | Rust `CheckResponse::with_ttlv`; C `kmipkit_client_batch_item_response_check` and `_check_ttlv`; Java `CheckResponse` accessors/`responseTtlv()`/`close()`; Python `CheckResponse` fields/`response_ttlv`/`close()`. Protocol, client, compiled C ABI consumer, Java/JNI, and Python/CFFI tests exercise failed-result identifier masking, policy-field preservation, ordered unknown TTLV, ownership, and Lease Time boundaries. Global binding export audit passes with C 295/295, Java 539/539, and Python 511/511 exact matches. Current-head cross-platform CI and coverage remain pending. |
+
 ## T049 — Get Usage Allocation mapping
 
 | Task | Approved owner and normative source | Contract and stable trace IDs | Four-language mapping and parity evidence |

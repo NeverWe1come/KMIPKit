@@ -2346,22 +2346,36 @@ coverage remain pending for the shared branch, and no official OASIS test
 case or formal certification claim is made. T043 remains open because its
 required current-head CI/coverage has not been supplied for the correction.
 
-### T044 Python export-audit and lease-range follow-up
+### T044 binding export-audit and lease-range follow-up
 
-The global Python export audit run after the T044 checkpoint found ten
-unclassified generated dataclass members on `kmipkit.client.CheckResponse`.
-The follow-up Red test named each artifact and failed because none had an
-approved exclusion record. The Green change adds the ten exact approved rows
-to the manifest input and regenerates the public API outputs. Java and Python
-also now have explicit Lease Time boundary tests. The existing facade checks
-already enforce the range, so those tests passed on the first run and required
-no production behavior change.
+The first export-audit follow-up found ten unclassified generated dataclass
+members on `kmipkit.client.CheckResponse`; the first Green added exact approved
+exclusions. Independent QA then ran the complete Java/Python export comparison
+and found twelve remaining inventory discrepancies: Check response kinds,
+two internal JNI bridge members, a redacted formatter, and the existing
+Certify response field kind. The second Red test covers the expected kinds and
+explicit exclusions. Its Green corrects only manifest classifications and
+approved exclusions, then regenerates public API outputs. The complete audit
+now reports exact matches for C (295/295), Java (539/539), and Python
+(511/511), with no missing exports or kind mismatches. Java and Python also
+have explicit Lease Time boundary tests. The existing facade checks already
+enforce the range, so those tests passed on the first run and required no
+production behavior change.
 
 | Phase | Commit | Verification | Result |
 |---|---|---|---|
 | Red | `c6113622` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_check_response_python_dataclass_artifacts_are_exactly_excluded -v`; same command with `test_remaining_python_exports_are_mapped_or_exactly_excluded` | Expected failures enumerated all ten missing `CheckResponse` exclusions and reported unclassified Python exports. |
 | Green | `3880dff0` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests -v`; `python -B tools/api_manifest/generate.py --check` | PASS: all 41 T076 mapping/export tests passed; generator verified all 12 outputs. |
 | Refactor | this commit | `mvn -q -Dtest=CheckResponseMappingTest test` from `bindings/java`; Python focused test command below; full T076 test class; generator check; `git diff --check` | PASS: Java Check mapping tests pass; Python Check mapping/boundary tests pass (3 tests); T044 task and evidence record are updated. |
+
+The full export comparison then exposed manifest classification gaps. A second
+Red/Green/Refactor cycle records and closes those gaps:
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `016827f3` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_check_java_and_python_exports_match_observed_declaration_kinds -v` | Expected failure: the test reported nine declaration-kind mismatches and missing exact exclusions for two internal JNI members and one redacted formatter. |
+| Green | `65691f3b` | The Red command; `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python tools/api_manifest/audit_binding_exports.py --repo-root . --check`; `python -B tools/api_manifest/generate.py --check` | PASS: focused test passes; global audit reports C 295/295, Java 539/539, Python 511/511, with zero missing exports or kind mismatches; all 12 generated outputs are current. |
+| Refactor | this commit | Full T076 and Check parity module tests; Java/Python Check tests; formatting; `git diff --check` | PASS: 44 manifest tests pass. Cross-platform PR CI and coverage remain pending. |
 
 The range evidence commands and results are:
 
@@ -2371,6 +2385,10 @@ $env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path target/debug/kmipkit_ffi.dll).Path; uv
                                                                             PASS, 3 tests
 uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping -v
                                                                             PASS, 41 tests
+uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_check_parity_manifest tools.api_manifest.tests.test_t076_client_mapping -v
+                                                                            PASS, 44 tests
+uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python tools/api_manifest/audit_binding_exports.py --repo-root . --check
+                                                                            PASS, C 295/295, Java 539/539, Python 511/511
 python -B tools/api_manifest/generate.py --check                             PASS, 12 outputs
 ```
 
