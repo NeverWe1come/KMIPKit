@@ -429,7 +429,7 @@ fn plaintext(row: &JsonValue) -> Result<SecretBytes, Box<dyn Error>> {
     let mode = row["parameters"]["mode"].as_str().unwrap_or_default();
     let padding = row["parameters"]["padding"].as_str().unwrap_or_default();
     let length = match (mode, padding) {
-        ("ECB" | "CBC", "None") | ("AESKeyWrapPadding" | "NISTKeyWrap", _) => 16,
+        ("ECB", "" | "None") | ("CBC", "None") | ("AESKeyWrapPadding" | "NISTKeyWrap", _) => 16,
         ("ECB" | "CBC", "PKCS5") => 15,
         ("XTS", _) => 32,
         _ => DATA.len(),
