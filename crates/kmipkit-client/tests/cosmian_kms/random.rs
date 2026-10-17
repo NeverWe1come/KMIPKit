@@ -472,6 +472,21 @@ mod filter_tests {
     }
 
     #[test]
+    fn valid_peer_rng_rejection_is_not_reported_as_response_validation_failure() {
+        let case_id = "cosmian-528-rng-retrieve-32-parameters-false";
+        let error = std::io::Error::other(format!(
+            "case {case_id} RNG Retrieve: KMIP Result Status 1 (Operation Failed) Reason Some((10, \"Cryptographic Failure\"))"
+        ));
+
+        assert_eq!(
+            rng_failure_observation_line(case_id, &error),
+            format!(
+                "case_id={case_id} classification=rejected expected_outcome=typed_success observed=rejected request_sent=true response_received=true interoperability=false detail={error}"
+            )
+        );
+    }
+
+    #[test]
     fn case_filter_selects_a_known_executable_case() {
         let selected = select_live_cases(Some("cosmian-528-rng-retrieve-32-parameters-false"))
             .expect("known live RNG case should be selectable");
