@@ -5033,3 +5033,43 @@ fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
     assert_eq!(format, Some(4), "Cosmian imports public SPKI using PKCS#8");
 }
 
+#[test]
+fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
+    let object = signature_key_object(vec![0x30, 0x00], 4, false)
+        .expect("well-formed public key fixture");
+    // OASIS KMIP v2.1 Â§11.56, Table 487: Public Key=0x42006D,
+    // Private Key=0x420064. These are object tags, not unique-identifier tags.
+    assert_eq!(object.tag().raw(), 0x0042_006D);
+    let private_object = signature_key_object(vec![0x30, 0x00], 4, true)
+        .expect("well-formed private key fixture");
+    assert_eq!(private_object.tag().raw(), 0x0042_0064);
+    let format = object.with_value(|value| {
+        let kmipkit_ttlv::ValueView::Structure(fields) = value else {
+            return None;
+        };
+        fields
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == KEY_BLOCK)
+            .and_then(|key_block| {
+                key_block.with_value(|value| {
+                    let kmipkit_ttlv::ValueView::Structure(key_fields) = value else {
+                        return None;
+                    };
+                    key_fields
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == KEY_FORMAT_TYPE)
+                        .and_then(|format| {
+                            format.with_value(|value| match value {
+                                kmipkit_ttlv::ValueView::Enumeration(value) => Some(*value),
+                                _ => None,
+                            })
+                        })
+                })
+            })
+    });
+
+    assert_eq!(format, Some(4), "Cosmian imports public SPKI using PKCS#8");
+}
+
