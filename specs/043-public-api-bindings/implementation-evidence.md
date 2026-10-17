@@ -2285,6 +2285,67 @@ coverage for this correction remain pending.
 | Green | `5aa1d322` | Focused Rust, compiled C, Java/JNI, Python, manifest, formatting, and Clippy checks listed above | PASS locally; no current-head CI claim yet. |
 | Refactor | pending | Update tasks, traceability, dependency matrix, and evidence; run `git diff --check` | In progress; T043 remains open until current-head CI and coverage pass. |
 
+## T044 — Check four-language mapping
+
+The approved owner is `specs/022-object-lifecycle/spec.md` (KMIPKIT-0036).
+The implementation follows OASIS KMIP v2.1 §6.1.7, Tables 183–185. Rust's
+existing typed Check request/response is now constructible and inspectable
+through the stable C ABI, Java/JNI, and Python/CFFI mappings. Request fields
+preserve optional Unique Identifier, signed 64-bit Usage Limits Count, raw
+signed 32-bit Cryptographic Usage Mask, and unsigned 32-bit Lease Time. A
+failed Check remains a typed result: the optional usage count, mask, and lease
+are exposed when present, a returned Unique Identifier is hidden by the typed
+accessor, and the caller can inspect an owned copy of the complete ordered
+response TTLV. Bindings do not add batch options or issue retries, polls, or
+other follow-up operations. All seven owner IDs are linked from
+`specs/022-object-lifecycle/traceability.md` and the generated public API
+inventory.
+
+| Phase | Commits | Verification | Result |
+|---|---|---|---|
+| Red | `20c5f314` | `python -B -m unittest tools.api_manifest.tests.test_check_parity_manifest -v`; `mvn -q -Dtest=CheckResponseMappingTest test -f bindings/java/pom.xml`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs` | Expected failures: both manifest tests reported Check blocked/absent from the verified parity inventory; Java failed because the Check response mapping was absent; the C consumer failed to link the Check ABI symbols. |
+| Green | `f61fa773`, `744958a8` | Focused Rust, C consumer, Java/JNI, Python/CFFI, manifest, generator, formatting, and FFI Clippy commands listed below | PASS locally. Export metadata now expects 186 exported C entry points; the focused metadata test and generated API outputs pass. |
+| Refactor | documentation commit | `git diff --check`; traceability and task records reviewed against the owner contract | Updates task state, payload and normative requirement verification links, dependency matrix, and this evidence record. |
+
+Focused verification on the Green implementation:
+
+```text
+cargo test -p kmipkit-protocol check_operation_tests                       PASS, 9 tests
+cargo test -p kmipkit-client check_execution_tests                         PASS, 7 tests
+cargo test -p kmipkit-ffi --features coverage-c-consumer check_             PASS, 2 tests
+cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer
+                                                                            PASS, 2 compiled C consumer tests
+cargo test -p kmipkit-ffi --features coverage-c-consumer every_exported_c_function_starts_inside_the_shared_panic_boundary
+                                                                            PASS, 1 test; 186 exports
+cargo build -p kmipkit-ffi                                                 PASS
+mvn -q -Dtest=CheckResponseMappingTest test -f bindings/java/pom.xml        PASS
+$env:PYTHONPATH='bindings/python/src'; $env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path 'target/debug/kmipkit_ffi.dll').Path; uv run --no-project --with pytest --with cffi -- python -m pytest bindings/python/tests/test_check_operation.py -q
+                                                                            PASS, 2 tests
+python -B -m unittest tools.api_manifest.tests.test_check_parity_manifest -v PASS, 2 tests
+uv run --no-project --with jsonschema -- python -m unittest tools.api_manifest.tests.test_operation_readiness -v
+                                                                            PASS, 13 tests
+python -B -m unittest tools.normative_catalog.tests.test_object_lifecycle_traceability -v
+                                                                            PASS, 2 tests
+python -B tools/api_manifest/generate.py --write                             PASS, generated 12 outputs
+python -B tools/api_manifest/generate.py --check                             PASS, verified 12 outputs
+cargo fmt --all --check                                                     PASS
+cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings     PASS
+git diff --check                                                            PASS
+```
+
+The failed-Check C fixture includes a returned Unique Identifier, three
+optional policy fields, and an unknown vendor field. It validates the full
+response through the Rust protocol decoder and a fake TLS 1.3 mTLS peer, then
+calls the compiled C consumer to verify the typed failure fields, hidden typed
+identifier, and retained ordered TTLV after the response-item handle is
+released. The fixture uses Result Status Operation Failed (1) with reason
+Incompatible Cryptographic Usage Mask (`0x29`).
+
+This is local scoped evidence only. Current-head cross-platform CI and
+coverage remain pending for the shared branch, and no official OASIS test
+case or formal certification claim is made. T043 remains open because its
+required current-head CI/coverage has not been supplied for the correction.
+
 ## T079 — Python native staging zeroization
 
 This task implements Constitution §8, `KMIPKIT-0021-FR-012`, and
