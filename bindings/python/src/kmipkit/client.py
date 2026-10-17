@@ -854,6 +854,7 @@ class BatchItemResult:
     )
     check_response: CheckResponse | None = field(default=None, repr=False)
     delegated_login_response: DelegatedLoginResponse | None = field(default=None, repr=False)
+    derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -939,6 +940,18 @@ class DelegatedLoginResponse:
 @dataclass(frozen=True, slots=True)
 class GetUsageAllocationResponse:
     """Successful Get Usage Allocation response and its owned complete generic TTLV."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class DeriveKeyResponse:
+    """Successful Derive Key response and its owned complete generic TTLV."""
 
     unique_identifier: extensions.UniqueIdentifier = field(repr=False)
     response_ttlv: ttlv.Structure = field(repr=False)
@@ -1229,6 +1242,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x11
                 ):
                     allocation_response = _get_usage_allocation_response(item)
+                derive_key_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x05
+                ):
+                    derive_key_response = _derive_key_response(item)
                 cryptographic_responses = (None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
@@ -1254,6 +1274,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         allocation_response,
                         check_response,
                         delegated_login_response,
+                        derive_key_response,
                     )
                 )
             finally:
@@ -1666,6 +1687,48 @@ def _get_usage_allocation_response(
     return GetUsageAllocationResponse(unique_identifier, response_ttlv)
 
 
+def _derive_key_response(
+    item: _ClientBatchItemResponse,
+) -> DeriveKeyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_derive_key(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_derive_key_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return DeriveKeyResponse(unique_identifier, response_ttlv)
+
+
 def _mac_response(item: _ClientBatchItemResponse) -> MacResponse | None:
     present = ffi.new("uint8_t *")
     identifier = _initialize_unique_identifier_output()
@@ -2071,6 +2134,7 @@ __all__ = [
     "CertifyResponse",
     "CheckResponse",
     "DelegatedLoginResponse",
+    "DeriveKeyResponse",
     "Client",
     "CredentialEncoding",
     "Endpoint",

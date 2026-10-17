@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import pytest
 from types import SimpleNamespace
+
+import pytest
 
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
