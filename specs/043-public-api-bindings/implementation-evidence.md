@@ -2202,7 +2202,9 @@ request and response. The mappings preserve an open 32-bit
 Certificate Request Type, opaque sensitive request bytes, optional request
 structures, response Unique Identifier, absent-versus-present response state,
 and redacted diagnostics. The manifest inventories each language declaration
-and currently keeps the operation in `declared` state pending final CI evidence.
+and now classifies the operation as verified after correcting generic
+successful-response TTLV parity and owner requirement links; the current-head
+evidence is recorded below.
 The owner traceability IDs are `KMIPKIT-REQ-SPEC-6.1.6-001`,
 `KMIPKIT-REQ-SPEC-6.1.6-002-001`, `KMIPKIT-REQ-SPEC-6.1.6-002-002`,
 `KMIPKIT-REQ-SPEC-6.1.6-002-003`, `KMIPKIT-REQ-SPEC-6.1.6-003`, and
@@ -2259,7 +2261,7 @@ evidence for the correction described below.
 | Green | `39b7e5ea` | Manifest generation and readiness tests | Passed the readiness-state transition only. Independent QA later showed the implementation evidence was incomplete. |
 | Refactor | `c3a02c40` | `python -B -m unittest tools.api_manifest.tests.test_certify_parity_manifest -v` | Expected failure: language-specific generic response TTLV mappings and owner requirement links were missing. |
 
-### T043 generic successful-response TTLV correction — Red/Green/Refactor in progress
+### T043 generic successful-response TTLV correction — complete
 
 The Green correction is commit `5aa1d322`. `CertifyResponse::with_ttlv` now
 retains the generic response structure on successful outcomes only. C, Java,
@@ -2275,15 +2277,16 @@ the Certify API manifest tests (5), the Java Certify mapping and mTLS client
 integration tests, Python Certify tests (7 plus 1 client test),
 `cargo fmt --all --check`, the focused Clippy command, and
 `git diff --check`. The generated API manifest check also passed for all 12
-outputs. These are local checks on `5aa1d322`; PR #104 still reports CI for
-the earlier remote head `1ade490e`. Current-head cross-platform CI and
-coverage for this correction remain pending.
+outputs. These were local checks on 5aa1d322. Follow-up commits c7c69808 and
+50eb4d7d add malformed-response edge coverage and keep the expanded FFI test
+suite Clippy-clean. Current-head CI run 39024429424 on head 50eb4d7d passed all
+required cross-platform jobs and the selected coverage gate.
 
 | Phase | Commit | Verification | Result |
 |---|---|---|---|
 | Red | `c3a02c40` | `python -B -m unittest tools.api_manifest.tests.test_certify_parity_manifest -v` | Expected failure: missing generic response-TTLV parity and owner requirement links. |
 | Green | `5aa1d322` | Focused Rust, compiled C, Java/JNI, Python, manifest, formatting, and Clippy checks listed above | PASS locally; no current-head CI claim yet. |
-| Refactor | pending | Update tasks, traceability, dependency matrix, and evidence; run `git diff --check` | In progress; T043 remains open until current-head CI and coverage pass. |
+| Refactor | c7c69808, 50eb4d7d | Focused FFI/Java tests, full Maven verification, workspace Clippy, formatting, and current-head CI run 39024429424 | PASS: all required cross-platform jobs and selected coverage pass; T043 is complete. |
 
 ## T044 — Check four-language mapping
 
@@ -2341,10 +2344,11 @@ identifier, and retained ordered TTLV after the response-item handle is
 released. The fixture uses Result Status Operation Failed (1) with reason
 Incompatible Cryptographic Usage Mask (`0x29`).
 
-This is local scoped evidence only. Current-head cross-platform CI and
-coverage remain pending for the shared branch, and no official OASIS test
-case or formal certification claim is made. T043 remains open because its
-required current-head CI/coverage has not been supplied for the correction.
+The commands above are local scoped evidence for the initial Green
+implementation. Current-head cross-platform CI and selected coverage passed in
+run 39024429424 on head 50eb4d7d. This records API mapping evidence under the
+approved owner contract; it does not claim OASIS test-case conformance or
+formal certification.
 
 ### T044 binding export-audit and lease-range follow-up
 
@@ -2375,7 +2379,7 @@ Red/Green/Refactor cycle records and closes those gaps:
 |---|---|---|---|
 | Red | `016827f3` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_check_java_and_python_exports_match_observed_declaration_kinds -v` | Expected failure: the test reported nine declaration-kind mismatches and missing exact exclusions for two internal JNI members and one redacted formatter. |
 | Green | `65691f3b` | The Red command; `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python tools/api_manifest/audit_binding_exports.py --repo-root . --check`; `python -B tools/api_manifest/generate.py --check` | PASS: focused test passes; global audit reports C 295/295, Java 539/539, Python 511/511, with zero missing exports or kind mismatches; all 12 generated outputs are current. |
-| Refactor | this commit | Full T076 and Check parity module tests; Java/Python Check tests; formatting; `git diff --check` | PASS: 44 manifest tests pass. Cross-platform PR CI and coverage remain pending. |
+| Refactor | this commit | Full T076 and Check parity module tests; Java/Python Check tests; formatting; `git diff --check` | PASS: 44 manifest tests pass. Current-head run 39024429424 passed the required cross-platform checks and selected-scope coverage. |
 
 The range evidence commands and results are:
 
@@ -2396,6 +2400,22 @@ Both language tests accept Lease Time `0` and `UINT32_MAX`, then reject
 `-1` and `UINT32_MAX + 1`. The Python call uses the locally built native DLL;
 the initial isolated invocation without pytest and the native-library path
 could not collect tests, and is not counted as verification.
+#### Current-head CI and coverage — 2026-10-17
+
+PR #104 CI run 39024429424 on head 50eb4d7d completed successfully.
+All required Rust 1.94/stable Linux, Windows, and macOS jobs, C consumers,
+Java/JNI and Python matrices, sanitizers, fuzz smoke, normative inventory,
+traceability, and selected coverage checks passed; two informational jobs were
+skipped. The selected-scope report measured changed production at 4,627/4,862
+(95.17%, including 16 summary-only lines as uncovered); kmipkit-ttlv at
+735/741 (99.19%); kmipkit-protocol at 12,581/12,973 (96.98%);
+kmipkit-transport at 3,713/3,902 (95.16%); kmipkit-ffi at 4,989/5,178
+(96.35%); Java at 2,035/2,084 (97.65%); Python at 2,472/2,501 (98.84%);
+JNI at 2,861/3,256 (87.87%, including 16 summary-only lines as uncovered);
+and the workspace at 28,984/29,970 (96.71%). Every component and aggregate
+threshold passed. Local verification also passed `cargo fmt --all --check`,
+workspace Clippy, 43 focused Rust FFI tests, and Maven `clean verify` with
+217 tests and JaCoCo checks.
 
 ## T079 — Python native staging zeroization
 
