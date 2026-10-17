@@ -1147,8 +1147,18 @@ def _rust_function_signature_lines(source_lines: tuple[str, ...]) -> frozenset[i
             continue
         start = line_index
         for end in range(start, len(source_lines)):
-            declaration_line = source_lines[end].split("//", 1)[0].rstrip()
-            if declaration_line.endswith(("{", ";")):
+            declaration_line = source_lines[end].rstrip()
+            code_line = _mask_rust_non_code(declaration_line).rstrip()
+            opening_brace = code_line.find("{")
+            if opening_brace >= 0:
+                body = declaration_line[opening_brace + 1 :].split("//", 1)[0]
+                if body.replace("}", "").strip():
+                    declaration_lines.update(range(start + 1, end + 1))
+                else:
+                    declaration_lines.update(range(start + 1, end + 2))
+                line_index = end + 1
+                break
+            if code_line.endswith(";"):
                 declaration_lines.update(range(start + 1, end + 2))
                 line_index = end + 1
                 break
