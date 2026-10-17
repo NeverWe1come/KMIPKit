@@ -3593,7 +3593,7 @@ fn run_covercrypt_cipher_case(
                 ciphertext,
                 "Decrypt oracle",
             )?;
-            if !decrypted.with_bytes(|bytes| bytes == COVERCRYPT_TEST_PLAINTEXT) {
+            if !covercrypt_plaintext_matches_fixture(&decrypted) {
                 return Err(format!(
                     "case {id} Encrypt: target response received; CoverCrypt round-trip did not reproduce the known plaintext"
                 )
@@ -3613,7 +3613,7 @@ fn run_covercrypt_cipher_case(
                 ciphertext,
                 "Decrypt",
             )?;
-            if !decrypted.with_bytes(|bytes| bytes == COVERCRYPT_TEST_PLAINTEXT) {
+            if !covercrypt_plaintext_matches_fixture(&decrypted) {
                 return Err(format!(
                     "case {id} Decrypt: target response received; CoverCrypt plaintext did not match the setup fixture"
                 )
@@ -3628,6 +3628,16 @@ fn run_covercrypt_cipher_case(
         super::common::cleanup_owned_objects(client, id, &mut ownership)
     })
     .map_err(|message| -> Box<dyn Error> { message.into() })
+}
+
+fn covercrypt_plaintext_matches_fixture(decrypted: &SecretBytes) -> bool {
+    decrypted.with_bytes(|bytes| {
+        super::cryptographic_covercrypt::split_decrypted_data(bytes).is_ok_and(
+            |(metadata, plaintext)| {
+                metadata.is_empty() && plaintext == COVERCRYPT_TEST_PLAINTEXT
+            },
+        )
+    })
 }
 
 fn execute_covercrypt_encrypt(

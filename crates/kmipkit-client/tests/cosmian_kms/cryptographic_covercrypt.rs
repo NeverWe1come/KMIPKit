@@ -19,7 +19,39 @@ pub(super) fn encode_data_to_encrypt(
 }
 
 pub(super) fn split_decrypted_data(data: &[u8]) -> Result<(&[u8], &[u8]), &'static str> {
-    Ok((&[], data))
+    let mut metadata_length = 0_usize;
+    let mut shift = 0_u32;
+    let mut prefix_length = 0_usize;
+
+    loop {
+        let byte = *data
+            .get(prefix_length)
+            .ok_or("CoverCrypt metadata length is truncated")?;
+        let chunk = usize::from(byte & 0x7f);
+        if shift >= usize::BITS || chunk > (usize::MAX >> shift) {
+            return Err("CoverCrypt metadata length overflows usize");
+        }
+        metadata_length |= chunk << shift;
+        prefix_length += 1;
+        if byte & 0x80 == 0 {
+            break;
+        }
+        shift = shift
+            .checked_add(7)
+            .filter(|next_shift| *next_shift < usize::BITS)
+            .ok_or("CoverCrypt metadata length overflows usize")?;
+    }
+
+    let plaintext_offset = prefix_length
+        .checked_add(metadata_length)
+        .ok_or("CoverCrypt metadata length overflows usize")?;
+    let metadata = data
+        .get(prefix_length..plaintext_offset)
+        .ok_or("CoverCrypt metadata is truncated")?;
+    let plaintext = data
+        .get(plaintext_offset..)
+        .ok_or("CoverCrypt plaintext offset is out of range")?;
+    Ok((metadata, plaintext))
 }
 
 fn append_leb128_length(output: &mut Vec<u8>, mut length: usize) -> Result<(), &'static str> {
