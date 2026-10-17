@@ -236317,7 +236317,7 @@
     {
       "declarationId": "T081:protocol-response-ttlv:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.errors.ClientExecutionError.response_ttlv",
       "capabilityId": "crypto_response_ttlv",
       "requirementIds": [
@@ -241958,6 +241958,42 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T049; the typed Unique Identifier result is mapped across four languages and its representation redaction is independently tested."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetUsageAllocation",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Get Usage Allocation facade; it has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade exposes the typed GetUsageAllocationResponse; this native entry point only transfers opaque handles across the JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation",
+      "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Get Usage Allocation response facade; it has no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade exposes the owned typed response and generic TTLV accessor; this native entry point only transfers opaque handles across the JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.toString",
+      "reason": "This exact Java formatter emits only a redacted summary of the response identifier and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T049. ClientFacadeTlsIntegrationTest verifies the successful typed response and redacted toString output; the owned generic TTLV remains available only through responseTtlv()."
     }
   ],
   "apiLevels": [
