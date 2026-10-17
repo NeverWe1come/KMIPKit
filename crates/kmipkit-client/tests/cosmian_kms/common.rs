@@ -1853,6 +1853,107 @@ mod review_regression_tests {
         );
     }
 
+    #[test]
+    fn lifecycle_asymmetric_setup_rows_declare_and_serialize_exact_rsa_fixture() {
+        const CASE_IDS: &[&str] = &[
+            "cosmian-528-add-attribute-privatekey",
+            "cosmian-528-add-attribute-publickey",
+            "cosmian-528-activate-privatekey",
+            "cosmian-528-activate-publickey",
+            "cosmian-528-check-privatekey",
+            "cosmian-528-check-publickey",
+            "cosmian-528-delete-attribute-privatekey",
+            "cosmian-528-delete-attribute-publickey",
+            "cosmian-528-destroy-privatekey",
+            "cosmian-528-destroy-publickey",
+            "cosmian-528-get-attribute-list-privatekey",
+            "cosmian-528-get-attribute-list-publickey",
+            "cosmian-528-get-attributes-privatekey",
+            "cosmian-528-get-attributes-publickey",
+            "cosmian-528-locate-privatekey",
+            "cosmian-528-locate-publickey",
+            "cosmian-528-modify-attribute-privatekey",
+            "cosmian-528-modify-attribute-publickey",
+            "cosmian-528-revoke-privatekey",
+            "cosmian-528-revoke-publickey",
+            "cosmian-528-set-attribute-privatekey",
+            "cosmian-528-set-attribute-publickey",
+        ];
+
+        fn scalar_fields(payload: &Structure, group_tag: u32) -> Vec<(u32, i64)> {
+            let payload_view = payload.view();
+            let Some(group) = payload_view
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == group_tag)
+            else {
+                return Vec::new();
+            };
+            group.with_value(|value| match value {
+                kmipkit_ttlv::ValueView::Structure(structure) => structure
+                    .children()
+                    .iter()
+                    .filter_map(|item| {
+                        let scalar = item.with_value(|value| match value {
+                            kmipkit_ttlv::ValueView::Enumeration(value) => {
+                                Some(i64::from(*value))
+                            }
+                            kmipkit_ttlv::ValueView::Integer(value) => Some(i64::from(*value)),
+                            _ => None,
+                        })?;
+                        Some((item.tag().raw(), scalar))
+                    })
+                    .collect(),
+                _ => Vec::new(),
+            })
+        }
+
+        for case_id in CASE_IDS {
+            let row = manifest_row(case_id).expect("lifecycle key-pair setup row");
+            assert_eq!(
+                row["algorithm"].as_str(),
+                Some("RSA"),
+                "{case_id} must select the lifecycle fixture algorithm explicitly"
+            );
+            assert_eq!(
+                row["parameters"]["key_bits"].as_i64(),
+                Some(2048),
+                "{case_id} must select the lifecycle fixture size explicitly"
+            );
+            assert_eq!(
+                row["wire_enum_values"]["cryptographic_algorithm"]["value"].as_str(),
+                Some("0x00000004"),
+                "{case_id} must preserve the RSA wire enumeration"
+            );
+
+            let request = super::super::cryptographic::build_create_key_pair_request(&row, case_id)
+                .expect("explicit lifecycle RSA fixture request");
+            let payload = request
+                .into_ttlv_payload()
+                .expect("lifecycle RSA fixture serializes");
+            assert!(
+                scalar_fields(&payload, 0x0042_0126)
+                    .contains(&(0x0042_0028, 4)),
+                "{case_id} Common Attributes must contain RSA"
+            );
+            assert!(
+                scalar_fields(&payload, 0x0042_0126)
+                    .contains(&(0x0042_002a, 2048)),
+                "{case_id} Common Attributes must contain the explicit key size"
+            );
+            assert!(
+                scalar_fields(&payload, 0x0042_0127)
+                    .contains(&(0x0042_002c, 0x10)),
+                "{case_id} Private Key Attributes must contain Sign usage"
+            );
+            assert!(
+                scalar_fields(&payload, 0x0042_0128)
+                    .contains(&(0x0042_002c, 0x20)),
+                "{case_id} Public Key Attributes must contain Verify usage"
+            );
+        }
+    }
+
     const LOCATE_CASES: &[(&str, u32)] = &[
         ("cosmian-528-locate-certificate", 1),
         ("cosmian-528-locate-opaqueobject", 8),
