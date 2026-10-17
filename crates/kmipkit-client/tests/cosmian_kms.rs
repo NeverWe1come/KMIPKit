@@ -1600,14 +1600,20 @@ fn validate_required_capability_fields(row: &serde_json::Value) {
 }
 
 fn validate_capability_execution_status(row: &serde_json::Value) {
-    // Case families are an explicit plan until Tasks 4–7 implement execution
-    // and parity. Source existence must never become an observation.
+    // Normative exclusions are the only rows permitted to remain not_run;
+    // source existence alone never counts as a live observation.
     if row["expected_outcome"] == "standards_invalid_exclusion" {
         validate_non_executable_exclusion(row);
     } else {
         assert_eq!(
             manifest_text(row, "execution_status"),
             "planned_for_tasks_4_6"
+        );
+        assert_ne!(
+            manifest_text(&row["observed_result"], "classification"),
+            "not_run",
+            "executable case cannot remain not_run: {}",
+            manifest_text(row, "case_id")
         );
     }
 }
