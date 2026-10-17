@@ -52,17 +52,19 @@ final class DelegatedLoginMappingTest {
         NativeExtensionRegistry.ensureLoaded();
         long ticketTtlv = NativeExtensionRegistry.ttlvStructureCreate();
         byte[] secret = "ticket-value-must-not-appear-in-text".getBytes();
+        byte[] nativeSecret = secret.clone();
 
         try (ClientBatchItemResult.DelegatedLoginResponse response = ClientBatchItemResult
                 .parseDelegatedLoginResponse(new Object[] {
-                    new long[] {1, 1, 0xfeed_beefL}, secret,
+                    new long[] {1, 1, 0xfeed_beefL}, nativeSecret,
                     new long[] {ticketTtlv}
                 })
                 .orElseThrow()) {
             assertEquals(0xfeed_beefL, response.ticketTypeRaw().orElseThrow());
             assertArrayEquals(secret, response.ticketValue().orElseThrow());
-            assertTrue(response.ticketTtlv().handle() > 0);
+            assertTrue(response.ticketTtlv().orElseThrow().handle() > 0);
             assertFalse(response.toString().contains(new String(secret)));
+            assertArrayEquals(new byte[secret.length], nativeSecret);
         }
     }
 
@@ -77,7 +79,19 @@ final class DelegatedLoginMappingTest {
         try (response) {
             assertTrue(response.ticketTypeRaw().isEmpty());
             assertTrue(response.ticketValue().isEmpty());
+            assertTrue(response.ticketTtlv().isEmpty());
             assertFalse(response.toString().contains("ticket-value"));
         }
+    }
+
+    @Test
+    void responseMappingWipesSecretWhenNativeTupleValidationFails() {
+        byte[] secret = "malformed-native-ticket-secret".getBytes();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseDelegatedLoginResponse(new Object[] {
+                    new long[] {1, 1, 0xfeed_beefL}, secret, "invalid ticket handle"
+                }));
+        assertArrayEquals(new byte[secret.length], secret);
     }
 }
