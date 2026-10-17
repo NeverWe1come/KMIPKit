@@ -2285,21 +2285,14 @@ fn ffi_derive_key_response_getter_returns_success_identifier_and_clears_failure(
     assert_response_identifier(&identifier, output_identifier);
     kmipkit_client_batch_item_response_release(successful_item);
 
-    let failed_item = failed_cryptographic_item(
-        derive_key_response_request(),
-        5,
-        b"derive-key-failure",
-    );
+    let failed_item =
+        failed_cryptographic_item(derive_key_response_request(), 5, b"derive-key-failure");
     present = 9;
     identifier = empty_unique_identifier_output_v1();
     identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
     identifier.integer_value = -17;
     assert_eq!(
-        kmipkit_client_batch_item_response_derive_key(
-            failed_item,
-            &mut present,
-            &mut identifier,
-        ),
+        kmipkit_client_batch_item_response_derive_key(failed_item, &mut present, &mut identifier,),
         SUCCESS
     );
     assert_eq!(present, 0);
@@ -2343,11 +2336,8 @@ fn ffi_derive_key_response_ttlv_returns_owned_success_copy_only() {
     kmipkit_ttlv_structure_view_release(response_view);
     kmipkit_ttlv_structure_release(response_ttlv);
 
-    let failed_item = failed_cryptographic_item(
-        derive_key_response_request(),
-        5,
-        b"derive-key-ttlv-failure",
-    );
+    let failed_item =
+        failed_cryptographic_item(derive_key_response_request(), 5, b"derive-key-ttlv-failure");
     present = 9;
     response_ttlv = ptr::null_mut();
     assert_eq!(
