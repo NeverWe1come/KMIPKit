@@ -648,6 +648,9 @@ public final class ClientBatchItemResult implements AutoCloseable {
         Object[] tuple = values;
         long rawHandle = 0;
         TtlvStructure ownedTtlv = null;
+        DelegatedLoginResponse response = null;
+        byte[] ownedValue = null;
+        boolean transferred = false;
         try {
             tuple = requireTuple(values, 3, "native Delegated Login response is invalid");
             if (tuple[2] instanceof long[] handleValues && handleValues.length == 1) {
@@ -666,29 +669,43 @@ public final class ClientBatchItemResult implements AutoCloseable {
                             "native absent Delegated Login Ticket contains fields");
                 }
                 if (!responsePresent) return Optional.empty();
-                return Optional.of(new DelegatedLoginResponse(
-                        OptionalLong.empty(), null, null));
+                response = new DelegatedLoginResponse(OptionalLong.empty(), null, null);
+                Optional<DelegatedLoginResponse> result = resultTransfer.apply(response);
+                transferred = true;
+                response = null;
+                return result;
             }
             if (!responsePresent || fields[2] < 0 || fields[2] > 0xffff_ffffL
                     || rawHandle <= 0) {
                 throw new InvalidInputException("native Delegated Login Ticket is invalid");
             }
-            byte[] value = requireBytes(tuple[1]);
+            ownedValue = requireBytes(tuple[1]);
             ownedTtlv = TtlvStructure.fromNative(rawHandle, null);
-            DelegatedLoginResponse response = new DelegatedLoginResponse(
-                    OptionalLong.of(fields[2]), value, ownedTtlv);
-            Arrays.fill(value, (byte) 0);
-            return resultTransfer.apply(response);
-        } catch (RuntimeException exception) {
+            response = new DelegatedLoginResponse(
+                    OptionalLong.of(fields[2]), ownedValue, ownedTtlv);
+            Arrays.fill(ownedValue, (byte) 0);
+            ownedTtlv = null;
+            rawHandle = 0;
+            Optional<DelegatedLoginResponse> result = resultTransfer.apply(response);
+            transferred = true;
+            response = null;
+            return result;
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+            if (ownedValue != null) {
+                Arrays.fill(ownedValue, (byte) 0);
+            }
+            if (!transferred && tuple != null && tuple.length > 1 && tuple[1] instanceof byte[] value
+                    && value != ownedValue) {
+                Arrays.fill(value, (byte) 0);
+            }
             if (ownedTtlv != null) {
                 ownedTtlv.close();
             } else if (rawHandle > 0) {
-                TtlvStructure.fromNative(rawHandle, null).close();
+                NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
             }
-            if (tuple != null && tuple.length > 1 && tuple[1] instanceof byte[] value) {
-                Arrays.fill(value, (byte) 0);
-            }
-            throw exception;
         }
     }
 

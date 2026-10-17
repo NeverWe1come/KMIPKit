@@ -835,6 +835,60 @@ bool optional_java_string(JNIEnv* env, jstring input, std::vector<uint8_t>& outp
     return java_string_to_utf8(env, input, output);
 }
 
+void wipe_java_byte_array(JNIEnv* env, jbyteArray value) noexcept {
+    if (value == nullptr) return;
+
+    jthrowable original_exception = env->ExceptionOccurred();
+    if (original_exception != nullptr) env->ExceptionClear();
+
+    const jsize length = env->GetArrayLength(value);
+    if (!env->ExceptionCheck()) {
+        constexpr jsize kZeroChunkLength = 256;
+        constexpr std::array<jbyte, kZeroChunkLength> zeros{};
+        for (jsize offset = 0; offset < length;) {
+            const jsize count = std::min(kZeroChunkLength, length - offset);
+            env->SetByteArrayRegion(value, offset, count, zeros.data());
+            if (env->ExceptionCheck()) break;
+            offset += count;
+        }
+    }
+
+    if (original_exception != nullptr) {
+        if (env->ExceptionCheck()) env->ExceptionClear();
+        env->Throw(original_exception);
+        env->DeleteLocalRef(original_exception);
+    }
+}
+
+class DelegatedLoginResponseCleanup final {
+public:
+    explicit DelegatedLoginResponseCleanup(JNIEnv* env) : env_(env) {}
+
+    DelegatedLoginResponseCleanup(const DelegatedLoginResponseCleanup&) = delete;
+    DelegatedLoginResponseCleanup& operator=(const DelegatedLoginResponseCleanup&) = delete;
+
+    ~DelegatedLoginResponseCleanup() {
+        if (secret_value_ != nullptr) {
+            wipe_java_byte_array(env_, secret_value_);
+            env_->DeleteLocalRef(secret_value_);
+        }
+        kmipkit_ttlv_structure_release(ticket_ttlv_);
+    }
+
+    void set_secret_value(jbyteArray value) noexcept { secret_value_ = value; }
+    void set_ticket_ttlv(kmipkit_ttlv_structure_t* value) noexcept { ticket_ttlv_ = value; }
+
+    void transfer_to_java() noexcept {
+        secret_value_ = nullptr;
+        ticket_ttlv_ = nullptr;
+    }
+
+private:
+    JNIEnv* env_;
+    jbyteArray secret_value_ = nullptr;
+    kmipkit_ttlv_structure_t* ticket_ttlv_ = nullptr;
+};
+
 jbyteArray span_to_java_bytes(JNIEnv* env, uint8_t present, kmipkit_byte_span_v1_t span) {
     if (present == 0) return nullptr;
     if (present != 1 || (span.data == nullptr && span.length != 0)
@@ -3129,6 +3183,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
 JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDelegatedLogin(
         JNIEnv* env, jclass, jlong raw_item) {
     return guarded<jobjectArray>(env, nullptr, [&] {
+        DelegatedLoginResponseCleanup cleanup(env);
         uint8_t present = 0;
         uint8_t ticket_present = 0;
         uint32_t ticket_type = 0;
@@ -3152,43 +3207,35 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         kmipkit_ttlv_structure_t* ticket_ttlv = nullptr;
         const int32_t ttlv_status = kmipkit_client_batch_item_response_delegated_login_ttlv(
                 item, &ticket_ttlv_present, &ticket_ttlv);
+        cleanup.set_ticket_ttlv(ticket_ttlv);
         if (ttlv_status != 0) {
-            kmipkit_ttlv_structure_release(ticket_ttlv);
             throw_status(env, ttlv_status);
             return static_cast<jobjectArray>(nullptr);
         }
         if (ticket_ttlv_present > 1 || ticket_ttlv_present != ticket_present
                 || (ticket_ttlv_present == 1 && ticket_ttlv == nullptr)
                 || (ticket_ttlv_present == 0 && ticket_ttlv != nullptr)) {
-            kmipkit_ttlv_structure_release(ticket_ttlv);
             throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
             return static_cast<jobjectArray>(nullptr);
         }
         jbyteArray secret_value = span_to_java_bytes(env, ticket_present, ticket_value);
-        if (ticket_present == 1 && secret_value == nullptr) {
-            kmipkit_ttlv_structure_release(ticket_ttlv);
+        cleanup.set_secret_value(secret_value);
+        if (env->ExceptionCheck() || (ticket_present == 1 && secret_value == nullptr)) {
             return static_cast<jobjectArray>(nullptr);
         }
         jlongArray fields = make_long_array(env, {
                 static_cast<jlong>(present), static_cast<jlong>(ticket_present),
                 static_cast<jlong>(ticket_type)});
-        if (fields == nullptr) {
-            if (secret_value != nullptr) env->DeleteLocalRef(secret_value);
-            kmipkit_ttlv_structure_release(ticket_ttlv);
-            return static_cast<jobjectArray>(nullptr);
-        }
+        if (fields == nullptr) return static_cast<jobjectArray>(nullptr);
         jlongArray ticket_ttlv_handle = make_long_array(
                 env, {to_java_handle(ticket_ttlv)});
         if (ticket_ttlv_handle == nullptr) {
             env->DeleteLocalRef(fields);
-            if (secret_value != nullptr) env->DeleteLocalRef(secret_value);
-            kmipkit_ttlv_structure_release(ticket_ttlv);
             return static_cast<jobjectArray>(nullptr);
         }
         jobjectArray result = make_object_array(env, {fields, secret_value, ticket_ttlv_handle});
-        if (result == nullptr) kmipkit_ttlv_structure_release(ticket_ttlv);
+        if (result != nullptr) cleanup.transfer_to_java();
         env->DeleteLocalRef(fields);
-        if (secret_value != nullptr) env->DeleteLocalRef(secret_value);
         env->DeleteLocalRef(ticket_ttlv_handle);
         return result;
     });
