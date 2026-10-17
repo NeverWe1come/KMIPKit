@@ -2038,8 +2038,25 @@ fn has_typed_executor(operation: &str) -> bool {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum TargetOperationDelivery {
     ResponseReceived,
+    SetupResponseReceived,
     NotSent,
     Uncertain,
+}
+
+#[test]
+fn finding_probe_setup_response_is_not_misreported_as_target_response() {
+    let row = serde_json::json!({"case_id": "case-1"});
+    for detail in [
+        "case case-1 Create Key Pair: KMIP Result Status 1 (Operation Failed)",
+        "case case-1 Sign: KMIP Result Status 1 (Operation Failed)",
+        "case case-1-covercrypt-master Create Key Pair: KMIP Result Status 1 (Operation Failed)",
+    ] {
+        assert_eq!(
+            target_operation_delivery(&row, "Signature Verify", detail),
+            TargetOperationDelivery::SetupResponseReceived,
+            "a prerequisite response must not count as reaching Signature Verify"
+        );
+    }
 }
 
 fn target_operation_delivery(
