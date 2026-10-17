@@ -1125,6 +1125,23 @@ fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
     );
     assert_response_identifier(&identifier, b"checked-object");
 
+    identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_check(
+            item,
+            &raw mut present,
+            &raw mut identifier_present,
+            &raw mut identifier,
+            &raw mut count_present,
+            &raw mut count,
+            &raw mut mask_present,
+            &raw mut mask,
+            &raw mut lease_present,
+            &raw mut lease,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
     let mut ttlv_present = 0;
     let mut response_ttlv = ptr::null_mut();
     assert_eq!(
@@ -2448,7 +2465,7 @@ fn assert_crypto_result_getters_return_status(
 }
 
 #[test]
-fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
+fn ffi_response_getters_reject_inconsistent_response_item_handles() {
     let response = Arc::new(
         create_key_pair_success_response()
             .expect("the valid successful typed response is associated with its request"),
@@ -2460,6 +2477,43 @@ fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
     );
     assert_creation_result_getters_return_status(mismatched_item, ERROR_INVALID_INPUT);
     assert_crypto_result_getters_return_status(mismatched_item, ERROR_INVALID_INPUT);
+
+    let mut present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_certify_ttlv(
+            mismatched_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation(
+            mismatched_item,
+            &raw mut present,
+            &raw mut identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    let mut span = byte_span(&[]);
+    assert_eq!(
+        kmipkit_client_batch_item_response_unique_batch_item_id(
+            mismatched_item,
+            &raw mut present,
+            &raw mut span,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_response_pending_correlation_value(
+            mismatched_item,
+            &raw mut present,
+            &raw mut span,
+        ),
+        ERROR_INVALID_INPUT
+    );
     kmipkit_client_batch_item_response_release(mismatched_item);
 
     let invalid_index_item = make_handle(
@@ -2471,7 +2525,72 @@ fn ffi_creation_result_getters_reject_inconsistent_response_item_handles() {
     );
     assert_creation_result_getters_return_status(invalid_index_item, ERROR_INTERNAL);
     assert_crypto_result_getters_return_status(invalid_index_item, ERROR_INTERNAL);
+
+    response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_certify_ttlv(
+            invalid_index_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation(
+            invalid_index_item,
+            &raw mut present,
+            &raw mut identifier,
+        ),
+        ERROR_INTERNAL
+    );
+    span = byte_span(&[]);
+    assert_eq!(
+        kmipkit_client_batch_item_response_unique_batch_item_id(
+            invalid_index_item,
+            &raw mut present,
+            &raw mut span,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_response_pending_correlation_value(
+            invalid_index_item,
+            &raw mut present,
+            &raw mut span,
+        ),
+        ERROR_INTERNAL
+    );
     kmipkit_client_batch_item_response_release(invalid_index_item);
+}
+
+#[test]
+fn ffi_create_split_key_identifier_getter_rejects_out_of_range_identifier_index() {
+    let response = Arc::new(
+        create_split_key_success_response()
+            .expect("the split-key response contains ordered generated identifiers"),
+    );
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(response),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+            item,
+            u64::MAX,
+            &raw mut identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    kmipkit_client_batch_item_response_release(item);
 }
 
 #[test]

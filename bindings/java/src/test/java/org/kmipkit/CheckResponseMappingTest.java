@@ -125,4 +125,37 @@ final class CheckResponseMappingTest {
                     new long[] {responseTtlvHandle}
                 }));
     }
+
+    @Test
+    void presentResponseValidatesAbsentOptionalFieldsAndMapsIdentifier() {
+        NativeExtensionRegistry.ensureLoaded();
+        long absentCountTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCheckResponse(new Object[] {
+                    new long[] {1, 0, 0, -1, 0, 0, 0, 0}, null,
+                    new long[] {absentCountTtlv}
+                }));
+        ResponseTtlvTestSupport.assertReleased(absentCountTtlv);
+
+        long absentIdentifierTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        Object[] unexpectedIdentifier = {
+            new long[] {1, 0, 0, 0, 0, 0, 0, 0},
+            new Object[] {new long[] {1, 3, 0, -9}, null},
+            new long[] {absentIdentifierTtlv}
+        };
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseCheckResponse(unexpectedIdentifier));
+        ResponseTtlvTestSupport.assertReleased(absentIdentifierTtlv);
+
+        long presentIdentifierTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        try (ClientBatchItemResult.CheckResponse response = ClientBatchItemResult
+                .parseCheckResponse(new Object[] {
+                    new long[] {1, 1, 0, 0, 0, 0, 0, 0},
+                    new Object[] {new long[] {1, 3, 0, -9}, null},
+                    new long[] {presentIdentifierTtlv}
+                })
+                .orElseThrow()) {
+            assertEquals(UniqueIdentifier.Kind.INTEGER, response.uniqueIdentifier().orElseThrow().kind());
+        }
+    }
 }

@@ -76,6 +76,22 @@ final class NativeBridgeCoverageTest {
     }
 
     @Test
+    void nativeClientOperationBridgesRejectMalformedIdentifiersAndAbsentValues() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCheck(
+                        4, null, 0, false, 0, false, 0, false, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCheck(
+                        0, null, 0, false, 0, false, 0, false, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGetUsageAllocation(4, null, 0, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                        1, 2, 1, 1, 3, null, (long) Integer.MAX_VALUE + 1,
+                        null, 0, 0));
+    }
+
+    @Test
     void nativeReleaseIgnoresForgedPositiveJniHandles() {
         assertDoesNotThrow(() -> NativeExtensionRegistry.release(NativeExtensionRegistry.TAG, 0x1000L));
     }

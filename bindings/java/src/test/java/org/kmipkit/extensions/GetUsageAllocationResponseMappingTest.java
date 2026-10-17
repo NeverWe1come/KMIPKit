@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -14,6 +15,8 @@ import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
+import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
 import org.junit.jupiter.api.Test;
 
 final class GetUsageAllocationResponseMappingTest {
@@ -75,6 +78,30 @@ final class GetUsageAllocationResponseMappingTest {
             }
             assertFalse(response.toString().contains("allocation-object"));
         }
+    }
+
+    @Test
+    void malformedResponsesReleaseOwnedTtlvAndRejectMissingTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long absentResponseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseGetUsageAllocationResponse(new Object[] {
+                    new long[] {0}, null, new long[] {absentResponseTtlv}
+                }));
+        ResponseTtlvTestSupport.assertReleased(absentResponseTtlv);
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseGetUsageAllocationResponse(new Object[] {
+                    new long[] {1}, new Object[] {new long[] {1, 1, 0, 0}, null}, new long[] {0}
+                }));
+
+        long malformedIdentifierTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseGetUsageAllocationResponse(new Object[] {
+                    new long[] {1}, new Object[] {new long[] {0, 1, 0, 0}, null},
+                    new long[] {malformedIdentifierTtlv}
+                }));
+        ResponseTtlvTestSupport.assertReleased(malformedIdentifierTtlv);
     }
 
     private static TtlvStructure responseTtlv(CodecLimits limits) {
