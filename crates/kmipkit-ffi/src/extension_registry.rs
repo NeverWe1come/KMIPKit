@@ -66,11 +66,11 @@ mod opaque_handle_validation_tests;
 #[path = "../tests/support/registry_preflight_tests.rs"]
 mod registry_preflight_tests;
 #[cfg(test)]
-#[path = "../tests/support/view_ownership_tests.rs"]
-mod view_ownership_tests;
-#[cfg(test)]
 #[path = "../tests/support/test_handle_helpers.rs"]
 mod test_handle_helpers;
+#[cfg(test)]
+#[path = "../tests/support/view_ownership_tests.rs"]
+mod view_ownership_tests;
 #[cfg(test)]
 use self::test_handle_helpers::make_handle;
 
