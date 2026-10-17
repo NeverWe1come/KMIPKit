@@ -614,8 +614,8 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-// This TLS batch returns 14 ordered items: the original eight, five crypto
-// operations, and Certify for the generated C consumer to inspect.
+// This TLS batch returns 15 ordered items: the original eight, five crypto
+// operations, Certify, and Derive Key for the generated C consumer to inspect.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -626,7 +626,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 14),
+            integer(0x0042_000D, 15),
         ],
     );
     let response_payload = structure(
@@ -638,7 +638,26 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         std::iter::once(header)
             .chain(discover_version_response_items(response_payload))
             .chain(creation_response_items())
-            .chain(cryptographic_response_items()),
+            .chain(cryptographic_response_items())
+            .chain([derive_key_response_item()]),
+    )
+}
+
+fn derive_key_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 5),
+            ttlv_item(0x0042_0093, 0x08, b"derive"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    ttlv_item(0x0042_0094, 0x07, b"derived-key"),
+                    ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                ],
+            ),
+        ],
     )
 }
 
