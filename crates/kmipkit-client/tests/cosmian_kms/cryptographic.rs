@@ -2901,6 +2901,59 @@ fn register_row_certificate(
     Ok(identifier)
 }
 
+#[cfg(test)]
+mod lifecycle_fixture_regressions {
+    use super::*;
+
+    #[test]
+    fn lifecycle_key_rows_without_an_algorithm_can_build_a_typed_pair() {
+        for case_id in [
+            "cosmian-528-activate-privatekey",
+            "cosmian-528-activate-publickey",
+        ] {
+            let row = super::super::common::manifest_row(case_id)
+                .expect("lifecycle key case exists in the manifest");
+            let request = build_create_key_pair_request(&row, case_id)
+                .expect("the lifecycle fixture supplies a deterministic RSA key pair");
+            let payload = request
+                .into_ttlv_payload()
+                .expect("the lifecycle key pair is valid typed TTLV");
+            let view = payload.view();
+            assert!(
+                structure_contains_integer(&view, CRYPTOGRAPHIC_ALGORITHM, 4),
+                "{case_id} must use the explicit RSA fixture algorithm"
+            );
+            assert!(
+                structure_contains_integer(&view, CRYPTOGRAPHIC_LENGTH, 2048),
+                "{case_id} must use the explicit 2,048-bit RSA fixture"
+            );
+        }
+    }
+
+    fn structure_contains_integer(
+        structure: &kmipkit_ttlv::StructureView<'_>,
+        tag: u32,
+        expected: i64,
+    ) -> bool {
+        structure.children().iter().any(|item| {
+            if item.tag().raw() == tag
+                && item.with_value(|value| {
+                    matches!(value, kmipkit_ttlv::ValueView::Enumeration(actual) if i64::from(*actual) == expected)
+                        || matches!(value, kmipkit_ttlv::ValueView::Integer(actual) if i64::from(*actual) == expected)
+                })
+            {
+                return true;
+            }
+            item.with_value(|value| match value {
+                kmipkit_ttlv::ValueView::Structure(child) => {
+                    structure_contains_integer(&child, tag, expected)
+                }
+                _ => false,
+            })
+        })
+    }
+}
+
 fn register_certificate_private_key(
     client: &mut kmipkit_client::Client,
     row: &JsonValue,
