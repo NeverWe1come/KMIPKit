@@ -1058,6 +1058,12 @@ fn clone_structure_view(structure: &kmipkit_ttlv::StructureView<'_>) -> FfiResul
 fn derive_key_parameters_from_handle(
     structure: *mut kmipkit_ttlv_structure_t,
 ) -> FfiResult<DerivationParameters> {
+    const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+    const INITIALIZATION_VECTOR: u32 = 0x0042_003A;
+    const DERIVATION_DATA: u32 = 0x0042_0030;
+    const SALT: u32 = 0x0042_0084;
+    const ITERATION_COUNT: u32 = 0x0042_003C;
+
     if structure.is_null() {
         return Err(ERROR_INVALID_INPUT);
     }
@@ -1066,11 +1072,6 @@ fn derive_key_parameters_from_handle(
         return Err(ERROR_INVALID_INPUT);
     };
 
-    const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
-    const INITIALIZATION_VECTOR: u32 = 0x0042_003A;
-    const DERIVATION_DATA: u32 = 0x0042_0030;
-    const SALT: u32 = 0x0042_0084;
-    const ITERATION_COUNT: u32 = 0x0042_003C;
     let mut seen = [false; 4];
     let mut parameters = DerivationParameters::new();
     for item in source.view().children() {
@@ -3041,9 +3042,8 @@ pub extern "C" fn kmipkit_client_batch_item_derive_key(
         if unique_identifiers.is_null() {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let count = match usize::try_from(unique_identifier_count) {
-            Ok(count) => count,
-            Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+        let Ok(count) = usize::try_from(unique_identifier_count) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
         };
         // SAFETY: non-null and bounded above; the caller supplies `count` readable ABI records.
         let source_identifiers = unsafe { std::slice::from_raw_parts(unique_identifiers, count) };
@@ -3059,9 +3059,8 @@ pub extern "C" fn kmipkit_client_batch_item_derive_key(
                 Err(status) => return record_ffi_error(status),
             };
             if let UniqueIdentifier::TextString(value) = &identifier {
-                let length = match u64::try_from(value.len()) {
-                    Ok(length) => length,
-                    Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+                let Ok(length) = u64::try_from(value.len()) else {
+                    return record_ffi_error(ERROR_RESOURCE_LIMIT);
                 };
                 total_identifier_bytes = match total_identifier_bytes.checked_add(length) {
                     Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
