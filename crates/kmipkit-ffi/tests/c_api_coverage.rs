@@ -13,6 +13,7 @@ use std::thread;
 
 use kmipkit_ffi::kmipkit_codec_limits_t;
 use kmipkit_test_support::EphemeralPki;
+use kmipkit_ttlv::{Item, ValueView};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
@@ -220,6 +221,10 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         let mut tls = StreamOwned::new(connection, stream);
         let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
         assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        assert!(
+            c_request_contains_exact_derivation_parameters(&request),
+            "C ABI consumer must transmit the exact ordered Derive Key parameter values"
+        );
         tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -288,6 +293,47 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     );
     peer.join().expect("the loopback TLS peer completes");
     assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
+    const DERIVATION_PARAMETERS: u32 = 0x0042_0032;
+    const DERIVATION_DATA: u32 = 0x0042_0030;
+    const SALT: u32 = 0x0042_0084;
+    const ITERATION_COUNT: u32 = 0x0042_003C;
+    const FIRST_DATA: &[u8] = &[0xA1, 0x00, 0xB2];
+    const SECOND_DATA: &[u8] = &[0xC3, 0x00, 0xD4];
+    const SALT_BYTES: &[u8] = &[0xE5, 0x00, 0xF6];
+
+    fn byte_string_is(item: &Item, expected: &[u8]) -> bool {
+        item.with_value(
+            |value| matches!(value, ValueView::ByteString(actual) if actual == expected),
+        )
+    }
+
+    fn has_exact_parameters(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                return false;
+            };
+            let children = structure.children();
+            if item.tag().raw() == DERIVATION_PARAMETERS {
+                return children.len() == 4
+                    && children[0].tag().raw() == DERIVATION_DATA
+                    && byte_string_is(&children[0], FIRST_DATA)
+                    && children[1].tag().raw() == DERIVATION_DATA
+                    && byte_string_is(&children[1], SECOND_DATA)
+                    && children[2].tag().raw() == SALT
+                    && byte_string_is(&children[2], SALT_BYTES)
+                    && children[3].tag().raw() == ITERATION_COUNT
+                    && children[3].with_value(
+                        |value| matches!(value, ValueView::Integer(actual) if *actual == 4096),
+                    );
+            }
+            children.iter().any(has_exact_parameters)
+        })
+    }
+
+    kmipkit_ttlv::codec::decode(encoded).is_ok_and(|root| has_exact_parameters(&root))
 }
 
 #[test]
