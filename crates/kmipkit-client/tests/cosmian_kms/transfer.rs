@@ -143,6 +143,9 @@ fn provision_wrapped_target(
         super::common::required_text(row, "object_type")?,
         &source.primary,
     )?;
+    if target_row["parameters"]["sensitive"].as_bool() == Some(false) {
+        verify_sensitive_attribute(client, case_id, &source.primary, false)?;
+    }
     if object_type.raw() == 2 {
         verify_usage_mask(
             client,
@@ -359,6 +362,59 @@ fn verify_usage_mask(
     if actual != expected {
         return Err(format!(
             "case {case_id}: server persisted Cryptographic Usage Mask {actual:#x}, expected {expected:#x}"
+        )
+        .into());
+    }
+    Ok(())
+}
+
+fn sensitive_attribute_value(attributes: &AttributeSet) -> Option<bool> {
+    attributes
+        .as_items()
+        .iter()
+        .find(|item| item.tag().raw() == SENSITIVE)
+        .and_then(|item| {
+            item.with_value(|value| match value {
+                ValueView::Boolean(value) => Some(*value),
+                _ => None,
+            })
+        })
+}
+
+fn verify_sensitive_attribute(
+    client: &mut Client,
+    case_id: &str,
+    unique_id: &str,
+    expected: bool,
+) -> Result<(), Box<dyn Error>> {
+    let actual = super::common::execute_case(
+        client,
+        case_id,
+        ClientRequest::get_attributes(GetAttributesRequest::try_new(
+            Some(unique_id.to_owned()),
+            [AttributeReference::tag(SENSITIVE)],
+        )?),
+        "Get Attributes Sensitive verification",
+        |response| {
+            let result = response
+                .get_attributes()
+                .ok_or_else(|| "Sensitive verification returned no typed result".to_owned())?;
+            let returned_id = result
+                .unique_identifier()
+                .ok_or_else(|| "Sensitive verification omitted the Unique Identifier".to_owned())?;
+            if returned_id != unique_id {
+                return Err("Sensitive verification returned an unexpected object".to_owned());
+            }
+            let attributes = result
+                .attributes()
+                .ok_or_else(|| "Sensitive verification returned no Attributes".to_owned())?;
+            sensitive_attribute_value(attributes)
+                .ok_or_else(|| "Sensitive verification omitted a Boolean value".to_owned())
+        },
+    )?;
+    if actual != expected {
+        return Err(format!(
+            "case {case_id}: server returned Sensitive={actual} after Create Key Pair requested Sensitive={expected}"
         )
         .into());
     }
@@ -2462,8 +2518,6 @@ fn transfer_observation_line(
 mod inventory_tests {
     use super::*;
 
-    const SENSITIVE: u32 = 0x0042_00CD;
-
     #[test]
     fn rsa_hybrid_wrapping_explicitly_encodes_padding_method_none() {
         let row = serde_json::json!({
@@ -2491,6 +2545,22 @@ mod inventory_tests {
         );
     }
 
+    fn has_sensitive_false(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
+        structure.children().iter().any(|item| {
+            if item.tag().raw() == SENSITIVE
+                && item.with_value(
+                    |value| matches!(value, ValueView::Boolean(sensitive) if !*sensitive),
+                )
+            {
+                return true;
+            }
+            item.with_value(|value| match value {
+                ValueView::Structure(child) => has_sensitive_false(&child),
+                _ => false,
+            })
+        })
+    }
+
     #[test]
     fn configurable_kem_register_setup_can_explicitly_request_non_sensitive_key_material() {
         // OASIS KMIP v2.1 §4.55, Tables 139–140: Sensitive is client-modifiable,
@@ -2505,26 +2575,11 @@ mod inventory_tests {
             .expect("ConfigurableKEM private-key Register case");
         row["parameters"]["sensitive"] = serde_json::json!(false);
 
-        let request = super::super::cryptographic::build_create_key_pair_request(&row, "sensitive-probe")
-            .expect("typed Create Key Pair request")
-            .into_ttlv_payload()
-            .expect("typed Create Key Pair payload");
-
-        fn has_sensitive_false(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
-            structure.children().iter().any(|item| {
-                if item.tag().raw() == SENSITIVE
-                    && item.with_value(|value| {
-                        matches!(value, ValueView::Boolean(sensitive) if !*sensitive)
-                    })
-                {
-                    return true;
-                }
-                item.with_value(|value| match value {
-                    ValueView::Structure(child) => has_sensitive_false(&child),
-                    _ => false,
-                })
-            })
-        }
+        let request =
+            super::super::cryptographic::build_create_key_pair_request(&row, "sensitive-probe")
+                .expect("typed Create Key Pair request")
+                .into_ttlv_payload()
+                .expect("typed Create Key Pair payload");
 
         assert!(
             has_sensitive_false(&request.view()),
@@ -2534,18 +2589,14 @@ mod inventory_tests {
 
     #[test]
     fn sensitive_attribute_reader_preserves_the_server_boolean_value() {
-        let sensitive = AttributeSet::try_new([super::super::kmip_item(
-            SENSITIVE,
-            Value::boolean(true),
-        )
-        .expect("Sensitive attribute")])
-        .expect("Sensitive attributes");
-        let non_sensitive = AttributeSet::try_new([super::super::kmip_item(
-            SENSITIVE,
-            Value::boolean(false),
-        )
-        .expect("Sensitive attribute")])
-        .expect("Sensitive attributes");
+        let sensitive =
+            AttributeSet::try_new([super::super::kmip_item(SENSITIVE, Value::boolean(true))
+                .expect("Sensitive attribute")])
+            .expect("Sensitive attributes");
+        let non_sensitive =
+            AttributeSet::try_new([super::super::kmip_item(SENSITIVE, Value::boolean(false))
+                .expect("Sensitive attribute")])
+            .expect("Sensitive attributes");
 
         assert_eq!(sensitive_attribute_value(&sensitive), Some(true));
         assert_eq!(sensitive_attribute_value(&non_sensitive), Some(false));
