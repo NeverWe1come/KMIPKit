@@ -1756,6 +1756,46 @@ class T076ClientMappingTests(unittest.TestCase):
                 else:
                     self.assertIn("dataclass", exclusion["reason"].lower())
 
+    def test_derive_key_response_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
+        generated_members = (
+            "__dataclass_fields__",
+            "__dataclass_params__",
+            "__delattr__",
+            "__eq__",
+            "__hash__",
+            "__init__",
+            "__match_args__",
+            "__repr__",
+            "__setattr__",
+            "__slots__",
+        )
+        expected = {
+            f"kmipkit.client.DeriveKeyResponse.{member}" for member in generated_members
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.DeriveKeyResponse.")
+        }
+        self.assertEqual(expected, set(exclusions))
+        for path, exclusion in exclusions.items():
+            with self.subTest(excluded_export=path):
+                self.assertEqual(path, exclusion["exportName"])
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0037", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                if path.endswith(".__init__"):
+                    self.assertIn("constructor", exclusion["reason"].lower())
+                elif path.endswith(".__repr__"):
+                    self.assertIn("presentation", exclusion["reason"].lower())
+                    self.assertIn("redact", exclusion["evidence"].lower())
+                else:
+                    self.assertIn("dataclass", exclusion["reason"].lower())
+
     def test_check_java_and_python_exports_match_observed_declaration_kinds(self) -> None:
         declarations = {
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
