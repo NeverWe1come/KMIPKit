@@ -2000,7 +2000,7 @@ fn manifest_text<'a>(value: &'a serde_json::Value, field: &str) -> &'a str {
 // OASIS KMIP v2.1 §6.1.16, Tables 211–213; Protocol Version: §9.16, Table 421.
 fn cosmian_kms_accepts_kmip_2_1_discover_versions_over_mutual_tls() -> Result<(), Box<dyn Error>> {
     let mut client = client()?;
-    execute_one(
+    let result = execute_one(
         &mut client,
         ClientRequest::discover_versions(),
         "Discover Versions",
@@ -2015,7 +2015,13 @@ fn cosmian_kms_accepts_kmip_2_1_discover_versions_over_mutual_tls() -> Result<()
             );
             Ok(())
         },
-    )
+    );
+    if result.is_ok() {
+        println!(
+            "case_id=cosmian-528-discover-versions classification=typed_success expected_outcome=typed_success observed=typed_success request_sent=true response_received=true interoperability=true"
+        );
+    }
+    result
 }
 
 #[test]
@@ -2352,6 +2358,9 @@ fn cosmian_kms_query_response_without_storage_masks_is_reported_over_mutual_tls(
             println!(
                 "Cosmian Query interoperability limitation: KMIP result is Success with {operation_count} Operations, but the response omits required Protection Storage Masks and KMIPKit rejects the structured payload."
             );
+            println!(
+                "case_id=cosmian-528-query classification=response_validation_failed expected_outcome=known_response_shape_failure observed=response_validation_failed request_sent=true response_received=true interoperability=false result_status=0 missing_field=ProtectionStorageMasks"
+            );
             Ok(())
         }
     }
@@ -2388,6 +2397,9 @@ fn cosmian_kms_rejects_unsupported_kmip_2_1_ping_over_mutual_tls() -> Result<(),
             assert_eq!(reason, Some(4), "Cosmian reports Invalid Message for Ping");
             println!(
                 "Cosmian rejects KMIP Ping with Operation Failed / Invalid Message; the error response omits the Batch Item Operation field."
+            );
+            println!(
+                "case_id=cosmian-528-ping classification=malformed_response expected_outcome=unsupported_probe observed=malformed_response request_sent=true response_received=true interoperability=false result_status=1 result_reason=4 missing_field=Operation"
             );
             Ok(())
         }

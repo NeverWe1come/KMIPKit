@@ -10,6 +10,7 @@ const EXECUTABLE_CASE_IDS: &[&str] = &[
     "cosmian-528-add-attribute-secretdata",
     "cosmian-528-add-attribute-splitkey",
     "cosmian-528-add-attribute-symmetrickey",
+    "cosmian-528-adjust-attribute-symmetrickey",
     "cosmian-528-delete-attribute-certificate",
     "cosmian-528-delete-attribute-opaqueobject",
     "cosmian-528-delete-attribute-privatekey",
@@ -73,6 +74,7 @@ const EXECUTABLE_CASE_IDS: &[&str] = &[
     "cosmian-528-revoke-secretdata",
     "cosmian-528-revoke-splitkey",
     "cosmian-528-revoke-symmetrickey",
+    "cosmian-528-re-certify-certificate",
     "cosmian-528-activate-certificate",
     "cosmian-528-activate-privatekey",
     "cosmian-528-activate-publickey",
@@ -174,6 +176,13 @@ fn cosmian_528_add_attribute_splitkey() -> Result<(), Box<dyn Error>> {
 // OASIS KMIP v2.1 §6.1.2, Tables 167–169.
 fn cosmian_528_add_attribute_symmetrickey() -> Result<(), Box<dyn Error>> {
     super::common::run_lifecycle_case("cosmian-528-add-attribute-symmetrickey")
+}
+
+#[test]
+#[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.3, Tables 170–172; §4.59, Table 149.
+fn cosmian_528_adjust_attribute_probe() -> Result<(), Box<dyn Error>> {
+    super::common::run_lifecycle_case("cosmian-528-adjust-attribute-symmetrickey")
 }
 
 #[test]
@@ -615,6 +624,13 @@ fn cosmian_528_revoke_splitkey() -> Result<(), Box<dyn Error>> {
 // OASIS KMIP v2.1 §6.1.44, Tables 295–297.
 fn cosmian_528_revoke_symmetrickey() -> Result<(), Box<dyn Error>> {
     super::common::run_lifecycle_case("cosmian-528-revoke-symmetrickey")
+}
+
+#[test]
+#[ignore = "requires the local Cosmian KMS deployment; see tests/integration/cosmian/README.md"]
+// OASIS KMIP v2.1 §6.1.45, Tables 300–302.
+fn cosmian_528_recertify_probe() -> Result<(), Box<dyn Error>> {
+    super::common::run_lifecycle_case("cosmian-528-re-certify-certificate")
 }
 
 #[test]

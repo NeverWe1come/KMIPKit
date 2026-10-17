@@ -1,8 +1,8 @@
-//! Cosmian CoverCrypt typed Encrypt/Decrypt fixture regressions.
+//! Cosmian `CoverCrypt` typed Encrypt/Decrypt fixture regressions.
 
 use kmipkit_protocol::SecretBytes;
 
-/// Builds Cosmian's documented vendor DataToEncrypt byte container.
+/// Builds Cosmian's documented vendor `DataToEncrypt` byte container.
 pub(super) fn encode_data_to_encrypt(
     policy: &str,
     metadata: &[u8],

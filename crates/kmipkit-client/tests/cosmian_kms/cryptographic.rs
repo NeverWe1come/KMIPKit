@@ -26,6 +26,7 @@ const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const PKCS8_KEY_FORMAT_TYPE: u32 = 4;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
@@ -45,8 +46,8 @@ const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_VALUE: u32 = 0x0042_001E;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
-const PUBLIC_KEY: u32 = 0x0042_006F;
-const PRIVATE_KEY: u32 = 0x0042_006E;
+const PUBLIC_KEY: u32 = 0x0042_006D;
+const PRIVATE_KEY: u32 = 0x0042_0064;
 const LINK: u32 = 0x0042_004A;
 const LINK_TYPE: u32 = 0x0042_004B;
 const LINKED_OBJECT_IDENTIFIER: u32 = 0x0042_004C;
@@ -55,6 +56,8 @@ const KEY_USAGE_VERIFY: i32 = 0x0000_0020;
 const KEY_USAGE_ENCRYPT: i32 = 0x0000_0004;
 const KEY_USAGE_DECRYPT: i32 = 0x0000_0008;
 const OAEP_TEST_LABEL: &[u8] = b"KMIPKit OAEP label";
+const COVERCRYPT_TEST_PLAINTEXT: &[u8] = b"KMIPKit CoverCrypt integration payload";
+const ASYMMETRIC_TEST_PLAINTEXT: &[u8] = b"KMIPKit Cosmian typed cipher matrix";
 const KEY_USAGE_MAC_GENERATE_VERIFY: i32 = 384;
 const RAW_KEY_FORMAT_TYPE: u32 = 1;
 const FIXTURE_KEY: [u8; 32] = [0x5A; 32];
@@ -194,6 +197,35 @@ enum FindingProbePreflight {
 }
 
 #[test]
+fn certify_manifest_and_attributes_use_certificate_type_enumeration() {
+    let rows = target_rows().expect("cryptographic target rows");
+    let certify_rows = rows
+        .iter()
+        .filter(|row| row["operation"] == "Certify")
+        .collect::<Vec<_>>();
+    assert_eq!(certify_rows.len(), 203);
+
+    for row in certify_rows {
+        let id = case_id(row).expect("Certify case ID");
+        assert_eq!(
+            row["wire_enum_values"]["certificate_type"]["name"], "X.509",
+            "{id} must declare Certificate Type independently of Key Format Type"
+        );
+        assert_eq!(
+            wire_enum_value(row, "certificate_type").expect("Certificate Type enum"),
+            1,
+            "OASIS KMIP v2.1 §11.9, Table 440 assigns X.509 Certificate Type 1; {id}"
+        );
+        let attributes = certify_attributes(row).expect("Certify Attributes");
+        assert_eq!(
+            enum_field(&attributes, CERTIFICATE_TYPE),
+            Some(1),
+            "{id} must serialize Certificate Type 1"
+        );
+    }
+}
+
+#[test]
 fn cosmian_crypto_finding_rows_are_not_success_dispositions() {
     let rows = target_rows().expect("cryptographic target rows");
     let findings = rows
@@ -283,7 +315,7 @@ fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_en
             })
         })
         .expect("Certify Attributes structure");
-    assert_eq!(attribute_contract, (5, false));
+    assert_eq!(attribute_contract, (1, false));
 }
 
 #[test]
@@ -389,6 +421,20 @@ fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() 
             }
         }
     }
+    assert_finding_probe_inventory(
+        &runnable,
+        &not_sent,
+        &blocker_counts,
+        &serialized_probe_payloads,
+    );
+}
+
+fn assert_finding_probe_inventory(
+    runnable: &BTreeSet<&str>,
+    not_sent: &BTreeSet<&str>,
+    blocker_counts: &BTreeSet<(&str, &str)>,
+    serialized_probe_payloads: &std::collections::BTreeMap<&str, usize>,
+) {
     eprintln!(
         "crypto probe inventory: runnable={} not_sent={} blockers={blocker_counts:?}",
         runnable.len(),
@@ -404,7 +450,7 @@ fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() 
         15,
         "every unrepresentable probe stays NotSent"
     );
-    assert!(runnable.is_disjoint(&not_sent));
+    assert!(runnable.is_disjoint(not_sent));
     assert_eq!(
         runnable.len(),
         231,
@@ -416,7 +462,7 @@ fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() 
         "all 15 fixture gaps must remain NotSent"
     );
     assert_eq!(
-        blocker_counts,
+        *blocker_counts,
         [
             (
                 "Decrypt",
@@ -436,7 +482,7 @@ fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() 
             ),
         ]
         .into_iter()
-        .collect(),
+        .collect::<BTreeSet<_>>(),
         "preflight blockers must remain operation-specific and explicit"
     );
     eprintln!(
@@ -694,17 +740,27 @@ fn crypto_observation_reconciles_expected_and_observed_outcomes() {
         "expected_outcome": "source_documentation_discrepancy"
     });
     let finding = cryptographic_observation_line(&finding_row, "typed_success", "true");
-    assert!(finding.contains("classification=expected_finding_probe"), "{finding}");
+    assert!(
+        finding.contains("classification=expected_finding_probe"),
+        "{finding}"
+    );
     assert!(finding.contains("observed=typed_success"), "{finding}");
     assert!(finding.contains("interoperability=false"), "{finding}");
 
-    for observed in ["target_rejected", "response_validation_failed", "setup_rejected"] {
+    for observed in [
+        "target_rejected",
+        "response_validation_failed",
+        "setup_rejected",
+    ] {
         let row = serde_json::json!({
             "case_id": "standard-case",
             "expected_outcome": "typed_success"
         });
         let line = cryptographic_observation_line(&row, observed, "true");
-        assert!(line.contains(&format!("classification={observed}")), "{line}");
+        assert!(
+            line.contains(&format!("classification={observed}")),
+            "{line}"
+        );
         assert!(line.contains("interoperability=false"), "{line}");
     }
 
@@ -713,7 +769,10 @@ fn crypto_observation_reconciles_expected_and_observed_outcomes() {
         "expected_outcome": "typed_success"
     });
     let success = cryptographic_observation_line(&success_row, "typed_success", "true");
-    assert!(success.contains("classification=typed_success"), "{success}");
+    assert!(
+        success.contains("classification=typed_success"),
+        "{success}"
+    );
     assert!(success.contains("interoperability=true"), "{success}");
 
     let unsent_success = cryptographic_observation_line(&success_row, "typed_success", "false");
@@ -721,7 +780,10 @@ fn crypto_observation_reconciles_expected_and_observed_outcomes() {
         unsent_success.contains("classification=typed_success_without_sent_target"),
         "{unsent_success}"
     );
-    assert!(unsent_success.contains("interoperability=false"), "{unsent_success}");
+    assert!(
+        unsent_success.contains("interoperability=false"),
+        "{unsent_success}"
+    );
 }
 
 #[test]
@@ -1234,12 +1296,12 @@ fn covercrypt_create_builders_keep_policy_and_parent_link_dimensions() {
         .into_ttlv_payload()
         .expect("CoverCrypt Create TTLV payload");
     assert_eq!(
-        vendor_attribute_bytes(user_payload.view(), "cover_crypt_access_policy"),
+        vendor_attribute_bytes(&user_payload.view(), "cover_crypt_access_policy"),
         Some(ACCESS_POLICY.as_bytes().to_vec()),
         "CoverCrypt Create must carry the exact case policy bytes"
     );
     assert!(
-        structure_contains_text(user_payload.view(), LINKED_OBJECT_IDENTIFIER, MASTER_ID),
+        structure_contains_text(&user_payload.view(), LINKED_OBJECT_IDENTIFIER, MASTER_ID),
         "CoverCrypt user key must link to the matching master private key"
     );
 
@@ -1252,7 +1314,7 @@ fn covercrypt_create_builders_keep_policy_and_parent_link_dimensions() {
     .expect("CoverCrypt Create Key Pair request")
     .into_ttlv_payload()
     .expect("CoverCrypt Create Key Pair TTLV payload");
-    let policy = vendor_attribute_bytes(master_payload.view(), "cover_crypt_policy")
+    let policy = vendor_attribute_bytes(&master_payload.view(), "cover_crypt_policy")
         .expect("CoverCrypt master policy vendor attribute");
     let parsed_policy: JsonValue =
         serde_json::from_slice(&policy).expect("CoverCrypt master policy JSON bytes");
@@ -1447,10 +1509,7 @@ fn client_for_matrix_row(
                 "{}",
                 cryptographic_observation_line(row, "setup_blocked", "false")
             ),
-            Ok(CaseDisposition::ExpectedFindingProbe {
-                operation,
-                ..
-            }) => println!(
+            Ok(CaseDisposition::ExpectedFindingProbe { operation, .. }) => println!(
                 "{} operation={operation}",
                 cryptographic_observation_line(row, "setup_blocked", "false")
             ),
@@ -1859,7 +1918,6 @@ fn validate_parameter_value_shapes(
             | "external_digest"
             | "accept_sha256_substitution"
             | "verify_requested_digest_independently" => value.is_null() || value.is_boolean(),
-            "post_quantum" => value.is_null() || value.as_str().is_some(),
             "opaque_fixture_configuration" | "wire_container" => {
                 value.is_null() || value.is_object()
             }
@@ -2014,58 +2072,7 @@ fn validate_exact_finding_probe_dimensions(row: &JsonValue) -> Result<(), String
             }
         }
         "Certify" => {
-            let algorithm = required_case_text(row, "algorithm")
-                .map_err(|error| format!("case {id}: {error}"))?;
-            if !algorithm.starts_with("MLDSA_") && !algorithm.starts_with("SLHDSA_") {
-                return Err(format!(
-                    "case {id} Certify finding has no reviewed post-quantum CSR builder"
-                ));
-            }
-            if row["parameters"]["algorithm_dimension"]
-                != "subject ASN.1 OID only; no CryptographicAlgorithm enumeration is sent"
-                || !row["wire_enum_values"]["cryptographic_algorithm"]["value"].is_null()
-                || row["wire_enum_values"]["cryptographic_algorithm"]["classification"]
-                    != "not_sent_asn1_oid_only"
-            {
-                return Err(format!(
-                    "case {id} Certify must preserve the CSR algorithm OID without a KMIP Cryptographic Algorithm enum"
-                ));
-            }
-            let subject_input = required_parameter_text(row, "subject_input")
-                .map_err(|error| format!("case {id}: {error}"))?;
-            let (expected_name, expected_value) = match subject_input {
-                // OASIS KMIP v2.1 §11.8, Table 439 assigns distinct types:
-                // PKCS#10 is 2; PEM is 3.
-                "csr-pem" => ("PEM", 3),
-                "csr-pkcs10-der" => ("PKCS10", 2),
-                other => {
-                    return Err(format!(
-                        "case {id} Certify finding has unsupported CSR input {other}"
-                    ));
-                }
-            };
-            if row["wire_enum_values"]["certificate_request_type"]["name"] != expected_name
-                || wire_enum_value(row, "certificate_request_type")
-                    .map_err(|error| format!("case {id}: {error}"))?
-                    != expected_value
-            {
-                return Err(format!(
-                    "case {id} Certify request type does not match its KMIP CSR type"
-                ));
-            }
-            if row["wire_enum_values"]["key_format_type"]["name"] != "X509"
-                || wire_enum_value(row, "key_format_type")
-                    .map_err(|error| format!("case {id}: {error}"))?
-                    != 5
-            {
-                return Err(format!("case {id} Certify finding is not an X.509 request"));
-            }
-            build_offline_certify_request(
-                row,
-                UniqueIdentifier::TextString(format!("offline-{id}")),
-            )
-            .and_then(|request| request.into_ttlv_payload().map_err(Into::into))
-            .map_err(|error| format!("case {id} Certify request: {error}"))?;
+            validate_certify_finding_probe(row, id)?;
         }
         "Sign" | "Signature Verify" => {
             signature_parameters(row).map_err(|error| format!("case {id}: {error}"))?;
@@ -2079,6 +2086,58 @@ fn validate_exact_finding_probe_dimensions(row: &JsonValue) -> Result<(), String
             ));
         }
     }
+    Ok(())
+}
+
+fn validate_certify_finding_probe(row: &JsonValue, id: &str) -> Result<(), String> {
+    let algorithm =
+        required_case_text(row, "algorithm").map_err(|error| format!("case {id}: {error}"))?;
+    if !algorithm.starts_with("MLDSA_") && !algorithm.starts_with("SLHDSA_") {
+        return Err(format!(
+            "case {id} Certify finding has no reviewed post-quantum CSR builder"
+        ));
+    }
+    if row["parameters"]["algorithm_dimension"]
+        != "subject ASN.1 OID only; no CryptographicAlgorithm enumeration is sent"
+        || !row["wire_enum_values"]["cryptographic_algorithm"]["value"].is_null()
+        || row["wire_enum_values"]["cryptographic_algorithm"]["classification"]
+            != "not_sent_asn1_oid_only"
+    {
+        return Err(format!(
+            "case {id} Certify must preserve the CSR algorithm OID without a KMIP Cryptographic Algorithm enum"
+        ));
+    }
+    let subject_input = required_parameter_text(row, "subject_input")
+        .map_err(|error| format!("case {id}: {error}"))?;
+    let (expected_name, expected_value) = match subject_input {
+        // OASIS KMIP v2.1 §11.8, Table 439 assigns distinct types:
+        // PKCS#10 is 2; PEM is 3.
+        "csr-pem" => ("PEM", 3),
+        "csr-pkcs10-der" => ("PKCS10", 2),
+        other => {
+            return Err(format!(
+                "case {id} Certify finding has unsupported CSR input {other}"
+            ));
+        }
+    };
+    if row["wire_enum_values"]["certificate_request_type"]["name"] != expected_name
+        || wire_enum_value(row, "certificate_request_type")
+            .map_err(|error| format!("case {id}: {error}"))?
+            != expected_value
+    {
+        return Err(format!(
+            "case {id} Certify request type does not match its KMIP CSR type"
+        ));
+    }
+    if row["wire_enum_values"]["key_format_type"]["name"] != "X509"
+        || wire_enum_value(row, "key_format_type").map_err(|error| format!("case {id}: {error}"))?
+            != 5
+    {
+        return Err(format!("case {id} Certify finding is not an X.509 request"));
+    }
+    build_offline_certify_request(row, UniqueIdentifier::TextString(format!("offline-{id}")))
+        .and_then(|request| request.into_ttlv_payload().map_err(Into::into))
+        .map_err(|error| format!("case {id} Certify request: {error}"))?;
     Ok(())
 }
 
@@ -2630,7 +2689,7 @@ fn covercrypt_master_policy() -> Result<Vec<u8>, Box<dyn Error>> {
 }
 
 fn vendor_attribute_bytes(
-    structure: kmipkit_ttlv::StructureView<'_>,
+    structure: &kmipkit_ttlv::StructureView<'_>,
     expected_name: &str,
 ) -> Option<Vec<u8>> {
     const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
@@ -2673,7 +2732,7 @@ fn vendor_attribute_bytes(
         }
         let nested = item.with_value(|value| match value {
             kmipkit_ttlv::ValueView::Structure(child) => {
-                vendor_attribute_bytes(child, expected_name)
+                vendor_attribute_bytes(&child, expected_name)
             }
             _ => None,
         });
@@ -2685,7 +2744,7 @@ fn vendor_attribute_bytes(
 }
 
 fn structure_contains_text(
-    structure: kmipkit_ttlv::StructureView<'_>,
+    structure: &kmipkit_ttlv::StructureView<'_>,
     expected_tag: u32,
     expected_text: &str,
 ) -> bool {
@@ -2699,7 +2758,7 @@ fn structure_contains_text(
         }
         item.with_value(|value| match value {
             kmipkit_ttlv::ValueView::Structure(child) => {
-                structure_contains_text(child, expected_tag, expected_text)
+                structure_contains_text(&child, expected_tag, expected_text)
             }
             _ => false,
         })
@@ -2858,7 +2917,7 @@ fn run_certify_case(
 fn certify_attributes(row: &JsonValue) -> Result<Structure, Box<dyn Error>> {
     super::structure([super::kmip_item(
         CERTIFICATE_TYPE,
-        Value::enumeration(wire_enum_value(row, "key_format_type")?),
+        Value::enumeration(wire_enum_value(row, "certificate_type")?),
     )?])
 }
 
@@ -2919,28 +2978,26 @@ fn row_key_pair_request(
             )?])?),
         )?);
     }
-    if configurable_kem {
-        if let Some(post_quantum) = configuration["post_quantum"].as_str() {
-            let post_quantum_algorithm = match post_quantum {
-                "MLKEM512" | "MLKEM_512" => 0x39,
-                "MLKEM768" | "MLKEM_768" => 0x3A,
-                "MLKEM1024" | "MLKEM_1024" => 0x3B,
-                other => {
-                    return Err(format!(
-                        "case {id} has unsupported ConfigurableKEM post-quantum algorithm {other}"
-                    )
-                    .into());
-                }
-            };
-            let cryptographic_parameters = super::structure([super::kmip_item(
-                CRYPTOGRAPHIC_ALGORITHM,
-                Value::enumeration(post_quantum_algorithm),
-            )?])?;
-            common_items.push(super::kmip_item(
-                CRYPTOGRAPHIC_PARAMETERS,
-                Value::structure(cryptographic_parameters),
-            )?);
-        }
+    if configurable_kem && let Some(post_quantum) = configuration["post_quantum"].as_str() {
+        let post_quantum_algorithm = match post_quantum {
+            "MLKEM512" | "MLKEM_512" => 0x39,
+            "MLKEM768" | "MLKEM_768" => 0x3A,
+            "MLKEM1024" | "MLKEM_1024" => 0x3B,
+            other => {
+                return Err(format!(
+                    "case {id} has unsupported ConfigurableKEM post-quantum algorithm {other}"
+                )
+                .into());
+            }
+        };
+        let cryptographic_parameters = super::structure([super::kmip_item(
+            CRYPTOGRAPHIC_ALGORITHM,
+            Value::enumeration(post_quantum_algorithm),
+        )?])?;
+        common_items.push(super::kmip_item(
+            CRYPTOGRAPHIC_PARAMETERS,
+            Value::structure(cryptographic_parameters),
+        )?);
     }
     if row["algorithm"] == "CoverCrypt" {
         common_items.push(covercrypt_vendor_attribute(
@@ -2978,8 +3035,6 @@ fn register_row_certificate(
     let path = validation_fixture_path(row, "certificate")?;
     let bytes = std::fs::read(path)
         .map_err(|_| format!("case {id} required certificate fixture is unavailable"))?;
-    let identifier = format!("{id}-certificate");
-    ownership.track(identifier.clone());
     let attributes = AttributeSet::try_new([
         super::common::name_attribute(id)?,
         super::kmip_item(
@@ -2994,84 +3049,12 @@ fn register_row_certificate(
             super::kmip_item(CERTIFICATE_VALUE, Value::byte_string(bytes))?,
         ])?),
     )?;
-    super::common::execute_case(
+    super::common::register_result_id(
         client,
         id,
-        ClientRequest::register(RegisterRequest::new(
-            ObjectType::from_raw(1),
-            attributes,
-            object,
-        )),
-        "Register Certify fixture",
-        |response| {
-            let registered = response
-                .register()
-                .and_then(|result| result.unique_identifier())
-                .ok_or_else(|| {
-                    "successful Register response has no Unique Identifier".to_owned()
-                })?;
-            let registered = super::text_identifier(registered)
-                .map_err(|_| "Register response identifier is not text".to_owned())?;
-            if registered != identifier {
-                return Err("Register returned a different case-owned identifier".to_owned());
-            }
-            Ok(())
-        },
-    )?;
-    Ok(identifier)
-}
-
-#[cfg(test)]
-mod lifecycle_fixture_regressions {
-    use super::*;
-
-    #[test]
-    fn lifecycle_key_rows_without_an_algorithm_can_build_a_typed_pair() {
-        for case_id in [
-            "cosmian-528-activate-privatekey",
-            "cosmian-528-activate-publickey",
-        ] {
-            let row = super::super::common::manifest_row(case_id)
-                .expect("lifecycle key case exists in the manifest");
-            let request = build_create_key_pair_request(&row, case_id)
-                .expect("the lifecycle fixture supplies a deterministic RSA key pair");
-            let payload = request
-                .into_ttlv_payload()
-                .expect("the lifecycle key pair is valid typed TTLV");
-            let view = payload.view();
-            assert!(
-                structure_contains_integer(&view, CRYPTOGRAPHIC_ALGORITHM, 4),
-                "{case_id} must use the explicit RSA fixture algorithm"
-            );
-            assert!(
-                structure_contains_integer(&view, CRYPTOGRAPHIC_LENGTH, 2048),
-                "{case_id} must use the explicit 2,048-bit RSA fixture"
-            );
-        }
-    }
-
-    fn structure_contains_integer(
-        structure: &kmipkit_ttlv::StructureView<'_>,
-        tag: u32,
-        expected: i64,
-    ) -> bool {
-        structure.children().iter().any(|item| {
-            if item.tag().raw() == tag
-                && item.with_value(|value| {
-                    matches!(value, kmipkit_ttlv::ValueView::Enumeration(actual) if i64::from(*actual) == expected)
-                        || matches!(value, kmipkit_ttlv::ValueView::Integer(actual) if i64::from(*actual) == expected)
-                })
-            {
-                return true;
-            }
-            item.with_value(|value| match value {
-                kmipkit_ttlv::ValueView::Structure(child) => {
-                    structure_contains_integer(&child, tag, expected)
-                }
-                _ => false,
-            })
-        })
-    }
+        RegisterRequest::new(ObjectType::from_raw(1), attributes, object),
+        ownership,
+    )
 }
 
 fn register_certificate_private_key(
@@ -3110,14 +3093,14 @@ fn register_certificate_private_key(
 
     let public_attributes =
         cipher_fixture_key_attributes(id, algorithm, bits, KEY_USAGE_ENCRYPT, curve, None)?;
-    let public_object = signature_key_object(public_bytes, 5, algorithm, false)?;
+    let public_object = signature_key_object(public_bytes, algorithm, false)?;
     let public_identifier = register_independent_key(
         client,
         id,
         RegisterRequest::new(ObjectType::from_raw(3), public_attributes, public_object),
         ownership,
     )?;
-    super::common::run_activate(
+    super::common::ensure_active_object(
         client,
         id,
         "certificate oracle PublicKey",
@@ -3136,14 +3119,14 @@ fn register_certificate_private_key(
     )?;
     let private_attributes =
         cipher_fixture_key_attributes(id, algorithm, bits, KEY_USAGE_DECRYPT, curve, Some(link))?;
-    let private_object = signature_key_object(private_bytes, 4, algorithm, true)?;
+    let private_object = signature_key_object(private_bytes, algorithm, true)?;
     let private_identifier = register_independent_key(
         client,
         id,
         RegisterRequest::new(ObjectType::from_raw(4), private_attributes, private_object),
         ownership,
     )?;
-    super::common::run_activate(
+    super::common::ensure_active_object(
         client,
         id,
         "certificate oracle PrivateKey",
@@ -3222,7 +3205,7 @@ fn validation_fixture_stem(row: &JsonValue) -> Result<String, Box<dyn Error>> {
         "MLDSA_65" => "ML-DSA-65".to_owned(),
         "MLDSA_87" => "ML-DSA-87".to_owned(),
         other if other.starts_with("SLHDSA_") => {
-            other.replace("SLHDSA_", "SLH-DSA-").replace("_", "-")
+            other.replace("SLHDSA_", "SLH-DSA-").replace('_', "-")
         }
         other => return Err(format!("case {id} has no local fixture mapping for {other}").into()),
     };
@@ -3273,142 +3256,154 @@ fn run_cipher_case(
     }
 
     let id = case_id(row)?;
-    let operation = required_case_text(row, "operation")?;
-    let target_type = required_case_text(row, "object_type")?;
-    if !matches!(operation, "Encrypt" | "Decrypt") {
-        return Err(format!("case {id} has unsupported cipher operation {operation}").into());
-    }
     let mut ownership = super::common::CaseOwnership::default();
-    let operation_result = (|| {
-        let plaintext = b"KMIPKit Cosmian typed cipher matrix";
-        let ciphertext_fixture_row = asymmetric_ciphertext_fixture_row(row)?;
-        let setup_row = if operation == "Decrypt" {
-            &ciphertext_fixture_row
-        } else {
-            row
-        };
-        let provisioning_algorithm = match setup_row["algorithm"].as_str() {
-            // These finding probes deliberately apply a symmetric algorithm
-            // to an asymmetric object. Provision a valid RSA object so the
-            // requested target operation, rather than setup, is what fails.
-            Some("AES") if target_type != "SymmetricKey" => "RSA",
-            Some(value) => value,
-            None => return Err(format!("case {id} has no algorithm").into()),
-        };
-        let (public_id, private_id) = if target_type == "Certificate" {
-            if operation != "Encrypt" {
-                return Err(format!("case {id} Decrypt cannot target a Certificate").into());
-            }
-            let mut fixture_row = setup_row.clone();
-            fixture_row["algorithm"] = JsonValue::String(provisioning_algorithm.to_owned());
-            if provisioning_algorithm != setup_row["algorithm"].as_str().unwrap_or_default()
-                && provisioning_algorithm == "RSA"
-            {
-                fixture_row["wire_enum_values"]["cryptographic_algorithm"] =
-                    serde_json::json!({"name":"RSA","value":"0x00000004","classification":"standard"});
-            }
-            if fixture_row["parameters"]["subject_key_bits"].is_null() {
-                let bits = fixture_row["parameters"]["key_bits"]
-                    .as_u64()
-                    .unwrap_or(2048);
-                fixture_row["parameters"]["subject_key_bits"] = JsonValue::from(bits);
-            }
-            let certificate_id = register_row_certificate(
-                client,
-                &fixture_row,
-                id,
-                &mut ownership,
-            )?;
-            super::common::run_activate(client, id, "Certificate", &certificate_id)?;
-            let private_id = register_certificate_private_key(
-                client,
-                &fixture_row,
-                id,
-                &mut ownership,
-            )?;
-            super::common::run_activate(client, id, "Certificate oracle PrivateKey", &private_id)?;
-            (certificate_id, private_id)
-        } else {
-            let mut key_row = setup_row.clone();
-            key_row["algorithm"] = JsonValue::String(provisioning_algorithm.to_owned());
-            if key_row["wire_enum_values"]["cryptographic_algorithm"].is_null() {
-                return Err(format!("case {id} has no key-pair algorithm enum").into());
-            }
-            if provisioning_algorithm != setup_row["algorithm"].as_str().unwrap_or_default() {
-                key_row["wire_enum_values"]["cryptographic_algorithm"] =
-                    serde_json::json!({"name":"RSA","value":"0x00000004","classification":"standard"});
-                key_row["parameters"]["key_bits"] = JsonValue::from(2048);
-            }
-            let (private_id, public_id) = create_row_key_pair(
-                client,
-                &key_row,
-                id,
-                &mut ownership,
-                KEY_USAGE_DECRYPT,
-                KEY_USAGE_ENCRYPT,
-            )?;
-            super::common::run_activate(client, id, "PrivateKey", &private_id)?;
-            super::common::run_activate(client, id, "PublicKey", &public_id)?;
-            (public_id, private_id)
-        };
-
-        let encryption_parameters_row = if operation == "Decrypt" {
-            &ciphertext_fixture_row
-        } else {
-            row
-        };
-        let encrypted = execute_asymmetric_encrypt(
-            client,
-            encryption_parameters_row,
-            &public_id,
-            plaintext,
-        )?;
-        if operation == "Encrypt" {
-            let decrypted = execute_asymmetric_decrypt(client, row, &private_id, &encrypted)
-                .map_err(|_| {
-                    format!("case {id} Encrypt: target response received; round-trip oracle failed")
-                })?;
-            let expected = if is_kem_algorithm(required_case_text(row, "algorithm")?) {
-                &encrypted.data
-            } else {
-                // The ciphertext's Data is opaque for classical encryption;
-                // its oracle must recover the private fixed input.
-                if !decrypted.with_bytes(|value| value == plaintext) {
-                    return Err(format!(
-                        "case {id} Encrypt: target response received; round-trip did not reproduce the known plaintext"
-                    )
-                    .into());
-                }
-                return Ok::<(), Box<dyn Error>>(());
-            };
-            if !decrypted.with_bytes(|value| expected.with_bytes(|secret| value == secret)) {
-                return Err(format!(
-                    "case {id} Encrypt: target response received; KEM shared secret did not round-trip"
-                )
-                .into());
-            }
-            return Ok::<(), Box<dyn Error>>(());
-        }
-        let decrypted = execute_asymmetric_decrypt(client, row, &private_id, &encrypted)?;
-        let expected_matches = if is_kem_algorithm(required_case_text(row, "algorithm")?) {
-            decrypted.with_bytes(|value| encrypted.data.with_bytes(|secret| value == secret))
-        } else {
-            decrypted.with_bytes(|value| value == plaintext)
-        };
-        if !expected_matches {
-            return Err(format!(
-                "case {id} Decrypt: target response received; decrypted material did not match the fixture"
-            )
-            .into());
-        }
-        Ok(())
-    })()
-    .map_err(|error| error.to_string());
+    let operation_result = run_asymmetric_cipher_case(client, row, id, &mut ownership)
+        .map_err(|error| error.to_string());
 
     super::common::finish_operation_with_cleanup(operation_result, || {
         super::common::cleanup_owned_objects(client, id, &mut ownership)
     })
     .map_err(|message| -> Box<dyn Error> { message.into() })
+}
+
+fn run_asymmetric_cipher_case(
+    client: &mut kmipkit_client::Client,
+    row: &JsonValue,
+    id: &str,
+    ownership: &mut super::common::CaseOwnership,
+) -> Result<(), Box<dyn Error>> {
+    let operation = required_case_text(row, "operation")?;
+    let target_type = required_case_text(row, "object_type")?;
+    if !matches!(operation, "Encrypt" | "Decrypt") {
+        return Err(format!("case {id} has unsupported cipher operation {operation}").into());
+    }
+    let ciphertext_fixture_row = asymmetric_ciphertext_fixture_row(row)?;
+    let setup_row = if operation == "Decrypt" {
+        &ciphertext_fixture_row
+    } else {
+        row
+    };
+    let (public_id, private_id) =
+        create_asymmetric_cipher_keys(client, setup_row, target_type, operation, id, ownership)?;
+    let encryption_parameters_row = if operation == "Decrypt" {
+        &ciphertext_fixture_row
+    } else {
+        row
+    };
+    let encrypted = execute_asymmetric_encrypt(
+        client,
+        encryption_parameters_row,
+        &public_id,
+        ASYMMETRIC_TEST_PLAINTEXT,
+    )?;
+    verify_asymmetric_cipher_result(client, row, operation, id, &private_id, &encrypted)
+}
+
+fn create_asymmetric_cipher_keys(
+    client: &mut kmipkit_client::Client,
+    setup_row: &JsonValue,
+    target_type: &str,
+    operation: &str,
+    id: &str,
+    ownership: &mut super::common::CaseOwnership,
+) -> Result<(String, String), Box<dyn Error>> {
+    let provisioning_algorithm = match setup_row["algorithm"].as_str() {
+        // A symmetric algorithm applied to an asymmetric object is the target
+        // finding. Provision RSA so fixture creation does not mask it.
+        Some("AES") if target_type != "SymmetricKey" => "RSA",
+        Some(value) => value,
+        None => return Err(format!("case {id} has no algorithm").into()),
+    };
+    if target_type == "Certificate" {
+        if operation != "Encrypt" {
+            return Err(format!("case {id} Decrypt cannot target a Certificate").into());
+        }
+        let mut fixture_row = setup_row.clone();
+        fixture_row["algorithm"] = JsonValue::String(provisioning_algorithm.to_owned());
+        if provisioning_algorithm != setup_row["algorithm"].as_str().unwrap_or_default()
+            && provisioning_algorithm == "RSA"
+        {
+            fixture_row["wire_enum_values"]["cryptographic_algorithm"] =
+                serde_json::json!({"name":"RSA","value":"0x00000004","classification":"standard"});
+        }
+        if fixture_row["parameters"]["subject_key_bits"].is_null() {
+            let bits = fixture_row["parameters"]["key_bits"]
+                .as_u64()
+                .unwrap_or(2048);
+            fixture_row["parameters"]["subject_key_bits"] = JsonValue::from(bits);
+        }
+        let certificate_id = register_row_certificate(client, &fixture_row, id, ownership)?;
+        super::common::ensure_active_object(client, id, "Certificate", &certificate_id)?;
+        let private_id = register_certificate_private_key(client, &fixture_row, id, ownership)?;
+        super::common::ensure_active_object(client, id, "PrivateKey", &private_id)?;
+        return Ok((certificate_id, private_id));
+    }
+
+    let mut key_row = setup_row.clone();
+    key_row["algorithm"] = JsonValue::String(provisioning_algorithm.to_owned());
+    if key_row["wire_enum_values"]["cryptographic_algorithm"].is_null() {
+        return Err(format!("case {id} has no key-pair algorithm enum").into());
+    }
+    if provisioning_algorithm != setup_row["algorithm"].as_str().unwrap_or_default() {
+        key_row["wire_enum_values"]["cryptographic_algorithm"] =
+            serde_json::json!({"name":"RSA","value":"0x00000004","classification":"standard"});
+        key_row["parameters"]["key_bits"] = JsonValue::from(2048);
+    }
+    let (private_id, public_id) = create_row_key_pair(
+        client,
+        &key_row,
+        id,
+        ownership,
+        KEY_USAGE_DECRYPT,
+        KEY_USAGE_ENCRYPT,
+    )?;
+    super::common::run_activate(client, id, "PrivateKey", &private_id)?;
+    super::common::run_activate(client, id, "PublicKey", &public_id)?;
+    Ok((public_id, private_id))
+}
+
+fn verify_asymmetric_cipher_result(
+    client: &mut kmipkit_client::Client,
+    row: &JsonValue,
+    operation: &str,
+    id: &str,
+    private_id: &str,
+    encrypted: &AsymmetricEncrypted,
+) -> Result<(), Box<dyn Error>> {
+    if operation == "Encrypt" {
+        let decrypted =
+            execute_asymmetric_decrypt(client, row, private_id, encrypted).map_err(|_| {
+                format!("case {id} Encrypt: target response received; round-trip oracle failed")
+            })?;
+        if is_kem_algorithm(required_case_text(row, "algorithm")?) {
+            if !decrypted.with_bytes(|value| encrypted.data.with_bytes(|secret| value == secret)) {
+                return Err(format!(
+                    "case {id} Encrypt: target response received; KEM shared secret did not round-trip"
+                )
+                .into());
+            }
+        } else if !decrypted.with_bytes(|value| value == ASYMMETRIC_TEST_PLAINTEXT) {
+            return Err(format!(
+                "case {id} Encrypt: target response received; round-trip did not reproduce the known plaintext"
+            )
+            .into());
+        }
+        return Ok(());
+    }
+
+    let decrypted = execute_asymmetric_decrypt(client, row, private_id, encrypted)?;
+    let expected_matches = if is_kem_algorithm(required_case_text(row, "algorithm")?) {
+        decrypted.with_bytes(|value| encrypted.data.with_bytes(|secret| value == secret))
+    } else {
+        decrypted.with_bytes(|value| value == ASYMMETRIC_TEST_PLAINTEXT)
+    };
+    if !expected_matches {
+        return Err(format!(
+            "case {id} Decrypt: target response received; decrypted material did not match the fixture"
+        )
+        .into());
+    }
+    Ok(())
 }
 
 fn run_covercrypt_cipher_case(
@@ -3463,7 +3458,6 @@ fn run_covercrypt_cipher_case(
         )?;
         super::common::run_activate(client, id, "CoverCrypt user PrivateKey", &user_key_id)?;
 
-        const PLAINTEXT: &[u8] = b"KMIPKit CoverCrypt integration payload";
         if operation == "Encrypt" {
             let ciphertext = execute_covercrypt_encrypt(client, row, &master_public_id, "Encrypt")?;
             let decrypted = execute_covercrypt_decrypt(
@@ -3473,7 +3467,7 @@ fn run_covercrypt_cipher_case(
                 ciphertext,
                 "Decrypt oracle",
             )?;
-            if !decrypted.with_bytes(|bytes| bytes == PLAINTEXT) {
+            if !decrypted.with_bytes(|bytes| bytes == COVERCRYPT_TEST_PLAINTEXT) {
                 return Err(format!(
                     "case {id} Encrypt: target response received; CoverCrypt round-trip did not reproduce the known plaintext"
                 )
@@ -3493,7 +3487,7 @@ fn run_covercrypt_cipher_case(
                 ciphertext,
                 "Decrypt",
             )?;
-            if !decrypted.with_bytes(|bytes| bytes == PLAINTEXT) {
+            if !decrypted.with_bytes(|bytes| bytes == COVERCRYPT_TEST_PLAINTEXT) {
                 return Err(format!(
                     "case {id} Decrypt: target response received; CoverCrypt plaintext did not match the setup fixture"
                 )
@@ -3665,7 +3659,7 @@ fn execute_asymmetric_encrypt(
             }
             if algorithm == "ConfigurableKEM" {
                 let (shared_secret, encapsulation) =
-                    super::cryptographic_kem::decode_configurable_kem_encrypt_data(data)
+                    super::cryptographic_kem::decode_configurable_kem_encrypt_data(&data)
                         .map_err(str::to_owned)?;
                 return Ok(AsymmetricEncrypted {
                     data: shared_secret,
@@ -3793,7 +3787,7 @@ fn asymmetric_cipher_parameters(row: &JsonValue) -> Result<Structure, Box<dyn Er
         )?);
         match parameters["p_source"].as_str() {
             Some("empty") => {
-                items.push(super::kmip_item(P_SOURCE, Value::byte_string(Vec::new()))?)
+                items.push(super::kmip_item(P_SOURCE, Value::byte_string(Vec::new()))?);
             }
             Some("nonempty") => items.push(super::kmip_item(
                 P_SOURCE,
@@ -3803,7 +3797,7 @@ fn asymmetric_cipher_parameters(row: &JsonValue) -> Result<Structure, Box<dyn Er
             None => return Err(format!("case {id} OAEP parameters omit PSource").into()),
         }
     }
-    Ok(super::structure(items)?)
+    super::structure(items)
 }
 
 fn signature_parameters(row: &JsonValue) -> Result<Structure, Box<dyn Error>> {
@@ -3818,7 +3812,7 @@ fn signature_parameters(row: &JsonValue) -> Result<Structure, Box<dyn Error>> {
             CRYPTOGRAPHIC_ALGORITHM,
             Value::enumeration(wire_enum_value(row, "cryptographic_algorithm")?),
         )?);
-        return Ok(super::structure(items)?);
+        return super::structure(items);
     }
     match algorithm {
         "RSA" => {
@@ -3826,9 +3820,11 @@ fn signature_parameters(row: &JsonValue) -> Result<Structure, Box<dyn Error>> {
             let scheme = required_parameter_text(row, "signature_scheme")?;
             match scheme {
                 "RSASSA-PSS" => {
-                    items.push(super::kmip_item(PADDING_METHOD, Value::enumeration(10))?)
+                    items.push(super::kmip_item(PADDING_METHOD, Value::enumeration(10))?);
                 }
-                "PKCS1v15" => items.push(super::kmip_item(PADDING_METHOD, Value::enumeration(8))?),
+                "PKCS1v15" => {
+                    items.push(super::kmip_item(PADDING_METHOD, Value::enumeration(8))?);
+                }
                 other => {
                     return Err(
                         format!("case {id} has unsupported RSA signature scheme {other}").into(),
@@ -3904,7 +3900,7 @@ fn signature_parameters(row: &JsonValue) -> Result<Structure, Box<dyn Error>> {
             return Err(format!("case {id} has unsupported signature algorithm {other}").into());
         }
     }
-    Ok(super::structure(items)?)
+    super::structure(items)
 }
 
 fn digital_signature_algorithm_value(
@@ -4121,14 +4117,14 @@ fn register_independent_verification_key(
         .ok_or_else(|| format!("case {id} independent signer omits key size"))?;
     let public_attributes =
         signature_key_attributes(id, algorithm, curve, bits, KEY_USAGE_VERIFY, None)?;
-    let public_object = signature_key_object(public_bytes, 5, algorithm, false)?;
+    let public_object = signature_key_object(public_bytes, algorithm, false)?;
     let public_identifier = register_independent_key(
         client,
         id,
         RegisterRequest::new(ObjectType::from_raw(3), public_attributes, public_object),
         ownership,
     )?;
-    super::common::run_activate(client, id, "independent PublicKey", &public_identifier)?;
+    super::common::ensure_active_object(client, id, "PublicKey", &public_identifier)?;
 
     if required_case_text(row, "object_type")? == "PublicKey" {
         return Ok(public_identifier);
@@ -4148,14 +4144,14 @@ fn register_independent_verification_key(
     )?;
     let private_attributes =
         signature_key_attributes(id, algorithm, curve, bits, KEY_USAGE_VERIFY, Some(link))?;
-    let private_object = signature_key_object(private_bytes, 4, algorithm, true)?;
+    let private_object = signature_key_object(private_bytes, algorithm, true)?;
     let private_id = register_independent_key(
         client,
         id,
         RegisterRequest::new(ObjectType::from_raw(4), private_attributes, private_object),
         ownership,
     )?;
-    super::common::run_activate(client, id, "independent PrivateKey", &private_id)?;
+    super::common::ensure_active_object(client, id, "PrivateKey", &private_id)?;
     Ok(private_id)
 }
 
@@ -4215,7 +4211,6 @@ fn signature_key_attributes(
 
 fn signature_key_object(
     material: Vec<u8>,
-    key_format: u32,
     algorithm: u32,
     sensitive: bool,
 ) -> Result<kmipkit_ttlv::Item, Box<dyn Error>> {
@@ -4229,7 +4224,7 @@ fn signature_key_object(
     let mut key_block = Structure::new();
     key_block.try_push(super::kmip_item(
         KEY_FORMAT_TYPE,
-        Value::enumeration(key_format),
+        Value::enumeration(PKCS8_KEY_FORMAT_TYPE),
     )?)?;
     key_block.try_push(super::kmip_item(KEY_VALUE, Value::structure(key_value))?)?;
     key_block.try_push(super::kmip_item(
@@ -4244,6 +4239,46 @@ fn signature_key_object(
             Value::structure(key_block),
         )?])?),
     )
+}
+
+#[test]
+fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
+    let object =
+        signature_key_object(vec![0x30, 0x00], 4, false).expect("well-formed public key fixture");
+    // OASIS KMIP v2.1 §11.56, Table 487: Public Key=0x42006D,
+    // Private Key=0x420064. These are object tags, not unique-identifier tags.
+    assert_eq!(object.tag().raw(), 0x0042_006D);
+    let private_object =
+        signature_key_object(vec![0x30, 0x00], 4, true).expect("well-formed private key fixture");
+    assert_eq!(private_object.tag().raw(), 0x0042_0064);
+    let format = object.with_value(|value| {
+        let kmipkit_ttlv::ValueView::Structure(fields) = value else {
+            return None;
+        };
+        fields
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == KEY_BLOCK)
+            .and_then(|key_block| {
+                key_block.with_value(|value| {
+                    let kmipkit_ttlv::ValueView::Structure(key_fields) = value else {
+                        return None;
+                    };
+                    key_fields
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == KEY_FORMAT_TYPE)
+                        .and_then(|format| {
+                            format.with_value(|value| match value {
+                                kmipkit_ttlv::ValueView::Enumeration(value) => Some(*value),
+                                _ => None,
+                            })
+                        })
+                })
+            })
+    });
+
+    assert_eq!(format, Some(4), "Cosmian imports public SPKI using PKCS#8");
 }
 
 fn signature_fixture_stem(row: &JsonValue) -> Result<String, Box<dyn Error>> {
@@ -4299,9 +4334,8 @@ fn run_signature_multipart_case(
     let operation = required_case_text(row, "operation")?;
     let object_type = required_case_text(row, "object_type")?;
     let identifier = match (operation, object_type) {
-        ("Sign", "PrivateKey") => private_id,
+        ("Sign" | "Signature Verify", "PrivateKey") => private_id,
         ("Signature Verify", "PublicKey") => public_id,
-        ("Signature Verify", "PrivateKey") => private_id,
         _ => return Err(format!("case {id} has invalid multipart signature target").into()),
     };
     match operation {
@@ -4508,7 +4542,7 @@ fn execute_signature_verify(
         |response| {
             let actual = response
                 .signature_verify()
-                .and_then(|result| result.validity_indicator())
+                .and_then(kmipkit_protocol::SignatureVerifyResponse::validity_indicator)
                 .map(kmipkit_protocol::ValidityIndicator::raw);
             if actual != Some(1) {
                 return Err(format!(
@@ -5067,107 +5101,3 @@ fn hex_nibble(value: u8) -> Result<u8, Box<dyn Error>> {
         _ => Err("known-answer vector contains a non-hexadecimal character".into()),
     }
 }
-#[test]
-fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
-    let object = signature_key_object(vec![0x30, 0x00], 5, 4, false)
-        .expect("well-formed public key fixture");
-    let format = object.with_value(|value| {
-        let kmipkit_ttlv::ValueView::Structure(fields) = value else {
-            return None;
-        };
-        fields
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == KEY_BLOCK)
-            .and_then(|key_block| {
-                key_block.with_value(|value| {
-                    let kmipkit_ttlv::ValueView::Structure(key_fields) = value else {
-                        return None;
-                    };
-                    key_fields
-                        .children()
-                        .iter()
-                        .find(|field| field.tag().raw() == KEY_FORMAT_TYPE)
-                        .and_then(|format| {
-                            format.with_value(|value| match value {
-                                kmipkit_ttlv::ValueView::Enumeration(value) => Some(*value),
-                                _ => None,
-                            })
-                        })
-                })
-            })
-    });
-
-    assert_eq!(format, Some(4), "Cosmian imports public SPKI using PKCS#8");
-}
-
-#[test]
-fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
-    let object = signature_key_object(vec![0x30, 0x00], 4, false)
-        .expect("well-formed public key fixture");
-    // OASIS KMIP v2.1 Â§11.56, Table 487: Public Key=0x42006D,
-    // Private Key=0x420064. These are object tags, not unique-identifier tags.
-    assert_eq!(object.tag().raw(), 0x0042_006D);
-    let private_object = signature_key_object(vec![0x30, 0x00], 4, true)
-        .expect("well-formed private key fixture");
-    assert_eq!(private_object.tag().raw(), 0x0042_0064);
-    let format = object.with_value(|value| {
-        let kmipkit_ttlv::ValueView::Structure(fields) = value else {
-            return None;
-        };
-        fields
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == KEY_BLOCK)
-            .and_then(|key_block| {
-                key_block.with_value(|value| {
-                    let kmipkit_ttlv::ValueView::Structure(key_fields) = value else {
-                        return None;
-                    };
-                    key_fields
-                        .children()
-                        .iter()
-                        .find(|field| field.tag().raw() == KEY_FORMAT_TYPE)
-                        .and_then(|format| {
-                            format.with_value(|value| match value {
-                                kmipkit_ttlv::ValueView::Enumeration(value) => Some(*value),
-                                _ => None,
-                            })
-                        })
-                })
-            })
-    });
-
-    assert_eq!(format, Some(4), "Cosmian imports public SPKI using PKCS#8");
-}
-
-#[test]
-fn certify_manifest_and_attributes_use_certificate_type_enumeration() {
-    let rows = target_rows().expect("cryptographic target rows");
-    let certify_rows = rows
-        .iter()
-        .filter(|row| row["operation"] == "Certify")
-        .collect::<Vec<_>>();
-    assert_eq!(certify_rows.len(), 203);
-
-    for row in certify_rows {
-        let id = case_id(row).expect("Certify case ID");
-        assert_eq!(
-            row["wire_enum_values"]["certificate_type"]["name"],
-            "X.509",
-            "{id} must declare Certificate Type independently of Key Format Type"
-        );
-        assert_eq!(
-            wire_enum_value(row, "certificate_type").expect("Certificate Type enum"),
-            1,
-            "OASIS KMIP v2.1 Â§11.9, Table 440 assigns X.509 Certificate Type 1; {id}"
-        );
-        let attributes = certify_attributes(row).expect("Certify Attributes");
-        assert_eq!(
-            enum_field(&attributes, CERTIFICATE_TYPE),
-            Some(1),
-            "{id} must serialize Certificate Type 1"
-        );
-    }
-}
-

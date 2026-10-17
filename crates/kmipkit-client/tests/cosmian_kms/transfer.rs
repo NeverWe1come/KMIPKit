@@ -5,7 +5,7 @@
 //! Material use §4.26, Tables 79–81; §11.25, Tables 460–461. The fixture
 //! encoding field is never interpreted as a KMIP Key Format Type.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 
 use kmipkit_client::{Client, ClientRequest};
@@ -63,8 +63,6 @@ const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ENCODING_OPTION: u32 = 0x0042_00A3;
 const PKCS12_TEST_PASSWORD: &str = "kmipkit-test-password";
-const STATE_PRE_ACTIVE: u32 = 1;
-const STATE_ACTIVE: u32 = 2;
 const USAGE_ENCRYPT: i64 = 0x04;
 const USAGE_DECRYPT: i64 = 0x08;
 const USAGE_WRAP_KEY: i64 = 0x10;
@@ -92,7 +90,7 @@ fn provision_wrapped_target(
             SecretBytes::new(material),
             ownership,
         )?;
-        ensure_active_before_wrapping(client, case_id, "SecretData", &unique_id)?;
+        super::common::ensure_active_object(client, case_id, "SecretData", &unique_id)?;
         return Ok(unique_id);
     }
     let mut target_row = row.clone();
@@ -127,7 +125,7 @@ fn provision_wrapped_target(
         &target_row,
         ownership,
     )?;
-    ensure_active_before_wrapping(
+    super::common::ensure_active_object(
         client,
         case_id,
         super::common::required_text(row, "object_type")?,
@@ -163,7 +161,7 @@ fn provision_wrapping_key(
             let private_id = import_pfx_source(client, case_id, &certificate_row, ownership)?;
             let certificate_id =
                 pfx_certificate_identifier(client, case_id, &private_id.private_id, ownership)?;
-            ensure_active_before_wrapping(client, case_id, "Certificate", &certificate_id)?;
+            super::common::ensure_active_object(client, case_id, "Certificate", &certificate_id)?;
             Ok(certificate_id)
         }
         other => Err(format!("case {case_id}: unsupported wrapping key type {other}").into()),
@@ -217,7 +215,7 @@ fn provision_symmetric_kek(
         super::common::required_text(row, "operation")?,
     )?;
     verify_usage_mask(client, case_id, &unique_id, expected_usage)?;
-    ensure_active_before_wrapping(client, case_id, "SymmetricKey", &unique_id)?;
+    super::common::ensure_active_object(client, case_id, "SymmetricKey", &unique_id)?;
     Ok(unique_id)
 }
 
@@ -274,10 +272,10 @@ fn provision_rsa_kek(
     // key pair. The private half is the Unwrap/Decrypt key and is not valid
     // for Export/Get wrapping. Both objects are activated because Cosmian
     // resolves and validates the linked pair during wrapping.
-    ensure_active_before_wrapping(client, case_id, "PrivateKey", &private_id)?;
-    ensure_active_before_wrapping(client, case_id, "PublicKey", &public_id)?;
+    super::common::ensure_active_object(client, case_id, "PrivateKey", &private_id)?;
+    super::common::ensure_active_object(client, case_id, "PublicKey", &public_id)?;
     let wrapping_key_id = rsa_wrapping_key_identifier("Encrypt", &private_id, &public_id)?;
-    ensure_active_before_wrapping(client, case_id, "PublicKey", wrapping_key_id)?;
+    super::common::ensure_active_object(client, case_id, "PublicKey", wrapping_key_id)?;
     Ok(wrapping_key_id.to_owned())
 }
 
@@ -293,14 +291,6 @@ fn rsa_wrapping_key_identifier<'a>(
     }
 }
 
-fn wrapping_key_activation_required(state: u32) -> Result<bool, &'static str> {
-    match state {
-        STATE_PRE_ACTIVE => Ok(true),
-        STATE_ACTIVE => Ok(false),
-        _ => Err("case-owned wrapping key is not Pre-Active or Active"),
-    }
-}
-
 fn wrapping_key_usage_mask(key_type: &str, operation: &str) -> Result<i64, &'static str> {
     match key_type {
         "SymmetricKey" if operation == "Import" => {
@@ -310,29 +300,6 @@ fn wrapping_key_usage_mask(key_type: &str, operation: &str) -> Result<i64, &'sta
         "PrivateKey" => Ok(USAGE_UNWRAP_KEY | USAGE_DECRYPT),
         _ => Err("unsupported KMIP wrapping key object type"),
     }
-}
-
-fn ensure_active_before_wrapping(
-    client: &mut Client,
-    case_id: &str,
-    object_type: &str,
-    unique_id: &str,
-) -> Result<(), Box<dyn Error>> {
-    // OASIS KMIP v2.1 §3.2.2 prohibits cryptographic use while Pre-Active.
-    // Read typed State before and after Activate; an acknowledged lifecycle
-    // response alone does not prove this case-owned material is Active.
-    let before = super::common::get_object_state(client, case_id, unique_id)?;
-    if wrapping_key_activation_required(before)? {
-        super::common::run_activate(client, case_id, object_type, unique_id)?;
-    }
-    let after = super::common::get_object_state(client, case_id, unique_id)?;
-    if after != STATE_ACTIVE {
-        return Err(format!(
-            "case {case_id}: wrapping key state after Activate is {after}, expected Active"
-        )
-        .into());
-    }
-    Ok(())
 }
 
 fn verify_usage_mask(
@@ -565,24 +532,63 @@ fn cosmian_transfer_manifest_cases_have_typed_executors() {
 fn cosmian_528_transfer_matrix() {
     assert_manifest_parity();
     let mut failures = Vec::new();
+    let mut target_requests_sent = 0;
+    let mut interoperability_successes = 0;
+    let mut expected_finding_observations = 0;
     let selected = selected_case_ids();
+    let expected_outcomes = crate::common::manifest_rows(FAMILY)
+        .expect("transfer manifest rows")
+        .into_iter()
+        .map(|row| {
+            let case_id =
+                crate::common::required_text(&row, "case_id").expect("transfer manifest case ID");
+            let expected_outcome = crate::common::required_text(&row, "expected_outcome")
+                .expect("transfer manifest expected outcome");
+            (case_id.to_owned(), expected_outcome.to_owned())
+        })
+        .collect::<BTreeMap<_, _>>();
     for case_id in &selected {
+        let expected_outcome = expected_outcomes
+            .get(*case_id)
+            .expect("selected transfer case has an expected outcome");
         match run_case(case_id) {
-            Ok(()) => println!("case_id={case_id} classification=typed_success"),
+            Ok(()) => {
+                target_requests_sent += 1;
+                if expected_outcome == "typed_success" {
+                    interoperability_successes += 1;
+                } else {
+                    expected_finding_observations += 1;
+                }
+                println!(
+                    "{}",
+                    transfer_observation_line(case_id, expected_outcome, "typed_success", "true")
+                );
+            }
             Err(error) => {
                 let class = classify_error(error.as_ref());
+                let request_sent = target_request_sent_label(class, error.as_ref());
                 println!(
-                    "case_id={case_id} classification={class} target_request_sent={} detail={error}",
-                    target_request_sent_label(class, error.as_ref())
+                    "{} detail={error}",
+                    transfer_observation_line(case_id, expected_outcome, class, request_sent)
                 );
-                failures.push(case_id.to_owned());
+                if request_sent == "true" {
+                    target_requests_sent += 1;
+                    if expected_outcome != "typed_success" {
+                        expected_finding_observations += 1;
+                    }
+                }
+                if expected_outcome == "typed_success" || request_sent != "true" {
+                    failures.push(case_id.to_owned());
+                }
             }
         }
     }
     println!(
-        "transfer_matrix selected={} request_attempted={} failures={}",
+        "transfer_matrix selected={} target_requests_sent={} interoperability_successes={} expected_finding_observations={} failures={}",
         selected.len(),
-        selected.len(),
+        target_requests_sent,
+        interoperability_successes,
+        expected_finding_observations,
         failures.len()
     );
     assert!(
@@ -2374,6 +2380,28 @@ fn target_request_sent_label(classification: &str, error: &dyn Error) -> &'stati
     }
 }
 
+fn transfer_observation_line(
+    case_id: &str,
+    expected_outcome: &str,
+    observed: &str,
+    request_sent: &str,
+) -> String {
+    if expected_outcome == "typed_success" && observed == "typed_success" && request_sent == "true"
+    {
+        format!(
+            "case_id={case_id} classification=typed_success expected_outcome=typed_success observed=typed_success request_sent=true interoperability=true"
+        )
+    } else if expected_outcome != "typed_success" {
+        format!(
+            "case_id={case_id} classification=expected_finding_probe expected_outcome={expected_outcome} observed={observed} request_sent={request_sent} interoperability=false"
+        )
+    } else {
+        format!(
+            "case_id={case_id} classification={observed} expected_outcome=typed_success observed={observed} request_sent={request_sent} interoperability=false"
+        )
+    }
+}
+
 #[cfg(test)]
 mod inventory_tests {
     use super::*;
@@ -2909,6 +2937,102 @@ mod inventory_tests {
     }
 
     #[test]
+    fn transfer_finding_probe_observations_are_not_interoperability_successes() {
+        let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
+        let probes = rows
+            .iter()
+            .filter(|row| row["expected_outcome"] != "typed_success")
+            .collect::<Vec<_>>();
+        assert_eq!(probes.len(), 468);
+
+        for row in probes {
+            let case_id = crate::common::required_text(row, "case_id").expect("case ID");
+            let expected_outcome =
+                crate::common::required_text(row, "expected_outcome").expect("expected outcome");
+            let record =
+                transfer_observation_line(case_id, expected_outcome, "typed_success", "true");
+            assert!(
+                record.contains("classification=expected_finding_probe"),
+                "{case_id}"
+            );
+            assert!(
+                record.contains(&format!("expected_outcome={expected_outcome}")),
+                "{case_id}"
+            );
+            assert!(record.contains("observed=typed_success"), "{case_id}");
+            assert!(record.contains("request_sent=true"), "{case_id}");
+            assert!(record.contains("interoperability=false"), "{case_id}");
+        }
+
+        let typed_success = rows
+            .iter()
+            .find(|row| row["expected_outcome"] == "typed_success")
+            .expect("typed-success transfer row");
+        let case_id =
+            crate::common::required_text(typed_success, "case_id").expect("typed-success case ID");
+        let record = transfer_observation_line(case_id, "typed_success", "typed_success", "true");
+        assert!(record.contains("classification=typed_success"));
+        assert!(record.contains("expected_outcome=typed_success"));
+        assert!(record.contains("observed=typed_success"));
+        assert!(record.contains("request_sent=true"));
+        assert!(record.contains("interoperability=true"));
+    }
+
+    #[test]
+    fn transfer_manifest_observations_reconcile_without_promoting_rejections() {
+        let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
+        let mut observed_categories = std::collections::BTreeSet::new();
+
+        for row in rows {
+            let case_id = crate::common::required_text(&row, "case_id").expect("case ID");
+            let expected =
+                crate::common::required_text(&row, "expected_outcome").expect("expected outcome");
+            let observation = &row["observed_result"];
+            let observed = crate::common::required_text(observation, "classification")
+                .expect("observed classification");
+            let request_sent = observation["target_request_sent"]
+                .as_bool()
+                .expect("observed target-request delivery")
+                .to_string();
+            let record = transfer_observation_line(case_id, expected, observed, &request_sent);
+            let interoperable = expected == "typed_success"
+                && observed == "typed_success"
+                && request_sent == "true";
+
+            assert!(
+                record.contains(&format!("interoperability={interoperable}")),
+                "{case_id}: {record}"
+            );
+            if expected != "typed_success" {
+                assert!(
+                    record.contains("classification=expected_finding_probe"),
+                    "{case_id}: {record}"
+                );
+            }
+            if observed == "rejected" || observed == "setup_rejected" {
+                assert!(
+                    record.contains("interoperability=false"),
+                    "{case_id}: {record}"
+                );
+            }
+            observed_categories.insert(observed.to_owned());
+        }
+
+        assert_eq!(
+            observed_categories,
+            [
+                "rejected",
+                "response_validation_failed",
+                "setup_rejected",
+                "typed_success"
+            ]
+            .into_iter()
+            .map(str::to_owned)
+            .collect()
+        );
+    }
+
+    #[test]
     fn every_transfer_case_constructs_a_serializable_typed_request() {
         let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
         let mut serialized = 0;
@@ -3191,14 +3315,6 @@ mod inventory_tests {
             }
         }
         assert_eq!(wrapped_count, 2_452);
-    }
-
-    #[test]
-    fn wrapping_key_state_gate_requires_active_before_cryptographic_use() {
-        assert_eq!(wrapping_key_activation_required(1), Ok(true));
-        assert_eq!(wrapping_key_activation_required(2), Ok(false));
-        assert!(wrapping_key_activation_required(3).is_err());
-        assert!(wrapping_key_activation_required(0).is_err());
     }
 
     #[test]

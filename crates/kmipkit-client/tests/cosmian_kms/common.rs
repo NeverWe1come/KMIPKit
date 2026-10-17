@@ -7,14 +7,15 @@ use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientRequest, ClientResponseView,
 };
 use kmipkit_protocol::{
-    ActivateRequest, AddAttributeRequest, AttributeReference, AttributeSet, CheckRequest,
-    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CurrentAttribute,
-    DeleteAttributeRequest, DestroyRequest, GetAttributeListRequest, GetAttributesRequest,
-    LocateRequest, ModifyAttributeRequest, NewAttribute, ObjectType, OpaqueObjectContext,
-    RegisterRequest, RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest,
-    SplitKeyMethod, UniqueIdentifier, ValidateRequest,
+    ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType,
+    AttributeReference, AttributeSet, CheckRequest, CreateKeyPairRequest, CreateRequest,
+    CreateSplitKeyRequest, CurrentAttribute, DeleteAttributeRequest, DestroyRequest,
+    GetAttributeListRequest, GetAttributesRequest, LocateRequest, ModifyAttributeRequest,
+    NewAttribute, ObjectType, OpaqueObjectContext, RecertifyRequest, RegisterRequest,
+    RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SplitKeyMethod,
+    UniqueIdentifier, ValidateRequest,
 };
-use kmipkit_ttlv::{Item, Structure, Value};
+use kmipkit_ttlv::{Item, Structure, Value, ValueView};
 
 use super::{
     AES, CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH, CRYPTOGRAPHIC_USAGE_MASK, SUCCESS,
@@ -46,6 +47,9 @@ const STATUS_SUCCESS: u32 = 0;
 const STATE_PRE_ACTIVE: u32 = 1;
 const STATE_ACTIVE: u32 = 2;
 const STATE_DEACTIVATED: u32 = 3;
+const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
+const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
+const RECERTIFY_OPERATION: u32 = 0x0000_0007;
 
 pub(super) struct OwnedObjects {
     pub(super) primary: String,
@@ -82,7 +86,9 @@ pub(super) fn run_lifecycle_case(case_id: &str) -> Result<(), Box<dyn Error>> {
     });
     result.map_err(|message| -> Box<dyn Error> { message.into() })?;
 
-    println!("case_id={case_id} classification=typed_success");
+    if !matches!(operation, "Adjust Attribute" | "Re-certify") {
+        println!("case_id={case_id} classification=typed_success");
+    }
     Ok(())
 }
 
@@ -98,6 +104,7 @@ fn run_lifecycle_operation(
     match operation {
         "Activate" => run_activate(client, case_id, object_type, &objects.primary),
         "Add Attribute" => run_add_attribute(client, case_id, &objects.primary),
+        "Adjust Attribute" => run_adjust_attribute_probe(client, case_id, row, &objects.primary),
         "Delete Attribute" => run_delete_attribute(client, case_id, &objects.primary),
         "Get Attribute List" => run_get_attribute_list(client, case_id, &objects.primary),
         "Get Attributes" => run_get_attributes(client, case_id, &objects.primary),
@@ -105,12 +112,236 @@ fn run_lifecycle_operation(
         "Check" => run_check(client, case_id, row, &objects.primary),
         "Destroy" => run_destroy(client, case_id, object_type, &objects.primary, ownership),
         "Revoke" => run_revoke(client, case_id, object_type, &objects.primary, ownership),
+        "Re-certify" => run_recertify_probe(client, case_id, row, &objects.primary),
         "Modify Attribute" => run_modify_attribute(client, case_id, &objects.primary),
         "Set Attribute" => run_set_attribute(client, case_id, &objects.primary),
         unsupported => {
             Err(format!("case {case_id} has operation outside Task 4: {unsupported}").into())
         }
     }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ProbeOutcome {
+    TypedSuccess,
+    Unsupported,
+    Rejected,
+    ResponseValidationFailed,
+    MalformedResponse,
+}
+
+fn run_operation_probe(
+    client: &mut Client,
+    case_id: &str,
+    operation: &str,
+    expected_operation: u32,
+    expected_outcome: &str,
+    request: ClientRequest,
+    validate_success: impl FnOnce(ClientResponseView<'_>) -> Result<(), String>,
+) -> Result<ProbeOutcome, Box<dyn Error>> {
+    let response = match client.execute(
+        ClientBatch::new(ClientBatchItem::new(request)),
+        &kmipkit_ttlv::codec::CodecLimits::defaults(),
+    ) {
+        Ok(response) => response,
+        Err(error) => {
+            let Some((wire_operation, status, reason)) = super::response_result_fields(&error)
+            else {
+                return Err(format!(
+                    "case {case_id} {operation}: request failed without a parseable response result"
+                )
+                .into());
+            };
+            let classification = if wire_operation == Some(expected_operation) {
+                ProbeOutcome::ResponseValidationFailed
+            } else {
+                ProbeOutcome::MalformedResponse
+            };
+            print_probe_observation(
+                case_id,
+                expected_outcome,
+                classification,
+                true,
+                status,
+                reason,
+            );
+            return Ok(classification);
+        }
+    };
+    if response.len() != 1 {
+        return Err(format!(
+            "case {case_id} {operation}: expected one response item, received {}",
+            response.len()
+        )
+        .into());
+    }
+    let item = response
+        .get(0)
+        .ok_or_else(|| format!("case {case_id} {operation}: response item missing"))?;
+    let outcome = item.outcome();
+    let status = outcome.result().status().raw();
+    let reason = outcome
+        .result()
+        .reason()
+        .map(kmipkit_protocol::ResultReason::raw);
+    let classification = if status == STATUS_SUCCESS {
+        validate_success(outcome.response())
+            .map_err(|message| format!("case {case_id} {operation}: {message}"))?;
+        ProbeOutcome::TypedSuccess
+    } else if status == 1 && reason == Some(5) {
+        ProbeOutcome::Unsupported
+    } else {
+        ProbeOutcome::Rejected
+    };
+    print_probe_observation(
+        case_id,
+        expected_outcome,
+        classification,
+        true,
+        Some(status),
+        reason,
+    );
+    Ok(classification)
+}
+
+fn print_probe_observation(
+    case_id: &str,
+    expected_outcome: &str,
+    classification: ProbeOutcome,
+    request_sent: bool,
+    result_status: Option<u32>,
+    result_reason: Option<u32>,
+) {
+    let classification = match classification {
+        ProbeOutcome::TypedSuccess => "typed_success",
+        ProbeOutcome::Unsupported => "unsupported",
+        ProbeOutcome::Rejected => "rejected",
+        ProbeOutcome::ResponseValidationFailed => "response_validation_failed",
+        ProbeOutcome::MalformedResponse => "malformed_response",
+    };
+    println!(
+        "case_id={case_id} classification={classification} expected_outcome={expected_outcome} observed={classification} request_sent={request_sent} response_received=true interoperability=false result_status={result_status:?} result_reason={result_reason:?}"
+    );
+}
+
+fn run_adjust_attribute_probe(
+    client: &mut Client,
+    case_id: &str,
+    row: &serde_json::Value,
+    identifier: &str,
+) -> Result<(), Box<dyn Error>> {
+    let expected_outcome = required_text(row, "expected_outcome")?;
+    let outcome = run_operation_probe(
+        client,
+        case_id,
+        "Adjust Attribute",
+        ADJUST_ATTRIBUTE_OPERATION,
+        expected_outcome,
+        ClientRequest::adjust_attribute(AdjustAttributeRequest::new(
+            Some(identifier.to_owned()),
+            AttributeReference::tag(USAGE_LIMITS_TOTAL),
+            AdjustmentType::INCREMENT,
+            None,
+        )),
+        |response| {
+            let returned_identifier = response
+                .adjust_attribute()
+                .and_then(|result| result.unique_identifier())
+                .ok_or_else(|| {
+                    "successful Adjust Attribute omitted Unique Identifier".to_owned()
+                })?;
+            if returned_identifier != identifier {
+                return Err("Adjust Attribute returned a different Unique Identifier".to_owned());
+            }
+            Ok(())
+        },
+    )?;
+    if outcome == ProbeOutcome::TypedSuccess {
+        verify_adjusted_usage_limits_total(client, case_id, identifier)?;
+    }
+    Ok(())
+}
+
+fn verify_adjusted_usage_limits_total(
+    client: &mut Client,
+    case_id: &str,
+    identifier: &str,
+) -> Result<(), Box<dyn Error>> {
+    let response = client.execute(
+        ClientBatch::new(ClientBatchItem::new(ClientRequest::get_attributes(
+            GetAttributesRequest::try_new(
+                Some(identifier.to_owned()),
+                [AttributeReference::tag(USAGE_LIMITS_TOTAL)],
+            )?,
+        ))),
+        &kmipkit_ttlv::codec::CodecLimits::defaults(),
+    )?;
+    let item = response
+        .get(0)
+        .ok_or("Get Attributes omitted the Usage Limits Total response")?;
+    let outcome = item.outcome();
+    if outcome.result().status().raw() != STATUS_SUCCESS {
+        return Err(format!(
+            "case {case_id}: Get Attributes did not verify the adjusted value (status {})",
+            outcome.result().status().raw()
+        )
+        .into());
+    }
+    let response_view = outcome.response();
+    let attributes = response_view
+        .get_attributes()
+        .and_then(|result| result.attributes())
+        .ok_or("Get Attributes omitted the Usage Limits Total Attributes")?;
+    let value = attributes
+        .as_items()
+        .iter()
+        .find(|item| item.tag().raw() == USAGE_LIMITS_TOTAL)
+        .and_then(|item| {
+            item.with_value(|value| match value {
+                ValueView::Integer(value) => Some(*value),
+                _ => None,
+            })
+        });
+    if value != Some(1) {
+        return Err(format!(
+            "case {case_id}: Adjust Attribute result did not increment the absent Usage Limits Total from zero to one"
+        )
+        .into());
+    }
+    Ok(())
+}
+
+fn run_recertify_probe(
+    client: &mut Client,
+    case_id: &str,
+    row: &serde_json::Value,
+    certificate_identifier: &str,
+) -> Result<(), Box<dyn Error>> {
+    let expected_outcome = required_text(row, "expected_outcome")?;
+    let request =
+        RecertifyRequest::new().with_unique_identifier(identifier(certificate_identifier));
+    let _outcome = run_operation_probe(
+        client,
+        case_id,
+        "Re-certify",
+        RECERTIFY_OPERATION,
+        expected_outcome,
+        ClientRequest::recertify(request),
+        |response| {
+            let returned_identifier = response
+                .recertify()
+                .and_then(|result| result.unique_identifier());
+            if !matches!(returned_identifier, Some(UniqueIdentifier::TextString(value)) if value == certificate_identifier)
+            {
+                return Err(
+                    "successful Re-certify omitted or changed the certificate Unique Identifier"
+                        .to_owned(),
+                );
+            }
+            Ok(())
+        },
+    )?;
+    Ok(())
 }
 
 pub(super) fn run_activate(
@@ -1103,7 +1334,8 @@ fn register_opaque_object(
     )
 }
 
-fn register_result_id(
+// The cryptographic sibling shares this case-owned Register and cleanup path.
+pub(super) fn register_result_id(
     client: &mut Client,
     case_id: &str,
     request: RegisterRequest,
@@ -1377,6 +1609,39 @@ pub(super) fn get_object_state(
             Ok(state)
         },
     )
+}
+
+fn object_activation_required(state: u32) -> Result<bool, &'static str> {
+    match state {
+        STATE_PRE_ACTIVE => Ok(true),
+        STATE_ACTIVE => Ok(false),
+        _ => Err("case-owned object is not Pre-Active or Active"),
+    }
+}
+
+/// Ensures a case-owned object is Active without sending Activate twice.
+///
+/// OASIS KMIP v2.1 §6.1.1 permits Activate from Pre-Active; §3.2.2 prohibits
+/// cryptographic use while Pre-Active. The server's observed State determines
+/// whether the lifecycle request is necessary.
+pub(super) fn ensure_active_object(
+    client: &mut Client,
+    case_id: &str,
+    object_type: &str,
+    identifier: &str,
+) -> Result<(), Box<dyn Error>> {
+    let before = get_object_state(client, case_id, identifier)?;
+    if object_activation_required(before)? {
+        run_activate(client, case_id, object_type, identifier)?;
+    }
+    let after = get_object_state(client, case_id, identifier)?;
+    if after != STATE_ACTIVE {
+        return Err(format!(
+            "case {case_id}: object state after activation preflight is {after}, expected Active"
+        )
+        .into());
+    }
+    Ok(())
 }
 
 fn revoke_for_destroy(
@@ -1822,6 +2087,14 @@ mod review_regression_tests {
     use super::*;
 
     #[test]
+    fn active_object_preflight_activates_only_pre_active_objects() {
+        assert_eq!(object_activation_required(STATE_PRE_ACTIVE), Ok(true));
+        assert_eq!(object_activation_required(STATE_ACTIVE), Ok(false));
+        assert!(object_activation_required(STATE_DEACTIVATED).is_err());
+        assert!(object_activation_required(0).is_err());
+    }
+
+    #[test]
     fn result_message_classification_never_returns_server_text_or_identifiers() {
         assert_eq!(
             sanitized_result_message_class(
@@ -1895,9 +2168,7 @@ mod review_regression_tests {
                     .iter()
                     .filter_map(|item| {
                         let scalar = item.with_value(|value| match value {
-                            kmipkit_ttlv::ValueView::Enumeration(value) => {
-                                Some(i64::from(*value))
-                            }
+                            kmipkit_ttlv::ValueView::Enumeration(value) => Some(i64::from(*value)),
                             kmipkit_ttlv::ValueView::Integer(value) => Some(i64::from(*value)),
                             _ => None,
                         })?;
@@ -1932,23 +2203,19 @@ mod review_regression_tests {
                 .into_ttlv_payload()
                 .expect("lifecycle RSA fixture serializes");
             assert!(
-                scalar_fields(&payload, 0x0042_0126)
-                    .contains(&(0x0042_0028, 4)),
+                scalar_fields(&payload, 0x0042_0126).contains(&(0x0042_0028, 4)),
                 "{case_id} Common Attributes must contain RSA"
             );
             assert!(
-                scalar_fields(&payload, 0x0042_0126)
-                    .contains(&(0x0042_002a, 2048)),
+                scalar_fields(&payload, 0x0042_0126).contains(&(0x0042_002a, 2048)),
                 "{case_id} Common Attributes must contain the explicit key size"
             );
             assert!(
-                scalar_fields(&payload, 0x0042_0127)
-                    .contains(&(0x0042_002c, 0x10)),
+                scalar_fields(&payload, 0x0042_0127).contains(&(0x0042_002c, 0x10)),
                 "{case_id} Private Key Attributes must contain Sign usage"
             );
             assert!(
-                scalar_fields(&payload, 0x0042_0128)
-                    .contains(&(0x0042_002c, 0x20)),
+                scalar_fields(&payload, 0x0042_0128).contains(&(0x0042_002c, 0x20)),
                 "{case_id} Public Key Attributes must contain Verify usage"
             );
         }
@@ -1993,10 +2260,9 @@ mod review_regression_tests {
     fn check_usage_masks_are_explicit_and_match_each_case_fixture() {
         let cases = [
             ("cosmian-528-check-certificate", 2),
-            ("cosmian-528-check-privatekey", 1),
-            ("cosmian-528-check-publickey", 2),
+            ("cosmian-528-check-privatekey", 16),
+            ("cosmian-528-check-publickey", 32),
             ("cosmian-528-check-secretdata", 12),
-            ("cosmian-528-check-splitkey", 12),
             ("cosmian-528-check-symmetrickey", 12),
         ];
         for (case_id, expected) in cases {
@@ -2007,12 +2273,17 @@ mod review_regression_tests {
                 "{case_id} must send the manifest's exact usage mask"
             );
         }
-        let opaque = manifest_row("cosmian-528-check-opaqueobject")
-            .expect("OpaqueObject Check manifest row");
-        assert_eq!(
-            check_usage_mask_from_row(&opaque).expect("optional mask"),
-            None
-        );
+        for case_id in [
+            "cosmian-528-check-opaqueobject",
+            "cosmian-528-check-splitkey",
+        ] {
+            let row = manifest_row(case_id).expect("optional-mask Check manifest row");
+            assert_eq!(
+                check_usage_mask_from_row(&row).expect("optional mask"),
+                None,
+                "{case_id} uses Check without an incompatible usage-mask constraint"
+            );
+        }
     }
 
     #[test]

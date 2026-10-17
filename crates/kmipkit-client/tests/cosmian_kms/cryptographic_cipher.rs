@@ -1,7 +1,7 @@
 //! Case-isolated symmetric Encrypt/Decrypt interoperability checks.
 //!
 //! The matrix IDs and parameters come from the pinned Cosmian 5.28.0 source
-//! inventory. Each case sends KMIPKit typed requests and checks an Encrypt /
+//! inventory. Each case sends `KMIPKit` typed requests and checks an Encrypt /
 //! Decrypt round trip without printing plaintext, ciphertext, nonce, or tags.
 
 use std::error::Error;
@@ -429,10 +429,9 @@ fn plaintext(row: &JsonValue) -> Result<SecretBytes, Box<dyn Error>> {
     let mode = row["parameters"]["mode"].as_str().unwrap_or_default();
     let padding = row["parameters"]["padding"].as_str().unwrap_or_default();
     let length = match (mode, padding) {
-        ("ECB" | "CBC", "None") => 16,
+        ("ECB" | "CBC", "None") | ("AESKeyWrapPadding" | "NISTKeyWrap", _) => 16,
         ("ECB" | "CBC", "PKCS5") => 15,
         ("XTS", _) => 32,
-        ("AESKeyWrapPadding" | "NISTKeyWrap", _) => 16,
         _ => DATA.len(),
     };
     let mut bytes = Vec::with_capacity(length);
@@ -499,7 +498,7 @@ fn nonce_for(row: &JsonValue) -> Result<Option<SecretBytes>, Box<dyn Error>> {
             }
             Ok(Some(SecretBytes::new(NONCE[..bytes].to_vec())))
         }
-        Some("server") | Some("inapplicable") | None => Ok(None),
+        Some("server" | "inapplicable") | None => Ok(None),
         Some(other) => Err(format!("unknown nonce source {other}").into()),
     }
 }
@@ -530,9 +529,8 @@ fn additional_data(row: &JsonValue) -> Result<Option<Vec<u8>>, Box<dyn Error>> {
     match row["parameters"]["aad"].as_str() {
         Some("empty") => Ok(Some(Vec::new())),
         Some("nonempty") => Ok(Some(AAD.to_vec())),
-        Some("inapplicable") => Ok(None),
+        Some("inapplicable") | None => Ok(None),
         Some(other) => Err(format!("unknown AAD class {other}").into()),
-        None => Ok(None),
     }
 }
 

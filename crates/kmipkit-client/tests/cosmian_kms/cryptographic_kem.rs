@@ -1,7 +1,7 @@
 //! Cosmian KEM response semantics and vendor serialization helpers.
 
 pub(super) fn decode_configurable_kem_encrypt_data(
-    encoded: kmipkit_protocol::SecretBytes,
+    encoded: &kmipkit_protocol::SecretBytes,
 ) -> Result<(kmipkit_protocol::SecretBytes, kmipkit_protocol::SecretBytes), &'static str> {
     encoded.with_bytes(|bytes| {
         let mut offset = 0;
@@ -74,7 +74,7 @@ mod tests {
     fn configurable_kem_encrypt_data_decodes_shared_secret_and_encapsulation() {
         let encoded = SecretBytes::new(vec![3, 0x11, 0x22, 0x33, 2, 0xaa, 0xbb]);
 
-        let (shared_secret, encapsulation) = decode_configurable_kem_encrypt_data(encoded)
+        let (shared_secret, encapsulation) = decode_configurable_kem_encrypt_data(&encoded)
             .expect("well-formed Cosmian Serializable tuple");
 
         assert!(shared_secret.with_bytes(|bytes| bytes == [0x11, 0x22, 0x33]));
@@ -87,9 +87,9 @@ mod tests {
         encoded.extend(std::iter::repeat_n(0x5a, 130));
         encoded.extend([1, 0xa5]);
 
+        let encoded = SecretBytes::new(encoded);
         let (shared_secret, encapsulation) =
-            decode_configurable_kem_encrypt_data(SecretBytes::new(encoded))
-                .expect("LEB128 vector lengths");
+            decode_configurable_kem_encrypt_data(&encoded).expect("LEB128 vector lengths");
 
         assert!(
             shared_secret
@@ -101,7 +101,8 @@ mod tests {
     #[test]
     fn configurable_kem_encrypt_data_rejects_empty_components() {
         for encoded in [vec![0, 1, 0xa5], vec![1, 0x5a, 0]] {
-            assert!(decode_configurable_kem_encrypt_data(SecretBytes::new(encoded)).is_err());
+            let encoded = SecretBytes::new(encoded);
+            assert!(decode_configurable_kem_encrypt_data(&encoded).is_err());
         }
     }
 
@@ -114,7 +115,8 @@ mod tests {
             vec![0x80; 10],
             vec![0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x02],
         ] {
-            assert!(decode_configurable_kem_encrypt_data(SecretBytes::new(encoded)).is_err());
+            let encoded = SecretBytes::new(encoded);
+            assert!(decode_configurable_kem_encrypt_data(&encoded).is_err());
         }
     }
 }
