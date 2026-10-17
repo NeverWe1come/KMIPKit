@@ -3633,9 +3633,7 @@ fn run_covercrypt_cipher_case(
 fn covercrypt_plaintext_matches_fixture(decrypted: &SecretBytes) -> bool {
     decrypted.with_bytes(|bytes| {
         super::cryptographic_covercrypt::split_decrypted_data(bytes).is_ok_and(
-            |(metadata, plaintext)| {
-                metadata.is_empty() && plaintext == COVERCRYPT_TEST_PLAINTEXT
-            },
+            |(metadata, plaintext)| metadata.is_empty() && plaintext == COVERCRYPT_TEST_PLAINTEXT,
         )
     })
 }
