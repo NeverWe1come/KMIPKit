@@ -187278,15 +187278,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed Encrypt success and verified the block-aligned AES-ECB result against Cosmian 5.28.0."
       },
       "wire_enum_values": {
         "cryptographic_algorithm": {
@@ -187294,7 +187291,8 @@
           "value": "0x00000003",
           "classification": "standard"
         }
-      }
+      },
+      "notes": "The default ECB mode uses no padding; the test sends one complete 16-byte AES block. The Encrypt request passed against pinned Cosmian 5.28.0."
     },
     {
       "case_id": "cosmian-528-decrypt-symmetrickey-aes-ecb-128-default-inapplicable",
@@ -187702,15 +187700,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed Encrypt success and verified the block-aligned AES-ECB result against Cosmian 5.28.0."
       },
       "wire_enum_values": {
         "cryptographic_algorithm": {
@@ -187718,7 +187713,8 @@
           "value": "0x00000003",
           "classification": "standard"
         }
-      }
+      },
+      "notes": "The default ECB mode uses no padding; the test sends one complete 16-byte AES block. The Encrypt request passed against pinned Cosmian 5.28.0."
     },
     {
       "case_id": "cosmian-528-decrypt-symmetrickey-aes-ecb-192-default-inapplicable",
@@ -188126,15 +188122,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed Encrypt success and verified the block-aligned AES-ECB result against Cosmian 5.28.0."
       },
       "wire_enum_values": {
         "cryptographic_algorithm": {
@@ -188142,7 +188135,8 @@
           "value": "0x00000003",
           "classification": "standard"
         }
-      }
+      },
+      "notes": "The default ECB mode uses no padding; the test sends one complete 16-byte AES block. The Encrypt request passed against pinned Cosmian 5.28.0."
     },
     {
       "case_id": "cosmian-528-decrypt-symmetrickey-aes-ecb-256-default-inapplicable",
@@ -222007,7 +222001,10 @@
         "response_received": true,
         "target_request_sent": true,
         "interoperability": false,
-        "reason": "Cosmian returned a typed KMIP rejection after receiving the standards-valid AES/RSA hybrid request; this remains a documentation/source discrepancy observation."
+        "result_status": 1,
+        "result_reason": 5,
+        "result_reason_name": "Operation Not Supported",
+        "reason": "Cosmian returned Operation Failed / Operation Not Supported (Status 1, Reason 5) after receiving the AES-selected RSA-OAEP hybrid request; this remains a documentation/source discrepancy observation."
       },
       "notes": "Standards-valid Cryptographic Parameters selecting a hybrid scheme with an RSA key; vendor docs select AES, source RSA handler accepts only RSA. Record actual rejection as failed interoperability.",
       "wire_enum_values": {
@@ -222143,7 +222140,10 @@
         "response_received": true,
         "target_request_sent": true,
         "interoperability": false,
-        "reason": "Cosmian returned a typed KMIP rejection after receiving the standards-valid AES/RSA hybrid request; this remains a documentation/source discrepancy observation."
+        "result_status": 1,
+        "result_reason": 5,
+        "result_reason_name": "Operation Not Supported",
+        "reason": "Cosmian returned Operation Failed / Operation Not Supported (Status 1, Reason 5) after receiving the AES-selected RSA-OAEP hybrid request; this remains a documentation/source discrepancy observation."
       },
       "notes": "Standards-valid Cryptographic Parameters selecting a hybrid scheme with an RSA key; vendor docs select AES, source RSA handler accepts only RSA. Record actual rejection as failed interoperability.",
       "wire_enum_values": {

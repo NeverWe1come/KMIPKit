@@ -130,15 +130,15 @@ ps --all` returned no services.
 | Test family | Cases | Typed successes | Interoperability successes | Other measured outcomes |
 |---|---:|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 80 | 3 rejected; 2 response-validation failures; 2 malformed responses; 1 setup-blocked; 1 unsupported |
-| Cryptographic | 1,466 | 667 | 647 | 386 rejected; 325 setup-rejected; 88 response-validation failures |
+| Cryptographic | 1,466 | 670 | 650 | 383 rejected; 325 setup-rejected; 88 response-validation failures |
 | Key management | 216 | 12 | 12 | 201 rejected; 3 setup-rejected |
 | Import/Export/Register transfer | 4,640 | 2,722 | 2,668 | 890 rejected; 978 setup-rejected; 50 response-validation failures |
-| RNG | 6 | 0 | 0 | 6 malformed responses |
-| **Total executable rows** | **6,417** | **3,481** | **3,407** | **1,480 rejected; 1,306 setup-rejected; 146 response-validation failures; 10 other findings** |
+| RNG | 6 | 0 | 0 | 6 response-validation failures (missing Operation) |
+| **Total executable rows** | **6,417** | **3,484** | **3,410** | **1,477 rejected; 1,306 setup-rejected; 146 response-validation failures; 4 other findings** |
 
 Twelve normative exclusions were not sent: six invalid RNG Parameters
 combinations and six invalid Certify subject-OID-only CSR combinations. Of the
-3,481 typed responses, 74 source-gap/discrepancy observations remain outside the
+3,484 typed responses, 74 source-gap/discrepancy observations remain outside the
 interoperability count (20 cryptographic and 54 transfer). The 24 Create Key
 Pair source-discrepancy probes returned typed success with both key identifiers
 validated, so they count as observed KMIPKit–Cosmian interoperability; their
@@ -151,7 +151,14 @@ interoperable cases: three AES-ECB fixture corrections and one CoverCrypt
 framing correction passed; two pure-classical ConfigurableKEM cases fail during
 prerequisite Create Key Pair, and one RSA/AES probe is rejected as Operation Not
 Supported. Its ordinary RSA-OAEP payload is not a valid hybrid ciphertext. The
-matrix stores all per-case classifications and safe reason codes. See the
+three corresponding standalone AES-ECB Encrypt cases also pass after the same
+16-byte fixture correction; Encrypt now records 287/300 interoperability
+successes. Six ConfigurableKEM opaque-fixture results and three ML-KEM source-only
+results are typed successes outside the KMIP 2.1 interoperability count. Two RSA/AES
+requests were rejected with Operation Failed / Operation Not Supported (Status 1,
+Reason 5); two pure-classical ConfigurableKEM cases fail at key creation with
+Cryptographic Failure before Encrypt is sent. The matrix stores all per-case
+classifications and safe reason codes. See the
 [Decrypt case re-evaluation](../../../specs/015-cosmian-kms-integration/task-6-report.md#decrypt-case-re-evaluation)
 for evidence and attribution.
 
