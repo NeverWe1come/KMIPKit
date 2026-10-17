@@ -90,7 +90,7 @@ mod tests {
             super::split_decrypted_data(b"\x00KMIPKit CoverCrypt integration payload")
                 .expect("CoverCrypt decrypted data container");
 
-        assert!(metadata.is_empty());
+        assert_eq!(metadata, &[] as &[u8]);
         assert_eq!(plaintext, b"KMIPKit CoverCrypt integration payload");
     }
 
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn decrypted_data_rejects_metadata_length_overflow() {
-        let mut encoded_length = vec![0xff; (usize::BITS as usize + 6) / 7];
+        let mut encoded_length = vec![0xff; (usize::BITS as usize).div_ceil(7)];
         let overflow_marker = 1_u8 << ((usize::BITS - 1) % 7 + 1);
         if let Some(last) = encoded_length.last_mut() {
             *last = overflow_marker;

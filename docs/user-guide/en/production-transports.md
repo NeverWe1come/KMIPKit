@@ -186,9 +186,9 @@ current interoperability results. The reconciled matrix records 3,410
 interoperability successes; the latest complete full-suite run had 9 failing
 test functions. Encrypt records 287/300 interoperable cases after correcting
 three invalid AES-ECB test inputs. Two AES/RSA requests return Operation Not
-Supported, and two pure-classical ConfigurableKEM cases fail at Create Key Pair,
+Supported, and two pure-classical `ConfigurableKEM` cases fail at Create Key Pair,
 so Encrypt is not sent for those cases. Decrypt records 222/234 after correcting
-three AES-ECB fixture lengths and the CoverCrypt result framing. The results include 24 Create Key Pair source-discrepancy probes with successful
+three AES-ECB fixture lengths and the `CoverCrypt` result framing. The results include 24 Create Key Pair source-discrepancy probes with successful
 typed responses and validated key identifiers. Those profiles remain outside KMIP
 2.1 conformance claims. A targeted follow-up measured 15 cipher findings. Failures
 remain individually visible in the matrix and the [detailed Task 6 report](../../../specs/015-cosmian-kms-integration/task-6-report.md#decrypt-case-re-evaluation).
