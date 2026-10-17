@@ -203,6 +203,34 @@ fn cosmian_capability_manifest_is_complete() {
 }
 
 #[test]
+fn reviewed_generation_inventory_matches_covercrypt_create_pair_format() {
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/integration/cosmian/capability-matrix.json"
+    ))
+    .expect("capability manifest must be valid JSON");
+    let rows = resolve_capability_sources(&manifest);
+    let covercrypt_pair = rows
+        .iter()
+        .find(|row| {
+            row["case_id"]
+                == "cosmian-528-create-key-pair-privatekey-covercrypt-0x88800004-disposable-master-access-structure"
+        })
+        .expect("CoverCrypt Create Key Pair case");
+    assert_eq!(covercrypt_pair["key_format"], "CoverCryptSecretKey");
+
+    let mut issues = Vec::new();
+    review_generation_cases(&rows, &mut issues);
+    assert!(
+        !issues.iter().any(|issue| {
+            issue.starts_with(
+                "finite-case: Create Key Pair/PrivateKey/Some(\"CoverCrypt\")/None/None",
+            )
+        }),
+        "reviewed inventory must match the CoverCrypt Create Key Pair vendor key format"
+    );
+}
+
+#[test]
 fn configurable_kem_nested_pq_values_remain_discrepancy_probes() {
     let manifest: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/integration/cosmian/capability-matrix.json"
