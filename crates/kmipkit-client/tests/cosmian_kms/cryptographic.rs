@@ -688,6 +688,34 @@ fn malformed_target_response_is_not_a_target_rejection_or_interoperability_succe
 }
 
 #[test]
+fn crypto_observation_reconciles_expected_and_observed_outcomes() {
+    let finding = cryptographic_observation_line(
+        "source-only-case",
+        "source_documentation_discrepancy",
+        "typed_success",
+        "true",
+    );
+    assert!(finding.contains("classification=expected_finding_probe"), "{finding}");
+    assert!(finding.contains("observed=typed_success"), "{finding}");
+    assert!(finding.contains("interoperability=false"), "{finding}");
+
+    for observed in ["target_rejected", "response_validation_failed", "setup_rejected"] {
+        let line = cryptographic_observation_line("standard-case", "typed_success", observed, "true");
+        assert!(line.contains(&format!("classification={observed}")), "{line}");
+        assert!(line.contains("interoperability=false"), "{line}");
+    }
+
+    let success = cryptographic_observation_line(
+        "standard-case",
+        "typed_success",
+        "typed_success",
+        "true",
+    );
+    assert!(success.contains("classification=typed_success"), "{success}");
+    assert!(success.contains("interoperability=true"), "{success}");
+}
+
+#[test]
 fn sha224_known_answer_vectors_cover_signature_prehash() {
     assert_eq!(
         known_answer_digest("SHA-224", false).expect("SHA-224 abc digest"),
@@ -1414,6 +1442,18 @@ fn classify_case_error(row: &JsonValue, message: &str) -> &'static str {
     } else {
         "uncovered"
     }
+}
+
+fn cryptographic_observation_line(
+    case_id: &str,
+    expected_outcome: &str,
+    observed: &str,
+    request_sent: &str,
+) -> String {
+    let interoperability = observed == "typed_success" && request_sent == "true";
+    format!(
+        "case_id={case_id} classification={observed} expected_outcome={expected_outcome} observed={observed} request_sent={request_sent} interoperability={interoperability}"
+    )
 }
 
 fn target_rows() -> Result<Vec<JsonValue>, Box<dyn Error>> {
