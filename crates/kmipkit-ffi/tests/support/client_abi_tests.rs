@@ -357,6 +357,46 @@ fn failed_check_response(unique_id: &[u8]) -> Vec<u8> {
     )
 }
 
+fn successful_check_response() -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let payload = ttlv_structure(
+        0x0042_007c,
+        [
+            ttlv_item(0x0042_0094, 0x07, b"checked-object"),
+            ttlv_item(0x0042_0096, 0x03, &3_i64.to_be_bytes()),
+            ttlv_item(0x0042_002c, 0x02, &2_i32.to_be_bytes()),
+            ttlv_item(0x0042_0049, 0x0a, &60_u32.to_be_bytes()),
+            ttlv_item(0x0054_1234, 0x02, &(-7_i32).to_be_bytes()),
+        ],
+    );
+    ttlv_structure(
+        0x0042_007b,
+        [
+            header,
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 9),
+                    ttlv_item(0x0042_0093, 0x08, b"check-success"),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    payload,
+                ],
+            ),
+        ],
+    )
+}
+
 fn failed_cryptographic_item(
     request: ClientRequest,
     operation: u32,
@@ -973,6 +1013,108 @@ fn ffi_failed_check_keeps_policy_fields_and_complete_ttlv_available_to_c() {
     let result =
         unsafe { kmipkit_client_abi_c_consumer_validate_failed_check_response(response_item) };
     assert_eq!(result, 1);
+}
+
+#[test]
+fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
+    let response_bytes = successful_check_response();
+    let decoded = kmipkit_ttlv::codec::decode(&response_bytes)
+        .expect("the successful Check response fixture is valid TTLV");
+    let response_tree = decoded
+        .with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(structure) => Some(
+                structure
+                    .try_clone()
+                    .expect("the Check fixture is within the model depth limit"),
+            ),
+            _ => None,
+        })
+        .expect("the Check fixture is a Structure");
+    let validated = kmipkit_protocol::ResponseMessage::try_from_ttlv(response_tree)
+        .unwrap_or_else(|error| panic!("Check fixture fails KMIP validation: {error:?}"));
+    let response_item = validated
+        .batch_items()
+        .next()
+        .expect("the Check fixture contains one batch item");
+    kmipkit_protocol::CheckResponse::try_from_response_item(response_item)
+        .unwrap_or_else(|error| panic!("Check fixture fails typed mapping: {error:?}"));
+
+    let response = execute_single_abi_response(
+        ClientRequest::Check(
+            CheckRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("checked-object".to_owned()))
+                .with_usage_limits_count(3)
+                .with_cryptographic_usage_mask(2)
+                .with_lease_time(60),
+        ),
+        b"check-success",
+        response_bytes,
+    )
+    .expect("the successful Check response maps its identifier and policy fields");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+
+    let mut present = 9;
+    let mut identifier_present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut count_present = 9;
+    let mut count = -1;
+    let mut mask_present = 9;
+    let mut mask = -1;
+    let mut lease_present = 9;
+    let mut lease = 0;
+    assert_eq!(
+        kmipkit_client_batch_item_response_check(
+            item,
+            &raw mut present,
+            &raw mut identifier_present,
+            &raw mut identifier,
+            &raw mut count_present,
+            &raw mut count,
+            &raw mut mask_present,
+            &raw mut mask,
+            &raw mut lease_present,
+            &raw mut lease,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        (
+            present,
+            identifier_present,
+            count_present,
+            count,
+            mask_present,
+            mask,
+            lease_present,
+            lease
+        ),
+        (1, 1, 1, 3, 1, 2, 1, 60)
+    );
+    assert_response_identifier(&identifier, b"checked-object");
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_check_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
 }
 
 #[test]
