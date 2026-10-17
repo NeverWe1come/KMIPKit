@@ -12,6 +12,576 @@ fn assert_operation(item: *mut kmipkit_client_batch_item_t, expected: fn(&Client
     assert!(expected(item.request()));
 }
 
+fn derive_parameter_item(raw_tag: u32, value: Value) -> Item {
+    Item::new(
+        RawTag::new(raw_tag)
+            .expect("test tag is a valid raw KMIP tag")
+            .try_checked()
+            .expect("test tag is allocated"),
+        value,
+    )
+    .expect("test value forms a valid TTLV item")
+}
+
+fn derive_parameter_structure(items: impl IntoIterator<Item = Item>) -> Structure {
+    let mut structure = Structure::new();
+    for item in items {
+        structure
+            .try_push(item)
+            .expect("test structure stays within model limits");
+    }
+    structure
+}
+
+fn derive_parameter_handle(items: impl IntoIterator<Item = Item>) -> *mut kmipkit_ttlv_structure_t {
+    let mut structure = Structure::new();
+    for item in items {
+        structure
+            .try_push(item)
+            .expect("test structure stays within model limits");
+    }
+    make_handle(Kind::Structure, HandleValue::Structure(structure))
+}
+
+#[test]
+fn derive_key_parameter_parser_preserves_typed_fields_repeated_data_and_extensions() {
+    let structure = derive_parameter_handle([
+        derive_parameter_item(0x0042_002b, Value::structure(Structure::new())),
+        derive_parameter_item(0x0042_003a, Value::byte_string(b"iv".to_vec())),
+        derive_parameter_item(0x0042_0030, Value::byte_string(b"first".to_vec())),
+        derive_parameter_item(0x0042_0030, Value::byte_string(b"second".to_vec())),
+        derive_parameter_item(
+            0x0042_0084,
+            Value::byte_string(b"salt-secret-sentinel".to_vec()),
+        ),
+        derive_parameter_item(0x0042_003c, Value::integer(37)),
+        derive_parameter_item(0x0054_0001, Value::text_string("vendor".to_owned())),
+    ]);
+
+    let parameters = derive_key_parameters_from_handle(structure)
+        .expect("valid derivation parameters retain known and extension fields");
+    let formatted = format!("{parameters:?}");
+    assert!(formatted.contains("has_cryptographic_parameters: true"));
+    assert!(formatted.contains("has_initialization_vector: true"));
+    assert!(formatted.contains("derivation_data_count: 2"));
+    assert!(formatted.contains("has_salt: true"));
+    assert!(formatted.contains("has_iteration_count: true"));
+    assert!(formatted.contains("extension_count: 1"));
+    assert!(!formatted.contains("first"));
+    assert!(!formatted.contains("second"));
+    assert!(!formatted.contains("salt-secret-sentinel"));
+    release(structure, Kind::Structure);
+}
+
+#[test]
+fn derive_key_constructor_preserves_exact_ttlv_parameter_values_and_extensions() {
+    let structure = derive_parameter_handle([
+        derive_parameter_item(
+            0x0042_002b,
+            Value::structure(derive_parameter_structure([derive_parameter_item(
+                0x0042_0028,
+                Value::enumeration(0xfeed_beef),
+            )])),
+        ),
+        derive_parameter_item(0x0042_003a, Value::byte_string(b"iv-secret".to_vec())),
+        derive_parameter_item(0x0042_0030, Value::byte_string(b"first-secret".to_vec())),
+        derive_parameter_item(0x0042_0030, Value::byte_string(b"second-secret".to_vec())),
+        derive_parameter_item(0x0042_0084, Value::byte_string(b"salt-secret".to_vec())),
+        derive_parameter_item(0x0042_003c, Value::integer(37)),
+        derive_parameter_item(0x0054_0001, Value::text_string("vendor-extension".to_owned())),
+    ]);
+    let attributes = derive_parameter_handle([derive_parameter_item(
+        0x0042_002a,
+        Value::integer(128),
+    )]);
+    let identifier_bytes = b"source-key";
+    let identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("test ABI record size fits u32"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: identifier_bytes.as_ptr(),
+        text_length: u64::try_from(identifier_bytes.len())
+            .expect("identifier byte length fits u64"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+
+    let request = derive_key_request_from_handles(
+        2,
+        &raw const identifier,
+        1,
+        0xfeed_beef,
+        structure,
+        attributes,
+    )
+    .expect("the FFI mapper preserves valid Derive Key inputs");
+    let payload = request
+        .into_ttlv_payload()
+        .expect("the mapped request serializes as a valid Derive Key payload");
+    let fields = payload.view().children();
+    assert_eq!(
+        fields.iter().map(|item| item.tag().raw()).collect::<Vec<_>>(),
+        [0x0042_0057, 0x0042_0094, 0x0042_0031, 0x0042_0032, 0x0042_0125]
+    );
+    assert!(fields[1].with_value(
+        |value| matches!(value, ValueView::TextString(value) if value.as_bytes() == identifier_bytes)
+    ));
+
+    let parameters_preserved = fields[3].with_value(|value| {
+        let ValueView::Structure(parameters) = value else {
+            return false;
+        };
+        let items = parameters.children();
+        if items.iter().map(|item| item.tag().raw()).collect::<Vec<_>>()
+            != [
+                0x0042_002b,
+                0x0042_003a,
+                0x0042_0030,
+                0x0042_0030,
+                0x0042_0084,
+                0x0042_003c,
+                0x0054_0001,
+            ]
+        {
+            return false;
+        }
+        let cryptographic_parameters_preserved = items[0].with_value(|value| {
+            let ValueView::Structure(parameters) = value else {
+                return false;
+            };
+            let children = parameters.children();
+            children.len() == 1
+                && children[0].tag().raw() == 0x0042_0028
+                && children[0].with_value(
+                    |value| matches!(value, ValueView::Enumeration(value) if *value == 0xfeed_beef),
+                )
+        });
+        cryptographic_parameters_preserved
+            && items[1].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"iv-secret"),
+            )
+            && items[2].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"first-secret"),
+            )
+            && items[3].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"second-secret"),
+            )
+            && items[4].with_value(
+                |value| matches!(value, ValueView::ByteString(value) if value == b"salt-secret"),
+            )
+            && items[5].with_value(|value| matches!(value, ValueView::Integer(37)))
+            && items[6].with_value(
+                |value| matches!(value, ValueView::TextString(value) if value == "vendor-extension"),
+            )
+    });
+    assert!(parameters_preserved, "typed parameter values and extension survive FFI mapping");
+
+    release(attributes, Kind::Structure);
+    release(structure, Kind::Structure);
+}
+
+#[test]
+fn derive_key_parameter_parser_rejects_invalid_handles_types_and_duplicate_singletons() {
+    assert!(matches!(
+        derive_key_parameters_from_handle(ptr::null_mut()),
+        Err(ERROR_INVALID_INPUT)
+    ));
+
+    let wrong_kind: *mut kmipkit_ttlv_structure_t =
+        make_handle(Kind::Value, HandleValue::Value(Value::integer(1)));
+    assert!(matches!(
+        derive_key_parameters_from_handle(wrong_kind),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(wrong_kind, Kind::Value);
+
+    let mismatched_payload: *mut kmipkit_ttlv_structure_t =
+        make_handle(Kind::Structure, HandleValue::Value(Value::integer(1)));
+    assert!(matches!(
+        derive_key_parameters_from_handle(mismatched_payload),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(mismatched_payload, Kind::Structure);
+
+    let wrong_cryptographic_parameters =
+        derive_parameter_handle([derive_parameter_item(0x0042_002b, Value::integer(1))]);
+    assert!(matches!(
+        derive_key_parameters_from_handle(wrong_cryptographic_parameters),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(wrong_cryptographic_parameters, Kind::Structure);
+
+    let wrong_initialization_vector =
+        derive_parameter_handle([derive_parameter_item(0x0042_003a, Value::integer(4))]);
+    assert!(matches!(
+        derive_key_parameters_from_handle(wrong_initialization_vector),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(wrong_initialization_vector, Kind::Structure);
+
+    let wrong_derivation_data =
+        derive_parameter_handle([derive_parameter_item(0x0042_0030, Value::integer(5))]);
+    assert!(matches!(
+        derive_key_parameters_from_handle(wrong_derivation_data),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(wrong_derivation_data, Kind::Structure);
+
+    let wrong_salt =
+        derive_parameter_handle([derive_parameter_item(0x0042_0084, Value::integer(6))]);
+    assert!(matches!(
+        derive_key_parameters_from_handle(wrong_salt),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(wrong_salt, Kind::Structure);
+
+    let wrong_iteration_count = derive_parameter_handle([derive_parameter_item(
+        0x0042_003c,
+        Value::byte_string(vec![7]),
+    )]);
+    assert!(matches!(
+        derive_key_parameters_from_handle(wrong_iteration_count),
+        Err(ERROR_INVALID_INPUT)
+    ));
+    release(wrong_iteration_count, Kind::Structure);
+
+    let singleton_pairs = [
+        (
+            0x0042_002b,
+            Value::structure(Structure::new()),
+            Value::structure(Structure::new()),
+        ),
+        (
+            0x0042_003a,
+            Value::byte_string(vec![1]),
+            Value::byte_string(vec![2]),
+        ),
+        (
+            0x0042_0084,
+            Value::byte_string(vec![3]),
+            Value::byte_string(vec![4]),
+        ),
+        (0x0042_003c, Value::integer(1), Value::integer(2)),
+    ];
+    for (tag, first, second) in singleton_pairs {
+        let structure = derive_parameter_handle([
+            derive_parameter_item(tag, first),
+            derive_parameter_item(tag, second),
+        ]);
+        assert!(matches!(
+            derive_key_parameters_from_handle(structure),
+            Err(ERROR_INVALID_INPUT)
+        ));
+        release(structure, Kind::Structure);
+    }
+}
+
+#[test]
+fn derive_key_constructor_accepts_mixed_identifier_kinds_and_redacts_text() {
+    let text_identifier = b"derive-source-secret";
+    let struct_size = u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+        .expect("test ABI record size fits u32");
+    let identifiers = [
+        kmipkit_unique_identifier_v1_t {
+            struct_size,
+            abi_version: 1,
+            kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            reserved: 0,
+            text_data: text_identifier.as_ptr(),
+            text_length: u64::try_from(text_identifier.len()).expect("identifier length fits u64"),
+            enumeration_value: 0,
+            integer_value: 0,
+        },
+        kmipkit_unique_identifier_v1_t {
+            struct_size,
+            abi_version: 1,
+            kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
+            reserved: 0,
+            text_data: ptr::null(),
+            text_length: 0,
+            enumeration_value: 0xfedc_ba98,
+            integer_value: 0,
+        },
+        kmipkit_unique_identifier_v1_t {
+            struct_size,
+            abi_version: 1,
+            kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER,
+            reserved: 0,
+            text_data: ptr::null(),
+            text_length: 0,
+            enumeration_value: 0,
+            integer_value: -17,
+        },
+    ];
+    let parameters = derive_parameter_handle([]);
+    let attributes = derive_parameter_handle([]);
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_derive_key(
+            0xfedc_ba98,
+            identifiers.as_ptr(),
+            u64::try_from(identifiers.len()).expect("identifier count fits u64"),
+            0x8000_0001,
+            parameters,
+            attributes,
+            &raw mut item,
+        )
+    );
+    let handle = reference_handle(item, Kind::BatchItem).expect("Derive Key item is live");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("Derive Key handle contains a batch item");
+    };
+    let ClientRequest::DeriveKey(request) = batch_item.request() else {
+        panic!("batch item contains the requested operation");
+    };
+    let formatted = format!("{request:?}");
+    assert!(formatted.contains("object_type: 4275878552"));
+    assert!(formatted.contains("unique_identifier_count: 3"));
+    assert!(formatted.contains("derivation_method: 2147483649"));
+    assert!(!formatted.contains("derive-source-secret"));
+
+    release(item, Kind::BatchItem);
+    release(attributes, Kind::Structure);
+    release(parameters, Kind::Structure);
+}
+
+#[test]
+fn derive_key_constructor_rejects_null_required_parameter_and_attribute_handles() {
+    let struct_size = u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+        .expect("test ABI record size fits u32");
+    let identifier = kmipkit_unique_identifier_v1_t {
+        struct_size,
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: -17,
+    };
+    let parameters = derive_parameter_handle([]);
+    let attributes = derive_parameter_handle([]);
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            &raw const identifier,
+            1,
+            1,
+            ptr::null_mut(),
+            attributes,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            &raw const identifier,
+            1,
+            1,
+            parameters,
+            ptr::null_mut(),
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    release(attributes, Kind::Structure);
+    release(parameters, Kind::Structure);
+}
+
+#[test]
+fn derive_key_constructor_rejects_invalid_counts_identifiers_and_required_handles() {
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            ptr::null(),
+            0,
+            1,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    assert_eq!(
+        ERROR_RESOURCE_LIMIT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            ptr::null(),
+            MAX_DERIVE_KEY_SOURCE_IDENTIFIERS + 1,
+            1,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    let parameters = derive_parameter_handle([]);
+    let attributes = derive_parameter_handle([]);
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            ptr::null(),
+            1,
+            1,
+            parameters,
+            attributes,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    let invalid_identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: 0,
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: 1,
+    };
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            &raw const invalid_identifier,
+            1,
+            1,
+            parameters,
+            attributes,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    let oversized_identifier = vec![b'x'; usize::try_from(MAX_FFI_INPUT_BYTES).unwrap() + 1];
+    let oversized = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("test ABI record size fits u32"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: oversized_identifier.as_ptr(),
+        text_length: u64::try_from(oversized_identifier.len()).expect("test input length fits u64"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    assert_eq!(
+        ERROR_RESOURCE_LIMIT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            &raw const oversized,
+            1,
+            1,
+            parameters,
+            attributes,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    release(attributes, Kind::Structure);
+    release(parameters, Kind::Structure);
+}
+
+#[test]
+fn derive_key_constructor_rejects_aggregate_text_limit_and_malformed_parameter_handles() {
+    let struct_size = u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+        .expect("test ABI record size fits u32");
+    let text = vec![b'x'; 9 * 1024 * 1024];
+    let identifiers =
+        [text.as_slice(), text.as_slice()].map(|bytes| kmipkit_unique_identifier_v1_t {
+            struct_size,
+            abi_version: 1,
+            kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            reserved: 0,
+            text_data: bytes.as_ptr(),
+            text_length: u64::try_from(bytes.len()).expect("identifier length fits u64"),
+            enumeration_value: 0,
+            integer_value: 0,
+        });
+    let parameters = derive_parameter_handle([]);
+    let attributes = derive_parameter_handle([]);
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        ERROR_RESOURCE_LIMIT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            identifiers.as_ptr(),
+            u64::try_from(identifiers.len()).expect("identifier count fits u64"),
+            1,
+            parameters,
+            attributes,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    let malformed_parameters: *mut kmipkit_ttlv_structure_t =
+        make_handle(Kind::Structure, HandleValue::Value(Value::integer(1)));
+    let valid_identifier = kmipkit_unique_identifier_v1_t {
+        struct_size,
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: 7,
+    };
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            &raw const valid_identifier,
+            1,
+            1,
+            malformed_parameters,
+            attributes,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    let malformed_attributes: *mut kmipkit_ttlv_structure_t =
+        make_handle(Kind::Structure, HandleValue::Value(Value::integer(1)));
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_derive_key(
+            4,
+            &raw const valid_identifier,
+            1,
+            1,
+            parameters,
+            malformed_attributes,
+            &raw mut item,
+        )
+    );
+    assert!(item.is_null());
+
+    release(malformed_attributes, Kind::Structure);
+    release(malformed_parameters, Kind::Structure);
+    release(attributes, Kind::Structure);
+    release(parameters, Kind::Structure);
+}
+
 #[test]
 fn cryptographic_batch_item_constructors_preserve_operation_kind_and_redact_inputs() {
     let parameters = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
