@@ -3048,3 +3048,34 @@ line classifier and same-line rationale markers differ from that run. It is
 local evidence for the gate calculation, not a replacement for current-head
 CI. Run `39039966169` verified the correction on the pushed PR head before
 T045 is complete.
+
+### T047 local implementation and parity verification — 2026-10-17
+
+The Export API mapping reuses the approved Rust model and maps KMIP 2.1
+§6.1.18, Tables 217–219 to C, Java/JNI, and Python/CFFI. It preserves raw
+unknown selector/Object Type values, the original ordered Any Object item,
+required success Attributes, and a typed KMIP Failure with its complete
+ordered response TTLV. The negative Java test rejects Success without
+Table 218 Attributes. No Rust Export model change was needed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `989582bd` | Initial focused C ABI/compiled-consumer, Java/JNI, Python, and manifest parity tests | Expected failures: the C Export declarations, Java response facade, Python response mapping, and generated manifest inventory were absent. |
+| Red | `ce749937` | Staged Maven `ExportResponseMappingTest` | Expected failure: successful Export without the required Attributes was accepted. |
+| Red | `74540320` | `python -B -m unittest tools.api_manifest.tests.test_export_parity_manifest` | Expected failures: missing generated C symbols, Java member-kind classifications, and exact Python dataclass exclusions. |
+| Green | `e7aa4161` | `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`; focused FFI Export response test; staged `mvn test`; focused Python test; 48 manifest/export tests; generator and export audits | PASS: C consumer 5/5 including typed batch over mTLS; FFI success/Failure response test 1/1; Java 241 tests with 0 failures/errors and 3 skipped; Python 4/4; manifest/export tests 48/48; generator verified 12 outputs; Rust export audit reports `complete=true`, `matchesManifest=true`; C audit 304/304. |
+| Refactor | `7c354272` | Staged Maven `-Dtest=ExportResponseMappingTest,ClientBatchItemResultValidationTest test`; `git diff --check` | PASS: 7 Java tests; repeated Export JNI handle cleanup now uses one helper. |
+
+The complete binding-export audit exits nonzero on six Java and one Python
+baseline findings: four Delegated Login/Derive Key JNI bridge declarations,
+their two response `toString` methods, and the Python Delegated Login
+`ticket_value` kind. Running the same audit at base `368dcc08` produced those
+same findings and counts. No older API records were changed for T047; the
+Export Java `toString` exclusion was added so all T047-specific declarations
+are accounted for. The standalone C audit passes 304/304.
+
+The pinned generator was run with `python -B tools/api_manifest/generate.py
+--write` and `--check`; `cargo fmt --all --check` and `git diff --check` pass.
+The feature remains unchecked pending the required current-head cross-platform
+CI run and selected coverage gate. No OASIS test-case, full conformance,
+interoperability, profile-support, or certification claim is made.
