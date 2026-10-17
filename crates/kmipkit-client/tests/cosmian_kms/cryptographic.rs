@@ -880,6 +880,29 @@ fn crypto_observation_reconciles_expected_and_observed_outcomes() {
 }
 
 #[test]
+fn successful_create_key_pair_source_probes_count_as_interoperability() {
+    let rows = super::common::manifest_rows(FAMILY)
+        .unwrap_or_else(|error| panic!("{error}"))
+        .into_iter()
+        .filter(|row| {
+            row["operation"] == "Create Key Pair"
+                && row["expected_outcome"] == "source_documentation_discrepancy"
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(rows.len(), 24);
+    for row in rows {
+        let id = case_id(&row).unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(
+            row["observed_result"]["classification"],
+            "typed_success",
+            "{id}"
+        );
+        assert_eq!(row["observed_result"]["interoperability"], true, "{id}");
+    }
+}
+
+#[test]
 fn sha224_known_answer_vectors_cover_signature_prehash() {
     assert_eq!(
         known_answer_digest("SHA-224", false).expect("SHA-224 abc digest"),
