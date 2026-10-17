@@ -1151,6 +1151,30 @@ _RUST_LIFETIME_START = re.compile(r"'[A-Za-z_][A-Za-z0-9_]*")
 _CPP_RAW_STRING_START = re.compile(r'(?:u8|u|U|L)?R"([^ ()\\\t\r\n]{0,16})\(')
 
 
+def _is_cpp_digit_separator(text: str, index: int) -> bool:
+    """Distinguish C++ numeric separators from prefixed character literals."""
+    if index == 0 or index + 1 >= len(text):
+        return False
+    digit_characters = "0123456789abcdefABCDEF"
+    if text[index - 1] not in digit_characters or text[index + 1] not in digit_characters:
+        return False
+
+    token_start = index - 1
+    while token_start > 0:
+        previous = text[token_start - 1]
+        if not (previous.isascii() and (previous.isalnum() or previous in "_.")):
+            break
+        token_start -= 1
+    numeric_prefix = text[token_start:index]
+    return bool(numeric_prefix) and (
+        numeric_prefix[0].isascii() and numeric_prefix[0].isdigit()
+        or numeric_prefix.startswith(".")
+        and len(numeric_prefix) > 1
+        and numeric_prefix[1].isascii()
+        and numeric_prefix[1].isdigit()
+    )
+
+
 @lru_cache(maxsize=32)
 def _source_line_comments(source: str, source_lines: tuple[str, ...]) -> tuple[tuple[int, int, str], ...]:
     """Return actual line-comment spans while skipping literals and block comments."""
@@ -1285,6 +1309,11 @@ def _source_line_comments(source: str, source_lines: tuple[str, ...]) -> tuple[t
                 index += 1
                 column += 1
                 continue
+
+        if source.endswith(".cpp") and text[index] == "'" and _is_cpp_digit_separator(text, index):
+            index += 1
+            column += 1
+            continue
 
         if text[index] in "\"'":
             quote = text[index]
