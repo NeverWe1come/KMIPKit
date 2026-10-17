@@ -2,8 +2,10 @@ package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.junit.jupiter.api.Test;
@@ -61,5 +63,21 @@ final class ExportResponseMappingTest {
             assertTrue(response.anyObject().isEmpty());
             assertTrue(response.responseTtlv().handle() > 0);
         }
+    }
+
+    @Test
+    void successfulExportResponseRequiresTable218Attributes() {
+        NativeExtensionRegistry.ensureLoaded();
+        long anyObject = NativeExtensionRegistry.ttlvStructureCreate();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        Object[] identifier = {new long[] {1, 1, 0, 0}, "export-secret-id".getBytes()};
+
+        assertThrows(InvalidInputException.class, () -> {
+            var response = ClientBatchItemResult.parseExportResponse(new Object[] {
+                    new long[] {1, 1, 0xf123_4567L}, identifier,
+                    new long[] {0, anyObject, responseTtlv}
+            });
+            response.ifPresent(ClientBatchItemResult.ExportResponse::close);
+        });
     }
 }
