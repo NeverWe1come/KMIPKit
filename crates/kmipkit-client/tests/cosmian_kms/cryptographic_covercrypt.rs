@@ -18,6 +18,10 @@ pub(super) fn encode_data_to_encrypt(
     Ok(SecretBytes::new(encoded))
 }
 
+pub(super) fn split_decrypted_data(data: &[u8]) -> Result<(&[u8], &[u8]), &'static str> {
+    Ok((&[], data))
+}
+
 fn append_leb128_length(output: &mut Vec<u8>, mut length: usize) -> Result<(), &'static str> {
     loop {
         let mut byte = u8::try_from(length & 0x7f).map_err(|_| "LEB128 chunk is out of range")?;
@@ -34,6 +38,16 @@ fn append_leb128_length(output: &mut Vec<u8>, mut length: usize) -> Result<(), &
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn decrypted_data_splits_metadata_prefix_from_plaintext() {
+        let (metadata, plaintext) =
+            super::split_decrypted_data(b"\x04metaKMIPKit CoverCrypt integration payload")
+                .expect("CoverCrypt decrypted data container");
+
+        assert_eq!(metadata, b"meta");
+        assert_eq!(plaintext, b"KMIPKit CoverCrypt integration payload");
+    }
+
     #[test]
     fn data_to_encrypt_uses_vendor_leb128_policy_metadata_and_plaintext_layout() {
         let encoded = super::encode_data_to_encrypt("policy", b"meta", b"cleartext")
