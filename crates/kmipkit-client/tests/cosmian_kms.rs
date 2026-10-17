@@ -102,6 +102,19 @@ const COSMIAN_SUPPORTED_PATHS: [&str; 35] = [
 ];
 
 #[test]
+#[should_panic(expected = "executable case cannot remain not_run")]
+fn executable_matrix_case_must_have_a_measured_outcome() {
+    let row = serde_json::json!({
+        "case_id": "cosmian-528-regression-not-run",
+        "expected_outcome": "typed_success",
+        "execution_status": "planned_for_tasks_4_6",
+        "observed_result": {"classification": "not_run"}
+    });
+
+    validate_capability_execution_status(&row);
+}
+
+#[test]
 // Inventory contract: KMIPKIT-0015-FR-011/016, not a server conformance test.
 // Normative operation clauses: OASIS KMIP v2.1 §6.1; individual exact
 // operation/data sections and tables are mandatory in every manifest row.
