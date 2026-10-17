@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, extensions
+from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
 
@@ -69,6 +69,126 @@ def test_get_usage_allocation_response_maps_identifier_and_redacts_repr(
     assert isinstance(result, client.GetUsageAllocationResponse)
     assert result.unique_identifier == extensions.UniqueIdentifier.text_string("allocation-object")
     assert "allocation-object" not in repr(result)
+
+
+def test_get_usage_allocation_exposes_owned_complete_response_ttlv(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    native_copy = _usage_allocation_response_ttlv()
+    native_handle, owner = native_copy._take()
+    assert owner is None
+    storage_refs: list[object] = []
+    released_items: list[object] = []
+
+    def response(
+        _item: object, present: object, identifier: object, response_ttlv: object
+    ) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        encoded = b"allocation-object"
+        storage = ffi.new("uint8_t[]", encoded)
+        storage_refs.append(storage)
+        identifier.text_data = storage  # type: ignore[attr-defined]
+        identifier.text_length = len(encoded)  # type: ignore[attr-defined]
+        response_ttlv[0] = native_handle  # type: ignore[index]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_item_response_get_usage_allocation=response,
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv=response,
+        kmipkit_client_batch_item_response_release=lambda item: released_items.append(item),
+    )
+    monkeypatch.setattr(client, "lib", fake)
+    item_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 2)
+    item = client._wrap_owned_handle(client._ClientBatchItemResponse, item_pointer)
+
+    result = client._get_usage_allocation_response(item)
+    item.close()
+
+    assert result.unique_identifier == extensions.UniqueIdentifier.text_string("allocation-object")
+    assert released_items == [item_pointer]
+    assert result.response_ttlv.closed is False
+    with ttlv.ttlv_structure_view(result.response_ttlv) as view:
+        assert ttlv.ttlv_structure_view_item_count(view) == 4
+        assert [_tag_at(view, index) for index in range(4)] == [
+            0x0042_005C,
+            0x0042_0093,
+            0x0042_007F,
+            0x0042_007C,
+        ]
+        payload_item = ttlv.ttlv_structure_view_item_at(view, 3)
+        payload_value = ttlv.ttlv_item_view_value(payload_item)
+        payload = ttlv.ttlv_value_view_structure(payload_value)
+        try:
+            assert [_tag_at(payload, index) for index in range(2)] == [
+                0x0042_0094,
+                0x0054_0001,
+            ]
+        finally:
+            payload.close()
+            payload_value.close()
+            payload_item.close()
+
+    result.close()
+    assert result.response_ttlv.closed
+
+
+def _usage_allocation_response_ttlv() -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+
+    def item(tag_value: int, value: ttlv.Value) -> ttlv.TtlvItem:
+        raw_tag = ttlv.raw_tag_from_raw(tag_value)
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+            raw_tag.close()
+
+    def enumeration_item(tag_value: int, value: int) -> ttlv.TtlvItem:
+        return item(tag_value, ttlv.ttlv_value_enumeration(value))
+
+    def bytes_item(tag_value: int, value: bytes) -> ttlv.TtlvItem:
+        return item(tag_value, ttlv.ttlv_value_byte_string(value, limits))
+
+    def text_item(tag_value: int, value: str) -> ttlv.TtlvItem:
+        return item(tag_value, ttlv.ttlv_value_text_string(value.encode(), limits))
+
+    def structure_item(tag_value: int, fields: tuple[ttlv.TtlvItem, ...]) -> ttlv.TtlvItem:
+        structure = ttlv.ttlv_structure_create()
+        for field in fields:
+            structure = ttlv.ttlv_structure_with_item(structure, field, limits)
+        return item(tag_value, ttlv.ttlv_value_structure(structure, limits))
+
+    try:
+        payload = structure_item(
+            0x0042_007C,
+            (
+                text_item(0x0042_0094, "allocation-object"),
+                bytes_item(0x0054_0001, b"\xde\xad\x00\xff"),
+            ),
+        )
+        response = ttlv.ttlv_structure_create()
+        for field in (
+            enumeration_item(0x0042_005C, 0x11),
+            bytes_item(0x0042_0093, b"item-0"),
+            enumeration_item(0x0042_007F, 0),
+            payload,
+        ):
+            response = ttlv.ttlv_structure_with_item(response, field, limits)
+        return response
+    finally:
+        limits.close()
+
+
+def _tag_at(view: ttlv.TtlvStructureView, index: int) -> int:
+    item = ttlv.ttlv_structure_view_item_at(view, index)
+    tag = ttlv.ttlv_item_view_tag(item)
+    try:
+        return ttlv.tag_value(tag)
+    finally:
+        tag.close()
+        item.close()
 
 
 @pytest.mark.parametrize(("status", "expects_response"), ((0, True), (1, False)))

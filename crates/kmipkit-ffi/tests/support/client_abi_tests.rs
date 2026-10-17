@@ -1615,6 +1615,34 @@ fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_fail
     kmipkit_client_batch_item_response_release(failed_item);
 }
 
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
+}
+
+#[test]
+fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
+    let unknown_value = [0xde, 0xad, 0x00, 0xff];
+    let item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"usage-allocation",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"allocation-object"),
+            ttlv_item(0x0054_0001, 0x08, &unknown_value),
+        ],
+    );
+
+    // SAFETY: the C consumer receives the live response-item handle and takes ownership of it.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(item)
+    };
+
+    assert_eq!(result, 1, "the copied generic response must outlive its source item");
+}
+
 #[test]
 fn ffi_create_split_key_getters_copy_nonempty_identifiers_and_reject_out_of_range_index() {
     let response = create_split_key_success_response()
