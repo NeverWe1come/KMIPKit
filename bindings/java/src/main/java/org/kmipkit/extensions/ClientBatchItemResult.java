@@ -905,14 +905,16 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return Optional.of(new ExportResponse(OptionalLong.of(fields[2]), Optional.of(identifier),
                     attributes, anyObject, responseTtlv));
         } catch (RuntimeException exception) {
-            if (attributes != null) attributes.close();
-            else if (attributesHandle > 0) TtlvStructure.fromNative(attributesHandle, null).close();
-            if (anyObject != null) anyObject.close();
-            else if (anyObjectHandle > 0) TtlvStructure.fromNative(anyObjectHandle, null).close();
-            if (responseTtlv != null) responseTtlv.close();
-            else if (responseTtlvHandle > 0) TtlvStructure.fromNative(responseTtlvHandle, null).close();
+            closeExportHandle(attributes, attributesHandle);
+            closeExportHandle(anyObject, anyObjectHandle);
+            closeExportHandle(responseTtlv, responseTtlvHandle);
             throw exception;
         }
+    }
+
+    private static void closeExportHandle(@Nullable TtlvStructure owned, long handle) {
+        if (owned != null) owned.close();
+        else if (handle > 0) TtlvStructure.fromNative(handle, null).close();
     }
 
     static DeriveKeyResponse parseDeriveKeyResponse(Object[] values) {
