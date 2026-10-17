@@ -238805,7 +238805,7 @@
     {
       "declarationId": "T043:certify:response-ttlv:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.CertifyResponse.response_ttlv",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
       "requirementIds": [
@@ -239285,7 +239285,7 @@
     {
       "declarationId": "T044:check:response-type:java",
       "packageId": "java-kmipkit",
-      "kind": "java-member",
+      "kind": "type",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CheckResponse",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -239829,7 +239829,7 @@
     {
       "declarationId": "T044:check:outcome:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.BatchItemResult.check_response",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -239897,7 +239897,7 @@
     {
       "declarationId": "T044:check:response-type:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "type",
       "exportName": "kmipkit.client.CheckResponse",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -239965,7 +239965,7 @@
     {
       "declarationId": "T044:check:unique-identifier:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.CheckResponse.unique_identifier",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -240033,7 +240033,7 @@
     {
       "declarationId": "T044:check:usage-limits-count:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.CheckResponse.usage_limits_count",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -240101,7 +240101,7 @@
     {
       "declarationId": "T044:check:cryptographic-usage-mask:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.CheckResponse.cryptographic_usage_mask",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -240169,7 +240169,7 @@
     {
       "declarationId": "T044:check:lease-time:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.CheckResponse.lease_time",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -240237,7 +240237,7 @@
     {
       "declarationId": "T044:check:response-ttlv:python",
       "packageId": "python-kmipkit",
-      "kind": "python-export",
+      "kind": "field",
       "exportName": "kmipkit.client.CheckResponse.response_ttlv",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-CHECK",
       "requirementIds": [
@@ -245209,6 +245209,42 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T049. ClientFacadeTlsIntegrationTest verifies the successful typed response and redacted toString output; the owned generic TTLV remains available only through responseTtlv()."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCheck",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed Check facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItem.check supplies typed values through this internal JNI constructor; applications use the typed facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCheck",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed Check response facade; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItemResult.checkResponse validates the native tuple and owns the returned generic TTLV handle; applications use the typed result facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CheckResponse.toString",
+      "reason": "This exact Java formatter emits only a redacted summary and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. CheckResponse.toString returns a constant redacted summary; typed fields and responseTtlv remain separately mapped and tested."
     }
   ],
   "apiLevels": [

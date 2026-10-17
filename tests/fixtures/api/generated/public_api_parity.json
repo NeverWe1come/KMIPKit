@@ -4860,6 +4860,42 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java formatter emits only a redacted summary of the response identifier and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItem.check supplies typed values through this internal JNI constructor; applications use the typed facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCheck",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed Check facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItemResult.checkResponse validates the native tuple and owns the returned generic TTLV handle; applications use the typed result facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCheck",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed Check response facade; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. CheckResponse.toString returns a constant redacted summary; typed fields and responseTtlv remain separately mapped and tested.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CheckResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java formatter emits only a redacted summary and is not an independent KMIPKit capability."
     }
   ],
   "capabilities": [
@@ -76601,7 +76637,7 @@
       "declarationId": "T043:certify:response-ttlv:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.CertifyResponse.response_ttlv",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_certify_ttlv",
@@ -77081,7 +77117,7 @@
       "declarationId": "T044:check:response-type:java",
       "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.CheckResponse",
-      "kind": "java-member",
+      "kind": "type",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check",
@@ -77625,7 +77661,7 @@
       "declarationId": "T044:check:outcome:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.BatchItemResult.check_response",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check",
@@ -77693,7 +77729,7 @@
       "declarationId": "T044:check:response-type:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.CheckResponse",
-      "kind": "python-export",
+      "kind": "type",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check",
@@ -77761,7 +77797,7 @@
       "declarationId": "T044:check:unique-identifier:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.CheckResponse.unique_identifier",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check",
@@ -77829,7 +77865,7 @@
       "declarationId": "T044:check:usage-limits-count:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.CheckResponse.usage_limits_count",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check",
@@ -77897,7 +77933,7 @@
       "declarationId": "T044:check:cryptographic-usage-mask:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.CheckResponse.cryptographic_usage_mask",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check",
@@ -77965,7 +78001,7 @@
       "declarationId": "T044:check:lease-time:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.CheckResponse.lease_time",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check",
@@ -78033,7 +78069,7 @@
       "declarationId": "T044:check:response-ttlv:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.CheckResponse.response_ttlv",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_check_ttlv",
