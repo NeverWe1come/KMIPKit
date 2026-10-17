@@ -111,13 +111,22 @@ inventory test.
 
 ## Measured result and limitations
 
-The complete serial run against the pinned `ghcr.io/cosmian/kms:5.28.0` image
+The latest complete serial run against the pinned
+`ghcr.io/cosmian/kms:5.28.0` image
 (`sha256:7b60fd4484930969906caa5722b727054ff96d49339ce81e3c64ca9e4278540e`)
-ended with 98 passed and 10 failed test functions after 6,116.15 seconds. The
-10 failures are retained as failures; passing expected-finding assertions do
-not turn them into interoperability success. The per-case sanitized results
-are in the manifest. The run's sanitized log is an ignored local artifact at
-`.local/cosmian-kms/task14-full-ignored-suite.log`.
+used rustls 0.23.46 and ended with 101 passed and 9 failed test functions after
+6,383.81 seconds. The sanitized log is an ignored local artifact at
+`.local/cosmian-kms/final-rustls-0.23.46-full-suite.log` (SHA-256
+`84947A36B3557C22402DA12F918898F1743F913E4153A4A025120A7E4B2C0051`). The
+nine failing functions are the crypto, key-management and transfer matrix
+runners; six specific lifecycle cases; and the RNG runner. Their failures
+remain visible; expected-finding assertions do not turn them into
+interoperability successes. The run emitted 6,412 unique `case_id` results;
+five standalone lifecycle tests have their observations recorded by test name
+in the report and manifest. The six valid RNG responses are classified as
+malformed because the typed response omitted Operation. Compose teardown
+completed, and `docker compose --file tests/integration/cosmian/compose.yaml
+ps --all` returned no services.
 
 | Test family | Cases | Typed successes | Interoperability successes | Other measured outcomes |
 |---|---:|---:|---:|---|

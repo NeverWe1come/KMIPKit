@@ -77,10 +77,10 @@ The pinned local image was exercised with the complete ignored suite. The
 manifest contains 6,429 records: 6,417 executable cases and 12 non-executable
 normative exclusions. All executable rows have a measured outcome or an
 explicit fixture/setup blocker; 3,376 rows passed typed-response and
-operation-specific checks and count as interoperability successes. The serial
-suite ended with 98 passed and 10 failed test functions, so the report preserves
-server rejections and KMIPKit response-validation failures rather than calling
-the run green.
+operation-specific checks and count as interoperability successes. The latest
+serial suite ended with 101 passed and 9 failed test functions, so the report
+preserves server rejections and KMIPKit response-validation failures rather
+than calling the run green.
 
 | Family | Cases | Interoperability successes | Main non-success observations |
 |---|---:|---:|---|
