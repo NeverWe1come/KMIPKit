@@ -299,14 +299,20 @@ fn pqc_certify_pem_and_der_use_their_kmip_request_types() {
             .into_iter()
             .find(|row| row["case_id"] == case_id)
             .unwrap_or_else(|| panic!("missing Certify case {case_id}"));
-        let (expected_name, expected_value) = if case_id.ends_with("-pem") {
-            ("PEM", 3)
-        } else {
-            ("PKCS10", 2)
+        let (expected_name, oasis_value) = match row["parameters"]["subject_input"].as_str() {
+            Some("csr-pem") => ("PEM", 3),
+            Some("csr-pkcs10-der") => ("PKCS10", 2),
+            other => panic!("case {case_id} has unexpected CSR input {other:?}"),
         };
         assert_eq!(
             row["wire_enum_values"]["certificate_request_type"]["name"],
             expected_name
+        );
+        let row_request_type = wire_enum_value(&row, "certificate_request_type")
+            .unwrap_or_else(|error| panic!("case {case_id}: {error}"));
+        assert_eq!(
+            row_request_type, oasis_value,
+            "case {case_id} manifest value must match OASIS KMIP v2.1 §11.8, Table 439"
         );
 
         validate_exact_finding_probe_dimensions(&row)
@@ -319,7 +325,7 @@ fn pqc_certify_pem_and_der_use_their_kmip_request_types() {
         .unwrap_or_else(|error| panic!("case {case_id}: {error}"));
         assert_eq!(
             enum_field(&payload, CERTIFICATE_REQUEST_TYPE),
-            Some(expected_value)
+            Some(row_request_type)
         );
         assert_eq!(enum_field(&payload, CRYPTOGRAPHIC_ALGORITHM), None);
     }
@@ -383,34 +389,35 @@ fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() 
             }
         }
     }
+    eprintln!(
+        "crypto probe inventory: runnable={} not_sent={} blockers={blocker_counts:?}",
+        runnable.len(),
+        not_sent.len()
+    );
     assert_eq!(
         runnable.len(),
-        201,
+        231,
         "only probes with exact request and fixture dimensions may reach the target"
     );
     assert_eq!(
         not_sent.len(),
-        45,
+        15,
         "every unrepresentable probe stays NotSent"
     );
     assert!(runnable.is_disjoint(&not_sent));
     assert_eq!(
         runnable.len(),
-        201,
+        231,
         "all exact findings need typed payloads"
     );
     assert_eq!(
         not_sent.len(),
-        45,
-        "all 45 fixture gaps must remain NotSent"
+        15,
+        "all 15 fixture gaps must remain NotSent"
     );
     assert_eq!(
         blocker_counts,
         [
-            (
-                "Certify",
-                "matching post-quantum CSR fixture is unavailable"
-            ),
             (
                 "Decrypt",
                 "exact AES/RSA hybrid ciphertext fixture is unavailable"
@@ -1885,6 +1892,60 @@ fn validate_exact_finding_probe_dimensions(row: &JsonValue) -> Result<(), String
             ) {
                 return Err(format!("case {id} MAC has no explicit data mode"));
             }
+        }
+        "Certify" => {
+            let algorithm = required_case_text(row, "algorithm")
+                .map_err(|error| format!("case {id}: {error}"))?;
+            if !algorithm.starts_with("MLDSA_") && !algorithm.starts_with("SLHDSA_") {
+                return Err(format!(
+                    "case {id} Certify finding has no reviewed post-quantum CSR builder"
+                ));
+            }
+            if row["parameters"]["algorithm_dimension"]
+                != "subject ASN.1 OID only; no CryptographicAlgorithm enumeration is sent"
+                || !row["wire_enum_values"]["cryptographic_algorithm"]["value"].is_null()
+                || row["wire_enum_values"]["cryptographic_algorithm"]["classification"]
+                    != "not_sent_asn1_oid_only"
+            {
+                return Err(format!(
+                    "case {id} Certify must preserve the CSR algorithm OID without a KMIP Cryptographic Algorithm enum"
+                ));
+            }
+            let subject_input = required_parameter_text(row, "subject_input")
+                .map_err(|error| format!("case {id}: {error}"))?;
+            let (expected_name, expected_value) = match subject_input {
+                // OASIS KMIP v2.1 §11.8, Table 439 assigns distinct types:
+                // PKCS#10 is 2; PEM is 3.
+                "csr-pem" => ("PEM", 3),
+                "csr-pkcs10-der" => ("PKCS10", 2),
+                other => {
+                    return Err(format!(
+                        "case {id} Certify finding has unsupported CSR input {other}"
+                    ));
+                }
+            };
+            if row["wire_enum_values"]["certificate_request_type"]["name"] != expected_name
+                || wire_enum_value(row, "certificate_request_type")
+                    .map_err(|error| format!("case {id}: {error}"))?
+                    != expected_value
+            {
+                return Err(format!(
+                    "case {id} Certify request type does not match its KMIP CSR type"
+                ));
+            }
+            if row["wire_enum_values"]["key_format_type"]["name"] != "X509"
+                || wire_enum_value(row, "key_format_type")
+                    .map_err(|error| format!("case {id}: {error}"))?
+                    != 5
+            {
+                return Err(format!("case {id} Certify finding is not an X.509 request"));
+            }
+            build_offline_certify_request(
+                row,
+                UniqueIdentifier::TextString(format!("offline-{id}")),
+            )
+            .and_then(|request| request.into_ttlv_payload().map_err(Into::into))
+            .map_err(|error| format!("case {id} Certify request: {error}"))?;
         }
         "Sign" | "Signature Verify" => {
             signature_parameters(row).map_err(|error| format!("case {id}: {error}"))?;
@@ -3362,18 +3423,19 @@ fn execute_covercrypt_decrypt(
 
 fn asymmetric_ciphertext_fixture_row(row: &JsonValue) -> Result<JsonValue, Box<dyn Error>> {
     let operation = required_case_text(row, "operation")?;
-    if operation != "Decrypt"
-        || row["algorithm"].as_str() == row["parameters"]["key_algorithm"].as_str()
-    {
+    if operation != "Decrypt" {
+        return Ok(row.clone());
+    }
+    let target_algorithm = required_case_text(row, "algorithm")?;
+    let key_algorithm = row["parameters"]["key_algorithm"]
+        .as_str()
+        .unwrap_or(target_algorithm);
+    if target_algorithm == key_algorithm {
         return Ok(row.clone());
     }
     let id = case_id(row)?;
-    let key_algorithm = row["parameters"]["key_algorithm"]
-        .as_str()
-        .unwrap_or("unknown");
     Err(format!(
-        "case {id} Decrypt target algorithm {} does not match the {key_algorithm} key; the manifest has no exact hybrid ciphertext fixture",
-        row["algorithm"].as_str().unwrap_or("unknown")
+        "case {id} Decrypt target algorithm {target_algorithm} does not match the {key_algorithm} key; the manifest has no exact hybrid ciphertext fixture"
     )
     .into())
 }
