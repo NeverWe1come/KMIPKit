@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import pytest
+from types import SimpleNamespace
 
-from kmipkit import extensions, ttlv
+from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
+from kmipkit._ffi import ffi as ttlv_ffi
 from kmipkit.errors import InvalidInputError
 
 
@@ -71,3 +73,128 @@ def test_derive_key_builder_rejects_missing_source_identifiers(monkeypatch) -> N
             extensions.client_batch_item_derive_key(
                 2, (), 1, parameters, attributes
             )
+
+
+@pytest.mark.parametrize(("status", "expects_response"), ((0, True), (1, False)))
+def test_batch_result_maps_derive_key_response_only_on_success(
+    monkeypatch: pytest.MonkeyPatch, status: int, expects_response: bool
+) -> None:
+    response_pointer = ffi.cast("kmipkit_client_batch_response_t *", 1)
+    item_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 2)
+    native_handle = ffi.NULL
+    if expects_response:
+        native_copy = _derive_key_response_ttlv()
+        native_handle, owner = native_copy._take()
+        assert owner is None
+    calls: list[str] = []
+    identifier_storage = ffi.new("uint8_t[]", b"derived-key")
+
+    def metadata(_item: object, output: object) -> int:
+        output.struct_size = ffi.sizeof("kmipkit_client_batch_item_metadata_v2_t")  # type: ignore[attr-defined]
+        output.abi_version = 2  # type: ignore[attr-defined]
+        output.reserved = 0  # type: ignore[attr-defined]
+        output.operation = 0x05  # type: ignore[attr-defined]
+        output.outcome_kind = int(client.BatchOutcome.COMPLETED)  # type: ignore[attr-defined]
+        output.result_status = status  # type: ignore[attr-defined]
+        output.has_result_reason = 0  # type: ignore[attr-defined]
+        output.result_reason = 0  # type: ignore[attr-defined]
+        output.has_result_message = 0  # type: ignore[attr-defined]
+        output.result_message_data = ffi.NULL  # type: ignore[attr-defined]
+        output.result_message_length = 0  # type: ignore[attr-defined]
+        return 0
+
+    def derive_key_response(_item: object, present: object, identifier: object) -> int:
+        calls.append("derive-key")
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        identifier.text_data = identifier_storage  # type: ignore[attr-defined]
+        identifier.text_length = len(b"derived-key")  # type: ignore[attr-defined]
+        return 0
+
+    def derive_key_ttlv(_item: object, present: object, output: object) -> int:
+        calls.append("derive-key-ttlv")
+        present[0] = 1  # type: ignore[index]
+        output[0] = ffi.cast(
+            "kmipkit_ttlv_structure_t *",
+            int(ttlv_ffi.cast("uintptr_t", native_handle)),
+        )  # type: ignore[index]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: None,
+        kmipkit_client_batch_item_response_release=lambda _ptr: None,
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, _index, output: output.__setitem__(0, item_pointer) or 0,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=lambda _item, present, span: (
+            present.__setitem__(0, 0) or setattr(span, "data", ffi.NULL) or setattr(span, "length", 0) or 0
+        ),
+        kmipkit_client_batch_item_response_pending_correlation_value=lambda _item, present, span: (
+            present.__setitem__(0, 0) or setattr(span, "data", ffi.NULL) or setattr(span, "length", 0) or 0
+        ),
+        kmipkit_client_batch_item_response_discover_versions_supported_versions=lambda _item, present, _values, _capacity, count: (
+            present.__setitem__(0, 0) or count.__setitem__(0, 0) or 0
+        ),
+        kmipkit_client_batch_item_response_derive_key=derive_key_response,
+        kmipkit_client_batch_item_response_derive_key_ttlv=derive_key_ttlv,
+        kmipkit_client_batch_item_response_create=lambda _item, present, object_type, _identifier: (
+            present.__setitem__(0, 0) or object_type.__setitem__(0, 0) or 0
+        ),
+        kmipkit_client_batch_item_response_create_key_pair=lambda _item, present, _private, _public: (
+            present.__setitem__(0, 0) or 0
+        ),
+        kmipkit_client_batch_item_response_create_split_key_count=lambda _item, present, count: (
+            present.__setitem__(0, 0) or count.__setitem__(0, 0) or 0
+        ),
+    )
+    monkeypatch.setattr(client, "lib", fake)
+
+    result = client._batch_result(response_pointer)
+
+    derive_key = getattr(result.items[0], "derive_key_response", None)
+    assert (derive_key is not None) is expects_response
+    if expects_response:
+        assert derive_key.unique_identifier == extensions.UniqueIdentifier.text_string("derived-key")
+        assert "derived-key" not in repr(result.items[0])
+        with ttlv.ttlv_structure_view(derive_key.response_ttlv) as view:
+            assert ttlv.ttlv_structure_view_item_count(view) == 2
+            assert _response_tag_at(view, 0) == 0x0042_0094
+            assert _response_tag_at(view, 1) == 0x0054_0001
+        derive_key.close()
+        assert derive_key.response_ttlv.closed
+    assert calls == (["derive-key", "derive-key-ttlv"] if expects_response else [])
+    result.close()
+
+
+def _derive_key_response_ttlv() -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+
+    def item(tag_value: int, value: ttlv.Value) -> ttlv.TtlvItem:
+        raw_tag = ttlv.raw_tag_from_raw(tag_value)
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+            raw_tag.close()
+
+    try:
+        response = ttlv.ttlv_structure_create()
+        for child in (
+            item(0x0042_0094, ttlv.ttlv_value_text_string(b"derived-key", limits)),
+            item(0x0054_0001, ttlv.ttlv_value_byte_string(b"vendor", limits)),
+        ):
+            response = ttlv.ttlv_structure_with_item(response, child, limits)
+        return response
+    finally:
+        limits.close()
+
+
+def _response_tag_at(view: ttlv.TtlvStructureView, index: int) -> int:
+    item_view = ttlv.ttlv_structure_view_item_at(view, index)
+    tag = ttlv.ttlv_item_view_tag(item_view)
+    try:
+        return ttlv.tag_value(tag)
+    finally:
+        tag.close()
+        item_view.close()
