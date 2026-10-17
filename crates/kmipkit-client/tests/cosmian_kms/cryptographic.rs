@@ -413,6 +413,9 @@ fn documented_cipher_gap_rows_have_exact_typed_target_probes() {
     assert_eq!(ciphertext_fixture["algorithm"], "RSA");
     assert_eq!(ciphertext_fixture["parameters"]["padding"], "OAEP");
     assert_eq!(ciphertext_fixture["parameters"]["hash"], "SHA-256");
+    assert_eq!(ciphertext_fixture["parameters"]["mgf"], "MGF1");
+    assert_eq!(ciphertext_fixture["parameters"]["mgf_hash"], "SHA-256");
+    assert_eq!(ciphertext_fixture["parameters"]["p_source"], "empty");
     assert!(build_offline_target_payloads(&ciphertext_fixture).is_ok());
 }
 
@@ -525,45 +528,26 @@ fn assert_finding_probe_inventory(
     );
     assert_eq!(
         runnable.len(),
-        231 - unavailable_post_quantum_csr_count,
+        246 - unavailable_post_quantum_csr_count,
         "only probes with exact request and fixture dimensions may reach the target"
     );
     assert_eq!(
         not_sent.len(),
-        15 + unavailable_post_quantum_csr_count,
+        unavailable_post_quantum_csr_count,
         "every unrepresentable probe stays NotSent"
     );
     assert!(runnable.is_disjoint(not_sent));
     assert_eq!(
         runnable.len(),
-        231 - unavailable_post_quantum_csr_count,
+        246 - unavailable_post_quantum_csr_count,
         "all exact findings need typed payloads"
     );
     assert_eq!(
         not_sent.len(),
-        15 + unavailable_post_quantum_csr_count,
-        "baseline blockers and unavailable PQC CSR probes must remain NotSent"
+        unavailable_post_quantum_csr_count,
+        "only unavailable PQC CSR fixtures may remain NotSent"
     );
-    let mut expected_blockers = [
-        (
-            "Decrypt",
-            "exact AES/RSA hybrid ciphertext fixture is unavailable",
-        ),
-        (
-            "Encrypt",
-            "exact AES/RSA hybrid request fixture is unavailable",
-        ),
-        (
-            "Decrypt",
-            "opaque ConfigurableKEM key fixture is unavailable",
-        ),
-        (
-            "Encrypt",
-            "opaque ConfigurableKEM key fixture is unavailable",
-        ),
-    ]
-    .into_iter()
-    .collect::<BTreeSet<_>>();
+    let mut expected_blockers = BTreeSet::new();
     if unavailable_post_quantum_csr_count > 0 {
         expected_blockers.insert((
             "Certify",
@@ -2085,19 +2069,6 @@ fn finding_probe_preflight(row: &JsonValue) -> Result<FindingProbePreflight, Str
         return Err(format!("case {id} is not an expected-finding probe"));
     }
 
-    if row["algorithm"] == "ConfigurableKEM" && matches!(operation, "Encrypt" | "Decrypt") {
-        return Ok(FindingProbePreflight::NotSent(
-            "opaque ConfigurableKEM key fixture is unavailable",
-        ));
-    }
-    if row["algorithm"] == "AES" && row["parameters"]["key_algorithm"] == "RSA" {
-        let reason = if operation == "Decrypt" {
-            "exact AES/RSA hybrid ciphertext fixture is unavailable"
-        } else {
-            "exact AES/RSA hybrid request fixture is unavailable"
-        };
-        return Ok(FindingProbePreflight::NotSent(reason));
-    }
     if operation == "Certify"
         && row["algorithm"].as_str().is_some_and(|algorithm| {
             algorithm.starts_with("MLDSA_") || algorithm.starts_with("SLHDSA_")
@@ -3700,6 +3671,22 @@ fn asymmetric_ciphertext_fixture_row(row: &JsonValue) -> Result<JsonValue, Box<d
         return Ok(row.clone());
     }
     let id = case_id(row)?;
+    if target_algorithm == "AES" && key_algorithm == "RSA" {
+        let mut fixture = row.clone();
+        fixture["operation"] = JsonValue::String("Encrypt".to_owned());
+        fixture["algorithm"] = JsonValue::String("RSA".to_owned());
+        fixture["wire_enum_values"]["cryptographic_algorithm"] = serde_json::json!({
+            "name": "RSA",
+            "value": "0x00000004",
+            "classification": "standard"
+        });
+        fixture["parameters"]["padding"] = JsonValue::String("OAEP".to_owned());
+        fixture["parameters"]["hash"] = JsonValue::String("SHA-256".to_owned());
+        fixture["parameters"]["mgf"] = JsonValue::String("MGF1".to_owned());
+        fixture["parameters"]["mgf_hash"] = JsonValue::String("SHA-256".to_owned());
+        fixture["parameters"]["p_source"] = JsonValue::String("empty".to_owned());
+        return Ok(fixture);
+    }
     Err(format!(
         "case {id} Decrypt target algorithm {target_algorithm} does not match the {key_algorithm} key; the manifest has no exact hybrid ciphertext fixture"
     )
