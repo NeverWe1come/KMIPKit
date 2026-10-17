@@ -187351,17 +187351,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "setup_rejected",
-        "request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
         "response_received": true,
-        "target_request_sent": false,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "setup_request_sent": true,
-        "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "target_request_sent": true,
+        "interoperability": true,
+        "reason": "KMIPKit received typed Encrypt and Decrypt success responses and verified the block-aligned fixture round trip."
       },
       "wire_enum_values": {
         "cryptographic_algorithm": {
@@ -187369,7 +187364,8 @@
           "value": "0x00000003",
           "classification": "standard"
         }
-      }
+      },
+      "notes": "The default ECB mode uses no padding; the test sends one complete 16-byte AES block. The Encrypt oracle and target Decrypt both passed against pinned Cosmian 5.28.0."
     },
     {
       "case_id": "cosmian-528-encrypt-symmetrickey-aes-ecb-192-none-inapplicable",
@@ -187779,17 +187775,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "setup_rejected",
-        "request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
         "response_received": true,
-        "target_request_sent": false,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "setup_request_sent": true,
-        "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "target_request_sent": true,
+        "interoperability": true,
+        "reason": "KMIPKit received typed Encrypt and Decrypt success responses and verified the block-aligned fixture round trip."
       },
       "wire_enum_values": {
         "cryptographic_algorithm": {
@@ -187797,7 +187788,8 @@
           "value": "0x00000003",
           "classification": "standard"
         }
-      }
+      },
+      "notes": "The default ECB mode uses no padding; the test sends one complete 16-byte AES block. The Encrypt oracle and target Decrypt both passed against pinned Cosmian 5.28.0."
     },
     {
       "case_id": "cosmian-528-encrypt-symmetrickey-aes-ecb-256-none-inapplicable",
@@ -188207,17 +188199,12 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "setup_rejected",
-        "request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
         "response_received": true,
-        "target_request_sent": false,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "setup_request_sent": true,
-        "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "target_request_sent": true,
+        "interoperability": true,
+        "reason": "KMIPKit received typed Encrypt and Decrypt success responses and verified the block-aligned fixture round trip."
       },
       "wire_enum_values": {
         "cryptographic_algorithm": {
@@ -188225,7 +188212,8 @@
           "value": "0x00000003",
           "classification": "standard"
         }
-      }
+      },
+      "notes": "The default ECB mode uses no padding; the test sends one complete 16-byte AES block. The Encrypt oracle and target Decrypt both passed against pinned Cosmian 5.28.0."
     },
     {
       "case_id": "cosmian-528-encrypt-symmetrickey-aes-cbc-128-none-caller",
@@ -222292,9 +222280,13 @@
         "response_received": true,
         "target_request_sent": true,
         "interoperability": false,
-        "reason": "Cosmian returned a typed KMIP rejection after receiving the standards-valid AES/RSA hybrid request; this remains a documentation/source discrepancy observation."
+        "reason": "The pinned server returned Operation Failed / Operation Not Supported after receiving the AES-algorithm/RSA-key Decrypt request. The request is sent as the documentation-directed probe, but its ciphertext fixture is ordinary RSA-OAEP rather than a valid AES-GCM/RSA hybrid ciphertext; the source rejects the AES algorithm for RSA before processing ciphertext.",
+        "result_status": 1,
+        "result_reason": 5,
+        "result_reason_name": "Operation Not Supported",
+        "message_class": "wrapping_algorithm_unsupported"
       },
-      "notes": "Standards-valid Cryptographic Parameters selecting a hybrid scheme with an RSA key; vendor docs select AES, source RSA handler accepts only RSA. Record actual rejection as failed interoperability.",
+      "notes": "Documentation/source discrepancy probe: the 5.28 docs both limit RSA-AES to key wrapping and direct Encrypt/Decrypt callers to use an RSA key with Cryptographic Algorithm AES. Pinned RSA Decrypt source accepts only Cryptographic Algorithm RSA. This request was rejected as Operation Not Supported. Its ciphertext fixture is ordinary RSA-OAEP data, not a genuine AES-GCM/RSA hybrid envelope, so it does not test valid hybrid ciphertext handling.",
       "wire_enum_values": {
         "cryptographic_algorithm": {
           "name": "AES",
@@ -223885,19 +223877,14 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "setup_rejected",
-        "request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
         "response_received": true,
-        "target_request_sent": false,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "setup_request_sent": true,
-        "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "target_request_sent": true,
+        "interoperability": true,
+        "reason": "KMIPKit received a typed Decrypt success and decoded Cosmian's empty-metadata CoverCrypt data container to the expected plaintext."
       },
-      "notes": "CoverCrypt requires matching case-owned policy and user key. KEM paths encapsulate/decapsulate: Data is shared secret and IVCounterNonce encapsulation, not arbitrary plaintext encryption. Runtime provider/non-FIPS availability remains unobserved.",
+      "notes": "The Decrypt result Data uses a LEB128 metadata-length prefix; KMIPKit strips the empty-metadata prefix before comparing plaintext. This case passed against the pinned server. KEM paths encapsulate/decapsulate: Data is shared secret and IVCounterNonce encapsulation, not arbitrary plaintext encryption.",
       "wire_enum_values": {
         "cryptographic_algorithm": {
           "name": "CoverCrypt",
@@ -223956,19 +223943,14 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "setup_rejected",
-        "request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
         "response_received": true,
-        "target_request_sent": false,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "setup_request_sent": true,
-        "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "target_request_sent": true,
+        "interoperability": true,
+        "reason": "KMIPKit received a typed Decrypt success and decoded Cosmian's empty-metadata CoverCrypt data container to the expected plaintext."
       },
-      "notes": "CoverCrypt requires matching case-owned policy and user key. KEM paths encapsulate/decapsulate: Data is shared secret and IVCounterNonce encapsulation, not arbitrary plaintext encryption. Runtime provider/non-FIPS availability remains unobserved.",
+      "notes": "The Decrypt result Data uses a LEB128 metadata-length prefix; KMIPKit strips the empty-metadata prefix before comparing plaintext. This case passed against the pinned server. KEM paths encapsulate/decapsulate: Data is shared secret and IVCounterNonce encapsulation, not arbitrary plaintext encryption.",
       "wire_enum_values": {
         "cryptographic_algorithm": {
           "name": "CoverCrypt",
@@ -224372,9 +224354,9 @@
         "result_reason_name": "Cryptographic Failure",
         "setup_request_sent": true,
         "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "reason": "Cosmian returned Operation Failed / Cryptographic Failure (Status 1, Reason 10) for the prerequisite Create Key Pair; the target Decrypt request was not sent. The pinned source has a pure-classical keygen path, but the generic wire error does not identify the internal cause."
       },
-      "notes": "ConfigurableKEM serializes shared-secret and encapsulation together in Data; IVCounterNonce is absent. Non-FIPS high-bit extension; classical-only configurations avoid reserved nested MLKEM enums.",
+      "notes": "Pure-classical ConfigurableKEM setup probe (P-256 or Curve25519). Cosmian 5.28.0 source maps curve-only parameters to the pure-classical keygen branch, but Create Key Pair returned Cryptographic Failure. Decrypt was not sent; server-side diagnostics are needed to identify the provider/internal cause.",
       "wire_enum_values": {
         "cryptographic_algorithm": {
           "name": "ConfigurableKEM",
@@ -224518,9 +224500,9 @@
         "result_reason_name": "Cryptographic Failure",
         "setup_request_sent": true,
         "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "reason": "Cosmian returned Operation Failed / Cryptographic Failure (Status 1, Reason 10) for the prerequisite Create Key Pair; the target Decrypt request was not sent. The pinned source has a pure-classical keygen path, but the generic wire error does not identify the internal cause."
       },
-      "notes": "ConfigurableKEM serializes shared-secret and encapsulation together in Data; IVCounterNonce is absent. Non-FIPS high-bit extension; classical-only configurations avoid reserved nested MLKEM enums.",
+      "notes": "Pure-classical ConfigurableKEM setup probe (P-256 or Curve25519). Cosmian 5.28.0 source maps curve-only parameters to the pure-classical keygen branch, but Create Key Pair returned Cryptographic Failure. Decrypt was not sent; server-side diagnostics are needed to identify the provider/internal cause.",
       "wire_enum_values": {
         "cryptographic_algorithm": {
           "name": "ConfigurableKEM",
