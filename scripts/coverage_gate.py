@@ -1155,9 +1155,6 @@ def _is_cpp_digit_separator(text: str, index: int) -> bool:
     """Distinguish C++ numeric separators from prefixed character literals."""
     if index == 0 or index + 1 >= len(text):
         return False
-    digit_characters = "0123456789abcdefABCDEF"
-    if text[index - 1] not in digit_characters or text[index + 1] not in digit_characters:
-        return False
 
     token_start = index - 1
     while token_start > 0:
@@ -1166,13 +1163,31 @@ def _is_cpp_digit_separator(text: str, index: int) -> bool:
             break
         token_start -= 1
     numeric_prefix = text[token_start:index]
-    return bool(numeric_prefix) and (
+    if not numeric_prefix or not (
         numeric_prefix[0].isascii() and numeric_prefix[0].isdigit()
         or numeric_prefix.startswith(".")
         and len(numeric_prefix) > 1
         and numeric_prefix[1].isascii()
         and numeric_prefix[1].isdigit()
-    )
+    ):
+        return False
+
+    lowercase_prefix = numeric_prefix.lower()
+    if lowercase_prefix.startswith("0x") and "p" not in lowercase_prefix:
+        digit_characters = "0123456789abcdefABCDEF"
+    elif lowercase_prefix.startswith("0b"):
+        digit_characters = "01"
+    elif (
+        numeric_prefix.startswith("0")
+        and len(numeric_prefix) > 1
+        and numeric_prefix[1].isdigit()
+        and not any(character in numeric_prefix for character in ".eEpP")
+    ):
+        digit_characters = "01234567"
+    else:
+        digit_characters = "0123456789"
+
+    return text[index - 1] in digit_characters and text[index + 1] in digit_characters
 
 
 @lru_cache(maxsize=32)
