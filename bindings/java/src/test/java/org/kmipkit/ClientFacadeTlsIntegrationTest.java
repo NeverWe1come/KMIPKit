@@ -55,7 +55,9 @@ import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
@@ -189,7 +191,7 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure splitAttributes = TtlvStructure.create();
                 TtlvStructure delegatedLoginRights = TtlvStructure.create();
                 TtlvStructure derivationParameters = TtlvStructure.create();
-                TtlvStructure derivedAttributes = TtlvStructure.create()) {
+                TtlvStructure derivedAttributes = deriveKeyAttributes()) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, null));
             assertNativeRequestOptionsRejected(client, new long[11]);
@@ -234,7 +236,7 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.delegatedLogin(delegatedLoginRights,
                                     60L, null, 3, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(12)))
-                    .add(ClientBatchItem.deriveKey(2,
+                    .add(ClientBatchItem.deriveKey(7,
                                     List.of(UniqueIdentifier.textString("source-key")),
                                     0xfeed_beefL, derivationParameters, derivedAttributes)
                             .withUniqueBatchItemId(uniqueBatchItemId(13)));
@@ -378,9 +380,18 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
                             deriveKeyResponse.uniqueIdentifier().kind());
                     assertEquals("derived-key", deriveKeyResponse.uniqueIdentifier().text());
-                    assertEquals(2, deriveKeyTtlv.itemCount());
-                    assertEquals(0x0042_0094, tagAt(deriveKeyTtlv, 0));
-                    assertEquals(0x0054_0001, tagAt(deriveKeyTtlv, 1));
+                    assertEquals(4, deriveKeyTtlv.itemCount());
+                    assertEquals(0x0042_005c, tagAt(deriveKeyTtlv, 0));
+                    assertEquals(0x0042_0093, tagAt(deriveKeyTtlv, 1));
+                    assertEquals(0x0042_007f, tagAt(deriveKeyTtlv, 2));
+                    assertEquals(0x0042_007c, tagAt(deriveKeyTtlv, 3));
+                    try (TtlvItemView responsePayload = deriveKeyTtlv.itemAt(3);
+                            TtlvValueView responsePayloadValue = responsePayload.value();
+                            TtlvStructureView payload = responsePayloadValue.structure()) {
+                        assertEquals(2, payload.itemCount());
+                        assertEquals(0x0042_0094, tagAt(payload, 0));
+                        assertEquals(0x0054_0001, tagAt(payload, 1));
+                    }
                     assertFalse(deriveKeyResponse.toString().contains("derived-key"));
                 }
             }
@@ -803,6 +814,16 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    private static TtlvStructure deriveKeyAttributes() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure attributes = TtlvStructure.create();
+        try (Tag tag = RawTag.fromRaw(0x42002a).checked();
+                TtlvValue length = TtlvValue.Integer(128);
+                TtlvItem item = TtlvItem.create(tag, length, limits)) {
+            return TtlvStructure.withItem(attributes, item, limits);
+        }
+    }
+
     private static List<?> cryptoOperations() throws Exception {
         Field operations = CryptoOperationsJavaFacadeTest.class.getDeclaredField("OPERATIONS");
         if (!operations.trySetAccessible()) {
@@ -1043,7 +1064,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(13)));
+                item(0x42000d, 2, integer(14)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1120,9 +1141,15 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] delegatedLoginItem = structure(0x42000f,
                 enumeration(0x42005c, 0x2f), item(0x420093, 8, uniqueBatchItemId(12)),
                 enumeration(0x42007f, 0), delegatedLoginPayload);
+        byte[] deriveKeyPayload = structure(0x42007c,
+                item(0x420094, 7, "derived-key".getBytes(StandardCharsets.UTF_8)),
+                item(0x540001, 8, "KMIPKit-derive-key-sentinel".getBytes(StandardCharsets.US_ASCII)));
+        byte[] deriveKeyItem = structure(0x42000f,
+                enumeration(0x42005c, 5), item(0x420093, 8, uniqueBatchItemId(13)),
+                enumeration(0x42007f, 0), deriveKeyPayload);
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
-                certifyItem, allocationItem, checkItem, delegatedLoginItem);
+                certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {
