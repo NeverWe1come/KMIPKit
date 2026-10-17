@@ -1158,7 +1158,6 @@
             "method",
             "parameters",
             "returnType",
-            "jniSymbol",
             "errorCategories"
           ],
           "properties": {
@@ -1184,7 +1183,8 @@
             },
             "jniSymbol": {
               "type": "string",
-              "pattern": "^Java_[A-Za-z0-9_]+$"
+              "pattern": "^Java_[A-Za-z0-9_]+$",
+              "description": "Present only when this public Java method directly maps to a JNI entry point."
             },
             "errorCategories": {
               "$ref": "#/$defs/errorCategoryIds"

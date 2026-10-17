@@ -16569,7 +16569,6 @@
         "class": "ClientBatchItemResult.DelegatedLoginResponse",
         "method": "ticketTtlv",
         "parameters": [],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDelegatedLogin",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -247287,6 +247286,102 @@
         "evidence": "Status: Accepted"
       },
       "evidence": "ADR-0003 keeps protocol and client behavior in separate published crates, requiring a narrow bridge for this internal decision. KMIPKIT-0021-FR-015 defines the only response-TTLV behavior exposed to callers, and the crypto_response_ttlv capability maps that behavior across Rust, C, Java, and Python."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__dataclass_fields__",
+      "reason": "This exact DelegatedLoginResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__dataclass_params__",
+      "reason": "This exact DelegatedLoginResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__eq__",
+      "reason": "This exact DelegatedLoginResponse equality method is Python dataclass value semantics, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__hash__",
+      "reason": "This exact DelegatedLoginResponse hash method is Python dataclass value semantics, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__init__",
+      "reason": "This exact DelegatedLoginResponse initializer is a generated Python record constructor; its server-response capability is represented by the typed response mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__match_args__",
+      "reason": "This exact DelegatedLoginResponse member is Python dataclass pattern-matching metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__repr__",
+      "reason": "This exact DelegatedLoginResponse representation method is Python presentation behavior, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.__slots__",
+      "reason": "This exact DelegatedLoginResponse member is Python dataclass storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T045; Delegated Login response fields are mapped across four languages, and this exact generated member has no separate cross-language capability."
     },
     {
       "packageId": "python-kmipkit",

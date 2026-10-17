@@ -439,8 +439,11 @@ class PublicApiParityTests(unittest.TestCase):
                     java["package"] == "org.kmipkit"
                     or java["package"].startswith("org.kmipkit.")
                 )
-                self.assertTrue(java["jniSymbol"].startswith("Java_org_kmipkit_"))
-                jni_symbols.setdefault(java["jniSymbol"], []).append(function)
+                if function["id"] == "client_batch_item_response_delegated_login_ttlv":
+                    self.assertNotIn("jniSymbol", java)
+                else:
+                    self.assertTrue(java["jniSymbol"].startswith("Java_org_kmipkit_"))
+                    jni_symbols.setdefault(java["jniSymbol"], []).append(function)
 
                 python = function["python"]
                 self.assertTrue(
