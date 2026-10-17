@@ -2888,10 +2888,10 @@ coverage threshold. The 16 summary-only LLVM lines remain charged as uncovered.
 |---|---|---|---|
 | Red | `caf7907f` | Focused coverage-exclusion classifier test | Expected failure: a marker without a reason was accepted. |
 | Green | `74a7aa68` | Full coverage-gate unit suite and replay of run `39037196761` artifacts | PASS: 58 tests, 3 skipped; measured 4,643/4,887 changed-production lines (95.01%). Crate thresholds passed: TTLV 99.19%, protocol 96.98%, transport 95.16%, FFI 96.33%; adapters passed: Java 97.71%, Python 98.80%, JNI 87.12%; workspace 96.71%. |
-| Refactor | this commit | Evidence and task reconciliation; `git diff --check` | T045 stays open until full-head CI passes with the exact exclusions. |
+| Refactor | this commit | Evidence and task reconciliation; `git diff --check` | PASS: current-head run `39039966169` for `227e0c94e5d934007c049a43d0eac2af037ebd24` passed all required CI jobs, including aggregate coverage. |
 
 The replay used the unchanged reports from run `39037196761`; only the source
 line classifier and same-line rationale markers differ from that run. It is
 local evidence for the gate calculation, not a replacement for current-head
-CI. The next CI run must verify the correction on the pushed PR head before
-T045 can be marked complete.
+CI. Run `39039966169` verified the correction on the pushed PR head before
+T045 is complete.
