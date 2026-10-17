@@ -120,6 +120,14 @@ fn provision_wrapped_target(
         target_row["parameters"]["usage_mask"] = serde_json::json!(USAGE_WRAP_KEY | USAGE_ENCRYPT);
         target_row["parameters"]["activation_date"] = serde_json::json!("now");
     }
+    if object_type.raw() == 4
+        && row["algorithm"] == "ConfigurableKEM"
+        && row["key_format"] == "ConfigurableKEMSecretKey"
+    {
+        // OASIS KMIP v2.1 §4.55, Tables 139–140: explicitly request a
+        // non-sensitive test key so the setup Export can exercise wrapping.
+        target_row["parameters"]["sensitive"] = serde_json::json!(false);
+    }
     let source = super::common::provision_object(
         client,
         super::common::required_text(row, "object_type")?,

@@ -25,6 +25,8 @@ const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+// OASIS KMIP v2.1 §4.55, Table 139.
+const SENSITIVE: u32 = 0x0042_00CD;
 const OBJECT_TYPE_ATTRIBUTE: u32 = 0x0042_0057;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const PKCS8_KEY_FORMAT_TYPE: u32 = 4;
@@ -3135,15 +3137,19 @@ fn row_key_pair_request(
     let mut request =
         CreateKeyPairRequest::new().with_common_attributes(AttributeSet::try_new(common_items)?);
     if row["algorithm"] != "CoverCrypt" {
+        let mut private_attributes = vec![super::kmip_item(
+            CRYPTOGRAPHIC_USAGE_MASK,
+            Value::integer(if configurable_kem {
+                KEY_USAGE_DECRYPT
+            } else {
+                private_usage
+            }),
+        )?];
+        if let Some(sensitive) = row["parameters"]["sensitive"].as_bool() {
+            private_attributes.push(super::kmip_item(SENSITIVE, Value::boolean(sensitive))?);
+        }
         request = request
-            .with_private_key_attributes(AttributeSet::try_new([super::kmip_item(
-                CRYPTOGRAPHIC_USAGE_MASK,
-                Value::integer(if configurable_kem {
-                    KEY_USAGE_DECRYPT
-                } else {
-                    private_usage
-                }),
-            )?])?)
+            .with_private_key_attributes(AttributeSet::try_new(private_attributes)?)
             .with_public_key_attributes(AttributeSet::try_new([super::kmip_item(
                 CRYPTOGRAPHIC_USAGE_MASK,
                 Value::integer(if configurable_kem {
