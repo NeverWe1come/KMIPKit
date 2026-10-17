@@ -853,16 +853,17 @@ fn export_response_item() -> Vec<u8> {
                 [
                     enumeration(0x0042_0057, 0xf123_4567),
                     ttlv_item(0x0042_0094, 0x07, b"exported-key"),
+                    structure(0x0042_0125, [enumeration(0x0042_001D, 1)]),
                     structure(
-                        0x0042_0125,
-                        [enumeration(0x0042_001D, 1)],
+                        0x0042_008F,
+                        [structure(
+                            0x0042_0040,
+                            [
+                                enumeration(0x0042_0042, 0xf123_4567),
+                                ttlv_item(0x0042_0043, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                            ],
+                        )],
                     ),
-                    structure(0x0042_008F, [
-                        structure(0x0042_0040, [
-                            enumeration(0x0042_0042, 0xf123_4567),
-                            ttlv_item(0x0042_0043, 0x08, &[0xde, 0xad, 0x00, 0xff]),
-                        ]),
-                    ]),
                 ],
             ),
         ],

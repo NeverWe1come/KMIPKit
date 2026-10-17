@@ -619,6 +619,20 @@ int32_t kmipkit_client_batch_item_response_delegated_login(kmipkit_client_batch_
  */
 /* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_delegated_login_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_ticket_ttlv);
+/* Creates a typed KMIP v2.1 Export request, preserving the optional Table 217 selectors as raw unsigned values and borrowing the optional Key Wrapping Specification structure.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
+int32_t kmipkit_client_batch_item_export(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_key_format_type, uint32_t key_format_type, uint8_t has_key_wrap_type, uint32_t key_wrap_type, uint8_t has_key_compression_type, uint32_t key_compression_type, kmipkit_ttlv_structure_t * key_wrapping_specification, kmipkit_client_batch_item_t ** out_item);
+/* Returns a typed Export result for Success and KMIP Failure. On Success, the caller owns copies of the required Attributes and opaque Any Object structures; on Failure the payload outputs are empty.
+ * The caller must release each non-null structure output with kmipkit_ttlv_structure_release. Response data remains sensitive and is omitted from diagnostics.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
+int32_t kmipkit_client_batch_item_response_export(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_payload_present, uint32_t * out_object_type, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_ttlv_structure_t ** out_attributes, kmipkit_ttlv_structure_t ** out_any_object);
+/* Returns a caller-owned copy of the complete ordered Export response TTLV for Success and KMIP Failure; returns no structure for a non-Export result.
+ * The caller must release a non-null output with kmipkit_ttlv_structure_release. Raw response contents are sensitive and are not included in diagnostics.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
+int32_t kmipkit_client_batch_item_response_export_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

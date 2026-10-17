@@ -259,6 +259,18 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_export(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_payload_present,
+        uint32_t *out_object_type,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        kmipkit_ttlv_structure_t **out_attributes,
+        kmipkit_ttlv_structure_t **out_any_object);
+    int32_t kmipkit_client_batch_item_response_export_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_create_key_pair(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -377,7 +389,18 @@ ffi.cdef(
         uint32_t derivation_method,
         kmipkit_ttlv_structure_t *derivation_parameters,
         kmipkit_ttlv_structure_t *attributes,
-        kmipkit_client_batch_item_t **out_item);    int32_t kmipkit_client_batch_item_get_usage_allocation(
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_export(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        uint8_t has_key_format_type,
+        uint32_t key_format_type,
+        uint8_t has_key_wrap_type,
+        uint32_t key_wrap_type,
+        uint8_t has_key_compression_type,
+        uint32_t key_compression_type,
+        kmipkit_ttlv_structure_t *key_wrapping_specification,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_get_usage_allocation(
         const kmipkit_unique_identifier_v1_t *unique_identifier,
         int64_t usage_limits_count,
         kmipkit_client_batch_item_t **out_item);

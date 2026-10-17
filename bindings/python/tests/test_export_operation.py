@@ -4,17 +4,26 @@ from types import SimpleNamespace
 
 from kmipkit._client_ffi import ffi
 from kmipkit import client, extensions, ttlv
-from kmipkit._ffi import ffi as ttlv_ffi
 
 
 def test_export_builder_preserves_optional_raw_table_217_selectors(
     monkeypatch,
 ) -> None:
     calls: list[tuple[str, tuple[object, ...]]] = []
+    identifier_snapshots: list[bytes] = []
+
+    def make_handle(_kind, symbol, arguments):
+        identifier = arguments[0]
+        identifier_snapshots.append(
+            bytes(ffi.buffer(identifier.text_data, identifier.text_length))
+        )
+        calls.append((symbol, arguments))
+        return 23
+
     monkeypatch.setattr(
         extensions,
         "_make_handle",
-        lambda _kind, symbol, arguments: calls.append((symbol, arguments)) or 23,
+        make_handle,
     )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
 
@@ -39,7 +48,7 @@ def test_export_builder_preserves_optional_raw_table_217_selectors(
     assert arguments[1:] == (1, 0xF123_4567, 1, 0xF123_4568, 1, 0xF123_4569, 17)
     identifier = arguments[0]
     assert identifier.kind == int(extensions.UniqueIdentifierKind.TEXT_STRING)
-    assert bytes(ttlv_ffi.buffer(identifier.text_data, identifier.text_length)) == b"exported-key"
+    assert identifier_snapshots == [b"exported-key"]
 
 
 def test_export_builder_keeps_every_table_217_option_omitted(monkeypatch) -> None:
@@ -56,7 +65,8 @@ def test_export_builder_keeps_every_table_217_option_omitted(monkeypatch) -> Non
 
     symbol, arguments = calls[0]
     assert symbol == "kmipkit_client_batch_item_export"
-    assert arguments == (None, 0, 0, 0, 0, 0, 0, 0)
+    assert arguments[0] == ffi.NULL
+    assert arguments[1:] == (0, 0, 0, 0, 0, 0, 0)
 
 
 def test_export_response_repr_redacts_identifiers_and_sensitive_ttlv() -> None:

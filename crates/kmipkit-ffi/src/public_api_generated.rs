@@ -1392,9 +1392,19 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::derive_key",
     ),
     (
+        "rust-observed-095ba383b386427a66aa",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::export",
+    ),
+    (
         "T046:response:rustVariant",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::DeriveKey",
+    ),
+    (
+        "rust-observed-dddde85d9600600983d1",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::Export",
     ),
     (
         "rust-observed-397ee0115e79bd8b9749",
@@ -1430,6 +1440,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-9576a7e0dbcd07375fe4",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Certify",
+    ),
+    (
+        "rust-observed-a60dee53f11a9b109b34",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Export",
     ),
     (
         "rust-observed-9365e579da298db8f315",
@@ -1570,6 +1585,41 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "T046:result:responseTtlv:rust",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::DeriveKeyResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-031571ec08e163325060",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ExportRequest",
+    ),
+    (
+        "rust-observed-e3bf863bcaacb1002277",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ExportResponse",
+    ),
+    (
+        "rust-observed-04f202557574f16668a7",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ExportResponse::attributes",
+    ),
+    (
+        "rust-observed-b8bea7d94fd9b08810ed",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ExportResponse::object",
+    ),
+    (
+        "rust-observed-01a7e218a8f30f712d15",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ExportResponse::object_type",
+    ),
+    (
+        "rust-observed-d8572a0a4a3148a268cd",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ExportResponse::unique_identifier",
+    ),
+    (
+        "rust-observed-f00a8e823ff573890820",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ExportResponse::with_ttlv",
     ),
     (
         "rust-observed-e1f8406907aaf65d7c1e",

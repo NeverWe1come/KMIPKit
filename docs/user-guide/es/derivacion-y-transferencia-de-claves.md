@@ -159,6 +159,34 @@ fn inspect_export_without_formatting_material(response: &ClientBatchItemResponse
 fn main() {}
 ```
 
+## API de Export en los cuatro lenguajes
+
+Las cuatro API usan las mismas opciones de KMIP 2.1 §6.1.18 Tabla 217. El
+identificador, Key Format Type, Key Wrap Type, Key Compression Type y Key
+Wrapping Specification son opcionales; los selectores de enumeración conservan
+los valores raw desconocidos.
+
+| Lenguaje | Crear la petición | Revisar el resultado tipado |
+|---|---|---|
+| Rust | `Client::export(ExportRequest)` | `ClientBatchOutcome::Export` y `ExportResponse` |
+| C | `kmipkit_client_batch_item_export` | `kmipkit_client_batch_item_response_export` y `kmipkit_client_batch_item_response_export_ttlv` |
+| Java | `ClientBatchItem.export(...)` | `ClientBatchItemResult.exportResponse()` y `ExportResponse.close()` |
+| Python | `client_batch_item_export(...)` | `BatchItemResult.export_response` y `ExportResponse.close()` |
+
+Comprueba `Result Status` del elemento de lote antes de usar los campos de una
+respuesta correcta. Un KMIP Failure sigue siendo un resultado Export tipado y
+conserva el TTLV completo de respuesta en su orden original. En caso de éxito,
+la Tabla 218 exige Object Type, Unique Identifier, Attributes y Any Object.
+Object Type se expone como valor unsigned raw, Unique Identifier conserva su
+tipo wire, y Attributes y Any Object permanecen como TTLV genérico. En C, Java
+y Python, Any Object es una Structure de un elemento cuyo hijo conserva la
+etiqueta original del elemento polimórfico y el orden.
+
+Cierra las copias de respuesta propiedad del llamador al terminar. KMIPKit pone
+a cero la memoria que posee, pero los runtimes de Java y Python pueden conservar
+copias externas fuera de ese control. No formatees, registres ni incluyas los
+datos del objeto, Attributes o el TTLV raw de respuesta en errores.
+
 El llamador aporta cada identificador exacto y el umbral conocido de su Split
 Key. KMIPKit requiere un contexto por ocurrencia y, antes de enviar, comprueba
 que el número de entradas —incluidos identificadores repetidos— alcance el

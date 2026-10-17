@@ -855,6 +855,7 @@ class BatchItemResult:
     check_response: CheckResponse | None = field(default=None, repr=False)
     delegated_login_response: DelegatedLoginResponse | None = field(default=None, repr=False)
     derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
+    export_response: ExportResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -959,6 +960,30 @@ class DeriveKeyResponse:
     def close(self) -> None:
         """Release the caller-owned complete generic response structure."""
         self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ExportResponse:
+    """Typed Export result with independently owned opaque response structures."""
+
+    object_type_raw: int | None
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    attributes: ttlv.Structure | None = field(repr=False)
+    any_object: ttlv.Structure | None = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the owned response TTLV, Attributes, and Any Object copies."""
+        for value in (self.attributes, self.any_object, self.response_ttlv):
+            if value is not None:
+                value.close()
+
+    def __repr__(self) -> str:
+        return (
+            "ExportResponse(object_type_raw="
+            f"{self.object_type_raw!r}, unique_identifier=redacted, "
+            "attributes=redacted, any_object=redacted, response_ttlv=redacted)"
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1249,6 +1274,9 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x05
                 ):
                     derive_key_response = _derive_key_response(item)
+                export_response = None
+                if int(metadata.operation) == 0x2B:
+                    export_response = _export_response(item)
                 cryptographic_responses = (None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
@@ -1275,6 +1303,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         check_response,
                         delegated_login_response,
                         derive_key_response,
+                        export_response,
                     )
                 )
             finally:
@@ -1729,6 +1758,105 @@ def _derive_key_response(
     return DeriveKeyResponse(unique_identifier, response_ttlv)
 
 
+def _export_response(item: _ClientBatchItemResponse) -> ExportResponse | None:
+    present = ffi.new("uint8_t *")
+    payload_present = ffi.new("uint8_t *")
+    object_type = ffi.new("uint32_t *")
+    identifier = _initialize_unique_identifier_output()
+    attributes_output = ffi.new("kmipkit_ttlv_structure_t **")
+    any_object_output = ffi.new("kmipkit_ttlv_structure_t **")
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    owned_wrappers: list[ttlv.Structure] = []
+
+    try:
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_export(
+                item._pointer(),
+                present,
+                payload_present,
+                object_type,
+                identifier,
+                attributes_output,
+                any_object_output,
+            )
+        )
+        if present[0] not in (0, 1) or payload_present[0] not in (0, 1):
+            errors.raise_for_status(4)
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_export_ttlv(
+                item._pointer(), response_ttlv_present, response_ttlv_output
+            )
+        )
+        if response_ttlv_present[0] not in (0, 1) or response_ttlv_present[0] != present[0]:
+            errors.raise_for_status(4)
+
+        if present[0] == 0:
+            if (
+                payload_present[0] != 0
+                or object_type[0] != 0
+                or identifier.kind != 0
+                or attributes_output[0] != ffi.NULL
+                or any_object_output[0] != ffi.NULL
+                or response_ttlv_output[0] != ffi.NULL
+            ):
+                errors.raise_for_status(4)
+            return None
+
+        if response_ttlv_output[0] == ffi.NULL:
+            errors.raise_for_status(4)
+        if payload_present[0] == 0:
+            if (
+                object_type[0] != 0
+                or identifier.kind != 0
+                or attributes_output[0] != ffi.NULL
+                or any_object_output[0] != ffi.NULL
+            ):
+                errors.raise_for_status(4)
+            unique_identifier = None
+            raw_object_type = None
+        else:
+            if attributes_output[0] == ffi.NULL or any_object_output[0] == ffi.NULL:
+                errors.raise_for_status(4)
+            unique_identifier = _optional_output_identifier(identifier)
+            if unique_identifier is None:
+                errors.raise_for_status(4)
+            raw_object_type = int(object_type[0])
+
+        def take_structure(output: Any) -> ttlv.Structure | None:
+            handle = output[0]
+            if handle == ffi.NULL:
+                return None
+            value = ttlv._structure_from_native_address(
+                int(ffi.cast("uintptr_t", handle))
+            )
+            output[0] = ffi.NULL
+            owned_wrappers.append(value)
+            return value
+
+        attributes = take_structure(attributes_output)
+        any_object = take_structure(any_object_output)
+        response_ttlv = take_structure(response_ttlv_output)
+        if response_ttlv is None or (
+            payload_present[0] == 1 and (attributes is None or any_object is None)
+        ):
+            errors.raise_for_status(4)
+        return ExportResponse(
+            raw_object_type,
+            unique_identifier,
+            attributes,
+            any_object,
+            response_ttlv,
+        )
+    except Exception:
+        for wrapper in owned_wrappers:
+            wrapper.close()
+        for output in (attributes_output, any_object_output, response_ttlv_output):
+            if output[0] != ffi.NULL:
+                lib.kmipkit_ttlv_structure_release(output[0])
+        raise
+
+
 def _mac_response(item: _ClientBatchItemResponse) -> MacResponse | None:
     present = ffi.new("uint8_t *")
     identifier = _initialize_unique_identifier_output()
@@ -2135,6 +2263,7 @@ __all__ = [
     "CheckResponse",
     "DelegatedLoginResponse",
     "DeriveKeyResponse",
+    "ExportResponse",
     "Client",
     "CredentialEncoding",
     "Endpoint",

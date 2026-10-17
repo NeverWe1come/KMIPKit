@@ -193,6 +193,33 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates an Export request, preserving unknown Table 217 selector values. */
+    public static ClientBatchItem export(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable Long keyFormatType,
+            @Nullable Long keyWrapType,
+            @Nullable Long keyCompressionType,
+            @Nullable TtlvStructure keyWrappingSpecification) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            if (keyFormatType != null) requireU32(keyFormatType, "Key Format Type");
+            if (keyWrapType != null) requireU32(keyWrapType, "Key Wrap Type");
+            if (keyCompressionType != null) requireU32(keyCompressionType, "Key Compression Type");
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemExport(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier), keyFormatType != null,
+                            keyFormatType == null ? 0 : keyFormatType,
+                            keyWrapType != null, keyWrapType == null ? 0 : keyWrapType,
+                            keyCompressionType != null, keyCompressionType == null ? 0 : keyCompressionType,
+                            handleOrNull(keyWrappingSpecification)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Derive Key request preserving ordered and repeated source identifiers. */
     public static ClientBatchItem deriveKey(
             long objectType,

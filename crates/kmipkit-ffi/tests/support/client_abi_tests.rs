@@ -11,8 +11,8 @@ use base64::Engine;
 use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
-    DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    ExportRequest, GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
+    DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
+    GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
     SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;

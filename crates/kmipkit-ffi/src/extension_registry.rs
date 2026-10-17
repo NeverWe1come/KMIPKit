@@ -36,10 +36,10 @@ use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
-    DeriveKeyRequest, GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest,
-    ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    UniqueIdentifier,
+    DeriveKeyRequest, ExportRequest, GetUsageAllocationRequest, HashRequest, KeyCompressionType,
+    KeyFormatType, KeyWrapType, MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext,
+    OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3125,6 +3125,61 @@ pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
         *out = try_ffi!(batch_item_handle(ClientRequest::get_usage_allocation(
             request
         )));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 2.1 Export request from its optional Table 217 selectors.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_export(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_key_format_type: u8,
+    key_format_type: u32,
+    has_key_wrap_type: u8,
+    key_wrap_type: u32,
+    has_key_compression_type: u8,
+    key_compression_type: u32,
+    key_wrapping_specification: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let key_format_type = match has_key_format_type {
+            0 => None,
+            1 => Some(KeyFormatType::from_raw(key_format_type)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let key_wrap_type = match has_key_wrap_type {
+            0 => None,
+            1 => Some(KeyWrapType::from_raw(key_wrap_type)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let key_compression_type = match has_key_compression_type {
+            0 => None,
+            1 => Some(KeyCompressionType::from_raw(key_compression_type)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let wrapping_specification =
+            try_ffi!(copy_structure_handle(key_wrapping_specification, false));
+
+        let mut request = ExportRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(value) = key_format_type {
+            request = request.with_key_format_type(value);
+        }
+        if let Some(value) = key_wrap_type {
+            request = request.with_key_wrap_type(value);
+        }
+        if let Some(value) = key_compression_type {
+            request = request.with_key_compression_type(value);
+        }
+        if let Some(value) = wrapping_specification {
+            request = request.with_key_wrapping_specification(value);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Export(request)));
         SUCCESS
     })
 }

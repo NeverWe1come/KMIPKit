@@ -1585,6 +1585,128 @@ pub extern "C" fn kmipkit_client_batch_item_response_derive_key_ttlv(
     })
 }
 
+/// Copies the typed Export result, retaining unknown Object Type values and exposing opaque TTLV.
+///
+/// `out_present` is set for every typed Export result, including KMIP Failure. Payload outputs are
+/// populated only when the KMIP Result Status is Success. The returned Attributes and Any Object
+/// structures are independent, zeroizing copies; Any Object contains its original outer item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_export(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_payload_present: *mut u8,
+    out_object_type: *mut u32,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_attributes: *mut *mut kmipkit_ttlv_structure_t,
+    out_any_object: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let payload_present = scalar_out!(out_payload_present);
+        let object_type = scalar_out!(out_object_type);
+        let attributes_out = out_slot!(out_attributes);
+        let any_object_out = out_slot!(out_any_object);
+        *present = 0;
+        *payload_present = 0;
+        *object_type = 0;
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(export) = item.outcome().export_response() else {
+            return SUCCESS;
+        };
+        *present = 1;
+        if export.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+
+        let (Some(raw_object_type), Some(identifier), Some(attributes), Some(any_object)) = (
+            export.object_type(),
+            export.unique_identifier(),
+            export.attributes(),
+            export.object(),
+        ) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let attributes = try_ffi!(attributes.with_value(|value| match value {
+            ValueView::Structure(structure) => super::clone_structure_view(&structure),
+            _ => Err(ERROR_INTERNAL),
+        }));
+        let mut any_object_structure = Structure::new();
+        let any_object_item = try_ffi!(any_object.try_clone().map_err(model_status));
+        if let Err(error) = any_object_structure.try_push(any_object_item) {
+            return record_ffi_error(model_status(error));
+        }
+        let attributes_handle =
+            match try_make_handle(Kind::Structure, HandleValue::Structure(attributes)) {
+                Ok(handle) => handle,
+                Err(status) => return record_ffi_error(status),
+            };
+        let any_object_handle = match try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(any_object_structure),
+        ) {
+            Ok(handle) => handle,
+            Err(status) => {
+                release(attributes_handle, Kind::Structure);
+                return record_ffi_error(status);
+            }
+        };
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier)) {
+            release(attributes_handle, Kind::Structure);
+            release(any_object_handle, Kind::Structure);
+            return record_ffi_error(status);
+        }
+        *object_type = raw_object_type.raw();
+        *attributes_out = attributes_handle;
+        *any_object_out = any_object_handle;
+        *payload_present = 1;
+        SUCCESS
+    })
+}
+
+/// Returns an independent copy of the complete ordered Export response TTLV, including failures.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_export_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(export) = item.outcome().export_response() {
+            let structure = try_ffi!(
+                export
+                    .with_ttlv(|view| view.try_clone())
+                    .map_err(model_status)
+            );
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_create_key_pair(
     item: *mut kmipkit_client_batch_item_response_t,

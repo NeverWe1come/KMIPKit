@@ -103,6 +103,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetUsageAllocationResponse(values);
     }
 
+    /** Returns a typed Export response for both Success and KMIP Failure outcomes. */
+    public Optional<ExportResponse> exportResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseExport);
+        return parseExportResponse(values);
+    }
+
     /**
      * Returns the resolved identifier and complete generic TTLV from a successful Derive Key
      * response. The returned response owns an independent TTLV copy; callers must close it.
@@ -183,6 +190,54 @@ public final class ClientBatchItemResult implements AutoCloseable {
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
 
         @Override public String toString() { return "CreateResponse[objectType=" + objectType + ", uniqueIdentifier=redacted]"; }
+    }
+
+    /** Typed KMIP Export result and an owned copy of its complete ordered response TTLV. */
+    public static final class ExportResponse implements AutoCloseable {
+        private final OptionalLong objectTypeRaw;
+        private final Optional<UniqueIdentifier> uniqueIdentifier;
+        private final @Nullable TtlvStructure attributes;
+        private final @Nullable TtlvStructure anyObject;
+        private final TtlvStructure responseTtlv;
+
+        private ExportResponse(OptionalLong objectTypeRaw,
+                Optional<UniqueIdentifier> uniqueIdentifier,
+                @Nullable TtlvStructure attributes,
+                @Nullable TtlvStructure anyObject,
+                TtlvStructure responseTtlv) {
+            this.objectTypeRaw = objectTypeRaw;
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.attributes = attributes;
+            this.anyObject = anyObject;
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the raw unsigned Object Type only when the server returned Success. */
+        public OptionalLong objectTypeRaw() { return objectTypeRaw; }
+        /** Returns the exact Unique Identifier wire value only on Success. */
+        public Optional<UniqueIdentifier> uniqueIdentifier() { return uniqueIdentifier; }
+        /** Returns the required Attributes on Success, or empty for a KMIP Failure. */
+        public Optional<TtlvStructure> attributes() { return Optional.ofNullable(attributes); }
+        /** Returns the original Any Object item, including its outer tag and ordered contents. */
+        public Optional<TtlvStructure> anyObject() { return Optional.ofNullable(anyObject); }
+        /** Returns the complete ordered response TTLV, including KMIP Failure responses. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override
+        public void close() {
+            if (attributes != null) attributes.close();
+            if (anyObject != null) anyObject.close();
+            responseTtlv.close();
+        }
+
+        @Override
+        public String toString() {
+            return "ExportResponse[objectTypeRaw=" + objectTypeRaw
+                    + ", uniqueIdentifier=" + (uniqueIdentifier.isPresent() ? "redacted" : "absent")
+                    + ", attributes=" + (attributes == null ? "absent" : "present")
+                    + ", anyObject=" + (anyObject == null ? "absent" : "present")
+                    + ", responseTtlv=redacted]";
+        }
     }
 
     /** Successful Certify response with its owned complete generic TTLV. */
@@ -804,6 +859,58 @@ public final class ClientBatchItemResult implements AutoCloseable {
                     identifierRecord(tuple[1]), responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<ExportResponse> parseExportResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Export response is invalid");
+        long[] fields = requireLongArray(tuple[0], 3, "native Export response is invalid");
+        long[] handles = requireLongArray(tuple[2], 3, "native Export response is invalid");
+        long attributesHandle = handles[0];
+        long anyObjectHandle = handles[1];
+        long responseTtlvHandle = handles[2];
+        TtlvStructure attributes = null;
+        TtlvStructure anyObject = null;
+        TtlvStructure responseTtlv = null;
+        try {
+            if (fields[0] == 0) {
+                if (fields[1] != 0 || fields[2] != 0 || tuple[1] != null
+                        || attributesHandle != 0 || anyObjectHandle != 0 || responseTtlvHandle != 0) {
+                    throw new InvalidInputException("native absent Export response contains fields");
+                }
+                return Optional.empty();
+            }
+            requirePresent(fields[0]);
+            if (fields[1] != 0 && fields[1] != 1) {
+                throw new InvalidInputException("native Export payload presence is invalid");
+            }
+            if (responseTtlvHandle <= 0) {
+                throw new InvalidInputException("native Export response TTLV is missing");
+            }
+            responseTtlv = TtlvStructure.fromNative(responseTtlvHandle, null);
+            if (fields[1] == 0) {
+                if (tuple[1] != null || attributesHandle != 0 || anyObjectHandle != 0) {
+                    throw new InvalidInputException("native failed Export response contains payload fields");
+                }
+                return Optional.of(new ExportResponse(OptionalLong.empty(), Optional.empty(),
+                        null, null, responseTtlv));
+            }
+            if (tuple[1] == null || attributesHandle <= 0 || anyObjectHandle <= 0) {
+                throw new InvalidInputException("native successful Export response is incomplete");
+            }
+            UniqueIdentifier identifier = identifierRecord(tuple[1]);
+            attributes = TtlvStructure.fromNative(attributesHandle, null);
+            anyObject = TtlvStructure.fromNative(anyObjectHandle, null);
+            return Optional.of(new ExportResponse(OptionalLong.of(fields[2]), Optional.of(identifier),
+                    attributes, anyObject, responseTtlv));
+        } catch (RuntimeException exception) {
+            if (attributes != null) attributes.close();
+            else if (attributesHandle > 0) TtlvStructure.fromNative(attributesHandle, null).close();
+            if (anyObject != null) anyObject.close();
+            else if (anyObjectHandle > 0) TtlvStructure.fromNative(anyObjectHandle, null).close();
+            if (responseTtlv != null) responseTtlv.close();
+            else if (responseTtlvHandle > 0) TtlvStructure.fromNative(responseTtlvHandle, null).close();
             throw exception;
         }
     }

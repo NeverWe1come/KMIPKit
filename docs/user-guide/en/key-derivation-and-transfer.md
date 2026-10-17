@@ -156,6 +156,32 @@ fn inspect_export_without_formatting_material(response: &ClientBatchItemResponse
 fn main() {}
 ```
 
+## Export API across languages
+
+All four language surfaces use the same KMIP 2.1 §6.1.18 Table 217 choices.
+The identifier, Key Format Type, Key Wrap Type, Key Compression Type, and Key
+Wrapping Specification are optional; enum selectors retain unknown raw values.
+
+| Language | Create the request | Inspect the typed result |
+|---|---|---|
+| Rust | `Client::export(ExportRequest)` | `ClientBatchOutcome::Export` and `ExportResponse` |
+| C | `kmipkit_client_batch_item_export` | `kmipkit_client_batch_item_response_export` and `kmipkit_client_batch_item_response_export_ttlv` |
+| Java | `ClientBatchItem.export(...)` | `ClientBatchItemResult.exportResponse()` and `ExportResponse.close()` |
+| Python | `client_batch_item_export(...)` | `BatchItemResult.export_response` and `ExportResponse.close()` |
+
+Read the batch item's `Result Status` before using successful payload fields.
+A KMIP Failure remains a typed Export result and retains its complete ordered
+response TTLV. On Success, Table 218 requires Object Type, Unique Identifier,
+Attributes, and Any Object. Object Type is exposed as a raw unsigned value,
+Unique Identifier retains its wire type, and Attributes and Any Object remain
+generic TTLV. The C, Java, and Python Any Object value is a one-item Structure
+whose child retains the original polymorphic item tag and order.
+
+Close caller-owned response copies when finished. KMIPKit zeroizes memory it
+owns, but Java and Python runtimes may retain external copies outside that
+control. Do not format, log, or place object data, Attributes, or raw response
+TTLV in errors.
+
 The caller supplies exact identifier occurrences and their known Split Key
 thresholds. KMIPKit requires one context per occurrence and checks that the
 number of entries, including repeated identifiers, meets the largest supplied

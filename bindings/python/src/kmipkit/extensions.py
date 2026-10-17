@@ -1696,6 +1696,51 @@ def client_batch_item_get_usage_allocation(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_export(
+    unique_identifier: UniqueIdentifier | None = None,
+    key_format_type: int | None = None,
+    key_wrap_type: int | None = None,
+    key_compression_type: int | None = None,
+    key_wrapping_specification: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.18 Export item with optional Table 217 selectors."""
+    if key_format_type is None:
+        has_key_format_type = 0
+        raw_key_format_type = 0
+    else:
+        has_key_format_type = 1
+        raw_key_format_type = _integer_range(key_format_type, 0, 0xFFFF_FFFF)
+    if key_wrap_type is None:
+        has_key_wrap_type = 0
+        raw_key_wrap_type = 0
+    else:
+        has_key_wrap_type = 1
+        raw_key_wrap_type = _integer_range(key_wrap_type, 0, 0xFFFF_FFFF)
+    if key_compression_type is None:
+        has_key_compression_type = 0
+        raw_key_compression_type = 0
+    else:
+        has_key_compression_type = 1
+        raw_key_compression_type = _integer_range(key_compression_type, 0, 0xFFFF_FFFF)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_export",
+            (
+                identifier,
+                has_key_format_type,
+                raw_key_format_type,
+                has_key_wrap_type,
+                raw_key_wrap_type,
+                has_key_compression_type,
+                raw_key_compression_type,
+                _native_structure(key_wrapping_specification),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_hash(
     parameters: ttlv.Structure,
     data: ttlv.Value | None = None,
@@ -1926,6 +1971,7 @@ __all__ = [
     "client_batch_item_check",
     "client_batch_item_delegated_login",
     "client_batch_item_get_usage_allocation",
+    "client_batch_item_export",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",
