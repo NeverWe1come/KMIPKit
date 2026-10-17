@@ -927,6 +927,42 @@ trait Example { fn declaration(&self); }
         self.assertFalse(excluded)
         self.assertTrue(adjacent)
 
+    def test_coverage_exclusion_markers_inside_literals_are_not_comments(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "crates/kmipkit-ffi/src/client_abi.rs",
+                'let note = r#"// COVERAGE-EXCLUDE: string contents"#;\n',
+            ),
+            (
+                "bindings/python/src/kmipkit/client.py",
+                'note = "# COVERAGE-EXCLUDE: string contents"\n',
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                'const char* note = R"tag(// COVERAGE-EXCLUDE: raw string contents)tag";\n',
+            ),
+            (
+                "bindings/java/src/main/java/org/kmipkit/extensions/Client.java",
+                'String note = "// COVERAGE-EXCLUDE: string contents";\n',
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "int value = 1; /* // COVERAGE-EXCLUDE: block comment contents */\n",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative, source_text in cases:
+                with self.subTest(source=relative, text=source_text):
+                    source = root / relative
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    source.write_text(source_text, encoding="utf-8")
+
+                    is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+                    self.assertTrue(is_executable)
+
     def test_changed_rust_line_parser_decodes_git_quoted_unicode_paths(self) -> None:
         self.require_gate()
         diff = r'''diff --git "a/crates/kmipkit-ttlv/src/parser-\303\261 name.rs" "b/crates/kmipkit-ttlv/src/parser-\303\261 name.rs"
