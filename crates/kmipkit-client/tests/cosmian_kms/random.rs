@@ -223,6 +223,32 @@ fn valid_rng_rows_construct_and_encode_the_requested_typed_payloads_offline() {
     }
 }
 
+#[test]
+fn valid_rng_observations_record_response_validation_failures_without_interop() {
+    let rows = super::common::manifest_rows(FAMILY).expect("random manifest rows");
+
+    for case in LIVE_CASES {
+        let row = manifest_row(&rows, case.case_id);
+        let observed = &row["observed_result"];
+        assert_eq!(
+            observed["classification"], "response_validation_failed",
+            "{}",
+            case.case_id
+        );
+        assert_eq!(observed["request_sent"], true, "{}", case.case_id);
+        assert_eq!(observed["target_request_sent"], true, "{}", case.case_id);
+        assert_eq!(observed["response_received"], true, "{}", case.case_id);
+        assert_eq!(observed["interoperability"], false, "{}", case.case_id);
+        assert_eq!(observed["result_status"], 1, "{}", case.case_id);
+        assert_eq!(observed["result_reason"], 4, "{}", case.case_id);
+        assert_eq!(
+            observed["response_operation_present"], false,
+            "{}",
+            case.case_id
+        );
+    }
+}
+
 fn assert_normative_exclusion(rows: &[serde_json::Value], case: MatrixCase) {
     let row = manifest_row(rows, case.case_id);
     assert_eq!(
