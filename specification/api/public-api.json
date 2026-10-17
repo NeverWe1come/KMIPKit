@@ -242285,6 +242285,126 @@
     },
     {
       "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__dataclass_fields__",
+      "reason": "This exact CheckResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __dataclass_fields__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__dataclass_params__",
+      "reason": "This exact CheckResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __dataclass_params__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__delattr__",
+      "reason": "This exact CheckResponse member is Python dataclass record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __delattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__eq__",
+      "reason": "This exact CheckResponse member is Python dataclass record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __eq__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__hash__",
+      "reason": "This exact CheckResponse member is Python dataclass record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __hash__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__init__",
+      "reason": "This exact CheckResponse constructor is generated Python dataclass machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __init__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__match_args__",
+      "reason": "This exact CheckResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __match_args__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__repr__",
+      "reason": "This exact CheckResponse formatter is a Python presentation detail, not an independent cross-language operation; the unique identifier and generic TTLV are excluded from its representation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __repr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__setattr__",
+      "reason": "This exact CheckResponse member is Python dataclass record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __setattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.CheckResponse.__slots__",
+      "reason": "This exact CheckResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __slots__."
+    },
+    {
+      "packageId": "python-kmipkit",
       "exportName": "kmipkit.client.CertifyResponse.__dataclass_fields__",
       "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
       "approvalSource": {
