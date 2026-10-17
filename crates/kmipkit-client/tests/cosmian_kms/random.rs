@@ -318,7 +318,10 @@ fn cosmian_528_random_matrix_no_parameter_cases() {
         match run_live_case(case) {
             Ok(()) => println!("case_id={} classification=typed_success", case.case_id),
             Err(error) => {
-                println!("{}", rng_failure_observation_line(case.case_id, error.as_ref()));
+                println!(
+                    "{}",
+                    rng_failure_observation_line(case.case_id, error.as_ref())
+                );
                 failures.push(case.case_id);
             }
         }
@@ -334,19 +337,21 @@ fn cosmian_528_random_matrix_no_parameter_cases() {
 
 fn rng_failure_observation_line(case_id: &str, error: &dyn Error) -> String {
     let detail = error.to_string();
-    let classification = if detail.contains("typed response rejected by KMIPKit") {
-        "response_validation_failed"
-    } else if detail.contains("KMIP Result Status") || detail.contains("Result Status") {
-        "rejected"
-    } else {
-        "failed"
-    };
-
-    match classification {
-        "response_validation_failed" | "rejected" => format!(
-            "case_id={case_id} classification={classification} expected_outcome=typed_success observed={classification} request_sent=true response_received=true interoperability=false detail={error}"
+    match rng_error_classification(&detail) {
+        Some(classification) => format!(
+            "case_id={case_id} classification={classification} expected_outcome=typed_success observed={classification} request_sent=true response_received=true interoperability=false detail={detail}"
         ),
-        _ => format!("case_id={case_id} classification=failed detail={error}"),
+        None => format!("case_id={case_id} classification=failed detail={detail}"),
+    }
+}
+
+fn rng_error_classification(detail: &str) -> Option<&'static str> {
+    if detail.contains("typed response rejected by KMIPKit") {
+        Some("response_validation_failed")
+    } else if detail.contains("KMIP Result Status") || detail.contains("Result Status") {
+        Some("rejected")
+    } else {
+        None
     }
 }
 
