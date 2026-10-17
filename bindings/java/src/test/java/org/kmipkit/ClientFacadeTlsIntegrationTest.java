@@ -237,7 +237,9 @@ final class ClientFacadeTlsIntegrationTest {
                                     60L, null, 3, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(12)))
                     .add(ClientBatchItem.deriveKey(7,
-                                    List.of(UniqueIdentifier.textString("source-key")),
+                                    List.of(UniqueIdentifier.textString("source-key"),
+                                            UniqueIdentifier.enumeration(0xfedc_ba98L),
+                                            UniqueIdentifier.integer(-17)),
                                     0xfeed_beefL, derivationParameters, derivedAttributes)
                             .withUniqueBatchItemId(uniqueBatchItemId(13)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
@@ -394,9 +396,35 @@ final class ClientFacadeTlsIntegrationTest {
             assertTrue(request.length >= 8);
             assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
                     new byte[] {request[0], request[1], request[2]});
+            assertTrue(containsOrderedDeriveKeyIdentifiersInBatchItem(request,
+                    item(0x420094, 7, "source-key".getBytes(StandardCharsets.UTF_8)),
+                    enumeration(0x420094, (int) 0xfedc_ba98L),
+                    item(0x420094, 2, integer(-17))));
         } finally {
             listener.close();
         }
+    }
+
+    @Test
+    void deriveKeyWireAssertionRequiresTheExactOrderedIdentifierList() throws Exception {
+        byte[] textIdentifier = item(0x420094, 7,
+                "source-key".getBytes(StandardCharsets.UTF_8));
+        byte[] enumerationIdentifier = enumeration(0x420094, (int) 0xfedc_ba98L);
+        byte[] integerIdentifier = item(0x420094, 2, integer(-17));
+        byte[][] expected = {textIdentifier, enumerationIdentifier, integerIdentifier};
+        byte[] extraIdentifier = item(0x420094, 2, integer(-18));
+        byte[] operation = enumeration(0x42005c, 5);
+
+        byte[] exactRequest = structure(0x420078,
+                structure(0x42000f, operation,
+                        structure(0x420079, textIdentifier, enumerationIdentifier, integerIdentifier)));
+        byte[] requestWithExtraIdentifier = structure(0x420078,
+                structure(0x42000f, operation,
+                        structure(0x420079, textIdentifier, extraIdentifier,
+                                enumerationIdentifier, integerIdentifier)));
+
+        assertTrue(containsOrderedDeriveKeyIdentifiersInBatchItem(exactRequest, expected));
+        assertFalse(containsOrderedDeriveKeyIdentifiersInBatchItem(requestWithExtraIdentifier, expected));
     }
 
     @Test
@@ -801,6 +829,48 @@ final class ClientFacadeTlsIntegrationTest {
             }
         }
         return false;
+    }
+
+    private static boolean containsOrderedDeriveKeyIdentifiersInBatchItem(
+            byte[] bytes, byte[]... identifiers) throws Exception {
+        byte[] batchItemTagAndType = {0x42, 0x00, 0x0f, 0x01};
+        byte[] deriveKeyOperation = enumeration(0x42005c, 5);
+        for (int offset = 0; offset <= bytes.length - 8; offset++) {
+            if (!matchesAt(bytes, batchItemTagAndType, offset)) continue;
+            int valueLength = ByteBuffer.wrap(bytes, offset + 4, 4).getInt();
+            int valueStart = offset + 8;
+            if (valueLength < 0 || valueLength > bytes.length - valueStart) continue;
+            int valueEnd = valueStart + valueLength;
+            int searchStart = indexOf(bytes, deriveKeyOperation, valueStart, valueEnd);
+            if (searchStart < 0) continue;
+            searchStart += deriveKeyOperation.length;
+            boolean identifiersMatchInOrder = true;
+            for (byte[] identifier : identifiers) {
+                int identifierStart = indexOf(bytes, identifier, searchStart, valueEnd);
+                if (identifierStart < 0) {
+                    identifiersMatchInOrder = false;
+                    break;
+                }
+                searchStart = identifierStart + identifier.length;
+            }
+            if (identifiersMatchInOrder) return true;
+        }
+        return false;
+    }
+
+    private static int indexOf(byte[] bytes, byte[] sequence, int start, int end) {
+        for (int offset = start; offset <= end - sequence.length; offset++) {
+            if (matchesAt(bytes, sequence, offset)) return offset;
+        }
+        return -1;
+    }
+
+    private static boolean matchesAt(byte[] bytes, byte[] sequence, int offset) {
+        if (offset < 0 || offset > bytes.length - sequence.length) return false;
+        for (int index = 0; index < sequence.length; index++) {
+            if (bytes[offset + index] != sequence[index]) return false;
+        }
+        return true;
     }
 
     private static long tagAt(TtlvStructureView structure, long index) {
