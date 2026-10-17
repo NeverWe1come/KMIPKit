@@ -76,16 +76,18 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 
 De las **56** filas de operaciones KMIP `client_1_0`, **42 / 56** siguen en
-estado `blocked`. Diez filas están `declared`: Create, Create Key Pair, Create
-Split Key, Derive Key, Discover Versions, Hash, MAC, MAC Verify, Sign y
-Signature Verify. Sus mapeos de solicitud y respuesta para cuatro lenguajes
-están registrados; `declared` no demuestra la conformidad completa de las
-operaciones. No se debe inferir que una operación está disponible porque haya
-tipos o código en otra parte del repositorio. Cuatro mapeos de operación están
-`verified`: Certify, Check, Delegated Login y Get Usage Allocation. El mapeo de
-Get Usage Allocation incluye su petición con identificador opcional y contador
-con signo, la respuesta con identificador resuelto y los resultados comunes
-del lote en Rust, C, Java y Python. Esta evidencia de mapeo no afirma la
+estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
+Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
+Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
+`declared` no demuestra la conformidad completa de las operaciones. No se debe
+inferir que una operación está disponible porque haya tipos o código en otra
+parte del repositorio. Cinco mapeos de operación están `verified`: Certify,
+Check, Delegated Login, Derive Key y Get Usage Allocation. El mapeo de Derive
+Key rechaza una respuesta correcta que no incluya el Unique Identifier
+obligatorio y conserva el TTLV completo y ordenado en los cuatro lenguajes. El
+mapeo de Get Usage Allocation incluye su petición con identificador opcional y
+contador con signo, la respuesta con identificador resuelto y los resultados
+comunes del lote en Rust, C, Java y Python. Esta evidencia de mapeo no afirma la
 conformidad completa de las operaciones. Esta instantánea no afirma paridad
 completa de operaciones, compatibilidad con un perfil ni certificación formal
 de KMIPKit.

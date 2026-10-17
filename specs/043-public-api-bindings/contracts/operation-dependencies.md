@@ -19,7 +19,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.11 | Decrypt | KMIPKIT-0019 | Candidate owner (autonomous implementation authorized, specification not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-045` and `KMIPKIT-DISC-046` remain tracked |
 | §6.1.12 | Delegated Login | KMIPKIT-0038 | Approved owner; KMIPKIT-0038 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
 | §6.1.13 | Delete Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
-| §6.1.14 | Derive Key | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.14 | Derive Key | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; four-language API mapping and parity evidence verified in CI run `39063120154` on `7fef6d24`; full operation conformance remains a separate requirement |
 | §6.1.15 | Destroy | KMIPKIT-0018 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.16 | Discover Versions | KMIPKIT-0007 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.17 | Encrypt | KMIPKIT-0019 | Candidate owner (autonomous implementation authorized, specification not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-045` and `KMIPKIT-DISC-046` remain tracked |

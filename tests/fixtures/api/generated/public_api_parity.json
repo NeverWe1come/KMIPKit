@@ -22590,7 +22590,7 @@
       "section": "6.1.12"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved for implementation — 2026-10-11",
         "kind": "feature-specification",
@@ -52108,7 +52108,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "rust-observed-4bb888b1c681b20dd34d",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_client::Client::derive_key",
       "kind": "associated-item",
       "languageMappings": {
@@ -52130,6 +52130,14 @@
         }
       },
       "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0037-FR-001",
@@ -52162,7 +52170,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:response:rustVariant",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_client::ClientBatchOutcome::DeriveKey",
       "kind": "variant",
       "languageMappings": {
@@ -52492,7 +52500,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:response:rust",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_client::ClientBatchOutcome::derive_key_response",
       "kind": "associated-item",
       "languageMappings": {
@@ -54188,7 +54196,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:type:rust",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_protocol::DeriveKeyResponse",
       "kind": "type",
       "languageMappings": {
@@ -54250,7 +54258,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:uniqueIdentifier:rust",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_protocol::DeriveKeyResponse::unique_identifier",
       "kind": "associated-item",
       "languageMappings": {
@@ -54312,7 +54320,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:responseTtlv:rust",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_protocol::DeriveKeyResponse::with_ttlv",
       "kind": "associated-item",
       "languageMappings": {
@@ -81717,7 +81725,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:constructor:c",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_client_batch_item_derive_key",
       "kind": "c-symbol",
       "languageMappings": {
@@ -81739,6 +81747,14 @@
         }
       },
       "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0037-FR-001",
@@ -81771,7 +81787,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:constructor:java",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItem.deriveKey",
       "kind": "java-member",
       "languageMappings": {
@@ -81793,6 +81809,14 @@
         }
       },
       "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0037-FR-001",
@@ -81825,7 +81849,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:constructor:python",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit.extensions.client_batch_item_derive_key",
       "kind": "python-export",
       "languageMappings": {
@@ -81847,6 +81871,14 @@
         }
       },
       "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ],
       "parityScope": "four-language",
       "requirementIds": [
         "KMIPKIT-0037-FR-001",
@@ -81879,7 +81911,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:response:c",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_client_batch_item_response_derive_key",
       "kind": "c-symbol",
       "languageMappings": {
@@ -81941,7 +81973,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:response:java",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.deriveKeyResponse",
       "kind": "java-member",
       "languageMappings": {
@@ -82003,7 +82035,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:type:java",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DeriveKeyResponse",
       "kind": "type",
       "languageMappings": {
@@ -82065,7 +82097,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:uniqueIdentifier:java",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DeriveKeyResponse.uniqueIdentifier",
       "kind": "java-member",
       "languageMappings": {
@@ -82127,7 +82159,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:response:python",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit.client.BatchItemResult.derive_key_response",
       "kind": "field",
       "languageMappings": {
@@ -82189,7 +82221,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:type:python",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit.client.DeriveKeyResponse",
       "kind": "type",
       "languageMappings": {
@@ -82251,7 +82283,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:uniqueIdentifier:python",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit.client.DeriveKeyResponse.unique_identifier",
       "kind": "field",
       "languageMappings": {
@@ -82313,7 +82345,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:responseTtlv:c",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit_client_batch_item_response_derive_key_ttlv",
       "kind": "c-symbol",
       "languageMappings": {
@@ -82375,7 +82407,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:responseTtlv:java",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DeriveKeyResponse.responseTtlv",
       "kind": "java-member",
       "languageMappings": {
@@ -82437,7 +82469,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:responseTtlv:python",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit.client.DeriveKeyResponse.response_ttlv",
       "kind": "field",
       "languageMappings": {
@@ -82499,7 +82531,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:responseTtlv:javaClose",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DeriveKeyResponse.close",
       "kind": "java-member",
       "languageMappings": {
@@ -82562,7 +82594,7 @@
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
       "declarationId": "T046:result:responseTtlv:pythonClose",
-      "declarationState": "declared",
+      "declarationState": "verified",
       "exportName": "kmipkit.client.DeriveKeyResponse.close",
       "kind": "python-export",
       "languageMappings": {

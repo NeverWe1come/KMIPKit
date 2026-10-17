@@ -72,17 +72,19 @@ changes to this table.
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
 Of the **56** KMIP `client_1_0` operation rows, **42 / 56** remain `blocked`.
-Ten rows are `declared`: Create, Create Key Pair, Create Split Key, Derive Key,
-Discover Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their
-four-language request and response mappings are recorded; `declared` is not
-evidence of complete operation conformance. Do not infer operation availability
-from types or implementation code elsewhere in the repository. Four operation
-mappings are `verified`: Certify, Check, Delegated Login, and Get Usage
-Allocation. The Get Usage Allocation mapping includes its optional identifier
-and signed count request, resolved identifier response, and common batch
-outcomes in Rust, C, Java, and Python. This mapping evidence does not claim full
-operation conformance. KMIPKit does not claim full operation parity, a supported
-profile, or formal certification from this snapshot.
+Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
+Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
+request and response mappings are recorded; `declared` is not evidence of
+complete operation conformance. Do not infer operation availability from types
+or implementation code elsewhere in the repository. Five operation mappings
+are `verified`: Certify, Check, Delegated Login, Derive Key, and Get Usage
+Allocation. The Derive Key mapping rejects a successful result without its
+required Unique Identifier and preserves the complete ordered response TTLV in
+all four languages. The Get Usage Allocation mapping includes its optional
+identifier and signed count request, resolved identifier response, and common
+batch outcomes in Rust, C, Java, and Python. This mapping evidence does not
+claim full operation conformance. KMIPKit does not claim full operation parity,
+a supported profile, or formal certification from this snapshot.
 
 For the authoritative operation owners and per-capability mappings, see the
 [manifest](../../../specification/api/public-api.json) and the [public API

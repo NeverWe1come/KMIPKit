@@ -108044,7 +108044,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -108069,7 +108069,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_derive_key"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "rust-observed-c1b5fc8d2a0980e520c3",
@@ -108798,7 +108806,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -108825,13 +108833,13 @@
         }
       },
       "parityEvidenceIds": [
-    "bindings/c/tests/client_abi_consumer.c",
-    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
         "bindings/python/tests/test_derive_key_operation.py",
         "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
       ]
@@ -110010,7 +110018,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -197142,7 +197150,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -197232,7 +197240,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -197294,7 +197302,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243287,7 +243295,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243312,7 +243320,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_derive_key"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T046:constructor:java",
@@ -243341,7 +243357,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243366,7 +243382,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_derive_key"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T046:constructor:python",
@@ -243395,7 +243419,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243420,7 +243444,15 @@
           "packageId": "python-kmipkit",
           "name": "kmipkit.extensions.client_batch_item_derive_key"
         }
-      }
+      },
+      "parityEvidenceIds": [
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
+        "bindings/python/tests/test_derive_key_operation.py",
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
+      ]
     },
     {
       "declarationId": "T046:response:c",
@@ -243449,7 +243481,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243511,7 +243543,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243573,7 +243605,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243635,7 +243667,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243697,7 +243729,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243759,7 +243791,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243821,7 +243853,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243883,7 +243915,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -243945,7 +243977,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -244007,7 +244039,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -244069,7 +244101,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -244132,7 +244164,7 @@
         "KMIPKIT-REQ-SPEC-7.12-003",
         "KMIPKIT-REQ-SPEC-7.12-005-001"
       ],
-      "declarationState": "declared",
+      "declarationState": "verified",
       "parityScope": "four-language",
       "approvalSource": {
         "kind": "feature-specification",
@@ -249762,7 +249794,7 @@
       "name": "Derive Key",
       "section": "6.1.14",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0037"

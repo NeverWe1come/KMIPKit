@@ -2902,10 +2902,11 @@ Current local verification on the feature branch:
 The Windows build emitted the existing AWS-LC `stdalign_check.c`/NASM and
 MSVC linker warnings; the affected test commands completed successfully. The
 local Windows environment does not provide the repository's aggregate LLVM
-coverage result. T046 remains unchecked and the manifest row remains
-`declared` until the current pushed head passes the required cross-platform CI
-and changed-code coverage gates. These local results are not an OASIS
-certification, profile-conformance, or interoperability claim.
+coverage result. At this earlier checkpoint, T046 remained unchecked and its
+manifest row remained `declared` pending current-head CI and changed-code
+coverage. The final verification below records the later result. These local
+results are not an OASIS certification, profile-conformance, or interoperability
+claim.
 
 ### T046 follow-up — require the success Unique Identifier (2026-10-17)
 
@@ -2923,12 +2924,11 @@ mappers.
 | Green | `612bdaa7` | Full Python suite with coverage; `mvn --batch-mode --file bindings/java/pom.xml clean verify` | Python: 419 passed, 98.86% coverage. Java: 237 tests, 0 failures, 0 errors, 3 documented skips. Both adapters now raise their invalid-input error for a missing success identifier. |
 | Refactor | `6c4707dd` | Focused Python Derive Key tests; focused Java mapping test; `git diff --check` | Python helper and Java internal parser now return non-optional response types after successful-response validation. Public Java `Optional` behavior for non-success results is unchanged. Focused tests pass: Python 13; Java 4. |
 
-Independent QA and scoped security re-reviews found no actionable issues. The
-cross-platform run `39063019503` on the final pushed head remains pending;
-T046 stays unchecked and its manifest `apiState` stays `declared` until the
-current-head CI and coverage gates pass. This scoped review does not replace
-the qualified human 1.0 security review. No conformance or certification claim
-is made.
+Independent QA and scoped security re-reviews found no actionable issues. At
+this review checkpoint, cross-platform run `39063019503` had not completed; see
+the final verification below for the later current-head CI result. This scoped
+review does not replace the qualified human 1.0 security review. No conformance
+or certification claim is made.
 
 ### Coverage gate integrity follow-up
 
@@ -2952,9 +2952,9 @@ counted as executable lines.
 | Green | `7c5c52ab` | Full coverage-gate unit suite | PASS: 62 tests, 3 skipped; includes real-comment reason validation and all parser regressions. |
 
 The earlier PR CI run `39045613758` targeted `dd7487c` and failed before these
-corrections were pushed; its result does not validate the current tree. The
-updated branch still requires a fresh cross-platform CI run and aggregate
-coverage result before T046 can be checked off.
+corrections were pushed; its result does not validate the current tree. At that
+checkpoint the branch still required a fresh cross-platform CI run and
+aggregate coverage result before T046 could be checked off.
 
 ### T046 follow-up — reconcile Derive Key export and readiness contracts
 
@@ -2979,12 +2979,45 @@ The manifest now records only the exact generated Python dataclass members as
 approved exclusions, and its outputs are regenerated from the manifest input.
 The C export guard expects 192 functions. The Java and Python inventory
 assertions match 552 and 524 declarations; their observed Check JNI bridge
-members are included in the exact bridge-exclusion assertion. Both language
-guides now report 42 blocked, 10 declared (including Derive Key), and 4
-verified operation mappings. T046 remains unchecked and Derive Key remains
-`declared` until a fresh current-head cross-platform CI run and coverage gates
-pass. This evidence does not claim OASIS certification or full operation
-conformance.
+members are included in the exact bridge-exclusion assertion. At this
+intermediate checkpoint both language guides reported 42 blocked, 10 declared
+(including Derive Key), and 4 verified operation mappings. T046 was still open
+at that point. The final verification below updates the readiness counts after
+the current-head CI passed. This evidence does not claim OASIS certification or
+full operation conformance.
+
+### T046 final verification — 2026-10-17
+
+The final pushed head `7fef6d24` passed all required jobs in CI run
+`39063120154`, including the cross-platform Rust, C, Java/JNI, and Python
+matrices and the selected-scope coverage gate. The aggregate reported:
+
+| Scope | Covered / executable lines | Result |
+|---|---:|---:|
+| Changed production | 5042 / 5307 | 95.01% (95% minimum; 16 summary-only lines charged uncovered) |
+| TTLV | 735 / 741 | 99.19% (95% minimum) |
+| Protocol | 12581 / 12973 | 96.98% (95% minimum) |
+| Transport | 3713 / 3902 | 95.16% (85% minimum) |
+| FFI | 5283 / 5485 | 96.32% (85% minimum) |
+| Java adapters | 2214 / 2266 | 97.71% (85% minimum) |
+| Python adapters | 2613 / 2643 | 98.86% (85% minimum) |
+| JNI bridge | 3093 / 3546 | 87.23% (85% minimum; 16 summary-only lines charged uncovered) |
+| Workspace | 29278 / 30277 | 96.70% (90% minimum) |
+
+The manifest now marks the Derive Key operation API and its 21 mapped public
+declarations `verified`; the generated API outputs were regenerated from that
+manifest. The English and Spanish package guides now list 42 blocked, 9
+declared, and 5 verified operation mappings. The readiness contract regression
+was committed Red as `7fb67e8a` and reproduced the stale `declared` status.
+This Green change records the verified manifest state, regenerated output,
+traceability, evidence, and both language guides. The readiness and manifest-v2
+suites passed 65 tests; the package-doc contract suite passed 6 tests;
+`generate.py --check` verified all 12 outputs.
+
+This closes T046's four-language API mapping and parity task only. It does not
+claim complete Derive Key protocol conformance, interoperability, supported
+profile status, or formal certification. The qualified human security review
+required before 1.0 remains outstanding.
 
 ### T045 follow-up — documented unreachable JNI consistency branches
 
