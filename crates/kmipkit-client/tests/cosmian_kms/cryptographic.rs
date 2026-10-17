@@ -365,6 +365,58 @@ fn pqc_certify_pem_and_der_use_their_kmip_request_types() {
 }
 
 #[test]
+fn documented_cipher_gap_rows_have_exact_typed_target_probes() {
+    const FIXTURE_BLOCKED_CASE_IDS: [&str; 15] = [
+        "cosmian-528-encrypt-publickey-aes-rsa-aes-selection-discrepancy",
+        "cosmian-528-encrypt-certificate-aes-rsa-aes-selection-discrepancy",
+        "cosmian-528-decrypt-privatekey-aes-rsa-aes-selection-discrepancy",
+        "cosmian-528-decrypt-privatekey-configurablekem-opaque-fixture-none-mlkem512",
+        "cosmian-528-encrypt-publickey-configurablekem-opaque-fixture-none-mlkem512",
+        "cosmian-528-decrypt-privatekey-configurablekem-opaque-fixture-none-mlkem768",
+        "cosmian-528-encrypt-publickey-configurablekem-opaque-fixture-none-mlkem768",
+        "cosmian-528-decrypt-privatekey-configurablekem-opaque-fixture-p256-mlkem512",
+        "cosmian-528-encrypt-publickey-configurablekem-opaque-fixture-p256-mlkem512",
+        "cosmian-528-decrypt-privatekey-configurablekem-opaque-fixture-p256-mlkem768",
+        "cosmian-528-encrypt-publickey-configurablekem-opaque-fixture-p256-mlkem768",
+        "cosmian-528-decrypt-privatekey-configurablekem-opaque-fixture-curve25519-mlkem512",
+        "cosmian-528-encrypt-publickey-configurablekem-opaque-fixture-curve25519-mlkem512",
+        "cosmian-528-decrypt-privatekey-configurablekem-opaque-fixture-curve25519-mlkem768",
+        "cosmian-528-encrypt-publickey-configurablekem-opaque-fixture-curve25519-mlkem768",
+    ];
+
+    let rows = target_rows().expect("cryptographic target rows");
+    for id in FIXTURE_BLOCKED_CASE_IDS {
+        let row = rows
+            .iter()
+            .find(|row| row["case_id"] == id)
+            .unwrap_or_else(|| panic!("missing cryptographic matrix row {id}"));
+        assert_ne!(row["expected_outcome"], "typed_success", "{id}");
+        assert!(
+            matches!(
+                finding_probe_preflight(row),
+                Ok(FindingProbePreflight::SendExactTarget)
+            ),
+            "{id} must build its server-side key fixture and send the exact target request"
+        );
+        let payloads = build_offline_target_payloads(row)
+            .unwrap_or_else(|error| panic!("{id} target payload: {error}"));
+        assert_eq!(payloads.len(), 1, "{id} must send one typed target request");
+    }
+
+    let decrypt = rows
+        .iter()
+        .find(|row| row["case_id"] == "cosmian-528-decrypt-privatekey-aes-rsa-aes-selection-discrepancy")
+        .expect("AES/RSA Decrypt discrepancy row");
+    let ciphertext_fixture = asymmetric_ciphertext_fixture_row(decrypt)
+        .expect("AES/RSA Decrypt finding must have a typed RSA ciphertext setup");
+    assert_eq!(ciphertext_fixture["operation"], "Encrypt");
+    assert_eq!(ciphertext_fixture["algorithm"], "RSA");
+    assert_eq!(ciphertext_fixture["parameters"]["padding"], "OAEP");
+    assert_eq!(ciphertext_fixture["parameters"]["hash"], "SHA-256");
+    assert!(build_offline_target_payloads(&ciphertext_fixture).is_ok());
+}
+
+#[test]
 fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() {
     let rows = target_rows().expect("cryptographic target rows");
     let findings = rows
