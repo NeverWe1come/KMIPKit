@@ -1723,6 +1723,38 @@ class T076ClientMappingTests(unittest.TestCase):
                 else:
                     self.assertIn("dataclass", exclusion["reason"].lower())
 
+    def test_check_java_and_python_exports_match_observed_declaration_kinds(self) -> None:
+        declarations = {
+            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
+        }
+        expected_kinds = {
+            "T044:check:response-type:java": "type",
+            "T044:check:outcome:python": "field",
+            "T044:check:response-type:python": "type",
+            "T044:check:unique-identifier:python": "field",
+            "T044:check:usage-limits-count:python": "field",
+            "T044:check:cryptographic-usage-mask:python": "field",
+            "T044:check:lease-time:python": "field",
+            "T044:check:response-ttlv:python": "field",
+            "T043:certify:response-ttlv:python": "field",
+        }
+        for declaration_id, expected_kind in expected_kinds.items():
+            with self.subTest(declaration=declaration_id):
+                self.assertEqual(expected_kind, declarations[declaration_id]["kind"])
+
+        exclusions = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        self.assertTrue(
+            {
+                "org.kmipkit.NativeExtensionRegistry.clientBatchItemCheck",
+                "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCheck",
+                "org.kmipkit.extensions.ClientBatchItemResult.CheckResponse.toString",
+            }.issubset(exclusions)
+        )
+
     def test_transport_handle_adapter_is_backed_by_four_language_configuration_values(self) -> None:
         capability = next(
             row
