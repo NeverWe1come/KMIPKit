@@ -822,6 +822,54 @@ trait Example { fn declaration(&self); }
             GATE.parse_added_rust_lines(diff),
         )
 
+    def test_changed_coverage_excludes_multiline_rust_function_declarations(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "pub extern \"C\" fn response(\n"
+                "    item: *mut Item,\n"
+                "    out_present: *mut u8,\n"
+                ") -> i32 {\n"
+                "    let present = scalar_out!(out_present);\n"
+                "    SUCCESS\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            source_lines: dict[str, list[str]] = {}
+
+            declaration_results = [
+                GATE._is_executable_changed_line(
+                    root, relative, line, source_lines
+                )
+                for line in range(1, 5)
+            ]
+            body_results = [
+                GATE._is_executable_changed_line(
+                    root, relative, line, source_lines
+                )
+                for line in (5, 6)
+            ]
+
+        self.assertEqual([False, False, False, False], declaration_results)
+        self.assertEqual([True, True], body_results)
+
+    def test_changed_coverage_keeps_inline_rust_function_bodies_executable(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn inline() { let answer = 42; answer }\n", encoding="utf-8")
+
+            is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+        self.assertTrue(is_executable)
+
     def test_changed_rust_line_parser_decodes_git_quoted_unicode_paths(self) -> None:
         self.require_gate()
         diff = r'''diff --git "a/crates/kmipkit-ttlv/src/parser-\303\261 name.rs" "b/crates/kmipkit-ttlv/src/parser-\303\261 name.rs"
