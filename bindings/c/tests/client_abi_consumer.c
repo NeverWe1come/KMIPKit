@@ -271,6 +271,11 @@ static int check_view_tags(
     return 1;
 }
 
+static int response_identifier_matches(
+    const kmipkit_unique_identifier_v1_t *identifier,
+    const uint8_t *expected,
+    uint64_t expected_length);
+
 static int derive_key_response_is_readable_from_c(
     kmipkit_client_batch_item_response_t *item) {
     static const uint8_t expected_identifier[] = "derived-key";
@@ -299,10 +304,8 @@ static int derive_key_response_is_readable_from_c(
     identifier.struct_size = (uint32_t)sizeof(identifier);
     identifier.abi_version = 1;
     if (kmipkit_client_batch_item_response_derive_key(item, &present, &identifier) != 0 ||
-        present != 1 || identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-        identifier.text_data == 0 ||
-        identifier.text_length != (uint64_t)(sizeof(expected_identifier) - 1) ||
-        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) != 0 ||
+        present != 1 || !response_identifier_matches(
+            &identifier, expected_identifier, (uint64_t)(sizeof(expected_identifier) - 1)) ||
         kmipkit_client_batch_item_response_derive_key_ttlv(
             item, &present, &response_ttlv) != 0 ||
         present != 1 || response_ttlv == 0 ||
