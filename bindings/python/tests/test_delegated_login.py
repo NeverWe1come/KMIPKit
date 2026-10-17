@@ -85,6 +85,17 @@ def test_delegated_login_builder_rejects_invalid_table_199_values(monkeypatch, v
         )
 
 
+def test_delegated_login_rejects_two_lease_time_forms_with_valid_rights(monkeypatch) -> None:
+    monkeypatch.setattr(
+        extensions, "_make_handle", lambda *_args: pytest.fail("conflicting lease times reached the ABI")
+    )
+
+    with ttlv.ttlv_structure_create() as rights, pytest.raises(InvalidInputError):
+        extensions.client_batch_item_delegated_login(
+            rights, lease_time_interval=1, lease_time_date_time=2
+        )
+
+
 def test_delegated_login_requires_generic_rights_structure() -> None:
     with pytest.raises(InvalidInputError):
         extensions.client_batch_item_delegated_login(None)
@@ -177,6 +188,20 @@ def test_absent_delegated_login_ticket_has_zeroed_native_fields(monkeypatch) -> 
     assert response_value.ticket_value is None
     assert response_value.ticket_ttlv is None
     assert calls == ["ttlv"]
+
+
+def test_absent_delegated_login_response_maps_to_none(monkeypatch) -> None:
+    _install_delegated_login_native_response(
+        monkeypatch,
+        present=0,
+        ticket_present=0,
+        ticket_type=0,
+        ticket_value=b"",
+        ttlv_present=0,
+        ttlv_pointer=0,
+    )
+
+    assert client._delegated_login_response(SimpleNamespace(_pointer=lambda: object())) is None
 
 
 def _install_delegated_login_native_response(

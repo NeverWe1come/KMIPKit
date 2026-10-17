@@ -76,6 +76,24 @@ def test_derive_key_builder_rejects_missing_source_identifiers(monkeypatch) -> N
             )
 
 
+@pytest.mark.parametrize("invalid_field", ("derivation_parameters", "attributes"))
+def test_derive_key_builder_requires_structure_inputs(
+    monkeypatch: pytest.MonkeyPatch, invalid_field: str
+) -> None:
+    monkeypatch.setattr(
+        extensions, "_make_handle", lambda *_args: pytest.fail("invalid inputs reached the ABI")
+    )
+    identifiers = (extensions.UniqueIdentifier.text_string("source-a"),)
+
+    with ttlv.ttlv_structure_create() as parameters, ttlv.ttlv_structure_create() as attributes:
+        parameters_input = object() if invalid_field == "derivation_parameters" else parameters
+        attributes_input = object() if invalid_field == "attributes" else attributes
+        with pytest.raises(InvalidInputError):
+            extensions.client_batch_item_derive_key(
+                2, identifiers, 1, parameters_input, attributes_input
+            )
+
+
 @pytest.mark.parametrize(("status", "expects_response"), ((0, True), (1, False)))
 def test_batch_result_maps_derive_key_response_only_on_success(
     monkeypatch: pytest.MonkeyPatch, status: int, expects_response: bool
@@ -165,6 +183,22 @@ def test_batch_result_maps_derive_key_response_only_on_success(
         assert derive_key.response_ttlv.closed
     assert calls == (["derive-key", "derive-key-ttlv"] if expects_response else [])
     result.close()
+
+
+def test_derive_key_response_returns_none_when_native_marks_it_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item = SimpleNamespace(_pointer=lambda: ffi.cast("kmipkit_client_batch_item_response_t *", 1))
+
+    def derive_key_response(_item: object, present: object, _identifier: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(
+        kmipkit_client_batch_item_response_derive_key=derive_key_response,
+    ))
+
+    assert client._derive_key_response(item) is None
 
 
 @pytest.mark.parametrize(
