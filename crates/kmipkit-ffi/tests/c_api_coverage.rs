@@ -225,6 +225,10 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
             c_request_contains_exact_derivation_parameters(&request),
             "C ABI consumer must transmit the exact ordered Derive Key parameter values"
         );
+        assert!(
+            c_request_contains_exact_export_selectors(&request),
+            "C ABI consumer must transmit the exact ordered Export selectors"
+        );
         tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -390,6 +394,97 @@ fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
             return false;
         };
         derive_key_items.next().is_none() && derive_key_item_has_expected_payload(derive_key_item)
+    })
+}
+
+fn c_request_contains_exact_export_selectors(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const EXPORT: u32 = 43;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_WRAP_TYPE: u32 = 0x0042_00F8;
+    const KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
+    const KEY_WRAPPING_SPECIFICATION: u32 = 0x0042_0047;
+
+    fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+        let mut matching = structure
+            .children()
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item.tag().raw() == tag);
+        let (index, _) = matching.next()?;
+        matching.next().is_none().then_some(index)
+    }
+
+    fn has_operation(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(structure) = value else {
+                return false;
+            };
+            unique_child_index(&structure, OPERATION).is_some_and(|index| {
+                structure.children()[index].with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == EXPORT),
+                )
+            })
+        })
+    }
+
+    fn has_exact_selectors(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let Some(payload_index) = unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+                return false;
+            };
+            batch_item.children()[payload_index].with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return false;
+                };
+                let children = payload.children();
+                children.len() == 5
+                    && children[0].tag().raw() == UNIQUE_IDENTIFIER
+                    && children[0].with_value(|value| {
+                        matches!(value, ValueView::TextString(actual) if actual == "export-key")
+                    })
+                    && children[1].tag().raw() == KEY_FORMAT_TYPE
+                    && children[1].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == 0xfedc_ba98)
+                    })
+                    && children[2].tag().raw() == KEY_WRAP_TYPE
+                    && children[2].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == 0xfedc_ba99)
+                    })
+                    && children[3].tag().raw() == KEY_COMPRESSION_TYPE
+                    && children[3].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == 0xfedc_ba9a)
+                    })
+                    && children[4].tag().raw() == KEY_WRAPPING_SPECIFICATION
+                    && children[4].with_value(|value| {
+                        matches!(value, ValueView::Structure(actual) if actual.children().is_empty())
+                    })
+            })
+        })
+    }
+
+    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut export_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| has_operation(item));
+        let Some(export_item) = export_items.next() else {
+            return false;
+        };
+        export_items.next().is_none() && has_exact_selectors(export_item)
     })
 }
 
@@ -717,8 +812,8 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-// This TLS batch returns 15 ordered items: the original eight, five crypto
-// operations, Certify, and Derive Key for the generated C consumer to inspect.
+// This TLS batch returns 16 ordered items: the original eight, five crypto
+// operations, Certify, Derive Key, and Export for the generated C consumer.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -729,7 +824,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 15),
+            integer(0x0042_000D, 16),
         ],
     );
     let response_payload = structure(
@@ -742,7 +837,35 @@ fn mixed_discover_versions_response() -> Vec<u8> {
             .chain(discover_version_response_items(response_payload))
             .chain(creation_response_items())
             .chain(cryptographic_response_items())
-            .chain([derive_key_response_item()]),
+            .chain([derive_key_response_item(), export_response_item()]),
+    )
+}
+
+fn export_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 43),
+            ttlv_item(0x0042_0093, 0x08, b"export"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    enumeration(0x0042_0057, 0xf123_4567),
+                    ttlv_item(0x0042_0094, 0x07, b"exported-key"),
+                    structure(
+                        0x0042_0125,
+                        [enumeration(0x0042_001D, 1)],
+                    ),
+                    structure(0x0042_008F, [
+                        structure(0x0042_0040, [
+                            enumeration(0x0042_0042, 0xf123_4567),
+                            ttlv_item(0x0042_0043, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                        ]),
+                    ]),
+                ],
+            ),
+        ],
     )
 }
 

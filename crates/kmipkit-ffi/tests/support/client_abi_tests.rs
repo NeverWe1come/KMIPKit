@@ -12,7 +12,7 @@ use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCatego
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
+    ExportRequest, GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
     SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
@@ -2361,6 +2361,135 @@ fn ffi_derive_key_response_ttlv_returns_owned_success_copy_only() {
     assert_eq!(present, 0);
     assert!(response_ttlv.is_null());
     kmipkit_client_batch_item_response_release(failed_item);
+}
+
+#[test]
+fn ffi_export_response_preserves_success_fields_and_failure_ttlv_without_local_error() {
+    let attributes = ttlv_structure(0x0042_0125, [ttlv_enumeration(0x0042_001d, 0xf123_4567)]);
+    let any_object = ttlv_structure(
+        0x0042_008f,
+        [ttlv_structure(
+            0x0042_0040,
+            [ttlv_item(0x0042_0045, 0x08, b"export-secret-material")],
+        )],
+    );
+    let successful_item = successful_cryptographic_item(
+        ClientRequest::export(ExportRequest::new()),
+        0x2b,
+        b"export-success",
+        vec![
+            ttlv_enumeration(0x0042_0057, 0xfedc_ba98),
+            ttlv_item(0x0042_0094, 0x07, b"export-secret-id"),
+            attributes,
+            any_object,
+        ],
+    );
+    let mut present = 0;
+    let mut payload_present = 0;
+    let mut object_type = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut attributes = ptr::null_mut();
+    let mut any_object = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_export(
+            successful_item,
+            &mut present,
+            &mut payload_present,
+            &mut object_type,
+            &mut identifier,
+            &mut attributes,
+            &mut any_object,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, payload_present, object_type), (1, 1, 0xfedc_ba98));
+    assert_response_identifier(&identifier, b"export-secret-id");
+    assert!(!attributes.is_null());
+    assert!(!any_object.is_null());
+    kmipkit_client_batch_item_response_release(successful_item);
+
+    let mut attributes_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(attributes, &mut attributes_view),
+        SUCCESS
+    );
+    let mut attributes_count = 0;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(attributes_view, &mut attributes_count),
+        SUCCESS
+    );
+    assert_eq!(attributes_count, 1);
+    kmipkit_ttlv_structure_view_release(attributes_view);
+    kmipkit_ttlv_structure_release(attributes);
+
+    let mut any_object_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(any_object, &mut any_object_view),
+        SUCCESS
+    );
+    let mut any_object_count = 0;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(any_object_view, &mut any_object_count),
+        SUCCESS
+    );
+    assert_eq!(any_object_count, 1);
+    kmipkit_ttlv_structure_view_release(any_object_view);
+    kmipkit_ttlv_structure_release(any_object);
+
+    let failed_item = failed_cryptographic_item(
+        ClientRequest::export(ExportRequest::new()),
+        0x2b,
+        b"export-failure",
+    );
+    present = 9;
+    payload_present = 9;
+    object_type = u32::MAX;
+    identifier = empty_unique_identifier_output_v1();
+    attributes = ptr::dangling_mut();
+    any_object = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_export(
+            failed_item,
+            &mut present,
+            &mut payload_present,
+            &mut object_type,
+            &mut identifier,
+            &mut attributes,
+            &mut any_object,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, payload_present, object_type), (1, 0, 0));
+    assert_eq!(identifier.kind, 0);
+    assert!(attributes.is_null());
+    assert!(any_object.is_null());
+
+    let mut response_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_export_ttlv(
+            failed_item,
+            &mut response_present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(response_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(failed_item);
+    let mut response_view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(response_ttlv, &mut response_view),
+        SUCCESS
+    );
+    let mut response_count = 0;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(response_view, &mut response_count),
+        SUCCESS
+    );
+    assert_eq!(response_count, 4);
+    kmipkit_ttlv_structure_view_release(response_view);
+    kmipkit_ttlv_structure_release(response_ttlv);
 }
 
 #[test]
