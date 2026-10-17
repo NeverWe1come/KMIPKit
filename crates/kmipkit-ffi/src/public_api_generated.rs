@@ -1377,6 +1377,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientError::ProtocolResponse::response_ttlv",
     ),
     (
+        "rust-observed-ac6bfe0a5b7ff3e02a9a",
+        "rust-kmipkit",
+        "kmipkit::GetUsageAllocationResponse::with_ttlv",
+    ),
+    (
         "rust-observed-d1197da70a234b98ce0e",
         "rust-kmipkit-client",
         "<kmipkit_client::RequestOptions as core::default::Default>::default",
@@ -1465,6 +1470,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-1b3d0b75acdff86532c8",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
+    ),
+    (
+        "rust-observed-13dd78ed4ea678db8508",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::GetUsageAllocationResponse::with_ttlv",
     ),
     (
         "rust-observed-5d253f0403ebfd0df573",

@@ -6,7 +6,14 @@ Get Usage Allocation está mapeada en Rust, C, Java y Python. La petición
 conserva el Unique Identifier opcional y el Usage Limits Count exacto de 64
 bits con signo; el resultado correcto expone el identificador resuelto. El
 resultado común del lote conserva Pending y Failure, la correlación y el estado
-de entrega sin consultar ni reintentar automáticamente.
+de entrega sin consultar ni reintentar automáticamente. Cuando termina con
+éxito, la respuesta también expone el TTLV genérico completo y ordenado,
+incluidos los campos desconocidos. Rust presta una vista; C devuelve una
+estructura que pertenece al llamador y debe liberarse con
+`kmipkit_ttlv_structure_release`; Java devuelve un `TtlvStructure` propiedad
+del resultado cerrable; y Python ofrece `response_ttlv` en la respuesta
+cerrable. Los accesores tipados de C, Java y Python no devuelven un TTLV
+genérico para resultados Failure o Pending.
 
 ## Construir peticiones de política
 

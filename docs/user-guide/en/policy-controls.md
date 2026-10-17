@@ -6,7 +6,13 @@ Get Usage Allocation is mapped across Rust, C, Java, and Python. Its request
 preserves the optional Unique Identifier and exact signed 64-bit Usage Limits
 Count; a successful result exposes the resolved identifier. The common batch
 result preserves Pending and Failure, correlation, and delivery state without
-automatic polling or retry.
+automatic polling or retry. On success, the response also exposes its complete
+ordered generic TTLV, including unknown fields. Rust lends a view; C returns a
+caller-owned structure that must be released with
+`kmipkit_ttlv_structure_release`; Java returns a `TtlvStructure` owned by the
+closeable result; and Python exposes `response_ttlv` on the closeable response.
+The C, Java, and Python typed accessors do not return a generic response for a
+Failure or Pending result.
 
 ## Build policy requests
 

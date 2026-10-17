@@ -21,23 +21,30 @@ EXPECTED_MAPPINGS = {
         "kmipkit_protocol::GetUsageAllocationRequest::new",
         "kmipkit_protocol::GetUsageAllocationRequest::usage_limits_count",
         "kmipkit_protocol::GetUsageAllocationResponse",
+        "kmipkit::GetUsageAllocationResponse::with_ttlv",
+        "kmipkit_protocol::GetUsageAllocationResponse::with_ttlv",
         "kmipkit_protocol::GetUsageAllocationResponse::unique_identifier",
     },
     "c": {
         "kmipkit_client_batch_item_get_usage_allocation",
         "kmipkit_client_batch_item_response_get_usage_allocation",
+        "kmipkit_client_batch_item_response_get_usage_allocation_ttlv",
     },
     "java": {
         "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
         "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
         "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse",
         "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.uniqueIdentifier",
+        "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.responseTtlv",
+        "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.close",
     },
     "python": {
         "kmipkit.extensions.client_batch_item_get_usage_allocation",
         "kmipkit.client.BatchItemResult.get_usage_allocation_response",
         "kmipkit.client.GetUsageAllocationResponse",
         "kmipkit.client.GetUsageAllocationResponse.unique_identifier",
+        "kmipkit.client.GetUsageAllocationResponse.response_ttlv",
+        "kmipkit.client.GetUsageAllocationResponse.close",
     },
 }
 REQUIREMENTS = {
@@ -55,6 +62,7 @@ REQUIREMENTS = {
     "KMIPKIT-0043-FR-008",
     "KMIPKIT-0043-FR-009",
     "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-011",
     "KMIPKIT-0043-FR-012",
     "KMIPKIT-0043-FR-013",
     "KMIPKIT-0043-FR-015",
@@ -71,6 +79,13 @@ PARITY_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/GetUsageAllocationJavaFacadeTest.java",
     "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
     "bindings/python/tests/test_get_usage_allocation_operation.py",
+}
+RESPONSE_TTLV_EVIDENCE = {
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
+    "bindings/python/tests/test_get_usage_allocation_operation.py",
+    "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
 }
 
 
@@ -136,6 +151,51 @@ class GetUsageAllocationParityManifestTests(unittest.TestCase):
         self.assertEqual(1, len(operations))
         self.assertEqual("verified", operations[0]["apiState"])
         self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
+
+    def test_complete_success_response_ttlv_has_owned_four_language_mapping(self) -> None:
+        function = next(
+            row for row in self.manifest["functions"]
+            if row["id"] == "client_batch_item_response_get_usage_allocation_ttlv"
+        )
+        self.assertEqual("kmipkit_client_batch_item_response_get_usage_allocation_ttlv", function["c"]["symbol"])
+        self.assertEqual("ffi", function["rust"]["owner"])
+        self.assertEqual(
+            "kmipkit_ffi::extension_registry::client_abi", function["rust"]["module"]
+        )
+        self.assertEqual(
+            "kmipkit_client_batch_item_response_get_usage_allocation_ttlv",
+            function["rust"]["name"],
+        )
+        self.assertEqual(
+            "*mut *mut kmipkit_ttlv_structure_t",
+            function["rust"]["parameters"][2]["type"],
+        )
+        self.assertEqual("getUsageAllocationResponse", function["java"]["method"])
+        self.assertEqual(
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseGetUsageAllocation",
+            function["java"]["jniSymbol"],
+        )
+        self.assertEqual("kmipkit_ttlv_structure_t **", function["c"]["parameters"][2]["type"])
+        self.assertEqual("library-owned", function["c"]["parameters"][2]["ownership"])
+        self.assertTrue(function["c"]["parameters"][2]["nullable"])
+        self.assertTrue(any("only for a successful Get Usage Allocation result" in line for line in function["c"]["documentation"]))
+
+        for declaration_id in (
+            "T049:result:responseTtlv:c",
+            "T049:result:responseTtlv:java",
+            "T049:result:responseTtlv:javaClose",
+            "T049:result:responseTtlv:python",
+            "T049:result:responseTtlv:pythonClose",
+            "rust-observed-ac6bfe0a5b7ff3e02a9a",
+            "rust-observed-13dd78ed4ea678db8508",
+        ):
+            declaration = self.declarations[declaration_id]
+            self.assertEqual("verified", declaration["declarationState"])
+            self.assertIn("KMIPKIT-0039-FR-004", declaration["requirementIds"])
+            self.assertIn("KMIPKIT-0043-FR-011", declaration["requirementIds"])
+            self.assertTrue(
+                RESPONSE_TTLV_EVIDENCE <= set(declaration["parityEvidenceIds"])
+            )
 
 
 if __name__ == "__main__":

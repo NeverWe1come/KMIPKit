@@ -19,22 +19,30 @@ import org.junit.jupiter.api.Test;
 final class GetUsageAllocationResponseMappingTest {
     @Test
     void successfulResponseMapsIdentifierAndKeepsItRedacted() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure structure = responseTtlv(limits);
+        long responseTtlvHandle = structure.nativeHandleOwner().transfer();
         byte[] identifier = "allocation-object".getBytes(StandardCharsets.UTF_8);
         Object[] record = {new long[] {1, 1, 0, 0}, identifier};
 
         ClientBatchItemResult.GetUsageAllocationResponse response = ClientBatchItemResult
-                .parseGetUsageAllocationResponse(new Object[] {new long[] {1}, record})
+                .parseGetUsageAllocationResponse(new Object[] {
+                    new long[] {1}, record, new long[] {responseTtlvHandle}
+                })
                 .orElseThrow();
 
-        assertEquals(UniqueIdentifier.Kind.TEXT_STRING, response.uniqueIdentifier().kind());
-        assertEquals("allocation-object", response.uniqueIdentifier().text());
-        assertFalse(response.toString().contains("allocation-object"));
+        try (response) {
+            assertEquals(UniqueIdentifier.Kind.TEXT_STRING, response.uniqueIdentifier().kind());
+            assertEquals("allocation-object", response.uniqueIdentifier().text());
+            assertFalse(response.toString().contains("allocation-object"));
+        }
     }
 
     @Test
     void absentResponseDoesNotCreateAnIdentifier() {
         assertTrue(ClientBatchItemResult
-                .parseGetUsageAllocationResponse(new Object[] {new long[] {0}, null})
+                .parseGetUsageAllocationResponse(
+                        new Object[] {new long[] {0}, null, new long[] {0}})
                 .isEmpty());
     }
 
@@ -48,7 +56,7 @@ final class GetUsageAllocationResponseMappingTest {
                 "allocation-object".getBytes(StandardCharsets.UTF_8)};
         ClientBatchItemResult.GetUsageAllocationResponse response = ClientBatchItemResult
                 .parseGetUsageAllocationResponse(new Object[] {
-                    new long[] {1}, identifier, Long.valueOf(copiedHandle)
+                    new long[] {1}, identifier, new long[] {copiedHandle}
                 })
                 .orElseThrow();
 

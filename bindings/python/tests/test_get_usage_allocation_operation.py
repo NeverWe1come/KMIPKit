@@ -6,6 +6,7 @@ import pytest
 
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
+from kmipkit._ffi import ffi as ttlv_ffi
 
 
 def test_get_usage_allocation_builder_preserves_identifier_and_exact_signed_count(
@@ -47,6 +48,9 @@ def test_get_usage_allocation_builder_allows_placeholder_identifier(
 def test_get_usage_allocation_response_maps_identifier_and_redacts_repr(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    native_copy = _usage_allocation_response_ttlv()
+    native_handle, owner = native_copy._take()
+    assert owner is None
     storage_refs: list[object] = []
 
     def response(_item: object, present: object, identifier: object) -> int:
@@ -59,16 +63,28 @@ def test_get_usage_allocation_response_maps_identifier_and_redacts_repr(
         identifier.text_length = len(encoded)  # type: ignore[attr-defined]
         return 0
 
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = ffi.cast(
+            "kmipkit_ttlv_structure_t *",
+            int(ttlv_ffi.cast("uintptr_t", native_handle)),
+        )  # type: ignore[index]
+        return 0
+
     monkeypatch.setattr(
         client,
         "lib",
-        SimpleNamespace(kmipkit_client_batch_item_response_get_usage_allocation=response),
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_get_usage_allocation=response,
+            kmipkit_client_batch_item_response_get_usage_allocation_ttlv=response_ttlv,
+        ),
     )
     result = client._get_usage_allocation_response(SimpleNamespace(_pointer=lambda: object()))
 
     assert isinstance(result, client.GetUsageAllocationResponse)
     assert result.unique_identifier == extensions.UniqueIdentifier.text_string("allocation-object")
     assert "allocation-object" not in repr(result)
+    result.close()
 
 
 def test_get_usage_allocation_exposes_owned_complete_response_ttlv(
@@ -80,9 +96,7 @@ def test_get_usage_allocation_exposes_owned_complete_response_ttlv(
     storage_refs: list[object] = []
     released_items: list[object] = []
 
-    def response(
-        _item: object, present: object, identifier: object, response_ttlv: object
-    ) -> int:
+    def response(_item: object, present: object, identifier: object) -> int:
         present[0] = 1  # type: ignore[index]
         identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
         encoded = b"allocation-object"
@@ -90,12 +104,19 @@ def test_get_usage_allocation_exposes_owned_complete_response_ttlv(
         storage_refs.append(storage)
         identifier.text_data = storage  # type: ignore[attr-defined]
         identifier.text_length = len(encoded)  # type: ignore[attr-defined]
-        response_ttlv[0] = native_handle  # type: ignore[index]
+        return 0
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = ffi.cast(
+            "kmipkit_ttlv_structure_t *",
+            int(ttlv_ffi.cast("uintptr_t", native_handle)),
+        )  # type: ignore[index]
         return 0
 
     fake = SimpleNamespace(
         kmipkit_client_batch_item_response_get_usage_allocation=response,
-        kmipkit_client_batch_item_response_get_usage_allocation_ttlv=response,
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv=response_ttlv,
         kmipkit_client_batch_item_response_release=lambda item: released_items.append(item),
     )
     monkeypatch.setattr(client, "lib", fake)
@@ -198,6 +219,11 @@ def test_batch_result_maps_get_usage_allocation_only_on_success(
     response_pointer = ffi.cast("kmipkit_client_batch_response_t *", 1)
     item_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 2)
     calls: list[str] = []
+    native_handle = ffi.NULL
+    if expects_response:
+        native_copy = _usage_allocation_response_ttlv()
+        native_handle, owner = native_copy._take()
+        assert owner is None
 
     def metadata(_item: object, output: object) -> int:
         output.struct_size = ffi.sizeof("kmipkit_client_batch_item_metadata_v2_t")  # type: ignore[attr-defined]
@@ -220,6 +246,15 @@ def test_batch_result_maps_get_usage_allocation_only_on_success(
         identifier.integer_value = -17  # type: ignore[attr-defined]
         return 0
 
+    def allocation_ttlv_response(_item: object, present: object, output: object) -> int:
+        calls.append("allocation-ttlv")
+        present[0] = 1  # type: ignore[index]
+        output[0] = ffi.cast(
+            "kmipkit_ttlv_structure_t *",
+            int(ttlv_ffi.cast("uintptr_t", native_handle)),
+        )  # type: ignore[index]
+        return 0
+
     fake = SimpleNamespace(
         kmipkit_client_batch_response_release=lambda _ptr: None,
         kmipkit_client_batch_item_response_release=lambda _ptr: None,
@@ -236,6 +271,7 @@ def test_batch_result_maps_get_usage_allocation_only_on_success(
             present.__setitem__(0, 0) or count.__setitem__(0, 0) or 0
         ),
         kmipkit_client_batch_item_response_get_usage_allocation=allocation_response,
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv=allocation_ttlv_response,
         **{
             "kmipkit_client_batch_item_response_create": lambda _item, present, object_type, _identifier: (
                 present.__setitem__(0, 0) or object_type.__setitem__(0, 0) or 0
@@ -257,5 +293,6 @@ def test_batch_result_maps_get_usage_allocation_only_on_success(
     if expects_response:
         assert allocation.unique_identifier == extensions.UniqueIdentifier.integer(-17)
         assert "-17" not in repr(result.items[0])
-    assert calls == (["allocation"] if expects_response else [])
+        allocation.close()
+    assert calls == (["allocation", "allocation-ttlv"] if expects_response else [])
     result.close()

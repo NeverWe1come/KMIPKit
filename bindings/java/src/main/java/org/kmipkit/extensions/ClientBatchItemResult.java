@@ -8,6 +8,7 @@ import java.util.OptionalLong;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.ttlv.TtlvStructure;
 import org.jspecify.annotations.Nullable;
 
 /** Common, operation-independent metadata for one response batch item. */
@@ -159,15 +160,23 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() { return "CertifyResponse[uniqueIdentifier=redacted]"; }
     }
 
-    /** Successful Get Usage Allocation response. The resolved identifier is redacted by default. */
-    public static final class GetUsageAllocationResponse {
+    /** Successful Get Usage Allocation response with its owned complete generic TTLV. */
+    public static final class GetUsageAllocationResponse implements AutoCloseable {
         private final UniqueIdentifier uniqueIdentifier;
+        private final TtlvStructure responseTtlv;
 
-        private GetUsageAllocationResponse(UniqueIdentifier uniqueIdentifier) {
+        private GetUsageAllocationResponse(
+                UniqueIdentifier uniqueIdentifier, TtlvStructure responseTtlv) {
             this.uniqueIdentifier = uniqueIdentifier;
+            this.responseTtlv = responseTtlv;
         }
 
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns the complete ordered response structure owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() {
             return "GetUsageAllocationResponse[uniqueIdentifier=redacted]";
@@ -456,14 +465,31 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     static Optional<GetUsageAllocationResponse> parseGetUsageAllocationResponse(Object[] values) {
-        Object[] tuple = requireTuple(values, 2, "native Get Usage Allocation response is invalid");
+        Object[] tuple = requireTuple(values, 3, "native Get Usage Allocation response is invalid");
         long[] fields = requireLongArray(
                 tuple[0], 1, "native Get Usage Allocation response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Get Usage Allocation response is invalid");
         if (!responsePresent(fields)) {
-            requireNoResponseFields(fields, tuple);
+            if (tuple[1] != null || responseTtlvHandle[0] != 0) {
+                if (responseTtlvHandle[0] > 0) {
+                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+                }
+                throw new InvalidInputException("native absent response contains fields");
+            }
             return Optional.empty();
         }
-        return Optional.of(new GetUsageAllocationResponse(identifierRecord(tuple[1])));
+        if (responseTtlvHandle[0] <= 0) {
+            throw new InvalidInputException("native Get Usage Allocation response is invalid");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            return Optional.of(new GetUsageAllocationResponse(
+                    identifierRecord(tuple[1]), responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
     }
 
     static Optional<CreateKeyPairResponse> parseCreateKeyPairResponse(Object[] values) {

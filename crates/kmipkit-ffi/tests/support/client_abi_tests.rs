@@ -1615,6 +1615,111 @@ fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_fail
     kmipkit_client_batch_item_response_release(failed_item);
 }
 
+#[test]
+fn ffi_get_usage_allocation_ttlv_copies_success_and_excludes_failure_responses() {
+    let successful_item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"usage-allocation",
+        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
+    );
+    let mut present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+            successful_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+
+    let failed_item = failed_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"usage-allocation-failure",
+    );
+    present = 9;
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+            failed_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(failed_item);
+}
+
+#[test]
+fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items() {
+    let response = Arc::new(
+        create_key_pair_success_response()
+            .expect("the successful key-pair response is associated with its request"),
+    );
+    let mismatched_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    let mut present = 9;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+            mismatched_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(mismatched_item);
+
+    let invalid_index_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(&response),
+            index: usize::MAX,
+        },
+    );
+    present = 9;
+    response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+            invalid_index_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(invalid_index_item);
+
+    let unrelated_success_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse { response, index: 0 },
+    );
+    present = 9;
+    response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+            unrelated_success_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(unrelated_success_item);
+}
+
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
@@ -1636,11 +1741,13 @@ fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
     );
 
     // SAFETY: the C consumer receives the live response-item handle and takes ownership of it.
-    let result = unsafe {
-        kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(item)
-    };
+    let result =
+        unsafe { kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(item) };
 
-    assert_eq!(result, 1, "the copied generic response must outlive its source item");
+    assert_eq!(
+        result, 1,
+        "the copied generic response must outlive its source item"
+    );
 }
 
 #[test]

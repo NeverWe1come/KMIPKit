@@ -194,6 +194,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertIn("approvedExclusions", manifest)
         self.assertEqual(list(self.validator.iter_errors(manifest)), [])
 
+    def test_rust_type_schema_accepts_mutable_pointer_to_pointer_c_abi_output(self) -> None:
+        validator = Draft202012Validator(self.schema["$defs"]["rustType"])
+
+        self.assertTrue(validator.is_valid("*mut *mut kmipkit_ttlv_structure_t"))
+        self.assertFalse(validator.is_valid("*mut *mut *mut kmipkit_ttlv_structure_t"))
+
     def test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds(self) -> None:
         manifest = _valid_v2_manifest()
         condition = {
@@ -1261,7 +1267,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 526)
+        self.assertEqual(len(declarations), 528)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1581,7 +1587,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 498)
+        self.assertEqual(len(declarations), 500)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")

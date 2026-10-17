@@ -65,8 +65,18 @@ Its request accepts an optional Unique Identifier; a successful typed response
 exposes the resolved Unique Identifier. The Rust, C, Java, and Python facades
 share the operation mapping while the common batch result retains Success,
 Pending, Failure, correlation, and request-delivery state. Pending is returned
-to the caller without automatic polling or retry. The mapping follows the
-approved contract in [policy controls](../../specs/025-policy-controls/spec.md).
+to the caller without automatic polling or retry. A successful response also
+exposes the complete ordered generic TTLV response, including unknown fields:
+Rust lends a `StructureView`, C returns a caller-owned
+`kmipkit_ttlv_structure_t`, Java returns a `TtlvStructure` owned by its
+`GetUsageAllocationResponse`, and Python returns an owned `ttlv.Structure` from
+`response_ttlv`. Release the C handle with
+`kmipkit_ttlv_structure_release`; Java callers close the result, and Python
+callers close the result or its context-managed `response_ttlv` structure. The
+C, Java, and Python typed accessors do not return
+a generic response handle for Failure or Pending, and this does not expand the
+separate T081 error-only response-retention capability. The mapping follows
+the approved contract in [policy controls](../../specs/025-policy-controls/spec.md).
 
 KMIPKIT-0013 constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level
