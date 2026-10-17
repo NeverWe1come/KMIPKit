@@ -2452,6 +2452,8 @@ fn transfer_observation_line(
 mod inventory_tests {
     use super::*;
 
+    const SENSITIVE: u32 = 0x0042_00CD;
+
     #[test]
     fn rsa_hybrid_wrapping_explicitly_encodes_padding_method_none() {
         let row = serde_json::json!({
@@ -2476,6 +2478,47 @@ mod inventory_tests {
             padding_method,
             Some(1),
             "KMIP Padding Method None must select Cosmian's RSA-AES hybrid wrapping"
+        );
+    }
+
+    #[test]
+    fn configurable_kem_register_setup_can_explicitly_request_non_sensitive_key_material() {
+        // OASIS KMIP v2.1 §4.55, Tables 139–140: Sensitive is client-modifiable,
+        // and defaults to False when the client omits it.
+        let mut row = crate::common::manifest_rows(FAMILY)
+            .expect("transfer manifest rows")
+            .into_iter()
+            .find(|row| {
+                row["case_id"]
+                    == "cosmian-528-register-privatekey-configurablekem-opaque-fixture-curve25519-mlkem512"
+            })
+            .expect("ConfigurableKEM private-key Register case");
+        row["parameters"]["sensitive"] = serde_json::json!(false);
+
+        let request = super::super::cryptographic::build_create_key_pair_request(&row, "sensitive-probe")
+            .expect("typed Create Key Pair request")
+            .into_ttlv_payload()
+            .expect("typed Create Key Pair payload");
+
+        fn has_sensitive_false(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
+            structure.children().iter().any(|item| {
+                if item.tag().raw() == SENSITIVE
+                    && item.with_value(|value| {
+                        matches!(value, ValueView::Boolean(sensitive) if !*sensitive)
+                    })
+                {
+                    return true;
+                }
+                item.with_value(|value| match value {
+                    ValueView::Structure(child) => has_sensitive_false(&child),
+                    _ => false,
+                })
+            })
+        }
+
+        assert!(
+            has_sensitive_false(&request.view()),
+            "the private-key setup request must encode Sensitive=False"
         );
     }
 
