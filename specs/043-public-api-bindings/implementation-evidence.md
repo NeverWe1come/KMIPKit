@@ -2866,6 +2866,47 @@ The declaration classifier only changes how non-executable Rust signature
 lines are measured. Current-head cross-platform CI and the aggregate coverage
 result remain pending; no passing threshold is inferred from the prior run.
 
+### T046 — Derive Key four-language mapping
+
+The approved owner remains KMIPKIT-0037; this API-parity task adds no new
+protocol interpretation. Rust/C/Python/Java request and response declarations
+map to the existing Derive Key model in §6.1.14, Tables 205–207 and §7.12,
+Table 364. The C ABI retains a response-item-borrowed success identifier and
+returns an owned copy of the complete response item for generic inspection.
+Java and Python expose owned response structures with deterministic close;
+unknown fields and their order remain available in every binding. The approved
+manifest now links the executable C and Java mTLS consumers as evidence.
+
+| Track | Red | Green | Refactor | Evidence |
+|---|---|---|---|---|
+| C/Python request bindings | `2099945f`, `8950bf37` | `4d558323` | — | Compiled C constructor and Python request mapping tests define valid, repeated source identifiers and the public constructor contract. |
+| Java request binding | `8e094a67` | `8cca9ea3` | — | Java builder test and JNI mapping cover Derive Key request construction. |
+| FFI response ABI | `c7a7910e` | `5e0a6bd6` | — | Focused FFI response getter tests return the text identifier only on success and copy the ordered response TTLV. |
+| Python response mapping | `ced30838` | `5cc60537` | — | Python tests cover typed identifier, owned TTLV, cleanup, and redaction. |
+| Java response mapping | `4d911a15` | `a293427e` | — | Java tests cover typed identifier, owned TTLV, cleanup, and redaction. |
+| Java/JNI mTLS response | `991e1da4` | `e4254e11` | `a16f6d1c` | Red failed because the request fixture omitted the required output Cryptographic Length and the response fixture had no Derive Key result. Green supplies valid Secret Data attributes, returns the ordered success result plus unknown extension, and passes the real TLS 1.3 mutual-authenticated JNI exchange. Refactor centralizes ordered TTLV tag assertions. |
+| Compiled C consumer mTLS response | `9c047e8c` | `4be4c55c` | `93d92c1e` | Red failed after the client sent a 15-item batch while the fixture returned 14 items (`KMIPKIT_ERROR_PROTOCOL`, delivery `possibly-sent`). Green adds the Derive Key response. The compiled C consumer checks the typed identifier, complete response tags, nested payload order, and unknown extension bytes. Refactor reuses the existing C response-identifier assertion helper. |
+
+Current local verification on the feature branch:
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-protocol --lib derive_key_operation_tests` | PASS: 10 tests. |
+| `cargo test -p kmipkit-client --lib derive_key_execution_tests` | PASS: 1 test. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib ffi_derive_key_response_` | PASS: 2 FFI response tests. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage` | PASS: 5 tests, including the compiled C consumer over TLS 1.3 mTLS. |
+| `bindings/java/gradlew.bat -p bindings/java test --rerun-tasks` | PASS: 231 tests; 0 failures, 0 errors, 3 skipped. The Java TLS/JNI response test is included. |
+| `uv run --project bindings/python --with-requirements bindings/python/requirements-coverage.txt -- pytest -q bindings/python/tests` | PASS: 408 tests. |
+| `cargo fmt --all --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS; the generator verifies all 12 fixed outputs. |
+
+The Windows build emitted the existing AWS-LC `stdalign_check.c`/NASM and
+MSVC linker warnings; the affected test commands completed successfully. The
+local Windows environment does not provide the repository's aggregate LLVM
+coverage result. T046 remains unchecked and the manifest row remains
+`declared` until the current pushed head passes the required cross-platform CI
+and changed-code coverage gates. These local results are not an OASIS
+certification, profile-conformance, or interoperability claim.
+
 ### T045 follow-up — documented unreachable JNI consistency branches
 
 Current-head run `39037196761` completed with every platform, binding,

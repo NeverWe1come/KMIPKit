@@ -108825,10 +108825,13 @@
         }
       },
       "parityEvidenceIds": [
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyMappingTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/DeriveKeyResponseMappingTest.java",
         "bindings/python/tests/test_derive_key_operation.py",
         "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs",
+    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs"
       ]
