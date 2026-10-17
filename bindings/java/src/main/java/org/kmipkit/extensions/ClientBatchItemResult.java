@@ -821,7 +821,8 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 }
                 throw new InvalidInputException("native absent response contains fields");
             }
-            return Optional.empty();
+            throw new InvalidInputException(
+                    "native Derive Key success response is missing its Unique Identifier");
         }
         if (responseTtlvHandle[0] <= 0) {
             throw new InvalidInputException("native Derive Key response is invalid");

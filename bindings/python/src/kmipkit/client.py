@@ -1701,7 +1701,7 @@ def _derive_key_response(
         if identifier.kind != 0:
             errors.raise_for_status(4)
         _optional_output_identifier(identifier)
-        return None
+        errors.raise_for_status(4)
     if present[0] != 1:
         errors.raise_for_status(4)
     unique_identifier = _optional_output_identifier(identifier)
