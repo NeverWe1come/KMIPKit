@@ -169,6 +169,60 @@ fn cosmian_random_case_ids_cover_manifest_and_exclusions() {
     }
 }
 
+#[test]
+fn valid_rng_rows_construct_and_encode_the_requested_typed_payloads_offline() {
+    const DATA_LENGTH: u32 = 0x0042_00D5;
+    const DATA: u32 = 0x0042_00C2;
+
+    for case in LIVE_CASES {
+        let payload = match case.operation {
+            RandomOperation::Retrieve => RngRetrieveRequest::new(
+                i32::try_from(case.length).expect("approved RNG length fits KMIP Integer"),
+            )
+            .to_ttlv_payload()
+            .expect("RNG Retrieve request payload"),
+            RandomOperation::Seed => RngSeedRequest::new(SecretBytes::new(vec![0x5A; case.length]))
+                .to_ttlv_payload()
+                .expect("RNG Seed request payload"),
+        };
+        match case.operation {
+            RandomOperation::Retrieve => {
+                let length = payload.view().children().iter().find_map(|item| {
+                    (item.tag().raw() == DATA_LENGTH)
+                        .then(|| {
+                            item.with_value(|value| match value {
+                                kmipkit_ttlv::ValueView::Integer(length) => Some(*length),
+                                _ => None,
+                            })
+                        })
+                        .flatten()
+                });
+                assert_eq!(
+                    length,
+                    Some(i32::try_from(case.length).expect("RNG length fits KMIP Integer")),
+                    "{}",
+                    case.case_id
+                );
+                assert_eq!(payload.view().children().len(), 1, "{}", case.case_id);
+            }
+            RandomOperation::Seed => {
+                let length = payload.view().children().iter().find_map(|item| {
+                    (item.tag().raw() == DATA)
+                        .then(|| {
+                            item.with_value(|value| match value {
+                                kmipkit_ttlv::ValueView::ByteString(bytes) => Some(bytes.len()),
+                                _ => None,
+                            })
+                        })
+                        .flatten()
+                });
+                assert_eq!(length, Some(case.length), "{}", case.case_id);
+                assert_eq!(payload.view().children().len(), 1, "{}", case.case_id);
+            }
+        }
+    }
+}
+
 fn assert_normative_exclusion(rows: &[serde_json::Value], case: MatrixCase) {
     let row = manifest_row(rows, case.case_id);
     assert_eq!(

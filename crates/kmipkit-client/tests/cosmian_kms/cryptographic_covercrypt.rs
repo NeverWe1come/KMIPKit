@@ -1,5 +1,37 @@
 //! Cosmian CoverCrypt typed Encrypt/Decrypt fixture regressions.
 
+use kmipkit_protocol::SecretBytes;
+
+/// Builds Cosmian's documented vendor DataToEncrypt byte container.
+pub(super) fn encode_data_to_encrypt(
+    policy: &str,
+    metadata: &[u8],
+    plaintext: &[u8],
+) -> Result<SecretBytes, &'static str> {
+    let policy = policy.as_bytes();
+    let mut encoded = Vec::with_capacity(policy.len() + metadata.len() + plaintext.len() + 20);
+    append_leb128_length(&mut encoded, policy.len())?;
+    encoded.extend_from_slice(policy);
+    append_leb128_length(&mut encoded, metadata.len())?;
+    encoded.extend_from_slice(metadata);
+    encoded.extend_from_slice(plaintext);
+    Ok(SecretBytes::new(encoded))
+}
+
+fn append_leb128_length(output: &mut Vec<u8>, mut length: usize) -> Result<(), &'static str> {
+    loop {
+        let mut byte = u8::try_from(length & 0x7f).map_err(|_| "LEB128 chunk is out of range")?;
+        length >>= 7;
+        if length != 0 {
+            byte |= 0x80;
+        }
+        output.push(byte);
+        if length == 0 {
+            return Ok(());
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

@@ -189,6 +189,33 @@ fn cosmian_capability_manifest_is_complete() {
     review_contract_detects_removed_dimensions(rows);
 }
 
+#[test]
+fn configurable_kem_nested_pq_values_remain_discrepancy_probes() {
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/integration/cosmian/capability-matrix.json"
+    ))
+    .expect("capability manifest must be valid JSON");
+    let rows = resolve_capability_sources(&manifest);
+    let nested_probe_rows = rows
+        .iter()
+        .filter(|row| {
+            row["algorithm"] == "ConfigurableKEM"
+                && row["wire_enum_values"]["nested_post_quantum_algorithm"]["classification"]
+                    == "source_only_numeric_probe"
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(nested_probe_rows.len(), 6);
+    for row in nested_probe_rows {
+        assert_eq!(row["expected_outcome"], "source_documentation_discrepancy");
+        assert_eq!(
+            row["wire_enum_values"]["cryptographic_algorithm"]["value"],
+            "0x88800003"
+        );
+        validate_wire_enum_values(row);
+    }
+}
+
 fn review_contract_detects_removed_dimensions(rows: &[serde_json::Value]) {
     let without_rsa_3072_sign: Vec<_> = rows
         .iter()
@@ -1877,12 +1904,29 @@ fn validate_wire_enum_values(row: &serde_json::Value) {
             assert_eq!(manifest_text(row, "object_type"), "CertificateRequest");
             continue;
         }
-        assert!(matches!(classification, "standard" | "vendor_extension"));
+        assert!(matches!(
+            classification,
+            "standard" | "vendor_extension" | "source_only_numeric_probe"
+        ));
         let text = manifest_text(enumeration, "value");
         let value = u32::from_str_radix(text.trim_start_matches("0x"), 16)
             .expect("enumeration must record a numeric hexadecimal identity");
         if classification == "vendor_extension" {
             assert!((0x8000_0000..=0x8FFF_FFFF).contains(&value));
+        } else if classification == "source_only_numeric_probe" {
+            assert_eq!(
+                manifest_text(row, "expected_outcome"),
+                "source_documentation_discrepancy"
+            );
+            match dimension.as_str() {
+                "cryptographic_algorithm" => assert!((0x39..=0x4A).contains(&value)),
+                "nested_post_quantum_algorithm" => {
+                    assert_eq!(manifest_text(row, "operation"), "Create Key Pair");
+                    assert_eq!(manifest_text(row, "algorithm"), "ConfigurableKEM");
+                    assert!((0x39..=0x3A).contains(&value));
+                }
+                _ => panic!("unexpected source-only numeric enum dimension {dimension}"),
+            }
         } else if dimension == "cryptographic_algorithm" {
             assert!(
                 (1..=0x38).contains(&value),
