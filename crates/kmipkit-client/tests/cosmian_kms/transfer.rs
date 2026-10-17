@@ -26,6 +26,8 @@ const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const RECOMMENDED_CURVE: u32 = 0x0042_0060;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+// OASIS KMIP v2.1 §4.55, Table 139.
+const SENSITIVE: u32 = 0x0042_00CD;
 const ACTIVATION_DATE: u32 = 0x0042_0001;
 const CERTIFICATE_LENGTH: u32 = 0x0042_00AD;
 const SECRET_DATA_TYPE: u32 = 0x0042_0086;
@@ -2528,6 +2530,25 @@ mod inventory_tests {
             has_sensitive_false(&request.view()),
             "the private-key setup request must encode Sensitive=False"
         );
+    }
+
+    #[test]
+    fn sensitive_attribute_reader_preserves_the_server_boolean_value() {
+        let sensitive = AttributeSet::try_new([super::super::kmip_item(
+            SENSITIVE,
+            Value::boolean(true),
+        )
+        .expect("Sensitive attribute")])
+        .expect("Sensitive attributes");
+        let non_sensitive = AttributeSet::try_new([super::super::kmip_item(
+            SENSITIVE,
+            Value::boolean(false),
+        )
+        .expect("Sensitive attribute")])
+        .expect("Sensitive attributes");
+
+        assert_eq!(sensitive_attribute_value(&sensitive), Some(true));
+        assert_eq!(sensitive_attribute_value(&non_sensitive), Some(false));
     }
 
     #[test]
