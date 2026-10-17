@@ -689,30 +689,39 @@ fn malformed_target_response_is_not_a_target_rejection_or_interoperability_succe
 
 #[test]
 fn crypto_observation_reconciles_expected_and_observed_outcomes() {
-    let finding = cryptographic_observation_line(
-        "source-only-case",
-        "source_documentation_discrepancy",
-        "typed_success",
-        "true",
-    );
+    let finding_row = serde_json::json!({
+        "case_id": "source-only-case",
+        "expected_outcome": "source_documentation_discrepancy"
+    });
+    let finding = cryptographic_observation_line(&finding_row, "typed_success", "true");
     assert!(finding.contains("classification=expected_finding_probe"), "{finding}");
     assert!(finding.contains("observed=typed_success"), "{finding}");
     assert!(finding.contains("interoperability=false"), "{finding}");
 
     for observed in ["target_rejected", "response_validation_failed", "setup_rejected"] {
-        let line = cryptographic_observation_line("standard-case", "typed_success", observed, "true");
+        let row = serde_json::json!({
+            "case_id": "standard-case",
+            "expected_outcome": "typed_success"
+        });
+        let line = cryptographic_observation_line(&row, observed, "true");
         assert!(line.contains(&format!("classification={observed}")), "{line}");
         assert!(line.contains("interoperability=false"), "{line}");
     }
 
-    let success = cryptographic_observation_line(
-        "standard-case",
-        "typed_success",
-        "typed_success",
-        "true",
-    );
+    let success_row = serde_json::json!({
+        "case_id": "standard-case",
+        "expected_outcome": "typed_success"
+    });
+    let success = cryptographic_observation_line(&success_row, "typed_success", "true");
     assert!(success.contains("classification=typed_success"), "{success}");
     assert!(success.contains("interoperability=true"), "{success}");
+
+    let unsent_success = cryptographic_observation_line(&success_row, "typed_success", "false");
+    assert!(
+        unsent_success.contains("classification=typed_success_without_sent_target"),
+        "{unsent_success}"
+    );
+    assert!(unsent_success.contains("interoperability=false"), "{unsent_success}");
 }
 
 #[test]
@@ -1307,12 +1316,9 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
             match finding_probe_preflight(row) {
                 Ok(FindingProbePreflight::SendExactTarget) => {}
                 Ok(FindingProbePreflight::NotSent(reason)) => {
-                    let expected_outcome = row["expected_outcome"]
-                        .as_str()
-                        .unwrap_or("unknown_expected_outcome");
-                    println!(
-                        "case_id={id} classification=expected_finding_probe expected_outcome={expected_outcome} observed=preflight_not_sent request_sent=false interoperability=false preflight_reason={reason}"
-                    );
+                    let observation =
+                        cryptographic_observation_line(row, "preflight_not_sent", "false");
+                    println!("{observation} preflight_reason={reason}");
                     failures.push(format!("{id} (preflight NotSent: {reason})"));
                     continue;
                 }
@@ -1325,41 +1331,48 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
                 }
             }
         }
-        let mut client = match super::client() {
-            Ok(client) => client,
-            Err(_) => {
-                match disposition(row) {
-                    Ok(CaseDisposition::Executable(_)) => {
-                        println!("case_id={id} classification=setup_blocked request_sent=false");
-                    }
-                    Ok(CaseDisposition::ExpectedFindingProbe {
-                        operation,
-                        expected_outcome,
-                    }) => println!(
-                        "case_id={id} classification=expected_finding_probe expected_outcome={expected_outcome} observed=setup_blocked request_sent=false interoperability=false operation={operation}"
-                    ),
-                    Err(_) => println!("case_id={id} classification=registry_error"),
-                }
-                failures.push(format!("{id} (fresh client setup failed before request)"));
-                continue;
-            }
+        let Some(mut client) = client_for_matrix_row(row, id, &mut failures) else {
+            continue;
         };
         match disposition(row) {
             Ok(CaseDisposition::Executable(_)) => match dispatch_case(row, Some(&mut client)) {
-                Ok(()) => println!("case_id={id} classification=typed_success"),
+                Ok(()) => println!(
+                    "{}",
+                    cryptographic_observation_line(row, "typed_success", "true")
+                ),
                 Err(error) => {
                     let detail = error.to_string();
-                    let classification = classify_case_error(row, &detail);
-                    println!("case_id={id} classification={classification} detail={error}");
+                    let operation = row["operation"].as_str().unwrap_or_default();
+                    let delivery = target_operation_delivery(row, operation, &detail);
+                    let observed = match delivery {
+                        TargetOperationDelivery::ResponseReceived
+                        | TargetOperationDelivery::SetupResponseReceived => {
+                            classify_case_error(row, &detail)
+                        }
+                        TargetOperationDelivery::NotSent => "setup_or_client_blocked",
+                        TargetOperationDelivery::Uncertain => "delivery_uncertain",
+                    };
+                    let request_sent = match delivery {
+                        TargetOperationDelivery::ResponseReceived => "true",
+                        TargetOperationDelivery::SetupResponseReceived
+                        | TargetOperationDelivery::NotSent => "false",
+                        TargetOperationDelivery::Uncertain => "unknown",
+                    };
+                    println!(
+                        "{} detail={error}",
+                        cryptographic_observation_line(row, observed, request_sent)
+                    );
+                    let classification = observed;
                     failures.push(format!("{id} ({classification}): {error}"));
                 }
             },
             Ok(CaseDisposition::ExpectedFindingProbe {
                 operation,
-                expected_outcome,
+                ..
             }) => match dispatch_operation(row, Some(&mut client), operation) {
                 Ok(()) => println!(
-                    "case_id={id} classification=expected_finding_probe expected_outcome={expected_outcome} observed=typed_success request_sent=true interoperability=false"
+                    "{}",
+                    cryptographic_observation_line(row, "typed_success", "true")
                 ),
                 Err(error) => {
                     let detail = error.to_string();
@@ -1379,7 +1392,8 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
                         TargetOperationDelivery::Uncertain => "unknown",
                     };
                     println!(
-                        "case_id={id} classification=expected_finding_probe expected_outcome={expected_outcome} observed={observed} request_sent={request_sent} setup_response_received={} interoperability=false detail={detail}",
+                        "{} setup_response_received={} detail={detail}",
+                        cryptographic_observation_line(row, observed, request_sent),
                         delivery == TargetOperationDelivery::SetupResponseReceived
                     );
                     if delivery != TargetOperationDelivery::ResponseReceived {
@@ -1403,6 +1417,32 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
         selected_count,
         failures.join("; ")
     );
+}
+
+fn client_for_matrix_row(
+    row: &JsonValue,
+    id: &str,
+    failures: &mut Vec<String>,
+) -> Option<kmipkit_client::Client> {
+    let Ok(client) = super::client() else {
+        match disposition(row) {
+            Ok(CaseDisposition::Executable(_)) => println!(
+                "{}",
+                cryptographic_observation_line(row, "setup_blocked", "false")
+            ),
+            Ok(CaseDisposition::ExpectedFindingProbe {
+                operation,
+                ..
+            }) => println!(
+                "{} operation={operation}",
+                cryptographic_observation_line(row, "setup_blocked", "false")
+            ),
+            Err(_) => println!("case_id={id} classification=registry_error"),
+        }
+        failures.push(format!("{id} (fresh client setup failed before request)"));
+        return None;
+    };
+    Some(client)
 }
 
 fn classify_case_error(row: &JsonValue, message: &str) -> &'static str {
@@ -1445,14 +1485,25 @@ fn classify_case_error(row: &JsonValue, message: &str) -> &'static str {
 }
 
 fn cryptographic_observation_line(
-    case_id: &str,
-    expected_outcome: &str,
-    observed: &str,
+    row: &JsonValue,
+    observed_result_classification: &str,
     request_sent: &str,
 ) -> String {
-    let interoperability = observed == "typed_success" && request_sent == "true";
+    let case_id = row["case_id"].as_str().unwrap_or_default();
+    let expected_outcome = row["expected_outcome"]
+        .as_str()
+        .unwrap_or("unknown_expected_outcome");
+    let (classification, interoperability) = if expected_outcome != "typed_success" {
+        ("expected_finding_probe", false)
+    } else if observed_result_classification == "typed_success" && request_sent == "true" {
+        ("typed_success", true)
+    } else if observed_result_classification == "typed_success" {
+        ("typed_success_without_sent_target", false)
+    } else {
+        (observed_result_classification, false)
+    };
     format!(
-        "case_id={case_id} classification={observed} expected_outcome={expected_outcome} observed={observed} request_sent={request_sent} interoperability={interoperability}"
+        "case_id={case_id} classification={classification} expected_outcome={expected_outcome} observed={observed_result_classification} request_sent={request_sent} interoperability={interoperability}"
     )
 }
 
