@@ -3,7 +3,6 @@ package org.kmipkit.extensions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import org.kmipkit.ttlv.CodecLimits;
@@ -43,10 +42,9 @@ final class DeriveKeyResponseMappingTest {
     }
 
     @Test
-    void absentResponseDoesNotCreateAnIdentifierOrTtlv() {
-        assertTrue(ClientBatchItemResult
-                .parseDeriveKeyResponse(new Object[] {new long[] {0}, null, new long[] {0}})
-                .isEmpty());
+    void successfulDeriveKeyResponseRequiresAUniqueIdentifier() {
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                .parseDeriveKeyResponse(new Object[] {new long[] {0}, null, new long[] {0}}));
     }
 
     @Test

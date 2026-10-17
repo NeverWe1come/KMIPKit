@@ -185,7 +185,7 @@ def test_batch_result_maps_derive_key_response_only_on_success(
     result.close()
 
 
-def test_derive_key_response_returns_none_when_native_marks_it_absent(
+def test_derive_key_response_rejects_absent_identifier_for_successful_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     item = SimpleNamespace(_pointer=lambda: ffi.cast("kmipkit_client_batch_item_response_t *", 1))
@@ -198,7 +198,8 @@ def test_derive_key_response_returns_none_when_native_marks_it_absent(
         kmipkit_client_batch_item_response_derive_key=derive_key_response,
     ))
 
-    assert client._derive_key_response(item) is None
+    with pytest.raises(InvalidInputError):
+        client._derive_key_response(item)
 
 
 @pytest.mark.parametrize(
