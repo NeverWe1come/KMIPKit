@@ -2346,19 +2346,38 @@ coverage remain pending for the shared branch, and no official OASIS test
 case or formal certification claim is made. T043 remains open because its
 required current-head CI/coverage has not been supplied for the correction.
 
-### T044 Python export-audit follow-up — Red
+### T044 Python export-audit and lease-range follow-up
 
 The global Python export audit run after the T044 checkpoint found ten
 unclassified generated dataclass members on `kmipkit.client.CheckResponse`.
-T044 has been reopened until each exact generated export is accounted for.
-The new focused test names the expected ten `CheckResponse` dataclass
-artifacts and currently fails because none has an approved exclusion record.
+The follow-up Red test named each artifact and failed because none had an
+approved exclusion record. The Green change adds the ten exact approved rows
+to the manifest input and regenerates the public API outputs. Java and Python
+also now have explicit Lease Time boundary tests. The existing facade checks
+already enforce the range, so those tests passed on the first run and required
+no production behavior change.
 
 | Phase | Commit | Verification | Result |
 |---|---|---|---|
-| Red | follow-up test commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_check_response_python_dataclass_artifacts_are_exactly_excluded -v`; same command with `test_remaining_python_exports_are_mapped_or_exactly_excluded` | Expected failures enumerate all ten missing `CheckResponse` exclusions and report them as unclassified Python exports. |
-| Green | pending | Add ten exact approved exclusion rows to the manifest input; regenerate with the pinned API-manifest generator; rerun focused and global export tests | Pending. |
-| Refactor | pending | Verify generated outputs and current task/dependency/evidence status | Pending. |
+| Red | `c6113622` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_check_response_python_dataclass_artifacts_are_exactly_excluded -v`; same command with `test_remaining_python_exports_are_mapped_or_exactly_excluded` | Expected failures enumerated all ten missing `CheckResponse` exclusions and reported unclassified Python exports. |
+| Green | `3880dff0` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests -v`; `python -B tools/api_manifest/generate.py --check` | PASS: all 41 T076 mapping/export tests passed; generator verified all 12 outputs. |
+| Refactor | this commit | `mvn -q -Dtest=CheckResponseMappingTest test` from `bindings/java`; Python focused test command below; full T076 test class; generator check; `git diff --check` | PASS: Java Check mapping tests pass; Python Check mapping/boundary tests pass (3 tests); T044 task and evidence record are updated. |
+
+The range evidence commands and results are:
+
+```text
+mvn -q -Dtest=CheckResponseMappingTest test                                  PASS
+$env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path target/debug/kmipkit_ffi.dll).Path; uv run --python 3.12 --no-project --with-requirements bindings/python/requirements-coverage.txt --with-requirements tools/api_manifest/requirements-test.txt --with-editable bindings/python -- python -m pytest -q bindings/python/tests/test_check_operation.py
+                                                                            PASS, 3 tests
+uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt -- python -m unittest tools.api_manifest.tests.test_t076_client_mapping -v
+                                                                            PASS, 41 tests
+python -B tools/api_manifest/generate.py --check                             PASS, 12 outputs
+```
+
+Both language tests accept Lease Time `0` and `UINT32_MAX`, then reject
+`-1` and `UINT32_MAX + 1`. The Python call uses the locally built native DLL;
+the initial isolated invocation without pytest and the native-library path
+could not collect tests, and is not counted as verification.
 
 ## T079 — Python native staging zeroization
 

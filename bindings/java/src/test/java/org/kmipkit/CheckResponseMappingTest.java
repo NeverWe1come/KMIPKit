@@ -2,8 +2,10 @@ package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +16,20 @@ final class CheckResponseMappingTest {
                 Integer.MIN_VALUE, 0L)) {
             assertTrue(item != null);
         }
+    }
+
+    @Test
+    void checkBuilderAcceptsLeaseTimeU32BoundariesAndRejectsOutOfRangeValues() {
+        try (ClientBatchItem zero = ClientBatchItem.check(null, null, null, 0L);
+             ClientBatchItem maximum = ClientBatchItem.check(null, null, null, 0xffff_ffffL)) {
+            assertTrue(zero != null);
+            assertTrue(maximum != null);
+        }
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.check(null, null, null, -1L));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.check(null, null, null, 0x1_0000_0000L));
     }
 
     @Test

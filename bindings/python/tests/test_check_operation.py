@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
+
 from kmipkit import client, extensions
 from kmipkit._client_ffi import ffi
+from kmipkit.errors import InvalidInputError
 
 
 def test_check_builder_preserves_every_optional_field(monkeypatch) -> None:
@@ -27,6 +30,26 @@ def test_check_builder_preserves_every_optional_field(monkeypatch) -> None:
     assert calls[0][0] == "kmipkit_client_batch_item_check"
     assert calls[0][1][0] != ffi.NULL
     assert calls[0][1][1:] == (1, -(1 << 63), 1, -(1 << 31), 1, 0)
+
+
+def test_check_builder_accepts_lease_time_u32_boundaries_and_rejects_out_of_range(
+    monkeypatch,
+) -> None:
+    calls: list[tuple[str, tuple[object, ...]]] = []
+    monkeypatch.setattr(
+        extensions,
+        "_make_handle",
+        lambda _kind, symbol, arguments: calls.append((symbol, arguments)) or 23,
+    )
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    for lease_time in (0, (1 << 32) - 1):
+        assert extensions.client_batch_item_check(lease_time=lease_time) == 23
+    assert [call[1][-1] for call in calls] == [0, (1 << 32) - 1]
+
+    for lease_time in (-1, 1 << 32):
+        with pytest.raises(InvalidInputError):
+            extensions.client_batch_item_check(lease_time=lease_time)
 
 
 def test_failed_check_maps_policy_fields_and_owned_generic_ttlv(monkeypatch) -> None:
