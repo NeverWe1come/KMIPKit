@@ -83,11 +83,16 @@ algorithm values remain outside the KMIP 2.1 enumeration. The latest
 serial suite ended with 101 passed and 9 failed test functions, so the report
 preserves server rejections and KMIPKit response-validation failures rather
 than calling the run green.
+The seven multipart Hash cases are separately classified as semantic
+mismatches: KMIPKit accepted typed Success, but the server's final digest did
+not match the independent `abc` known-answer vector. The three SHA-224 requests
+remain target rejections despite Cosmian's published algorithm list; pinned
+5.28.0 source omits SHA-224 in Hash dispatch.
 
 | Family | Cases | Interoperability successes | Main non-success observations |
 |---|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 3 rejected; Query/Locate validation failures; Ping/Adjust malformed responses; Activate setup blocked; Re-certify unsupported |
-| Cryptographic | 1,466 | 650 | 383 rejected; 325 setup rejected; 88 response validation failed; 20 typed finding responses |
+| Cryptographic | 1,466 | 650 | 383 rejected; 325 setup rejected; 81 response validation failed; 7 multipart semantic mismatches; 20 typed finding responses |
 | Key management | 216 | 12 | 201 rejected; 3 setup rejected |
 | Import/Export/Register transfer | 4,640 | 2,780 | 882 rejected; 978 setup rejected; 0 response validation failed |
 | RNG | 6 | 0 | 6 response-validation failures (missing Operation) |

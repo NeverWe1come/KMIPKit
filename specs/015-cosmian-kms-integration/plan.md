@@ -1,6 +1,6 @@
 # Implementation Plan: Local Cosmian KMS Integration Tests
 
-**Branch**: `feature/KMIPKIT-0015-cosmian-operations` | **Date**: 2026-10-08 (exhaustive amendment 2026-10-16) | **Spec**: [spec.md](spec.md)
+**Branch**: `feature/KMIPKIT-0015-cosmian-operations` | **Date**: 2026-10-08 (exhaustive amendment 2026-10-16; multipart amendment 2026-10-17) | **Spec**: [spec.md](spec.md)
 
 **Input**: [Approved matrix design](../../docs/superpowers/specs/2026-10-16-cosmian-exhaustive-matrix-design.md), [specification](spec.md), [execution plan](../../docs/superpowers/plans/2026-10-16-cosmian-exhaustive-matrix.md).
 
@@ -22,15 +22,15 @@ Expand the opt-in local Cosmian 5.28.0 suite from its historical twenty-case bas
 
 **Target Platform**: Local Docker Desktop/Engine and Rust 1.94+ host.
 
-**Constraints**: Existing raw TTLV/TLS 1.3/mTLS with hostname/chain verification; loopback-only 5696; no automatic retry, external service, production API/protocol change, sensitive output or committed credential. Imports use only test-generated material. Destroy targets only a unique object that case created. Stop/remove all Compose services after any live run, including failure.
+**Constraints**: Existing raw TTLV/TLS 1.3/mTLS with hostname/chain verification; loopback-only 5696; no automatic retry, external service, sensitive output or committed credential. No production API/protocol changes except the maintainer-authorized KMIP 2.1 multipart input/output correction recorded as FR-017. Imports use only test-generated material. Destroy targets only a unique object that case created. Stop/remove all Compose services after any live run, including failure.
 
 **Scale/Scope**: Exact 35-path inventory and all applicable source-derived dimensions from `spec.md`; each case owns setup/linked objects and reports a stable ID. The inventory is a valid intersection, not all mathematical combinations. Documented-but-source-gap rows remain visible; unrepresentable requests become client blockers rather than alternate wire implementations.
 
 ## Constitution Check
 
 - **Specification and traceability**: The amendment defines FR-011 through FR-016 and SC-005 through SC-009, keeps previous identifiers stable, and adds exact OASIS operation/data citations. Concrete matrix rows must refine sources before acceptance.
-- **Test first and evidence**: Keep historical Red/Green/Refactor evidence and measured baseline distinct. The next implementation sequence starts with a failing offline completeness test and empty manifest (Red), builds the complete sourced inventory/cases (Green), then refactors with case parity (Refactor), in separate signed-off commits. No production Rust change belongs to this documentation task.
-- **Core and protocol boundaries**: All 35 paths and probes already have `ClientRequest` variants. No public operation/API expansion is needed. A production defect or representation gap requires separate approved implementation scope.
+- **Test first and evidence**: Keep historical Red/Green/Refactor evidence and measured baseline distinct. The multipart amendment adds Red/Green/Refactor evidence for FR-017; the new protocol behavior is covered by unit contract tests before the live Cosmian rerun.
+- **Core and protocol boundaries**: All 35 paths and probes already have `ClientRequest` variants. No public operation/API expansion is needed. The explicitly authorized FR-017 exception is limited to typed multipart input/output handling; unrelated production defects remain out of scope.
 - **Security**: Test-generated fixtures and independent state only; no persistent data mount; cleanup/teardown even after failure; no request retry; no secret/raw-body logging. Existing suite is mutating, not read-only.
 - **Human-governed workflow**: Reuse the authorized dedicated worktree/feature branch. Existing authorization permits the expanded local work; only humans approve/merge/release. Retain DCO sign-off and the separate draft-PR review process.
 
@@ -84,6 +84,10 @@ python3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_featur
 Review every amended FR/SC against the approved design, typed request variants and exact local OASIS clauses; self-review the full diff and run `git diff --check`. These existing suites cover selected repository traceability contracts; they do not prove the new matrix inventory or live coverage before those checks/cases are implemented.
 
 For subsequent implementation, record distinct Red/Green/Refactor evidence. Run offline manifest completeness/parity and existing focused client/transport tests, syntax/Compose checks, ordinary Cargo ignore behavior, and `cargo fmt --all --check`. Run the live target through `scripts/integration/cosmian-kms.ps1 -Action test` (serial ignored tests), followed by `-Action down` and empty `-Action status`, including on failure. Retain exact per-case results and image digest. Complete workspace Clippy, tests, coverage, traceability, immutable-source, generated-output, dependency/security and compatibility gates required by the repository before requesting review; no historical pass substitutes for a current final-head result.
+
+## Multipart scope amendment — authorized 2026-10-17
+
+FR-017 permits caller-provided multipart input data where the operation supports it and accepts optional output data for multipart Hash, MAC, and Sign responses. Preserve required output on single-part responses and all TTLV structural checks. The Cosmian Hash test uses `a`, `b`, and `c` as three separate input blocks, reuses the initial Correlation Value, and validates a returned final digest against the independent `abc` known-answer vector. OASIS KMIP v2.1 §2.1 says Data is required except on initial or final parts, while Hash Table 235 says `No for multi-part`; this textual tension is recorded for maintainer interpretation. This change permits sending Data and leaves existing handling of omitted intermediate Data unchanged; the live test sends Data on all parts.
 
 ## Evidence and risks
 

@@ -224741,7 +224741,7 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "semantic_mismatch",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -224749,10 +224749,10 @@
         "result_status": 0,
         "response_operation_present": true,
         "response_operation_raw": 39,
-        "reason": "Cosmian returned KMIP Success for the Hash streaming request, but KMIPKit rejected typed response validation; the payload was not retained, so no more specific missing-field claim is made.",
+        "reason": "Cosmian returned typed success for the three-part a, b, c Hash request, but its final digest did not match the independent known-answer digest for abc.",
         "result_reason": null
       },
-      "notes": "SHA-224 is advertised but omitted by compute_hash. Streaming correlation source feeds digest bytes back as data; verify against the intended concatenated-data digest, never count merely parsed output as correctness.",
+      "notes": "The corrected KMIPKit flow sends a, b, and c as separate Data blocks and reuses the first response Correlation Value. The final typed response is accepted but its digest differs from the independent known-answer digest for abc. Pinned Cosmian hash.rs uses the correlation bytes as additional input to a fresh digest and does not return an updated Correlation Value for the intermediate part; this is a Cosmian multipart Hash semantic gap, not a response-parser rejection.",
       "wire_enum_values": {
         "hashing_algorithm": {
           "name": "SHA-256",
@@ -224865,7 +224865,7 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "semantic_mismatch",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -224873,10 +224873,10 @@
         "result_status": 0,
         "response_operation_present": true,
         "response_operation_raw": 39,
-        "reason": "Cosmian returned KMIP Success for the Hash streaming request, but KMIPKit rejected typed response validation; the payload was not retained, so no more specific missing-field claim is made.",
+        "reason": "Cosmian returned typed success for the three-part a, b, c Hash request, but its final digest did not match the independent known-answer digest for abc.",
         "result_reason": null
       },
-      "notes": "SHA-224 is advertised but omitted by compute_hash. Streaming correlation source feeds digest bytes back as data; verify against the intended concatenated-data digest, never count merely parsed output as correctness.",
+      "notes": "The corrected KMIPKit flow sends a, b, and c as separate Data blocks and reuses the first response Correlation Value. The final typed response is accepted but its digest differs from the independent known-answer digest for abc. Pinned Cosmian hash.rs uses the correlation bytes as additional input to a fresh digest and does not return an updated Correlation Value for the intermediate part; this is a Cosmian multipart Hash semantic gap, not a response-parser rejection.",
       "wire_enum_values": {
         "hashing_algorithm": {
           "name": "SHA-384",
@@ -224989,7 +224989,7 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "semantic_mismatch",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -224997,10 +224997,10 @@
         "result_status": 0,
         "response_operation_present": true,
         "response_operation_raw": 39,
-        "reason": "Cosmian returned KMIP Success for the Hash streaming request, but KMIPKit rejected typed response validation; the payload was not retained, so no more specific missing-field claim is made.",
+        "reason": "Cosmian returned typed success for the three-part a, b, c Hash request, but its final digest did not match the independent known-answer digest for abc.",
         "result_reason": null
       },
-      "notes": "SHA-224 is advertised but omitted by compute_hash. Streaming correlation source feeds digest bytes back as data; verify against the intended concatenated-data digest, never count merely parsed output as correctness.",
+      "notes": "The corrected KMIPKit flow sends a, b, and c as separate Data blocks and reuses the first response Correlation Value. The final typed response is accepted but its digest differs from the independent known-answer digest for abc. Pinned Cosmian hash.rs uses the correlation bytes as additional input to a fresh digest and does not return an updated Correlation Value for the intermediate part; this is a Cosmian multipart Hash semantic gap, not a response-parser rejection.",
       "wire_enum_values": {
         "hashing_algorithm": {
           "name": "SHA-512",
@@ -225113,7 +225113,7 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "semantic_mismatch",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -225121,10 +225121,10 @@
         "result_status": 0,
         "response_operation_present": true,
         "response_operation_raw": 39,
-        "reason": "Cosmian returned KMIP Success for the Hash streaming request, but KMIPKit rejected typed response validation; the payload was not retained, so no more specific missing-field claim is made.",
+        "reason": "Cosmian returned typed success for the three-part a, b, c Hash request, but its final digest did not match the independent known-answer digest for abc.",
         "result_reason": null
       },
-      "notes": "SHA-224 is advertised but omitted by compute_hash. Streaming correlation source feeds digest bytes back as data; verify against the intended concatenated-data digest, never count merely parsed output as correctness.",
+      "notes": "The corrected KMIPKit flow sends a, b, and c as separate Data blocks and reuses the first response Correlation Value. The final typed response is accepted but its digest differs from the independent known-answer digest for abc. Pinned Cosmian hash.rs uses the correlation bytes as additional input to a fresh digest and does not return an updated Correlation Value for the intermediate part; this is a Cosmian multipart Hash semantic gap, not a response-parser rejection.",
       "wire_enum_values": {
         "hashing_algorithm": {
           "name": "SHA3-224",
@@ -225237,7 +225237,7 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "semantic_mismatch",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -225245,10 +225245,10 @@
         "result_status": 0,
         "response_operation_present": true,
         "response_operation_raw": 39,
-        "reason": "Cosmian returned KMIP Success for the Hash streaming request, but KMIPKit rejected typed response validation; the payload was not retained, so no more specific missing-field claim is made.",
+        "reason": "Cosmian returned typed success for the three-part a, b, c Hash request, but its final digest did not match the independent known-answer digest for abc.",
         "result_reason": null
       },
-      "notes": "SHA-224 is advertised but omitted by compute_hash. Streaming correlation source feeds digest bytes back as data; verify against the intended concatenated-data digest, never count merely parsed output as correctness.",
+      "notes": "The corrected KMIPKit flow sends a, b, and c as separate Data blocks and reuses the first response Correlation Value. The final typed response is accepted but its digest differs from the independent known-answer digest for abc. Pinned Cosmian hash.rs uses the correlation bytes as additional input to a fresh digest and does not return an updated Correlation Value for the intermediate part; this is a Cosmian multipart Hash semantic gap, not a response-parser rejection.",
       "wire_enum_values": {
         "hashing_algorithm": {
           "name": "SHA3-256",
@@ -225361,7 +225361,7 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "semantic_mismatch",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -225369,10 +225369,10 @@
         "result_status": 0,
         "response_operation_present": true,
         "response_operation_raw": 39,
-        "reason": "Cosmian returned KMIP Success for the Hash streaming request, but KMIPKit rejected typed response validation; the payload was not retained, so no more specific missing-field claim is made.",
+        "reason": "Cosmian returned typed success for the three-part a, b, c Hash request, but its final digest did not match the independent known-answer digest for abc.",
         "result_reason": null
       },
-      "notes": "SHA-224 is advertised but omitted by compute_hash. Streaming correlation source feeds digest bytes back as data; verify against the intended concatenated-data digest, never count merely parsed output as correctness.",
+      "notes": "The corrected KMIPKit flow sends a, b, and c as separate Data blocks and reuses the first response Correlation Value. The final typed response is accepted but its digest differs from the independent known-answer digest for abc. Pinned Cosmian hash.rs uses the correlation bytes as additional input to a fresh digest and does not return an updated Correlation Value for the intermediate part; this is a Cosmian multipart Hash semantic gap, not a response-parser rejection.",
       "wire_enum_values": {
         "hashing_algorithm": {
           "name": "SHA3-384",
@@ -225485,7 +225485,7 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "semantic_mismatch",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
@@ -225493,10 +225493,10 @@
         "result_status": 0,
         "response_operation_present": true,
         "response_operation_raw": 39,
-        "reason": "Cosmian returned KMIP Success for the Hash streaming request, but KMIPKit rejected typed response validation; the payload was not retained, so no more specific missing-field claim is made.",
+        "reason": "Cosmian returned typed success for the three-part a, b, c Hash request, but its final digest did not match the independent known-answer digest for abc.",
         "result_reason": null
       },
-      "notes": "SHA-224 is advertised but omitted by compute_hash. Streaming correlation source feeds digest bytes back as data; verify against the intended concatenated-data digest, never count merely parsed output as correctness.",
+      "notes": "The corrected KMIPKit flow sends a, b, and c as separate Data blocks and reuses the first response Correlation Value. The final typed response is accepted but its digest differs from the independent known-answer digest for abc. Pinned Cosmian hash.rs uses the correlation bytes as additional input to a fresh digest and does not return an updated Correlation Value for the intermediate part; this is a Cosmian multipart Hash semantic gap, not a response-parser rejection.",
       "wire_enum_values": {
         "hashing_algorithm": {
           "name": "SHA3-512",

@@ -127,14 +127,21 @@ none counts as an interoperability success. Compose teardown
 completed, and `docker compose --file tests/integration/cosmian/compose.yaml
 ps --all` returned no services.
 
+The targeted Hash follow-up accepts typed multipart responses and sends `a`,
+`b`, and `c` while reusing the first response's Correlation Value, as specified
+by OASIS KMIP v2.1 §2.1 and §7.8. Seven server responses are typed Success but
+their final digests do not match the independent `abc` vectors; three SHA-224
+requests are rejected although Cosmian's published algorithm list advertises
+SHA-224. Hash remains 14/24 interoperable cases.
+
 | Test family | Cases | Typed successes | Interoperability successes | Other measured outcomes |
 |---|---:|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 80 | 3 rejected; 2 response-validation failures; 2 malformed responses; 1 setup-blocked; 1 unsupported |
-| Cryptographic | 1,466 | 670 | 650 | 383 rejected; 325 setup-rejected; 88 response-validation failures |
+| Cryptographic | 1,466 | 670 | 650 | 383 rejected; 325 setup-rejected; 81 response-validation failures; 7 multipart semantic mismatches |
 | Key management | 216 | 12 | 12 | 201 rejected; 3 setup-rejected |
 | Import/Export/Register transfer | 4,640 | 2,780 | 2,780 | 882 rejected; 978 setup-rejected; 0 response-validation failures |
 | RNG | 6 | 0 | 0 | 6 response-validation failures (missing Operation) |
-| **Total executable rows** | **6,417** | **3,542** | **3,522** | **1,469 rejected; 1,306 setup-rejected; 96 response-validation failures; 4 other findings** |
+| **Total executable rows** | **6,417** | **3,542** | **3,522** | **1,469 rejected; 1,306 setup-rejected; 89 response-validation failures; 7 semantic mismatches; 4 other findings** |
 
 Twelve normative exclusions were not sent: six invalid RNG Parameters
 combinations and six invalid Certify subject-OID-only CSR combinations. Of the
