@@ -11,9 +11,8 @@ use base64::Engine;
 use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
-    DelegatedLoginRequest,
-    GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
-    SplitKeyMethod, UniqueIdentifier,
+    DelegatedLoginRequest, GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData,
+    SecretBytes, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -1049,8 +1048,45 @@ fn ffi_delegated_login_constructor_validates_typed_fields_and_requires_rights() 
         SUCCESS
     );
     assert!(!item.is_null());
-    release(rights, Kind::Structure);
     kmipkit_client_batch_item_release(item);
+
+    let mut interval_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_delegated_login(
+            rights,
+            1,
+            i64::from(u32::MAX),
+            0,
+            0,
+            ptr::null_mut(),
+            &mut interval_item,
+        ),
+        SUCCESS
+    );
+    assert!(!interval_item.is_null());
+    kmipkit_client_batch_item_release(interval_item);
+
+    let mut wrong_usage_limits = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_discover_versions(&mut wrong_usage_limits),
+        SUCCESS
+    );
+    let mut invalid_item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+    assert_eq!(
+        kmipkit_client_batch_item_delegated_login(
+            rights,
+            0,
+            0,
+            0,
+            0,
+            wrong_usage_limits.cast(),
+            &mut invalid_item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(invalid_item.is_null());
+    kmipkit_client_batch_item_release(wrong_usage_limits);
+    release(rights, Kind::Structure);
 }
 
 #[test]

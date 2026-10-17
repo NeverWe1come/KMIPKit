@@ -165,6 +165,21 @@ final class ClientBatchNativeBoundaryTest {
                 () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseCheck(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin(0));
+    }
+
+    @Test
+    void directExecuteRejectsNullClientAndBatchHandles() {
+        long batch = NativeExtensionRegistry.clientBatchCreate();
+        try {
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientExecute(0, batch, new long[0]));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientExecute(1, 0, new long[0]));
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.CLIENT_BATCH, batch);
+        }
     }
 
     @Test

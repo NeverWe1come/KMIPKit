@@ -85,6 +85,22 @@ final class DelegatedLoginMappingTest {
     }
 
     @Test
+    void responseMappingRejectsInconsistentAbsentAndPresentTicketFields() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseDelegatedLoginResponse(new Object[] {
+                    new long[] {1, 0, 0}, null, new long[] {2}
+                }));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseDelegatedLoginResponse(new Object[] {
+                    new long[] {0, 1, 3}, new byte[] {1}, new long[] {0}
+                }));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseDelegatedLoginResponse(new Object[] {
+                    new long[] {1, 1, -1}, new byte[] {1}, new long[] {0}
+                }));
+    }
+
+    @Test
     void responseMappingWipesSecretWhenNativeTupleValidationFails() {
         byte[] secret = "malformed-native-ticket-secret".getBytes();
 
