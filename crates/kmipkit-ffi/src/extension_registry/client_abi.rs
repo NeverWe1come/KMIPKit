@@ -1279,10 +1279,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
         let Some(item) = response.get(*index) else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        if item.outcome().result().status().raw() != 0 {
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
             return SUCCESS;
         }
-        if let kmipkit_client::ClientBatchOutcome::GetUsageAllocation(allocation) = item.outcome() {
+        if let kmipkit_client::ClientBatchOutcome::GetUsageAllocation(allocation) = outcome {
             let structure =
                 try_ffi!(allocation.with_ttlv(|view| super::clone_structure_view(&view)));
             *response_ttlv = try_ffi!(try_make_handle(

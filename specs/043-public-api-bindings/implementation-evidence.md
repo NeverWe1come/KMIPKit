@@ -2445,3 +2445,27 @@ verified both an absent identifier with `INT64_MIN` and a present text
 identifier with `INT64_MAX`. The full Java Gradle suite passed; focused C, Rust,
 Python, and manifest parity checks above passed. The post-correction full
 manifest-suite result is recorded in the verification table above.
+
+### Independent-review follow-up: generic response TTLV parity
+
+Independent review found that T049 did not expose the complete generic response
+TTLV through C, Java, and Python, as required by KMIPKIT-0039-FR-004 and SC-001.
+T049 was reopened while preserving the separate T081 error-only retention
+exception. The follow-up adds a success-only C ABI copy, Java and Python owned
+response structures, unknown-field/order and lifetime tests, generated
+manifest/header updates, and user documentation. It does not add the Usage
+Allocation guard (T078) or change any other operation.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `fb3dc377` | `cargo test -p kmipkit-ffi --all-features --lib usage_allocation_ttlv`; `bindings/java/gradlew.bat test --tests org.kmipkit.extensions.GetUsageAllocationResponseMappingTest --no-daemon`; `& $taskPython -m pytest bindings/python/tests/test_get_usage_allocation_operation.py -q` | Expected failure: C accessor is absent; Java does not expose `responseTtlv()`; Python result does not expose `response_ttlv`. The tests assert full response order, unknown nested tag preservation, copy lifetime, and error absence. |
+| Green | `666494bb` | `cargo test -p kmipkit-ffi --all-features ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs`; `bindings/java/gradlew.bat test --tests org.kmipkit.extensions.GetUsageAllocationResponseMappingTest --no-daemon`; `& $taskPython -m pytest bindings/python/tests/test_get_usage_allocation_operation.py -q`; `python -B tools/api_manifest/generate.py --check`; `& $taskPython -B -m unittest discover -s tools/api_manifest/tests -p 'test_*.py' -v` | PASS: Rust invalid-envelope/index/unrelated-operation test; compiled C consumer; Java focused test (`BUILD SUCCESSFUL`); Python focused test (6 passed); pinned generator verifies 12 outputs; manifest suite 349 tests, 0 failures, 3 Windows symlink-permission skips. |
+| Refactor | this commit | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `cargo test --workspace --all-features`; `cargo llvm-cov --workspace --all-features`; `cargo llvm-cov --package kmipkit-ffi --all-features`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: formatter, lint, workspace tests, FFI tests (104 unit + 5 C API), generator and diff checks exit 0. Workspace line coverage is 95.50% (30,225/31,649); new accessor executable lines are all covered, including success-copy, failure-absent, inconsistent envelope, out-of-range index, and unrelated-success paths. The existing `client_abi.rs` file total is 91.66%, above the FFI 85% gate; its lower uncovered lines are outside the new accessor. |
+
+The manifest maps the C declaration to the actual exported owner
+`kmipkit_ffi::extension_registry::client_abi::kmipkit_client_batch_item_response_get_usage_allocation_ttlv`.
+The existing Java JNI entry point calls this TTLV getter as well as the typed
+identifier getter and transfers the owned handle to `GetUsageAllocationResponse`.
+The three new edge-path cases now give every executable statement in the
+accessor a nonzero coverage count. No generated file was edited by hand; all
+checked-in outputs were refreshed and verified by the pinned generator.
