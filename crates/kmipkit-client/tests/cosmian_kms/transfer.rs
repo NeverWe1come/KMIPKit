@@ -2888,6 +2888,11 @@ mod inventory_tests {
     fn opaque_post_quantum_transfer_rows_are_exactly_fixture_blocked() {
         let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
         let blocked = fixture_unavailable_case_ids().collect::<BTreeSet<_>>();
+        assert_eq!(
+            blocked.len(),
+            0,
+            "source-gap cases must attempt a typed operation instead of being silently skipped"
+        );
         let expected = rows
             .iter()
             .filter(|row| {
@@ -2923,15 +2928,11 @@ mod inventory_tests {
     }
 
     #[test]
-    fn every_requestable_transfer_case_constructs_a_serializable_typed_request() {
+    fn every_transfer_case_constructs_a_serializable_typed_request() {
         let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
-        let blocked = fixture_unavailable_case_ids().collect::<BTreeSet<_>>();
         let mut serialized = 0;
         for row in rows {
             let case_id = crate::common::required_text(&row, "case_id").expect("transfer case ID");
-            if blocked.contains(case_id) {
-                continue;
-            }
             let operation =
                 crate::common::required_text(&row, "operation").expect("transfer operation");
             let object_type = object_type(
@@ -2954,7 +2955,7 @@ mod inventory_tests {
             );
             serialized += 1;
         }
-        assert_eq!(serialized, 4_568);
+        assert_eq!(serialized, 4_640);
     }
 
     #[test]
