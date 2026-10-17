@@ -3128,3 +3128,49 @@ not treated as passing coverage evidence; the selected-scope CI gate remains
 authoritative. These follow-up results have not yet been checked by CI on the
 current PR head. T047 remains unchecked until the refreshed cross-platform run
 and selected-scope coverage gate pass.
+
+### T047 coverage gate follow-up — 2026-10-18
+
+CI run `39076064592` on head `bd2466bc` passed the cross-platform Rust, C,
+Java, Python, JNI, sanitizer, dependency-policy, inventory, and documentation
+jobs. The selected-scope coverage gate alone failed: 5,389/5,702 changed
+production lines (94.51 percent); 28 additional covered executable lines
+would be needed to reach the unchanged 95 percent threshold.
+
+Test-only follow-up commit `9c7b9acc` adds direct C ABI checks for omitted
+Export selectors and Derive Key validation, Java/JNI checks for Export
+identifier and handle boundaries plus absent Export results, and a Python
+Derive Key input-limit test. It does not change production behavior, coverage
+thresholds, or exclusions.
+
+| Verification | Result |
+|---|---|
+| `mvn -B -f bindings/java/pom.xml '-Dtest=ClientBatchNativeBoundaryTest,ClientBatchItemResultValidationTest' test` | PASS: 20 tests, 0 failures/errors/skips |
+| Python `test_derive_key_operation.py` with the built native library | PASS: 14 tests |
+| Four focused FFI ABI tests for Export selectors, Export response defensive outputs, and Derive Key validation | PASS: 4 tests |
+| `cargo fmt --all --check` and `git diff --check` | PASS |
+
+An independent reachability review found no set of clean deterministic Export
+public-API tests that could cover the 28-line shortfall. The remaining changed
+misses are primarily allocation/Java-exception cleanup and consistency checks
+for states the FFI does not expose through valid public constructors. The new
+test commit still requires a current-head CI run; T047 remains unchecked until
+the selected coverage gate passes with the approved threshold and documented
+evidence.
+
+### T047 generated C declaration refresh — 2026-10-18
+
+The pinned API manifest generator identified the checked-in C header as stale
+after the Export response contract clarification. Running
+`python -B tools/api_manifest/generate.py --write` regenerated the two C API
+comments to state the supported Success and KMIP Failure behavior; no ABI
+declaration changed. The follow-up `--check` verifies all 12 generated outputs.
+
+CI run `39079621478` on head `9c7b9acc` reported `Run Python contracts` failing
+on all three operating systems. The workflow logs are unavailable until the
+run finishes. Locally, the same pinned-dependency contract sequence passes:
+222 normative-catalog tests (7 platform skips), 17 extension-fixture tests (1
+platform skip), 51 API parity/T076 tests, and both generated-output checks.
+These results include the regenerated header. The run's selected-scope coverage
+gate is still in progress; T047 remains unchecked until a new CI head passes
+the cross-platform contracts and coverage gate.
