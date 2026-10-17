@@ -139,14 +139,14 @@ SHA-224. Hash remains 14/24 interoperable cases.
 | Lifecycle and probes | 89 | 80 | 80 | 3 rejected; 2 response-validation failures; 2 malformed responses; 1 setup-blocked; 1 unsupported |
 | Cryptographic | 1,466 | 670 | 650 | 383 rejected; 325 setup-rejected; 81 response-validation failures; 7 multipart semantic mismatches |
 | Key management | 216 | 12 | 12 | 201 rejected; 3 setup-rejected |
-| Import/Export/Register transfer | 4,640 | 2,780 | 2,780 | 882 rejected; 978 setup-rejected; 0 response-validation failures |
+| Import/Export/Register transfer | 4,640 | 2,832 | 2,832 | 830 rejected; 978 setup-rejected; 0 response-validation failures |
 | RNG | 6 | 0 | 0 | 6 response-validation failures (missing Operation) |
-| **Total executable rows** | **6,417** | **3,542** | **3,522** | **1,469 rejected; 1,306 setup-rejected; 89 response-validation failures; 7 semantic mismatches; 4 other findings** |
+| **Total executable rows** | **6,417** | **3,594** | **3,574** | **1,417 rejected; 1,306 setup-rejected; 89 response-validation failures; 7 semantic mismatches; 4 other findings** |
 
 Twelve normative exclusions were not sent: six invalid RNG Parameters
 combinations and six invalid Certify subject-OID-only CSR combinations. Of the
-3,542 typed responses, 20 cryptographic source-gap/discrepancy observations
-remain outside the interoperability count. The 54 transfer finding rows that
+3,594 typed responses, 20 cryptographic source-gap/discrepancy observations
+remain outside the interoperability count. A live follow-up reran 52 native SymmetricKey Import cases after correcting the Symmetric Key and transparent Key TTLV tags in the test builder; all 52 returned typed success. The 54 transfer finding rows that
 returned typed success and passed operation postconditions now count as observed
 interoperability; their documentation/source classifications remain attached,
 and this is not a KMIP 2.1 conformance claim. The 24 Create Key

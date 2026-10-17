@@ -11,9 +11,9 @@ The pinned target is `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa57
 | Lifecycle and probes | 89 | 80 | 80 | 3 | 0 | 2 | 2 malformed; 1 setup blocked; 1 unsupported |
 | Cryptographic | 1,466 | 670 | 650 | 383 | 325 | 81 | 7 semantic mismatches |
 | Key management | 216 | 12 | 12 | 201 | 3 | 0 | — |
-| Import/Export/Register transfer | 4,640 | 2,780 | 2,780 | 882 | 978 | 0 | — |
+| Import/Export/Register transfer | 4,640 | 2,832 | 2,832 | 830 | 978 | 0 | — |
 | RNG | 6 | 0 | 0 | 0 | 0 | 6 | — |
-| **Executable total** | **6,417** | **3,542** | **3,522** | **1,469** | **1,306** | **89** | **7 semantic mismatches; 4 fixture/setup/malformed/unsupported** |
+| **Executable total** | **6,417** | **3,594** | **3,574** | **1,417** | **1,306** | **89** | **7 semantic mismatches; 4 fixture/setup/malformed/unsupported** |
 
 Of the 98 typed-success responses on source-gap/discrepancy rows, 24 Create Key Pair cases and 54 transfer cases now count as observed interoperability because their operation-specific postconditions passed. The remaining 20 cryptographic findings stay separately classified. The 24 Create Key Pair profiles remain source-documentation discrepancies because their algorithm values are outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration; their success is not a KMIP 2.1 conformance claim. The 54 transfer findings retain their source/documentation classifications and likewise are not conformance claims. Rejection means a well-formed KMIP failure response; setup rejection means a prerequisite failed before the target operation was sent; response-validation failure means the request was delivered but KMIPKit could not accept or satisfy a typed-response postcondition; malformed response means required response shape was missing. These categories remain distinct in each matrix record.
 
@@ -43,7 +43,7 @@ These summaries count only executable cases whose typed response and operation-s
 | Get Attribute List | 7 / 7 |
 | Get Attributes | 7 / 7 |
 | Hash | 14 / 24 |
-| Import | 593 / 1,041 |
+| Import | 645 / 1,041 |
 | Join Split Key | 3 / 3 |
 | Locate | 6 / 7 |
 | Register | 583 / 1,029 |
@@ -73,7 +73,7 @@ For `Set Attribute (Modify)`, the matrix exercises Set Attribute and Modify Attr
 | Sign | 0 / 163 | All target requests returned `Item Not Found`; this response alone does not establish that the operation is unimplemented. |
 | Signature Verify | 0 / 321 | 312 cases were rejected during prerequisite setup with `Item Not Found`, before the target operation was sent; the other 9 target requests returned `Item Not Found`. |
 
-These are measured outcomes against the pinned local Cosmian KMS 5.28.0 binary TTLV/mTLS deployment. The findings and their attribution are tracked per case in [`capability-matrix.json`](../../tests/integration/cosmian/capability-matrix.json); an observed failure is not automatically attributed to KMIPKit or Cosmian without supporting evidence.
+A focused live rerun of the 52 previously rejected native SymmetricKey Import cases passed 52/52 after correcting two integration-builder tags: Symmetric Key is `0x42008F` (the old `0x42007F` is Result Status), and the transparent key material child is `Key` `0x42003F` (the old `0x420044` is Key Part Identifier). The defect was in KMIPKit integration test construction; no production-library or Cosmian change was needed. The ledger and operation totals include these 52 successes. These are measured outcomes against the pinned local Cosmian KMS 5.28.0 binary TTLV/mTLS deployment. The findings and their attribution are tracked per case in [`capability-matrix.json`](../../tests/integration/cosmian/capability-matrix.json); an observed failure is not automatically attributed to KMIPKit or Cosmian without supporting evidence.
 
 ## Full serial run and teardown
 
@@ -126,7 +126,7 @@ The 81 crypto response-validation failures are HMAC prerequisite responses where
 
 Key management has 12 interoperability successes, 201 target rejections and three setup rejections across 216 cases.
 
-Transfer has 2,780 interoperability successes, 882 target rejections, 978 setup rejections and no response-validation failures across 4,640 rows. The full run exercised all 72 ConfigurableKEM opaque transfer cases: 48 prerequisite setup rejections and 24 target rejections. These rows are not labeled fixture-unavailable.
+Transfer has 2,832 interoperability successes, 830 target rejections, 978 setup rejections and no response-validation failures across 4,640 rows. The full run exercised all 72 ConfigurableKEM opaque transfer cases: 48 prerequisite setup rejections and 24 target rejections. These rows are not labeled fixture-unavailable.
 
 | Operation | Interoperable / executable | Target rejections | Setup rejections | Target rejection breakdown | Setup rejection breakdown |
 |---|---:|---:|---:|---|---|

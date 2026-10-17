@@ -141099,15 +141099,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -141457,15 +141454,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -141997,15 +141991,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -142355,15 +142346,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -142895,15 +142883,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -143253,15 +143238,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -143793,15 +143775,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -144151,15 +144130,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -144691,15 +144667,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -145049,15 +145022,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -145589,15 +145559,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -145947,15 +145914,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -146493,15 +146457,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -146859,15 +146820,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -147405,15 +147363,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -147763,15 +147718,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -148303,15 +148255,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -148661,15 +148610,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -149201,15 +149147,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -149559,15 +149502,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -150099,15 +150039,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -150457,15 +150394,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -150997,15 +150931,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -151355,15 +151286,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -151895,15 +151823,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -152253,15 +152178,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -152793,15 +152715,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -153151,15 +153070,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -153691,15 +153607,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -154049,15 +153962,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -154589,15 +154499,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -154947,15 +154854,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -155487,15 +155391,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -155845,15 +155746,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -156385,15 +156283,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -156743,15 +156638,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -157283,15 +157175,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -157641,15 +157530,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -158181,15 +158067,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -158539,15 +158422,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -159079,15 +158959,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -159437,15 +159314,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -159977,15 +159851,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -160335,15 +160206,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -160875,15 +160743,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -161233,15 +161098,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -161773,15 +161635,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -162131,15 +161990,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -162671,15 +162527,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -163029,15 +162882,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -163569,15 +163419,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {
@@ -163927,15 +163774,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 4,
-        "response_operation_present": false,
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 4)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. Subject algorithm metadata roundtrip; wrapping KEK cases cannot satisfy this case. No inference of supported cipher use from a storage-only algorithm.",
       "wire_enum_values": {

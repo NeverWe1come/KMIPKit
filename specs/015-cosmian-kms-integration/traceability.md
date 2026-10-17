@@ -1,6 +1,6 @@
 # Requirement Traceability: Cosmian KMS Integration
 
-The exhaustive matrix is implemented and reconciled against the latest complete serial ignored-suite output and targeted live follow-ups. The manifest contains 6,429 rows: 6,417 executable combinations with individual observed classifications and 12 normative exclusions that were not sent. It records 3,522 successful typed interoperability outcomes; all other results remain separately classified. The latest full test binary run with rustls 0.23.46 ended with 101 passed and 9 failed test functions. Subsequent targeted follow-ups corrected four Decrypt fixture/postcondition issues, measured the 15 former cipher fixture blockers, and reran the Get/Export legacy-PKCS#12 cases; this remains an evidence report, not a claim that all cases succeeded or that Cosmian is fully conformant. Historical selected-case runs remain separate bounded evidence.
+The exhaustive matrix is implemented and reconciled against the latest complete serial ignored-suite output and targeted live follow-ups. The manifest contains 6,429 rows: 6,417 executable combinations with individual observed classifications and 12 normative exclusions that were not sent. It records 3,574 successful typed interoperability outcomes; all other results remain separately classified. The latest full test binary run with rustls 0.23.46 ended with 101 passed and 9 failed test functions. Subsequent targeted follow-ups corrected four Decrypt fixture/postcondition issues, measured the 15 former cipher fixture blockers, and reran the Get/Export legacy-PKCS#12 cases; this remains an evidence report, not a claim that all cases succeeded or that Cosmian is fully conformant. Historical selected-case runs remain separate bounded evidence. A live follow-up reran all 52 previously rejected native SymmetricKey Import cases after correcting the integration test builder tags for Symmetric Key and transparent Key; all 52 returned typed success.
 
 | Requirement | Source | Implementation | Verification |
 |---|---|---|---|
@@ -26,7 +26,7 @@ The exhaustive matrix is implemented and reconciled against the latest complete 
 | `KMIPKIT-0015-SC-001` | FR-001, FR-002 | Pinned loopback Compose deployment and teardown were exercised in the serial run. |
 | `KMIPKIT-0015-SC-002` | FR-004, FR-008, FR-016 | All live tests remain ignored by default; the latest offline integration target passed 118 tests with 110 live tests ignored. |
 | `KMIPKIT-0015-SC-003` | FR-006, FR-008, FR-011 | Inventory covers all 35 advertised paths, separates Set/Modify, and records Query/Ping/Adjust/Re-certify findings individually. |
-| `KMIPKIT-0015-SC-004` | FR-006, FR-010, FR-016 | Each of 6,417 executable rows has a live classification or explicit blocker; 3,522 successful typed postconditions count as observed interoperability. Source-only values remain separate from KMIP 2.1 conformance claims. The 15 cipher findings have measured target responses. |
+| `KMIPKIT-0015-SC-004` | FR-006, FR-010, FR-016 | Each of 6,417 executable rows has a live classification or explicit blocker; 3,574 successful typed postconditions count as observed interoperability. Source-only values remain separate from KMIP 2.1 conformance claims. The 15 cipher findings have measured target responses. |
 | `KMIPKIT-0015-SC-005` | FR-011–FR-014, FR-016 | Offline schema, unique-ID, source-reference, dimension and case-to-executor checks pass over the 6,429-row manifest. |
 | `KMIPKIT-0015-SC-006` | FR-005, FR-013, FR-016 | Import/Export defaults, explicit formats, PEM/DER and PFX paths are represented; legacy-format Key Format Type failures and PFX source omission remain explicit. |
 | `KMIPKIT-0015-SC-007` | FR-014, FR-016 | All crypto and valid RNG rows have live classifications or explicit fixture blockers; failed round trips, verification pairs and target behaviors remain failures. |
@@ -34,16 +34,16 @@ The exhaustive matrix is implemented and reconciled against the latest complete 
 | `KMIPKIT-0015-SC-009` | FR-005, FR-015 | Full serial run completed Compose teardown and `ps -a` was empty. The final PR gate set remains open while required workspace/hosted checks are evaluated. |
 ## Complete observed matrix — pinned Cosmian 5.28.0
 
-The manifest contains 6,429 unique records: 6,417 executable rows and 12 standards-invalid/non-executable exclusions. Each executable row has a live observation or an explicit fixture/setup blocker; none remains `not_run`. Of the executable rows, 3,522 passed the typed response and operation-specific postconditions and are counted as observed interoperability successes. A successful expected-finding probe may count when those postconditions pass; the expected/source-discrepancy classification remains separately recorded.
+The manifest contains 6,429 unique records: 6,417 executable rows and 12 standards-invalid/non-executable exclusions. Each executable row has a live observation or an explicit fixture/setup blocker; none remains `not_run`. Of the executable rows, 3,574 passed the typed response and operation-specific postconditions and are counted as observed interoperability successes. A successful expected-finding probe may count when those postconditions pass; the expected/source-discrepancy classification remains separately recorded.
 
 | Family | Cases | `typed_success` observations | Interoperability successes | Target `rejected` | `setup_rejected` | `response_validation_failed` | Other measured findings |
 |---|---:|---:|---:|---:|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 80 | 3 | 0 | 2 | 2 malformed, 1 setup blocked, 1 unsupported |
 | Cryptographic | 1,466 | 670 | 650 | 383 | 325 | 81 | 7 semantic mismatches |
 | Key management | 216 | 12 | 12 | 201 | 3 | 0 | — |
-| Import/Export/Register transfer | 4,640 | 2,780 | 2,780 | 882 | 978 | 0 | — |
+| Import/Export/Register transfer | 4,640 | 2,832 | 2,832 | 830 | 978 | 0 | — |
 | RNG | 6 | 0 | 0 | 0 | 0 | 6 | — |
-| **Executable total** | **6,417** | **3,542** | **3,522** | **1,469** | **1,306** | **89** | **7 semantic mismatches; 4 fixture/setup/malformed/unsupported findings** |
+| **Executable total** | **6,417** | **3,594** | **3,574** | **1,417** | **1,306** | **89** | **7 semantic mismatches; 4 fixture/setup/malformed/unsupported findings** |
 
 The 12 exclusions are six RNG parameter variants forbidden by the request structures and six Certify subject-OID-only CSR rows without a source-confirmed valid contract; none was sent. Twenty-four Create Key Pair source-discrepancy probes returned typed success and both key identifiers passed the response postcondition, so they count as observed KMIPKit–Cosmian interoperability. Their algorithm values remain outside the pinned KMIP 2.1 enumeration. The remaining 20 crypto typed finding observations stay outside the interoperability count. The 54 transfer finding rows with typed success and passed operation postconditions now count as observed interoperability, while retaining their source/documentation classifications; this does not claim KMIP 2.1 conformance. A targeted follow-up measured all 15 former cipher fixture blockers; see the Task 6 report.
 
@@ -55,7 +55,7 @@ The live matrix records 650 crypto interoperability successes, 20 other typed re
 
 ### Transfer, key-management, and lifecycle detail
 
-Transfer observations are 2,780 interoperability successes, 882 target rejections, 978 setup rejections, and no response-validation failures. The 54 typed expected-finding successes now count as observed interoperability because the runner's postconditions passed; their source/documentation discrepancy tags remain. The full run exercised all 72 ConfigurableKEM opaque transfer rows; the manifest records 48 setup rejections and 24 target rejections, instead of the earlier provisional fixture-unavailable classification.
+Transfer observations are 2,832 interoperability successes, 830 target rejections, 978 setup rejections, and no response-validation failures. The 54 typed expected-finding successes now count as observed interoperability because the runner's postconditions passed; their source/documentation discrepancy tags remain. The full run exercised all 72 ConfigurableKEM opaque transfer rows; the manifest records 48 setup rejections and 24 target rejections, instead of the earlier provisional fixture-unavailable classification.
 
 ### Get and Export attribution
 
