@@ -35,7 +35,7 @@ use kmipkit_client::{
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest,
+    CreateSplitKeyRequest, DelegatedLoginRequest, GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest,
     ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
     RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
     UniqueIdentifier,
@@ -128,6 +128,11 @@ const TRANSPORT_FLAG_TLS_SERVER_NAME: u32 = 1;
 const TRANSPORT_FLAG_TARGET_URI: u32 = 2;
 const BATCH_OUTCOME_COMPLETED: u32 = 1;
 const BATCH_OUTCOME_PENDING: u32 = 2;
+
+enum DelegatedLoginLeaseTime {
+    Interval(u32),
+    DateTime(i64),
+}
 
 #[derive(Clone, Copy)]
 struct LastError {
@@ -2813,6 +2818,67 @@ pub extern "C" fn kmipkit_client_batch_item_check(
             request = request.with_lease_time(lease_time);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::check(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Delegated Login request from KMIP 2.1 §6.1.12, Table 199.
+///
+/// `lease_time_kind` is 0 for absent, 1 for Interval, or 2 for Date Time.
+/// Rights is required; Usage Limits is copied when supplied.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_delegated_login(
+    rights: *mut kmipkit_ttlv_structure_t,
+    lease_time_kind: u32,
+    lease_time_value: i64,
+    has_request_count: u8,
+    request_count: i32,
+    usage_limits: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let rights = match copy_structure_handle(rights, true) {
+            Ok(Some(rights)) => rights,
+            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        let lease_time = match lease_time_kind {
+            0 if lease_time_value == 0 => None,
+            1 => match u32::try_from(lease_time_value) {
+                Ok(value) => Some(DelegatedLoginLeaseTime::Interval(value)),
+                Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            },
+            2 => Some(DelegatedLoginLeaseTime::DateTime(lease_time_value)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let request_count = match (has_request_count, request_count) {
+            (0, 0) => None,
+            (1, value) => Some(value),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let usage_limits = match copy_structure_handle(usage_limits, false) {
+            Ok(value) => value,
+            Err(status) => return record_ffi_error(status),
+        };
+        let mut request = DelegatedLoginRequest::new(rights);
+        if let Some(lease_time) = lease_time {
+            request = match lease_time {
+                DelegatedLoginLeaseTime::Interval(value) => {
+                    request.with_lease_time_interval(value)
+                }
+                DelegatedLoginLeaseTime::DateTime(value) => {
+                    request.with_lease_time_date_time(value)
+                }
+            };
+        }
+        if let Some(count) = request_count {
+            request = request.with_request_count(count);
+        }
+        if let Some(usage_limits) = usage_limits {
+            request = request.with_usage_limits(usage_limits);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::delegated_login(request)));
         SUCCESS
     })
 }

@@ -1068,6 +1068,27 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDelegatedLogin(
+        JNIEnv* env, jclass, jlong raw_rights, jint raw_lease_time_kind,
+        jlong raw_lease_time_value, jboolean raw_has_request_count,
+        jint raw_request_count, jlong raw_usage_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_has_request_count != JNI_TRUE && raw_has_request_count != JNI_FALSE) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_delegated_login(
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_rights),
+                    static_cast<uint32_t>(raw_lease_time_kind),
+                    static_cast<int64_t>(raw_lease_time_value),
+                    raw_has_request_count == JNI_TRUE ? 1 : 0,
+                    static_cast<int32_t>(raw_request_count),
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_usage_limits), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemGetUsageAllocation(
         JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
         jlong raw_identifier_number, jlong raw_usage_limits_count) {
@@ -3101,6 +3122,74 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         env->DeleteLocalRef(fields);
         if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
         env->DeleteLocalRef(response_ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDelegatedLogin(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t ticket_present = 0;
+        uint32_t ticket_type = 0;
+        kmipkit_byte_span_v1_t ticket_value{nullptr, 0};
+        kmipkit_client_batch_item_response_t* item =
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
+        const int32_t status = kmipkit_client_batch_item_response_delegated_login(
+                item, &present, &ticket_present, &ticket_type, &ticket_value);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || ticket_present > 1
+                || (ticket_present == 0 && (ticket_type != 0
+                    || ticket_value.data != nullptr || ticket_value.length != 0))
+                || (present == 0 && ticket_present != 0)) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        uint8_t ticket_ttlv_present = 0;
+        kmipkit_ttlv_structure_t* ticket_ttlv = nullptr;
+        const int32_t ttlv_status = kmipkit_client_batch_item_response_delegated_login_ttlv(
+                item, &ticket_ttlv_present, &ticket_ttlv);
+        if (ttlv_status != 0) {
+            kmipkit_ttlv_structure_release(ticket_ttlv);
+            throw_status(env, ttlv_status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (ticket_ttlv_present > 1 || ticket_ttlv_present != ticket_present
+                || (ticket_ttlv_present == 1 && ticket_ttlv == nullptr)
+                || (ticket_ttlv_present == 0 && ticket_ttlv != nullptr)) {
+            kmipkit_ttlv_structure_release(ticket_ttlv);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jbyteArray secret_value = span_to_java_bytes(env, ticket_present, ticket_value);
+        if (ticket_present == 1 && secret_value == nullptr) {
+            kmipkit_ttlv_structure_release(ticket_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), static_cast<jlong>(ticket_present),
+                static_cast<jlong>(ticket_type)});
+        if (fields == nullptr) {
+            if (secret_value != nullptr) env->DeleteLocalRef(secret_value);
+            kmipkit_ttlv_structure_release(ticket_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray ticket_ttlv_handle = make_long_array(
+                env, {to_java_handle(ticket_ttlv)});
+        if (ticket_ttlv_handle == nullptr) {
+            env->DeleteLocalRef(fields);
+            if (secret_value != nullptr) env->DeleteLocalRef(secret_value);
+            kmipkit_ttlv_structure_release(ticket_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, secret_value, ticket_ttlv_handle});
+        if (result == nullptr) kmipkit_ttlv_structure_release(ticket_ttlv);
+        env->DeleteLocalRef(fields);
+        if (secret_value != nullptr) env->DeleteLocalRef(secret_value);
+        env->DeleteLocalRef(ticket_ttlv_handle);
         return result;
     });
 }

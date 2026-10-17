@@ -21116,6 +21116,378 @@
         "requestBoundary": "not-applicable",
         "returnType": "i32"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed KMIP 2.1 §6.1.12, Table 199 Delegated Login request. Rights is required; Lease Time kind 0 omits it, 1 selects Interval, and 2 selects Date Time. Pass NULL for optional Usage Limits. Generic Rights and Usage Limits child order and unknown tags are preserved."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "rights",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "lease_time_kind",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "lease_time_value",
+            "type": "int64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_request_count",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "request_count",
+            "type": "int32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "usage_limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_delegated_login"
+      },
+      "id": "client_batch_item_delegated_login",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDelegatedLogin",
+        "method": "delegatedLogin",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "rights",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "leaseTimeInterval",
+            "type": "Long"
+          },
+          {
+            "name": "leaseTimeDateTime",
+            "type": "Long"
+          },
+          {
+            "name": "requestCount",
+            "type": "Integer"
+          },
+          {
+            "name": "usageLimits",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_delegated_login",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_delegated_login",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "rights",
+            "type": "ttlv.Structure"
+          },
+          {
+            "name": "lease_time_interval",
+            "type": "int | None"
+          },
+          {
+            "name": "lease_time_date_time",
+            "type": "int | None"
+          },
+          {
+            "name": "request_count",
+            "type": "int | None"
+          },
+          {
+            "name": "usage_limits",
+            "type": "ttlv.Structure | None"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientRequest",
+        "name": "delegated_login",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "DelegatedLoginRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientRequest"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the typed Delegated Login Ticket from §6.1.12, Table 200. Ticket Type remains raw and forward-compatible. Ticket Value is borrowed from the response item and must not be logged."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_ticket_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_ticket_type",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_ticket_value",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_delegated_login"
+      },
+      "id": "client_batch_item_response_delegated_login",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDelegatedLogin",
+        "method": "delegatedLoginResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<DelegatedLoginResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_delegated_login",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.BatchItemResult.delegated_login_response",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "DelegatedLoginResponse | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchOutcome",
+        "name": "delegated_login_response",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<&DelegatedLoginResponse>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns an owned generic copy of the §6.1.12 Table 200 Ticket Structure, preserving child order, unknown tags, and extension data. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_ticket_ttlv",
+            "nullable": true,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_delegated_login_ttlv"
+      },
+      "id": "client_batch_item_response_delegated_login_ttlv",
+      "java": {
+        "class": "ClientBatchItemResult.DelegatedLoginResponse",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDelegatedLogin",
+        "method": "ticketTtlv",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<TtlvStructure>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.DelegatedLoginResponse.ticket_ttlv",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "ttlv.Structure | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_ticket_ttlv",
+            "type": "*mut *mut kmipkit_ttlv_structure_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
     }
   ],
   "languages": [
@@ -21577,6 +21949,75 @@
       },
       "scope": "client_1_0",
       "section": "6.1.10"
+    },
+    {
+      "apiState": "verified",
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T045:delegated-login:constructor:c",
+          "T045:delegated-login:response:c",
+          "T045:delegated-login:response-ttlv:c"
+        ],
+        "java": [
+          "T045:delegated-login:constructor:java",
+          "T045:delegated-login:outcome:java",
+          "T045:delegated-login:response-type:java",
+          "T045:delegated-login:ticket-type:java",
+          "T045:delegated-login:ticket-value:java",
+          "T045:delegated-login:ticket-ttlv:java",
+          "T045:delegated-login:response-close:java"
+        ],
+        "python": [
+          "T045:delegated-login:constructor:python",
+          "T045:delegated-login:outcome:python",
+          "T045:delegated-login:response-type:python",
+          "T045:delegated-login:ticket-type:python",
+          "T045:delegated-login:ticket-value:python",
+          "T045:delegated-login:ticket-ttlv:python",
+          "T045:delegated-login:response-close:python"
+        ],
+        "rust": [
+          "rust-observed-0fb01a6aea7bb491c891",
+          "rust-observed-1023588285a89c1a691f",
+          "rust-observed-2908f7da1d4d181f08f3",
+          "rust-observed-352f80883b2591ba151d",
+          "rust-observed-3a4bfd7477699815b169",
+          "rust-observed-732fcdddcf0c2a58f06a",
+          "rust-observed-8539a6fd04ac7debc581",
+          "rust-observed-8681e7bb9662a819b3b7",
+          "rust-observed-9b6877a984c591dab2a0",
+          "rust-observed-a2cbba1f79c2557a10e3",
+          "rust-observed-a40c51b3bd1698599d9b",
+          "rust-observed-ab0a12f30db53d59f250",
+          "rust-observed-bcda3c15a47990f6a3b4",
+          "rust-observed-ca27d9b0d5e438f52bd0",
+          "rust-observed-e255abe3ee88fe1eb051",
+          "rust-observed-fa2e16229a0c5c65a5f1"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0038",
+      "name": "Delegated Login",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0038",
+        "state": "approved"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "scope": "client_1_0",
+      "section": "6.1.12"
     },
     {
       "apiState": "declared",
@@ -51235,6 +51676,69 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-a40c51b3bd1698599d9b",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatchOutcome::delegated_login_response",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.delegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.delegated_login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::delegated_login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
         "path": "specs/021-hash-mac-signature-operations/spec.md",
@@ -51472,6 +51976,69 @@
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
         "KMIPKIT-REQ-SPEC-6.1.7-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-a2cbba1f79c2557a10e3",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::delegated_login",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::delegated_login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     },
     {
@@ -52304,6 +52871,510 @@
       "approvalSource": {
         "evidence": "**Status**: Approved for implementation — 2026-10-11",
         "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-8681e7bb9662a819b3b7",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginRequest",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-ca27d9b0d5e438f52bd0",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginRequest::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-bcda3c15a47990f6a3b4",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_date_time",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-e255abe3ee88fe1eb051",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginRequest::with_lease_time_interval",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-352f80883b2591ba151d",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-732fcdddcf0c2a58f06a",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginRequest::with_usage_limits",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginRequest::with_usage_limits",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-0fb01a6aea7bb491c891",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-8539a6fd04ac7debc581",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::DelegatedLoginResponse::ticket",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.delegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.delegated_login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginResponse::ticket",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
         "path": "specs/025-policy-controls/spec.md",
         "status": "Approved"
       },
@@ -52818,6 +53889,384 @@
         "KMIPKIT-0044-FR-002",
         "KMIPKIT-0044-FR-006",
         "KMIPKIT-0044-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-3a4bfd7477699815b169",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::Ticket",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-1023588285a89c1a691f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::Ticket::ticket_type",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::ticket_type",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-2908f7da1d4d181f08f3",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::Ticket::with_ticket_value",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ticket_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-ab0a12f30db53d59f250",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::Ticket::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-9b6877a984c591dab2a0",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::TicketType",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::TicketType",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "rust-observed-fa2e16229a0c5c65a5f1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::TicketType::raw",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::TicketType::raw",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     },
     {
@@ -78192,6 +79641,1077 @@
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
         "KMIPKIT-REQ-SPEC-6.1.7-004-002",
         "KMIPKIT-REQ-SPEC-6.1.7-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:constructor:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_delegated_login",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::delegated_login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:response:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_delegated_login",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.delegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.delegated_login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::delegated_login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:response-ttlv:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:constructor:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::delegated_login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:outcome:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.delegatedLoginResponse",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.delegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.delegated_login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::delegated_login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:response-type:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:ticket-type:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::ticket_type",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:ticket-value:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketValue",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ticket_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:ticket-ttlv:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:response-close:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:constructor:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.client_batch_item_delegated_login",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.delegatedLogin",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_delegated_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::delegated_login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:outcome:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.BatchItemResult.delegated_login_response",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.delegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.delegated_login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::delegated_login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:response-type:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.DelegatedLoginResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::DelegatedLoginResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:ticket-type:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::ticket_type",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:ticket-value:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.ticket_value",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ticket_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:ticket-ttlv:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.ticket_ttlv",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.ticketTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.ticket_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
+      "declarationId": "T045:delegated-login:response-close:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.DelegatedLoginResponse.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_delegated_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DelegatedLoginResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/DelegatedLoginMappingTest.java",
+        "bindings/python/tests/test_delegated_login.py",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ]
     }
   ],

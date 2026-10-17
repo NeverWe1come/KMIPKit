@@ -1,6 +1,7 @@
 package org.kmipkit.extensions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -72,6 +73,14 @@ public final class ClientBatchItemResult implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseCheck);
         return parseCheckResponse(values);
+    }
+
+    /** Returns the typed Delegated Login result and its raw-preserving Ticket when present. */
+    public Optional<DelegatedLoginResponse> delegatedLoginResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseDelegatedLogin);
+        return parseDelegatedLoginResponse(values);
     }
 
     /**
@@ -207,6 +216,41 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "CheckResponse[fields=redacted]"; }
+    }
+
+    /** Delegated Login Ticket fields and the independently owned generic Ticket TTLV copy. */
+    public static final class DelegatedLoginResponse implements AutoCloseable {
+        private final OptionalLong ticketTypeRaw;
+        private @Nullable byte[] ticketValue;
+        private @Nullable TtlvStructure ticketTtlv;
+
+        private DelegatedLoginResponse(OptionalLong ticketTypeRaw,
+                @Nullable byte[] ticketValue, @Nullable TtlvStructure ticketTtlv) {
+            this.ticketTypeRaw = ticketTypeRaw;
+            this.ticketValue = copyBytes(ticketValue);
+            this.ticketTtlv = ticketTtlv;
+        }
+
+        /** Returns the raw unsigned Ticket Type, preserving unknown values. */
+        public OptionalLong ticketTypeRaw() { return ticketTypeRaw; }
+
+        /** Returns a caller-owned Ticket Value copy; callers must protect and clear it. */
+        public Optional<byte[]> ticketValue() { return copiedBytes(ticketValue); }
+
+        /** Returns the complete ordered Ticket structure, including unknown children. */
+        public Optional<TtlvStructure> ticketTtlv() { return Optional.ofNullable(ticketTtlv); }
+
+        @Override public void close() {
+            if (ticketValue != null) Arrays.fill(ticketValue, (byte) 0);
+            ticketValue = null;
+            if (ticketTtlv != null) ticketTtlv.close();
+            ticketTtlv = null;
+        }
+
+        @Override public String toString() {
+            return "DelegatedLoginResponse[ticketTypeRaw=" + ticketTypeRaw
+                    + ", ticketValue=redacted, ticketTtlv=preserved]";
+        }
     }
 
     /** Successful Get Usage Allocation response with its owned complete generic TTLV. */
@@ -589,6 +633,54 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return Optional.of(new CheckResponse(identifier, count, usageMask, lease, responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<DelegatedLoginResponse> parseDelegatedLoginResponse(Object[] values) {
+        Object[] tuple = values;
+        long rawHandle = 0;
+        TtlvStructure ownedTtlv = null;
+        try {
+            tuple = requireTuple(values, 3, "native Delegated Login response is invalid");
+            if (tuple[2] instanceof long[] handleValues && handleValues.length == 1) {
+                rawHandle = handleValues[0];
+            }
+            long[] fields = requireLongArray(
+                    tuple[0], 3, "native Delegated Login response is invalid");
+            long[] ticketTtlvHandle = requireLongArray(
+                    tuple[2], 1, "native Delegated Login response is invalid");
+            rawHandle = ticketTtlvHandle[0];
+            boolean responsePresent = responseFlag(fields[0]);
+            boolean ticketPresent = responseFlag(fields[1]);
+            if (!ticketPresent) {
+                if (fields[2] != 0 || tuple[1] != null || rawHandle != 0) {
+                    throw new InvalidInputException(
+                            "native absent Delegated Login Ticket contains fields");
+                }
+                if (!responsePresent) return Optional.empty();
+                return Optional.of(new DelegatedLoginResponse(
+                        OptionalLong.empty(), null, null));
+            }
+            if (!responsePresent || fields[2] < 0 || fields[2] > 0xffff_ffffL
+                    || rawHandle <= 0) {
+                throw new InvalidInputException("native Delegated Login Ticket is invalid");
+            }
+            byte[] value = requireBytes(tuple[1]);
+            ownedTtlv = TtlvStructure.fromNative(rawHandle, null);
+            DelegatedLoginResponse response = new DelegatedLoginResponse(
+                    OptionalLong.of(fields[2]), value, ownedTtlv);
+            Arrays.fill(value, (byte) 0);
+            return Optional.of(response);
+        } catch (RuntimeException exception) {
+            if (ownedTtlv != null) {
+                ownedTtlv.close();
+            } else if (rawHandle > 0) {
+                TtlvStructure.fromNative(rawHandle, null).close();
+            }
+            if (tuple != null && tuple.length > 1 && tuple[1] instanceof byte[] value) {
+                Arrays.fill(value, (byte) 0);
+            }
             throw exception;
         }
     }
