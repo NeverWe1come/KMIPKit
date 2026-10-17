@@ -2316,6 +2316,19 @@ they are created. Focused security review found no actionable issue and
 confirmed the accessor is reachable only for the successful-operation UID
 shape failures. QA and traceability review found no remaining scope mismatch.
 
+### T049 status-gating correction — Red
+
+The Rust `GetUsageAllocationResponse::with_ttlv` accessor exposed the generic
+response for Failure and Pending results even though T049's traceability
+requires generic response TTLV only on success. The new protocol tests require
+success to return `Some` and Failure/Pending to return `None`; Pending
+correlation remains available through the dedicated `with_unique_batch_item_id`
+accessor. This is distinct from T081's approved UID-shape error exception.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | test-only Red commit | `cargo test -p kmipkit-protocol --all-features get_usage_allocation` | Expected compile failure: the current accessor returns `bool`/`()` rather than `Option`, so the success-only and no-TTLV assertions cannot compile. |
+
 ## T082 — Close selected-scope changed-production coverage gap
 
 CI run `38898672071` was the Red evidence: selected changed-production coverage
