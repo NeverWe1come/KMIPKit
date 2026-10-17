@@ -103,6 +103,12 @@ server and are not ignored:
 cargo test --offline -p kmipkit-client --test cosmian_kms
 ```
 
+The offline suite does not require the ignored runtime certificate directory.
+Without the generated validation CSRs, the 30 post-quantum Certify finding
+probes remain `NotSent`; with the full local fixture set, they are eligible for
+exact request construction. A partial PQC CSR fixture set is rejected by the
+inventory test.
+
 ## Measured result and limitations
 
 The complete serial run against the pinned `ghcr.io/cosmian/kms:5.28.0` image
