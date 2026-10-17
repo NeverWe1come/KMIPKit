@@ -2907,6 +2907,29 @@ coverage result. T046 remains unchecked and the manifest row remains
 and changed-code coverage gates. These local results are not an OASIS
 certification, profile-conformance, or interoperability claim.
 
+### T046 follow-up — require the success Unique Identifier (2026-10-17)
+
+QA found that the binding response mappers treated a missing Derive Key
+Unique Identifier as an absent optional response. The batch-result path invokes
+these mappers only for a completed successful Derive Key, whose required
+Unique Identifier is defined by KMIP 2.1 §6.1.14, Table 206. The successful
+response must therefore fail closed when the native result omits the
+identifier. Non-success results remain optional and are not passed to these
+mappers.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `dad5f28e` | Focused Python response test and Java mapping test | Both reproduced the defect: the parser returned empty instead of rejecting the malformed successful result. |
+| Green | `612bdaa7` | Full Python suite with coverage; `mvn --batch-mode --file bindings/java/pom.xml clean verify` | Python: 419 passed, 98.86% coverage. Java: 237 tests, 0 failures, 0 errors, 3 documented skips. Both adapters now raise their invalid-input error for a missing success identifier. |
+| Refactor | `6c4707dd` | Focused Python Derive Key tests; focused Java mapping test; `git diff --check` | Python helper and Java internal parser now return non-optional response types after successful-response validation. Public Java `Optional` behavior for non-success results is unchanged. Focused tests pass: Python 13; Java 4. |
+
+Independent QA and scoped security re-reviews found no actionable issues. The
+cross-platform run `39063019503` on the final pushed head remains pending;
+T046 stays unchecked and its manifest `apiState` stays `declared` until the
+current-head CI and coverage gates pass. This scoped review does not replace
+the qualified human 1.0 security review. No conformance or certification claim
+is made.
+
 ### Coverage gate integrity follow-up
 
 An independent review of the changed-code coverage helper found two ways its
