@@ -697,6 +697,27 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
             self.assertIn("ffi-and-bindings.md", exclusion["evidence"])
 
+        get_usage_request = exclusions[(
+            "java-kmipkit",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetUsageAllocation",
+        )]["evidence"]
+        self.assertIn(
+            "identifier kind, optional text or numeric identifier, and usage limits count",
+            get_usage_request,
+        )
+        self.assertNotIn("only transfers opaque handles", get_usage_request)
+
+        get_usage_response = exclusions[(
+            "java-kmipkit",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation",
+        )]["evidence"]
+        self.assertIn(
+            "Object[] tuple of presence fields, typed identifier data, and an owned response-TTLV handle",
+            get_usage_response,
+        )
+        self.assertIn("parseGetUsageAllocationResponse", get_usage_response)
+        self.assertNotIn("only transfers opaque handles", get_usage_response)
+
         java_boilerplate = {
             "org.kmipkit.extensions.BatchOutcomeKind.equals",
             "org.kmipkit.extensions.BatchOutcomeKind.hashCode",

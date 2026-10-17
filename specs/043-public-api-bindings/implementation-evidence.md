@@ -2507,3 +2507,16 @@ identifier getter and transfers the owned handle to `GetUsageAllocationResponse`
 The three new edge-path cases now give every executable statement in the
 accessor a nonzero coverage count. No generated file was edited by hand; all
 checked-in outputs were refreshed and verified by the pinned generator.
+
+### T011 independent QA evidence correction — Red
+
+The export audit records had two documentation defects: the Rust direct-path
+count did not reconcile with the observed, excluded, and matched totals, and
+the two Get Usage Allocation JNI exclusions described semantic request and
+response mappings as handle-only plumbing. A contract assertion now requires
+the exclusion evidence to state the request inputs and response tuple contents
+accurately, while rejecting the old handle-only claim.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | this commit | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports.BindingExportAuditTests.test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions -v` | Expected failure: the request exclusion evidence does not identify identifier kind/value and usage limits count; it incorrectly says the JNI method only transfers opaque handles. |
