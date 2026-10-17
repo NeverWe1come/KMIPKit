@@ -1018,7 +1018,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(12)));
+                item(0x42000d, 2, integer(13)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1088,9 +1088,16 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] checkItem = structure(0x42000f,
                 enumeration(0x42005c, 9), item(0x420093, 8, uniqueBatchItemId(11)),
                 enumeration(0x42007f, 1), enumeration(0x42007e, 0x29), checkPayload);
+        byte[] ticket = structure(0x420149,
+                enumeration(0x42014a, 0xfeed_beef),
+                item(0x42014b, 8, "delegated-ticket-secret".getBytes(StandardCharsets.US_ASCII)));
+        byte[] delegatedLoginPayload = structure(0x42007c, ticket);
+        byte[] delegatedLoginItem = structure(0x42000f,
+                enumeration(0x42005c, 0x2f), item(0x420093, 8, uniqueBatchItemId(12)),
+                enumeration(0x42007f, 0), delegatedLoginPayload);
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
-                certifyItem, allocationItem, checkItem);
+                certifyItem, allocationItem, checkItem, delegatedLoginItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {
