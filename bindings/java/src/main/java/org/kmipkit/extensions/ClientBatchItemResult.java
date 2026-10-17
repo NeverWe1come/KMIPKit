@@ -67,7 +67,11 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseCertifyResponse(values);
     }
 
-    /** Returns the resolved identifier from a successful Get Usage Allocation response. */
+    /**
+     * Returns the resolved identifier and complete generic TTLV from a successful Get Usage
+     * Allocation response. The returned response owns an independent TTLV copy; callers must
+     * close it when finished. Closing this batch item does not close the returned response.
+     */
     public Optional<GetUsageAllocationResponse> getUsageAllocationResponse() {
         if (resultStatus() != 0) return Optional.empty();
         NativeExtensionRegistry.ensureLoaded();
