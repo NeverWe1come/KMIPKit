@@ -221,7 +221,10 @@ final class ClientFacadeTlsIntegrationTest {
                             .withUniqueBatchItemId(uniqueBatchItemId(8)))
                     .add(ClientBatchItem.certify(UniqueIdentifier.textString("public-key"),
                                     1L, null, null, null)
-                            .withUniqueBatchItemId(uniqueBatchItemId(9)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(9)))
+                    .add(ClientBatchItem.getUsageAllocation(
+                                    UniqueIdentifier.textString("allocation-request"), 3L)
+                            .withUniqueBatchItemId(uniqueBatchItemId(10)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -234,8 +237,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult keyPair = response.itemAt(6);
                     ClientBatchItemResult splitKey = response.itemAt(7);
                     ClientBatchItemResult textCreated = response.itemAt(8);
-                    ClientBatchItemResult certified = response.itemAt(9)) {
-                assertEquals(10, response.itemCount());
+                    ClientBatchItemResult certified = response.itemAt(9);
+                    ClientBatchItemResult allocated = response.itemAt(10)) {
+                assertEquals(11, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -309,6 +313,18 @@ final class ClientFacadeTlsIntegrationTest {
                         certifyResponse.uniqueIdentifier().kind());
                 assertEquals("certify-text-id-secret", certifyResponse.uniqueIdentifier().text());
                 assertFalse(certifyResponse.toString().contains("certify-text-id-secret"));
+
+                try (ClientBatchItemResult.GetUsageAllocationResponse allocationResponse =
+                                allocated.getUsageAllocationResponse().orElseThrow();
+                        TtlvStructureView allocationTtlv = allocationResponse.responseTtlv().view()) {
+                    assertEquals(0, allocated.resultStatus());
+                    assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
+                            allocationResponse.uniqueIdentifier().kind());
+                    assertEquals("allocation-object", allocationResponse.uniqueIdentifier().text());
+                    assertTrue(containsByteString(allocationTtlv, 0x540001,
+                            "KMIPKit-allocation-sentinel".getBytes(StandardCharsets.US_ASCII)));
+                    assertFalse(allocationResponse.toString().contains("allocation-object"));
+                }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
             assertTrue(request.length >= 8);
@@ -963,7 +979,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(10)));
+                item(0x42000d, 2, integer(11)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1019,9 +1035,15 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] certifyItem = structure(0x42000f,
                 enumeration(0x42005c, 6), item(0x420093, 8, uniqueBatchItemId(9)),
                 enumeration(0x42007f, 0), certifyPayload);
+        byte[] allocationPayload = structure(0x42007c,
+                item(0x420094, 7, "allocation-object".getBytes(StandardCharsets.UTF_8)),
+                item(0x540001, 8, "KMIPKit-allocation-sentinel".getBytes(StandardCharsets.US_ASCII)));
+        byte[] allocationItem = structure(0x42000f,
+                enumeration(0x42005c, 17), item(0x420093, 8, uniqueBatchItemId(10)),
+                enumeration(0x42007f, 0), allocationPayload);
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
-                certifyItem);
+                certifyItem, allocationItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {
