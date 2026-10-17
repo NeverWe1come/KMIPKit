@@ -214,6 +214,97 @@ fn cosmian_crypto_finding_rows_are_not_success_dispositions() {
 }
 
 #[test]
+fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_enum() {
+    const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
+    const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const ATTRIBUTE_NAME: u32 = 0x0042_000A;
+    const ATTRIBUTE_VALUE: u32 = 0x0042_000B;
+
+    let id = "cosmian-528-certify-certificaterequest-mldsa-44-subject-oid-only-der";
+    let row = target_rows()
+        .expect("cryptographic target rows")
+        .into_iter()
+        .find(|row| row["case_id"] == id)
+        .expect("reviewed ML-DSA Certify discrepancy row");
+    assert_eq!(row["expected_outcome"], "source_documentation_discrepancy");
+    assert_eq!(
+        row["parameters"]["algorithm_dimension"],
+        "subject ASN.1 OID only; no CryptographicAlgorithm enumeration is sent"
+    );
+    assert_eq!(row["wire_enum_values"]["cryptographic_algorithm"]["value"], JsonValue::Null);
+    assert_eq!(
+        row["wire_enum_values"]["cryptographic_algorithm"]["classification"],
+        "not_sent_asn1_oid_only"
+    );
+
+    validate_exact_finding_probe_dimensions(&row)
+        .expect("Certify finding probe dimensions must match the exact request");
+    let payload = build_offline_certify_request(
+        &row,
+        UniqueIdentifier::TextString("offline-certify-subject".to_owned()),
+    )
+    .expect("offline Certify request builder")
+    .into_ttlv_payload()
+    .expect("offline Certify TTLV payload");
+
+    assert_eq!(enum_field(&payload, CERTIFICATE_REQUEST_TYPE), Some(2));
+    assert!(byte_string_field_length(&payload, CERTIFICATE_REQUEST_VALUE).is_some_and(|len| len > 0));
+    let attributes = payload
+        .view()
+        .children()
+        .iter()
+        .find(|item| item.tag().raw() == ATTRIBUTES)
+        .and_then(|item| {
+            item.with_value(|value| {
+                let kmipkit_ttlv::ValueView::Structure(attributes) = value else {
+                    return None;
+                };
+                Some(
+                    attributes
+                        .children()
+                        .iter()
+                        .filter_map(|attribute| {
+                            attribute.with_value(|value| {
+                                let kmipkit_ttlv::ValueView::Structure(fields) = value else {
+                                    return None;
+                                };
+                                let name = fields
+                                    .children()
+                                    .iter()
+                                    .find(|field| field.tag().raw() == ATTRIBUTE_NAME)
+                                    .and_then(|field| {
+                                        field.with_value(|value| match value {
+                                            kmipkit_ttlv::ValueView::TextString(name) => {
+                                                Some(name.to_owned())
+                                            }
+                                            _ => None,
+                                        })
+                                    })?;
+                                let value = fields
+                                    .children()
+                                    .iter()
+                                    .find(|field| field.tag().raw() == ATTRIBUTE_VALUE)
+                                    .and_then(|field| {
+                                        field.with_value(|value| match value {
+                                            kmipkit_ttlv::ValueView::Enumeration(value) => {
+                                                Some(*value)
+                                            }
+                                            _ => None,
+                                        })
+                                    })?;
+                                Some((name, value))
+                            })
+                        })
+                        .collect::<Vec<_>>(),
+                )
+            })
+        })
+        .expect("Certify Attributes structure");
+    assert_eq!(attributes, [("Certificate Type".to_owned(), 5)]);
+}
+
+#[test]
 fn cosmian_crypto_finding_preflight_separates_exact_probes_from_not_sent_rows() {
     let rows = target_rows().expect("cryptographic target rows");
     let findings = rows
