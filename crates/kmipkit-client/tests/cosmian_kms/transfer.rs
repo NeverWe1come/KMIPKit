@@ -383,7 +383,7 @@ fn wrapping_crypto_parameters_with_algorithm(
     let padding = parameters["padding"].as_str();
     if let Some(padding) = padding {
         let raw = match padding {
-            "None" => None,
+            "None" => Some(1),
             "OAEP" => Some(2),
             "PKCS1v1.5" | "PKCS1v15" => Some(8),
             other => return Err(format!("unmapped Padding Method {other}").into()),
@@ -554,9 +554,8 @@ fn cosmian_528_transfer_matrix() {
         match run_case(case_id) {
             Ok(()) => {
                 target_requests_sent += 1;
-                if expected_outcome == "typed_success" {
-                    interoperability_successes += 1;
-                } else {
+                interoperability_successes += 1;
+                if expected_outcome != "typed_success" {
                     expected_finding_observations += 1;
                 }
                 println!(
@@ -625,6 +624,16 @@ fn assert_manifest_parity() {
             "unmapped transfer operation for {}",
             row["case_id"]
         );
+        if matches!(row["operation"].as_str(), Some("Get" | "Export"))
+            && row["key_format"] == "Cosmian-Pkcs12Legacy"
+        {
+            assert_eq!(
+                row["parameters"]["requested_format_value"],
+                row["wire_enum_values"]["key_format_type"]["value"],
+                "legacy PKCS#12 Get/Export must request the vendor Key Format Type for {}",
+                row["case_id"]
+            );
+        }
     }
 }
 
@@ -2001,7 +2010,8 @@ fn require_format(object: Option<&Item>, row: &serde_json::Value) -> Result<(), 
         Ok(())
     } else {
         Err(format!(
-            "requested Key Format Type {expected} was not present in the typed object"
+            "requested Key Format Type {expected} was not present in the typed object; returned Key Format Type values: {:?}",
+            item_key_format_values(object)
         ))
     }
 }
@@ -2077,6 +2087,28 @@ fn item_contains_format(item: &Item, expected: u32) -> bool {
             })
         })
     })
+}
+
+fn item_key_format_values(item: &Item) -> Vec<u32> {
+    fn collect(value: ValueView<'_>, formats: &mut Vec<u32>) {
+        let ValueView::Structure(structure) = value else {
+            return;
+        };
+        for field in structure.children() {
+            if field.tag().raw() == KEY_FORMAT_TYPE {
+                field.with_value(|value| {
+                    if let ValueView::Enumeration(raw) = value {
+                        formats.push(*raw);
+                    }
+                });
+            }
+            field.with_value(|value| collect(value, formats));
+        }
+    }
+
+    let mut formats = Vec::new();
+    item.with_value(|value| collect(value, &mut formats));
+    formats
 }
 
 fn item_contains_certificate_type(item: &Item, expected: u32) -> bool {
@@ -2386,10 +2418,9 @@ fn transfer_observation_line(
     observed: &str,
     request_sent: &str,
 ) -> String {
-    if expected_outcome == "typed_success" && observed == "typed_success" && request_sent == "true"
-    {
+    if observed == "typed_success" && request_sent == "true" {
         format!(
-            "case_id={case_id} classification=typed_success expected_outcome=typed_success observed=typed_success request_sent=true interoperability=true"
+            "case_id={case_id} classification=typed_success expected_outcome={expected_outcome} observed=typed_success request_sent=true interoperability=true"
         )
     } else if expected_outcome != "typed_success" {
         format!(
@@ -2405,6 +2436,33 @@ fn transfer_observation_line(
 #[cfg(test)]
 mod inventory_tests {
     use super::*;
+
+    #[test]
+    fn rsa_hybrid_wrapping_explicitly_encodes_padding_method_none() {
+        let row = serde_json::json!({
+            "parameters": {
+                "padding": "None",
+                "hash": "SHA-256"
+            }
+        });
+        let parameters = wrapping_crypto_parameters_with_algorithm(&row, Some(4))
+            .expect("RSA hybrid wrapping parameters");
+        let padding_method = parameters.view().children().iter().find_map(|item| {
+            if item.tag().raw() != PADDING_METHOD {
+                return None;
+            }
+            item.with_value(|value| match value {
+                ValueView::Enumeration(raw) => Some(*raw),
+                _ => None,
+            })
+        });
+
+        assert_eq!(
+            padding_method,
+            Some(1),
+            "KMIP Padding Method None must select Cosmian's RSA-AES hybrid wrapping"
+        );
+    }
 
     #[test]
     fn transfer_case_ids_are_unique_and_match_manifest() {
@@ -2694,6 +2752,7 @@ mod inventory_tests {
 
         require_format(Some(&object), &row)
             .expect("Cosmian legacy PKCS12 output is typed as standard PKCS12");
+        assert_eq!(item_key_format_values(&object), [0x16]);
     }
 
     #[test]
@@ -2937,7 +2996,7 @@ mod inventory_tests {
     }
 
     #[test]
-    fn transfer_finding_probe_observations_are_not_interoperability_successes() {
+    fn successful_transfer_finding_probes_count_as_observed_interoperability() {
         let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
         let probes = rows
             .iter()
@@ -2945,12 +3004,11 @@ mod inventory_tests {
             .collect::<Vec<_>>();
         assert_eq!(probes.len(), 468);
 
-        for row in probes {
+        for row in &probes {
             let case_id = crate::common::required_text(row, "case_id").expect("case ID");
             let expected_outcome =
                 crate::common::required_text(row, "expected_outcome").expect("expected outcome");
-            let record =
-                transfer_observation_line(case_id, expected_outcome, "typed_success", "true");
+            let record = transfer_observation_line(case_id, expected_outcome, "rejected", "true");
             assert!(
                 record.contains("classification=expected_finding_probe"),
                 "{case_id}"
@@ -2959,20 +3017,22 @@ mod inventory_tests {
                 record.contains(&format!("expected_outcome={expected_outcome}")),
                 "{case_id}"
             );
-            assert!(record.contains("observed=typed_success"), "{case_id}");
+            assert!(record.contains("observed=rejected"), "{case_id}");
             assert!(record.contains("request_sent=true"), "{case_id}");
             assert!(record.contains("interoperability=false"), "{case_id}");
         }
 
-        let typed_success = rows
+        let successful_probe = probes
             .iter()
-            .find(|row| row["expected_outcome"] == "typed_success")
-            .expect("typed-success transfer row");
-        let case_id =
-            crate::common::required_text(typed_success, "case_id").expect("typed-success case ID");
-        let record = transfer_observation_line(case_id, "typed_success", "typed_success", "true");
+            .find(|row| row["observed_result"]["classification"] == "typed_success")
+            .expect("successful source-discrepancy transfer row");
+        let case_id = crate::common::required_text(successful_probe, "case_id")
+            .expect("successful finding case ID");
+        let expected_outcome = crate::common::required_text(successful_probe, "expected_outcome")
+            .expect("source-discrepancy expected outcome");
+        let record = transfer_observation_line(case_id, expected_outcome, "typed_success", "true");
         assert!(record.contains("classification=typed_success"));
-        assert!(record.contains("expected_outcome=typed_success"));
+        assert!(record.contains(&format!("expected_outcome={expected_outcome}")));
         assert!(record.contains("observed=typed_success"));
         assert!(record.contains("request_sent=true"));
         assert!(record.contains("interoperability=true"));
@@ -2995,15 +3055,18 @@ mod inventory_tests {
                 .expect("observed target-request delivery")
                 .to_string();
             let record = transfer_observation_line(case_id, expected, observed, &request_sent);
-            let interoperable = expected == "typed_success"
-                && observed == "typed_success"
-                && request_sent == "true";
+            let interoperable = observed == "typed_success" && request_sent == "true";
+            assert_eq!(
+                observation["interoperability"].as_bool(),
+                Some(interoperable),
+                "{case_id}: manifest interoperability must follow the typed target outcome"
+            );
 
             assert!(
                 record.contains(&format!("interoperability={interoperable}")),
                 "{case_id}: {record}"
             );
-            if expected != "typed_success" {
+            if expected != "typed_success" && observed != "typed_success" {
                 assert!(
                     record.contains("classification=expected_finding_probe"),
                     "{case_id}: {record}"
@@ -3020,15 +3083,10 @@ mod inventory_tests {
 
         assert_eq!(
             observed_categories,
-            [
-                "rejected",
-                "response_validation_failed",
-                "setup_rejected",
-                "typed_success"
-            ]
-            .into_iter()
-            .map(str::to_owned)
-            .collect()
+            ["rejected", "setup_rejected", "typed_success"]
+                .into_iter()
+                .map(str::to_owned)
+                .collect()
         );
     }
 
@@ -3106,7 +3164,7 @@ mod inventory_tests {
                 "{case_id}: typed {operation} omitted or changed Key Format Type"
             );
         }
-        assert_eq!(formatted_operations, 1_100);
+        assert_eq!(formatted_operations, 1_158);
     }
 
     // This validates every wrapped row's spec and all operation request shapes.

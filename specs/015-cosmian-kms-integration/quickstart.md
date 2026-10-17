@@ -3,7 +3,7 @@
 This quickstart deploys Cosmian KMS 5.28.0 locally and runs KMIPKit's opt-in,
 typed integration suite. Its exhaustive manifest contains 6,429 rows across
 all 35 advertised operation paths and applicable object, format, encoding,
-algorithm, and parameter combinations. It records 3,410 successful typed
+algorithm, and parameter combinations. It records 3,522 successful typed
 interoperability outcomes; remaining results include target rejections, setup
 failures, malformed or invalid responses, and explicit fixture blockers. This
 does not claim complete KMIP 2.1 conformance or formal certification.
@@ -76,7 +76,7 @@ removed.
 The pinned local image was exercised with the complete ignored suite. The
 manifest contains 6,429 records: 6,417 executable cases and 12 non-executable
 normative exclusions. All executable rows have a measured outcome or an
-explicit fixture/setup blocker; 3,410 rows passed typed-response and
+explicit fixture/setup blocker; 3,522 rows passed typed-response and
 operation-specific checks and count as interoperability successes. This
 includes 24 successful Create Key Pair source-discrepancy probes; their
 algorithm values remain outside the KMIP 2.1 enumeration. The latest
@@ -89,7 +89,7 @@ than calling the run green.
 | Lifecycle and probes | 89 | 80 | 3 rejected; Query/Locate validation failures; Ping/Adjust malformed responses; Activate setup blocked; Re-certify unsupported |
 | Cryptographic | 1,466 | 650 | 383 rejected; 325 setup rejected; 88 response validation failed; 20 typed finding responses |
 | Key management | 216 | 12 | 201 rejected; 3 setup rejected |
-| Import/Export/Register transfer | 4,640 | 2,668 | 890 rejected; 978 setup rejected; 50 response validation failed |
+| Import/Export/Register transfer | 4,640 | 2,780 | 882 rejected; 978 setup rejected; 0 response validation failed |
 | RNG | 6 | 0 | 6 response-validation failures (missing Operation) |
 
 Encrypt records 287/300 interoperable cases. Three AES-ECB Encrypt failures were test-fixture defects: ECB has no default padding, and the old 19-byte input was not block-aligned. All three now pass with a 16-byte input. Six ConfigurableKEM opaque-fixture results and three ML-KEM source-only results are typed successes outside the KMIP 2.1 interoperability count. Two RSA/AES requests were rejected with Operation Failed / Operation Not Supported (Status 1, Reason 5); two pure-classical ConfigurableKEM cases fail at key setup with Cryptographic Failure before Encrypt is sent.

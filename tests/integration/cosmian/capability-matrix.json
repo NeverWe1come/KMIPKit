@@ -165073,8 +165073,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -165154,8 +165154,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -165235,8 +165235,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -165316,8 +165316,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -165397,8 +165397,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -165478,8 +165478,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -165559,8 +165559,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -165640,8 +165640,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166237,8 +166237,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166318,8 +166318,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166399,8 +166399,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166480,8 +166480,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166561,8 +166561,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166642,8 +166642,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166723,8 +166723,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -166804,8 +166804,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167401,8 +167401,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167482,8 +167482,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167563,8 +167563,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167644,8 +167644,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167725,8 +167725,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167806,8 +167806,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167887,8 +167887,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -167968,8 +167968,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -168565,8 +168565,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -168646,8 +168646,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -168727,8 +168727,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -168808,8 +168808,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -168889,8 +168889,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -168970,8 +168970,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -169051,8 +169051,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -169132,8 +169132,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "Transfer representations: research.md; default is an omitted request field, PEM fixtures normalize to DER. DSA source conversion/storage path contradicts broad support.md DSA note; no signing/pair-generation claim.",
       "wire_enum_values": {
@@ -169200,8 +169200,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "No requested format preserves Opaque, although formats.md describes default Raw.",
       "wire_enum_values": {
@@ -170901,8 +170901,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "No requested format preserves Opaque, although formats.md describes default Raw.",
       "wire_enum_values": {
@@ -504963,8 +504963,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -505047,8 +505047,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -505131,8 +505131,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -505215,8 +505215,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -505653,8 +505653,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -505744,8 +505744,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -505835,8 +505835,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -505926,8 +505926,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506017,8 +506017,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506108,8 +506108,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506199,8 +506199,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506290,8 +506290,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506378,8 +506378,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506461,8 +506461,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506544,8 +506544,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506627,8 +506627,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506713,8 +506713,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506799,8 +506799,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506885,8 +506885,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -506971,8 +506971,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "The target returned typed success and this case passed its implemented operation-specific postconditions. This is observed KMIPKit-Cosmian interoperability; the source/documentation discrepancy remains separate and this result is not a KMIP 2.1 conformance claim."
       },
       "notes": "algorithms.md says every listed encryption scheme can wrap; source only GCM/KW/KWP. Preserve actual requested-scheme rejection or substitution as failed interoperability. One Raw target represents the scheme-routing gap.",
       "wire_enum_values": {
@@ -515111,7 +515111,8 @@
       "parameters": {
         "key_bits": 3072,
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -515161,13 +515162,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -515204,7 +515204,8 @@
       "parameters": {
         "key_bits": 3072,
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -515254,13 +515255,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -515988,7 +515988,8 @@
       "parameters": {
         "key_bits": 4096,
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -516038,13 +516039,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -516081,7 +516081,8 @@
       "parameters": {
         "key_bits": 4096,
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -516131,13 +516132,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -516913,7 +516913,8 @@
       "parameters": {
         "curve": "P192",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -516964,13 +516965,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -517012,7 +517012,8 @@
       "parameters": {
         "curve": "P192",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -517063,13 +517064,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -517850,7 +517850,8 @@
       "parameters": {
         "curve": "P224",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -517901,13 +517902,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -517949,7 +517949,8 @@
       "parameters": {
         "curve": "P224",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -518000,13 +518001,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -518787,7 +518787,8 @@
       "parameters": {
         "curve": "P256",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -518838,13 +518839,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -518886,7 +518886,8 @@
       "parameters": {
         "curve": "P256",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -518937,13 +518938,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -519724,7 +519724,8 @@
       "parameters": {
         "curve": "P384",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -519775,13 +519776,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -519823,7 +519823,8 @@
       "parameters": {
         "curve": "P384",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -519874,13 +519875,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -520661,7 +520661,8 @@
       "parameters": {
         "curve": "P521",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -520712,13 +520713,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -520760,7 +520760,8 @@
       "parameters": {
         "curve": "P521",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -520811,13 +520812,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -521604,7 +521604,8 @@
       "parameters": {
         "curve": "SECP224K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -521655,15 +521656,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -521705,7 +521703,8 @@
       "parameters": {
         "curve": "SECP224K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -521756,15 +521755,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -522545,7 +522541,8 @@
       "parameters": {
         "curve": "SECP256K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -522596,13 +522593,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -522644,7 +522640,8 @@
       "parameters": {
         "curve": "SECP256K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -522695,13 +522692,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -523488,7 +523484,8 @@
       "parameters": {
         "curve": "CURVE25519",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -523539,13 +523536,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -523587,7 +523583,8 @@
       "parameters": {
         "curve": "CURVE25519",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -523638,13 +523635,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -524431,7 +524427,8 @@
       "parameters": {
         "curve": "CURVE448",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -524482,13 +524479,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -524530,7 +524526,8 @@
       "parameters": {
         "curve": "CURVE448",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -524581,13 +524578,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -525368,7 +525364,8 @@
       "parameters": {
         "curve": "P192",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -525419,13 +525416,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -525467,7 +525463,8 @@
       "parameters": {
         "curve": "P192",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -525518,13 +525515,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -526305,7 +526301,8 @@
       "parameters": {
         "curve": "P224",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -526356,13 +526353,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -526404,7 +526400,8 @@
       "parameters": {
         "curve": "P224",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -526455,13 +526452,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -527242,7 +527238,8 @@
       "parameters": {
         "curve": "P256",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -527293,13 +527290,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -527341,7 +527337,8 @@
       "parameters": {
         "curve": "P256",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -527392,13 +527389,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -528179,7 +528175,8 @@
       "parameters": {
         "curve": "P384",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -528230,13 +528227,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -528278,7 +528274,8 @@
       "parameters": {
         "curve": "P384",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -528329,13 +528326,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -529116,7 +529112,8 @@
       "parameters": {
         "curve": "P521",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -529167,13 +529164,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -529215,7 +529211,8 @@
       "parameters": {
         "curve": "P521",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -529266,13 +529263,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -530059,7 +530055,8 @@
       "parameters": {
         "curve": "SECP224K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -530110,15 +530107,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -530160,7 +530154,8 @@
       "parameters": {
         "curve": "SECP224K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -530211,15 +530206,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -531000,7 +530992,8 @@
       "parameters": {
         "curve": "SECP256K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -531051,13 +531044,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -531099,7 +531091,8 @@
       "parameters": {
         "curve": "SECP256K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -531150,13 +531143,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -531943,7 +531935,8 @@
       "parameters": {
         "curve": "CURVE25519",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -531994,13 +531987,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -532042,7 +532034,8 @@
       "parameters": {
         "curve": "CURVE25519",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -532093,13 +532086,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -532886,7 +532878,8 @@
       "parameters": {
         "curve": "CURVE448",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -532937,13 +532930,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -532985,7 +532977,8 @@
       "parameters": {
         "curve": "CURVE448",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -533036,13 +533029,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -533823,7 +533815,8 @@
       "parameters": {
         "curve": "P192",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -533874,13 +533867,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -533922,7 +533914,8 @@
       "parameters": {
         "curve": "P192",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -533973,13 +533966,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -534760,7 +534752,8 @@
       "parameters": {
         "curve": "P224",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -534811,13 +534804,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -534859,7 +534851,8 @@
       "parameters": {
         "curve": "P224",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -534910,13 +534903,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -535697,7 +535689,8 @@
       "parameters": {
         "curve": "P256",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -535748,13 +535741,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -535796,7 +535788,8 @@
       "parameters": {
         "curve": "P256",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -535847,13 +535840,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -536634,7 +536626,8 @@
       "parameters": {
         "curve": "P384",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -536685,13 +536678,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -536733,7 +536725,8 @@
       "parameters": {
         "curve": "P384",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -536784,13 +536777,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -537571,7 +537563,8 @@
       "parameters": {
         "curve": "P521",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -537622,13 +537615,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -537670,7 +537662,8 @@
       "parameters": {
         "curve": "P521",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -537721,13 +537714,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -538514,7 +538506,8 @@
       "parameters": {
         "curve": "SECP224K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -538565,15 +538558,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -538615,7 +538605,8 @@
       "parameters": {
         "curve": "SECP224K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -538666,15 +538657,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -539455,7 +539443,8 @@
       "parameters": {
         "curve": "SECP256K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -539506,13 +539495,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -539554,7 +539542,8 @@
       "parameters": {
         "curve": "SECP256K1",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -539605,13 +539594,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates.",
       "wire_enum_values": {
@@ -540410,7 +540398,8 @@
       "parameters": {
         "curve": "CURVEED25519",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -540461,13 +540450,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates. Cosmian RecommendedCurve CURVEED25519 is a high-bit extension; Ed25519/Ed448 algorithms themselves are standard Table443 values.",
       "wire_enum_values": {
@@ -540509,7 +540497,8 @@
       "parameters": {
         "curve": "CURVEED25519",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -540560,13 +540549,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "response_validation_failed",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "The typed Get/Export response did not expose the explicitly requested Key Format Type Cosmian-Pkcs12Legacy; the case postcondition failed and response contents were not retained.",
-        "expected_key_format": "Cosmian-Pkcs12Legacy"
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates. Cosmian RecommendedCurve CURVEED25519 is a high-bit extension; Ed25519/Ed448 algorithms themselves are standard Table443 values.",
       "wire_enum_values": {
@@ -541371,7 +541359,8 @@
       "parameters": {
         "curve": "CURVEED448",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -541422,15 +541411,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 5,
-        "result_reason_name": "Operation Not Supported",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 5: Operation Not Supported)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates. Cosmian RecommendedCurve CURVEED448 is a high-bit extension; Ed25519/Ed448 algorithms themselves are standard Table443 values.",
       "wire_enum_values": {
@@ -541472,7 +541458,8 @@
       "parameters": {
         "curve": "CURVEED448",
         "password_link": false,
-        "certificate_chain": false
+        "certificate_chain": false,
+        "requested_format_value": "0x88800001"
       },
       "key_format": "Cosmian-Pkcs12Legacy",
       "encoding": "binary-TTLV",
@@ -541523,15 +541510,12 @@
       "test_family": "cosmian_kms::transfer",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 5,
-        "result_reason_name": "Operation Not Supported",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 5: Operation Not Supported)."
+        "interoperability": true,
+        "reason": "The request explicitly selected Cosmian legacy PKCS#12 (0x88800001); KMIPKit received a typed success response and all transfer postconditions passed. Cosmian normalized the returned Key Format Type to standard PKCS#12 (0x16)."
       },
       "notes": "PFX/container algorithm branch; password/chain branches independently covered with RSA-2048. objects.md advertises PFX; formats.md omits it. PKCS7/legacy names are high-bit vendor formats only. Every row owns linked keys/certificates. Cosmian RecommendedCurve CURVEED448 is a high-bit extension; Ed25519/Ed448 algorithms themselves are standard Table443 values.",
       "wire_enum_values": {

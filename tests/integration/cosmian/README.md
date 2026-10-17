@@ -132,14 +132,17 @@ ps --all` returned no services.
 | Lifecycle and probes | 89 | 80 | 80 | 3 rejected; 2 response-validation failures; 2 malformed responses; 1 setup-blocked; 1 unsupported |
 | Cryptographic | 1,466 | 670 | 650 | 383 rejected; 325 setup-rejected; 88 response-validation failures |
 | Key management | 216 | 12 | 12 | 201 rejected; 3 setup-rejected |
-| Import/Export/Register transfer | 4,640 | 2,722 | 2,668 | 890 rejected; 978 setup-rejected; 50 response-validation failures |
+| Import/Export/Register transfer | 4,640 | 2,780 | 2,780 | 882 rejected; 978 setup-rejected; 0 response-validation failures |
 | RNG | 6 | 0 | 0 | 6 response-validation failures (missing Operation) |
-| **Total executable rows** | **6,417** | **3,484** | **3,410** | **1,477 rejected; 1,306 setup-rejected; 146 response-validation failures; 4 other findings** |
+| **Total executable rows** | **6,417** | **3,542** | **3,522** | **1,469 rejected; 1,306 setup-rejected; 96 response-validation failures; 4 other findings** |
 
 Twelve normative exclusions were not sent: six invalid RNG Parameters
 combinations and six invalid Certify subject-OID-only CSR combinations. Of the
-3,484 typed responses, 74 source-gap/discrepancy observations remain outside the
-interoperability count (20 cryptographic and 54 transfer). The 24 Create Key
+3,542 typed responses, 20 cryptographic source-gap/discrepancy observations
+remain outside the interoperability count. The 54 transfer finding rows that
+returned typed success and passed operation postconditions now count as observed
+interoperability; their documentation/source classifications remain attached,
+and this is not a KMIP 2.1 conformance claim. The 24 Create Key
 Pair source-discrepancy probes returned typed success with both key identifiers
 validated, so they count as observed KMIPKit–Cosmian interoperability; their
 algorithm values remain outside the pinned KMIP 2.1 enumeration and are not a
@@ -162,14 +165,23 @@ classifications and safe reason codes. See the
 [Decrypt case re-evaluation](../../../specs/015-cosmian-kms-integration/task-6-report.md#decrypt-case-re-evaluation)
 for evidence and attribution.
 
+For Get and Export specifically, the current ledger records **797/1,279** and
+**807/1,291** observed interoperability successes. A focused run selected 66
+cases and confirmed the legacy-PKCS#12 selector fix: the test now sends Cosmian's
+`KeyFormatType=0x88800001`; 62 target Get/Export requests returned typed
+success, including all 58 cases that newly send the selector. Four other
+selected legacy-PKCS#12 cases did not reach Get/Export because their
+password-linked PFX Import setup was rejected; these are part of 16
+password-link setup rejections, not Get/Export failures. See the Get/Export
+attribution section in `traceability.md`.
+
 Notable results include: Discover Versions passes; Check SplitKey passes with
 the optional usage mask omitted; Query returns Success but omits the required
 Protection Storage Masks field; Ping and Adjust Attribute return malformed
 failure responses without Operation; Re-certify is rejected as unsupported;
-and all six valid RNG cases return responses missing Operation. Fifty PrivateKey
-Get/Export checks for `Cosmian-Pkcs12Legacy` fail the typed Key Format Type
-postcondition. The password-linked PFX import setup is separately recorded as
-rejected before dependent Get/Export requests are sent. See
+and all six valid RNG cases return responses missing Operation. Password-linked
+PFX setup failures are recorded before dependent Get/Export requests are sent.
+See
 [`traceability.md`](../../../specs/015-cosmian-kms-integration/traceability.md)
 and the [Task 6 evidence report](../../../specs/015-cosmian-kms-integration/task-6-report.md)
 for source references and per-case interpretation.
