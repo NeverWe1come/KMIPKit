@@ -144,6 +144,37 @@ static int certify_response_accessor_is_callable_from_c(void) {
         identifier.integer_value == 0;
 }
 
+static int get_usage_allocation_constructor_is_callable_from_c(void) {
+    static const uint8_t identifier_text[] = "allocation-object";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    kmipkit_client_batch_item_t *item = 0;
+    if (kmipkit_client_batch_item_get_usage_allocation(
+            &identifier, INT64_MAX, &item) != 0) {
+        return 0;
+    }
+    const int result = item != 0;
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
+static int get_usage_allocation_response_accessor_clears_outputs(void) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    uint8_t present = 9;
+    const int32_t status = kmipkit_client_batch_item_response_get_usage_allocation(
+        0, &present, &identifier);
+    return status == T076_ERROR_INVALID_INPUT && present == 0 &&
+        identifier.kind == 0 && identifier.text_data == 0 &&
+        identifier.text_length == 0 && identifier.enumeration_value == 0 &&
+        identifier.integer_value == 0;
+}
+
 static int creation_create_key_pair_matches_shared_fixture(void) {
     kmipkit_ttlv_structure_t *groups[6] = {0};
     kmipkit_client_batch_item_t *item = 0;
@@ -1297,6 +1328,8 @@ int main(int argc, char **argv) {
     if (!creation_create_matches_shared_fixture() ||
         !certify_constructor_is_callable_from_c() ||
         !certify_response_accessor_is_callable_from_c() ||
+        !get_usage_allocation_constructor_is_callable_from_c() ||
+        !get_usage_allocation_response_accessor_clears_outputs() ||
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||
         !creation_rejects_malformed_split_key_inputs() ||

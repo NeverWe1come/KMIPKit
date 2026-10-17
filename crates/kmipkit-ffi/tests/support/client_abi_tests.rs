@@ -10,8 +10,9 @@ use std::thread;
 use base64::Engine;
 use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
-    AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateSplitKeyRequest, LocateRequest,
-    ObjectType, OperationData, SecretBytes, SplitKeyMethod, UniqueIdentifier,
+    AttributeSet, CertifyRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
+    GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
+    SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -1548,6 +1549,70 @@ fn ffi_create_key_pair_getter_copies_successful_typed_identifiers() {
 
     kmipkit_client_batch_item_response_release(key_pair_item);
     kmipkit_client_batch_response_release(response_handle);
+}
+
+#[test]
+fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_failure() {
+    let response_identifier = b"allocation-object";
+    let successful_item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"usage-allocation",
+        vec![ttlv_item(0x0042_006f, 0x07, response_identifier)],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation(
+            successful_item,
+            &mut present,
+            &mut identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_eq!(
+        identifier.kind,
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+    );
+    assert_eq!(
+        identifier.text_length,
+        u64::try_from(response_identifier.len()).expect("identifier length fits ABI")
+    );
+    // SAFETY: the open item handle retains the Arc-backed typed response containing this text.
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                identifier.text_data,
+                usize::try_from(identifier.text_length)
+                    .expect("identifier length fits this test target"),
+            )
+        },
+        response_identifier
+    );
+    kmipkit_client_batch_item_response_release(successful_item);
+
+    let failed_item = failed_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"usage-allocation-failure",
+    );
+    present = 9;
+    identifier = empty_unique_identifier_output_v1();
+    identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+    identifier.integer_value = -17;
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation(
+            failed_item,
+            &mut present,
+            &mut identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert_eq!(identifier.integer_value, 0);
+    kmipkit_client_batch_item_response_release(failed_item);
 }
 
 #[test]

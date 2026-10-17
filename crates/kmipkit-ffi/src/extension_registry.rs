@@ -52,6 +52,9 @@ use std::time::Duration;
 #[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
 mod cryptographic_operation_abi_tests;
 #[cfg(test)]
+#[path = "../tests/support/get_usage_allocation_abi_tests.rs"]
+mod get_usage_allocation_abi_tests;
+#[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
 #[cfg(test)]
