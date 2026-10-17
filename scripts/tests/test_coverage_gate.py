@@ -715,19 +715,23 @@ trait Example { fn declaration(&self); }
             (source_dir / "lib.rs").write_text(
                 'pub fn production() {}\n'
                 '#[cfg(test)]\n'
-                '#[path = "../tests/unit/private_tests.rs"]\n'
+                '#[path = "../tests/support/private_tests.rs"]\n'
                 'mod private_tests;\n',
                 encoding="utf-8",
             )
-            test_source = root / "crates" / "sample" / "tests" / "unit" / "private_tests.rs"
+            test_source = root / "crates" / "sample" / "tests" / "support" / "private_tests.rs"
             test_source.parent.mkdir(parents=True)
             test_source.write_text("#[test] fn checks_private_behavior() {}\n", encoding="utf-8")
 
             scan = GATE.scan_production_sources(root)
+            support_path_is_production = GATE.is_coverage_source_path(
+                "crates/sample/tests/support/private_tests.rs"
+            )
 
         self.assertTrue(scan.eligible)
         self.assertTrue(scan.complete)
         self.assertEqual({"crates/sample/src/lib.rs"}, scan.eligible_files)
+        self.assertFalse(support_path_is_production)
 
     def test_cfg_test_module_path_into_production_source_fails_preflight(self) -> None:
         self.require_gate()
@@ -1014,6 +1018,13 @@ trait Example { fn declaration(&self); }
 
         self.assertFalse(excluded)
         self.assertTrue(adjacent)
+
+    def test_cpp_digit_separators_respect_numeric_base(self) -> None:
+        self.require_gate()
+        decimal_with_hex_letter = "int value = 1'B;"
+        apostrophe = decimal_with_hex_letter.index("'")
+
+        self.assertFalse(GATE._is_cpp_digit_separator(decimal_with_hex_letter, apostrophe))
 
     def test_rust_coverage_markers_respect_lifetimes_and_nested_comments(self) -> None:
         self.require_gate()
