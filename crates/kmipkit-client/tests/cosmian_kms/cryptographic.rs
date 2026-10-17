@@ -2147,7 +2147,7 @@ fn build_create_request(
     ))
 }
 
-fn build_create_key_pair_request(
+pub(super) fn build_create_key_pair_request(
     row: &JsonValue,
     id: &str,
 ) -> Result<CreateKeyPairRequest, Box<dyn Error>> {

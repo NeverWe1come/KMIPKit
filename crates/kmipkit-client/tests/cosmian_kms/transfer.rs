@@ -18,8 +18,8 @@ use kmipkit_ttlv::{Item, Structure, Value, ValueView};
 
 const FAMILY: &str = "cosmian_kms::transfer";
 const CASE_IDS: &str = include_str!("transfer-case-ids.txt");
-const FIXTURE_UNAVAILABLE_CASE_IDS: &str =
-    include_str!("configurable-kem-fixture-unavailable-case-ids.txt");
+const CONFIGURABLE_KEM_PROBE_CASE_IDS: &str =
+    include_str!("configurable-kem-transfer-probe-case-ids.txt");
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
@@ -566,15 +566,7 @@ fn cosmian_528_transfer_matrix() {
     assert_manifest_parity();
     let mut failures = Vec::new();
     let selected = selected_case_ids();
-    let mut fixture_blocked = 0;
     for case_id in &selected {
-        if fixture_unavailable_case_ids().any(|blocked| blocked == *case_id) {
-            println!(
-                "case_id={case_id} classification=fixture_unavailable target_request_sent=false reason=valid KMIP 2.1 ConfigurableKEM serialized fixture is unavailable"
-            );
-            fixture_blocked += 1;
-            continue;
-        }
         match run_case(case_id) {
             Ok(()) => println!("case_id={case_id} classification=typed_success"),
             Err(error) => {
@@ -588,10 +580,9 @@ fn cosmian_528_transfer_matrix() {
         }
     }
     println!(
-        "transfer_matrix selected={} request_attempted={} fixture_unavailable={} failures={}",
+        "transfer_matrix selected={} request_attempted={} failures={}",
         selected.len(),
-        selected.len() - fixture_blocked,
-        fixture_blocked,
+        selected.len(),
         failures.len()
     );
     assert!(
@@ -635,8 +626,8 @@ fn case_ids() -> impl Iterator<Item = &'static str> {
     CASE_IDS.lines().filter(|line| !line.is_empty())
 }
 
-fn fixture_unavailable_case_ids() -> impl Iterator<Item = &'static str> {
-    FIXTURE_UNAVAILABLE_CASE_IDS
+fn configurable_kem_probe_case_ids() -> impl Iterator<Item = &'static str> {
+    CONFIGURABLE_KEM_PROBE_CASE_IDS
         .lines()
         .filter(|line| !line.is_empty())
 }
@@ -2885,14 +2876,9 @@ mod inventory_tests {
     }
 
     #[test]
-    fn opaque_post_quantum_transfer_rows_are_exactly_fixture_blocked() {
+    fn opaque_post_quantum_transfer_rows_are_not_skipped() {
         let rows = crate::common::manifest_rows(FAMILY).expect("transfer manifest rows");
-        let blocked = fixture_unavailable_case_ids().collect::<BTreeSet<_>>();
-        assert_eq!(
-            blocked.len(),
-            0,
-            "source-gap cases must attempt a typed operation instead of being silently skipped"
-        );
+        let probes = configurable_kem_probe_case_ids().collect::<BTreeSet<_>>();
         let expected = rows
             .iter()
             .filter(|row| {
@@ -2909,21 +2895,16 @@ mod inventory_tests {
             })
             .collect::<BTreeSet<_>>();
         assert_eq!(expected.len(), 72);
-        assert_eq!(blocked.len(), 72);
         assert_eq!(
-            blocked,
+            probes,
             expected.iter().map(String::as_str).collect(),
-            "fixture-unavailable ledger must match every post-only/hybrid ConfigurableKEM transfer row"
+            "the explicitly tracked source-gap probes must cover every post-only/hybrid ConfigurableKEM transfer row"
         );
         assert!(
             rows.iter()
-                .filter(|row| {
-                    row["algorithm"] == "ConfigurableKEM"
-                        && row["parameters"]["opaque_fixture_configuration"]["post_quantum"]
-                            .is_string()
-                })
-                .all(|row| blocked.contains(row["case_id"].as_str().expect("case ID"))),
-            "no opaque post-quantum transfer case may be mislabeled as requestable"
+                .filter(|row| probes.contains(row["case_id"].as_str().expect("case ID")))
+                .all(|row| row["expected_outcome"] != "typed_success"),
+            "source-only transfer probes must not be classified as successful interoperability"
         );
     }
 

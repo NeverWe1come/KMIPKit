@@ -17,7 +17,7 @@ use kmipkit_protocol::{
 use kmipkit_ttlv::{Item, Structure, Value};
 
 use super::{
-    AES, CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH, CRYPTOGRAPHIC_USAGE_MASK, RSA, SUCCESS,
+    AES, CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH, CRYPTOGRAPHIC_USAGE_MASK, SUCCESS,
     certificate_directory, client, comment_item, kmip_item, structure, text_identifier,
 };
 
@@ -837,34 +837,7 @@ pub(super) fn provision_object(
             )?
         }
         "PrivateKey" | "PublicKey" => {
-            let algorithm = manifest_enum(row, "cryptographic_algorithm").unwrap_or(RSA);
-            let mut common_items = vec![
-                kmip_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(algorithm))?,
-                name_attribute(case_id)?,
-            ];
-            if let Some(key_bits) = manifest_integer(row, "key_bits") {
-                common_items.push(kmip_item(CRYPTOGRAPHIC_LENGTH, Value::integer(key_bits))?);
-            }
-            if let Some(curve) = manifest_enum(row, "recommended_curve") {
-                common_items.push(kmip_item(
-                    0x0042_0029,
-                    Value::structure(structure([kmip_item(
-                        0x0042_0060,
-                        Value::enumeration(curve),
-                    )?])?),
-                )?);
-            }
-            let common = AttributeSet::try_new(common_items)?;
-            let request = CreateKeyPairRequest::new()
-                .with_common_attributes(common)
-                .with_private_key_attributes(AttributeSet::try_new([kmip_item(
-                    CRYPTOGRAPHIC_USAGE_MASK,
-                    Value::integer(1),
-                )?])?)
-                .with_public_key_attributes(AttributeSet::try_new([kmip_item(
-                    CRYPTOGRAPHIC_USAGE_MASK,
-                    Value::integer(2),
-                )?])?);
+            let request = super::cryptographic::build_create_key_pair_request(row, case_id)?;
             let (private_id, public_id) =
                 execute_created_key_pair(client, case_id, request, ownership)?;
             if object_type == "PrivateKey" {
