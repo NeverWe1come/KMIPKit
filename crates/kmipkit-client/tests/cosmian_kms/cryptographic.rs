@@ -1029,6 +1029,21 @@ fn aes_rsa_gap_probe_is_not_rewritten_as_an_rsa_target_request() {
 }
 
 #[test]
+fn direct_kem_decrypt_uses_its_algorithm_as_the_key_algorithm() {
+    let row = target_rows()
+        .expect("cryptographic target rows")
+        .into_iter()
+        .find(|row| row["case_id"] == "cosmian-528-decrypt-privatekey-mlkem-512-source-only")
+        .expect("direct ML-KEM Decrypt row");
+
+    assert_eq!(
+        asymmetric_ciphertext_fixture_row(&row).expect("matching ML-KEM ciphertext fixture row"),
+        row,
+        "a direct KEM operation uses the same algorithm for its generated key and target request"
+    );
+}
+
+#[test]
 fn covercrypt_create_builders_keep_policy_and_parent_link_dimensions() {
     const MASTER_ID: &str = "offline-covercrypt-master-private-id";
     const ACCESS_POLICY: &str =
