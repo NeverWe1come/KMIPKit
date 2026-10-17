@@ -33,6 +33,7 @@ const LINK: u32 = 0x0042_004A;
 const LINK_TYPE: u32 = 0x0042_004B;
 const LINKED_OBJECT_IDENTIFIER: u32 = 0x0042_004C;
 const KEY_BLOCK: u32 = 0x0042_0040;
+// OASIS KMIP v2.1 §11.56, Table 487; §3.4, Table 18 defines its transparent-key use.
 const KEY: u32 = 0x0042_003F;
 const KEY_VALUE: u32 = 0x0042_0045;
 const KEY_MATERIAL: u32 = 0x0042_0043;
@@ -41,6 +42,7 @@ const PUBLIC_KEY: u32 = 0x0042_006D;
 const CERTIFICATE: u32 = 0x0042_0013;
 const CERTIFICATE_TYPE: u32 = 0x0042_001D;
 const CERTIFICATE_VALUE: u32 = 0x0042_001E;
+// OASIS KMIP v2.1 §11.56, Table 487: Symmetric Key (distinct from Result Status).
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const SECRET_DATA: u32 = 0x0042_0085;
 const OPAQUE_OBJECT: u32 = 0x0042_005B;
