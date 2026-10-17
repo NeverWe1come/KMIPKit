@@ -190,8 +190,10 @@ contratos detallados de la API y la entrega.
 El repositorio incluye un despliegue optativo de Cosmian KMS 5.28.0 con Docker
 Compose y pruebas reales ignoradas por defecto que usan el cliente Rust tipado
 con TLS mutuo. Consulta la [guía de pruebas locales con Cosmian](../../../tests/integration/cosmian/README.md)
-para ver la configuración, los comandos, las operaciones probadas y los
-resultados de interoperabilidad actuales.
+para ver la configuración, los comandos de la suite completa y de cada familia,
+la matriz exhaustiva por caso y los resultados actuales. La última ejecución
+completa registró 3.376 intercambios tipados exitosos y 10 funciones de test con
+fallos; los fallos y bloqueos permanecen visibles en la matriz.
 
 ## Ejemplo local y ejecutable de una petición
 

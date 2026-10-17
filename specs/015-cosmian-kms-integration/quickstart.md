@@ -1,9 +1,12 @@
 # Quickstart: Local Cosmian KMS Integration Tests
 
-This quickstart deploys Cosmian KMS 5.28.0 locally and provides opt-in typed
-test cases for twenty operation paths in KMIPKIT-0015. Eighteen return
-successful typed results; Query and Ping record known Cosmian interoperability
-limitations. This does not claim broad protocol conformance.
+This quickstart deploys Cosmian KMS 5.28.0 locally and runs KMIPKit's opt-in,
+typed integration suite. Its exhaustive manifest contains 6,429 rows across
+all 35 advertised operation paths and applicable object, format, encoding,
+algorithm, and parameter combinations. It records 3,376 successful typed
+interoperability outcomes; remaining results include target rejections, setup
+failures, malformed or invalid responses, and explicit fixture blockers. This
+does not claim complete KMIP 2.1 conformance or formal certification.
 
 ## Prerequisites
 
@@ -32,15 +35,19 @@ run the live test explicitly:
 .\scripts\integration\cosmian-kms.ps1 -Action test
 ```
 
-The test target sends typed requests for Discover Versions; Create; Create Key
-Pair; Create Split Key; Add Attribute; Delete Attribute; Get Attributes; Get
-Attribute List; Modify Attribute; Set Attribute; Activate; Query; Ping;
-Encrypt; Decrypt; Hash; MAC; MAC Verify; Sign; and Signature Verify. Start with
-the full ignored integration target:
+The full ignored target covers lifecycle, cryptographic, random-number,
+key-management, transfer, and separate operation-probe cases. The wrapper's
+`-Action test` runs the ignored suite serially and tears down Compose in a
+`finally` block, even when Cargo returns a failure. To run Cargo directly,
+start the server first and stop it with `-Action down` in a PowerShell
+`finally` block.
 
 ```powershell
-cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1
+cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1 --nocapture
 ```
+
+The matrix's family runners can also be selected by their exact test names;
+commands and safe-output rules are listed in the [integration README](../../tests/integration/cosmian/README.md).
 
 To run one operation test, add its exact Rust test name before `-- --ignored --exact --test-threads=1`, for example:
 
@@ -63,6 +70,30 @@ Protection Storage Masks required by Table 283, and Cosmian rejects Ping as
 unsupported. The tests create server-generated objects and test metadata in
 the container-local database; the database is discarded when the container is
 removed.
+
+## Exhaustive matrix result
+
+The pinned local image was exercised with the complete ignored suite. The
+manifest contains 6,429 records: 6,417 executable cases and 12 non-executable
+normative exclusions. All executable rows have a measured outcome or an
+explicit fixture/setup blocker; 3,376 rows passed typed-response and
+operation-specific checks and count as interoperability successes. The serial
+suite ended with 98 passed and 10 failed test functions, so the report preserves
+server rejections and KMIPKit response-validation failures rather than calling
+the run green.
+
+| Family | Cases | Interoperability successes | Main non-success observations |
+|---|---:|---:|---|
+| Lifecycle and probes | 89 | 80 | 3 rejected; Query/Locate validation failures; Ping/Adjust malformed responses; Activate setup blocked; Re-certify unsupported |
+| Cryptographic | 1,466 | 616 | 384 rejected; 331 setup rejected; 88 response validation failed; 15 exact fixtures unavailable |
+| Key management | 216 | 12 | 201 rejected; 3 setup rejected |
+| Import/Export/Register transfer | 4,640 | 2,668 | 890 rejected; 978 setup rejected; 50 response validation failed |
+| RNG | 6 | 0 | 6 malformed typed responses |
+
+The 12 exclusions are six standards-invalid RNG Parameters combinations and
+six standards-invalid Certify request combinations. Matrix and summary details
+are recorded in [traceability](traceability.md) and the
+[Task 6 report](task-6-report.md).
 
 ## Recorded result
 

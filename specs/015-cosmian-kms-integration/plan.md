@@ -70,7 +70,7 @@ docs/user-guide/en/production-transports.md
 docs/user-guide/es/transportes-produccion.md
 ```
 
-`crates/kmipkit-client/Cargo.toml` changes only if a manifest-validation dev dependency is needed. Fixture/report artifacts remain ignored and sanitized. This layout is planned, not a claim that case modules or the manifest already exist.
+`crates/kmipkit-client/Cargo.toml` changes only if a manifest-validation dev dependency is needed. The focused operation-family modules, versioned manifest, offline completeness/parity tests and ignored live runners are implemented. Generated fixtures and full-run logs remain ignored and sanitized under `.local/cosmian-kms/`.
 
 ## Verification Plan
 
@@ -87,6 +87,6 @@ For subsequent implementation, record distinct Red/Green/Refactor evidence. Run 
 
 ## Evidence and risks
 
-The 2026-10-15 baseline has twenty passing test cases, eighteen successful typed exchanges and two finding probes, with teardown verified. The exhaustive matrix remains pending. Inherited Response Message/Create/Split Key fixes and KMIPKIT-0021 shared-tag corrections are historical production work; do not duplicate or expand them here. Hosted dependency policy previously failed on existing `rustls 0.23.45` advisories, as recorded in `traceability.md`; do not claim that this documentation amendment resolves that gate.
+The historical 2026-10-15 baseline had twenty passing test cases, eighteen successful typed exchanges and two finding probes. The exhaustive matrix now contains 6,429 rows, including 6,417 executable cases with individual live classifications/blockers and 12 normative exclusions; 3,376 executable rows are successful typed interoperability outcomes. The complete serial suite ended with 98 passed and 10 failed functions, and Compose teardown was verified. The failures remain in the matrix and final review gates remain open. Inherited Response Message/Create/Split Key fixes and KMIPKIT-0021 shared-tag corrections are historical production work; do not duplicate or expand them here. Hosted dependency policy previously failed on existing `rustls 0.23.45` advisories, as recorded in `traceability.md`; this integration amendment does not resolve that separate dependency gate.
 
 Vendor docs, source and runtime can disagree. Preserve both sources and actual outcome, including source-only formats and documented-but-source-gap algorithms. Missing fixtures, local API representation gaps or service prerequisites are explicit blockers. They do not justify weakening typed parsing, fabricating standard values, discarding valid advertised cases or making profile/certification claims.

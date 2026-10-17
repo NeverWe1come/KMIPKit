@@ -33,12 +33,26 @@ switch ($Action) {
     }
     'test' {
         Push-Location $repositoryRoot
+        $testExitCode = 1
+        $cleanupExitCode = 1
         try {
-            cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1
-            exit $LASTEXITCODE
+            cargo test -p kmipkit-client --test cosmian_kms -- --ignored --test-threads=1 --nocapture
+            $testExitCode = $LASTEXITCODE
         }
         finally {
+            docker compose --file $composeFile down --volumes --remove-orphans
+            $cleanupExitCode = $LASTEXITCODE
+            if ($cleanupExitCode -eq 0) {
+                $remainingServices = docker compose --file $composeFile ps --all --quiet
+                if ($LASTEXITCODE -ne 0 -or $remainingServices) {
+                    Write-Output 'Cosmian Compose teardown did not leave an empty service list.'
+                    $cleanupExitCode = 1
+                }
+            }
             Pop-Location
         }
+        if ($testExitCode -ne 0) { exit $testExitCode }
+        if ($cleanupExitCode -ne 0) { exit $cleanupExitCode }
+        exit 0
     }
 }
