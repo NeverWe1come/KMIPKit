@@ -218,8 +218,7 @@ fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_en
     const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
     const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
     const ATTRIBUTES: u32 = 0x0042_0125;
-    const ATTRIBUTE_NAME: u32 = 0x0042_000A;
-    const ATTRIBUTE_VALUE: u32 = 0x0042_000B;
+    const CERTIFICATE_TYPE: u32 = 0x0042_001D;
 
     let id = "cosmian-528-certify-certificaterequest-mldsa-44-subject-oid-only-der";
     let row = target_rows()
@@ -250,7 +249,7 @@ fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_en
 
     assert_eq!(enum_field(&payload, CERTIFICATE_REQUEST_TYPE), Some(2));
     assert!(byte_string_field_length(&payload, CERTIFICATE_REQUEST_VALUE).is_some_and(|len| len > 0));
-    let attributes = payload
+    let attribute_contract = payload
         .view()
         .children()
         .iter()
@@ -260,48 +259,52 @@ fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_en
                 let kmipkit_ttlv::ValueView::Structure(attributes) = value else {
                     return None;
                 };
-                Some(
-                    attributes
-                        .children()
-                        .iter()
-                        .filter_map(|attribute| {
-                            attribute.with_value(|value| {
-                                let kmipkit_ttlv::ValueView::Structure(fields) = value else {
-                                    return None;
-                                };
-                                let name = fields
-                                    .children()
-                                    .iter()
-                                    .find(|field| field.tag().raw() == ATTRIBUTE_NAME)
-                                    .and_then(|field| {
-                                        field.with_value(|value| match value {
-                                            kmipkit_ttlv::ValueView::TextString(name) => {
-                                                Some(name.to_owned())
-                                            }
-                                            _ => None,
-                                        })
-                                    })?;
-                                let value = fields
-                                    .children()
-                                    .iter()
-                                    .find(|field| field.tag().raw() == ATTRIBUTE_VALUE)
-                                    .and_then(|field| {
-                                        field.with_value(|value| match value {
-                                            kmipkit_ttlv::ValueView::Enumeration(value) => {
-                                                Some(*value)
-                                            }
-                                            _ => None,
-                                        })
-                                    })?;
-                                Some((name, value))
-                            })
+                let fields = attributes.children();
+                let certificate_type = fields
+                    .iter()
+                    .find(|field| field.tag().raw() == CERTIFICATE_TYPE)
+                    .and_then(|field| {
+                        field.with_value(|value| match value {
+                            kmipkit_ttlv::ValueView::Enumeration(value) => Some(*value),
+                            _ => None,
                         })
-                        .collect::<Vec<_>>(),
-                )
+                    })?;
+                Some((
+                    certificate_type,
+                    fields
+                        .iter()
+                        .any(|field| field.tag().raw() == CRYPTOGRAPHIC_ALGORITHM),
+                ))
             })
         })
         .expect("Certify Attributes structure");
-    assert_eq!(attributes, [("Certificate Type".to_owned(), 5)]);
+    assert_eq!(attribute_contract, (5, false));
+}
+
+#[test]
+fn pqc_certify_pem_and_der_both_use_the_pkcs10_request_type() {
+    const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
+    for case_id in [
+        "cosmian-528-certify-certificaterequest-mldsa-44-subject-oid-only-pem",
+        "cosmian-528-certify-certificaterequest-mldsa-44-subject-oid-only-der",
+    ] {
+        let row = target_rows()
+            .expect("cryptographic target rows")
+            .into_iter()
+            .find(|row| row["case_id"] == case_id)
+            .unwrap_or_else(|| panic!("missing Certify case {case_id}"));
+
+        validate_exact_finding_probe_dimensions(&row)
+            .unwrap_or_else(|error| panic!("case {case_id}: {error}"));
+        let payload = build_offline_certify_request(
+            &row,
+            UniqueIdentifier::TextString(format!("offline-{case_id}")),
+        )
+        .and_then(|request| request.into_ttlv_payload().map_err(Into::into))
+        .unwrap_or_else(|error| panic!("case {case_id}: {error}"));
+        assert_eq!(enum_field(&payload, CERTIFICATE_REQUEST_TYPE), Some(2));
+        assert_eq!(enum_field(&payload, CRYPTOGRAPHIC_ALGORITHM), None);
+    }
 }
 
 #[test]
