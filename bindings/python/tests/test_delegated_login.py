@@ -4,29 +4,32 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, extensions
+from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit.errors import InvalidInputError
 
 
 def test_delegated_login_builder_maps_table_199_fields(monkeypatch) -> None:
     calls: list[tuple[str, tuple[object, ...]]] = []
-    rights = SimpleNamespace(_pointer=lambda: 17)
-    usage_limits = SimpleNamespace(_pointer=lambda: 29)
     monkeypatch.setattr(
         extensions,
         "_make_handle",
         lambda _kind, symbol, arguments: calls.append((symbol, arguments)) or 23,
     )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
-    monkeypatch.setattr(extensions, "_native_structure", lambda value, **_kwargs: value._pointer())
 
-    item = extensions.client_batch_item_delegated_login(
-        rights,
-        lease_time_interval=0xFFFF_FFFF,
-        request_count=-(1 << 31),
-        usage_limits=usage_limits,
-    )
+    with ttlv.ttlv_structure_create() as rights, ttlv.ttlv_structure_create() as usage_limits:
+        monkeypatch.setattr(
+            extensions,
+            "_native_structure",
+            lambda value, **_kwargs: 17 if value is rights else 29,
+        )
+        item = extensions.client_batch_item_delegated_login(
+            rights,
+            lease_time_interval=0xFFFF_FFFF,
+            request_count=-(1 << 31),
+            usage_limits=usage_limits,
+        )
 
     assert item == 23
     assert calls == [(
@@ -37,17 +40,21 @@ def test_delegated_login_builder_maps_table_199_fields(monkeypatch) -> None:
 
 def test_delegated_login_builder_maps_signed_datetime_and_allows_omissions(monkeypatch) -> None:
     calls: list[tuple[str, tuple[object, ...]]] = []
-    rights = SimpleNamespace(_pointer=lambda: 17)
     monkeypatch.setattr(
         extensions,
         "_make_handle",
         lambda _kind, symbol, arguments: calls.append((symbol, arguments)) or 23,
     )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
-    monkeypatch.setattr(extensions, "_native_structure", lambda value, **_kwargs: value._pointer())
 
-    extensions.client_batch_item_delegated_login(rights, lease_time_date_time=-(1 << 63))
-    extensions.client_batch_item_delegated_login(rights)
+    with ttlv.ttlv_structure_create() as rights:
+        monkeypatch.setattr(
+            extensions,
+            "_native_structure",
+            lambda value, **_kwargs: 17 if value is rights else ffi.NULL,
+        )
+        extensions.client_batch_item_delegated_login(rights, lease_time_date_time=-(1 << 63))
+        extensions.client_batch_item_delegated_login(rights)
 
     assert calls == [
         ("kmipkit_client_batch_item_delegated_login", (17, 2, -(1 << 63), 0, 0, ffi.NULL)),

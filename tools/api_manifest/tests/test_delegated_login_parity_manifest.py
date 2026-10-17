@@ -13,9 +13,6 @@ OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
 OWNER_SPEC = "specs/024-credential-sessions/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
-    "KMIPKIT-024-T199-REQUEST",
-    "KMIPKIT-024-T200-RESPONSE",
-    "KMIPKIT-024-T201-ERROR",
     "KMIPKIT-0038-FR-001",
     "KMIPKIT-0038-FR-002",
     "KMIPKIT-0038-FR-003",
@@ -36,6 +33,19 @@ REQUIREMENTS = {
     "KMIPKIT-0043-FR-018",
     "KMIPKIT-0043-FR-021",
     "KMIPKIT-0043-FR-022",
+}
+TABLE_TRACEABILITY = {
+    "KMIPKIT-024-T199-REQUEST",
+    "KMIPKIT-024-T200-RESPONSE",
+    "KMIPKIT-024-T201-ERROR",
+    "KMIPKIT-ELEM-TAG-420049",
+    "KMIPKIT-ELEM-TAG-42014C",
+    "KMIPKIT-ELEM-TAG-420095",
+    "KMIPKIT-ELEM-TAG-42014D",
+    "KMIPKIT-ELEM-TAG-420149",
+    "KMIPKIT-ELEM-TAG-42007F",
+    "KMIPKIT-ELEM-TAG-42007E",
+    "KMIPKIT-ELEM-TAG-42007D",
 }
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
@@ -112,6 +122,12 @@ class DelegatedLoginParityManifestTests(unittest.TestCase):
         self.assertEqual(OWNER_SPEC, operation["approvalEvidence"]["path"])
         self.assertEqual("Approved", operation["approvalEvidence"]["status"])
         self.assertNotIn("blockedReason", operation)
+        traceability = (ROOT / "specs/024-credential-sessions/traceability.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("§6.1.12; Tables 199–201", traceability)
+        for trace_id in TABLE_TRACEABILITY:
+            self.assertIn(trace_id, traceability)
         self.assertEqual(LANGUAGES, set(operation["declarations"]))
         self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
         for evidence in PARITY_EVIDENCE:
