@@ -2032,6 +2032,20 @@ fn ffi_certify_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
         ],
     );
 
+    let mut present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_certify_ttlv(
+            item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+
     // SAFETY: the compiled C consumer takes ownership of this live response-item handle.
     let result = unsafe { kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(item) };
 
@@ -2053,6 +2067,20 @@ fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
             ttlv_item(0x0054_0001, 0x08, &unknown_value),
         ],
     );
+
+    let mut present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+            item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
 
     // SAFETY: the C consumer receives the live response-item handle and takes ownership of it.
     let result =
