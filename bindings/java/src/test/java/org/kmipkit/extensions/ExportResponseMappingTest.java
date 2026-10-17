@@ -25,6 +25,18 @@ final class ExportResponseMappingTest {
     }
 
     @Test
+    void exportJniBoundaryRejectsSelectorsOutsideUnsignedThirtyTwoBitRange() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientBatchItemExport(
+                0, null, 0, true, -1, false, 0, false, 0, 0));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientBatchItemExport(
+                0, null, 0, false, 0, true, 0x1_0000_0000L, false, 0, 0));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientBatchItemExport(
+                0, null, 0, false, 0, false, 0, true, -1, 0));
+    }
+
+    @Test
     void successfulExportResponsePreservesRawObjectTypeAndOwnsOpaqueOrderedTtlv() {
         NativeExtensionRegistry.ensureLoaded();
         long attributes = NativeExtensionRegistry.ttlvStructureCreate();
@@ -79,5 +91,40 @@ final class ExportResponseMappingTest {
             });
             response.ifPresent(ClientBatchItemResult.ExportResponse::close);
         });
+    }
+
+    @Test
+    void absentExportResponseRejectsUnexpectedTtlvHandle() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseExportResponse(
+                new Object[] {new long[] {0, 0, 0}, null, new long[] {0, 0, responseTtlv}}));
+    }
+
+    @Test
+    void exportResponseRejectsPayloadPresenceOutsideBooleanRange() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseExportResponse(
+                new Object[] {new long[] {1, 2, 0}, null, new long[] {0, 0, 0}}));
+    }
+
+    @Test
+    void successfulExportResponseRequiresCompleteResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseExportResponse(
+                new Object[] {new long[] {1, 0, 0}, null, new long[] {0, 0, 0}}));
+    }
+
+    @Test
+    void failedExportResponseRejectsAndReleasesTypedPayloadHandles() {
+        NativeExtensionRegistry.ensureLoaded();
+        long attributes = NativeExtensionRegistry.ttlvStructureCreate();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseExportResponse(
+                new Object[] {new long[] {1, 0, 0}, null, new long[] {attributes, 0, responseTtlv}}));
     }
 }

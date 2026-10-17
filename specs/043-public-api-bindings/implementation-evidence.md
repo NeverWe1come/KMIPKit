@@ -3100,3 +3100,31 @@ success/failure tests (2), the C ABI export-count test (1), the compiled C
 mTLS consumer test (1), workspace Clippy, rustfmt, and `git diff --check`. The
 full CI run above predates these corrections; T047 remains unchecked pending
 a new current-head cross-platform run and selected coverage gate.
+
+### T047 selected-coverage follow-up — 2026-10-18
+
+Run `39071443186` on head `2bf210d1` passed the cross-platform Rust, C, Java,
+Python, JNI, sanitizer, dependency-policy, inventory, and documentation jobs.
+The selected-scope coverage gate alone failed at 5,301/5,695 changed-production
+lines (93.08 percent), below the unchanged 95 percent requirement. The local
+follow-up adds executable C ABI checks for invalid and wrong-kind handles,
+Java/JNI Export Success and Failure mapping assertions over mTLS, Python
+batch-result dispatch and Export ownership/malformed-shape tests, and a narrow
+coverage rationale for an invariant-protected Python defensive check. No
+production behavior or coverage threshold changed.
+
+| Verification | Result |
+|---|---|
+| `cargo fmt --all --check` and `git diff --check` | PASS |
+| `python -B -m unittest scripts.tests.test_coverage_gate` | PASS: 65 tests, 0 failures, 3 skipped |
+| C ABI compiled consumer and FFI coverage tests | PASS: 5 C consumer tests, including the updated mTLS consumer; 125 Rust FFI unit tests |
+| Java Export mapping and TLS integration tests | PASS: 18 focused tests; full JNI coverage collection also passed 246 Java tests (0 failures/errors, 1 skipped) |
+| Python binding suite with coverage | PASS: 434 tests; 98.87 percent |
+
+The local full-workspace `cargo llvm-cov` test run completed its tests but could
+not export a report because LLVM attempted to parse a `trybuild` build marker
+file (`invoked.timestamp`) as an object file. This local exporter limitation is
+not treated as passing coverage evidence; the selected-scope CI gate remains
+authoritative. These follow-up results have not yet been checked by CI on the
+current PR head. T047 remains unchecked until the refreshed cross-platform run
+and selected-scope coverage gate pass.

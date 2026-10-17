@@ -1093,6 +1093,55 @@ def test_batch_result_dispatches_check_operation_to_typed_mapper(
     assert released == ["item", "response"]
 
 
+def test_batch_result_dispatches_export_operation_to_typed_mapper(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    released: list[str] = []
+    export_response = object()
+    dispatched: list[object] = []
+
+    def metadata(_item: object, out: object) -> int:
+        _initialize_metadata_v2(out)
+        out.operation = 0x2B  # type: ignore[attr-defined]
+        out.result_status = 1  # type: ignore[attr-defined]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
+        kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+    )
+    monkeypatch.setattr(client, "lib", fake)
+    monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
+    monkeypatch.setattr(client, "_discover_versions_supported_versions", lambda _item: None)
+    monkeypatch.setattr(client, "_create_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_key_pair_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_split_key_response", lambda _item: None)
+
+    def export_mapper(item: object) -> object:
+        dispatched.append(item)
+        return export_response
+
+    monkeypatch.setattr(client, "_export_response", export_mapper)
+
+    result = client._batch_result(response_pointer)
+    try:
+        assert result.items[0].operation == 0x2B
+        assert result.items[0].result_status == 1
+        assert result.items[0].export_response is export_response
+        assert len(dispatched) == 1
+    finally:
+        result.close()
+
+    assert released == ["item", "response"]
+
+
 def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

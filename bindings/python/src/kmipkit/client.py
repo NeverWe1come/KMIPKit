@@ -1840,7 +1840,7 @@ def _export_response(item: _ClientBatchItemResponse) -> ExportResponse | None:
         if response_ttlv is None or (
             payload_present[0] == 1 and (attributes is None or any_object is None)
         ):
-            errors.raise_for_status(4)
+            errors.raise_for_status(4)  # COVERAGE-EXCLUDE: each non-null handle wraps or raises.
         return ExportResponse(
             raw_object_type,
             unique_identifier,

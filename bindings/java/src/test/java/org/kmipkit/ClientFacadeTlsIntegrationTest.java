@@ -242,7 +242,12 @@ final class ClientFacadeTlsIntegrationTest {
                                             UniqueIdentifier.enumeration(0xfedc_ba98L),
                                             UniqueIdentifier.integer(-17)),
                                     0xfeed_beefL, derivationParameters, derivedAttributes)
-                            .withUniqueBatchItemId(uniqueBatchItemId(13)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(13)))
+                    .add(ClientBatchItem.export(UniqueIdentifier.textString("export-source"),
+                                    0xfedc_ba98L, 0xfedc_ba99L, 0xfedc_ba9aL, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(14)))
+                    .add(ClientBatchItem.export(null, null, null, null, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(15)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -259,8 +264,10 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult allocated = response.itemAt(10);
                     ClientBatchItemResult checked = response.itemAt(11);
                     ClientBatchItemResult delegated = response.itemAt(12);
-                    ClientBatchItemResult derived = response.itemAt(13)) {
-                assertEquals(14, response.itemCount());
+                    ClientBatchItemResult derived = response.itemAt(13);
+                    ClientBatchItemResult exported = response.itemAt(14);
+                    ClientBatchItemResult exportFailed = response.itemAt(15)) {
+                assertEquals(16, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -391,6 +398,32 @@ final class ClientFacadeTlsIntegrationTest {
                         assertTagOrder(payload, 0x0042_0094, 0x0054_0001);
                     }
                     assertFalse(deriveKeyResponse.toString().contains("derived-key"));
+                }
+                try (ClientBatchItemResult.ExportResponse exportResponse =
+                                exported.exportResponse().orElseThrow();
+                        TtlvStructureView exportTtlv = exportResponse.responseTtlv().view();
+                        TtlvStructureView exportAttributes =
+                                exportResponse.attributes().orElseThrow().view();
+                        TtlvStructureView exportObject = exportResponse.anyObject().orElseThrow().view()) {
+                    assertEquals(0, exported.resultStatus());
+                    assertEquals(0xfedc_ba98L, exportResponse.objectTypeRaw().orElseThrow());
+                    assertEquals("export-secret-id", exportResponse.uniqueIdentifier().orElseThrow().text());
+                    assertTagOrder(exportTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+                    assertTagOrder(exportAttributes, 0x42001d);
+                    assertTagOrder(exportObject, 0x42008f);
+                    assertTrue(containsByteString(exportObject, 0x420045,
+                            "KMIPKit-export-sentinel".getBytes(StandardCharsets.US_ASCII)));
+                    assertFalse(exportResponse.toString().contains("export-secret-id"));
+                }
+                try (ClientBatchItemResult.ExportResponse exportFailure =
+                                exportFailed.exportResponse().orElseThrow();
+                        TtlvStructureView exportFailureTtlv = exportFailure.responseTtlv().view()) {
+                    assertEquals(1, exportFailed.resultStatus());
+                    assertTrue(exportFailure.objectTypeRaw().isEmpty());
+                    assertTrue(exportFailure.uniqueIdentifier().isEmpty());
+                    assertTrue(exportFailure.attributes().isEmpty());
+                    assertTrue(exportFailure.anyObject().isEmpty());
+                    assertEquals(4, exportFailureTtlv.itemCount());
                 }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
@@ -1170,7 +1203,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(14)));
+                item(0x42000d, 2, integer(16)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1253,9 +1286,25 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] deriveKeyItem = structure(0x42000f,
                 enumeration(0x42005c, 5), item(0x420093, 8, uniqueBatchItemId(13)),
                 enumeration(0x42007f, 0), deriveKeyPayload);
+        byte[] exportAttributes = structure(0x0042_0125,
+                enumeration(0x0042_001d, 1));
+        byte[] exportObject = structure(0x0042_008f,
+                structure(0x0042_0040,
+                        item(0x0042_0045, 8, "KMIPKit-export-sentinel".getBytes(StandardCharsets.US_ASCII))));
+        byte[] exportPayload = structure(0x42007c,
+                enumeration(0x0042_0057, 0xfedc_ba98),
+                item(0x0042_0094, 7, "export-secret-id".getBytes(StandardCharsets.UTF_8)),
+                exportAttributes, exportObject);
+        byte[] exportItem = structure(0x42000f,
+                enumeration(0x0042_005c, 43), item(0x0042_0093, 8, uniqueBatchItemId(14)),
+                enumeration(0x0042_007f, 0), exportPayload);
+        byte[] exportFailure = structure(0x42000f,
+                enumeration(0x0042_005c, 43), item(0x0042_0093, 8, uniqueBatchItemId(15)),
+                enumeration(0x0042_007f, 1), enumeration(0x0042_007e, 5));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
-                certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem);
+                certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem,
+                exportItem, exportFailure);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {

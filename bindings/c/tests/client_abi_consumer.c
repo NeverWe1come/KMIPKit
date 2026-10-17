@@ -206,6 +206,23 @@ cleanup:
     kmipkit_ttlv_structure_release(wrapping_specification);
     return result;
 }
+
+static int export_constructor_rejects_invalid_presence_from_c(void) {
+    kmipkit_client_batch_item_t *item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    const int32_t key_format_status = kmipkit_client_batch_item_export(
+        0, 2, 0, 0, 0, 0, 0, 0, &item);
+    if (key_format_status != T076_ERROR_INVALID_INPUT || item != 0) return 0;
+
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    const int32_t key_wrap_status = kmipkit_client_batch_item_export(
+        0, 0, 0, 2, 0, 0, 0, 0, &item);
+    if (key_wrap_status != T076_ERROR_INVALID_INPUT || item != 0) return 0;
+
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    const int32_t compression_status = kmipkit_client_batch_item_export(
+        0, 0, 0, 0, 0, 2, 0, 0, &item);
+    return compression_status == T076_ERROR_INVALID_INPUT && item == 0;
+}
 static int delegated_login_constructor_is_callable_from_c(void) {
     kmipkit_ttlv_structure_t *rights = 0;
     kmipkit_ttlv_structure_t *usage_limits = 0;
@@ -270,6 +287,73 @@ static int check_response_accessors_clear_outputs_from_c(void) {
     const int32_t ttlv_status = kmipkit_client_batch_item_response_check_ttlv(
         0, &present, &response_ttlv);
     return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
+
+static int export_response_accessors_clear_outputs_from_c(
+    kmipkit_client_batch_item_response_t *item) {
+    uint8_t present = 9;
+    uint8_t payload_present = 9;
+    uint32_t object_type = UINT32_MAX;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    kmipkit_ttlv_structure_t *attributes = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    kmipkit_ttlv_structure_t *any_object = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_response_export(
+            0, &present, &payload_present, &object_type, &identifier,
+            &attributes, &any_object) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || payload_present != 0 || object_type != 0 ||
+        identifier.kind != 0 || identifier.text_data != 0 || identifier.text_length != 0 ||
+        identifier.enumeration_value != 0 || identifier.integer_value != 0 ||
+        attributes != 0 || any_object != 0) {
+        return 0;
+    }
+    kmipkit_ttlv_structure_t *wrong_kind = 0;
+    if (kmipkit_ttlv_structure_create(&wrong_kind) != 0 || wrong_kind == 0) {
+        return 0;
+    }
+    present = 9;
+    payload_present = 9;
+    object_type = UINT32_MAX;
+    attributes = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    any_object = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    const int32_t wrong_kind_status = kmipkit_client_batch_item_response_export(
+        (kmipkit_client_batch_item_response_t *)wrong_kind, &present, &payload_present,
+        &object_type, &identifier, &attributes, &any_object);
+    kmipkit_ttlv_structure_release(wrong_kind);
+    if (wrong_kind_status != T076_ERROR_INVALID_INPUT || present != 0 ||
+        payload_present != 0 || object_type != 0 || identifier.kind != 0 ||
+        identifier.text_data != 0 || identifier.text_length != 0 ||
+        identifier.enumeration_value != 0 || identifier.integer_value != 0 ||
+        attributes != 0 || any_object != 0) {
+        return 0;
+    }
+    present = 9;
+    payload_present = 9;
+    object_type = UINT32_MAX;
+    attributes = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    any_object = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_response_export(
+            item, &present, &payload_present, &object_type, &identifier,
+            &attributes, &any_object) != 0 || present != 0 || payload_present != 0 ||
+        object_type != 0 || identifier.kind != 0 || identifier.text_data != 0 ||
+        identifier.text_length != 0 || identifier.enumeration_value != 0 ||
+        identifier.integer_value != 0 || attributes != 0 || any_object != 0) {
+        return 0;
+    }
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    present = 9;
+    if (kmipkit_client_batch_item_response_export_ttlv(
+            0, &present, &response_ttlv) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || response_ttlv != 0) {
+        return 0;
+    }
+    response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    present = 9;
+    return kmipkit_client_batch_item_response_export_ttlv(
+               item, &present, &response_ttlv) == 0 &&
+        present == 0 && response_ttlv == 0;
 }
 
 static int check_view_tags(
@@ -392,6 +476,23 @@ static int export_response_is_readable_from_c(
     uint32_t object_type = 0;
     int result = 0;
     if (item == 0) {
+        return 0;
+    }
+    uint8_t rejected_present = 9;
+    uint8_t rejected_payload_present = 9;
+    uint32_t rejected_object_type = UINT32_MAX;
+    kmipkit_unique_identifier_v1_t invalid_identifier = {0};
+    invalid_identifier.struct_size = (uint32_t)sizeof(invalid_identifier) - 1;
+    invalid_identifier.abi_version = 1;
+    kmipkit_ttlv_structure_t *rejected_attributes =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    kmipkit_ttlv_structure_t *rejected_any_object =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_response_export(
+            item, &rejected_present, &rejected_payload_present, &rejected_object_type,
+            &invalid_identifier, &rejected_attributes, &rejected_any_object) !=
+            T076_ERROR_INVALID_INPUT || rejected_present != 0 || rejected_payload_present != 0 ||
+        rejected_object_type != 0 || rejected_attributes != 0 || rejected_any_object != 0) {
         return 0;
     }
     identifier.struct_size = (uint32_t)sizeof(identifier);
@@ -1528,6 +1629,9 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         if (index == 14 && !derive_key_response_is_readable_from_c(response_item)) {
             goto cleanup;
         }
+        if (index == 0 && !export_response_accessors_clear_outputs_from_c(response_item)) {
+            goto cleanup;
+        }
         if (index == 15 && !export_response_is_readable_from_c(response_item)) {
             goto cleanup;
         }
@@ -1933,6 +2037,7 @@ int main(int argc, char **argv) {
         !delegated_login_constructor_is_callable_from_c() ||
         !derive_key_constructor_is_callable_from_c() ||
         !export_constructor_is_callable_from_c() ||
+        !export_constructor_rejects_invalid_presence_from_c() ||
         !delegated_login_response_accessors_clear_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
