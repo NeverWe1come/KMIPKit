@@ -2789,3 +2789,41 @@ Focused verification results:
 The new full-head CI result and coverage report are still pending. The local
 Rust command emits existing aws-lc stdalign/NASM warnings but passes; no
 coverage or cross-platform result is inferred from it.
+
+### T045 follow-up — response-path coverage
+
+The last aggregate run (`39032305211`) passed the platform, binding, FFI, and
+JNI test jobs but failed the changed-production-code coverage gate at
+4,872/5,248 lines (92.84%, below the required 95%). The report identified that
+the Java/JNI facade had only tested Delegated Login tuple parsing, not a Ticket
+response arriving through its TLS client execution path. The correction adds a
+successful Delegated Login response to the existing mutual-TLS fixture and
+checks its raw Ticket Type, copied Ticket Value, retained generic Ticket TTLV,
+and redacted representation. The C ABI regression calls both Ticket response
+getters against a typed response and verifies the borrowed bytes and owned TTLV
+handle. Additional tests cover null JNI handles, direct execute null inputs,
+malformed Java tuple flags, Python invalid flags/spans/TTLV consistency, cleanup
+and zeroization after mapping errors, and C constructor lease/Usage Limits
+validation.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `028c0bb8` | `mvn -Dtest=ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange test` | Expected failure: the response fixture still contained 12 items and no Delegated Login Ticket, while the client now requested item 13. |
+| Green | `d320e42b` | Same focused Maven test | PASS: successful Java facade execution over mutual TLS maps the Delegated Login Ticket and all existing mixed outcomes. |
+| Coverage tests | `a12270a7`, `4231a78b` | Java boundary/mapping tests, Python full suite, focused FFI ABI tests | PASS locally; detailed commands and counts follow. |
+| Refactor | this commit | `cargo fmt --all --check`; `git diff --check`; evidence/task review | T045 remains unchecked pending the new full-head aggregate coverage and cross-platform CI. |
+
+Focused verification:
+
+| Command | Result |
+|---|---|
+| `mvn "-Dtest=ClientBatchNativeBoundaryTest,DelegatedLoginMappingTest" test` | PASS: 21 tests, 0 failures, 0 errors. |
+| `python -m pytest -q bindings/python/tests` (Python 3.12 environment; native library loaded from a temporary copy so the wheel-build test can replace its build output) | PASS: 404 tests. |
+| `cargo test -p kmipkit-ffi --no-default-features --lib ffi_delegated_login_response_getters_return_ticket_fields_and_owned_ttlv` | PASS: 1 test. |
+| `cargo test -p kmipkit-ffi --no-default-features --lib ffi_delegated_login_constructor_validates_typed_fields_and_requires_rights` | PASS: 1 test. |
+| `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+Current-head CI run `39034660780` is pending. The worktree's Windows toolchain
+cannot measure the Linux-only aggregate coverage collector, so no new coverage
+percentage is claimed locally. The previous 92.84% result remains the latest
+measured value until that run completes.
