@@ -2735,3 +2735,24 @@ workaround described above; the independently compiled C consumer passed
 without it. No OASIS fixture for Delegated Login is present in the pinned local
 bundle, so these are project-derived tests, not official fixture passes. No
 server interoperability, profile support, or certification claim is made.
+
+### T045 security follow-up — Java Error during JNI-to-parser handoff
+
+The independent security review of the original T045 head found a low-severity
+Java heap-cleanup gap (CWE-226): JNI transferred the response tuple before the
+Java parser began, leaving a narrow Error path where the staging Ticket Value
+and native TTLV handle had no cleanup owner. The follow-up keeps cleanup in the
+caller across parser entry, wipes the staging byte array on every exit, and
+releases a still-owned TTLV handle. The parser clears the tuple's handle slot
+when it adopts or releases that handle, preventing duplicate release.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `2b2c8f2b`, `057f84fa` | `mvn -q -Dtest=DelegatedLoginMappingTest test` from `bindings/java` | Expected failures: the first exposed a nonzero Ticket Value after an Error before parser entry; the second exposed the same leak when the parser factory failed before invocation. |
+| Green | `fdf38ae0`, `f5a58690` | `mvn -q -Dtest=DelegatedLoginMappingTest test`; `mvn -q test` from `bindings/java` | PASS: focused Delegated Login tests pass (8 tests); the Java module passes (225 tests, 0 failures, 0 errors, 3 skipped). Regressions verify that the Ticket Value is wiped and the released native TTLV handle is rejected. Caller and helper `finally` blocks protect both the call boundary and parser execution. |
+| Refactor | this commit | `git diff --check`; independent security re-review of `2b2c8f2b..f5a58690`; final branch CI | PASS: independent re-review confirms the caller-level cleanup covers parser supplier creation and helper entry, with no ordinary-path ownership leak or double release. Local tests pass; final-head CI and coverage remain pending. The parser-factory regression directly exercises helper cleanup; the caller-level fallback is verified by source review. |
+
+The fix applies to the Java adapter and does not change the four-language API
+contract. The original task-specific limitations above remain: no current-head
+cross-platform CI or coverage run, no pinned OASIS Delegated Login fixture, and
+no second-server interoperability evidence.
