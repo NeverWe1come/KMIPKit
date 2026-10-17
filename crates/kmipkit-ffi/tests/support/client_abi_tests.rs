@@ -2364,7 +2364,7 @@ fn ffi_derive_key_response_ttlv_returns_owned_success_copy_only() {
 }
 
 #[test]
-fn ffi_export_response_preserves_success_fields_and_failure_ttlv_without_local_error() {
+fn ffi_export_response_preserves_success_fields_and_owned_ttlv() {
     let attributes = ttlv_structure(0x0042_0125, [ttlv_enumeration(0x0042_001d, 0xf123_4567)]);
     let any_object = ttlv_structure(
         0x0042_008f,
@@ -2435,18 +2435,21 @@ fn ffi_export_response_preserves_success_fields_and_failure_ttlv_without_local_e
     assert_eq!(any_object_count, 1);
     kmipkit_ttlv_structure_view_release(any_object_view);
     kmipkit_ttlv_structure_release(any_object);
+}
 
+#[test]
+fn ffi_export_failure_has_no_typed_payload_and_preserves_response_ttlv() {
     let failed_item = failed_cryptographic_item(
         ClientRequest::export(ExportRequest::new()),
         0x2b,
         b"export-failure",
     );
-    present = 9;
-    payload_present = 9;
-    object_type = u32::MAX;
-    identifier = empty_unique_identifier_output_v1();
-    attributes = ptr::dangling_mut();
-    any_object = ptr::dangling_mut();
+    let mut present = 9;
+    let mut payload_present = 9;
+    let mut object_type = u32::MAX;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut attributes = ptr::dangling_mut();
+    let mut any_object = ptr::dangling_mut();
     assert_eq!(
         kmipkit_client_batch_item_response_export(
             failed_item,

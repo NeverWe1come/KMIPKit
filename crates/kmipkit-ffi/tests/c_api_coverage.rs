@@ -204,36 +204,7 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     let port = CString::new(port.to_string()).expect("port has no NUL byte");
     let server_config = mtls_server_config(&pki);
     let exchange_count = Arc::new(AtomicU64::new(0));
-    let peer_exchange_count = Arc::clone(&exchange_count);
-    let peer = thread::spawn(move || {
-        let (stream, _) = listener
-            .accept()
-            .expect("the public C client connects to the local peer");
-        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
-        stream
-            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
-            .expect("server read timeout is configured");
-        stream
-            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
-            .expect("server write timeout is configured");
-        let connection = ServerConnection::new(server_config)
-            .expect("the TLS 1.3 server connection is configured");
-        let mut tls = StreamOwned::new(connection, stream);
-        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
-        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
-        assert!(
-            c_request_contains_exact_derivation_parameters(&request),
-            "C ABI consumer must transmit the exact ordered Derive Key parameter values"
-        );
-        assert!(
-            c_request_contains_exact_export_selectors(&request),
-            "C ABI consumer must transmit the exact ordered Export selectors"
-        );
-        tls.write_all(&mixed_discover_versions_response())
-            .expect("the typed KMIP response is written");
-        tls.flush().expect("the TLS response is flushed");
-        let _ = tls.get_ref().shutdown(Shutdown::Both);
-    });
+    let peer = spawn_public_client_batch_peer(listener, server_config, Arc::clone(&exchange_count));
 
     let executable = CString::new("kmipkit_public_client_consumer")
         .expect("test executable name has no NUL byte");
@@ -297,6 +268,42 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     );
     peer.join().expect("the loopback TLS peer completes");
     assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+fn spawn_public_client_batch_peer(
+    listener: TcpListener,
+    server_config: Arc<ServerConfig>,
+    exchange_count: Arc<AtomicU64>,
+) -> thread::JoinHandle<()> {
+    thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the public C client connects to the local peer");
+        exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        assert!(
+            c_request_contains_exact_derivation_parameters(&request),
+            "C ABI consumer must transmit the exact ordered Derive Key parameter values"
+        );
+        assert!(
+            c_request_contains_exact_export_selectors(&request),
+            "C ABI consumer must transmit the exact ordered Export selectors"
+        );
+        tls.write_all(&mixed_discover_versions_response())
+            .expect("the typed KMIP response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    })
 }
 
 fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
