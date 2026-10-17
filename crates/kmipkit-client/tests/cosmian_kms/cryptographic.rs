@@ -527,6 +527,33 @@ fn finding_probe_delivery_requires_typed_target_response_evidence() {
         ),
         TargetOperationDelivery::Uncertain
     );
+    assert_eq!(
+        target_operation_delivery(
+            &row,
+            "Signature Verify",
+            "case case-1 Sign: KMIP Result Status 1 (Operation Failed)",
+        ),
+        TargetOperationDelivery::SetupResponseReceived
+    );
+}
+
+#[test]
+fn crypto_error_classification_separates_setup_from_target_rejections() {
+    let row = serde_json::json!({"case_id": "case-1", "operation": "Encrypt"});
+    assert_eq!(
+        classify_case_error(
+            &row,
+            "case case-1 Create Key Pair: KMIP Result Status 1 (Operation Failed)"
+        ),
+        "setup_rejected"
+    );
+    assert_eq!(
+        classify_case_error(
+            &row,
+            "case case-1 Encrypt: KMIP Result Status 1 (Operation Failed)"
+        ),
+        "target_rejected"
+    );
 }
 
 #[test]
@@ -1148,7 +1175,7 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
                 Ok(()) => println!("case_id={id} classification=typed_success"),
                 Err(error) => {
                     let detail = error.to_string();
-                    let classification = classify_case_error(&detail);
+                    let classification = classify_case_error(row, &detail);
                     println!("case_id={id} classification={classification} detail={error}");
                     failures.push(format!("{id} ({classification}): {error}"));
                 }
@@ -1164,17 +1191,22 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
                     let detail = error.to_string();
                     let delivery = target_operation_delivery(row, operation, &detail);
                     let observed = match delivery {
-                        TargetOperationDelivery::ResponseReceived => classify_case_error(&detail),
+                        TargetOperationDelivery::ResponseReceived => {
+                            classify_case_error(row, &detail)
+                        }
+                        TargetOperationDelivery::SetupResponseReceived => "setup_rejected",
                         TargetOperationDelivery::NotSent => "setup_or_client_blocked",
                         TargetOperationDelivery::Uncertain => "delivery_uncertain",
                     };
                     let request_sent = match delivery {
                         TargetOperationDelivery::ResponseReceived => "true",
-                        TargetOperationDelivery::NotSent => "false",
+                        TargetOperationDelivery::SetupResponseReceived
+                        | TargetOperationDelivery::NotSent => "false",
                         TargetOperationDelivery::Uncertain => "unknown",
                     };
                     println!(
-                        "case_id={id} classification=expected_finding_probe expected_outcome={expected_outcome} observed={observed} request_sent={request_sent} interoperability=false detail={detail}"
+                        "case_id={id} classification=expected_finding_probe expected_outcome={expected_outcome} observed={observed} request_sent={request_sent} setup_response_received={} interoperability=false detail={detail}",
+                        delivery == TargetOperationDelivery::SetupResponseReceived
                     );
                     if delivery != TargetOperationDelivery::ResponseReceived {
                         failures.push(format!(
@@ -1199,13 +1231,28 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
     );
 }
 
-fn classify_case_error(message: &str) -> &'static str {
+fn classify_case_error(row: &JsonValue, message: &str) -> &'static str {
+    let id = row["case_id"].as_str().unwrap_or_default();
+    let operation = row["operation"].as_str().unwrap_or_default();
+    let target_response = message.contains(&format!("case {id} {operation}:"));
     if message.contains("KMIP Result Status") {
-        "target_rejected"
+        if target_response {
+            "target_rejected"
+        } else {
+            "setup_rejected"
+        }
     } else if message.contains("typed response rejected by KMIPKit") {
-        "response_rejected"
+        if target_response {
+            "response_rejected"
+        } else {
+            "setup_response_rejected"
+        }
     } else if message.contains("client_blocked before a usable response") {
-        "client_blocked"
+        if target_response {
+            "client_blocked"
+        } else {
+            "setup_blocked"
+        }
     } else if message.contains("fixture is unavailable")
         || message.contains("has no local fixture")
         || message.contains("required CSR fixture")
@@ -2083,6 +2130,18 @@ fn target_operation_delivery(
         } else {
             TargetOperationDelivery::Uncertain
         };
+    }
+    if detail.contains("KMIP Result Status")
+        || detail.contains("typed response rejected by KMIPKit")
+    {
+        return TargetOperationDelivery::SetupResponseReceived;
+    }
+    if detail.contains("has no exact")
+        || detail.contains("has no local fixture")
+        || detail.contains("fixture is unavailable")
+        || detail.contains("manifest has no exact")
+    {
+        return TargetOperationDelivery::NotSent;
     }
     TargetOperationDelivery::Uncertain
 }
