@@ -152,6 +152,16 @@ class ExportParityManifestTests(unittest.TestCase):
             with self.subTest(symbol=symbol):
                 self.assertIn(f"{symbol}(", header)
 
+    def test_export_response_ttlv_abi_aliases_the_java_export_entrypoint(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        export_response = functions["client_batch_item_response_export"]
+        export_ttlv = functions["client_batch_item_response_export_ttlv"]
+        java_fields = ("package", "class", "method", "parameters", "jniSymbol", "returnType")
+        self.assertEqual(
+            {field: export_response["java"][field] for field in java_fields},
+            {field: export_ttlv["java"][field] for field in java_fields},
+        )
+
     def test_java_table218_accessors_are_method_declarations(self) -> None:
         for declaration_id in ("T047:java:04", "T047:java:05", "T047:java:06", "T047:java:07", "T047:java:08"):
             with self.subTest(declaration_id=declaration_id):
