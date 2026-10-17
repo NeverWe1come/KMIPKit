@@ -151,15 +151,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() { return "CreateResponse[objectType=" + objectType + ", uniqueIdentifier=redacted]"; }
     }
 
-    /** Successful Certify response. The identifier is redacted from default formatting. */
-    public static final class CertifyResponse {
+    /** Successful Certify response with its owned complete generic TTLV. */
+    public static final class CertifyResponse implements AutoCloseable {
         private final UniqueIdentifier uniqueIdentifier;
+        private final TtlvStructure responseTtlv;
 
-        private CertifyResponse(UniqueIdentifier uniqueIdentifier) {
+        private CertifyResponse(UniqueIdentifier uniqueIdentifier, TtlvStructure responseTtlv) {
             this.uniqueIdentifier = uniqueIdentifier;
+            this.responseTtlv = responseTtlv;
         }
 
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns the complete ordered response structure owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "CertifyResponse[uniqueIdentifier=redacted]"; }
     }
@@ -459,13 +466,29 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     static Optional<CertifyResponse> parseCertifyResponse(Object[] values) {
-        Object[] tuple = requireTuple(values, 2, "native Certify response is invalid");
+        Object[] tuple = requireTuple(values, 3, "native Certify response is invalid");
         long[] fields = requireLongArray(tuple[0], 1, "native Certify response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Certify response is invalid");
         if (!responsePresent(fields)) {
-            requireNoResponseFields(fields, tuple);
+            if (tuple[1] != null || responseTtlvHandle[0] != 0) {
+                if (responseTtlvHandle[0] > 0) {
+                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+                }
+                throw new InvalidInputException("native absent Certify response contains fields");
+            }
             return Optional.empty();
         }
-        return Optional.of(new CertifyResponse(identifierRecord(tuple[1])));
+        if (responseTtlvHandle[0] <= 0) {
+            throw new InvalidInputException("native Certify response is invalid");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            return Optional.of(new CertifyResponse(identifierRecord(tuple[1]), responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
     }
 
     static Optional<GetUsageAllocationResponse> parseGetUsageAllocationResponse(Object[] values) {

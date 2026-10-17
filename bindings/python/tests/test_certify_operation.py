@@ -119,16 +119,40 @@ def test_certify_builder_allows_identifier_only_request(monkeypatch) -> None:
 
 
 def test_certify_response_maps_generated_identifier_and_keeps_it_redacted(monkeypatch) -> None:
+    response_ttlv_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 24)
+
+    class OwnedStructure:
+        closed = False
+
+        def close(self) -> None:
+            self.closed = True
+
+    response_ttlv = OwnedStructure()
+
     def response_certify(_item, present, identifier) -> int:
         present[0] = 1
         identifier.kind = 3
         identifier.integer_value = -17
         return 0
 
+    def response_certify_ttlv(_item, present, output) -> int:
+        present[0] = 1
+        output[0] = response_ttlv_pointer
+        return 0
+
     monkeypatch.setattr(
         client,
         "lib",
-        SimpleNamespace(kmipkit_client_batch_item_response_certify=response_certify),
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_certify=response_certify,
+            kmipkit_client_batch_item_response_certify_ttlv=response_certify_ttlv,
+            kmipkit_ttlv_structure_release=lambda _pointer: None,
+        ),
+    )
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda address: response_ttlv if address == 24 else None,
     )
     item = SimpleNamespace(_pointer=lambda: object())
 
@@ -136,7 +160,10 @@ def test_certify_response_maps_generated_identifier_and_keeps_it_redacted(monkey
 
     assert isinstance(response, client.CertifyResponse)
     assert response.unique_identifier == extensions.UniqueIdentifier.integer(-17)
+    assert response.response_ttlv is response_ttlv
     assert "-17" not in repr(response)
+    response.close()
+    assert response_ttlv.closed
 
 
 def test_certify_response_preserves_absence_without_stale_identifier(monkeypatch) -> None:
@@ -157,7 +184,16 @@ def test_certify_response_preserves_absence_without_stale_identifier(monkeypatch
 def test_batch_result_exposes_successful_certify_response(monkeypatch) -> None:
     response_pointer = ffi.cast("kmipkit_client_batch_response_t *", 1)
     item_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 2)
+    response_ttlv_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 24)
     released: list[str] = []
+
+    class OwnedStructure:
+        closed = False
+
+        def close(self) -> None:
+            self.closed = True
+
+    response_ttlv = OwnedStructure()
 
     def metadata(_item, output) -> int:
         output.struct_size = ffi.sizeof("kmipkit_client_batch_item_metadata_v2_t")
@@ -179,6 +215,11 @@ def test_batch_result_exposes_successful_certify_response(monkeypatch) -> None:
         identifier.integer_value = -17
         return 0
 
+    def certify_response_ttlv(_item, present, output) -> int:
+        present[0] = 1
+        output[0] = response_ttlv_pointer
+        return 0
+
     fake = SimpleNamespace(
         kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
         kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
@@ -195,6 +236,8 @@ def test_batch_result_exposes_successful_certify_response(monkeypatch) -> None:
             present.__setitem__(0, 0) or count.__setitem__(0, 0) or 0
         ),
         kmipkit_client_batch_item_response_certify=certify_response,
+        kmipkit_client_batch_item_response_certify_ttlv=certify_response_ttlv,
+        kmipkit_ttlv_structure_release=lambda _ptr: None,
         **{
             "kmipkit_client_batch_item_response_create": lambda _item, present, object_type, _identifier: (
                 present.__setitem__(0, 0) or object_type.__setitem__(0, 0) or 0
@@ -208,12 +251,20 @@ def test_batch_result_exposes_successful_certify_response(monkeypatch) -> None:
         },
     )
     monkeypatch.setattr(client, "lib", fake)
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda address: response_ttlv if address == 24 else None,
+    )
 
     result = client._batch_result(response_pointer)
 
     response = result.items[0].certify_response
     assert isinstance(response, client.CertifyResponse)
     assert response.unique_identifier == extensions.UniqueIdentifier.integer(-17)
+    assert response.response_ttlv is response_ttlv
     assert "-17" not in repr(result.items[0])
+    response.close()
+    assert response_ttlv.closed
     result.close()
     assert released == ["item", "response"]

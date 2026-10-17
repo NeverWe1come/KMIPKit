@@ -875,9 +875,14 @@ class HashResponse:
 
 @dataclass(frozen=True, slots=True)
 class CertifyResponse:
-    """Typed Certify response containing the generated certificate identifier."""
+    """Successful Certify response and its owned complete generic TTLV."""
 
     unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1390,7 +1395,26 @@ def _certify_response(item: _ClientBatchItemResponse) -> CertifyResponse | None:
     unique_identifier = _optional_output_identifier(identifier)
     if unique_identifier is None:
         errors.raise_for_status(4)
-    return CertifyResponse(unique_identifier)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_certify_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return CertifyResponse(unique_identifier, response_ttlv)
 
 
 def _get_usage_allocation_response(

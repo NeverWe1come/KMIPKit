@@ -1442,6 +1442,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::CertifyResponse::unique_identifier",
     ),
     (
+        "rust-observed-ddfdae60511a2ab6af44",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CertifyResponse::with_ttlv",
+    ),
+    (
         "rust-observed-e1f8406907aaf65d7c1e",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::GetUsageAllocationRequest",

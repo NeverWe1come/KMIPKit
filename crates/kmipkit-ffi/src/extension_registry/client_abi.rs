@@ -1225,6 +1225,44 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify(
     })
 }
 
+/// Copies the complete generic response only from a successful Certify result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_certify_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(certify) = outcome.certify_response() {
+            let Some(structure) = certify.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            let structure = try_ffi!(structure);
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Borrows the resolved identifier from a successful Get Usage Allocation response item.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation(

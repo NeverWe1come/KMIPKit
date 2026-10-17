@@ -764,6 +764,18 @@ fn ffi_certify_response_getter_does_not_report_failure_as_a_generated_identifier
     assert_eq!(identifier.kind, 0);
     assert!(identifier.text_data.is_null());
     assert_eq!(identifier.text_length, 0);
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_certify_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
     kmipkit_client_batch_item_response_release(item);
 }
 
@@ -1722,9 +1734,38 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+}
+
+#[test]
+fn ffi_certify_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
+    let unknown_value = [0xde, 0xad, 0x00, 0xff];
+    let item = successful_cryptographic_item(
+        ClientRequest::Certify(
+            CertifyRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("public-key".to_owned()))
+                .with_certificate_request_type(1),
+        ),
+        0x06,
+        b"certify-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"issued-certificate"),
+            ttlv_item(0x0054_0001, 0x08, &unknown_value),
+        ],
+    );
+
+    // SAFETY: the compiled C consumer takes ownership of this live response-item handle.
+    let result = unsafe { kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(item) };
+
+    assert_eq!(
+        result, 1,
+        "C can inspect response order and unknown fields after the item handle is released"
+    );
 }
 
 #[test]

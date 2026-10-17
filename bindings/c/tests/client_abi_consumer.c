@@ -1233,6 +1233,65 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
+    kmipkit_client_batch_item_response_t *item) {
+    static const uint32_t expected_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    uint8_t identifier_present = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t ttlv_present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    uint64_t count = 0;
+    int result = 0;
+
+    if (item == 0) {
+        return 0;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    const int32_t identifier_status = kmipkit_client_batch_item_response_certify(
+        item, &identifier_present, &identifier);
+    if (identifier_status != 0 || identifier_present != 1 ||
+        identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        identifier.text_length != UINT64_C(18) || identifier.text_data == 0) {
+        kmipkit_client_batch_item_response_release(item);
+        return 0;
+    }
+    const int32_t ttlv_status = kmipkit_client_batch_item_response_certify_ttlv(
+        item, &ttlv_present, &response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (ttlv_status != 0 || ttlv_present != 1 || response_ttlv == 0 ||
+        kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 ||
+        count != (uint64_t)(sizeof(expected_tags) / sizeof(expected_tags[0]))) {
+        goto cleanup;
+    }
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *item_view = 0;
+        kmipkit_tag_t *tag = 0;
+        uint32_t raw_tag = 0;
+        const int valid = kmipkit_ttlv_structure_view_item_at(view, index, &item_view) == 0 &&
+            kmipkit_ttlv_item_view_tag(item_view, &tag) == 0 &&
+            kmipkit_ttlv_tag_value(tag, &raw_tag) == 0 && raw_tag == expected_tags[index];
+        kmipkit_tag_release(tag);
+        kmipkit_ttlv_item_view_release(item_view);
+        if (!valid) {
+            goto cleanup;
+        }
+    }
+    if (!public_ttlv_view_contains_response_sentinel(view, 0)) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
     int argc, char **argv, kmipkit_codec_limits_t *limits) {
     static const uint8_t host[] = "127.0.0.1";

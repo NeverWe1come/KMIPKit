@@ -170,7 +170,10 @@ fn successful_response_returns_required_identifier_and_keeps_unknown_fields() {
     assert_eq!(response.result().status().raw(), SUCCESS);
     assert_eq!(response.unique_identifier(), Some(&generated_identifier));
     drop(message);
-    assert!(response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)));
+    assert_eq!(
+        response.with_ttlv(|view| structure_contains_tag(&view, UNKNOWN_VENDOR_TAG)),
+        Some(true)
+    );
 }
 
 #[test]
@@ -208,6 +211,7 @@ fn failure_response_preserves_the_table_181_reason_without_success_payload() {
         Some(INVALID_CSR)
     );
     assert!(response.unique_identifier().is_none());
+    assert!(response.with_ttlv(|_| ()).is_none());
 }
 
 #[test]

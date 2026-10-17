@@ -307,12 +307,19 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals("create-text-id-secret", textCreateResponse.uniqueIdentifier().text());
                 assertFalse(textCreateResponse.toString().contains("create-text-id-secret"));
 
-                ClientBatchItemResult.CertifyResponse certifyResponse =
-                        certified.certifyResponse().orElseThrow();
-                assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
-                        certifyResponse.uniqueIdentifier().kind());
-                assertEquals("certify-text-id-secret", certifyResponse.uniqueIdentifier().text());
-                assertFalse(certifyResponse.toString().contains("certify-text-id-secret"));
+                try (ClientBatchItemResult.CertifyResponse certifyResponse =
+                                certified.certifyResponse().orElseThrow()) {
+                    certified.close();
+                    try (TtlvStructureView certifyTtlv = certifyResponse.responseTtlv().view()) {
+                        assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
+                                certifyResponse.uniqueIdentifier().kind());
+                        assertEquals("certify-text-id-secret", certifyResponse.uniqueIdentifier().text());
+                        assertTrue(certifyTtlv.itemCount() > 0);
+                        assertTrue(containsByteString(certifyTtlv, 0x540001,
+                                "KMIPKit-certify-sentinel".getBytes(StandardCharsets.US_ASCII)));
+                        assertFalse(certifyResponse.toString().contains("certify-text-id-secret"));
+                    }
+                }
 
                 try (ClientBatchItemResult.GetUsageAllocationResponse allocationResponse =
                                 allocated.getUsageAllocationResponse().orElseThrow();
@@ -1031,7 +1038,8 @@ final class ClientFacadeTlsIntegrationTest {
                 enumeration(0x42005c, 1), item(0x420093, 8, uniqueBatchItemId(8)),
                 enumeration(0x42007f, 0), textCreatePayload);
         byte[] certifyPayload = structure(0x42007c,
-                item(0x420094, 7, "certify-text-id-secret".getBytes(StandardCharsets.UTF_8)));
+                item(0x420094, 7, "certify-text-id-secret".getBytes(StandardCharsets.UTF_8)),
+                item(0x540001, 8, "KMIPKit-certify-sentinel".getBytes(StandardCharsets.US_ASCII)));
         byte[] certifyItem = structure(0x42000f,
                 enumeration(0x42005c, 6), item(0x420093, 8, uniqueBatchItemId(9)),
                 enumeration(0x42007f, 0), certifyPayload);
