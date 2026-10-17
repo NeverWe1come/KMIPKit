@@ -271,7 +271,7 @@ fn pending_response_retains_exact_correlation_without_fabricating_identifier() {
     assert_eq!(actual.result().status().raw(), 2);
     assert!(actual.unique_identifier().is_none());
     assert_eq!(
-        response_item(&message).with_unique_batch_item_id(<[u8]>::to_vec),
+        response_item(&message).with_asynchronous_correlation_value(<[u8]>::to_vec),
         Some(correlation.to_vec()),
         "Pending correlation remains available through its dedicated field"
     );

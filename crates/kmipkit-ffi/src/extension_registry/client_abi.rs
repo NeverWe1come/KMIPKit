@@ -1284,8 +1284,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
             return SUCCESS;
         }
         if let kmipkit_client::ClientBatchOutcome::GetUsageAllocation(allocation) = outcome {
-            let structure =
-                try_ffi!(allocation.with_ttlv(|view| super::clone_structure_view(&view)));
+            let Some(structure) = allocation.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),
