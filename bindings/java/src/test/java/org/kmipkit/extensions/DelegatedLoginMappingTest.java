@@ -135,7 +135,7 @@ final class DelegatedLoginMappingTest {
         assertEquals("injected pre-parser handoff failure", thrown.getMessage());
         assertArrayEquals(new byte[secret.length], secret);
         TtlvStructure stale = TtlvStructure.fromNative(ticketTtlv, null);
-        assertThrows(IllegalStateException.class, stale::view);
+        assertThrows(InvalidInputException.class, stale::view);
         stale.close();
     }
 }

@@ -646,7 +646,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
     static Optional<DelegatedLoginResponse> parseDelegatedLoginResponseAfterNativeReturn(
             Object[] values,
             Function<Object[], Optional<DelegatedLoginResponse>> parser) {
-        return parser.apply(values);
+        try {
+            return parser.apply(values);
+        } finally {
+            cleanupDelegatedLoginResponseValues(values);
+        }
+    }
+
+    private static void cleanupDelegatedLoginResponseValues(Object[] values) {
+        if (values == null) return;
+        if (values.length > 1 && values[1] instanceof byte[] ticketValue) {
+            Arrays.fill(ticketValue, (byte) 0);
+        }
+        if (values.length > 2 && values[2] instanceof long[] ticketHandle
+                && ticketHandle.length == 1 && ticketHandle[0] > 0) {
+            long rawHandle = ticketHandle[0];
+            ticketHandle[0] = 0;
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
+        }
     }
 
     static Optional<DelegatedLoginResponse> parseDelegatedLoginResponse(
@@ -688,11 +705,12 @@ public final class ClientBatchItemResult implements AutoCloseable {
             }
             ownedValue = requireBytes(tuple[1]);
             ownedTtlv = TtlvStructure.fromNative(rawHandle, null);
+            clearDelegatedLoginTtlvHandle(tuple, rawHandle);
+            rawHandle = 0;
             response = new DelegatedLoginResponse(
                     OptionalLong.of(fields[2]), ownedValue, ownedTtlv);
             Arrays.fill(ownedValue, (byte) 0);
             ownedTtlv = null;
-            rawHandle = 0;
             Optional<DelegatedLoginResponse> result = resultTransfer.apply(response);
             transferred = true;
             response = null;
@@ -711,8 +729,16 @@ public final class ClientBatchItemResult implements AutoCloseable {
             if (ownedTtlv != null) {
                 ownedTtlv.close();
             } else if (rawHandle > 0) {
+                clearDelegatedLoginTtlvHandle(tuple, rawHandle);
                 NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
             }
+        }
+    }
+
+    private static void clearDelegatedLoginTtlvHandle(Object[] tuple, long rawHandle) {
+        if (tuple != null && tuple.length > 2 && tuple[2] instanceof long[] handles
+                && handles.length == 1 && handles[0] == rawHandle) {
+            handles[0] = 0;
         }
     }
 
