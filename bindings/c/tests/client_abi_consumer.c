@@ -349,15 +349,56 @@ cleanup:
     return result;
 }
 
+static int append_derive_key_parameter(
+    kmipkit_codec_limits_t *limits,
+    kmipkit_ttlv_structure_t **parameters,
+    uint32_t raw_tag_value,
+    kmipkit_ttlv_value_t **value) {
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_item_t *item = 0;
+    kmipkit_ttlv_structure_t *updated = 0;
+    int result = 0;
+
+    if (limits == 0 || parameters == 0 || *parameters == 0 || value == 0 || *value == 0) {
+        return 0;
+    }
+    if (kmipkit_ttlv_raw_tag_create(raw_tag_value, &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_item_create(tag, *value, limits, &item) != 0) {
+        goto cleanup;
+    }
+    *value = 0;
+    if (kmipkit_ttlv_structure_with_item(*parameters, item, limits, &updated) != 0) {
+        goto cleanup;
+    }
+    *parameters = 0;
+    item = 0;
+    *parameters = updated;
+    updated = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(updated);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    return result;
+}
+
 static int create_derive_key_request(
     kmipkit_codec_limits_t *limits, kmipkit_client_batch_item_t **out_item) {
     static const uint8_t source_identifier[] = "source-key";
+    static const uint8_t first_derivation_data[] = {0xa1, 0x00, 0xb2};
+    static const uint8_t second_derivation_data[] = {0xc3, 0x00, 0xd4};
+    static const uint8_t salt_bytes[] = {0xe5, 0x00, 0xf6};
     kmipkit_unique_identifier_v1_t identifier = {0};
     kmipkit_ttlv_structure_t *parameters = 0;
     kmipkit_ttlv_structure_t *empty_attributes = 0;
     kmipkit_ttlv_structure_t *attributes = 0;
     kmipkit_raw_tag_t *raw_tag = 0;
     kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_t *parameter_value = 0;
     kmipkit_ttlv_value_t *length = 0;
     kmipkit_ttlv_item_t *length_item = 0;
     int result = 0;
@@ -373,6 +414,27 @@ static int create_derive_key_request(
     identifier.text_length = (uint64_t)(sizeof(source_identifier) - 1);
     if (kmipkit_ttlv_structure_create(&parameters) != 0 ||
         kmipkit_ttlv_structure_create(&empty_attributes) != 0 ||
+        kmipkit_ttlv_value_byte_string(
+            limits,
+            first_derivation_data,
+            (uint64_t)sizeof(first_derivation_data),
+            &parameter_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &parameters, UINT32_C(0x420030), &parameter_value) ||
+        kmipkit_ttlv_value_byte_string(
+            limits,
+            second_derivation_data,
+            (uint64_t)sizeof(second_derivation_data),
+            &parameter_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &parameters, UINT32_C(0x420030), &parameter_value) ||
+        kmipkit_ttlv_value_byte_string(
+            limits, salt_bytes, (uint64_t)sizeof(salt_bytes), &parameter_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &parameters, UINT32_C(0x420084), &parameter_value) ||
+        kmipkit_ttlv_value_integer(4096, &parameter_value) != 0 ||
+        !append_derive_key_parameter(
+            limits, &parameters, UINT32_C(0x42003c), &parameter_value) ||
         kmipkit_ttlv_raw_tag_create(UINT32_C(0x42002a), &raw_tag) != 0 ||
         kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
         kmipkit_ttlv_value_integer(128, &length) != 0 ||
@@ -393,6 +455,7 @@ static int create_derive_key_request(
 cleanup:
     kmipkit_ttlv_item_release(length_item);
     kmipkit_ttlv_value_release(length);
+    kmipkit_ttlv_value_release(parameter_value);
     kmipkit_tag_release(tag);
     kmipkit_raw_tag_release(raw_tag);
     kmipkit_ttlv_structure_release(attributes);
