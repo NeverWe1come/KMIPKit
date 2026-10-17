@@ -32,6 +32,17 @@ REQUIREMENTS = {
     "KMIPKIT-0043-FR-021",
     "KMIPKIT-0043-FR-022",
 }
+PARITY_EVIDENCE = {
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/CertifyJavaFacadeTest.java",
+    "bindings/java/src/test/java/org/kmipkit/extensions/CertifyResponseMappingTest.java",
+    "bindings/python/tests/test_certify_operation.py",
+    "bindings/python/tests/test_client.py",
+    "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+    "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+    "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+}
 EXPECTED_MAPPINGS = {
     "rust": {
         "kmipkit_client::ClientRequest::Certify",
@@ -89,7 +100,7 @@ class CertifyParityManifestTests(unittest.TestCase):
         self.assertEqual("Certify", operation["name"])
         self.assertEqual("6.1.6", operation["section"])
         self.assertEqual("client_1_0", operation["scope"])
-        self.assertEqual("declared", operation["apiState"])
+        self.assertEqual("verified", operation["apiState"])
         self.assertEqual("KMIPKIT-0036", operation["featureSpecId"])
         self.assertEqual("approved", operation["ownerDependency"]["state"])
         self.assertEqual("KMIPKIT-0036", operation["ownerDependency"]["specId"])
@@ -97,6 +108,7 @@ class CertifyParityManifestTests(unittest.TestCase):
         self.assertEqual("Approved", operation["approvalEvidence"]["status"])
         self.assertNotIn("blockedReason", operation)
         self.assertEqual(LANGUAGES, set(operation["declarations"]))
+        self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
 
         linked_requirements: set[str] = set()
         actual_mappings = {language: set() for language in LANGUAGES}
@@ -105,7 +117,11 @@ class CertifyParityManifestTests(unittest.TestCase):
             for declaration_id in declaration_ids:
                 declaration = self.declarations[declaration_id]
                 self.assertIn(declaration["capabilityId"], {OPERATION_ID, "client_execution"})
-                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertTrue(
+                    PARITY_EVIDENCE <= set(declaration["parityEvidenceIds"]),
+                    declaration_id,
+                )
                 self.assertEqual("four-language", declaration["parityScope"])
                 self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
                 self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
@@ -128,7 +144,7 @@ class CertifyParityManifestTests(unittest.TestCase):
         ]
         self.assertEqual(1, len(operations))
         operation = operations[0]
-        self.assertEqual("declared", operation["apiState"])
+        self.assertEqual("verified", operation["apiState"])
         self.assertEqual(LANGUAGES, set(operation["declarations"]))
 
     def test_certify_bridge_and_generated_helpers_have_exact_exclusions(self) -> None:
