@@ -665,6 +665,22 @@ mod tests {
     }
 
     #[test]
+    fn aes_ecb_default_padding_fixture_is_block_aligned() {
+        let row = serde_json::json!({
+            "algorithm": "AES",
+            "parameters": {"mode": "ECB", "padding": null}
+        });
+
+        assert_eq!(
+            super::plaintext(&row)
+                .expect("default AES-ECB plaintext fixture")
+                .with_bytes(<[u8]>::len),
+            16,
+            "Cosmian defaults ECB to no padding, which requires whole AES blocks"
+        );
+    }
+
+    #[test]
     // OASIS KMIP v2.1 §11.6/Table 436 distinguishes AEAD from GCM.
     fn aead_and_gcm_keep_their_distinct_wire_modes() {
         for (mode, expected) in [("AEAD", 0x12), ("GCM", 9)] {
