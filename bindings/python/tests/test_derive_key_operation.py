@@ -167,6 +167,100 @@ def test_batch_result_maps_derive_key_response_only_on_success(
     result.close()
 
 
+@pytest.mark.parametrize(
+    ("present_value", "identifier_kind"),
+    ((0, 1), (2, 0), (1, 0)),
+    ids=("absent-with-identifier", "invalid-presence", "present-without-identifier"),
+)
+def test_derive_key_response_rejects_inconsistent_presence_fields(
+    monkeypatch: pytest.MonkeyPatch,
+    present_value: int,
+    identifier_kind: int,
+) -> None:
+    item = SimpleNamespace(_pointer=lambda: ffi.cast("kmipkit_client_batch_item_response_t *", 1))
+
+    def derive_key_response(_item: object, present: object, identifier: object) -> int:
+        present[0] = present_value  # type: ignore[index]
+        identifier.kind = identifier_kind  # type: ignore[attr-defined]
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(
+        kmipkit_client_batch_item_response_derive_key=derive_key_response,
+    ))
+
+    with pytest.raises(InvalidInputError):
+        client._derive_key_response(item)
+
+
+@pytest.mark.parametrize("response_ttlv_present", (0, 2))
+def test_derive_key_response_releases_mismatched_native_ttlv(
+    monkeypatch: pytest.MonkeyPatch,
+    response_ttlv_present: int,
+) -> None:
+    item = SimpleNamespace(_pointer=lambda: ffi.cast("kmipkit_client_batch_item_response_t *", 1))
+    identifier_storage = ffi.new("uint8_t[]", b"derived-key")
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 3)
+    released: list[object] = []
+
+    def derive_key_response(_item: object, present: object, identifier: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        identifier.text_data = identifier_storage  # type: ignore[attr-defined]
+        identifier.text_length = len(b"derived-key")  # type: ignore[attr-defined]
+        return 0
+
+    def derive_key_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = response_ttlv_present  # type: ignore[index]
+        output[0] = native_ttlv  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(
+        kmipkit_client_batch_item_response_derive_key=derive_key_response,
+        kmipkit_client_batch_item_response_derive_key_ttlv=derive_key_ttlv,
+        kmipkit_ttlv_structure_release=lambda handle: released.append(handle),
+    ))
+
+    with pytest.raises(InvalidInputError):
+        client._derive_key_response(item)
+    assert released == [native_ttlv]
+
+
+def test_derive_key_response_releases_ttlv_when_wrapping_it_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item = SimpleNamespace(_pointer=lambda: ffi.cast("kmipkit_client_batch_item_response_t *", 1))
+    identifier_storage = ffi.new("uint8_t[]", b"derived-key")
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 3)
+    released: list[object] = []
+
+    def derive_key_response(_item: object, present: object, identifier: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        identifier.text_data = identifier_storage  # type: ignore[attr-defined]
+        identifier.text_length = len(b"derived-key")  # type: ignore[attr-defined]
+        return 0
+
+    def derive_key_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = native_ttlv  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(
+        kmipkit_client_batch_item_response_derive_key=derive_key_response,
+        kmipkit_client_batch_item_response_derive_key_ttlv=derive_key_ttlv,
+        kmipkit_ttlv_structure_release=lambda handle: released.append(handle),
+    ))
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("test wrapper failure")),
+    )
+
+    with pytest.raises(RuntimeError, match="test wrapper failure"):
+        client._derive_key_response(item)
+    assert released == [native_ttlv]
+
+
 def _derive_key_response_ttlv() -> ttlv.Structure:
     limits = ttlv.codec_limits_defaults()
 

@@ -2273,6 +2273,16 @@ fn ffi_derive_key_response_getter_returns_success_identifier_and_clears_failure(
     );
     let mut present = 0;
     let mut identifier = empty_unique_identifier_output_v1();
+    let mut undersized_identifier = empty_unique_identifier_output_v1();
+    undersized_identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_derive_key(
+            successful_item,
+            &mut present,
+            &mut undersized_identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
     assert_eq!(
         kmipkit_client_batch_item_response_derive_key(
             successful_item,
@@ -2364,6 +2374,16 @@ fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_fail
     );
     let mut present = 0;
     let mut identifier = empty_unique_identifier_output_v1();
+    let mut undersized_identifier = empty_unique_identifier_output_v1();
+    undersized_identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation(
+            successful_item,
+            &mut present,
+            &mut undersized_identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
     assert_eq!(
         kmipkit_client_batch_item_response_get_usage_allocation(
             successful_item,
@@ -2846,6 +2866,25 @@ fn assert_crypto_result_getters_return_status(
             &raw mut first_span,
             &raw mut correlation_present,
             &raw mut correlation,
+        ),
+        expected_status
+    );
+
+    let mut derive_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_derive_key(
+            item,
+            &raw mut present,
+            &raw mut derive_identifier,
+        ),
+        expected_status
+    );
+    let mut derive_response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_derive_key_ttlv(
+            item,
+            &raw mut present,
+            &raw mut derive_response_ttlv,
         ),
         expected_status
     );

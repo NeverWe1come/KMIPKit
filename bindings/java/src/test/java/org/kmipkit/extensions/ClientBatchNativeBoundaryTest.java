@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.TtlvStructure;
 
 /** Exercises fixed-width validation at the Java-to-JNI boundary. */
@@ -164,9 +165,70 @@ final class ClientBatchNativeBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
         assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDeriveKey(0));
+        assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseCheck(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin(0));
+    }
+
+    @Test
+    void deriveKeyJniRejectsMalformedArraysIdentifiersAndLimits() {
+        int[] textKind = {UniqueIdentifier.Kind.TEXT_STRING.raw()};
+        byte[][] textIdentifier = {new byte[] {0x41}};
+        long[] noNumber = {0};
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, null, textIdentifier, noNumber, 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        -1, textKind, textIdentifier, noNumber, 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, textKind, textIdentifier, noNumber, 0x1_0000_0000L, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, new int[0], new byte[0][], new long[0], 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, textKind, new byte[0][], noNumber, 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, textKind, new byte[][] {null}, noNumber, 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, textKind, textIdentifier, new long[] {1}, 1, 0, 0));
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, new int[] {UniqueIdentifier.Kind.ENUMERATION.raw()},
+                        new byte[][] {new byte[] {0x41}}, new long[] {1}, 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, new int[] {UniqueIdentifier.Kind.ENUMERATION.raw()},
+                        new byte[][] {null}, new long[] {0x1_0000_0000L}, 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, new int[] {UniqueIdentifier.Kind.INTEGER.raw()},
+                        new byte[][] {null}, new long[] {Integer.MAX_VALUE + 1L}, 1, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, new int[] {4}, new byte[][] {null}, new long[] {0}, 1, 0, 0));
+
+        int[] tooManyKinds = new int[100_001];
+        byte[][] tooManyTexts = new byte[tooManyKinds.length][];
+        long[] tooManyNumbers = new long[tooManyKinds.length];
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, tooManyKinds, tooManyTexts, tooManyNumbers, 1, 0, 0));
+
+        byte[] oversizedText = new byte[16_777_217];
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                        7, textKind, new byte[][] {oversizedText}, noNumber, 1, 0, 0));
     }
 
     @Test
