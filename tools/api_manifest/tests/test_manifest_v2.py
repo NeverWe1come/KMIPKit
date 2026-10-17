@@ -198,6 +198,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         validator = Draft202012Validator(self.schema["$defs"]["rustType"])
 
         self.assertTrue(validator.is_valid("*mut *mut kmipkit_ttlv_structure_t"))
+
+    def test_requirement_ids_accept_referenced_kmip_7_12_sections(self) -> None:
+        validator = Draft202012Validator(self.schema["$defs"]["requirementId"])
+
+        self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-003"))
+        self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-005-001"))
         self.assertFalse(validator.is_valid("*mut *mut *mut kmipkit_ttlv_structure_t"))
 
     def test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds(self) -> None:
