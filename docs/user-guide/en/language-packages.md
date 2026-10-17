@@ -71,17 +71,18 @@ changes to this table.
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **45 / 56** remain `blocked`.
-Ten rows are `declared`: Certify, Create, Create Key Pair, Create Split Key,
+Of the **56** KMIP `client_1_0` operation rows, **42 / 56** remain `blocked`.
+Ten rows are `declared`: Create, Create Key Pair, Create Split Key, Derive Key,
 Discover Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their
 four-language request and response mappings are recorded; `declared` is not
 evidence of complete operation conformance. Do not infer operation availability
-from types or implementation code elsewhere in the repository. Get Usage
-Allocation is one `verified` operation mapping: its optional identifier and
-signed count request, resolved identifier response, and common batch outcomes
-are mapped across Rust, C, Java, and Python. This mapping evidence does not
-claim full operation conformance. KMIPKit does not claim full operation parity,
-a supported profile, or formal certification from this snapshot.
+from types or implementation code elsewhere in the repository. Four operation
+mappings are `verified`: Certify, Check, Delegated Login, and Get Usage
+Allocation. The Get Usage Allocation mapping includes its optional identifier
+and signed count request, resolved identifier response, and common batch
+outcomes in Rust, C, Java, and Python. This mapping evidence does not claim full
+operation conformance. KMIPKit does not claim full operation parity, a supported
+profile, or formal certification from this snapshot.
 
 For the authoritative operation owners and per-capability mappings, see the
 [manifest](../../../specification/api/public-api.json) and the [public API

@@ -1941,6 +1941,126 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __dataclass_fields__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __dataclass_params__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __delattr__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __eq__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __hash__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __init__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse constructor is generated Python dataclass machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __match_args__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __repr__; response identifiers and TTLV are redacted from its representation.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse formatter is a Python presentation detail, not an independent cross-language operation; secret-sensitive and potentially identifying fields are excluded from its representation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __setattr__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __slots__.",
+      "exportName": "kmipkit.client.DeriveKeyResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact DeriveKeyResponse member is Python dataclass introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T044 and KMIPKIT-0036; the typed CheckResponse fields and owned ordered response TTLV are mapped across languages. This exclusion applies only to generated member __dataclass_fields__.",
       "exportName": "kmipkit.client.CheckResponse.__dataclass_fields__",
       "packageId": "python-kmipkit",
