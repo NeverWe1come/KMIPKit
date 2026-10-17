@@ -1038,8 +1038,7 @@ fn ffi_failed_check_keeps_policy_fields_and_complete_ttlv_available_to_c() {
     assert_eq!(result, 1);
 }
 
-#[test]
-fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
+fn successful_check_client_response() -> Arc<ClientBatchResponse> {
     let response_bytes = successful_check_response();
     let decoded = kmipkit_ttlv::codec::decode(&response_bytes)
         .expect("the successful Check response fixture is valid TTLV");
@@ -1062,22 +1061,30 @@ fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
     kmipkit_protocol::CheckResponse::try_from_response_item(response_item)
         .unwrap_or_else(|error| panic!("Check fixture fails typed mapping: {error:?}"));
 
-    let response = execute_single_abi_response(
-        ClientRequest::Check(
-            CheckRequest::new()
-                .with_unique_identifier(UniqueIdentifier::TextString("checked-object".to_owned()))
-                .with_usage_limits_count(3)
-                .with_cryptographic_usage_mask(2)
-                .with_lease_time(60),
-        ),
-        b"check-success",
-        response_bytes,
+    Arc::new(
+        execute_single_abi_response(
+            ClientRequest::Check(
+                CheckRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString(
+                        "checked-object".to_owned(),
+                    ))
+                    .with_usage_limits_count(3)
+                    .with_cryptographic_usage_mask(2)
+                    .with_lease_time(60),
+            ),
+            b"check-success",
+            response_bytes,
+        )
+        .expect("the successful Check response maps its identifier and policy fields"),
     )
-    .expect("the successful Check response maps its identifier and policy fields");
-    let response = Arc::new(response);
+}
+
+fn successful_check_response_item(
+    response: &Arc<ClientBatchResponse>,
+) -> *mut kmipkit_client_batch_item_response_t {
     let response_handle = make_handle(
         Kind::ClientBatchResponse,
-        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+        HandleValue::ClientBatchResponse(Arc::clone(response)),
     );
     let mut item = ptr::null_mut();
     assert_eq!(
@@ -1085,6 +1092,63 @@ fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
         SUCCESS
     );
     kmipkit_client_batch_response_release(response_handle);
+    item
+}
+
+fn assert_check_response_getter_status(
+    item: *mut kmipkit_client_batch_item_response_t,
+    expected_status: i32,
+) {
+    let mut present = 0;
+    let mut identifier_present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut count_present = 0;
+    let mut count = 0;
+    let mut mask_present = 0;
+    let mut mask = 0;
+    let mut lease_present = 0;
+    let mut lease = 0;
+    assert_eq!(
+        kmipkit_client_batch_item_response_check(
+            item,
+            &raw mut present,
+            &raw mut identifier_present,
+            &raw mut identifier,
+            &raw mut count_present,
+            &raw mut count,
+            &raw mut mask_present,
+            &raw mut mask,
+            &raw mut lease_present,
+            &raw mut lease,
+        ),
+        expected_status
+    );
+}
+
+fn assert_check_response_ttlv_status(
+    item: *mut kmipkit_client_batch_item_response_t,
+    expected_status: i32,
+) {
+    let mut present = 9;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_check_ttlv(
+            item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        expected_status
+    );
+    if expected_status != SUCCESS {
+        assert_eq!(present, 0);
+        assert!(response_ttlv.is_null());
+    }
+}
+
+#[test]
+fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
+    let response = successful_check_client_response();
+    let item = successful_check_response_item(&response);
 
     let mut present = 9;
     let mut identifier_present = 9;
@@ -1156,35 +1220,17 @@ fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
     assert!(!response_ttlv.is_null());
     kmipkit_ttlv_structure_release(response_ttlv);
     kmipkit_client_batch_item_response_release(item);
+}
 
+#[test]
+fn ffi_check_getters_reject_inconsistent_response_item_handles() {
+    let response = successful_check_client_response();
     let mismatched_item = make_handle(
         Kind::ClientBatchItemResponse,
         HandleValue::ClientBatchResponse(Arc::clone(&response)),
     );
-    present = 9;
-    identifier_present = 9;
-    identifier = empty_unique_identifier_output_v1();
-    count_present = 9;
-    count = -1;
-    mask_present = 9;
-    mask = -1;
-    lease_present = 9;
-    lease = 0;
-    assert_eq!(
-        kmipkit_client_batch_item_response_check(
-            mismatched_item,
-            &raw mut present,
-            &raw mut identifier_present,
-            &raw mut identifier,
-            &raw mut count_present,
-            &raw mut count,
-            &raw mut mask_present,
-            &raw mut mask,
-            &raw mut lease_present,
-            &raw mut lease,
-        ),
-        ERROR_INVALID_INPUT
-    );
+    assert_check_response_getter_status(mismatched_item, ERROR_INVALID_INPUT);
+    assert_check_response_ttlv_status(mismatched_item, ERROR_INVALID_INPUT);
     kmipkit_client_batch_item_response_release(mismatched_item);
 
     let invalid_index_item = make_handle(
@@ -1194,59 +1240,8 @@ fn ffi_successful_check_getters_return_fields_and_ordered_ttlv() {
             index: usize::MAX,
         },
     );
-    assert_eq!(
-        kmipkit_client_batch_item_response_check(
-            invalid_index_item,
-            &raw mut present,
-            &raw mut identifier_present,
-            &raw mut identifier,
-            &raw mut count_present,
-            &raw mut count,
-            &raw mut mask_present,
-            &raw mut mask,
-            &raw mut lease_present,
-            &raw mut lease,
-        ),
-        ERROR_INTERNAL
-    );
-    kmipkit_client_batch_item_response_release(invalid_index_item);
-
-    let mismatched_item = make_handle(
-        Kind::ClientBatchItemResponse,
-        HandleValue::ClientBatchResponse(Arc::clone(&response)),
-    );
-    present = 9;
-    response_ttlv = ptr::null_mut();
-    assert_eq!(
-        kmipkit_client_batch_item_response_check_ttlv(
-            mismatched_item,
-            &raw mut present,
-            &raw mut response_ttlv,
-        ),
-        ERROR_INVALID_INPUT
-    );
-    assert_eq!(present, 0);
-    assert!(response_ttlv.is_null());
-    kmipkit_client_batch_item_response_release(mismatched_item);
-
-    let invalid_index_item = make_handle(
-        Kind::ClientBatchItemResponse,
-        HandleValue::ClientBatchItemResponse {
-            response,
-            index: usize::MAX,
-        },
-    );
-    present = 9;
-    assert_eq!(
-        kmipkit_client_batch_item_response_check_ttlv(
-            invalid_index_item,
-            &raw mut present,
-            &raw mut response_ttlv,
-        ),
-        ERROR_INTERNAL
-    );
-    assert_eq!(present, 0);
-    assert!(response_ttlv.is_null());
+    assert_check_response_getter_status(invalid_index_item, ERROR_INTERNAL);
+    assert_check_response_ttlv_status(invalid_index_item, ERROR_INTERNAL);
     kmipkit_client_batch_item_response_release(invalid_index_item);
 }
 
