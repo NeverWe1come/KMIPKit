@@ -896,6 +896,19 @@ trait Example { fn declaration(&self); }
         self.assertTrue(first_line_is_executable)
         self.assertEqual([True, True, True], next_signature_lines_are_declarations)
 
+    def test_changed_coverage_counts_an_empty_inline_rust_function_body(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn added() {}\n", encoding="utf-8")
+
+            is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+        self.assertTrue(is_executable)
+
     def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
