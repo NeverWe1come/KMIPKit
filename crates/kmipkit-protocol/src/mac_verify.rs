@@ -60,7 +60,7 @@ impl MacVerifyRequest {
         self
     }
 
-    /// Supplies single-part MAC Data (§7.20).
+    /// Supplies MAC Data for a single-part or multipart request (§7.20).
     #[must_use]
     pub fn with_mac_data(mut self, value: SecretBytes) -> Self {
         self.mac_data = Some(value);

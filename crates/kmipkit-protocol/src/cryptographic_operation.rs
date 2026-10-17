@@ -18,9 +18,10 @@ pub(crate) const DIGESTED_DATA: u32 = 0x0042_0107;
 pub(crate) const CORRELATION_VALUE: u32 = 0x0042_00D6;
 pub(crate) const INIT_INDICATOR: u32 = 0x0042_00D7;
 pub(crate) const FINAL_INDICATOR: u32 = 0x0042_00D8;
-pub(crate) const MAC_DATA: u32 = 0x0042_00C4;
-pub(crate) const SIGNATURE_DATA: u32 = 0x0042_00C7;
-pub(crate) const VALIDITY_INDICATOR: u32 = 0x0042_0128;
+// OASIS KMIP v2.1 §11.56, Table 487.
+pub(crate) const MAC_DATA: u32 = 0x0042_00C6;
+pub(crate) const SIGNATURE_DATA: u32 = 0x0042_00C3;
+pub(crate) const VALIDITY_INDICATOR: u32 = 0x0042_009B;
 pub(crate) const SUCCESS: u32 = 0;
 pub(crate) const PENDING: u32 = 2;
 
@@ -213,7 +214,10 @@ pub(crate) fn secret_value(bytes: SecretBytes) -> Value {
     bytes.into_ttlv_value()
 }
 
-/// Validates framing without deriving operation state or supplying later parts.
+/// Validates single-part input presence and multipart framing.
+///
+/// Multipart operation tables can omit input fields, while §2.1 allows clients
+/// to send a data block on each part. Preserve both choices for multipart calls.
 pub(crate) fn validate_framing(
     has_input: bool,
     has_correlation: bool,
@@ -222,8 +226,10 @@ pub(crate) fn validate_framing(
 ) -> Result<(), ProtocolError> {
     let valid = match (init, final_part, has_correlation) {
         (None, None, false) => has_input,
-        (Some(true), _, false) => final_part == Some(true) || !has_input,
-        (Some(false), _, true) | (_, Some(true | false), true) | (None, None, true) => !has_input,
+        (Some(true), _, false)
+        | (Some(false), _, true)
+        | (_, Some(true | false), true)
+        | (None, None, true) => true,
         _ => false,
     };
     if valid { Ok(()) } else { Err(request_error()) }
@@ -411,14 +417,15 @@ pub(crate) fn validate_validity_indicator_shape(
     }
 }
 
-/// Validates whether an operation output is present for the request framing.
+/// Requires output for single-part operations while preserving optional
+/// operation output on multipart responses.
 pub(crate) fn validate_operation_output_shape(
     has_output: bool,
     context: CryptographicOperationResponseContext,
     operation: &'static str,
 ) -> Result<(), CryptographicOperationError> {
     let is_single_part = matches!(context, CryptographicOperationResponseContext::SinglePart);
-    if has_output == is_single_part {
+    if !is_single_part || has_output {
         Ok(())
     } else {
         Err(response_shape_error(operation))
