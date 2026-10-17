@@ -870,6 +870,32 @@ trait Example { fn declaration(&self); }
 
         self.assertTrue(is_executable)
 
+    def test_changed_coverage_keeps_inline_rust_body_before_multiline_function(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "pub fn inline() { let answer = 42; answer }\n"
+                "pub fn next(\n"
+                "    value: i32,\n"
+                ") -> i32 {\n"
+                "    value\n"
+                "}\n",
+                encoding="utf-8",
+            )
+
+            first_line_is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+            next_signature_lines_are_declarations = [
+                not GATE._is_executable_changed_line(root, relative, line, {})
+                for line in (2, 3, 4)
+            ]
+
+        self.assertTrue(first_line_is_executable)
+        self.assertEqual([True, True, True], next_signature_lines_are_declarations)
+
     def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
