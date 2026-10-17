@@ -186,7 +186,8 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure commonAttributes = TtlvStructure.create();
                 TtlvStructure privateAttributes = TtlvStructure.create();
                 TtlvStructure publicAttributes = TtlvStructure.create();
-                TtlvStructure splitAttributes = TtlvStructure.create()) {
+                TtlvStructure splitAttributes = TtlvStructure.create();
+                TtlvStructure delegatedLoginRights = TtlvStructure.create()) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, null));
             assertNativeRequestOptionsRejected(client, new long[11]);
@@ -227,7 +228,10 @@ final class ClientFacadeTlsIntegrationTest {
                             .withUniqueBatchItemId(uniqueBatchItemId(10)))
                     .add(ClientBatchItem.check(UniqueIdentifier.textString("check-key"),
                                     3L, 2, 60L)
-                            .withUniqueBatchItemId(uniqueBatchItemId(11)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(11)))
+                    .add(ClientBatchItem.delegatedLogin(delegatedLoginRights,
+                                    60L, null, 3, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(12)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -242,8 +246,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult textCreated = response.itemAt(8);
                     ClientBatchItemResult certified = response.itemAt(9);
                     ClientBatchItemResult allocated = response.itemAt(10);
-                    ClientBatchItemResult checked = response.itemAt(11)) {
-                assertEquals(12, response.itemCount());
+                    ClientBatchItemResult checked = response.itemAt(11);
+                    ClientBatchItemResult delegated = response.itemAt(12)) {
+                assertEquals(13, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -346,6 +351,18 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(60L, checkResponse.leaseTime().orElseThrow());
                     assertTrue(checkTtlv.itemCount() > 0);
                     assertFalse(checkResponse.toString().contains("check-key"));
+                }
+
+                try (ClientBatchItemResult.DelegatedLoginResponse delegatedResponse =
+                                delegated.delegatedLoginResponse().orElseThrow()) {
+                    assertEquals(0, delegated.resultStatus());
+                    assertEquals(0xfeed_beefL,
+                            delegatedResponse.ticketTypeRaw().orElseThrow());
+                    assertArrayEquals("delegated-ticket-secret"
+                                    .getBytes(StandardCharsets.US_ASCII),
+                            delegatedResponse.ticketValue().orElseThrow());
+                    assertTrue(delegatedResponse.ticketTtlv().isPresent());
+                    assertFalse(delegatedResponse.toString().contains("delegated-ticket-secret"));
                 }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
