@@ -2322,12 +2322,15 @@ The Rust `GetUsageAllocationResponse::with_ttlv` accessor exposed the generic
 response for Failure and Pending results even though T049's traceability
 requires generic response TTLV only on success. The new protocol tests require
 success to return `Some` and Failure/Pending to return `None`; Pending
-correlation remains available through the dedicated `with_unique_batch_item_id`
+correlation remains available through the dedicated
+`with_asynchronous_correlation_value`
 accessor. This is distinct from T081's approved UID-shape error exception.
 
 | Phase | Commit | Verification | Result |
 |---|---|---|---|
-| Red | test-only Red commit | `cargo test -p kmipkit-protocol --all-features get_usage_allocation` | Expected compile failure: the current accessor returns `bool`/`()` rather than `Option`, so the success-only and no-TTLV assertions cannot compile. |
+| Red | `f0a1d567` | `cargo test -p kmipkit-protocol --all-features get_usage_allocation` | Expected compile failure: the current accessor returns `bool`/`()` rather than `Option`, so the success-only and no-TTLV assertions cannot compile. |
+| Green | `eb6e374b` | `cargo test -p kmipkit-protocol --all-features get_usage_allocation` (8 passed); `cargo test -p kmipkit-client --all-features get_usage_allocation` (6 passed); `cargo test -p kmipkit-ffi --all-features usage_allocation_ttlv` (3 passed); focused Clippy, format, API manifest check, and parity tests | PASS. Rust retains generic response TTLV only for successful responses; Failure/Pending return `None`, and Pending correlation remains available from its dedicated accessor. C maps an impossible successful result without retained TTLV to an internal error. |
+| Refactor | This evidence commit | `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-17.json`; `git diff --check` | PASS. Generated Rust export audit is complete: 9,510 manifest declarations matched, 0 issues, 0 kind mismatches, 0 missing declarations, and 0 unobserved declarations. This correction changes no approved T049 scope and does not affect T081's separate successful-response UID-shape error exception. |
 
 ## T082 — Close selected-scope changed-production coverage gap
 
