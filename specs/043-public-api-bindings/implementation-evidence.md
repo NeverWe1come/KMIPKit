@@ -2756,3 +2756,36 @@ The fix applies to the Java adapter and does not change the four-language API
 contract. The original task-specific limitations above remain: no current-head
 cross-platform CI or coverage run, no pinned OASIS Delegated Login fixture, and
 no second-server interoperability evidence.
+
+### T045 follow-up — full-head API inventory CI correction
+
+GitHub Actions run `39031019200` exposed two script-contract failures on all
+three operating systems and a stale FFI export-count assertion. The Java
+`ticketTtlv()` getter is implemented in the Java wrapper and has no direct JNI
+entry point; its manifest record incorrectly reused the JNI symbol used by the
+response factory. The Python response dataclass also had eight generated
+members missing exact KMIPKIT-0043-FR-021 exclusions. Three C exports added by
+T045 made the FFI boundary test's expected total stale (`186` instead of
+`189`); the coverage gate then failed because its required Rust producers had
+failed.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `434c6bc5` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_python_export_inventory_and_facade_mappings_are_exactly_classified tools.api_manifest.tests.test_delegated_login_parity_manifest.DelegatedLoginParityManifestTests.test_java_ticket_ttlv_getter_does_not_claim_a_native_entrypoint` | Expected failures: DelegatedLoginResponse had no exact generated-member exclusions, and `ticketTtlv` claimed the response factory's JNI entry point. |
+| Green | `2558c4fa` | Focused tests below; `python -B tools/api_manifest/generate.py --write` | The Java mapping now omits `jniSymbol` for the wrapper getter, the schema permits that field to be absent, all eight generated Python members have exact exclusions, API totals are current, and the C export-boundary count is 189. The pinned generator refreshed all 12 outputs. |
+| Refactor | this commit | `git diff --check`; task and evidence review | T045 is reopened and remains unchecked pending a clean current-head cross-platform CI and coverage run. |
+
+Focused verification results:
+
+| Command | Result |
+|---|---|
+| `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping` | PASS: 42 tests. |
+| `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_delegated_login_parity_manifest` | PASS: 11 tests. |
+| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2` | PASS: 51 schema and manifest tests. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs verify. |
+| `cargo test -p kmipkit-ffi --no-default-features --lib every_exported_c_function_starts_inside_the_shared_panic_boundary` | PASS: 1 test on Windows after adding the build script's C-consumer output directory to the process-local MSVC `LIB` search path. |
+| `git diff --check` | PASS. |
+
+The new full-head CI result and coverage report are still pending. The local
+Rust command emits existing aws-lc stdalign/NASM warnings but passes; no
+coverage or cross-platform result is inferred from it.
