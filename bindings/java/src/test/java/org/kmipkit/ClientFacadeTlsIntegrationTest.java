@@ -28,6 +28,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.FutureTask;
@@ -833,45 +834,78 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static boolean containsOrderedDeriveKeyIdentifiersInBatchItem(
             byte[] bytes, byte[]... identifiers) throws Exception {
-        byte[] batchItemTagAndType = {0x42, 0x00, 0x0f, 0x01};
-        byte[] deriveKeyOperation = enumeration(0x42005c, 5);
-        for (int offset = 0; offset <= bytes.length - 8; offset++) {
-            if (!matchesAt(bytes, batchItemTagAndType, offset)) continue;
-            int valueLength = ByteBuffer.wrap(bytes, offset + 4, 4).getInt();
-            int valueStart = offset + 8;
-            if (valueLength < 0 || valueLength > bytes.length - valueStart) continue;
-            int valueEnd = valueStart + valueLength;
-            int searchStart = indexOf(bytes, deriveKeyOperation, valueStart, valueEnd);
-            if (searchStart < 0) continue;
-            searchStart += deriveKeyOperation.length;
-            boolean identifiersMatchInOrder = true;
-            for (byte[] identifier : identifiers) {
-                int identifierStart = indexOf(bytes, identifier, searchStart, valueEnd);
-                if (identifierStart < 0) {
-                    identifiersMatchInOrder = false;
+        TtlvSpan message = parseItem(bytes, 0, bytes.length);
+        if (message.end() != bytes.length || message.tag() != 0x420078 || message.type() != 1) {
+            return false;
+        }
+
+        for (TtlvSpan batchItem : children(bytes, message)) {
+            if (batchItem.tag() != 0x42000f || batchItem.type() != 1) continue;
+            boolean isDeriveKey = false;
+            TtlvSpan requestPayload = null;
+            for (TtlvSpan field : children(bytes, batchItem)) {
+                if (field.tag() == 0x42005c && field.type() == 5 && field.valueLength() == 4) {
+                    isDeriveKey = ByteBuffer.wrap(bytes, field.valueStart(), field.valueLength())
+                            .getInt() == 5;
+                } else if (field.tag() == 0x420079 && field.type() == 1) {
+                    requestPayload = field;
+                }
+            }
+            if (!isDeriveKey || requestPayload == null) continue;
+
+            List<byte[]> actualIdentifiers = new ArrayList<>();
+            for (TtlvSpan field : children(bytes, requestPayload)) {
+                if (field.tag() == 0x420094) {
+                    actualIdentifiers.add(Arrays.copyOfRange(bytes, field.offset(), field.end()));
+                }
+            }
+            if (actualIdentifiers.size() != identifiers.length) continue;
+            boolean exactMatch = true;
+            for (int index = 0; index < identifiers.length; index++) {
+                if (!Arrays.equals(actualIdentifiers.get(index), identifiers[index])) {
+                    exactMatch = false;
                     break;
                 }
-                searchStart = identifierStart + identifier.length;
             }
-            if (identifiersMatchInOrder) return true;
+            if (exactMatch) return true;
         }
         return false;
     }
 
-    private static int indexOf(byte[] bytes, byte[] sequence, int start, int end) {
-        for (int offset = start; offset <= end - sequence.length; offset++) {
-            if (matchesAt(bytes, sequence, offset)) return offset;
+    private static List<TtlvSpan> children(byte[] bytes, TtlvSpan parent) {
+        if (parent.type() != 1) throw new IllegalArgumentException("TTLV parent must be a Structure");
+        int end = parent.valueStart() + parent.valueLength();
+        List<TtlvSpan> children = new ArrayList<>();
+        int offset = parent.valueStart();
+        while (offset < end) {
+            TtlvSpan child = parseItem(bytes, offset, end);
+            children.add(child);
+            offset = child.end();
         }
-        return -1;
+        if (offset != end) throw new IllegalArgumentException("TTLV Structure has invalid child boundaries");
+        return children;
     }
 
-    private static boolean matchesAt(byte[] bytes, byte[] sequence, int offset) {
-        if (offset < 0 || offset > bytes.length - sequence.length) return false;
-        for (int index = 0; index < sequence.length; index++) {
-            if (bytes[offset + index] != sequence[index]) return false;
+    private static TtlvSpan parseItem(byte[] bytes, int offset, int parentEnd) {
+        if (offset < 0 || parentEnd > bytes.length || offset > parentEnd - 8) {
+            throw new IllegalArgumentException("TTLV item header is truncated");
         }
-        return true;
+        int tag = ((bytes[offset] & 0xff) << 16)
+                | ((bytes[offset + 1] & 0xff) << 8)
+                | (bytes[offset + 2] & 0xff);
+        int type = bytes[offset + 3] & 0xff;
+        int valueLength = ByteBuffer.wrap(bytes, offset + 4, 4).getInt();
+        int valueStart = offset + 8;
+        if (valueLength < 0 || valueLength > parentEnd - valueStart) {
+            throw new IllegalArgumentException("TTLV item value exceeds its parent");
+        }
+        long paddedLength = ((long) valueLength + 7L) & ~7L;
+        long itemEnd = (long) valueStart + paddedLength;
+        if (itemEnd > parentEnd) throw new IllegalArgumentException("TTLV item padding exceeds its parent");
+        return new TtlvSpan(tag, type, offset, valueStart, valueLength, (int) itemEnd);
     }
+
+    private record TtlvSpan(int tag, int type, int offset, int valueStart, int valueLength, int end) {}
 
     private static long tagAt(TtlvStructureView structure, long index) {
         try (TtlvItemView item = structure.itemAt(index); Tag tag = item.tag()) {
