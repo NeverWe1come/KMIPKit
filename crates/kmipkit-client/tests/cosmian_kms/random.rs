@@ -230,22 +230,34 @@ fn valid_rng_observations_record_response_validation_failures_without_interop() 
     for case in LIVE_CASES {
         let row = manifest_row(&rows, case.case_id);
         let observed = &row["observed_result"];
+        assert_eq!(row["expected_outcome"], "typed_success", "{}", case.case_id);
         assert_eq!(
             observed["classification"], "response_validation_failed",
             "{}",
             case.case_id
         );
-        assert_eq!(observed["request_sent"], true, "{}", case.case_id);
-        assert_eq!(observed["target_request_sent"], true, "{}", case.case_id);
-        assert_eq!(observed["response_received"], true, "{}", case.case_id);
-        assert_eq!(observed["interoperability"], false, "{}", case.case_id);
-        assert_eq!(observed["result_status"], 1, "{}", case.case_id);
-        assert_eq!(observed["result_reason"], 4, "{}", case.case_id);
-        assert_eq!(
-            observed["response_operation_present"], false,
-            "{}",
-            case.case_id
-        );
+        for (field, expected) in [
+            ("request_sent", true),
+            ("target_request_sent", true),
+            ("response_received", true),
+            ("interoperability", false),
+            ("response_operation_present", false),
+        ] {
+            assert_eq!(
+                observed[field].as_bool(),
+                Some(expected),
+                "{}: {field}",
+                case.case_id
+            );
+        }
+        for (field, expected) in [("result_status", 1), ("result_reason", 4)] {
+            assert_eq!(
+                observed[field].as_i64(),
+                Some(expected),
+                "{}: {field}",
+                case.case_id
+            );
+        }
     }
 }
 
