@@ -26,7 +26,7 @@ class SharedRustInventoryTests(unittest.TestCase):
                 / "specs"
                 / "043-public-api-bindings"
                 / "reports"
-                / "rust-export-report-2026-10-13.json"
+                / "rust-export-report-2026-10-16.json"
             ).read_text(encoding="utf-8")
         )
 
@@ -39,10 +39,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 22)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 24)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            22,
+            24,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -51,12 +51,20 @@ class SharedRustInventoryTests(unittest.TestCase):
             - inventory["approvedExcludedRustDeclarationCount"],
         )
 
+    def test_operation_mappings_are_not_counted_as_shared_capabilities(self) -> None:
+        inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
+        operation_ids = {row["operationId"] for row in self.manifest["operations"]}
+
+        self.assertFalse(
+            any(row["capabilityId"] in operation_ids for row in inventory["mappedDeclarations"])
+        )
+
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 9525)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 143)
-        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 36)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 9534)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 264)
+        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 31)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
@@ -137,7 +145,30 @@ class SharedRustInventoryTests(unittest.TestCase):
             )
             self.assertEqual(capability["mappings"][language], expected)
 
-    def test_typed_view_and_discover_versions_exports_use_their_semantic_owner_requirements(self) -> None:
+    def test_response_ttlv_access_uses_its_approved_crypto_operation_owner(self) -> None:
+        response_ttlv = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit_client::ClientError::response_ttlv"
+        )
+        self.assertEqual("crypto_response_ttlv", response_ttlv["capabilityId"])
+        self.assertIn("KMIPKIT-0021-FR-015", response_ttlv["requirementIds"])
+        self.assertNotIn("KMIPKIT-0007-FR-006", response_ttlv["requirementIds"])
+        response_ttlv_field = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit::ClientError::ProtocolResponse::response_ttlv"
+        )
+        self.assertEqual("crypto_response_ttlv", response_ttlv_field["capabilityId"])
+        self.assertIn("KMIPKIT-0021-FR-015", response_ttlv_field["requirementIds"])
+        response_ttlv_method = next(
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit::ClientError::response_ttlv"
+        )
+        self.assertEqual("crypto_response_ttlv", response_ttlv_method["capabilityId"])
+        self.assertIn("KMIPKIT-0021-FR-015", response_ttlv_method["requirementIds"])
+
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         declarations = {row["exportName"]: row for row in inventory["mappedDeclarations"]}
 
@@ -169,7 +200,12 @@ class SharedRustInventoryTests(unittest.TestCase):
         )
 
         operation = next(row for row in self.manifest["operations"] if row["name"] == "Discover Versions")
-        self.assertEqual(operation["apiState"], "blocked")
+        self.assertEqual(operation["apiState"], "declared")
+        self.assertEqual(operation["featureSpecId"], "KMIPKIT-0007")
+        self.assertEqual(
+            set(operation["declarations"]),
+            {"rust", "c", "java", "python"},
+        )
 
     def test_all_ready_capability_mappings_match_exact_ready_exports(self) -> None:
         language_packages = {
@@ -188,11 +224,12 @@ class SharedRustInventoryTests(unittest.TestCase):
                     continue
                 expected = sorted(
                     {
-                        row["exportName"]
+                        row["languageMappings"][language]["name"]
                         for row in self.manifest["publicDeclarations"]
                         if row["capabilityId"] == capability["capabilityId"]
                         and row["declarationState"] in {"declared", "verified"}
-                        and row["packageId"] in packages
+                        and language in row.get("languageMappings", {})
+                        and row["languageMappings"][language]["packageId"] in packages
                     }
                 )
                 self.assertEqual(
@@ -249,10 +286,10 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         blocked = inventory["blockedUnreconciledDeclarations"]
 
-        self.assertEqual(len(blocked), 36)
+        self.assertEqual(len(blocked), 31)
         self.assertEqual(
             sum("callable public declaration" in row["blockedReason"] for row in blocked),
-            22,
+            17,
         )
         self.assertEqual(
             sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),

@@ -2,6 +2,16 @@
 
 ## Three supported levels
 
+### Local API-level metadata
+
+The local API taxonomy is available through Rust `kmipkit::api_levels`, C
+`kmipkit_api_levels_get_v1`, Java `RuntimeMetadata.apiLevels()`, and Python
+`kmipkit.metadata.get_api_levels()`. Each query returns the fixed-order
+`high-level`, `typed-protocol`, and `generic-ttlv` levels without a network
+call. It describes the KMIPKit facade surface, is distinct from the KMIP
+Discover Versions operation, and does not assert that every KMIP operation is
+mapped or complete.
+
 ### High level
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
@@ -40,7 +50,7 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch`
 with a closed typed request set. The currently implemented operation variants
 are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
-Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Get Usage Allocation, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke. The API does not accept generic Item values, raw message bytes, or
@@ -48,6 +58,25 @@ caller-implemented conversions.
 Discover Versions is explicit and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
+
+Get Usage Allocation follows KMIP v2.1 §6.1.23, Tables 232–234, and encodes
+Usage Limits Count as the exact signed Long Integer from §7.40, Table 392.
+Its request accepts an optional Unique Identifier; a successful typed response
+exposes the resolved Unique Identifier. The Rust, C, Java, and Python facades
+share the operation mapping while the common batch result retains Success,
+Pending, Failure, correlation, and request-delivery state. Pending is returned
+to the caller without automatic polling or retry. A successful response also
+exposes the complete ordered generic TTLV response, including unknown fields:
+Rust lends a `StructureView`, C returns a caller-owned
+`kmipkit_ttlv_structure_t`, Java returns a `TtlvStructure` owned by its
+`GetUsageAllocationResponse`, and Python returns an owned `ttlv.Structure` from
+`response_ttlv`. Release the C handle with
+`kmipkit_ttlv_structure_release`; Java callers close the result, and Python
+callers close the result or its context-managed `response_ttlv` structure. The
+C, Java, and Python typed accessors do not return
+a generic response handle for Failure or Pending, and this does not expand the
+separate T081 error-only response-retention capability. The mapping follows
+the approved contract in [policy controls](../../specs/025-policy-controls/spec.md).
 
 KMIPKIT-0013 constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level

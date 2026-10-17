@@ -66,14 +66,29 @@ tabla.
 | `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
 | `public_binding_surface` | blocked | El inventario completo de declaraciones públicas y sus mapeos aún no está reconciliado. |
 | `vendor_extension_registry` | declared | Hay mapeos compartidos exactos; falta verificar la paridad y las declaraciones no reconciliadas siguen bloqueadas. |
-| `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la ejecución completa y la paridad de respuesta de Discover Versions siguen bloqueadas. |
+| `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
+| `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
+| `client_execution` | declared | Los mapeos de solicitud y respuesta de Discover Versions están presentes en Rust, C, Java y Python; falta completar la conformidad de operaciones 1.0. |
+| `crypto_response_ttlv` | declared | El acceso TTLV genérico se limita a errores aprobados de forma del identificador único en respuestas correctas de MAC, MAC Verify, Sign y Signature Verify. |
+| `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
+| `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
+| `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 
-Las **56 / 56** filas de operaciones KMIP `client_1_0` tienen actualmente el
-estado `blocked` en el manifiesto. No se debe inferir que una operación está
-disponible porque haya tipos o código de implementación en otra parte del
-repositorio. Esta instantánea no afirma paridad completa de operaciones,
-compatibilidad con un perfil ni certificación formal de KMIPKit.
+De las **56** filas de operaciones KMIP `client_1_0`, **42 / 56** siguen en
+estado `blocked`. Diez filas están `declared`: Create, Create Key Pair, Create
+Split Key, Derive Key, Discover Versions, Hash, MAC, MAC Verify, Sign y
+Signature Verify. Sus mapeos de solicitud y respuesta para cuatro lenguajes
+están registrados; `declared` no demuestra la conformidad completa de las
+operaciones. No se debe inferir que una operación está disponible porque haya
+tipos o código en otra parte del repositorio. Cuatro mapeos de operación están
+`verified`: Certify, Check, Delegated Login y Get Usage Allocation. El mapeo de
+Get Usage Allocation incluye su petición con identificador opcional y contador
+con signo, la respuesta con identificador resuelto y los resultados comunes
+del lote en Rust, C, Java y Python. Esta evidencia de mapeo no afirma la
+conformidad completa de las operaciones. Esta instantánea no afirma paridad
+completa de operaciones, compatibilidad con un perfil ni certificación formal
+de KMIPKit.
 
 El [manifiesto](../../../specification/api/public-api.json) y el [diseño de
 la API pública](../../architecture/public-api.md) contienen los propietarios

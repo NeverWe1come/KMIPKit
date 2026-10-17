@@ -376,6 +376,43 @@ fn timeout_limit_v1(
     }
 }
 
+fn request_timeout_override_v1(
+    input: &kmipkit_timeout_limit_v1_t,
+) -> FfiResult<Option<TimeoutLimit>> {
+    if input.reserved != 0 || input.reserved2 != 0 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    match input.kind {
+        0 if input.seconds == 0 && input.nanoseconds == 0 => Ok(None),
+        TRANSPORT_TIMEOUT_BOUNDED if input.nanoseconds < 1_000_000_000 => Ok(Some(
+            TimeoutLimit::Bounded(Duration::new(input.seconds, input.nanoseconds)),
+        )),
+        TRANSPORT_TIMEOUT_UNBOUNDED if input.seconds == 0 && input.nanoseconds == 0 => {
+            Ok(Some(TimeoutLimit::Unbounded))
+        }
+        _ => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn request_options_from_v1(input: &kmipkit_request_options_v1_t) -> FfiResult<RequestOptions> {
+    let required_size = u32::try_from(std::mem::size_of::<kmipkit_request_options_v1_t>())
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    if input.abi_version != 1 || input.struct_size < required_size {
+        return Err(ERROR_INVALID_INPUT);
+    }
+
+    let connect = request_timeout_override_v1(&input.connect_timeout)?;
+    let write = request_timeout_override_v1(&input.write_timeout)?;
+    let read = request_timeout_override_v1(&input.read_timeout)?;
+    let total = request_timeout_override_v1(&input.total_timeout)?;
+    let options = RequestOptions::default();
+    let options = connect.map_or(options, |value| options.with_connect(value));
+    let options = write.map_or(options, |value| options.with_write(value));
+    let options = read.map_or(options, |value| options.with_read(value));
+    let options = total.map_or(options, |value| options.with_total(value));
+    Ok(options)
+}
+
 fn transport_text(span: crate::kmipkit_byte_span_v1_t) -> FfiResult<String> {
     let bytes = copy_transport_span(span.data, span.length, MAX_TRANSPORT_TEXT_BYTES)?;
     let text = std::str::from_utf8(&bytes).map_err(|_| ERROR_INVALID_INPUT)?;
@@ -490,10 +527,10 @@ pub extern "C" fn kmipkit_transport_config_create_v1(
     ffi_entrypoint(|| {
         let out = out_slot!(out_configuration);
         let configuration = try_ffi!(transport_config_from_v1(configuration));
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::TransportConfig,
             HandleValue::TransportConfig(configuration),
-        );
+        ));
         SUCCESS
     })
 }
@@ -520,7 +557,7 @@ pub extern "C" fn kmipkit_client_create(
         let HandleValue::Configuration(configuration) = &configuration.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        if let Err(status) = reference_handle(&transport_handle, Kind::TransportConfig) {
+        if let Err(status) = reference_handle(transport_handle, Kind::TransportConfig) {
             return record_ffi_error(status);
         }
         let client_configuration = client_extension::ClientConfiguration::from_shared_registry(
@@ -534,10 +571,10 @@ pub extern "C" fn kmipkit_client_create(
         *transport_slot = ptr::null_mut();
         match Client::new(client_configuration, transport_configuration) {
             Ok(client) => {
-                *out = make_handle(
+                *out = try_ffi!(try_make_handle(
                     Kind::Client,
                     HandleValue::Client(Box::new(std::sync::Mutex::new(client))),
-                );
+                ));
                 SUCCESS
             }
             Err(error) => record_client_error(&error),
@@ -549,10 +586,10 @@ pub extern "C" fn kmipkit_client_create(
 pub extern "C" fn kmipkit_client_batch_create(out_batch: *mut *mut kmipkit_client_batch_t) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_batch);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::ClientBatch,
             HandleValue::ClientBatch(std::sync::Mutex::new(ClientBatchBuilder::new())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -580,7 +617,7 @@ pub extern "C" fn kmipkit_client_batch_add_item(
         let Ok(mut batch) = batch.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        if let Err(status) = reference_handle(&item_handle, Kind::BatchItem) {
+        if let Err(status) = reference_handle(item_handle, Kind::BatchItem) {
             return record_ffi_error(status);
         }
         if batch.items.try_reserve(1).is_err() {
@@ -717,52 +754,178 @@ pub extern "C" fn kmipkit_client_execute(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let out = out_slot!(out_response);
-        if batch.is_null() {
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            None,
+            &RequestOptions::default(),
+        )
+    })
+}
+
+/// Executes one typed batch with per-exchange timeout overrides.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_options_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        // Validate and clear the caller's output before any request-options validation can fail.
+        let _ = out_slot!(out_response);
+        if options.is_null() {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        // SAFETY: the caller supplies a writable in/out slot holding the
-        // one-shot ordered batch consumed by execution.
-        let batch_slot = unsafe { &mut *batch };
-        let batch_handle = *batch_slot;
-        if batch_handle.is_null() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let client = read_handle!(client, Client);
-        let HandleValue::Client(client) = &client.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let limits_handle = read_handle!(limits, CodecLimits);
-        let HandleValue::CodecLimits(limits) = &limits_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        if let Err(status) = reference_handle(&batch_handle, Kind::ClientBatch) {
-            return record_ffi_error(status);
-        }
-        let batch_payload = match owned_payload(batch_handle, Kind::ClientBatch) {
-            Ok(HandleValue::ClientBatch(batch)) => batch,
-            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        // SAFETY: non-null options must point to a readable v1 prefix for this call.
+        let options = unsafe { &*options };
+        let options = match request_options_from_v1(options) {
+            Ok(options) => options,
             Err(status) => return record_ffi_error(status),
         };
-        *batch_slot = ptr::null_mut();
-        let batch = match batch_payload.into_inner() {
-            Ok(batch) => batch.into_batch(),
-            Err(_) => return record_ffi_error(ERROR_INTERNAL),
-        };
-        let Ok(mut client) = client.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        match client.execute(batch, limits) {
-            Ok(response) => {
-                *out = make_handle(
-                    Kind::ClientBatchResponse,
-                    HandleValue::ClientBatchResponse(Arc::new(response)),
-                );
-                SUCCESS
-            }
-            Err(error) => record_client_error(&error),
-        }
+        execute_client_batch(client, batch, limits, out_response, None, &options)
     })
+}
+
+/// Executes a typed batch and optionally returns an owned generic response on shape errors.
+fn execute_client_batch(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    out_error_response_ttlv: Option<*mut *mut kmipkit_ttlv_structure_t>,
+    request_options: &RequestOptions,
+) -> i32 {
+    let out = out_slot!(out_response);
+    let out_error = match out_error_response_ttlv {
+        Some(output) => Some(out_slot!(output)),
+        None => None,
+    };
+    if batch.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the caller supplies a writable in/out slot holding the
+    // one-shot ordered batch consumed by execution.
+    let batch_slot = unsafe { &mut *batch };
+    let batch_handle = *batch_slot;
+    if batch_handle.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let client = read_handle!(client, Client);
+    let HandleValue::Client(client) = &client.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let limits_handle = read_handle!(limits, CodecLimits);
+    let HandleValue::CodecLimits(limits) = &limits_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    if let Err(status) = reference_handle(batch_handle, Kind::ClientBatch) {
+        return record_ffi_error(status);
+    }
+    *batch_slot = ptr::null_mut();
+    let batch_payload = match owned_payload(batch_handle, Kind::ClientBatch) {
+        Ok(HandleValue::ClientBatch(batch)) => batch,
+        Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        Err(status) => return record_ffi_error(status),
+    };
+    let batch = match batch_payload.into_inner() {
+        Ok(batch) => batch.into_batch(),
+        Err(_) => return record_ffi_error(ERROR_INTERNAL),
+    };
+    let Ok(mut client) = client.lock() else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    match client.execute_with_options(batch, limits, request_options) {
+        Ok(response) => {
+            *out = try_ffi!(try_make_handle(
+                Kind::ClientBatchResponse,
+                HandleValue::ClientBatchResponse(Arc::new(response)),
+            ));
+            SUCCESS
+        }
+        Err(error) => {
+            let status = record_client_error(&error);
+            if let Some(output) = out_error {
+                match clone_error_response_ttlv(&error) {
+                    Ok(Some(response)) => {
+                        *output = try_ffi!(try_make_handle(
+                            Kind::Structure,
+                            HandleValue::Structure(response)
+                        ));
+                    }
+                    Ok(None) => {}
+                    Err(clone_status) => return record_ffi_error(clone_status),
+                }
+            }
+            status
+        }
+    }
+}
+
+/// Executes one batch with optional access to the complete generic response on shape errors.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_error_ttlv_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    out_error_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            Some(out_error_response_ttlv),
+            &RequestOptions::default(),
+        )
+    })
+}
+
+/// Executes a batch with request options and returns its generic TTLV on a typed response error.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_with_options_and_error_ttlv_v1(
+    client: *mut kmipkit_client_t,
+    batch: *mut *mut kmipkit_client_batch_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    out_error_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        // Clear both output slots before validating any caller-provided options.
+        let _ = out_slot!(out_response);
+        let _ = out_slot!(out_error_response_ttlv);
+        if options.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the non-null options pointer must reference a readable v1 record.
+        let options = unsafe { &*options };
+        let request_options = match request_options_from_v1(options) {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_client_batch(
+            client,
+            batch,
+            limits,
+            out_response,
+            Some(out_error_response_ttlv),
+            &request_options,
+        )
+    })
+}
+
+/// Makes the optional protocol-error response independent of the temporary client error.
+fn clone_error_response_ttlv(error: &ClientError) -> Result<Option<Structure>, i32> {
+    error
+        .response_ttlv()
+        .map(|response_ttlv| response_ttlv.with_ttlv(|view| super::clone_structure_view(&view)))
+        .transpose()
 }
 
 #[unsafe(no_mangle)]
@@ -821,13 +984,13 @@ pub extern "C" fn kmipkit_client_batch_response_item_at(
             return SUCCESS;
         };
         if response.get(index).is_some() {
-            *out = make_handle(
+            *out = try_ffi!(try_make_handle(
                 Kind::ClientBatchItemResponse,
                 HandleValue::ClientBatchItemResponse {
                     response: Arc::clone(response),
                     index,
                 },
-            );
+            ));
         }
         SUCCESS
     })
@@ -874,6 +1037,665 @@ pub extern "C" fn kmipkit_client_batch_item_response_metadata_v1(
             };
         }
         SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_metadata_v2(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_metadata: *mut kmipkit_client_batch_item_metadata_v2_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_metadata.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the caller supplies a readable initialized header for the v2 output record.
+        let (struct_size, abi_version) = unsafe {
+            (
+                std::ptr::addr_of!((*out_metadata).struct_size).read(),
+                std::ptr::addr_of!((*out_metadata).abi_version).read(),
+            )
+        };
+        if struct_size as usize != std::mem::size_of::<kmipkit_client_batch_item_metadata_v2_t>()
+            || abi_version != 2
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        let result = outcome.result();
+        let message_data = result
+            .message()
+            .map_or(ptr::null(), |message| message.as_bytes().as_ptr());
+        let message_length = result.message().map_or(0, |message| {
+            u64::try_from(message.as_bytes().len()).unwrap_or(u64::MAX)
+        });
+        let metadata = kmipkit_client_batch_item_metadata_v2_t {
+            struct_size,
+            abi_version: 2,
+            operation: outcome.operation().raw(),
+            outcome_kind: if outcome.asynchronous_correlation_value().is_some() {
+                BATCH_OUTCOME_PENDING
+            } else {
+                BATCH_OUTCOME_COMPLETED
+            },
+            result_status: result.status().raw(),
+            has_result_reason: u32::from(result.reason().is_some()),
+            result_reason: result
+                .reason()
+                .map_or(0, kmipkit_protocol::ResultReason::raw),
+            has_result_message: u32::from(result.message().is_some()),
+            reserved: 0,
+            result_message_data: message_data,
+            result_message_length: message_length,
+        };
+        // SAFETY: the caller supplied a writable record with the checked v2 size.
+        unsafe { out_metadata.write(metadata) };
+        SUCCESS
+    })
+}
+
+fn write_unique_identifier_v1(
+    out_identifier: *mut kmipkit_unique_identifier_v1_t,
+    identifier: Option<&kmipkit_protocol::UniqueIdentifier>,
+) -> FfiResult<()> {
+    if out_identifier.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the caller supplies readable version and size fields in the output record.
+    let (struct_size, abi_version) = unsafe {
+        (
+            std::ptr::addr_of!((*out_identifier).struct_size).read(),
+            std::ptr::addr_of!((*out_identifier).abi_version).read(),
+        )
+    };
+    if struct_size as usize != std::mem::size_of::<kmipkit_unique_identifier_v1_t>()
+        || abi_version != 1
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let mut output = kmipkit_unique_identifier_v1_t {
+        struct_size,
+        abi_version: 1,
+        kind: 0,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    if let Some(identifier) = identifier {
+        match identifier {
+            kmipkit_protocol::UniqueIdentifier::TextString(text) => {
+                output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+                output.text_data = text.as_ptr();
+                output.text_length = u64::try_from(text.len()).unwrap_or(u64::MAX);
+            }
+            kmipkit_protocol::UniqueIdentifier::Enumeration(value) => {
+                output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION;
+                output.enumeration_value = *value;
+            }
+            kmipkit_protocol::UniqueIdentifier::Integer(value) => {
+                output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+                output.integer_value = *value;
+            }
+            _ => return Err(ERROR_INVALID_INPUT),
+        }
+    }
+    // SAFETY: the caller supplied a writable record with the checked v1 size.
+    unsafe { out_identifier.write(output) };
+    Ok(())
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_create(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_object_type: *mut u32,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let object_type = scalar_out!(out_object_type);
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        *object_type = 0;
+        if let Some(create) = item.outcome().create_response()
+            && let (Some(object), Some(identifier)) =
+                (create.object_type(), create.unique_identifier())
+        {
+            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+            {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+            *object_type = object.raw();
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the generated certificate identifier only from a successful Certify result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_certify(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(certify) = item.outcome().certify_response() {
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, certify.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies typed Check fields, preserving policy values on failure and hiding any failure identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_check(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_usage_limits_count_present: *mut u8,
+    out_usage_limits_count: *mut i64,
+    out_cryptographic_usage_mask_present: *mut u8,
+    out_cryptographic_usage_mask: *mut i32,
+    out_lease_time_present: *mut u8,
+    out_lease_time: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let identifier_present = scalar_out!(out_unique_identifier_present);
+        let count_present = scalar_out!(out_usage_limits_count_present);
+        let count = scalar_out!(out_usage_limits_count);
+        let mask_present = scalar_out!(out_cryptographic_usage_mask_present);
+        let mask = scalar_out!(out_cryptographic_usage_mask);
+        let lease_present = scalar_out!(out_lease_time_present);
+        let lease = scalar_out!(out_lease_time);
+        *present = 0;
+        *identifier_present = 0;
+        *count_present = 0;
+        *count = 0;
+        *mask_present = 0;
+        *mask = 0;
+        *lease_present = 0;
+        *lease = 0;
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(check) = item.outcome().check_response() {
+            if let Some(identifier) = check.unique_identifier() {
+                if let Err(status) =
+                    write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+                {
+                    return record_ffi_error(status);
+                }
+                *identifier_present = 1;
+            }
+            if let Some(value) = check.usage_limits_count() {
+                *count = value;
+                *count_present = 1;
+            }
+            if let Some(value) = check.cryptographic_usage_mask() {
+                *mask = value;
+                *mask_present = 1;
+            }
+            if let Some(value) = check.lease_time() {
+                *lease = value;
+                *lease_present = 1;
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Returns a caller-owned copy of the complete ordered Check response TTLV, including failures.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_check_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(check) = item.outcome().check_response() {
+            let structure = try_ffi!(check.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the raw-preserving Ticket fields for §6.1.12 Delegated Login.
+///
+/// The returned Ticket Value span is borrowed from `item` and remains valid
+/// until that response item is released. The span must not be logged.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_delegated_login(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_ticket_present: *mut u8,
+    out_ticket_type: *mut u32,
+    out_ticket_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let ticket_present = scalar_out!(out_ticket_present);
+        let ticket_type = scalar_out!(out_ticket_type);
+        let ticket_value = scalar_out!(out_ticket_value);
+        *present = 0;
+        *ticket_type = 0;
+        try_ffi!(set_borrowed_span(ticket_present, ticket_value, None));
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(delegated_login) = item.outcome().delegated_login_response() {
+            *present = 1;
+            if let Some(ticket) = delegated_login.ticket() {
+                *ticket_type = ticket.ticket_type().raw();
+                if let Err(status) = ticket.with_ticket_value(|bytes| {
+                    set_borrowed_span(ticket_present, ticket_value, Some(bytes))
+                }) {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Returns an owned generic copy of the complete Ticket TTLV Structure.
+///
+/// Child order, unknown tags, and extension fields are retained exactly.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_delegated_login_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_ticket_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let ticket_ttlv = out_slot!(out_ticket_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(ticket) = item
+            .outcome()
+            .delegated_login_response()
+            .and_then(kmipkit_protocol::DelegatedLoginResponse::ticket)
+        {
+            let structure = try_ffi!(ticket.with_ttlv(|view| super::clone_structure_view(&view)));
+            *ticket_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic response only from a successful Certify result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_certify_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(certify) = outcome.certify_response() {
+            let Some(structure) = certify.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            let structure = try_ffi!(structure);
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Borrows the resolved identifier from a successful Get Usage Allocation response item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::GetUsageAllocation(allocation) = item.outcome()
+            && let Some(identifier) = allocation.unique_identifier()
+        {
+            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+            {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic response only from a successful Get Usage Allocation result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::GetUsageAllocation(allocation) = outcome {
+            let Some(structure) = allocation.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            let structure = try_ffi!(structure);
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Borrows the derived object identifier from a successful Derive Key response.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_derive_key(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(derive_key) = outcome.derive_key_response()
+            && let Some(identifier) = derive_key.unique_identifier()
+        {
+            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+            {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic response only from a successful Derive Key result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_derive_key_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(derive_key) = outcome.derive_key_response() {
+            let structure =
+                try_ffi!(derive_key.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_create_key_pair(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_private_key_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_public_key_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        if let Err(status) = write_unique_identifier_v1(out_private_key_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        if let Err(status) = write_unique_identifier_v1(out_public_key_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *present = 0;
+        if let Some(create) = item.outcome().create_key_pair_response()
+            && let (Some(private_identifier), Some(public_identifier)) = (
+                create.private_key_unique_identifier(),
+                create.public_key_unique_identifier(),
+            )
+        {
+            if let Err(status) = write_unique_identifier_v1(
+                out_private_key_unique_identifier,
+                Some(private_identifier),
+            ) {
+                return record_ffi_error(status);
+            }
+            if let Err(status) = write_unique_identifier_v1(
+                out_public_key_unique_identifier,
+                Some(public_identifier),
+            ) {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_create_split_key_count(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let count = scalar_out!(out_count);
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *present = 0;
+        *count = 0;
+        if let Some(create) = item.outcome().create_split_key_response() {
+            let identifiers = create.unique_identifiers();
+            if !identifiers.is_empty() {
+                *present = 1;
+                *count =
+                    try_ffi!(u64::try_from(identifiers.len()).map_err(|_| ERROR_RESOURCE_LIMIT));
+            }
+        }
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+    item: *mut kmipkit_client_batch_item_response_t,
+    index: u64,
+    out_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if let Err(status) = write_unique_identifier_v1(out_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse {
+            response,
+            index: item_index,
+        } = &item.value
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*item_index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(create) = item.outcome().create_split_key_response() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(identifier) = usize::try_from(index)
+            .ok()
+            .and_then(|index| create.unique_identifiers().get(index))
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match write_unique_identifier_v1(out_identifier, Some(identifier)) {
+            Ok(()) => SUCCESS,
+            Err(status) => record_ffi_error(status),
+        }
     })
 }
 
@@ -938,6 +1760,396 @@ pub extern "C" fn kmipkit_client_batch_item_response_pending_correlation_value(
                 data: ptr::null(),
                 length: 0,
             };
+        }
+        SUCCESS
+    })
+}
+
+fn set_borrowed_span(
+    present: &mut u8,
+    output: &mut crate::kmipkit_byte_span_v1_t,
+    bytes: Option<&[u8]>,
+) -> FfiResult<()> {
+    if let Some(bytes) = bytes {
+        *present = 1;
+        *output = crate::kmipkit_byte_span_v1_t {
+            data: if bytes.is_empty() {
+                ptr::null()
+            } else {
+                bytes.as_ptr()
+            },
+            length: u64::try_from(bytes.len()).map_err(|_| ERROR_INTERNAL)?,
+        };
+    } else {
+        *present = 0;
+        *output = crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+    }
+    Ok(())
+}
+
+/// Reads the typed Hash result fields. Returned byte spans are borrowed from `item`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_hash(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_data_present: *mut u8,
+    out_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let data_present = scalar_out!(out_data_present);
+        let data = scalar_out!(out_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        try_ffi!(set_borrowed_span(data_present, data, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().hash_response() {
+            *present = 1;
+            if let Some(bytes) = value.data() {
+                let status =
+                    bytes.with_bytes(|bytes| set_borrowed_span(data_present, data, Some(bytes)));
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed MAC result fields. Returned byte spans are borrowed from `item`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_mac(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_mac_data_present: *mut u8,
+    out_mac_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let mac_present = scalar_out!(out_mac_data_present);
+        let mac_data = scalar_out!(out_mac_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        try_ffi!(set_borrowed_span(mac_present, mac_data, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().mac_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(bytes) = value.mac_data() {
+                let status =
+                    bytes.with_bytes(|bytes| set_borrowed_span(mac_present, mac_data, Some(bytes)));
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed MAC Verify result fields and preserves unknown Validity Indicator values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_mac_verify(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_validity_present: *mut u8,
+    out_validity_indicator: *mut u32,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let validity_present = scalar_out!(out_validity_present);
+        let validity = scalar_out!(out_validity_indicator);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        *validity_present = 0;
+        *validity = 0;
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().mac_verify_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(indicator) = value.validity_indicator() {
+                *validity_present = 1;
+                *validity = indicator.raw();
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed Sign result fields. Returned byte spans are borrowed from `item`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_sign(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_signature_data_present: *mut u8,
+    out_signature_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let signature_present = scalar_out!(out_signature_data_present);
+        let signature_data = scalar_out!(out_signature_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        try_ffi!(set_borrowed_span(signature_present, signature_data, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().sign_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(bytes) = value.signature_data() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(signature_present, signature_data, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads the typed Signature Verify result and preserves unknown indicator values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_validity_present: *mut u8,
+    out_validity_indicator: *mut u32,
+    out_recovered_data_present: *mut u8,
+    out_recovered_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let validity_present = scalar_out!(out_validity_present);
+        let validity = scalar_out!(out_validity_indicator);
+        let recovered_present = scalar_out!(out_recovered_data_present);
+        let recovered = scalar_out!(out_recovered_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        *validity_present = 0;
+        *validity = 0;
+        try_ffi!(set_borrowed_span(recovered_present, recovered, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().signature_verify_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(indicator) = value.validity_indicator() {
+                *validity_present = 1;
+                *validity = indicator.raw();
+            }
+            if let Some(bytes) = value.recovered_data() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(recovered_present, recovered, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+            if let Some(bytes) = value.correlation_value() {
+                let status = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                });
+                if let Err(status) = status {
+                    return record_ffi_error(status);
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the typed supported-version list from a successful Discover Versions result.
+///
+/// Call with `out_versions == NULL` and `capacity == 0` to query presence and
+/// the required count. A present empty successful response sets `out_present`
+/// to 1 and `out_count` to 0. Pending, failed, and other-operation results set
+/// both outputs to 0. A second call with sufficient caller-owned capacity
+/// copies values in source order, retaining repetitions.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_discover_versions_supported_versions(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_versions: *mut crate::kmipkit_protocol_version_v1_t,
+    capacity: u64,
+    out_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let count = scalar_out!(out_count);
+        if out_versions.is_null() && capacity != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(versions) = item.discover_versions_supported_versions() else {
+            *present = 0;
+            *count = 0;
+            return SUCCESS;
+        };
+        let Ok(version_count) = u64::try_from(versions.len()) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *present = 1;
+        *count = version_count;
+        if out_versions.is_null() {
+            return SUCCESS;
+        }
+        let Ok(capacity) = usize::try_from(capacity) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if capacity < versions.len() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        for (offset, version) in versions.iter().enumerate() {
+            // SAFETY: the caller supplied a non-null, aligned writable array;
+            // capacity was checked against the slice length and `offset` is
+            // an in-bounds element index.
+            unsafe {
+                out_versions
+                    .add(offset)
+                    .write(crate::kmipkit_protocol_version_v1_t {
+                        major: version.major(),
+                        minor: version.minor(),
+                    });
+            }
         }
         SUCCESS
     })

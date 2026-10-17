@@ -29,7 +29,7 @@ REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" /
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_PATH = (
     ROOT / "specs" / "043-public-api-bindings" / "reports"
-    / "rust-export-report-2026-10-13.json"
+    / "rust-export-report-2026-10-16.json"
 )
 
 EXPECTED_PACKAGES = {
@@ -194,6 +194,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertIn("approvedExclusions", manifest)
         self.assertEqual(list(self.validator.iter_errors(manifest)), [])
 
+    def test_rust_type_schema_accepts_mutable_pointer_to_pointer_c_abi_output(self) -> None:
+        validator = Draft202012Validator(self.schema["$defs"]["rustType"])
+
+        self.assertTrue(validator.is_valid("*mut *mut kmipkit_ttlv_structure_t"))
+
+    def test_requirement_ids_accept_referenced_kmip_7_12_sections(self) -> None:
+        for definition in ("requirementId", "v2RequirementId"):
+            validator = Draft202012Validator(self.schema["$defs"][definition])
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-003"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-005-001"))
+        self.assertFalse(validator.is_valid("*mut *mut *mut kmipkit_ttlv_structure_t"))
+
     def test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds(self) -> None:
         manifest = _valid_v2_manifest()
         condition = {
@@ -346,8 +358,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     expected_batch_item_type["java"]["package"] = batch_item_type["java"]["package"]
                     expected_batch_item_type["python"]["module"] = batch_item_type["python"]["module"]
                 elif field == "errorCategories":
-                    actual = [row for row in manifest[field] if row["id"] != "internal"]
                     expected = registry[field]
+                    registry_ids = {row["id"] for row in expected}
+                    actual = [row for row in manifest[field] if row["id"] in registry_ids]
                 else:
                     actual = manifest[field]
                     expected = registry[field]
@@ -838,7 +851,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         declaration["languageMappings"]["python"] = {
             "packageId": "python-kmipkit",
-            "name": "kmipkit.extensions.ClientBatchItem.close",
+            "name": "kmipkit.extensions.with_extension",
         }
 
         with self.assertRaisesRegex(ManifestError, "blocked|mapping target"):
@@ -855,6 +868,19 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaisesRegex(ManifestError, "capability.*mapping|exact.*export"):
             _validate_v2_readiness(manifest, ROOT)
 
+    def test_capability_inventory_uses_each_language_mapping_name(self) -> None:
+        manifest = self.checked_in_manifest
+        package_languages = {
+            package["id"]: package["language"]
+            for package in manifest["publicPackages"]
+        }
+
+        generate._validate_capability_mapping_inventories(
+            manifest["capabilities"],
+            manifest["publicDeclarations"],
+            package_languages,
+        )
+
     def test_checked_in_manifest_inventories_all_rust_public_access_paths(self) -> None:
         rust_packages = EXPECTED_PACKAGES - {"c-kmipkit", "java-kmipkit", "python-kmipkit"}
         declarations = [
@@ -867,8 +893,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9503)
-        self.assertEqual(len(exclusions), 22)
+        self.assertEqual(len(declarations), 9510)
+        self.assertEqual(len(exclusions), 24)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
             (row["packageId"], _canonical_export_name(row["exportName"]), row["kind"])
@@ -1104,15 +1130,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "c-kmipkit"
         }
-        self.assertEqual(
-            set(c_exclusions),
-            {
-                "kmipkit_last_error_get",
-                "kmipkit_last_error_clear",
-                "kmipkit_extension_registry_limits_v1_t.struct_size",
-                "kmipkit_extension_registry_limits_v1_t.abi_version",
-            },
-        )
+        runtime_metadata_exclusions = {
+            "kmipkit_last_error_clear",
+            "kmipkit_extension_registry_limits_v1_t.struct_size",
+            "kmipkit_extension_registry_limits_v1_t.abi_version",
+        }
+        self.assertTrue(runtime_metadata_exclusions <= set(c_exclusions))
         for symbol in c_exclusions:
             self.assertTrue(c_exclusions[symbol]["reason"])
             self.assertTrue(c_exclusions[symbol]["evidence"])
@@ -1123,7 +1146,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 22)
+        self.assertEqual(len(rust_exclusions), 23)
         self.assertTrue(
             any(
                 item["exportName"] == "kmipkit_protocol::RegisterRequest::validate_local_shape"
@@ -1135,7 +1158,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 item["approvalSource"]["path"]
                 for item in rust_exclusions
             },
-            {"specs/029-opaque-object-context/spec.md"},
+            {
+                "docs/adr/0003-layered-cargo-workspace.md",
+                "specs/029-opaque-object-context/spec.md",
+            },
         )
 
         public_exports = {
@@ -1229,13 +1255,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 147)
+        self.assertEqual(len(ttlv_declarations), 234)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            123,
+            210,
         )
         self.assertEqual(
             sum(
@@ -1247,7 +1273,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 367)
+        self.assertEqual(len(declarations), 552)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1271,7 +1297,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             )
         ]
 
-        self.assertEqual(len(close_declarations), 21)
+        self.assertEqual(len(close_declarations), 16)
         self.assertTrue(
             all(declaration["declarationState"] == "blocked" for declaration in close_declarations)
         )
@@ -1281,6 +1307,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 == ["KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021"]
                 for declaration in close_declarations
             )
+        )
+        generic_ttlv_closes = [
+            declaration
+            for declaration in declarations
+            if declaration["exportName"].endswith(".close")
+            and declaration["capabilityId"] == "generic_ttlv_model"
+        ]
+        self.assertEqual(
+            {declaration["exportName"] for declaration in generic_ttlv_closes},
+            {
+                "org.kmipkit.ttlv.Tag.close",
+                "org.kmipkit.ttlv.TtlvItemView.close",
+                "org.kmipkit.ttlv.TtlvStructure.close",
+                "org.kmipkit.ttlv.TtlvStructureView.close",
+                "org.kmipkit.ttlv.TtlvValueView.close",
+            },
+        )
+        self.assertTrue(
+            all(declaration["declarationState"] == "declared" for declaration in generic_ttlv_closes)
         )
 
     def test_checked_in_manifest_accounts_for_every_ready_c_header_declaration(self) -> None:
@@ -1297,6 +1342,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             }
             for kind in {item["kind"] for item in declarations}
         }
+        approved_c_layouts = {
+            item["cType"]["name"]
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "c-kmipkit"
+            and item.get("cType", {}).get("kind") == "fixed-width-value"
+        }
+        ready_by_kind["type"].update(approved_c_layouts)
 
         header_functions = set(
             re.findall(
@@ -1309,6 +1361,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
         published_header_symbols = {
@@ -1334,21 +1387,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual(header_types, ready_by_kind["type"])
 
-        limits_matches = re.finditer(
-            r"typedef struct \{(?P<body>.*?)\} (kmipkit_extension_registry_limits_v1_t);",
-            header,
-            re.DOTALL,
-        )
         header_fields = {
-            f"{match[2]}.{name}"
-            for match in limits_matches
-            for name in re.findall(r"^\s*uint64_t (\w+);$", match["body"], re.MULTILINE)
+            f"{match['named_type'] or match['typedef_type']}.{field_name}"
+            for match in re.finditer(
+                r"(?:typedef\s+)?struct(?:\s+(?P<named_type>kmipkit_\w+))?\s*"
+                r"\{(?P<body>.*?)\}\s*(?P<typedef_type>kmipkit_\w+)?\s*;",
+                header,
+                re.DOTALL,
+            )
+            for field_name in re.findall(
+                r"^\s*(?:const\s+)?[A-Za-z_]\w*(?:\s*\*)*\s+"
+                r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*;",
+                match["body"],
+                re.MULTILINE,
+            )
         }
-        self.assertEqual(header_fields, ready_by_kind["field"])
+        approved_c_fields = {
+            item["exportName"]
+            for item in self.checked_in_manifest["approvedExclusions"]
+            if item["packageId"] == "c-kmipkit"
+            and re.fullmatch(r"kmipkit_\w+\.\w+", item["exportName"])
+        }
+        self.assertEqual(header_fields, ready_by_kind["field"] | approved_c_fields)
 
         header_ttlv_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|OPAQUE_OBJECT_CONTEXT)_\w+)",
+                r"^#define (KMIPKIT_(?:TTLV_ITEM_TYPE|OPAQUE_OBJECT_CONTEXT|UNIQUE_IDENTIFIER_KIND)_\w+)",
                 header,
                 re.MULTILINE,
             )
@@ -1375,6 +1439,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             exclusion["exportName"]
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] == "c-kmipkit"
+            and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
         ready_functions = {
@@ -1389,6 +1454,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if declaration["kind"] == "type"
             and declaration["declarationState"] in {"declared", "verified"}
         }
+        ready_types.update(
+            exclusion["cType"]["name"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+            and exclusion.get("cType", {}).get("kind") == "fixed-width-value"
+        )
         header_functions = set(
             re.findall(
                 r"^(?:void|int32_t)\s+(kmipkit_[A-Za-z0-9_]+)\s*\(",
@@ -1493,6 +1564,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for (kind, name), state in states.items()
             if kind == "type" and state in {"declared", "verified"}
         }
+        ready_types.update(
+            exclusion["cType"]["name"]
+            for exclusion in self.checked_in_manifest["approvedExclusions"]
+            if exclusion["packageId"] == "c-kmipkit"
+            and exclusion.get("cType", {}).get("kind") == "fixed-width-value"
+        )
 
         for function in self.checked_in_manifest["functions"]:
             if states.get(("c-symbol", function["c"]["symbol"])) not in {
@@ -1516,11 +1593,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 285)
+        self.assertEqual(len(declarations), 524)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
-        self.assertEqual(close_method["declarationState"], "blocked")
+        self.assertEqual(close_method["declarationState"], "declared")
         item_type = by_name["kmipkit.ttlv.ItemType"]
         self.assertEqual(item_type["declarationState"], "declared")
         enum_value = by_name["kmipkit.ttlv.ItemType.Structure"]
@@ -1584,6 +1661,262 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertFalse(declaration["additionalProperties"])
         self.assertFalse(exclusion["additionalProperties"])
+
+    def test_approved_c_exclusion_can_describe_an_abi_only_carrier_layout(self) -> None:
+        manifest = _valid_v2_manifest()
+        manifest["approvedExclusions"] = [
+            {
+                "packageId": "c-kmipkit",
+                "exportName": "kmipkit_example_v1_t",
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": copy.deepcopy(
+                    self.checked_in_manifest["approvedExclusions"][0]["approvalSource"]
+                ),
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {
+                    "name": "kmipkit_example_v1_t",
+                    "kind": "fixed-width-value",
+                    "fields": [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "data", "type": "const uint8_t *"},
+                        {"name": "length", "type": "uint64_t"},
+                    ],
+                },
+            }
+        ]
+
+        self.assertEqual(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "class"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "field__internal"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = "struct_size"
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = (
+            "uint32_t; injected"
+        )
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["type"] = "uint32_t"
+        manifest["approvedExclusions"][0]["packageId"] = "java-kmipkit"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+    def test_declared_c_value_fields_reject_reserved_c_and_cpp_names(self) -> None:
+        manifest = _valid_v2_manifest()
+        manifest["types"].append(
+            {
+                "id": "ExampleCValue",
+                "kind": "struct",
+                "requirementIds": ["KMIPKIT-0043-FR-001"],
+                "rust": {
+                    "module": "kmipkit_ffi::example",
+                    "name": "ExampleCValue",
+                    "owner": "ffi",
+                },
+                "c": {
+                    "name": "kmipkit_example_value_t",
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "valid_name", "type": "uint32_t"}],
+                },
+                "java": {"package": "org.kmipkit", "name": "ExampleCValue"},
+                "python": {"module": "kmipkit", "name": "ExampleCValue"},
+            }
+        )
+
+        self.assertEqual(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["types"][-1]["c"]["fields"][0]["name"] = "class"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+        manifest["types"][-1]["c"]["fields"][0]["name"] = "field__internal"
+        self.assertGreater(len(list(self.validator.iter_errors(manifest))), 0)
+
+    def test_c_header_renders_approved_exclusion_carrier_layout(self) -> None:
+        def exclusion(name: str, fields: list[dict[str, str]]) -> dict[str, object]:
+            return {
+                "packageId": "c-kmipkit",
+                "exportName": name,
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {"name": name, "kind": "fixed-width-value", "fields": fields},
+            }
+
+        manifest = {
+            "formatVersion": 2,
+            "approvedExclusions": [
+                exclusion(
+                    "kmipkit_transport_config_v1_t",
+                    [
+                        {"name": "struct_size", "type": "uint32_t"},
+                        {"name": "abi_version", "type": "uint32_t"},
+                        {"name": "client_certificates", "type": "const kmipkit_transport_input_v1_t *"},
+                        {"name": "client_private_key", "type": "kmipkit_transport_input_v1_t"},
+                        {"name": "connect_timeout", "type": "kmipkit_timeout_limit_v1_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_transport_input_v1_t",
+                    [
+                        {"name": "source_kind", "type": "uint32_t"},
+                        {"name": "encoding", "type": "uint32_t"},
+                        {"name": "data", "type": "kmipkit_byte_span_v1_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_timeout_limit_v1_t",
+                    [
+                        {"name": "kind", "type": "uint32_t"},
+                        {"name": "reserved", "type": "uint32_t"},
+                        {"name": "seconds", "type": "uint64_t"},
+                    ],
+                ),
+                exclusion(
+                    "kmipkit_byte_span_v1_t",
+                    [
+                        {"name": "data", "type": "const uint8_t *"},
+                        {"name": "length", "type": "uint64_t"},
+                    ],
+                ),
+            ],
+            "publicDeclarations": [],
+            "types": [],
+            "limits": [],
+            "errorCategories": [],
+            "functions": [],
+        }
+
+        header = generate.render_c_header(manifest)
+
+        for name in (
+            "kmipkit_transport_config_v1_t",
+            "kmipkit_transport_input_v1_t",
+            "kmipkit_timeout_limit_v1_t",
+            "kmipkit_byte_span_v1_t",
+        ):
+            self.assertIn(f"typedef struct {name} {name};", header)
+        self.assertLess(
+            header.index("struct kmipkit_byte_span_v1_t {"),
+            header.index("struct kmipkit_transport_input_v1_t {"),
+        )
+        self.assertLess(
+            header.index("struct kmipkit_transport_input_v1_t {"),
+            header.index("struct kmipkit_transport_config_v1_t {"),
+        )
+        self.assertLess(
+            header.index("struct kmipkit_timeout_limit_v1_t {"),
+            header.index("struct kmipkit_transport_config_v1_t {"),
+        )
+        self.assertIn(
+            "    const kmipkit_transport_input_v1_t * client_certificates;", header
+        )
+        self.assertIn(
+            "    kmipkit_transport_input_v1_t client_private_key;", header
+        )
+
+    def test_approved_c_carrier_layout_references_must_resolve_without_cycles(self) -> None:
+        def exclusion(name: str, field_type: str) -> dict[str, object]:
+            return {
+                "packageId": "c-kmipkit",
+                "exportName": name,
+                "reason": "This fixed ABI carrier has no four-language facade value.",
+                "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                "evidence": "The versioned C ABI uses this carrier at a native boundary.",
+                "cType": {
+                    "name": name,
+                    "kind": "fixed-width-value",
+                    "fields": [{"name": "value", "type": field_type}],
+                },
+            }
+
+        manifest = {
+            "approvedExclusions": [
+                exclusion("kmipkit_outer_v1_t", "kmipkit_inner_v1_t"),
+                exclusion("kmipkit_inner_v1_t", "uint32_t"),
+            ],
+            "types": [],
+        }
+        ordered = generate._ordered_approved_c_type_layouts(manifest)
+        self.assertEqual(
+            [record["name"] for record in ordered],
+            ["kmipkit_inner_v1_t", "kmipkit_outer_v1_t"],
+        )
+
+        manifest["approvedExclusions"][1]["cType"]["fields"][0]["type"] = (
+            "kmipkit_missing_v1_t"
+        )
+        with self.assertRaises(generate.ManifestError):
+            generate._ordered_approved_c_type_layouts(manifest)
+        manifest["approvedExclusions"][1]["cType"]["fields"][0]["type"] = (
+            "kmipkit_outer_v1_t"
+        )
+        with self.assertRaises(generate.ManifestError):
+            generate._ordered_approved_c_type_layouts(manifest)
+
+    def test_approved_c_carrier_rejects_reserved_c_and_cpp_field_names(self) -> None:
+        manifest = {
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_reserved_field_v1_t",
+                    "reason": "Native ABI carrier without a four-language value.",
+                    "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                    "evidence": "The native ABI declares this fixed-width record.",
+                    "cType": {
+                        "name": "kmipkit_reserved_field_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "class", "type": "uint32_t"}],
+                    },
+                }
+            ],
+            "types": [],
+        }
+
+        with self.assertRaisesRegex(generate.ManifestError, "reserved fields"):
+            generate._ordered_approved_c_type_layouts(manifest)
+        manifest["approvedExclusions"][0]["cType"]["fields"][0]["name"] = (
+            "field__internal"
+        )
+        with self.assertRaisesRegex(generate.ManifestError, "reserved fields"):
+            generate._ordered_approved_c_type_layouts(manifest)
+
+    def test_approved_c_carrier_rejects_partially_declared_value_dependency(self) -> None:
+        manifest = {
+            "approvedExclusions": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_outer_v1_t",
+                    "reason": "Native ABI carrier without a four-language value.",
+                    "approvalSource": {"kind": "feature-specification", "path": "unused"},
+                    "evidence": "The native ABI declares this fixed-width record.",
+                    "cType": {
+                        "name": "kmipkit_outer_v1_t",
+                        "kind": "fixed-width-value",
+                        "fields": [{"name": "inner", "type": "kmipkit_partial_v1_t"}],
+                    },
+                }
+            ],
+            "types": [
+                {
+                    "c": {
+                        "name": "kmipkit_partial_v1_t",
+                        "kind": "fixed-width-value",
+                    }
+                }
+            ],
+            "limits": [{"cField": "first"}, {"cField": "second"}],
+            "publicDeclarations": [
+                {
+                    "packageId": "c-kmipkit",
+                    "kind": "field",
+                    "exportName": "kmipkit_partial_v1_t.first",
+                    "declarationState": "declared",
+                }
+            ],
+        }
+
+        with self.assertRaisesRegex(generate.ManifestError, "incomplete declared value"):
+            generate._ordered_approved_c_type_layouts(manifest)
 
     def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
         manifest = json.loads(json.dumps(self.checked_in_manifest))

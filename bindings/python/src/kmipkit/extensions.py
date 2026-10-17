@@ -1,9 +1,11 @@
 """Manifest-backed Python facade for the vendor extension registry C ABI.
 
-KMIPKit owns and zeroizes its Rust buffers. Python necessarily creates and
-retains its own copies of input strings, byte strings, and values returned by
-TTLV accessors; Python's runtime does not provide deterministic zeroization of
-those external copies.
+Sensitive operation-input builders clear the CFFI staging arrays they own
+after synchronous ABI calls. The variable TTLV BigInteger, TextString, and
+ByteString constructors also clear their staging arrays. Immutable Python
+``bytes`` and ``str`` values cannot be overwritten in place, and Python's
+runtime may retain external copies of input and accessor values beyond
+KMIPKit's control.
 
 Opaque native identity handles expose bounded field getters. Inspection keeps
 generic TTLV intact; Python never infers identity by rescanning payload content.
@@ -11,7 +13,8 @@ generic TTLV intact; Python never infers identity by rescanning payload content.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any, overload
@@ -22,8 +25,11 @@ from ._handles import (
     NativeHandle,
     _invoke,
     _invoke_consuming,
+    _integer_range,
     _owned_bytes,
     _scalar,
+    _wipe_staging_buffer,
+    _wrap_owned_handle,
     synchronize_public_functions,
 )
 
@@ -73,7 +79,9 @@ def _native_limits(values: tuple[int, ...]) -> Any:
     return native
 
 _MAX_TEXT_BYTES_PER_FIELD = 4_096
+_MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024
 _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
+_MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024
 
 
 class ExtensionIdentity(NativeHandle):
@@ -85,8 +93,10 @@ class ExtensionIdentity(NativeHandle):
         vendor_identifier: str | None,
         name: str | None,
         version: str | None,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle)
+        super().__init__(handle, _token=_token)
         self.vendor_identifier = vendor_identifier
         self.name = name
         self.version = version
@@ -99,8 +109,8 @@ class Compatibility(NativeHandle):
 class TtlvPath(NativeHandle):
     _release_name = "kmipkit_ttlv_path_release"
 
-    def __init__(self, handle: Any, tags: tuple[int, ...]) -> None:
-        super().__init__(handle)
+    def __init__(self, handle: Any, tags: tuple[int, ...], *, _token: object) -> None:
+        super().__init__(handle, _token=_token)
         self.tags = tags
 
 
@@ -113,8 +123,10 @@ class Discriminator(NativeHandle):
         path: TtlvPath,
         scalar_type: ttlv.ItemType,
         scalar_value: object,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle)
+        super().__init__(handle, _token=_token)
         self.path_tags = path.tags
         self.scalar_type = scalar_type
         self.scalar_value = scalar_value
@@ -145,8 +157,10 @@ class ExtensionInformation(NativeHandle):
         attribute: bool | None = None,
         parent_structure_tag: int | None = None,
         description: str | None = None,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle)
+        super().__init__(handle, _token=_token)
         self.extension_name = extension_name
         self.tag = tag
         self.item_type = item_type
@@ -166,7 +180,7 @@ class ExtensionInformation(NativeHandle):
             "description": self.description,
         }
         values.update(changes)
-        return ExtensionInformation(handle, **values)
+        return _wrap_owned_handle(ExtensionInformation, handle, **values)
 
 
 class ExtensionDefinition(NativeHandle):
@@ -180,9 +194,12 @@ class ExtensionDefinition(NativeHandle):
         information: ExtensionInformation | None = None,
         compatibility: Compatibility | None = None,
         schema: ExtensionSchema | None = None,
+        *,
+        _token: object,
     ) -> None:
         super().__init__(
             handle,
+            _token=_token,
             owner=(identity, discriminator, information, compatibility, schema),
         )
         self.identity = identity
@@ -200,9 +217,11 @@ class ClientExtensionRegistry(NativeHandle):
         handle: Any,
         definitions: Iterable[ExtensionDefinition],
         limits: ExtensionRegistryLimits,
+        *,
+        _token: object,
     ) -> None:
         ordered = tuple(sorted(definitions, key=_identity_key))
-        super().__init__(handle, owner=ordered)
+        super().__init__(handle, _token=_token, owner=ordered)
         self._definitions = ordered
         self.limits = limits
 
@@ -215,8 +234,10 @@ class ClientConfiguration(NativeHandle):
         handle: Any,
         definitions: tuple[ExtensionDefinition, ...],
         limits: ExtensionRegistryLimits,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle, owner=definitions)
+        super().__init__(handle, _token=_token, owner=definitions)
         self._definitions = definitions
         self.limits = limits
 
@@ -229,16 +250,18 @@ class ValidatedExtensionValue(NativeHandle):
         handle: Any,
         identity: ExtensionIdentity | None = None,
         owner: object | None = None,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle, owner=(identity, owner))
+        super().__init__(handle, _token=_token, owner=(identity, owner))
         self.identity = identity
 
 
 class RegisteredExtensionValue(NativeHandle):
     _release_name = "kmipkit_registered_extension_value_release"
 
-    def __init__(self, handle: Any, identity: ExtensionIdentity) -> None:
-        super().__init__(handle, owner=identity)
+    def __init__(self, handle: Any, identity: ExtensionIdentity, *, _token: object) -> None:
+        super().__init__(handle, _token=_token, owner=identity)
         self.identity = identity
 
 
@@ -255,6 +278,54 @@ class OpaqueObjectContext(IntEnum):
 
     GENERIC = 1
     MANAGED_CRYPTOGRAPHIC_OBJECT = 2
+
+
+class UniqueIdentifierKind(IntEnum):
+    """Exact TTLV wire type used by a KMIP Unique Identifier."""
+
+    TEXT_STRING = 1
+    ENUMERATION = 2
+    INTEGER = 3
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class UniqueIdentifier:
+    """Exact KMIP Unique Identifier value with its original wire type."""
+
+    kind: UniqueIdentifierKind
+    text: str | None = None
+    number: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.kind, UniqueIdentifierKind):
+            errors.raise_for_status(4)
+        if self.kind is UniqueIdentifierKind.TEXT_STRING:
+            if self.text is None or self.number is not None:
+                errors.raise_for_status(4)
+            _owned_bytes(self.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        elif self.kind is UniqueIdentifierKind.ENUMERATION:
+            if self.text is not None or self.number is None:
+                errors.raise_for_status(4)
+            _integer_range(self.number, 0, 0xFFFF_FFFF)
+        else:
+            if self.text is not None or self.number is None:
+                errors.raise_for_status(4)
+            _integer_range(self.number, -(1 << 31), (1 << 31) - 1)
+
+    @classmethod
+    def text_string(cls, value: str) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.TEXT_STRING, text=value)
+
+    @classmethod
+    def enumeration(cls, value: int) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.ENUMERATION, number=value)
+
+    @classmethod
+    def integer(cls, value: int) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.INTEGER, number=value)
+
+    def __repr__(self) -> str:
+        return f"UniqueIdentifier(kind={self.kind.name}, value=redacted)"
 
 
 class RegisterRequest(NativeHandle):
@@ -278,7 +349,7 @@ class RegisterRequest(NativeHandle):
             (object_type, attributes, object),
             consumed_indices=(1, 2),
         )
-        return cls(handle)
+        return _wrap_owned_handle(cls, handle)
 
     def with_opaque_object_context(
         self, context: OpaqueObjectContext
@@ -291,7 +362,7 @@ class RegisterRequest(NativeHandle):
             (self, int(context)),
             consumed_indices=(0,),
         )
-        return RegisterRequest(handle)
+        return _wrap_owned_handle(RegisterRequest, handle)
 
 
 class ExtensionRecognition(NativeHandle):
@@ -303,8 +374,10 @@ class ExtensionRecognition(NativeHandle):
         registry: ClientExtensionRegistry,
         vendor_identifier: str,
         value: ttlv.Structure,
+        *,
+        _token: object,
     ) -> None:
-        super().__init__(handle, owner=(registry, value))
+        super().__init__(handle, _token=_token, owner=(registry, value))
         self._registry = registry
         self._vendor_identifier = vendor_identifier
         self._value = value
@@ -359,6 +432,17 @@ def _make_handle(
     return output[0]
 
 
+@contextmanager
+def _staging_buffer_scope() -> Iterator[list[Any]]:
+    """Keep staged inputs registered until the builder completes or fails."""
+    buffers: list[Any] = []
+    try:
+        yield buffers
+    finally:
+        for buffer in buffers:
+            _wipe_staging_buffer(buffer)
+
+
 def _make_bytes(value: str) -> tuple[bytes, Any]:
     if not isinstance(value, str):
         errors.raise_for_status(4)
@@ -398,7 +482,9 @@ def create_extension_identity(
             len(raw_version),
         ),
     )
-    return ExtensionIdentity(handle, vendor_identifier, name, version)
+    return _wrap_owned_handle(
+        ExtensionIdentity, handle, vendor_identifier, name, version
+    )
 
 
 def create_compatibility(
@@ -425,13 +511,13 @@ def create_compatibility(
             len(maximum),
         ),
     )
-    return Compatibility(handle)
+    return _wrap_owned_handle(Compatibility, handle)
 
 
 def create_ttlv_path(first_tag: ttlv.Tag) -> TtlvPath:
     value = ttlv.tag_value(first_tag)
     handle = _make_handle("kmipkit_ttlv_path_t", "kmipkit_ttlv_path_create", (value,))
-    return TtlvPath(handle, (value,))
+    return _wrap_owned_handle(TtlvPath, handle, (value,))
 
 
 def with_child_tag(path: TtlvPath, tag: ttlv.Tag) -> TtlvPath:
@@ -442,7 +528,7 @@ def with_child_tag(path: TtlvPath, tag: ttlv.Tag) -> TtlvPath:
         (path, value),
         consumed_indices=(0,),
     )
-    return TtlvPath(handle, (*path.tags, value))
+    return _wrap_owned_handle(TtlvPath, handle, (*path.tags, value))
 
 
 def create_discriminator(path: TtlvPath, scalar_value: ttlv.Value) -> Discriminator:
@@ -458,7 +544,9 @@ def create_discriminator(path: TtlvPath, scalar_value: ttlv.Value) -> Discrimina
         (path, scalar_value),
         consumed_indices=(0, 1),
     )
-    return Discriminator(handle, path, scalar_type, scalar_value_copy)
+    return _wrap_owned_handle(
+        Discriminator, handle, path, scalar_type, scalar_value_copy
+    )
 
 
 def scalar_schema(item_type: ttlv.ItemType) -> ExtensionSchema:
@@ -467,7 +555,7 @@ def scalar_schema(item_type: ttlv.ItemType) -> ExtensionSchema:
         "kmipkit_extension_schema_scalar",
         (int(item_type),),
     )
-    return ExtensionSchema(handle)
+    return _wrap_owned_handle(ExtensionSchema, handle)
 
 
 def structure_schema(
@@ -507,7 +595,9 @@ def structure_schema(
             int(preserve_undeclared_children),
         ),
     )
-    return ExtensionSchema(handle, owner=(child_snapshot, order_snapshot))
+    return _wrap_owned_handle(
+        ExtensionSchema, handle, owner=(child_snapshot, order_snapshot)
+    )
 
 
 def _child_rule(
@@ -519,7 +609,7 @@ def _child_rule(
         f"kmipkit_extension_child_rule_{mode}",
         (tag_value, schema._pointer()),
     )
-    return ExtensionChildRule(handle, owner=(tag, schema))
+    return _wrap_owned_handle(ExtensionChildRule, handle, owner=(tag, schema))
 
 
 def required_child_rule(tag: ttlv.Tag, schema: ExtensionSchema) -> ExtensionChildRule:
@@ -542,7 +632,9 @@ def create_extension_order_constraint(
         "kmipkit_extension_order_constraint_create",
         (ttlv.tag_value(before_tag), ttlv.tag_value(after_tag)),
     )
-    return ExtensionOrderConstraint(handle, owner=(before_tag, after_tag))
+    return _wrap_owned_handle(
+        ExtensionOrderConstraint, handle, owner=(before_tag, after_tag)
+    )
 
 
 def _schema_transform(
@@ -554,7 +646,7 @@ def _schema_transform(
         (schema, *values),
         consumed_indices=(0,),
     )
-    return ExtensionSchema(handle)
+    return _wrap_owned_handle(ExtensionSchema, handle)
 
 
 def with_minimum_length(schema: ExtensionSchema, value: int) -> ExtensionSchema:
@@ -613,7 +705,8 @@ def create_extension_definition(
             schema._pointer(),
         ),
     )
-    return ExtensionDefinition(
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         handle, identity, discriminator, compatibility=compatibility, schema=schema
     )
 
@@ -653,7 +746,9 @@ def validate_extension_value(
             (target._pointer(), value._pointer(), limits._pointer()),
             out_index=2,
         )
-        return ValidatedExtensionValue(handle, target.identity, owner=target)
+        return _wrap_owned_handle(
+            ValidatedExtensionValue, handle, target.identity, owner=target
+        )
     if not isinstance(target, ClientExtensionRegistry):
         errors.raise_for_status(4)
     if (
@@ -670,7 +765,7 @@ def validate_extension_value(
         (target._pointer(), identity._pointer(), value._pointer(), limits._pointer()),
         out_index=4,
     )
-    return RegisteredExtensionValue(handle, identity)
+    return _wrap_owned_handle(RegisteredExtensionValue, handle, identity)
 
 
 def create_extension_registry_limits(*values: int) -> ExtensionRegistryLimits:
@@ -735,7 +830,7 @@ def create_client_extension_registry(
         "kmipkit_client_extension_registry_create_v1",
         (definition_array, len(source), _native_limits(limit_values)),
     )
-    return ClientExtensionRegistry(handle, source, limits)
+    return _wrap_owned_handle(ClientExtensionRegistry, handle, source, limits)
 
 
 def create_client_configuration(
@@ -749,7 +844,7 @@ def create_client_configuration(
         (registry,),
         consumed_indices=(0,),
     )
-    return ClientConfiguration(handle, definitions, limits)
+    return _wrap_owned_handle(ClientConfiguration, handle, definitions, limits)
 
 
 def client_configuration_extension_registry(
@@ -760,7 +855,8 @@ def client_configuration_extension_registry(
         "kmipkit_client_configuration_extension_registry",
         (configuration._pointer(),),
     )
-    return ClientExtensionRegistry(
+    return _wrap_owned_handle(
+        ClientExtensionRegistry,
         handle, configuration._definitions, configuration.limits
     )
 
@@ -793,7 +889,8 @@ def definition_at(
     if output[0] == ffi.NULL:
         return None
     metadata = registry._definitions[index]
-    return ExtensionDefinition(
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         output[0],
         metadata.identity,
         metadata.discriminator,
@@ -820,8 +917,9 @@ def definition_for_identity(
     metadata_by_key = {_identity_key(item): item for item in registry._definitions}
     metadata = metadata_by_key.get(_identity_tuple(identity))
     if metadata is None:
-        return ExtensionDefinition(output[0], identity)
-    return ExtensionDefinition(
+        return _wrap_owned_handle(ExtensionDefinition, output[0], identity)
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         output[0],
         metadata.identity,
         metadata.discriminator,
@@ -838,13 +936,15 @@ def extension_definition_identity(definition: ExtensionDefinition) -> ExtensionI
         (definition._pointer(),),
     )
     identity = definition.identity
-    return ExtensionIdentity(
+    return _wrap_owned_handle(
+        ExtensionIdentity,
         handle, identity.vendor_identifier, identity.name, identity.version
     )
 
 
 def _identity_text(identity: ExtensionIdentity, symbol: str) -> str:
-    value = ttlv.Value(
+    value = _wrap_owned_handle(
+        ttlv.Value,
         _make_handle(
             "kmipkit_ttlv_value_t",
             symbol,
@@ -898,8 +998,9 @@ def extension_definition_information(
         return None
     metadata = definition.information
     if metadata is None:
-        return ExtensionInformation(output[0], None)
-    return ExtensionInformation(
+        return _wrap_owned_handle(ExtensionInformation, output[0], None)
+    return _wrap_owned_handle(
+        ExtensionInformation,
         output[0],
         metadata.extension_name,
         metadata.tag,
@@ -918,7 +1019,7 @@ def create_extension_information(extension_name: str) -> ExtensionInformation:
         "kmipkit_extension_information_create",
         (data, len(raw)),
     )
-    return ExtensionInformation(handle, extension_name)
+    return _wrap_owned_handle(ExtensionInformation, handle, extension_name)
 
 
 def _with_information(
@@ -1009,7 +1110,7 @@ def extension_information_to_ttlv(information: ExtensionInformation) -> ttlv.Str
         "kmipkit_extension_information_to_ttlv",
         (information._pointer(),),
     )
-    return ttlv.Structure(handle, owner=information)
+    return _wrap_owned_handle(ttlv.Structure, handle, owner=information)
 
 
 def with_extension_information(
@@ -1031,7 +1132,8 @@ def with_extension_information(
                 definition.schema._pointer(),
             ),
         )
-        source = ExtensionDefinition(
+        source = _wrap_owned_handle(
+            ExtensionDefinition,
             cloned_handle,
             definition.identity,
             definition.discriminator,
@@ -1045,7 +1147,8 @@ def with_extension_information(
         (source, information._pointer()),
         consumed_indices=(0,),
     )
-    return ExtensionDefinition(
+    return _wrap_owned_handle(
+        ExtensionDefinition,
         handle,
         definition.identity,
         definition.discriminator,
@@ -1074,7 +1177,9 @@ def inspect_extension(
         ),
         out_index=4,
     )
-    return ExtensionRecognition(handle, registry, vendor_identifier, value)
+    return _wrap_owned_handle(
+        ExtensionRecognition, handle, registry, vendor_identifier, value
+    )
 
 
 def is_recognized(recognition: ExtensionRecognition) -> bool:
@@ -1128,7 +1233,7 @@ def validated_value(
     )
     if output[0] == ffi.NULL:
         return None
-    return ValidatedExtensionValue(output[0], owner=recognition)
+    return _wrap_owned_handle(ValidatedExtensionValue, output[0], owner=recognition)
 
 
 def extension_recognition_generic_value(
@@ -1139,7 +1244,7 @@ def extension_recognition_generic_value(
         "kmipkit_extension_recognition_generic_value",
         (recognition._pointer(),),
     )
-    return ttlv.TtlvStructureView(handle, owner=recognition)
+    return _wrap_owned_handle(ttlv.TtlvStructureView, handle, owner=recognition)
 
 
 def validated_extension_identity(value: ValidatedExtensionValue) -> ExtensionIdentity:
@@ -1148,7 +1253,9 @@ def validated_extension_identity(value: ValidatedExtensionValue) -> ExtensionIde
         "kmipkit_validated_extension_value_identity",
         (value._pointer(),),
     )
-    return _populate_identity_fields(ExtensionIdentity(handle, None, None, None))
+    return _populate_identity_fields(
+        _wrap_owned_handle(ExtensionIdentity, handle, None, None, None)
+    )
 
 
 def validated_extension_value_generic_value(
@@ -1159,7 +1266,7 @@ def validated_extension_value_generic_value(
         "kmipkit_validated_extension_value_generic_value",
         (value._pointer(),),
     )
-    return ttlv.TtlvStructureView(handle, owner=value)
+    return _wrap_owned_handle(ttlv.TtlvStructureView, handle, owner=value)
 
 
 def value_at(value: ValidatedExtensionValue, path: TtlvPath) -> ttlv.TtlvValueView:
@@ -1168,7 +1275,7 @@ def value_at(value: ValidatedExtensionValue, path: TtlvPath) -> ttlv.TtlvValueVi
         "kmipkit_validated_extension_value_value_at",
         (value._pointer(), path._pointer()),
     )
-    return ttlv.TtlvValueView(handle, owner=(value, path))
+    return _wrap_owned_handle(ttlv.TtlvValueView, handle, owner=(value, path))
 
 
 def create_client_request_message_extension(
@@ -1182,7 +1289,7 @@ def create_client_request_message_extension(
         (value, int(criticality_indicator)),
         consumed_indices=(0,),
     )
-    return ClientRequestMessageExtension(handle)
+    return _wrap_owned_handle(ClientRequestMessageExtension, handle)
 
 
 def with_extension(
@@ -1194,7 +1301,27 @@ def with_extension(
         (item, extension),
         consumed_indices=(0, 1),
     )
-    return ClientBatchItem(handle)
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def with_unique_batch_item_id(
+    item: ClientBatchItem, identifier: bytes | bytearray | memoryview
+) -> ClientBatchItem:
+    """Return a new request item with the caller-selected opaque identity bytes."""
+    if not isinstance(item, ClientBatchItem) or not isinstance(
+        identifier, (bytes, bytearray, memoryview)
+    ):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        raw, data = _owned_bytes(identifier, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        staging_buffers.append(data)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_with_unique_batch_item_id",
+            (item, data, len(raw)),
+            consumed_indices=(0,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def client_batch_item_discover_versions() -> ClientBatchItem:
@@ -1204,7 +1331,7 @@ def client_batch_item_discover_versions() -> ClientBatchItem:
         "kmipkit_client_batch_item_discover_versions",
         (),
     )
-    return ClientBatchItem(handle)
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
@@ -1215,7 +1342,507 @@ def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
         (request,),
         consumed_indices=(0,),
     )
-    return ClientBatchItem(handle)
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -> Any:
+    if value is None:
+        if required:
+            errors.raise_for_status(4)
+        return ffi.NULL
+    if not isinstance(value, ttlv.Structure):
+        errors.raise_for_status(4)
+    return value._pointer()
+
+
+def _native_value(value: ttlv.Value | None) -> Any:
+    if value is None:
+        return ffi.NULL
+    if not isinstance(value, ttlv.Value):
+        errors.raise_for_status(4)
+    return value._pointer()
+
+
+def _native_optional_span(
+    value: bytes | bytearray | memoryview | None,
+    staging_buffers: list[Any] | None = None,
+) -> tuple[Any, Any]:
+    """Create a borrowed span record while preserving omitted versus empty input."""
+    if value is None:
+        return ffi.NULL, None
+    raw, data = _owned_bytes(value, _MAX_OPERATION_INPUT_BYTES)
+    if staging_buffers is not None:
+        staging_buffers.append(data)
+    span = ffi.new(
+        "kmipkit_byte_span_v1_t *",
+        {"data": data if raw else ffi.NULL, "length": len(raw)},
+    )
+    return span, data
+
+
+def _native_optional_indicator(value: bool | None) -> int:
+    if value is None:
+        return 0
+    if not isinstance(value, bool):
+        errors.raise_for_status(4)
+    return 2 if value else 1
+
+
+def _native_unique_identifier(
+    value: UniqueIdentifier | None,
+    staging_buffers: list[Any] | None = None,
+) -> tuple[Any, Any]:
+    if value is None:
+        return ffi.NULL, None
+    if not isinstance(value, UniqueIdentifier):
+        errors.raise_for_status(4)
+    record = ffi.new("kmipkit_unique_identifier_v1_t *")
+    record.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    record.abi_version = 1
+    record.kind = int(value.kind)
+    record.reserved = 0
+    record.enumeration_value = 0
+    record.integer_value = 0
+    owner = None
+    if value.kind is UniqueIdentifierKind.TEXT_STRING:
+        raw, owner = _owned_bytes(value.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
+        if staging_buffers is not None:
+            staging_buffers.append(owner)
+        data = owner if raw else ffi.NULL
+        record.text_data = data
+        record.text_length = len(raw)
+    else:
+        record.text_data = ffi.NULL
+        record.text_length = 0
+        if value.kind is UniqueIdentifierKind.ENUMERATION:
+            record.enumeration_value = int(value.number)
+        else:
+            record.integer_value = int(value.number)
+    return record, owner
+
+
+def client_batch_item_create(
+    object_type: int,
+    attributes: ttlv.Structure,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a Create batch item with required Attributes and optional masks."""
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_create",
+        (
+            raw_object_type,
+            _native_structure(attributes, required=True),
+            _native_structure(protection_storage_masks),
+        ),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_key_pair(
+    common_attributes: ttlv.Structure | None = None,
+    private_key_attributes: ttlv.Structure | None = None,
+    public_key_attributes: ttlv.Structure | None = None,
+    common_protection_storage_masks: ttlv.Structure | None = None,
+    private_protection_storage_masks: ttlv.Structure | None = None,
+    public_protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a Create Key Pair batch item preserving each optional group separately."""
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_create_key_pair",
+        (
+            _native_structure(common_attributes),
+            _native_structure(private_key_attributes),
+            _native_structure(public_key_attributes),
+            _native_structure(common_protection_storage_masks),
+            _native_structure(private_protection_storage_masks),
+            _native_structure(public_protection_storage_masks),
+        ),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_split_key(
+    object_type: int,
+    split_key_parts: int,
+    split_key_threshold: int,
+    split_key_method: int,
+    attributes: ttlv.Structure,
+    *,
+    unique_identifier: UniqueIdentifier | None = None,
+    prime_field_size: bytes | bytearray | memoryview | None = None,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a Create Split Key item with signed fields and explicit optional values."""
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    parts = _integer_range(split_key_parts, -(1 << 31), (1 << 31) - 1)
+    threshold = _integer_range(split_key_threshold, -(1 << 31), (1 << 31) - 1)
+    method = _integer_range(split_key_method, 0, 0xFFFF_FFFF)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        if prime_field_size is None:
+            has_prime = 0
+            prime_data = ffi.NULL
+            prime_length = 0
+        else:
+            if not isinstance(prime_field_size, (bytes, bytearray, memoryview)):
+                errors.raise_for_status(4)
+            raw_prime, prime_owner = _owned_bytes(
+                prime_field_size, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES
+            )
+            staging_buffers.append(prime_owner)
+            prime_data = prime_owner if raw_prime else ffi.NULL
+            has_prime = 1
+            prime_length = len(raw_prime)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_create_split_key",
+            (
+                raw_object_type,
+                identifier,
+                parts,
+                threshold,
+                method,
+                has_prime,
+                prime_data,
+                prime_length,
+                _native_structure(attributes, required=True),
+                _native_structure(protection_storage_masks),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_certify(
+    unique_identifier: UniqueIdentifier | None = None,
+    *,
+    certificate_request_type: int | None = None,
+    certificate_request_value: bytes | bytearray | memoryview | None = None,
+    attributes: ttlv.Structure | None = None,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create one typed Certify item, copying its opaque request value as sensitive input."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        if certificate_request_type is None:
+            has_request_type = 0
+            request_type = 0
+        else:
+            has_request_type = 1
+            request_type = _integer_range(certificate_request_type, 0, 0xFFFF_FFFF)
+        request_value, _ = _native_optional_span(
+            certificate_request_value, staging_buffers
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_certify",
+            (
+                identifier,
+                has_request_type,
+                request_type,
+                request_value,
+                _native_structure(attributes),
+                _native_structure(protection_storage_masks),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_check(
+    unique_identifier: UniqueIdentifier | None = None,
+    *,
+    usage_limits_count: int | None = None,
+    cryptographic_usage_mask: int | None = None,
+    lease_time: int | None = None,
+) -> ClientBatchItem:
+    """Create one typed Check item with optional KMIP 2.1 §6.1.7 fields."""
+    if usage_limits_count is None:
+        has_usage_limits_count = 0
+        count = 0
+    else:
+        has_usage_limits_count = 1
+        count = _integer_range(usage_limits_count, -(1 << 63), (1 << 63) - 1)
+    if cryptographic_usage_mask is None:
+        has_cryptographic_usage_mask = 0
+        usage_mask = 0
+    else:
+        has_cryptographic_usage_mask = 1
+        usage_mask = _integer_range(cryptographic_usage_mask, -(1 << 31), (1 << 31) - 1)
+    if lease_time is None:
+        has_lease_time = 0
+        lease = 0
+    else:
+        has_lease_time = 1
+        lease = _integer_range(lease_time, 0, (1 << 32) - 1)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_check",
+            (
+                identifier,
+                has_usage_limits_count,
+                count,
+                has_cryptographic_usage_mask,
+                usage_mask,
+                has_lease_time,
+                lease,
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_delegated_login(
+    rights: ttlv.Structure,
+    *,
+    lease_time_interval: int | None = None,
+    lease_time_date_time: int | None = None,
+    request_count: int | None = None,
+    usage_limits: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.12 Delegated Login item from generic Rights TTLV."""
+    if rights is None or not isinstance(rights, ttlv.Structure):
+        errors.raise_for_status(4)
+    if lease_time_interval is not None and lease_time_date_time is not None:
+        errors.raise_for_status(4)
+    if lease_time_interval is not None:
+        lease_time_kind = 1
+        lease_time = _integer_range(lease_time_interval, 0, 0xFFFF_FFFF)
+    elif lease_time_date_time is not None:
+        lease_time_kind = 2
+        lease_time = _integer_range(lease_time_date_time, -(1 << 63), (1 << 63) - 1)
+    else:
+        lease_time_kind = 0
+        lease_time = 0
+    if request_count is None:
+        has_request_count = 0
+        count = 0
+    else:
+        has_request_count = 1
+        count = _integer_range(request_count, -(1 << 31), (1 << 31) - 1)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_delegated_login",
+        (
+            _native_structure(rights, required=True),
+            lease_time_kind,
+            lease_time,
+            has_request_count,
+            count,
+            _native_structure(usage_limits),
+        ),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_derive_key(
+    object_type: int,
+    unique_identifiers: list[UniqueIdentifier] | tuple[UniqueIdentifier, ...],
+    derivation_method: int,
+    derivation_parameters: ttlv.Structure,
+    attributes: ttlv.Structure,
+) -> ClientBatchItem:
+    """Create one typed KMIP 2.1 §6.1.14 Derive Key item."""
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    raw_method = _integer_range(derivation_method, 0, 0xFFFF_FFFF)
+    identifiers = _bounded_snapshot(unique_identifiers, 100_000)
+    if not identifiers or any(not isinstance(value, UniqueIdentifier) for value in identifiers):
+        errors.raise_for_status(4)
+    if not isinstance(derivation_parameters, ttlv.Structure) or not isinstance(
+        attributes, ttlv.Structure
+    ):
+        errors.raise_for_status(4)
+
+    with _staging_buffer_scope() as staging_buffers:
+        native_identifiers = ffi.new("kmipkit_unique_identifier_v1_t[]", len(identifiers))
+        total_identifier_bytes = 0
+        for index, identifier in enumerate(identifiers):
+            native_identifier, _owner = _native_unique_identifier(identifier, staging_buffers)
+            total_identifier_bytes += native_identifier.text_length
+            if total_identifier_bytes > _MAX_OPERATION_INPUT_BYTES:
+                errors.raise_for_status(6)
+            native_identifiers[index] = native_identifier[0]
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_derive_key",
+            (
+                raw_object_type,
+                native_identifiers,
+                len(identifiers),
+                raw_method,
+                _native_structure(derivation_parameters, required=True),
+                _native_structure(attributes, required=True),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+def client_batch_item_get_usage_allocation(
+    unique_identifier: UniqueIdentifier | None,
+    usage_limits_count: int,
+) -> ClientBatchItem:
+    """Create a Get Usage Allocation item with the exact signed 64-bit unit count."""
+    count = _integer_range(usage_limits_count, -(1 << 63), (1 << 63) - 1)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_get_usage_allocation",
+            (identifier, count),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_hash(
+    parameters: ttlv.Structure,
+    data: ttlv.Value | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a Hash request item without performing local cryptography."""
+    with _staging_buffer_scope() as staging_buffers:
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_hash",
+            (
+                _native_structure(parameters, required=True),
+                _native_value(data),
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_mac(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a MAC request item while preserving optional wire fields."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_mac",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_mac_verify(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    mac_data: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a MAC Verify request item and copy opaque MAC bytes at the ABI boundary."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        mac_span, _ = _native_optional_span(mac_data, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_mac_verify",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                mac_span,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_sign(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    digested_data: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a Sign request item; KMIPKit never computes a digest or signature locally."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        digest_span, _ = _native_optional_span(digested_data, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_sign",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                digest_span,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_signature_verify(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    digested_data: bytes | bytearray | memoryview | None = None,
+    signature_data: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+) -> ClientBatchItem:
+    """Create a Signature Verify request item using opaque signature inputs."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        digest_span, _ = _native_optional_span(digested_data, staging_buffers)
+        signature_span, _ = _native_optional_span(signature_data, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_signature_verify",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                digest_span,
+                signature_span,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def client_batch_item_extension_count(item: ClientBatchItem) -> int:
@@ -1238,7 +1865,9 @@ def client_batch_item_extension_identity_at(
         "kmipkit_client_batch_item_extension_identity_at",
         (item._pointer(), index),
     )
-    return _populate_identity_fields(ExtensionIdentity(handle, None, None, None))
+    return _populate_identity_fields(
+        _wrap_owned_handle(ExtensionIdentity, handle, None, None, None)
+    )
 
 
 def client_batch_item_extension_criticality_indicator_at(
@@ -1279,13 +1908,28 @@ __all__ = [
     "OpaqueObjectContext",
     "RegisteredExtensionValue",
     "RegisterRequest",
+    "UniqueIdentifier",
+    "UniqueIdentifierKind",
     "TtlvPath",
     "ValidatedExtensionValue",
     "client_batch_item_discover_versions",
+    "client_batch_item_hash",
+    "client_batch_item_mac",
+    "client_batch_item_mac_verify",
+    "client_batch_item_sign",
+    "client_batch_item_signature_verify",
     "client_batch_item_register",
+    "client_batch_item_create",
+    "client_batch_item_create_key_pair",
+    "client_batch_item_create_split_key",
+    "client_batch_item_certify",
+    "client_batch_item_check",
+    "client_batch_item_delegated_login",
+    "client_batch_item_get_usage_allocation",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",
+    "with_unique_batch_item_id",
     "client_configuration_extension_registry",
     "create_client_configuration",
     "create_client_extension_registry",

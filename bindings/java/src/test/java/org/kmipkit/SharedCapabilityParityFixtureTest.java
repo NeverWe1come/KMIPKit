@@ -1,7 +1,7 @@
 package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -21,6 +21,8 @@ import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.UniqueIdentifier;
 
 /** Executes the Java mappings declared by the shared API capability fixture. */
 final class SharedCapabilityParityFixtureTest {
@@ -38,12 +40,14 @@ final class SharedCapabilityParityFixtureTest {
     @Test
     void everyJavaFixtureMappingTargetsAnExecutableJUnitConsumer() throws Exception {
         String fixture = Files.readString(sharedFixturePath());
-        assertTrue(fixture.contains("\"parityLanguages\": [\"rust\", \"c\", \"java\"]"));
-        assertTrue(fixture.contains("\"plannedConsumerLanguages\": [\"rust\", \"c\"]"));
-        assertTrue(fixture.contains("\"executableConsumerLanguages\": [\"java\"]"));
+        assertEquals(List.of("rust", "c", "java", "python"),
+                stringArrayField(fixture, "parityLanguages"));
+        assertEquals(List.of(), stringArrayField(fixture, "plannedConsumerLanguages"));
+        assertEquals(List.of("rust", "c", "java", "python"),
+                stringArrayField(fixture, "executableConsumerLanguages"));
 
         List<String> ids = caseIds(fixture);
-        assertEquals(6, ids.size());
+        assertEquals(11, ids.size());
         assertEquals(ids.size(), ids.stream().distinct().count());
         for (String id : ids) {
             String item = caseById(fixture, id);
@@ -71,18 +75,70 @@ final class SharedCapabilityParityFixtureTest {
     }
 
     @Test
-    void apiLevelDiscoveryRemainsUnavailableUntilTheFacadeExists() throws IOException {
+    void apiLevelQueryMatchesSharedFixtureLocally() throws IOException {
         String item = caseById(Files.readString(sharedFixturePath()), API_LEVEL_CASE);
         assertEquals("api_level_discovery", stringField(item, "capability"));
-        assertFalse(RuntimeMetadata.capabilityIsAvailable("api_level_discovery"));
+        assertTrue(RuntimeMetadata.capabilityIsAvailable("api_level_discovery"));
+        assertEquals(List.of("high-level", "typed-protocol", "generic-ttlv"),
+                stringArrayField(item, "apiLevels"));
+        assertEquals(stringArrayField(item, "apiLevels"), RuntimeMetadata.apiLevels());
+        assertTrue(item.contains("\"networkCalls\": 0"));
+        assertTrue(item.contains("\"distinctFromKmipOperation\": \"Discover Versions\""));
+        assertTrue(item.contains("\"operationMappingCompleteness\": \"not-asserted\""));
     }
 
     @Test
-    void orderedBatchOutcomesRemainUnavailableUntilTheExecutorExists() throws IOException {
+    void orderedBatchOutcomesMatchTheSharedFixtureAndUseOneExchange() throws IOException {
         String item = caseById(Files.readString(sharedFixturePath()), BATCH_CASE);
-        assertEquals("ordered_batch_outcomes", stringField(item, "capability"));
-        assertFalse(RuntimeMetadata.capabilityIsAvailable("ordered_batch_outcomes"));
-        assertTrue(item.contains("\"javaObservedOutput\": {\"available\": false, \"transportExchangeCount\": 0}"));
+        assertEquals("client_execution", stringField(item, "capability"));
+        assertTrue(RuntimeMetadata.capabilityIsAvailable("client_execution"));
+        assertTrue(item.contains("\"available\": true"));
+        assertTrue(item.contains("\"correlationValueHex\": \"00a17f\""));
+        assertTrue(item.contains("\"transportExchangeCount\": 1"));
+    }
+
+    @Test
+    void creationCreateMatchesSharedFixture() throws IOException {
+        String item = caseById(Files.readString(sharedFixturePath()), "creation.create.request-response.v1");
+        assertTrue(item.contains("\"attributesPresent\": true"));
+        assertTrue(item.contains("\"resultMessage\": null"));
+        try (TtlvStructure attributes = TtlvStructure.create();
+                TtlvStructure masks = TtlvStructure.create();
+                ClientBatchItem request = ClientBatchItem.create(0xffff_ffffL, attributes, masks)) {
+            assertNotNull(request);
+        }
+    }
+
+    @Test
+    void creationKeyPairMatchesSharedFixture() throws IOException {
+        String item = caseById(Files.readString(sharedFixturePath()), "creation.key-pair.request-response.v1");
+        assertTrue(item.contains("\"groupsRemainDistinct\": true"));
+        assertTrue(item.contains("\"privateUniqueIdentifier\""));
+        try (TtlvStructure common = TtlvStructure.create();
+                TtlvStructure privateAttributes = TtlvStructure.create();
+                TtlvStructure publicAttributes = TtlvStructure.create();
+                TtlvStructure commonMasks = TtlvStructure.create();
+                TtlvStructure publicMasks = TtlvStructure.create();
+                ClientBatchItem request = ClientBatchItem.createKeyPair(
+                        common, privateAttributes, publicAttributes, commonMasks, null, publicMasks)) {
+            assertNotNull(request);
+        }
+    }
+
+    @Test
+    void creationSplitKeyMatchesSharedFixture() throws IOException {
+        String item = caseById(Files.readString(sharedFixturePath()), "creation.split-key.request-response.v1");
+        assertTrue(item.contains("\"splitKeyParts\": -3"));
+        assertTrue(item.contains("\"correlationValueHex\": \"00ff80\""));
+        assertTrue(item.contains("\"resultMessage\": null"));
+        assertTrue(item.contains("\"status\": 2"));
+        try (TtlvStructure attributes = TtlvStructure.create();
+                TtlvStructure masks = TtlvStructure.create();
+                ClientBatchItem request = ClientBatchItem.createSplitKey(
+                        0xf000_0000L, UniqueIdentifier.integer(-7), -3, 4, 0xdead_beefL,
+                        null, attributes, masks)) {
+            assertNotNull(request);
+        }
     }
 
     @Test
@@ -206,6 +262,21 @@ final class SharedCapabilityParityFixtureTest {
     private static String stringField(String source, String name) {
         Pattern field = Pattern.compile("\\\"" + Pattern.quote(name) + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"");
         return field(field, source, "shared capability fixture is missing " + name);
+    }
+
+    private static List<String> stringArrayField(String source, String name) {
+        Pattern field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*\\[([^\\]]*)\\]");
+        Matcher matcher = field.matcher(source);
+        if (!matcher.find()) {
+            throw new AssertionError("shared capability fixture is missing " + name);
+        }
+        Matcher values = Pattern.compile("\\\"([^\\\"]*)\\\"").matcher(matcher.group(1));
+        List<String> result = new ArrayList<>();
+        while (values.find()) {
+            result.add(values.group(1));
+        }
+        return List.copyOf(result);
     }
 
     private static Path sharedFixturePath() {

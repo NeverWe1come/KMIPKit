@@ -52,8 +52,8 @@ KMIPKIT-0019 owns the initial shared Cryptographic Parameters, `OperationData`, 
 - Model MAC Data, Signature Data, and Digested Data as opaque byte strings. Owned KMIPKit byte storage uses the existing zeroizing type; Debug/Display never prints contents.
 - Use open raw enumeration wrappers for algorithm and Validity Indicator values. Do not introduce closed-enum conversion that rejects vendor or future values.
 - Validate locally decidable field presence and type rules before transmission: Hash Cryptographic Parameters; required single-part input; Sign Data-or-Digested-Data form; and verification inputs. Do not inspect server-held attributes or reject a choice based on unknown remote state.
-- Borrow response data from `ResponseBatchItemView` where practical and retain the source generic response item. Success payloads expose the table's fields; non-success retains the shared result without a fabricated successful payload. Successful MAC, MAC Verify, Sign, and Signature Verify payloads validate exactly one well-formed Unique Identifier, returning a sanitized typed shape error for missing, duplicate, or malformed values while leaving generic response access available.
-- For final multi-part MAC Verify and Signature Verify responses, accept either Validity Indicator presence or absence while `KMIPKIT-DISC-048` is open. For non-final responses, reject an unexpected indicator in the typed response shape while retaining the generic TTLV source for inspection.
+- Borrow response data from `ResponseBatchItemView` where practical. Success payloads expose the table's fields; non-success retains the shared result without a fabricated successful payload. Successful MAC, MAC Verify, Sign, and Signature Verify payloads validate exactly one well-formed Unique Identifier, returning a sanitized typed shape error for missing, duplicate, or malformed values while preserving generic response access for those exact failures only.
+- For final multi-part MAC Verify and Signature Verify responses, accept either Validity Indicator presence or absence while `KMIPKIT-DISC-048` is open. For non-final responses, reject an unexpected indicator in the typed response shape without retaining generic response TTLV.
 - Assign no local semantics to the listed operation error reasons. Preserve any KMIP result value allowed by the common result contract, including unknown codes.
 
 ### Client execution
@@ -61,7 +61,7 @@ KMIPKIT-0019 owns the initial shared Cryptographic Parameters, `OperationData`, 
 - Add five variants to the closed `ClientRequest` and `ClientOperation` pipelines in `crates/kmipkit-client/src/execute.rs`, including operation code, payload encoding, response dispatch, identity/correlation, and redacted request formatting.
 - Add explicit synchronous client conveniences for each request following existing operation methods and `RequestOptions` overloads. They use the shared batch writer and exchange exactly once.
 - Keep batching and per-item result association in the shared execution layer. Do not add operation retries, automatic multipart continuations, polling, local cryptography, server state lookup, or additional transport behavior.
-- Add response accessors to `ClientResponseView`/`ClientBatchItemResponse` according to existing conventions; keep generic response tree access available for unrecognized fields.
+- Add response accessors to `ClientResponseView`/`ClientBatchItemResponse` according to existing conventions; keep generic response tree access available for successful typed responses and retain it in errors only for the FR-015 Unique Identifier shape failures.
 
 ### Normative catalog
 
@@ -74,7 +74,7 @@ KMIPKIT-0019 owns the initial shared Cryptographic Parameters, `OperationData`, 
 ### Test strategy for the implementation PR
 
 - **Protocol model**: positive and negative payload construction/conversion tests for every request/response/error table, field types, requiredness, optionality, single/multi-part shapes, output omission, and exact wire enumeration values. Include missing, duplicate, and malformed Unique Identifier negatives for successful MAC, MAC Verify, Sign, and Signature Verify responses.
-- **Response discrepancy**: single-part indicator required; non-final multipart indicator is a typed shape error; final multipart indicator present and absent both decode; generic TTLV preserves the original received tree in every case.
+- **Response discrepancy**: single-part indicator required; non-final multipart indicator is a typed shape error with no retained error TTLV; final multipart indicator present and absent both decode. Generic TTLV remains available for successful typed responses and the FR-015 Unique Identifier shape errors only.
 - **Losslessness**: property and round-trip tests for all standard/extension enum values, unknown raw values, generic parameters, byte strings, repeated/unknown fields, and response-tree borrowing.
 - **Client execution**: fake-transport tests prove correct operation code, exactly one exchange, request/response association in batches, Result Status/Reason/Message preservation, Pending passthrough, request delivery state, and no retry.
 - **Security**: redaction tests use sentinel inputs for Data, Digested Data, MAC Data, Signature Data, and parameters across Debug, Display, and error formatting; owned bytes continue to use the shared zeroizing owner.
@@ -132,7 +132,7 @@ specs/021-hash-mac-signature-operations/traceability.md
 
 - **Shared model dependency not yet implemented**: sequence after KMIPKIT-0019 and reuse its merged public types; do not create parallel `OperationData` or Cryptographic Parameters models.
 - **Large standardized enumeration sets**: test every assigned value and extension preservation through table-driven vectors; generate no public binding output in this feature.
-- **Conflicting final multipart verification shape**: keep `KMIPKIT-DISC-048` open, accept both final forms, reject indicators on non-final typed responses, and retain generic TTLV evidence.
+- **Conflicting final multipart verification shape**: keep `KMIPKIT-DISC-048` open, accept both final forms, reject indicators on non-final typed responses without retaining response TTLV, and retain generic TTLV evidence only for FR-015 Unique Identifier shape failures.
 - **Unavailable official fixtures**: label tests as source-derived and report official fixtures as unavailable; do not imply official test-case passes.
 - **Sensitive request and response bytes**: use shared secret storage/redaction patterns and test all formatting/error boundaries with sentinel bytes.
 - **Release branch advances during implementation**: update from the active release branch, resolve conflicts, validate immutable source hashes, and rerun catalog, formatting, lint, tests, coverage, and security checks.

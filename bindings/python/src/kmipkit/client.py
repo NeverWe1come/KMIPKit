@@ -3,21 +3,31 @@
 This module exposes transport configuration, typed ordered batches, and common
 outcome metadata. Per-operation builders remain owned by their operation
 specifications; callers can add only the typed batch items those specs expose.
-Python-owned copies of credentials and returned correlation values follow the
-runtime's normal memory-management limits and cannot be deterministically
-zeroized by KMIPKit.
+KMIPKit-owned credential inputs use mutable buffers that are wiped before
+release. Copies returned to Python callers and copies retained by Python or
+foreign runtimes remain subject to those runtimes' memory-management limits.
 """
 
 from __future__ import annotations
 
+import hashlib
+import ipaddress
+import sys
 from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
 from typing import Any, Self
+from urllib.parse import urlsplit
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
-from ._handles import NativeHandle, _NATIVE_CALL_LOCK, _owned_bytes
+from ._handles import (
+    NativeHandle,
+    _NATIVE_CALL_LOCK,
+    _integer_range,
+    _owned_bytes,
+    _wrap_owned_handle,
+)
 
 
 _MAX_INPUT_BYTES = 16 * 1024 * 1024
@@ -27,17 +37,8 @@ _MAX_TRANSPORT_CONFIG_ITEMS = 4_096
 _MAX_U64 = (1 << 64) - 1
 _MIN_I64 = -(1 << 63)
 _MAX_I64 = (1 << 63) - 1
-
-
-def _integer_range(value: int, minimum: int, maximum: int) -> int:
-    if not isinstance(value, int) or isinstance(value, bool):
-        errors.raise_for_status(4)
-    # Invoke the built-in descriptor to bypass rich-comparison overrides on
-    # int subclasses, then retain only the canonical fixed-width value.
-    number = int.__index__(value)
-    if number < minimum or number > maximum:
-        errors.raise_for_status(4)
-    return number
+_MIN_I32 = -(1 << 31)
+_MAX_I32 = (1 << 31) - 1
 
 
 def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
@@ -45,6 +46,14 @@ def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
     if not allow_zero and number == 0:
         errors.raise_for_status(4)
     return number
+
+
+def _is_ip_literal(host: str) -> bool:
+    try:
+        ipaddress.ip_address(host.strip("[]"))
+    except ValueError:
+        return False
+    return True
 
 
 class CredentialEncoding(IntEnum):
@@ -84,8 +93,59 @@ class BatchOutcome(IntEnum):
 
 
 @dataclass(frozen=True, slots=True)
+class ProtocolVersion:
+    """A KMIP protocol version pair returned by Discover Versions."""
+
+    major: int
+    minor: int
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class BatchItemMetadataV2:
+    """Version 2 metadata with an exact, redacted Result Message field.
+
+    The message is copied into a Python ``str`` before releasing the native
+    response item and is bounded by the response codec limit (16 MiB by
+    default). Python does not guarantee deterministic zeroization of that
+    external copy after it becomes unreachable.
+    """
+
+    operation: int
+    outcome: BatchOutcome | int
+    result_status: int
+    result_reason: int | None
+    result_message: str | None = field(repr=False)
+
+    def __repr__(self) -> str:
+        return (
+            "BatchItemMetadataV2(operation="
+            f"{self.operation}, outcome={self.outcome!r}, result_status={self.result_status}, "
+            f"result_reason={self.result_reason!r}, result_message=redacted)"
+        )
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "operation", _unsigned(self.operation, 32))
+        raw_outcome = _unsigned(self.outcome, 32)
+        try:
+            outcome: BatchOutcome | int = BatchOutcome(raw_outcome)
+        except ValueError:
+            outcome = raw_outcome
+        object.__setattr__(self, "outcome", outcome)
+        object.__setattr__(self, "result_status", _unsigned(self.result_status, 32))
+        if self.result_reason is not None:
+            object.__setattr__(self, "result_reason", _unsigned(self.result_reason, 32))
+        if self.result_message is not None:
+            if not isinstance(self.result_message, str):
+                errors.raise_for_status(4)
+            try:
+                self.result_message.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                errors.raise_for_status(4)
+
+
+@dataclass(frozen=True, slots=True)
 class Endpoint:
-    """A raw TLS host/port or HTTPS URI, with optional explicit routing values."""
+    """A raw TLS host/port or HTTPS URI, with an optional TLS name for IP hosts."""
 
     kind: EndpointKind
     address: str = field(repr=False)
@@ -102,14 +162,24 @@ class Endpoint:
             object.__setattr__(self, "port", port)
             if self.tls_server_name is not None:
                 _nonempty_text(self.tls_server_name)
+                if not _is_ip_literal(self.address):
+                    errors.raise_for_status(4)
             if self.target_uri is not None:
                 errors.raise_for_status(4)
             return
         if self.kind is EndpointKind.HTTPS:
             port = _unsigned(self.port, 16)
             object.__setattr__(self, "port", port)
-            if port != 0 or self.tls_server_name is not None:
+            if port != 0:
                 errors.raise_for_status(4)
+            if self.tls_server_name is not None:
+                _nonempty_text(self.tls_server_name)
+                try:
+                    host = urlsplit(self.address).hostname
+                except ValueError:
+                    errors.raise_for_status(4)
+                if host is None or not _is_ip_literal(host):
+                    errors.raise_for_status(4)
             if self.target_uri is not None:
                 _nonempty_text(self.target_uri)
             return
@@ -119,7 +189,7 @@ class Endpoint:
     def raw_tls(
         cls, host: str, port: int, *, tls_server_name: str | None = None
     ) -> Self:
-        """Create a raw TTLV-over-TLS endpoint."""
+        """Create a raw TLS endpoint, optionally overriding the name for an IP host."""
         validated = Endpoint(EndpointKind.RAW_TLS, host, port, tls_server_name)
         return cls(
             validated.kind,
@@ -130,9 +200,17 @@ class Endpoint:
         )
 
     @classmethod
-    def https(cls, uri: str, *, target_uri: str | None = None) -> Self:
-        """Create a TTLV-over-HTTPS endpoint."""
-        validated = Endpoint(EndpointKind.HTTPS, uri, target_uri=target_uri)
+    def https(
+        cls,
+        uri: str,
+        *,
+        tls_server_name: str | None = None,
+        target_uri: str | None = None,
+    ) -> Self:
+        """Create HTTPS with an optional TLS name for an IP endpoint."""
+        validated = Endpoint(
+            EndpointKind.HTTPS, uri, tls_server_name=tls_server_name, target_uri=target_uri
+        )
         return cls(
             validated.kind,
             validated.address,
@@ -142,15 +220,107 @@ class Endpoint:
         )
 
 
-@dataclass(frozen=True, slots=True)
+class _SecretBytes:
+    """Mutable owned bytes that are wiped before their backing storage is released."""
+
+    __slots__ = ("_buffer", "__weakref__")
+
+    def __init__(self, source: bytes | bytearray | memoryview) -> None:
+        self._buffer = bytearray(source)
+
+    @property
+    def buffer(self) -> bytearray:
+        """Return the privately owned mutable storage for internal FFI borrowing."""
+        return self._buffer
+
+    def clone(self) -> _SecretBytes:
+        return _SecretBytes(self._buffer)
+
+    def to_bytes(self) -> bytes:
+        return bytes(self._buffer)
+
+    def wipe(self) -> None:
+        memoryview(self._buffer)[:] = bytes(len(self._buffer))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _SecretBytes):
+            return NotImplemented
+        return self._buffer == other._buffer
+
+    def __del__(self) -> None:
+        try:
+            self.wipe()
+        except Exception:
+            # Destructors must not surface failures during interpreter shutdown.
+            pass
+
+
+@dataclass(frozen=True, slots=True, init=False, eq=False)
 class TransportInput:
     """Credential or trust material supplied as bytes or a local file path."""
 
     source: bytes | Path = field(repr=False)
     encoding: CredentialEncoding
 
-    def __post_init__(self) -> None:
+    def __init__(self, source: bytes | Path, encoding: CredentialEncoding) -> None:
+        if not isinstance(encoding, CredentialEncoding):
+            errors.raise_for_status(4)
+        if isinstance(source, bytes):
+            try:
+                view = memoryview(source)
+                if view.nbytes > _MAX_INPUT_BYTES:
+                    errors.raise_for_status(6)
+                owned_source: _SecretBytes | Path = _SecretBytes(view)
+            except (BufferError, TypeError, ValueError):
+                errors.raise_for_status(4)
+        elif isinstance(source, Path):
+            try:
+                path_bytes = _utf8_bytes(str(source))
+            except (TypeError, ValueError, UnicodeEncodeError):
+                errors.raise_for_status(4)
+            if (
+                not path_bytes
+                or b"\x00" in path_bytes
+                or len(path_bytes) > _MAX_TEXT_BYTES
+            ):
+                errors.raise_for_status(4)
+            owned_source = Path(path_bytes.decode("utf-8"))
+        else:
+            errors.raise_for_status(4)
+        object.__setattr__(self, "source", owned_source)
+        object.__setattr__(self, "encoding", encoding)
         _validate_transport_input(self)
+
+    @classmethod
+    def _from_secret(cls, source: _SecretBytes, encoding: CredentialEncoding) -> Self:
+        value = object.__new__(cls)
+        object.__setattr__(value, "source", source)
+        object.__setattr__(value, "encoding", encoding)
+        _validate_transport_input(value)
+        return value
+
+    def __getattribute__(self, name: str) -> Any:
+        if name == "source":
+            source = TransportInput.source.__get__(self, TransportInput)
+            if isinstance(source, _SecretBytes):
+                return source.to_bytes()
+            return source
+        return object.__getattribute__(self, name)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, TransportInput):
+            return NotImplemented
+        return (
+            self.encoding == other.encoding
+            and _transport_source(self) == _transport_source(other)
+        )
+
+    def __hash__(self) -> int:
+        source = _transport_source(self)
+        if isinstance(source, _SecretBytes):
+            digest = hashlib.blake2b(source.buffer, digest_size=16).digest()
+            return hash((digest, self.encoding))
+        return hash((source, self.encoding))
 
     @classmethod
     def memory(
@@ -165,12 +335,11 @@ class TransportInput:
             view = memoryview(data)
             if view.nbytes > _MAX_INPUT_BYTES:
                 errors.raise_for_status(6)
-            raw = view.tobytes()
         except (TypeError, ValueError):
             errors.raise_for_status(4)
-        if not raw:
+        if not view.nbytes:
             errors.raise_for_status(4)
-        return cls(raw, encoding)
+        return cls._from_secret(_SecretBytes(view), encoding)
 
     @classmethod
     def file(cls, path: str | Path, encoding: CredentialEncoding) -> Self:
@@ -193,29 +362,28 @@ def _validate_transport_input(value: TransportInput) -> None:
         errors.raise_for_status(4)
     if not isinstance(value.encoding, CredentialEncoding):
         errors.raise_for_status(4)
-    if isinstance(value.source, bytes):
-        try:
-            view = memoryview(value.source)
-            byte_count = view.nbytes
-        except (BufferError, TypeError, ValueError):
-            errors.raise_for_status(4)
+    source = _transport_source(value)
+    if isinstance(source, _SecretBytes):
+        byte_count = len(source.buffer)
         if byte_count == 0:
             errors.raise_for_status(4)
         if byte_count > _MAX_INPUT_BYTES:
             errors.raise_for_status(6)
-        if type(value.source) is not bytes:
-            object.__setattr__(value, "source", view.tobytes())
         return
-    if not isinstance(value.source, Path):
+    if not isinstance(source, Path):
         errors.raise_for_status(4)
     try:
-        path_text = str(value.source)
+        path_text = str(source)
         path_bytes = _utf8_bytes(path_text)
     except (TypeError, ValueError, UnicodeEncodeError):
         errors.raise_for_status(4)
     if not path_bytes or b"\x00" in path_bytes or len(path_bytes) > _MAX_TEXT_BYTES:
         errors.raise_for_status(4)
-    object.__setattr__(value, "source", Path(path_bytes.decode("utf-8")))
+
+
+def _transport_source(value: TransportInput) -> _SecretBytes | Path:
+    """Read the canonical source slot without producing a public bytes copy."""
+    return TransportInput.source.__get__(value, TransportInput)
 
 
 def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
@@ -226,8 +394,9 @@ def _validate_transport_input_group(values: tuple[TransportInput, ...]) -> None:
         if not isinstance(value, TransportInput):
             errors.raise_for_status(4)
         _validate_transport_input(value)
-        if isinstance(value.source, bytes):
-            total += memoryview(value.source).nbytes
+        source = _transport_source(value)
+        if isinstance(source, _SecretBytes):
+            total += len(source.buffer)
             if total > _MAX_INPUT_BYTES:
                 errors.raise_for_status(6)
 
@@ -326,6 +495,74 @@ class TimeoutLimit:
 
 
 @dataclass(frozen=True, slots=True)
+class RequestOptions:
+    """Optional connect, write, read, and total timeout overrides for one exchange."""
+
+    connect_timeout: TimeoutLimit = TimeoutLimit()
+    write_timeout: TimeoutLimit = TimeoutLimit()
+    read_timeout: TimeoutLimit = TimeoutLimit()
+    total_timeout: TimeoutLimit = TimeoutLimit()
+
+    def __post_init__(self) -> None:
+        if any(
+            not isinstance(value, TimeoutLimit)
+            for value in (
+                self.connect_timeout,
+                self.write_timeout,
+                self.read_timeout,
+                self.total_timeout,
+            )
+        ):
+            errors.raise_for_status(4)
+
+
+def _validated_request_options(options: RequestOptions) -> RequestOptions:
+    """Copy the approved dataclass fields so subclasses cannot bypass validation."""
+    if not isinstance(options, RequestOptions):
+        errors.raise_for_status(4)
+
+    fields = (
+        RequestOptions.connect_timeout.__get__(options, RequestOptions),
+        RequestOptions.write_timeout.__get__(options, RequestOptions),
+        RequestOptions.read_timeout.__get__(options, RequestOptions),
+        RequestOptions.total_timeout.__get__(options, RequestOptions),
+    )
+    normalized: list[TimeoutLimit] = []
+    for value in fields:
+        if not isinstance(value, TimeoutLimit):
+            errors.raise_for_status(4)
+        normalized.append(
+            TimeoutLimit(
+                TimeoutLimit.kind.__get__(value, TimeoutLimit),
+                TimeoutLimit.seconds.__get__(value, TimeoutLimit),
+                TimeoutLimit.nanoseconds.__get__(value, TimeoutLimit),
+            )
+        )
+    return RequestOptions(*normalized)
+
+
+def _request_options_record(options: RequestOptions) -> Any:
+    """Build the versioned FFI record while retaining explicit timeout kinds."""
+    validated = _validated_request_options(options)
+    record = ffi.new("kmipkit_request_options_v1_t *")
+    record.struct_size = ffi.sizeof("kmipkit_request_options_v1_t")
+    record.abi_version = 1
+    for name, value in (
+        ("connect_timeout", validated.connect_timeout),
+        ("write_timeout", validated.write_timeout),
+        ("read_timeout", validated.read_timeout),
+        ("total_timeout", validated.total_timeout),
+    ):
+        target = getattr(record, name)
+        target.kind = int(value.kind)
+        target.reserved = 0
+        target.seconds = value.seconds
+        target.nanoseconds = value.nanoseconds
+        target.reserved2 = 0
+    return record
+
+
+@dataclass(frozen=True, slots=True)
 class TransportConfig:
     """Validated-input description for TLS 1.3 mutual-TLS client construction."""
 
@@ -367,6 +604,10 @@ class TransportConfig:
         object.__setattr__(self, "revocation_lists", revocation_lists)
         if any(not isinstance(item, TransportInput) for item in self.revocation_lists):
             errors.raise_for_status(4)
+        if any(
+            isinstance(_transport_source(item), Path) for item in self.revocation_lists
+        ):
+            errors.raise_for_status(4)
         _validate_transport_input_group(self.revocation_lists)
         for timeout in (
             self.connect_timeout,
@@ -400,10 +641,12 @@ def _snapshot_transport_input(value: TransportInput) -> TransportInput:
         errors.raise_for_status(4)
     # Reconstruct through the base dataclass so its input checks always run.
     try:
-        source = TransportInput.source.__get__(value, TransportInput)
+        source = _transport_source(value)
         encoding = TransportInput.encoding.__get__(value, TransportInput)
     except (AttributeError, TypeError):
         errors.raise_for_status(4)
+    if isinstance(source, _SecretBytes):
+        return TransportInput._from_secret(source.clone(), encoding)
     return TransportInput(source, encoding)
 
 
@@ -497,22 +740,24 @@ class Batch(_ClientHandle):
         """Create an empty ordered batch builder."""
         output = ffi.new("kmipkit_client_batch_t **")
         _raise_abi_status(lib.kmipkit_client_batch_create(output))
-        return cls(output[0])
+        return _wrap_owned_handle(cls, output[0])
 
     def add_item(self, item: extensions.ClientBatchItem) -> Self:
         """Append one typed item, consuming its wrapper only when accepted."""
         if not isinstance(item, extensions.ClientBatchItem):
             errors.raise_for_status(4)
         with _NATIVE_CALL_LOCK:
+            batch_pointer = self._pointer()
             item._acquire_ownership_lock()
             try:
-                original, owner = item._take()
+                original = item._pointer()
                 slot = ffi.new(
                     "kmipkit_client_batch_item_t **",
                     ffi.cast("kmipkit_client_batch_item_t *", original),
                 )
+                original, owner = item._take()
                 try:
-                    status = lib.kmipkit_client_batch_add_item(self._pointer(), slot)
+                    status = lib.kmipkit_client_batch_add_item(batch_pointer, slot)
                 except (OverflowError, TypeError, ValueError):
                     item._restore(original, owner)
                     raise errors.InvalidInputError() from None
@@ -584,6 +829,173 @@ class BatchItemResult:
     result_reason: int | None
     unique_batch_item_id: bytes | None = field(repr=False)
     pending_correlation_value: bytes | None = field(repr=False)
+    supported_versions: tuple[ProtocolVersion, ...] | None = None
+    operation: int = 0
+    result_message: str | None = field(default=None, repr=False)
+    create_object_type: int | None = None
+    unique_identifier: extensions.UniqueIdentifier | None = field(default=None, repr=False)
+    private_key_unique_identifier: extensions.UniqueIdentifier | None = field(
+        default=None, repr=False
+    )
+    public_key_unique_identifier: extensions.UniqueIdentifier | None = field(
+        default=None, repr=False
+    )
+    split_key_unique_identifiers: tuple[extensions.UniqueIdentifier, ...] | None = field(
+        default=None, repr=False
+    )
+    hash_response: HashResponse | None = field(default=None, repr=False)
+    mac_response: MacResponse | None = field(default=None, repr=False)
+    mac_verify_response: MacVerifyResponse | None = field(default=None, repr=False)
+    sign_response: SignResponse | None = field(default=None, repr=False)
+    signature_verify_response: SignatureVerifyResponse | None = field(default=None, repr=False)
+    certify_response: CertifyResponse | None = field(default=None, repr=False)
+    get_usage_allocation_response: GetUsageAllocationResponse | None = field(
+        default=None, repr=False
+    )
+    check_response: CheckResponse | None = field(default=None, repr=False)
+    delegated_login_response: DelegatedLoginResponse | None = field(default=None, repr=False)
+    derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
+
+    @property
+    def metadata_v2(self) -> BatchItemMetadataV2:
+        """Return the versioned common metadata while preserving exact message presence."""
+        return BatchItemMetadataV2(
+            self.operation,
+            self.outcome,
+            self.result_status,
+            self.result_reason,
+            self.result_message,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class HashResponse:
+    """Typed Hash response fields copied from the matching successful batch item."""
+
+    data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class CertifyResponse:
+    """Successful Certify response and its owned complete generic TTLV."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class CheckResponse:
+    """Typed Check fields and the owned complete response TTLV, including failures."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    usage_limits_count: int | None
+    cryptographic_usage_mask: int | None
+    lease_time: int | None
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(slots=True, repr=False)
+class DelegatedLoginResponse:
+    """Raw-preserving Ticket fields and the owned generic Ticket TTLV copy.
+
+    Python-owned Ticket bytes are kept in a mutable buffer and wiped by
+    ``close``. Bytes returned to the caller and copies retained by the Python
+    runtime cannot be deterministically zeroized.
+    """
+
+    ticket_type_raw: int | None
+    _ticket_value: _SecretBytes | None = field(repr=False)
+    ticket_ttlv: ttlv.Structure | None = field(repr=False)
+
+    @property
+    def ticket_value(self) -> bytes | None:
+        """Return a caller-owned Ticket Value copy when a Ticket was present."""
+        return None if self._ticket_value is None else self._ticket_value.to_bytes()
+
+    def close(self) -> None:
+        """Wipe owned Ticket Value bytes and release the generic Ticket TTLV copy."""
+        if self._ticket_value is not None:
+            self._ticket_value.wipe()
+            self._ticket_value = None
+        if self.ticket_ttlv is not None:
+            self.ticket_ttlv.close()
+            self.ticket_ttlv = None
+
+    def __repr__(self) -> str:
+        return (
+            "DelegatedLoginResponse(ticket_type_raw="
+            f"{self.ticket_type_raw!r}, ticket_value=redacted, ticket_ttlv=preserved)"
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class GetUsageAllocationResponse:
+    """Successful Get Usage Allocation response and its owned complete generic TTLV."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class DeriveKeyResponse:
+    """Successful Derive Key response and its owned complete generic TTLV."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class MacResponse:
+    """Typed MAC response fields; byte payloads are omitted from repr output."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    mac_data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class MacVerifyResponse:
+    """Typed MAC Verify result with a forward-compatible raw Validity Indicator."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    validity_indicator_raw: int | None
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class SignResponse:
+    """Typed Sign response fields; signature bytes are omitted from repr output."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    signature_data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
+class SignatureVerifyResponse:
+    """Typed Signature Verify result preserving unknown raw Validity Indicator values."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    validity_indicator_raw: int | None
+    recovered_data: bytes | None = field(repr=False)
+    correlation_value: bytes | None = field(repr=False)
 
 
 class BatchResult(_ClientHandle):
@@ -591,8 +1003,14 @@ class BatchResult(_ClientHandle):
 
     _release_name = "kmipkit_client_batch_response_release"
 
-    def __init__(self, handle: Any, items: tuple[BatchItemResult, ...]) -> None:
-        super().__init__(handle)
+    def __init__(
+        self,
+        handle: Any,
+        items: tuple[BatchItemResult, ...],
+        *,
+        _token: object,
+    ) -> None:
+        super().__init__(handle, _token=_token)
         self.items = items
 
 
@@ -613,34 +1031,44 @@ class Client(_ClientHandle):
         if not isinstance(transport, TransportConfig):
             errors.raise_for_status(4)
         transport = _validated_transport_config(transport)
-        record, owners = _transport_record(transport)
-        transport_output = ffi.new("kmipkit_transport_config_t **")
-        client_output = ffi.new("kmipkit_client_t **")
-        with _NATIVE_CALL_LOCK:
-            status = lib.kmipkit_transport_config_create_v1(record, transport_output)
-            _raise_abi_status(status)
-            transport_slot = ffi.new(
-                "kmipkit_transport_config_t **", transport_output[0]
-            )
-            try:
-                status = lib.kmipkit_client_create(
-                    ffi.cast(
-                        "kmipkit_client_configuration_t *", configuration._pointer()
-                    ),
-                    transport_slot,
-                    client_output,
+        owners: tuple[object, ...] = ()
+        try:
+            record, owners = _transport_record(transport)
+            transport_output = ffi.new("kmipkit_transport_config_t **")
+            client_output = ffi.new("kmipkit_client_t **")
+            with _NATIVE_CALL_LOCK:
+                try:
+                    status = lib.kmipkit_transport_config_create_v1(
+                        record, transport_output
+                    )
+                finally:
+                    _wipe_client_transport_secrets(owners, transport)
+                    owners = ()
+                _raise_abi_status(status)
+                transport_slot = ffi.new(
+                    "kmipkit_transport_config_t **", transport_output[0]
                 )
-            except (OverflowError, TypeError, ValueError):
+                try:
+                    status = lib.kmipkit_client_create(
+                        ffi.cast(
+                            "kmipkit_client_configuration_t *",
+                            configuration._pointer(),
+                        ),
+                        transport_slot,
+                        client_output,
+                    )
+                except (OverflowError, TypeError, ValueError):
+                    if transport_slot[0] != ffi.NULL:
+                        lib.kmipkit_transport_config_release(transport_slot[0])
+                    raise errors.InvalidInputError() from None
                 if transport_slot[0] != ffi.NULL:
                     lib.kmipkit_transport_config_release(transport_slot[0])
-                raise errors.InvalidInputError() from None
-            if transport_slot[0] != ffi.NULL:
-                lib.kmipkit_transport_config_release(transport_slot[0])
-            del owners
-            _raise_abi_status(status)
+                _raise_abi_status(status)
+        finally:
+            _wipe_client_transport_secrets(owners, transport)
         if client_output[0] == ffi.NULL:
             errors.raise_for_status(7)
-        return cls(client_output[0])
+        return _wrap_owned_handle(cls, client_output[0])
 
     def execute(
         self, batch: Batch, limits: ttlv.CodecLimits
@@ -649,24 +1077,78 @@ class Client(_ClientHandle):
         if not isinstance(batch, Batch) or not isinstance(limits, ttlv.CodecLimits):
             errors.raise_for_status(4)
         response_output = ffi.new("kmipkit_client_batch_response_t **")
+        error_response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
         with _NATIVE_CALL_LOCK:
             batch._acquire_ownership_lock()
             try:
-                original, owner = batch._take()
+                client_pointer = self._pointer()
+                limits_pointer = ffi.cast(
+                    "kmipkit_codec_limits_t *", limits._pointer()
+                )
+                original = batch._pointer()
                 batch_slot = ffi.new("kmipkit_client_batch_t **", original)
+                original, owner = batch._take()
                 try:
-                    status = lib.kmipkit_client_execute(
-                        self._pointer(),
+                    status = lib.kmipkit_client_execute_with_error_ttlv_v1(
+                        client_pointer,
                         batch_slot,
-                        ffi.cast("kmipkit_codec_limits_t *", limits._pointer()),
+                        limits_pointer,
                         response_output,
+                        error_response_ttlv_output,
                     )
                 except (OverflowError, TypeError, ValueError):
                     batch._restore(original, owner)
                     raise errors.InvalidInputError() from None
                 if batch_slot[0] != ffi.NULL:
                     batch._restore(original, owner)
-                _raise_client_status(status)
+                _raise_client_status(status, error_response_ttlv_output[0])
+            finally:
+                batch._release_ownership_lock()
+            if response_output[0] == ffi.NULL:
+                errors.raise_for_status(7)
+            return _batch_result(response_output[0])
+
+    def execute_with_options(
+        self,
+        batch: Batch,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+    ) -> BatchResult:
+        """Execute one batch with exchange-local timeout overrides."""
+        if (
+            not isinstance(batch, Batch)
+            or not isinstance(limits, ttlv.CodecLimits)
+            or not isinstance(options, RequestOptions)
+        ):
+            errors.raise_for_status(4)
+        request_options = _request_options_record(options)
+        response_output = ffi.new("kmipkit_client_batch_response_t **")
+        error_response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+        with _NATIVE_CALL_LOCK:
+            batch._acquire_ownership_lock()
+            try:
+                client_pointer = self._pointer()
+                limits_pointer = ffi.cast(
+                    "kmipkit_codec_limits_t *", limits._pointer()
+                )
+                original = batch._pointer()
+                batch_slot = ffi.new("kmipkit_client_batch_t **", original)
+                original, owner = batch._take()
+                try:
+                    status = lib.kmipkit_client_execute_with_options_and_error_ttlv_v1(
+                        client_pointer,
+                        batch_slot,
+                        limits_pointer,
+                        request_options,
+                        response_output,
+                        error_response_ttlv_output,
+                    )
+                except (OverflowError, TypeError, ValueError):
+                    batch._restore(original, owner)
+                    raise errors.InvalidInputError() from None
+                if batch_slot[0] != ffi.NULL:
+                    batch._restore(original, owner)
+                _raise_client_status(status, error_response_ttlv_output[0])
             finally:
                 batch._release_ownership_lock()
             if response_output[0] == ffi.NULL:
@@ -675,7 +1157,7 @@ class Client(_ClientHandle):
 
 
 def _batch_result(handle: Any) -> BatchResult:
-    response = BatchResult(handle, ())
+    response = _wrap_owned_handle(BatchResult, handle, ())
     items: list[BatchItemResult] = []
     try:
         count = ffi.new("uint64_t *")
@@ -693,21 +1175,23 @@ def _batch_result(handle: Any) -> BatchResult:
             )
             if item_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
-            item = _ClientBatchItemResponse(item_output[0])
+            item = _wrap_owned_handle(_ClientBatchItemResponse, item_output[0])
             try:
-                metadata = ffi.new("kmipkit_client_batch_item_metadata_v1_t *")
+                metadata = ffi.new("kmipkit_client_batch_item_metadata_v2_t *")
                 metadata.struct_size = ffi.sizeof(
-                    "kmipkit_client_batch_item_metadata_v1_t"
+                    "kmipkit_client_batch_item_metadata_v2_t"
                 )
-                metadata.abi_version = 1
+                metadata.abi_version = 2
                 _raise_abi_status(
-                    lib.kmipkit_client_batch_item_response_metadata_v1(
+                    lib.kmipkit_client_batch_item_response_metadata_v2(
                         item._pointer(), metadata
                     )
                 )
-                if metadata.abi_version != 1 or metadata.struct_size != ffi.sizeof(
-                    "kmipkit_client_batch_item_metadata_v1_t"
+                if metadata.abi_version != 2 or metadata.struct_size != ffi.sizeof(
+                    "kmipkit_client_batch_item_metadata_v2_t"
                 ):
+                    errors.raise_for_status(4)
+                if metadata.reserved != 0 or metadata.has_result_message not in (0, 1):
                     errors.raise_for_status(4)
                 try:
                     outcome: BatchOutcome | int = BatchOutcome(metadata.outcome_kind)
@@ -720,6 +1204,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     if metadata.has_result_reason == 1
                     else None
                 )
+                message_bytes = _metadata_result_message(metadata)
+                try:
+                    result_message = (
+                        None if message_bytes is None else message_bytes.decode("utf-8", errors="strict")
+                    )
+                except UnicodeDecodeError:
+                    errors.raise_for_status(4)
                 unique_id = _response_span(
                     item, lib.kmipkit_client_batch_item_response_unique_batch_item_id
                 )
@@ -727,6 +1218,42 @@ def _batch_result(handle: Any) -> BatchResult:
                     item,
                     lib.kmipkit_client_batch_item_response_pending_correlation_value,
                 )
+                supported_versions = _discover_versions_supported_versions(item)
+                create_object_type, create_identifier = _create_response(item)
+                private_identifier, public_identifier = _create_key_pair_response(item)
+                split_identifiers = _create_split_key_response(item)
+                certify_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x06
+                ):
+                    certify_response = _certify_response(item)
+                check_response = None
+                if int(metadata.operation) == 0x09:
+                    check_response = _check_response(item)
+                delegated_login_response = None
+                if int(metadata.operation) == 0x2F:
+                    delegated_login_response = _delegated_login_response(item)
+                allocation_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x11
+                ):
+                    allocation_response = _get_usage_allocation_response(item)
+                derive_key_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x05
+                ):
+                    derive_key_response = _derive_key_response(item)
+                cryptographic_responses = (None, None, None, None, None)
+                if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
+                    cryptographic_responses = _cryptographic_responses(
+                        item, int(metadata.operation)
+                    )
                 items.append(
                     BatchItemResult(
                         outcome,
@@ -734,6 +1261,20 @@ def _batch_result(handle: Any) -> BatchResult:
                         result_reason,
                         unique_id,
                         correlation,
+                        supported_versions,
+                        int(metadata.operation),
+                        result_message,
+                        create_object_type,
+                        create_identifier,
+                        private_identifier,
+                        public_identifier,
+                        split_identifiers,
+                        *cryptographic_responses,
+                        certify_response,
+                        allocation_response,
+                        check_response,
+                        delegated_login_response,
+                        derive_key_response,
                     )
                 )
             finally:
@@ -747,6 +1288,622 @@ def _batch_result(handle: Any) -> BatchResult:
 
 class _ClientBatchItemResponse(_ClientHandle):
     _release_name = "kmipkit_client_batch_item_response_release"
+
+
+def _metadata_result_message(metadata: Any) -> bytes | None:
+    if metadata.has_result_message == 0:
+        if metadata.result_message_data != ffi.NULL or metadata.result_message_length != 0:
+            errors.raise_for_status(4)
+        return None
+    if metadata.result_message_length > _MAX_INPUT_BYTES:
+        errors.raise_for_status(6)
+    if metadata.result_message_length != 0 and metadata.result_message_data == ffi.NULL:
+        errors.raise_for_status(4)
+    return (
+        bytes(ffi.buffer(metadata.result_message_data, int(metadata.result_message_length)))
+        if metadata.result_message_length
+        else b""
+    )
+
+
+def _initialize_unique_identifier_output() -> Any:
+    output = ffi.new("kmipkit_unique_identifier_v1_t *")
+    output.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+    output.abi_version = 1
+    return output
+
+
+def _read_unique_identifier(output: Any) -> extensions.UniqueIdentifier:
+    if (
+        output.struct_size != ffi.sizeof("kmipkit_unique_identifier_v1_t")
+        or output.abi_version != 1
+        or output.reserved != 0
+    ):
+        errors.raise_for_status(4)
+    kind = int(output.kind)
+    if kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
+        if output.text_length > _MAX_INPUT_BYTES or (
+            output.text_length != 0 and output.text_data == ffi.NULL
+        ):
+            errors.raise_for_status(4)
+        raw = (
+            bytes(ffi.buffer(output.text_data, int(output.text_length)))
+            if output.text_length
+            else b""
+        )
+        try:
+            return extensions.UniqueIdentifier.text_string(raw.decode("utf-8", errors="strict"))
+        except UnicodeDecodeError:
+            errors.raise_for_status(4)
+    if kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
+        if output.text_data != ffi.NULL or output.text_length != 0 or output.integer_value != 0:
+            errors.raise_for_status(4)
+        return extensions.UniqueIdentifier.enumeration(int(output.enumeration_value))
+    if kind == int(extensions.UniqueIdentifierKind.INTEGER):
+        if (
+            output.text_data != ffi.NULL
+            or output.text_length != 0
+            or output.enumeration_value != 0
+        ):
+            errors.raise_for_status(4)
+        return extensions.UniqueIdentifier.integer(int(output.integer_value))
+    errors.raise_for_status(4)
+
+
+def _create_response(
+    item: _ClientBatchItemResponse,
+) -> tuple[int | None, extensions.UniqueIdentifier | None]:
+    present = ffi.new("uint8_t *")
+    object_type = ffi.new("uint32_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_create(
+            item._pointer(), present, object_type, identifier
+        )
+    )
+    if present[0] == 0:
+        return None, None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return int(object_type[0]), _read_unique_identifier(identifier)
+
+
+def _create_key_pair_response(
+    item: _ClientBatchItemResponse,
+) -> tuple[extensions.UniqueIdentifier | None, extensions.UniqueIdentifier | None]:
+    present = ffi.new("uint8_t *")
+    private_identifier = _initialize_unique_identifier_output()
+    public_identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_create_key_pair(
+            item._pointer(), present, private_identifier, public_identifier
+        )
+    )
+    if present[0] == 0:
+        return None, None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return _read_unique_identifier(private_identifier), _read_unique_identifier(public_identifier)
+
+
+def _create_split_key_response(
+    item: _ClientBatchItemResponse,
+) -> tuple[extensions.UniqueIdentifier, ...] | None:
+    present = ffi.new("uint8_t *")
+    count = ffi.new("uint64_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_create_split_key_count(item._pointer(), present, count)
+    )
+    if present[0] == 0:
+        if count[0] != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1 or count[0] < 1:
+        errors.raise_for_status(4)
+    if count[0] > sys.maxsize:
+        errors.raise_for_status(6)
+    identifiers: list[extensions.UniqueIdentifier] = []
+    for index in range(int(count[0])):
+        output = _initialize_unique_identifier_output()
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_create_split_key_unique_identifier_at(
+                item._pointer(), index, output
+            )
+        )
+        identifiers.append(_read_unique_identifier(output))
+    return tuple(identifiers)
+
+
+def _optional_output_span(present: Any, value: Any) -> bytes | None:
+    if present[0] == 0:
+        if value.data != ffi.NULL or value.length != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1 or value.length > _MAX_INPUT_BYTES:
+        errors.raise_for_status(4)
+    if value.length and value.data == ffi.NULL:
+        errors.raise_for_status(4)
+    return bytes(ffi.buffer(value.data, int(value.length))) if value.length else b""
+
+
+def _optional_output_identifier(value: Any) -> extensions.UniqueIdentifier | None:
+    if value.kind == 0:
+        if value.text_data != ffi.NULL or value.text_length != 0:
+            errors.raise_for_status(4)
+        return None
+    return _read_unique_identifier(value)
+
+
+def _hash_response(item: _ClientBatchItemResponse) -> HashResponse | None:
+    present = ffi.new("uint8_t *")
+    data_present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_hash(
+            item._pointer(), present, data_present, data, correlation_present, correlation
+        )
+    )
+    if present[0] == 0:
+        if data_present[0] != 0 or correlation_present[0] != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(data_present, data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return HashResponse(
+        _optional_output_span(data_present, data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _certify_response(item: _ClientBatchItemResponse) -> CertifyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_certify(item._pointer(), present, identifier)
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_certify_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return CertifyResponse(unique_identifier, response_ttlv)
+
+
+def _check_response(item: _ClientBatchItemResponse) -> CheckResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier_present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    count_present = ffi.new("uint8_t *")
+    count = ffi.new("int64_t *")
+    mask_present = ffi.new("uint8_t *")
+    usage_mask = ffi.new("int32_t *")
+    lease_present = ffi.new("uint8_t *")
+    lease = ffi.new("uint32_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_check(
+            item._pointer(), present, identifier_present, identifier,
+            count_present, count, mask_present, usage_mask, lease_present, lease,
+        )
+    )
+    if present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if identifier_present[0] not in (0, 1) or bool(identifier_present[0]) != (
+        unique_identifier is not None
+    ):
+        errors.raise_for_status(4)
+    count_value = _optional_output_integer(count_present, count[0])
+    mask_value = _optional_output_integer(mask_present, usage_mask[0])
+    lease_value = _optional_output_integer(lease_present, lease[0])
+    if present[0] == 0:
+        if any(value is not None for value in (unique_identifier, count_value, mask_value, lease_value)):
+            errors.raise_for_status(4)
+        response_ttlv_present = ffi.new("uint8_t *")
+        response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_check_ttlv(
+                item._pointer(), response_ttlv_present, response_ttlv_output
+            )
+        )
+        if response_ttlv_present[0] != 0 or response_ttlv_output[0] != ffi.NULL:
+            if response_ttlv_output[0] != ffi.NULL:
+                lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+            errors.raise_for_status(4)
+        return None
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_check_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return CheckResponse(
+        unique_identifier, count_value, mask_value, lease_value, response_ttlv
+    )
+
+
+def _delegated_login_response(
+    item: _ClientBatchItemResponse,
+) -> DelegatedLoginResponse | None:
+    present = ffi.new("uint8_t *")
+    ticket_present = ffi.new("uint8_t *")
+    ticket_type = ffi.new("uint32_t *")
+    ticket_value = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_delegated_login(
+            item._pointer(), present, ticket_present, ticket_type, ticket_value
+        )
+    )
+    if present[0] not in (0, 1) or ticket_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    secret: _SecretBytes | None = None
+    if ticket_present[0] == 0:
+        if ticket_type[0] != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(ffi.new("uint8_t *"), ticket_value)
+    else:
+        if ticket_value.length > _MAX_INPUT_BYTES or (
+            ticket_value.length and ticket_value.data == ffi.NULL
+        ):
+            errors.raise_for_status(4)
+        secret = _SecretBytes(
+            ffi.buffer(ticket_value.data, int(ticket_value.length))
+            if ticket_value.length
+            else b""
+        )
+    ttlv_present = ffi.new("uint8_t *")
+    ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    try:
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_delegated_login_ttlv(
+                item._pointer(), ttlv_present, ttlv_output
+            )
+        )
+        structure_handle = ttlv_output[0]
+        expected_ttlv_presence = ticket_present[0]
+        if (
+            ttlv_present[0] != expected_ttlv_presence
+            or (expected_ttlv_presence == 1 and structure_handle == ffi.NULL)
+            or (expected_ttlv_presence == 0 and structure_handle != ffi.NULL)
+        ):
+            if structure_handle != ffi.NULL:
+                lib.kmipkit_ttlv_structure_release(structure_handle)
+            errors.raise_for_status(4)
+        ticket_structure = None
+        if structure_handle != ffi.NULL:
+            try:
+                ticket_structure = ttlv._structure_from_native_address(
+                    int(ffi.cast("uintptr_t", structure_handle))
+                )
+            except Exception:
+                lib.kmipkit_ttlv_structure_release(structure_handle)
+                raise
+        if present[0] == 0:
+            if ticket_present[0] != 0:
+                if ticket_structure is not None:
+                    ticket_structure.close()
+                errors.raise_for_status(4)
+            return None
+        return DelegatedLoginResponse(
+            int(ticket_type[0]) if ticket_present[0] == 1 else None,
+            secret,
+            ticket_structure,
+        )
+    except Exception:
+        if secret is not None:
+            secret.wipe()
+        raise
+
+
+def _optional_output_integer(present: Any, value: int) -> int | None:
+    if present[0] == 0:
+        if value != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return int(value)
+
+
+def _get_usage_allocation_response(
+    item: _ClientBatchItemResponse,
+) -> GetUsageAllocationResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_get_usage_allocation(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return GetUsageAllocationResponse(unique_identifier, response_ttlv)
+
+
+def _derive_key_response(
+    item: _ClientBatchItemResponse,
+) -> DeriveKeyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_derive_key(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_derive_key_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return DeriveKeyResponse(unique_identifier, response_ttlv)
+
+
+def _mac_response(item: _ClientBatchItemResponse) -> MacResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    mac_present = ffi.new("uint8_t *")
+    mac_data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_mac(
+            item._pointer(), present, identifier, mac_present, mac_data,
+            correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if mac_present[0] != 0 or correlation_present[0] != 0 or identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(mac_present, mac_data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return MacResponse(
+        _optional_output_identifier(identifier),
+        _optional_output_span(mac_present, mac_data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _mac_verify_response(item: _ClientBatchItemResponse) -> MacVerifyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    validity_present = ffi.new("uint8_t *")
+    validity = ffi.new("uint32_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_mac_verify(
+            item._pointer(), present, identifier, validity_present, validity,
+            correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if validity_present[0] != 0 or validity[0] != 0 or correlation_present[0] != 0 or identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1 or validity_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    return MacVerifyResponse(
+        _optional_output_identifier(identifier),
+        int(validity[0]) if validity_present[0] == 1 else None,
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _sign_response(item: _ClientBatchItemResponse) -> SignResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    signature_present = ffi.new("uint8_t *")
+    signature_data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_sign(
+            item._pointer(), present, identifier, signature_present, signature_data,
+            correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if signature_present[0] != 0 or correlation_present[0] != 0 or identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(signature_present, signature_data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return SignResponse(
+        _optional_output_identifier(identifier),
+        _optional_output_span(signature_present, signature_data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _signature_verify_response(
+    item: _ClientBatchItemResponse,
+) -> SignatureVerifyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    validity_present = ffi.new("uint8_t *")
+    validity = ffi.new("uint32_t *")
+    recovered_present = ffi.new("uint8_t *")
+    recovered_data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_signature_verify(
+            item._pointer(), present, identifier, validity_present, validity,
+            recovered_present, recovered_data, correlation_present, correlation,
+        )
+    )
+    if present[0] == 0:
+        if (
+            validity_present[0] != 0
+            or validity[0] != 0
+            or recovered_present[0] != 0
+            or correlation_present[0] != 0
+            or identifier.kind != 0
+        ):
+            errors.raise_for_status(4)
+        _optional_output_span(recovered_present, recovered_data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1 or validity_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    return SignatureVerifyResponse(
+        _optional_output_identifier(identifier),
+        int(validity[0]) if validity_present[0] == 1 else None,
+        _optional_output_span(recovered_present, recovered_data),
+        _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _cryptographic_responses(
+    item: _ClientBatchItemResponse, operation: int
+) -> tuple[
+    HashResponse | None,
+    MacResponse | None,
+    MacVerifyResponse | None,
+    SignResponse | None,
+    SignatureVerifyResponse | None,
+]:
+    if operation == 0x27:
+        return _hash_response(item), None, None, None, None
+    if operation == 0x23:
+        return None, _mac_response(item), None, None, None
+    if operation == 0x24:
+        return None, None, _mac_verify_response(item), None, None
+    if operation == 0x21:
+        return None, None, None, _sign_response(item), None
+    if operation == 0x22:
+        return None, None, None, None, _signature_verify_response(item)
+    return None, None, None, None, None
+
+
+def _discover_versions_supported_versions(
+    item: _ClientBatchItemResponse,
+) -> tuple[ProtocolVersion, ...] | None:
+    function = lib.kmipkit_client_batch_item_response_discover_versions_supported_versions
+    present = ffi.new("uint8_t *")
+    count = ffi.new("uint64_t *")
+    _raise_abi_status(function(item._pointer(), present, ffi.NULL, 0, count))
+    if present[0] == 0:
+        if count[0] != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    required = int(count[0])
+    if required > sys.maxsize // ffi.sizeof("kmipkit_protocol_version_v1_t"):
+        errors.raise_for_status(6)
+    if required == 0:
+        return ()
+
+    values = ffi.new("kmipkit_protocol_version_v1_t[]", required)
+    copied_present = ffi.new("uint8_t *")
+    copied_count = ffi.new("uint64_t *")
+    _raise_abi_status(
+        function(item._pointer(), copied_present, values, required, copied_count)
+    )
+    if copied_present[0] != 1 or copied_count[0] != required:
+        errors.raise_for_status(4)
+    return tuple(
+        ProtocolVersion(int(values[index].major), int(values[index].minor))
+        for index in range(required)
+    )
 
 
 def _response_span(item: _ClientBatchItemResponse, function: Any) -> bytes | None:
@@ -770,12 +1927,20 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
     """Build one bounded versioned C record and keep borrowed spans alive for the call."""
     owners: list[object] = []
 
-    def span(value: bytes) -> Any:
-        byte_count = memoryview(value).nbytes
+    def span(value: bytes | _SecretBytes) -> Any:
+        if isinstance(value, _SecretBytes):
+            source = value.clone()
+            byte_count = len(source.buffer)
+            owners.append(source)
+            data = ffi.from_buffer("uint8_t[]", source.buffer)
+            owners.append(data)
+        else:
+            byte_count = memoryview(value).nbytes
+            data = ffi.new("uint8_t[]", value) if byte_count else ffi.NULL
+            if byte_count:
+                owners.append(data)
         if byte_count == 0:
             return ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
-        data = ffi.new("uint8_t[]", value)
-        owners.append(data)
         return ffi.new(
             "kmipkit_byte_span_v1_t *",
             {"data": data, "length": byte_count},
@@ -783,12 +1948,13 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
 
     def input_record(value: TransportInput) -> Any:
         _validate_transport_input(value)
-        if isinstance(value.source, bytes):
+        source = _transport_source(value)
+        if isinstance(source, _SecretBytes):
             source_kind = 1
-            data = value.source
+            data: bytes | _SecretBytes = source
         else:
             source_kind = 2
-            data = _utf8_bytes(str(value.source))
+            data = _utf8_bytes(str(source))
             if not data or len(data) > _MAX_TEXT_BYTES:
                 errors.raise_for_status(4)
         record = ffi.new("kmipkit_transport_input_v1_t *")
@@ -819,47 +1985,72 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
             },
         )[0]
 
-    endpoint_bytes = _utf8_bytes(configuration.endpoint.address)
-    endpoint = span(endpoint_bytes)
-    certificates = input_array(configuration.client_certificates)
-    key = input_record(configuration.client_private_key)
-    trust_certificates = input_array(configuration.trust.certificates)
-    revocation_lists = input_array(configuration.revocation_lists)
-    flags = 0
-    server_name = ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
-    if configuration.endpoint.tls_server_name is not None:
-        flags |= 1
-        server_name = span(_utf8_bytes(configuration.endpoint.tls_server_name))
-    target_uri = ffi.new("kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0})[0]
-    if configuration.endpoint.target_uri is not None:
-        flags |= 2
-        target_uri = span(_utf8_bytes(configuration.endpoint.target_uri))
-    record = ffi.new("kmipkit_transport_config_v1_t *")
-    record.struct_size = ffi.sizeof("kmipkit_transport_config_v1_t")
-    record.abi_version = 1
-    record.endpoint_kind = int(configuration.endpoint.kind)
-    record.trust_kind = int(configuration.trust.kind)
-    record.flags = flags
-    record.reserved = 0
-    record.endpoint = endpoint
-    record.endpoint_port = configuration.endpoint.port
-    record.reserved2 = 0
-    record.client_certificates = certificates
-    record.client_certificate_count = len(configuration.client_certificates)
-    record.client_private_key = key
-    record.trust_certificates = trust_certificates
-    record.trust_certificate_count = len(configuration.trust.certificates)
-    record.revocation_lists = revocation_lists
-    record.revocation_list_count = len(configuration.revocation_lists)
-    record.tls_server_name = server_name
-    record.target_uri = target_uri
-    record.connect_timeout = timeout(configuration.connect_timeout)
-    record.write_timeout = timeout(configuration.write_timeout)
-    record.read_timeout = timeout(configuration.read_timeout)
-    record.total_timeout = timeout(configuration.total_timeout)
-    record.max_request_bytes = configuration.max_request_bytes
-    owners.append(record)
-    return record, tuple(owners)
+    try:
+        endpoint_bytes = _utf8_bytes(configuration.endpoint.address)
+        endpoint = span(endpoint_bytes)
+        certificates = input_array(configuration.client_certificates)
+        key = input_record(configuration.client_private_key)
+        trust_certificates = input_array(configuration.trust.certificates)
+        revocation_lists = input_array(configuration.revocation_lists)
+        flags = 0
+        server_name = ffi.new(
+            "kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0}
+        )[0]
+        if configuration.endpoint.tls_server_name is not None:
+            flags |= 1
+            server_name = span(_utf8_bytes(configuration.endpoint.tls_server_name))
+        target_uri = ffi.new(
+            "kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0}
+        )[0]
+        if configuration.endpoint.target_uri is not None:
+            flags |= 2
+            target_uri = span(_utf8_bytes(configuration.endpoint.target_uri))
+        record = ffi.new("kmipkit_transport_config_v1_t *")
+        record.struct_size = ffi.sizeof("kmipkit_transport_config_v1_t")
+        record.abi_version = 1
+        record.endpoint_kind = int(configuration.endpoint.kind)
+        record.trust_kind = int(configuration.trust.kind)
+        record.flags = flags
+        record.reserved = 0
+        record.endpoint = endpoint
+        record.endpoint_port = configuration.endpoint.port
+        record.reserved2 = 0
+        record.client_certificates = certificates
+        record.client_certificate_count = len(configuration.client_certificates)
+        record.client_private_key = key
+        record.trust_certificates = trust_certificates
+        record.trust_certificate_count = len(configuration.trust.certificates)
+        record.revocation_lists = revocation_lists
+        record.revocation_list_count = len(configuration.revocation_lists)
+        record.tls_server_name = server_name
+        record.target_uri = target_uri
+        record.connect_timeout = timeout(configuration.connect_timeout)
+        record.write_timeout = timeout(configuration.write_timeout)
+        record.read_timeout = timeout(configuration.read_timeout)
+        record.total_timeout = timeout(configuration.total_timeout)
+        record.max_request_bytes = configuration.max_request_bytes
+        owners.append(record)
+        return record, tuple(owners)
+    except BaseException:
+        _wipe_transport_secrets(owners)
+        raise
+
+
+def _wipe_transport_secrets(owners: tuple[object, ...] | list[object]) -> None:
+    """Wipe every mutable credential owner borrowed by an ABI record."""
+    for owner in owners:
+        if isinstance(owner, _SecretBytes):
+            owner.wipe()
+
+
+def _wipe_client_transport_secrets(
+    owners: tuple[object, ...] | list[object], configuration: TransportConfig
+) -> None:
+    """Wipe ABI spans and the per-call key snapshot after native copying."""
+    _wipe_transport_secrets(owners)
+    key_source = _transport_source(configuration.client_private_key)
+    if isinstance(key_source, _SecretBytes):
+        key_source.wipe()
 
 
 def _read_last_error() -> tuple[int, int, int, int]:
@@ -872,16 +2063,37 @@ def _read_last_error() -> tuple[int, int, int, int]:
     return int(status[0]), int(category[0]), int(cause[0]), int(delivery[0])
 
 
-def _raise_client_status(status: int) -> None:
+def _raise_client_status(status: int, error_response_ttlv: Any = ffi.NULL) -> None:
     if status == 0:
+        if error_response_ttlv != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(error_response_ttlv)
+            errors.raise_for_status(7)
         return
     _status, category, cause, delivery = _read_last_error()
-    raise errors.ClientExecutionError(
-        status=status,
-        category=_known_enum(errors.ClientErrorCategory, category),
-        cause=_known_enum(errors.ClientErrorCause, cause),
-        delivery=_known_enum(errors.DeliveryState, delivery),
-    )
+    response_ttlv = None
+    if error_response_ttlv != ffi.NULL:
+        if category == int(errors.ClientErrorCategory.PROTOCOL):
+            address = int(ffi.cast("uintptr_t", error_response_ttlv))
+            try:
+                response_ttlv = ttlv._structure_from_native_address(address)
+            except Exception:
+                lib.kmipkit_ttlv_structure_release(error_response_ttlv)
+                errors.raise_for_status(7)
+        else:
+            lib.kmipkit_ttlv_structure_release(error_response_ttlv)
+    try:
+        failure = errors.ClientExecutionError(
+            status=status,
+            category=_known_enum(errors.ClientErrorCategory, category),
+            cause=_known_enum(errors.ClientErrorCause, cause),
+            delivery=_known_enum(errors.DeliveryState, delivery),
+            response_ttlv=response_ttlv,
+        )
+    except Exception:
+        if response_ttlv is not None:
+            response_ttlv.close()
+        raise
+    raise failure
 
 
 def _known_enum(enum_type: type[IntEnum], value: int) -> IntEnum | int:
@@ -915,13 +2127,25 @@ def _nonempty_text(value: str) -> str:
 
 __all__ = [
     "Batch",
+    "BatchItemMetadataV2",
     "BatchItemResult",
     "BatchOutcome",
     "BatchResult",
+    "CertifyResponse",
+    "CheckResponse",
+    "DelegatedLoginResponse",
+    "DeriveKeyResponse",
     "Client",
     "CredentialEncoding",
     "Endpoint",
     "EndpointKind",
+    "HashResponse",
+    "GetUsageAllocationResponse",
+    "MacResponse",
+    "MacVerifyResponse",
+    "RequestOptions",
+    "SignResponse",
+    "SignatureVerifyResponse",
     "TimeoutKind",
     "TimeoutLimit",
     "TransportConfig",

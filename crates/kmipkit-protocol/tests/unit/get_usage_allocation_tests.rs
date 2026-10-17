@@ -99,6 +99,7 @@ fn table_233_requires_resolved_identifier_and_retains_unknown_siblings() {
         Some(&UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
     );
     assert_eq!(actual.result().status().raw(), 0);
+    assert_eq!(actual.with_ttlv(|_| true), Some(true));
     assert_eq!(
         format!("{actual:?}"),
         "GetUsageAllocationResponse { result: KmipOperationResult { status: ResultStatus(0), reason: None, message: None }, has_unique_identifier: true, response_ttlv: \"[REDACTED]\" }"
@@ -243,6 +244,7 @@ fn table_234_failures_and_unknown_reasons_remain_common_results() {
             Some(ResultReason::from_raw(reason))
         );
         assert!(actual.unique_identifier().is_none());
+        assert!(actual.with_ttlv(|_| true).is_none());
     }
 }
 
@@ -268,15 +270,10 @@ fn pending_response_retains_exact_correlation_without_fabricating_identifier() {
         .expect("Pending uses the common operation result");
     assert_eq!(actual.result().status().raw(), 2);
     assert!(actual.unique_identifier().is_none());
-    actual.with_ttlv(|response| {
-        let pending = response
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_0006)
-            .expect("correlation remains on the full response item");
-        assert!(pending.with_value(|value| matches!(
-            value,
-            ValueView::ByteString(bytes) if *bytes == correlation
-        )));
-    });
+    assert_eq!(
+        response_item(&message).with_asynchronous_correlation_value(<[u8]>::to_vec),
+        Some(correlation.to_vec()),
+        "Pending correlation remains available through its dedicated field"
+    );
+    assert_eq!(actual.with_ttlv(|_| true), None);
 }

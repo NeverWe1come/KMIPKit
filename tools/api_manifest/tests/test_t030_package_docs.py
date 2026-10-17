@@ -136,7 +136,35 @@ class PackageDocumentationContractTests(unittest.TestCase):
         blocked_operations = sum(
             operation["apiState"] == "blocked" for operation in operations
         )
-        self.assertEqual(len(operations), blocked_operations)
+        declared_operations = [
+            operation for operation in operations if operation["apiState"] == "declared"
+        ]
+        verified_operations = [
+            operation for operation in operations if operation["apiState"] == "verified"
+        ]
+        self.assertEqual(
+            [operation["name"] for operation in declared_operations],
+            [
+                "Create",
+                "Create Key Pair",
+                "Create Split Key",
+                "Derive Key",
+                "Discover Versions",
+                "Hash",
+                "MAC",
+                "MAC Verify",
+                "Sign",
+                "Signature Verify",
+            ],
+        )
+        self.assertEqual(
+            [operation["name"] for operation in verified_operations],
+            ["Certify", "Check", "Delegated Login", "Get Usage Allocation"],
+        )
+        self.assertEqual(
+            len(operations),
+            blocked_operations + len(declared_operations) + len(verified_operations),
+        )
 
         for guide, operation_phrase in (
             (self.english, "full operation parity"),

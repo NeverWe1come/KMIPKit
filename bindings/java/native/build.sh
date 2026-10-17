@@ -28,6 +28,20 @@ zeroizing_bytes_test="$native_output/zeroizing_bytes_test"
     "$script_dir/tests/zeroizing_bytes_test.cpp" -o "$zeroizing_bytes_test"
 "$zeroizing_bytes_test"
 
+client_batch_item_transfer_test="$native_output/client_batch_item_transfer_test"
+"${CXX:-c++}" -std=c++17 -Wall -Wextra -Werror \
+    "$script_dir/tests/client_batch_item_transfer_test.cpp" -o "$client_batch_item_transfer_test"
+"$client_batch_item_transfer_test"
+
+response_identifier_test="$native_output/response_identifier_validation_test"
+set -- -std=c++17 -Wall -Wextra -Werror
+if [ "${KMIPKIT_JNI_COVERAGE:-}" = "llvm" ]; then
+    set -- "$@" -fprofile-instr-generate -fcoverage-mapping
+fi
+"${CXX:-c++}" "$@" -I"$repository_root/tests/fixtures/api/generated" \
+    "$script_dir/tests/response_identifier_validation_test.cpp" -o "$response_identifier_test"
+"$response_identifier_test"
+
 cargo build --locked -p kmipkit-ffi --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in

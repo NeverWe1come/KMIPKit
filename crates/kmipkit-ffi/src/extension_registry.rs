@@ -1,55 +1,78 @@
 //! C ABI implementation for the manifest-backed extension registry API.
 #![allow(clippy::missing_safety_doc, clippy::too_many_arguments)]
 
+use aws_lc_rs::{hmac, rand};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::ptr;
-use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::{collections::HashMap, collections::hash_map::Entry};
 use std::{fs, io::Read};
 
 use crate::{
-    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_response_t,
-    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
-    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
-    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
-    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
-    kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
-    kmipkit_extension_identity_t, kmipkit_extension_information_t,
-    kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
-    kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t, kmipkit_raw_tag_t,
-    kmipkit_register_request_t, kmipkit_registered_extension_value_t, kmipkit_tag_t,
+    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
+    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
+    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
+    kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_extension_child_rule_t,
+    kmipkit_extension_compatibility_t, kmipkit_extension_definition_t,
+    kmipkit_extension_discriminator_t, kmipkit_extension_identity_t,
+    kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
+    kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
+    kmipkit_extension_schema_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t, kmipkit_tag_t,
     kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
     kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
     kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_validated_extension_value_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
+    kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
-    ClientErrorCategory,
+    ClientErrorCategory, ClientRequest,
 };
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    AttributeSet, ObjectType, OpaqueObjectContext, ProtocolError, ProtocolErrorKind,
-    RegisterRequest,
+    AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
+    CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
+    DeriveKeyRequest, GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest,
+    ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
+    RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
-    RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory, TransportConfig,
-    TrustSource,
+    RequestOptions, RevocationListInput, TimeoutLimit, TimeoutPolicy, TransportCauseCategory,
+    TransportConfig, TrustSource,
 };
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::time::Duration;
 
 #[cfg(test)]
+#[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
+mod cryptographic_operation_abi_tests;
+#[cfg(test)]
+#[path = "../tests/support/get_usage_allocation_abi_tests.rs"]
+mod get_usage_allocation_abi_tests;
+#[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
+#[cfg(test)]
+#[path = "../tests/support/opaque_handle_validation_tests.rs"]
+mod opaque_handle_validation_tests;
 #[cfg(test)]
 #[path = "../tests/support/registry_preflight_tests.rs"]
 mod registry_preflight_tests;
 #[cfg(test)]
+#[path = "../tests/support/test_handle_helpers.rs"]
+mod test_handle_helpers;
+#[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
+#[cfg(test)]
+use self::test_handle_helpers::make_handle;
 
 #[cfg(test)]
 thread_local! {
@@ -96,6 +119,7 @@ const MAX_TRANSPORT_CONFIG_ITEMS: u64 = 4_096;
 const MAX_TRANSPORT_TEXT_BYTES: u64 = 4_096;
 // Facade-local allocation guard; KMIPKIT-0013 does not set a material size cap.
 const MAX_FFI_INPUT_BYTES: u64 = 16 * 1024 * 1024;
+const MAX_DERIVE_KEY_SOURCE_IDENTIFIERS: u64 = 100_000;
 const MAX_TRANSPORT_MATERIAL_BYTES: u64 = MAX_FFI_INPUT_BYTES;
 const TRANSPORT_ENDPOINT_RAW_TLS: u32 = 1;
 const TRANSPORT_ENDPOINT_HTTPS: u32 = 2;
@@ -111,6 +135,11 @@ const TRANSPORT_FLAG_TLS_SERVER_NAME: u32 = 1;
 const TRANSPORT_FLAG_TARGET_URI: u32 = 2;
 const BATCH_OUTCOME_COMPLETED: u32 = 1;
 const BATCH_OUTCOME_PENDING: u32 = 2;
+
+enum DelegatedLoginLeaseTime {
+    Interval(u32),
+    DateTime(i64),
+}
 
 #[derive(Clone, Copy)]
 struct LastError {
@@ -298,7 +327,7 @@ enum HandleValue {
     RawTag(RawTag),
     Tag(Tag),
     Item(Item),
-    CodecLimits(CodecLimits),
+    CodecLimits(Arc<CodecLimits>),
     StructureView(TtlvView),
     ItemView(TtlvView),
     ValueView(TtlvView),
@@ -635,20 +664,137 @@ fn resolve_value_path<R>(
 
 type FfiResult<T> = Result<T, i32>;
 
-fn make_handle<T>(kind: Kind, value: HandleValue) -> *mut T {
-    Arc::into_raw(Arc::new(Handle { kind, value }))
-        .cast_mut()
-        .cast()
+const TOKEN_HALF_BITS: u32 = usize::BITS / 2;
+const TOKEN_HALF_MASK: usize = (1_usize << TOKEN_HALF_BITS) - 1;
+const TOKEN_MAX: usize = isize::MAX as usize;
+const TOKEN_ROUNDS: u8 = 8;
+const TOKEN_CYCLE_WALK_LIMIT: usize = 128;
+const TOKEN_DOMAIN: &[u8] = b"KMIPKit FFI opaque handle token v1";
+const RIGHT_BYTES_OFFSET: usize = std::mem::size_of::<usize>() - std::mem::size_of::<u32>();
+
+fn cycle_walk_token(mut token: usize, mut permute: impl FnMut(usize) -> usize) -> FfiResult<usize> {
+    for _ in 0..TOKEN_CYCLE_WALK_LIMIT {
+        token = permute(token);
+        if (1..=TOKEN_MAX).contains(&token) {
+            return Ok(token);
+        }
+    }
+    Err(ERROR_RESOURCE_LIMIT)
 }
 
-fn reference_handle<T>(pointer: &*mut T, expected: Kind) -> FfiResult<&Handle> {
+struct HandleRegistry {
+    next_sequence: AtomicUsize,
+    token_key: hmac::Key,
+    handles: Mutex<HashMap<usize, Arc<Handle>>>,
+}
+
+impl HandleRegistry {
+    fn new() -> FfiResult<Self> {
+        let token_key = hmac::Key::generate(hmac::HMAC_SHA256, &rand::SystemRandom::new())
+            .map_err(|_| ERROR_INTERNAL)?;
+        Ok(Self::with_token_key(token_key))
+    }
+
+    fn with_token_key(token_key: hmac::Key) -> Self {
+        Self {
+            next_sequence: AtomicUsize::new(1),
+            token_key,
+            handles: Mutex::new(HashMap::new()),
+        }
+    }
+
+    #[cfg(test)]
+    fn with_test_key(key: &[u8]) -> Self {
+        Self::with_token_key(hmac::Key::new(hmac::HMAC_SHA256, key))
+    }
+
+    fn allocate_id(&self) -> FfiResult<usize> {
+        let mut current = self.next_sequence.load(Ordering::Relaxed);
+        loop {
+            if current == 0 || current > TOKEN_MAX {
+                return Err(ERROR_RESOURCE_LIMIT);
+            }
+            let next = if current == TOKEN_MAX { 0 } else { current + 1 };
+            match self.next_sequence.compare_exchange_weak(
+                current,
+                next,
+                Ordering::Relaxed,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => return self.token_for_sequence(current),
+                Err(observed) => current = observed,
+            }
+        }
+    }
+
+    fn token_for_sequence(&self, sequence: usize) -> FfiResult<usize> {
+        debug_assert!((1..=TOKEN_MAX).contains(&sequence));
+        cycle_walk_token(sequence, |token| self.permute(token))
+    }
+
+    // A keyed Feistel permutation hides the monotonic sequence while preserving uniqueness.
+    // Bounded cycle walking excludes null and high-bit pointer values without collisions.
+    fn permute(&self, input: usize) -> usize {
+        let mut left = (input >> TOKEN_HALF_BITS) & TOKEN_HALF_MASK;
+        let mut right = input & TOKEN_HALF_MASK;
+
+        for round in 0..TOKEN_ROUNDS {
+            let mut context = hmac::Context::with_key(&self.token_key);
+            context.update(TOKEN_DOMAIN);
+            context.update(&[round]);
+            let right_bytes = right.to_be_bytes();
+            context.update(&right_bytes[RIGHT_BYTES_OFFSET..]);
+            let tag = context.sign();
+            let digest = tag.as_ref();
+            let round_key = u32::from_be_bytes([digest[0], digest[1], digest[2], digest[3]])
+                as usize
+                & TOKEN_HALF_MASK;
+            (left, right) = (right, (left ^ round_key) & TOKEN_HALF_MASK);
+        }
+
+        (left << TOKEN_HALF_BITS) | right
+    }
+}
+
+static HANDLE_REGISTRY: OnceLock<FfiResult<HandleRegistry>> = OnceLock::new();
+
+fn handle_registry() -> FfiResult<&'static HandleRegistry> {
+    HANDLE_REGISTRY
+        .get_or_init(HandleRegistry::new)
+        .as_ref()
+        .map_err(|status| *status)
+}
+
+fn handle_id<T>(pointer: *mut T) -> FfiResult<usize> {
     if pointer.is_null() {
         return Err(ERROR_INVALID_INPUT);
     }
-    // SAFETY: non-null opaque handle pointers must be live KMIPKit handles; dangling and foreign
-    // pointers are documented caller precondition violations. The envelope discriminator is
-    // checked before any payload is accessed.
-    let handle = unsafe { &*(*pointer).cast::<Handle>() };
+    // Opaque tokens have no pointer provenance and are never dereferenced. Their address bits are
+    // used only as keys into the live-handle table.
+    Ok(pointer.addr())
+}
+
+fn try_make_handle<T>(kind: Kind, value: HandleValue) -> FfiResult<*mut T> {
+    let registry = handle_registry()?;
+    let id = registry.allocate_id()?;
+    let handle = Arc::new(Handle { kind, value });
+    let mut handles = registry.handles.lock().map_err(|_| ERROR_INTERNAL)?;
+    match handles.entry(id) {
+        Entry::Vacant(entry) => {
+            entry.insert(handle);
+        }
+        Entry::Occupied(_) => return Err(ERROR_INTERNAL),
+    }
+    Ok(ptr::without_provenance_mut(id))
+}
+
+fn reference_handle<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
+    let id = handle_id(pointer)?;
+    let handles = handle_registry()?
+        .handles
+        .lock()
+        .map_err(|_| ERROR_INTERNAL)?;
+    let handle = handles.get(&id).cloned().ok_or(ERROR_INVALID_INPUT)?;
     if handle.kind != expected {
         return Err(ERROR_INVALID_INPUT);
     }
@@ -656,25 +802,19 @@ fn reference_handle<T>(pointer: &*mut T, expected: Kind) -> FfiResult<&Handle> {
 }
 
 fn clone_handle_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
-    if pointer.is_null() {
-        return Err(ERROR_INVALID_INPUT);
-    }
-    let handle = reference_handle(&pointer, expected)?;
-    let _ = handle;
-    // SAFETY: the handle reference was validated above and the C caller keeps its strong reference
-    // live for the duration of this call. Incrementing before reconstructing creates one owned copy.
-    unsafe {
-        Arc::increment_strong_count(pointer.cast::<Handle>());
-    }
-    // SAFETY: the preceding increment produced exactly one strong reference for this Arc.
-    Ok(unsafe { Arc::from_raw(pointer.cast::<Handle>()) })
+    reference_handle(pointer, expected)
 }
 
-fn consume_owner<T>(pointer: *mut T) -> Arc<Handle> {
-    // SAFETY: callers validate that this is a live KMIPKit handle and preflight every handle in
-    // the operation before transferring any consumed handle. Dangling and foreign pointers remain
-    // caller precondition violations.
-    unsafe { Arc::from_raw(pointer.cast::<Handle>()) }
+fn consume_owner<T>(pointer: *mut T, expected: Kind) -> FfiResult<Arc<Handle>> {
+    let id = handle_id(pointer)?;
+    let mut handles = handle_registry()?
+        .handles
+        .lock()
+        .map_err(|_| ERROR_INTERNAL)?;
+    match handles.entry(id) {
+        Entry::Occupied(entry) if entry.get().kind == expected => Ok(entry.remove()),
+        Entry::Occupied(_) | Entry::Vacant(_) => Err(ERROR_INVALID_INPUT),
+    }
 }
 
 fn unwrap_payload(handle: Arc<Handle>) -> FfiResult<HandleValue> {
@@ -688,8 +828,7 @@ fn unwrap_payload(handle: Arc<Handle>) -> FfiResult<HandleValue> {
 }
 
 fn owned_payload<T>(pointer: *mut T, expected: Kind) -> FfiResult<HandleValue> {
-    let _ = reference_handle(&pointer, expected)?;
-    unwrap_payload(consume_owner(pointer))
+    unwrap_payload(consume_owner(pointer, expected)?)
 }
 
 macro_rules! out_slot {
@@ -763,8 +902,8 @@ fn input_handle_array<T, U>(
         .try_reserve_exact(pointers.len())
         .map_err(|_| ERROR_RESOURCE_LIMIT)?;
     for pointer in pointers {
-        let handle = reference_handle(pointer, kind)?;
-        result.push(copy(handle)?);
+        let handle = reference_handle(*pointer, kind)?;
+        result.push(copy(&handle)?);
     }
     Ok(result)
 }
@@ -796,8 +935,8 @@ fn copy_registry_definitions(
     let mut preflight = client_extension::RegistryDefinitionPreflight::new(count, limits)
         .map_err(|error| protocol_status(&error))?;
     for pointer in pointers {
-        let handle = reference_handle(pointer, Kind::Definition)?;
-        let definition = definition_from_handle(handle)?;
+        let handle = reference_handle(*pointer, Kind::Definition)?;
+        let definition = definition_from_handle(&handle)?;
         preflight
             .add_definition(definition)
             .map_err(|error| protocol_status(&error))?;
@@ -811,8 +950,8 @@ fn copy_registry_definitions(
         .try_reserve_exact(pointers.len())
         .map_err(|_| ERROR_RESOURCE_LIMIT)?;
     for pointer in pointers {
-        let handle = reference_handle(pointer, Kind::Definition)?;
-        copied.push(copy(definition_from_handle(handle)?)?);
+        let handle = reference_handle(*pointer, Kind::Definition)?;
+        copied.push(copy(definition_from_handle(&handle)?)?);
     }
     Ok(copied)
 }
@@ -913,6 +1052,96 @@ fn clone_structure_view(structure: &kmipkit_ttlv::StructureView<'_>) -> FfiResul
     Ok(clone)
 }
 
+fn derive_key_parameters_from_handle(
+    structure: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<DerivationParameters> {
+    const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+    const INITIALIZATION_VECTOR: u32 = 0x0042_003A;
+    const DERIVATION_DATA: u32 = 0x0042_0030;
+    const SALT: u32 = 0x0042_0084;
+    const ITERATION_COUNT: u32 = 0x0042_003C;
+
+    if structure.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+
+    let mut seen = [false; 4];
+    let mut parameters = DerivationParameters::new();
+    for item in source.view().children() {
+        match item.tag().raw() {
+            CRYPTOGRAPHIC_PARAMETERS => {
+                if seen[0] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[0] = true;
+                let value = item.with_value(|value| match value {
+                    ValueView::Structure(value) => Some(clone_structure_view(&value)),
+                    _ => None,
+                });
+                let structure = value.ok_or(ERROR_INVALID_INPUT)??;
+                parameters = parameters.with_cryptographic_parameters(structure);
+            }
+            INITIALIZATION_VECTOR => {
+                if seen[1] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[1] = true;
+                let bytes = item
+                    .with_value(|value| match value {
+                        ValueView::ByteString(value) => Some(value.to_vec()),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_initialization_vector(SecretBytes::new(bytes));
+            }
+            DERIVATION_DATA => {
+                let bytes = item
+                    .with_value(|value| match value {
+                        ValueView::ByteString(value) => Some(value.to_vec()),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_derivation_data(SecretBytes::new(bytes));
+            }
+            SALT => {
+                if seen[2] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[2] = true;
+                let bytes = item
+                    .with_value(|value| match value {
+                        ValueView::ByteString(value) => Some(value.to_vec()),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_salt(SecretBytes::new(bytes));
+            }
+            ITERATION_COUNT => {
+                if seen[3] {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                seen[3] = true;
+                let value = item
+                    .with_value(|value| match value {
+                        ValueView::Integer(value) => Some(*value),
+                        _ => None,
+                    })
+                    .ok_or(ERROR_INVALID_INPUT)?;
+                parameters = parameters.with_iteration_count(value);
+            }
+            _ => {
+                parameters = parameters
+                    .with_extension(item.try_clone().map_err(model_status)?)
+                    .map_err(|error| protocol_status(&error))?;
+            }
+        }
+    }
+    Ok(parameters)
+}
 fn limits_from_fields(fields: [u64; 12]) -> FfiResult<extension::ExtensionRegistryLimits> {
     extension::with_values(
         fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7],
@@ -964,9 +1193,9 @@ fn limits_from_versioned(
 
 fn registry_from_handle(
     handle: &Handle,
-) -> FfiResult<&Arc<client_extension::ClientExtensionRegistry>> {
+) -> FfiResult<Arc<client_extension::ClientExtensionRegistry>> {
     match &handle.value {
-        HandleValue::Registry(registry) => Ok(registry),
+        HandleValue::Registry(registry) => Ok(Arc::clone(registry)),
         _ => Err(ERROR_INVALID_INPUT),
     }
 }
@@ -997,17 +1226,16 @@ fn validated_from_handle(
 }
 
 fn reference_registry(
-    pointer: &*mut kmipkit_client_extension_registry_t,
-) -> FfiResult<&Arc<client_extension::ClientExtensionRegistry>> {
+    pointer: *mut kmipkit_client_extension_registry_t,
+) -> FfiResult<Arc<client_extension::ClientExtensionRegistry>> {
     let handle = reference_handle(pointer, Kind::Registry)?;
-    registry_from_handle(handle)
+    registry_from_handle(&handle)
 }
 
 fn release<T>(pointer: *mut T, kind: Kind) {
-    if reference_handle(&pointer, kind).is_err() {
-        return;
+    if let Ok(handle) = consume_owner(pointer, kind) {
+        drop(handle);
     }
-    drop(consume_owner(pointer));
 }
 
 #[unsafe(no_mangle)]
@@ -1302,6 +1530,38 @@ pub extern "C" fn kmipkit_capability_is_available(
     })
 }
 
+/// Returns the local API taxonomy through borrowed spans into static strings.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_api_levels_get_v1(
+    out_high_level: *mut crate::kmipkit_byte_span_v1_t,
+    out_typed_protocol: *mut crate::kmipkit_byte_span_v1_t,
+    out_generic_ttlv: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_high_level.is_null() || out_typed_protocol.is_null() || out_generic_ttlv.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+
+        let levels = kmipkit::api_levels();
+        if levels.len() != 3 {
+            return record_ffi_error(ERROR_INTERNAL);
+        }
+        let span = |level: &str| crate::kmipkit_byte_span_v1_t {
+            data: level.as_ptr(),
+            length: level.len() as u64,
+        };
+
+        // SAFETY: all output pointers were checked non-null and are caller-provided writable
+        // span slots. Each span points to a static string returned by `kmipkit::api_levels()`.
+        unsafe {
+            *out_high_level = span(levels[0]);
+            *out_typed_protocol = span(levels[1]);
+            *out_generic_ttlv = span(levels[2]);
+        }
+        SUCCESS
+    })
+}
+
 /// Copies this thread's last categorized ABI failure without clearing it.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_last_error_get(
@@ -1343,7 +1603,7 @@ pub extern "C" fn kmipkit_last_error_clear() -> i32 {
 
 macro_rules! read_handle {
     ($pointer:expr, $kind:ident) => {
-        try_ffi!(reference_handle(&$pointer, Kind::$kind))
+        try_ffi!(reference_handle($pointer, Kind::$kind))
     };
 }
 
@@ -1375,7 +1635,10 @@ pub extern "C" fn kmipkit_extension_identity_create(
         let value = try_ffi!(
             extension::extension_identity(vendor, name, version).map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(Kind::Identity, HandleValue::Identity(value));
+        *out = try_ffi!(try_make_handle(
+            Kind::Identity,
+            HandleValue::Identity(value)
+        ));
         SUCCESS
     })
 }
@@ -1391,10 +1654,10 @@ pub extern "C" fn kmipkit_extension_identity_vendor_identifier(
         let HandleValue::Identity(identity) = &identity.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::text_string(identity.vendor_identifier().to_owned())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1410,10 +1673,10 @@ pub extern "C" fn kmipkit_extension_identity_name(
         let HandleValue::Identity(identity) = &identity.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::text_string(identity.name().to_owned())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1429,10 +1692,10 @@ pub extern "C" fn kmipkit_extension_identity_version(
         let HandleValue::Identity(identity) = &identity.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::text_string(identity.version().to_owned())),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1476,10 +1739,10 @@ pub extern "C" fn kmipkit_extension_compatibility_create(
             )
             .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Compatibility,
             HandleValue::Compatibility(compatibility),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1494,7 +1757,7 @@ pub extern "C" fn kmipkit_ttlv_path_create(
         let tag = try_ffi!(RawTag::new(first_tag).map_err(model_status));
         let tag = try_ffi!(tag.try_checked().map_err(model_status));
         let path = try_ffi!(extension::ttlv_path(tag).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Path, HandleValue::Path(path));
+        *out = try_ffi!(try_make_handle(Kind::Path, HandleValue::Path(path)));
         SUCCESS
     })
 }
@@ -1514,7 +1777,7 @@ pub extern "C" fn kmipkit_ttlv_path_with_child_tag(
         let tag = try_ffi!(RawTag::new(tag).map_err(model_status));
         let tag = try_ffi!(tag.try_checked().map_err(model_status));
         let path = try_ffi!(extension::with_child_tag(path, tag).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Path, HandleValue::Path(path));
+        *out = try_ffi!(try_make_handle(Kind::Path, HandleValue::Path(path)));
         SUCCESS
     })
 }
@@ -1529,8 +1792,8 @@ pub extern "C" fn kmipkit_extension_discriminator_create(
         let out = out_slot!(out_discriminator);
         let _ = read_handle!(path, Path);
         let _ = read_handle!(scalar_value, Value);
-        let path = consume_owner(path);
-        let scalar = consume_owner(scalar_value);
+        let path = try_ffi!(consume_owner(path, Kind::Path));
+        let scalar = try_ffi!(consume_owner(scalar_value, Kind::Value));
         let path = try_ffi!(unwrap_payload(path));
         let scalar = try_ffi!(unwrap_payload(scalar));
         let HandleValue::Path(path) = path else {
@@ -1541,10 +1804,10 @@ pub extern "C" fn kmipkit_extension_discriminator_create(
         };
         let discriminator =
             try_ffi!(extension::discriminator(path, scalar).map_err(|e| protocol_status(&e)));
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Discriminator,
             HandleValue::Discriminator(discriminator),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1558,7 +1821,7 @@ pub extern "C" fn kmipkit_extension_schema_scalar(
         let out = out_slot!(out_schema);
         let item_type = try_ffi!(item_type_from_u32(item_type));
         let schema = try_ffi!(extension::scalar(item_type).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Schema, HandleValue::Schema(schema));
+        *out = try_ffi!(try_make_handle(Kind::Schema, HandleValue::Schema(schema)));
         SUCCESS
     })
 }
@@ -1607,7 +1870,10 @@ fn child_rule_export(
     let tag = try_ffi!(RawTag::new(raw_tag).map_err(model_status));
     let tag = try_ffi!(tag.try_checked().map_err(model_status));
     let rule = try_ffi!(build(tag, schema.clone()).map_err(|e| protocol_status(&e)));
-    *out = make_handle(Kind::ChildRule, HandleValue::ChildRule(Box::new(rule)));
+    *out = try_ffi!(try_make_handle(
+        Kind::ChildRule,
+        HandleValue::ChildRule(Box::new(rule))
+    ));
     SUCCESS
 }
 
@@ -1626,10 +1892,10 @@ pub extern "C" fn kmipkit_extension_order_constraint_create(
         let constraint = try_ffi!(
             extension::extension_order_constraint(before, after).map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::OrderConstraint,
             HandleValue::OrderConstraint(constraint),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1676,7 +1942,7 @@ pub extern "C" fn kmipkit_extension_schema_structure(
             )
             .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(Kind::Schema, HandleValue::Schema(schema));
+        *out = try_ffi!(try_make_handle(Kind::Schema, HandleValue::Schema(schema)));
         SUCCESS
     })
 }
@@ -1787,7 +2053,7 @@ fn schema_transform(
         return record_ffi_error(ERROR_INVALID_INPUT);
     };
     let schema = try_ffi!(transform(schema).map_err(|e| protocol_status(&e)));
-    *out = make_handle(Kind::Schema, HandleValue::Schema(schema));
+    *out = try_ffi!(try_make_handle(Kind::Schema, HandleValue::Schema(schema)));
     SUCCESS
 }
 
@@ -1833,10 +2099,10 @@ pub extern "C" fn kmipkit_extension_definition_create(
             )
             .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Definition,
             HandleValue::Definition(Box::new(definition)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -1906,7 +2172,10 @@ pub extern "C" fn kmipkit_client_extension_registry_create_v1(
             client_extension::client_extension_registry(copied, limits)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Registry, HandleValue::Registry(Arc::new(registry)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registry,
+            HandleValue::Registry(Arc::new(registry))
+        ));
         SUCCESS
     })
 }
@@ -2053,7 +2322,10 @@ pub extern "C" fn kmipkit_client_extension_registry_create(
             client_extension::client_extension_registry(copied, limits)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Registry, HandleValue::Registry(Arc::new(registry)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registry,
+            HandleValue::Registry(Arc::new(registry))
+        ));
         SUCCESS
     })
 }
@@ -2070,10 +2342,10 @@ pub extern "C" fn kmipkit_client_configuration_create(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let configuration = client_extension::ClientConfiguration::from_shared_registry(registry);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configuration),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2090,7 +2362,10 @@ pub extern "C" fn kmipkit_client_configuration_extension_registry(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let registry = configuration.shared_extension_registry();
-        *out = make_handle(Kind::Registry, HandleValue::Registry(registry));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registry,
+            HandleValue::Registry(registry)
+        ));
         SUCCESS
     })
 }
@@ -2102,8 +2377,8 @@ pub extern "C" fn kmipkit_client_extension_registry_definition_count(
 ) -> i32 {
     ffi_entrypoint(|| {
         let count = scalar_out!(out_count);
-        let registry = try_ffi!(reference_registry(&registry));
-        *count = client_extension::definition_count(registry);
+        let registry = try_ffi!(reference_registry(registry));
+        *count = client_extension::definition_count(&registry);
         SUCCESS
     })
 }
@@ -2116,18 +2391,18 @@ pub extern "C" fn kmipkit_client_extension_registry_definition_at(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_definition);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let Some(index) = usize::try_from(index).ok() else {
             return SUCCESS;
         };
-        if client_extension::definition_at(registry, index).is_some() {
-            *out = make_handle(
+        if client_extension::definition_at(&registry, index).is_some() {
+            *out = try_ffi!(try_make_handle(
                 Kind::Definition,
                 HandleValue::DefinitionRef {
-                    registry: Arc::clone(registry),
+                    registry: Arc::clone(&registry),
                     index,
                 },
-            );
+            ));
         }
         SUCCESS
     })
@@ -2141,25 +2416,25 @@ pub extern "C" fn kmipkit_client_extension_registry_definition_for_identity(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_definition);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let identity_handle = read_handle!(identity, Identity);
         let HandleValue::Identity(identity) = &identity_handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let found = (0..client_extension::definition_count(registry)).find(|index| {
+        let found = (0..client_extension::definition_count(&registry)).find(|index| {
             usize::try_from(*index)
                 .ok()
-                .and_then(|position| client_extension::definition_at(registry, position))
+                .and_then(|position| client_extension::definition_at(&registry, position))
                 .is_some_and(|definition| definition.identity_ref() == identity)
         });
         if let Some(index) = found.and_then(|value| usize::try_from(value).ok()) {
-            *out = make_handle(
+            *out = try_ffi!(try_make_handle(
                 Kind::Definition,
                 HandleValue::DefinitionRef {
-                    registry: Arc::clone(registry),
+                    registry: Arc::clone(&registry),
                     index,
                 },
-            );
+            ));
         }
         SUCCESS
     })
@@ -2175,7 +2450,7 @@ pub extern "C" fn kmipkit_client_extension_registry_validate(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let identity_handle = read_handle!(identity, Identity);
         let structure_handle = read_handle!(value, Structure);
         let limits_handle = read_handle!(limits, CodecLimits);
@@ -2193,10 +2468,13 @@ pub extern "C" fn kmipkit_client_extension_registry_validate(
         };
         let value = try_ffi!(clone_structure(value));
         let registered = try_ffi!(
-            client_extension::validate_extension_value(registry, identity.clone(), value, limits,)
+            client_extension::validate_extension_value(&registry, identity.clone(), value, limits,)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Registered, HandleValue::Registered(registered));
+        *out = try_ffi!(try_make_handle(
+            Kind::Registered,
+            HandleValue::Registered(registered)
+        ));
         SUCCESS
     })
 }
@@ -2212,11 +2490,11 @@ pub extern "C" fn kmipkit_client_extension_registry_inspect(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        let registry = try_ffi!(reference_registry(&registry));
+        let registry = try_ffi!(reference_registry(registry));
         let vendor = try_ffi!(input_span(
             vendor_identifier_data,
             vendor_identifier_length,
-            client_extension::limits(registry).max_text_bytes_per_field()
+            client_extension::limits(&registry).max_text_bytes_per_field()
         ));
         let vendor = try_ffi!(std::str::from_utf8(vendor).map_err(|_| ERROR_INVALID_INPUT));
         let structure_handle = read_handle!(value, Structure);
@@ -2228,10 +2506,13 @@ pub extern "C" fn kmipkit_client_extension_registry_inspect(
         };
         let value = try_ffi!(clone_structure(value));
         let recognition = try_ffi!(
-            client_extension::inspect(registry, vendor, value, limits)
+            client_extension::inspect(&registry, vendor, value, limits)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(Kind::Recognition, HandleValue::Recognition(recognition));
+        *out = try_ffi!(try_make_handle(
+            Kind::Recognition,
+            HandleValue::Recognition(recognition)
+        ));
         SUCCESS
     })
 }
@@ -2246,7 +2527,7 @@ pub extern "C" fn kmipkit_extension_definition_validate(
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
         let definition_handle = read_handle!(definition, Definition);
-        let definition = try_ffi!(definition_from_handle(definition_handle));
+        let definition = try_ffi!(definition_from_handle(&definition_handle));
         let value_handle = read_handle!(value, Structure);
         let limits_handle = read_handle!(limits, CodecLimits);
         let (HandleValue::Structure(value), HandleValue::CodecLimits(limits)) =
@@ -2258,7 +2539,10 @@ pub extern "C" fn kmipkit_extension_definition_validate(
         let validated = try_ffi!(
             extension::validate(definition, value, limits).map_err(|error| protocol_status(&error))
         );
-        *out = make_handle(Kind::Validated, HandleValue::Validated(validated));
+        *out = try_ffi!(try_make_handle(
+            Kind::Validated,
+            HandleValue::Validated(validated)
+        ));
         SUCCESS
     })
 }
@@ -2283,10 +2567,10 @@ pub extern "C" fn kmipkit_client_request_message_extension_create(
             client_extension::client_request_message_extension(value, criticality_indicator == 1,)
                 .map_err(|error| client_status(&error))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::MessageExtension,
             HandleValue::MessageExtension(extension),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2301,8 +2585,8 @@ pub extern "C" fn kmipkit_client_batch_item_with_extension(
         let out = out_slot!(out_item);
         let _ = read_handle!(item, BatchItem);
         let _ = read_handle!(extension, MessageExtension);
-        let item = consume_owner(item);
-        let extension = consume_owner(extension);
+        let item = try_ffi!(consume_owner(item, Kind::BatchItem));
+        let extension = try_ffi!(consume_owner(extension, Kind::MessageExtension));
         let item = try_ffi!(unwrap_payload(item));
         let extension = try_ffi!(unwrap_payload(extension));
         let (HandleValue::BatchItem(item), HandleValue::MessageExtension(extension)) =
@@ -2310,10 +2594,10 @@ pub extern "C" fn kmipkit_client_batch_item_with_extension(
         else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(item.with_extension(extension))),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2329,15 +2613,15 @@ pub extern "C" fn kmipkit_client_batch_item_with_unique_batch_item_id(
         let out = out_slot!(out_item);
         let _ = read_handle!(item, BatchItem);
         let id = try_ffi!(input_span(id_data, id_length, MAX_FFI_INPUT_BYTES,));
-        let item = consume_owner(item);
+        let item = try_ffi!(consume_owner(item, Kind::BatchItem));
         let item = try_ffi!(unwrap_payload(item));
         let HandleValue::BatchItem(item) = item else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(item.with_unique_batch_item_id(id.to_vec()))),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2348,10 +2632,804 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions())),
+        ));
+        SUCCESS
+    })
+}
+
+fn copy_structure_handle(
+    structure: *mut kmipkit_ttlv_structure_t,
+    required: bool,
+) -> FfiResult<Option<Structure>> {
+    if structure.is_null() {
+        return if required {
+            Err(ERROR_INVALID_INPUT)
+        } else {
+            Ok(None)
+        };
+    }
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    source.view().try_clone().map(Some).map_err(model_status)
+}
+
+fn copy_attribute_set_handle(
+    structure: *mut kmipkit_ttlv_structure_t,
+    required: bool,
+) -> FfiResult<Option<AttributeSet>> {
+    if structure.is_null() {
+        return if required {
+            Err(ERROR_INVALID_INPUT)
+        } else {
+            Ok(None)
+        };
+    }
+    let handle = reference_handle(structure, Kind::Structure)?;
+    let HandleValue::Structure(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let view = source.view();
+    let children = view.children();
+    let mut items = Vec::new();
+    items
+        .try_reserve_exact(children.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for child in children {
+        items.push(child.try_clone().map_err(model_status)?);
+    }
+    AttributeSet::try_new(items)
+        .map(Some)
+        .map_err(|_| ERROR_INVALID_INPUT)
+}
+
+fn copy_unique_identifier(
+    identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<Option<UniqueIdentifier>> {
+    if identifier.is_null() {
+        return Ok(None);
+    }
+    // SAFETY: the caller promises a readable versioned input record for this call.
+    let value = unsafe { identifier.read() };
+    if value.struct_size as usize != std::mem::size_of::<kmipkit_unique_identifier_v1_t>()
+        || value.abi_version != 1
+        || value.reserved != 0
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let identifier = match value.kind {
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING => {
+            let text = input_span(value.text_data, value.text_length, MAX_FFI_INPUT_BYTES)?;
+            let text = std::str::from_utf8(text).map_err(|_| ERROR_INVALID_INPUT)?;
+            let mut owned = String::new();
+            owned
+                .try_reserve_exact(text.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            owned.push_str(text);
+            UniqueIdentifier::TextString(owned)
+        }
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION => {
+            UniqueIdentifier::Enumeration(value.enumeration_value)
+        }
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => {
+            UniqueIdentifier::Integer(value.integer_value)
+        }
+        _ => return Err(ERROR_INVALID_INPUT),
+    };
+    Ok(Some(identifier))
+}
+
+fn copy_optional_bytes(data: *const u8, length: u64, present: u8) -> FfiResult<Option<Vec<u8>>> {
+    if present == 0 {
+        return if data.is_null() && length == 0 {
+            Ok(None)
+        } else {
+            Err(ERROR_INVALID_INPUT)
+        };
+    }
+    if present != 1 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let bytes = input_span(data, length, MAX_FFI_INPUT_BYTES)?;
+    let mut owned = Vec::new();
+    owned
+        .try_reserve_exact(bytes.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    owned.extend_from_slice(bytes);
+    Ok(Some(owned))
+}
+
+fn copy_optional_secret_span(
+    span: *const crate::kmipkit_byte_span_v1_t,
+) -> FfiResult<Option<SecretBytes>> {
+    if span.is_null() {
+        return Ok(None);
+    }
+    // SAFETY: the C caller promises a readable byte-span record for this call.
+    let span = unsafe { span.read() };
+    let bytes = input_span(span.data, span.length, MAX_FFI_INPUT_BYTES)?;
+    let mut owned = Vec::new();
+    owned
+        .try_reserve_exact(bytes.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    owned.extend_from_slice(bytes);
+    Ok(Some(SecretBytes::new(owned)))
+}
+
+fn copy_operation_data(value: *mut kmipkit_ttlv_value_t) -> FfiResult<Option<OperationData>> {
+    if value.is_null() {
+        return Ok(None);
+    }
+    let handle = reference_handle(value, Kind::Value)?;
+    let HandleValue::Value(value) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    value.with_value(|view| match view {
+        ValueView::ByteString(bytes) => {
+            let mut owned = Vec::new();
+            owned
+                .try_reserve_exact(bytes.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            owned.extend_from_slice(bytes);
+            Ok(Some(OperationData::ByteString(SecretBytes::new(owned))))
+        }
+        ValueView::Enumeration(value) => Ok(Some(OperationData::Enumeration(*value))),
+        ValueView::Integer(value) => Ok(Some(OperationData::Integer(*value))),
+        _ => Err(ERROR_INVALID_INPUT),
+    })
+}
+
+fn optional_indicator(value: u8) -> FfiResult<Option<bool>> {
+    match value {
+        0 => Ok(None),
+        1 => Ok(Some(false)),
+        2 => Ok(Some(true)),
+        _ => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn with_cryptographic_framing<T>(
+    mut request: T,
+    correlation: Option<SecretBytes>,
+    init_indicator: Option<bool>,
+    final_indicator: Option<bool>,
+) -> T
+where
+    T: CryptographicRequestFraming,
+{
+    if let Some(value) = correlation {
+        request = request.with_correlation_value(value);
+    }
+    if let Some(value) = init_indicator {
+        request = request.with_init_indicator(value);
+    }
+    if let Some(value) = final_indicator {
+        request = request.with_final_indicator(value);
+    }
+    request
+}
+
+trait CryptographicRequestFraming: Sized {
+    fn with_correlation_value(self, value: SecretBytes) -> Self;
+    fn with_init_indicator(self, value: bool) -> Self;
+    fn with_final_indicator(self, value: bool) -> Self;
+}
+
+macro_rules! impl_cryptographic_request_framing {
+    ($($request:ty),+ $(,)?) => {
+        $(
+            impl CryptographicRequestFraming for $request {
+                fn with_correlation_value(self, value: SecretBytes) -> Self {
+                    <$request>::with_correlation_value(self, value)
+                }
+
+                fn with_init_indicator(self, value: bool) -> Self {
+                    <$request>::with_init_indicator(self, value)
+                }
+
+                fn with_final_indicator(self, value: bool) -> Self {
+                    <$request>::with_final_indicator(self, value)
+                }
+            }
+        )+
+    };
+}
+
+impl_cryptographic_request_framing!(
+    HashRequest,
+    MacRequest,
+    MacVerifyRequest,
+    SignRequest,
+    SignatureVerifyRequest,
+);
+
+fn copy_optional_identifier(
+    identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<Option<UniqueIdentifier>> {
+    if identifier.is_null() {
+        return Ok(None);
+    }
+    copy_unique_identifier(identifier)
+}
+
+fn batch_item_handle(request: ClientRequest) -> FfiResult<*mut kmipkit_client_batch_item_t> {
+    try_make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
+    )
+}
+
+/// Creates a typed Check request from KMIP 2.1 §6.1.7, Table 183.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_check(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_usage_limits_count: u8,
+    usage_limits_count: i64,
+    has_cryptographic_usage_mask: u8,
+    cryptographic_usage_mask: i32,
+    has_lease_time: u8,
+    lease_time: u32,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let usage_limits_count = match has_usage_limits_count {
+            0 => None,
+            1 => Some(usage_limits_count),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let cryptographic_usage_mask = match has_cryptographic_usage_mask {
+            0 => None,
+            1 => Some(cryptographic_usage_mask),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let lease_time = match has_lease_time {
+            0 => None,
+            1 => Some(lease_time),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let mut request = CheckRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(count) = usage_limits_count {
+            request = request.with_usage_limits_count(count);
+        }
+        if let Some(mask) = cryptographic_usage_mask {
+            request = request.with_cryptographic_usage_mask(mask);
+        }
+        if let Some(lease_time) = lease_time {
+            request = request.with_lease_time(lease_time);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::check(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Delegated Login request from KMIP 2.1 §6.1.12, Table 199.
+///
+/// `lease_time_kind` is 0 for absent, 1 for Interval, or 2 for Date Time.
+/// Rights is required; Usage Limits is copied when supplied.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_delegated_login(
+    rights: *mut kmipkit_ttlv_structure_t,
+    lease_time_kind: u32,
+    lease_time_value: i64,
+    has_request_count: u8,
+    request_count: i32,
+    usage_limits: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let rights = match copy_structure_handle(rights, true) {
+            Ok(Some(rights)) => rights,
+            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        let lease_time = match lease_time_kind {
+            0 if lease_time_value == 0 => None,
+            1 => match u32::try_from(lease_time_value) {
+                Ok(value) => Some(DelegatedLoginLeaseTime::Interval(value)),
+                Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            },
+            2 => Some(DelegatedLoginLeaseTime::DateTime(lease_time_value)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let request_count = match (has_request_count, request_count) {
+            (0, 0) => None,
+            (1, value) => Some(value),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let usage_limits = match copy_structure_handle(usage_limits, false) {
+            Ok(value) => value,
+            Err(status) => return record_ffi_error(status),
+        };
+        let mut request = DelegatedLoginRequest::new(rights);
+        if let Some(lease_time) = lease_time {
+            request = match lease_time {
+                DelegatedLoginLeaseTime::Interval(value) => request.with_lease_time_interval(value),
+                DelegatedLoginLeaseTime::DateTime(value) => {
+                    request.with_lease_time_date_time(value)
+                }
+            };
+        }
+        if let Some(count) = request_count {
+            request = request.with_request_count(count);
+        }
+        if let Some(usage_limits) = usage_limits {
+            request = request.with_usage_limits(usage_limits);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::delegated_login(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Certify request and copies the certificate request as sensitive bytes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_certify(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_certificate_request_type: u8,
+    certificate_request_type: u32,
+    certificate_request_value: *const crate::kmipkit_byte_span_v1_t,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let request_type = match has_certificate_request_type {
+            0 => None,
+            1 => Some(certificate_request_type),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let request_value = try_ffi!(copy_optional_secret_span(certificate_request_value));
+        let attributes = try_ffi!(copy_structure_handle(attributes, false));
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = CertifyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(request_type) = request_type {
+            request = request.with_certificate_request_type(request_type);
+        }
+        if let Some(request_value) = request_value {
+            request = request.with_certificate_request_value(request_value);
+        }
+        if let Some(attributes) = attributes {
+            request = request.with_attributes(attributes);
+        }
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Certify(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Derive Key request from KMIP 2.1 §6.1.14, Table 205.
+///
+/// The ordered Unique Identifier records may contain repeated identifiers.
+/// Derivation Parameters and Attributes are copied from generic TTLV structures;
+/// secret derivation byte strings are moved into zeroizing protocol storage.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_derive_key(
+    object_type: u32,
+    unique_identifiers: *const kmipkit_unique_identifier_v1_t,
+    unique_identifier_count: u64,
+    derivation_method: u32,
+    derivation_parameters: *mut kmipkit_ttlv_structure_t,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        if unique_identifier_count == 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        if unique_identifier_count > MAX_DERIVE_KEY_SOURCE_IDENTIFIERS {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        if unique_identifiers.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let Ok(count) = usize::try_from(unique_identifier_count) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
+        // SAFETY: non-null and bounded above; the caller supplies `count` readable ABI records.
+        let source_identifiers = unsafe { std::slice::from_raw_parts(unique_identifiers, count) };
+        let mut identifiers = Vec::new();
+        if identifiers.try_reserve_exact(count).is_err() {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        let mut total_identifier_bytes = 0_u64;
+        for identifier in source_identifiers {
+            let identifier = match copy_unique_identifier(ptr::from_ref(identifier)) {
+                Ok(Some(identifier)) => identifier,
+                Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+                Err(status) => return record_ffi_error(status),
+            };
+            if let UniqueIdentifier::TextString(value) = &identifier {
+                let Ok(length) = u64::try_from(value.len()) else {
+                    return record_ffi_error(ERROR_RESOURCE_LIMIT);
+                };
+                total_identifier_bytes = match total_identifier_bytes.checked_add(length) {
+                    Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
+                    _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+                };
+            }
+            identifiers.push(identifier);
+        }
+        let parameters = match derive_key_parameters_from_handle(derivation_parameters) {
+            Ok(parameters) => parameters,
+            Err(status) => return record_ffi_error(status),
+        };
+        let attributes = match copy_attribute_set_handle(attributes, true) {
+            Ok(Some(attributes)) => attributes,
+            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        let request = DeriveKeyRequest::new(
+            ObjectType::from_raw(object_type),
+            identifiers,
+            DerivationMethod::from_raw(derivation_method),
+            parameters,
+            attributes,
         );
+        *out = match batch_item_handle(ClientRequest::DeriveKey(request)) {
+            Ok(item) => item,
+            Err(status) => return record_ffi_error(status),
+        };
+        SUCCESS
+    })
+}
+/// Creates a typed Get Usage Allocation request from KMIP 2.1 §6.1.23, Table 232.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    usage_limits_count: i64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let mut request = GetUsageAllocationRequest::new(usage_limits_count);
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::get_usage_allocation(
+            request
+        )));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_hash(
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let Some(parameters) = parameters else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let data = try_ffi!(copy_operation_data(data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = HashRequest::new(parameters);
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::Hash(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_mac(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = MacRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::Mac(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_mac_verify(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    mac_data: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let mac_data = try_ffi!(copy_optional_secret_span(mac_data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = MacVerifyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        if let Some(mac_data) = mac_data {
+            request = request.with_mac_data(mac_data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::MacVerify(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_sign(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    digested_data: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let digested_data = try_ffi!(copy_optional_secret_span(digested_data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = SignRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        if let Some(digested_data) = digested_data {
+            request = request.with_digested_data(digested_data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::Sign(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_signature_verify(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    digested_data: *const crate::kmipkit_byte_span_v1_t,
+    signature_data: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let digested_data = try_ffi!(copy_optional_secret_span(digested_data));
+        let signature_data = try_ffi!(copy_optional_secret_span(signature_data));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let mut request = SignatureVerifyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(data) = data {
+            request = request.with_data(data);
+        }
+        if let Some(digested_data) = digested_data {
+            request = request.with_digested_data(digested_data);
+        }
+        if let Some(signature_data) = signature_data {
+            request = request.with_signature_data(signature_data);
+        }
+        request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
+        *out = try_ffi!(batch_item_handle(ClientRequest::SignatureVerify(request)));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create(
+    object_type: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let attributes = try_ffi!(copy_attribute_set_handle(attributes, false));
+        let Some(attributes) = attributes else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = CreateRequest::new(ObjectType::from_raw(object_type), attributes);
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::Create(
+                request,
+            )))),
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create_key_pair(
+    common_attributes: *mut kmipkit_ttlv_structure_t,
+    private_key_attributes: *mut kmipkit_ttlv_structure_t,
+    public_key_attributes: *mut kmipkit_ttlv_structure_t,
+    common_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    private_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    public_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let common_attributes = try_ffi!(copy_attribute_set_handle(common_attributes, false));
+        let private_key_attributes =
+            try_ffi!(copy_attribute_set_handle(private_key_attributes, false));
+        let public_key_attributes =
+            try_ffi!(copy_attribute_set_handle(public_key_attributes, false));
+        let common_protection_storage_masks = try_ffi!(copy_structure_handle(
+            common_protection_storage_masks,
+            false
+        ));
+        let private_protection_storage_masks = try_ffi!(copy_structure_handle(
+            private_protection_storage_masks,
+            false
+        ));
+        let public_protection_storage_masks = try_ffi!(copy_structure_handle(
+            public_protection_storage_masks,
+            false
+        ));
+        let mut request = CreateKeyPairRequest::new();
+        if let Some(attributes) = common_attributes {
+            request = request.with_common_attributes(attributes);
+        }
+        if let Some(attributes) = private_key_attributes {
+            request = request.with_private_key_attributes(attributes);
+        }
+        if let Some(attributes) = public_key_attributes {
+            request = request.with_public_key_attributes(attributes);
+        }
+        if let Some(masks) = common_protection_storage_masks {
+            request = request.with_common_protection_storage_masks(masks);
+        }
+        if let Some(masks) = private_protection_storage_masks {
+            request = request.with_private_protection_storage_masks(masks);
+        }
+        if let Some(masks) = public_protection_storage_masks {
+            request = request.with_public_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(
+                ClientRequest::CreateKeyPair(request),
+            ))),
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create_split_key(
+    object_type: u32,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    split_key_parts: i32,
+    split_key_threshold: i32,
+    split_key_method: u32,
+    has_prime_field_size: u8,
+    prime_field_size_data: *const u8,
+    prime_field_size_length: u64,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let attributes = try_ffi!(copy_attribute_set_handle(attributes, false));
+        let Some(attributes) = attributes else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let identifier = try_ffi!(copy_unique_identifier(unique_identifier));
+        let prime_field_size = try_ffi!(copy_optional_bytes(
+            prime_field_size_data,
+            prime_field_size_length,
+            has_prime_field_size,
+        ));
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = CreateSplitKeyRequest::new(
+            ObjectType::from_raw(object_type),
+            split_key_parts,
+            split_key_threshold,
+            SplitKeyMethod::from_raw(split_key_method),
+            attributes,
+        );
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(prime_field_size) = prime_field_size {
+            request = request.with_prime_field_size(prime_field_size);
+        }
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(
+                ClientRequest::CreateSplitKey(request),
+            ))),
+        ));
         SUCCESS
     })
 }
@@ -2370,8 +3448,8 @@ pub extern "C" fn kmipkit_register_request_create(
 
         // Transfer both owners before the first fallible unwrap so an error cannot strand the
         // second consumed input in a language binding that has already disarmed both wrappers.
-        let attributes_owner = consume_owner(attributes);
-        let object_owner = consume_owner(object);
+        let attributes_owner = try_ffi!(consume_owner(attributes, Kind::Structure));
+        let object_owner = try_ffi!(consume_owner(object, Kind::Item));
         let attributes = try_ffi!(unwrap_payload(attributes_owner));
         let HandleValue::Structure(attributes) = attributes else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -2395,10 +3473,10 @@ pub extern "C" fn kmipkit_register_request_create(
             Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
         };
         let request = RegisterRequest::new(ObjectType::from_raw(object_type), attributes, object);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::RegisterRequest,
             HandleValue::RegisterRequest(Box::new(request)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2421,10 +3499,10 @@ pub extern "C" fn kmipkit_register_request_with_opaque_object_context(
             2 => OpaqueObjectContext::ManagedCryptographicObject,
             _ => return record_ffi_error(ERROR_INVALID_INPUT),
         };
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::RegisterRequest,
             HandleValue::RegisterRequest(Box::new(request.with_opaque_object_context(context))),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2445,7 +3523,10 @@ pub extern "C" fn kmipkit_client_batch_item_register(
             Ok(item) => item,
             Err(error) => return record_ffi_error(protocol_status(&error)),
         };
-        *out = make_handle(Kind::BatchItem, HandleValue::BatchItem(Box::new(item)));
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(item))
+        ));
         SUCCESS
     })
 }
@@ -2484,7 +3565,10 @@ pub extern "C" fn kmipkit_client_batch_item_extension_identity_at(
         let Some(identity) = item.extension_identity_at(index) else {
             return SUCCESS;
         };
-        *out = make_handle(Kind::Identity, HandleValue::Identity(identity));
+        *out = try_ffi!(try_make_handle(
+            Kind::Identity,
+            HandleValue::Identity(identity)
+        ));
         SUCCESS
     })
 }
@@ -2528,7 +3612,10 @@ pub extern "C" fn kmipkit_extension_information_create(
         let name = try_ffi!(std::str::from_utf8(name).map_err(|_| ERROR_INVALID_IDENTITY));
         let information =
             try_ffi!(extension::extension_information(name).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Information, HandleValue::Information(information));
+        *out = try_ffi!(try_make_handle(
+            Kind::Information,
+            HandleValue::Information(information)
+        ));
         SUCCESS
     })
 }
@@ -2625,7 +3712,10 @@ pub extern "C" fn kmipkit_extension_information_description(
         let information = try_ffi!(
             extension::with_description(source, description).map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(Kind::Information, HandleValue::Information(information));
+        *out = try_ffi!(try_make_handle(
+            Kind::Information,
+            HandleValue::Information(information)
+        ));
         SUCCESS
     })
 }
@@ -2643,7 +3733,10 @@ fn information_transform(
         return record_ffi_error(ERROR_INVALID_INPUT);
     };
     let information = try_ffi!(transform(information));
-    *out = make_handle(Kind::Information, HandleValue::Information(information));
+    *out = try_ffi!(try_make_handle(
+        Kind::Information,
+        HandleValue::Information(information)
+    ));
     SUCCESS
 }
 
@@ -2660,7 +3753,10 @@ pub extern "C" fn kmipkit_extension_information_to_ttlv(
         };
         let structure =
             try_ffi!(extension::to_ttlv(information.clone()).map_err(|e| protocol_status(&e)));
-        *out = make_handle(Kind::Structure, HandleValue::Structure(structure));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
         SUCCESS
     })
 }
@@ -2685,10 +3781,10 @@ pub extern "C" fn kmipkit_extension_definition_with_information(
             extension::with_information(*definition, information.clone())
                 .map_err(|e| protocol_status(&e))
         );
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Definition,
             HandleValue::Definition(Box::new(definition)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2701,11 +3797,11 @@ pub extern "C" fn kmipkit_extension_definition_identity(
     ffi_entrypoint(|| {
         let out = out_slot!(out_identity);
         let definition = read_handle!(definition, Definition);
-        let definition = try_ffi!(definition_from_handle(definition));
-        *out = make_handle(
+        let definition = try_ffi!(definition_from_handle(&definition));
+        *out = try_ffi!(try_make_handle(
             Kind::Identity,
             HandleValue::Identity(extension::identity(definition)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2718,9 +3814,12 @@ pub extern "C" fn kmipkit_extension_definition_information(
     ffi_entrypoint(|| {
         let out = out_slot!(out_information);
         let definition = read_handle!(definition, Definition);
-        let definition = try_ffi!(definition_from_handle(definition));
+        let definition = try_ffi!(definition_from_handle(&definition));
         if let Some(information) = extension::information(definition) {
-            *out = make_handle(Kind::Information, HandleValue::Information(information));
+            *out = try_ffi!(try_make_handle(
+                Kind::Information,
+                HandleValue::Information(information)
+            ));
         }
         SUCCESS
     })
@@ -2755,7 +3854,10 @@ pub extern "C" fn kmipkit_extension_recognition_validated_value(
         };
         if recognition_value.validated_value().is_some() {
             let owner = try_ffi!(clone_handle_owner(recognition, Kind::Recognition));
-            *out = make_handle(Kind::Validated, HandleValue::ValidatedRef(owner));
+            *out = try_ffi!(try_make_handle(
+                Kind::Validated,
+                HandleValue::ValidatedRef(owner)
+            ));
         }
         SUCCESS
     })
@@ -2774,7 +3876,10 @@ pub extern "C" fn kmipkit_extension_recognition_generic_value(
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         let view = TtlvView::new(owner, ViewRoot::RecognitionGeneric, ViewTarget::Structure);
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(view));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
         SUCCESS
     })
 }
@@ -2787,11 +3892,11 @@ pub extern "C" fn kmipkit_validated_extension_value_identity(
     ffi_entrypoint(|| {
         let out = out_slot!(out_identity);
         let value = read_handle!(value, Validated);
-        let value = try_ffi!(validated_from_handle(value));
-        *out = make_handle(
+        let value = try_ffi!(validated_from_handle(&value));
+        *out = try_ffi!(try_make_handle(
             Kind::Identity,
             HandleValue::Identity(extension::validated_extension_value_identity(value)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -2804,10 +3909,13 @@ pub extern "C" fn kmipkit_validated_extension_value_generic_value(
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
         let value_handle = read_handle!(value, Validated);
-        let _ = try_ffi!(validated_from_handle(value_handle));
+        let _ = try_ffi!(validated_from_handle(&value_handle));
         let owner = try_ffi!(clone_handle_owner(value, Kind::Validated));
         let structure = TtlvView::new(owner, ViewRoot::ValidatedGeneric, ViewTarget::Structure);
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(structure));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(structure)
+        ));
         SUCCESS
     })
 }
@@ -2828,7 +3936,10 @@ pub extern "C" fn kmipkit_validated_extension_value_value_at(
         let owner = try_ffi!(clone_handle_owner(value, Kind::Validated));
         let structure = TtlvView::new(owner, ViewRoot::ValidatedGeneric, ViewTarget::Structure);
         let value_view = try_ffi!(structure.value_at_tags(path.tags()));
-        *out = make_handle(Kind::ValueView, HandleValue::ValueView(value_view));
+        *out = try_ffi!(try_make_handle(
+            Kind::ValueView,
+            HandleValue::ValueView(value_view)
+        ));
         SUCCESS
     })
 }
@@ -2919,10 +4030,10 @@ fn check_item_limits(item: &Item, limits: &CodecLimits) -> FfiResult<()> {
     Ok(())
 }
 
-fn codec_limits_from_handle(pointer: &*mut kmipkit_codec_limits_t) -> FfiResult<&CodecLimits> {
+fn codec_limits_from_handle(pointer: *mut kmipkit_codec_limits_t) -> FfiResult<Arc<CodecLimits>> {
     let handle = reference_handle(pointer, Kind::CodecLimits)?;
     match &handle.value {
-        HandleValue::CodecLimits(limits) => Ok(limits),
+        HandleValue::CodecLimits(limits) => Ok(Arc::clone(limits)),
         _ => Err(ERROR_INVALID_INPUT),
     }
 }
@@ -2935,7 +4046,7 @@ pub extern "C" fn kmipkit_ttlv_raw_tag_create(
     ffi_entrypoint(|| {
         let out = out_slot!(out_raw_tag);
         let raw = try_ffi!(RawTag::new(raw).map_err(model_status));
-        *out = make_handle(Kind::RawTag, HandleValue::RawTag(raw));
+        *out = try_ffi!(try_make_handle(Kind::RawTag, HandleValue::RawTag(raw)));
         SUCCESS
     })
 }
@@ -2968,7 +4079,7 @@ pub extern "C" fn kmipkit_ttlv_raw_tag_try_checked(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let tag = try_ffi!(raw_tag.try_checked().map_err(model_status));
-        *out = make_handle(Kind::Tag, HandleValue::Tag(tag));
+        *out = try_ffi!(try_make_handle(Kind::Tag, HandleValue::Tag(tag)));
         SUCCESS
     })
 }
@@ -2992,10 +4103,10 @@ pub extern "C" fn kmipkit_codec_limits_defaults(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_limits);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::CodecLimits,
-            HandleValue::CodecLimits(CodecLimits::defaults()),
-        );
+            HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+        ));
         SUCCESS
     })
 }
@@ -3019,7 +4130,10 @@ pub extern "C" fn kmipkit_codec_limits_create(
             CodecLimits::new(max_message_bytes, max_structure_depth, max_elements)
                 .map_err(|_| ERROR_RESOURCE_LIMIT)
         );
-        *out = make_handle(Kind::CodecLimits, HandleValue::CodecLimits(limits));
+        *out = try_ffi!(try_make_handle(
+            Kind::CodecLimits,
+            HandleValue::CodecLimits(Arc::new(limits)),
+        ));
         SUCCESS
     })
 }
@@ -3030,8 +4144,8 @@ fn codec_limit_value(
     selector: fn(&CodecLimits) -> usize,
 ) -> i32 {
     let output = scalar_out!(out_value);
-    let limits = try_ffi!(codec_limits_from_handle(&pointer));
-    *output = try_ffi!(u64::try_from(selector(limits)).map_err(|_| ERROR_RESOURCE_LIMIT));
+    let limits = try_ffi!(codec_limits_from_handle(pointer));
+    *output = try_ffi!(u64::try_from(selector(&limits)).map_err(|_| ERROR_RESOURCE_LIMIT));
     SUCCESS
 }
 
@@ -3072,7 +4186,10 @@ pub extern "C" fn kmipkit_ttlv_value_integer(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::integer(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::integer(value))
+        ));
         SUCCESS
     })
 }
@@ -3084,7 +4201,10 @@ pub extern "C" fn kmipkit_ttlv_value_long_integer(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::long_integer(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::long_integer(value))
+        ));
         SUCCESS
     })
 }
@@ -3096,7 +4216,10 @@ pub extern "C" fn kmipkit_ttlv_value_enumeration(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::enumeration(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::enumeration(value))
+        ));
         SUCCESS
     })
 }
@@ -3111,7 +4234,10 @@ pub extern "C" fn kmipkit_ttlv_value_boolean(
         if value > 1 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::boolean(value == 1)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::boolean(value == 1))
+        ));
         SUCCESS
     })
 }
@@ -3123,7 +4249,10 @@ pub extern "C" fn kmipkit_ttlv_value_date_time(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::date_time(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::date_time(value))
+        ));
         SUCCESS
     })
 }
@@ -3135,7 +4264,10 @@ pub extern "C" fn kmipkit_ttlv_value_interval(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::interval(value)));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::interval(value))
+        ));
         SUCCESS
     })
 }
@@ -3147,10 +4279,10 @@ pub extern "C" fn kmipkit_ttlv_value_date_time_extended(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        *out = make_handle(
+        *out = try_ffi!(try_make_handle(
             Kind::Value,
             HandleValue::Value(Value::date_time_extended(value)),
-        );
+        ));
         SUCCESS
     })
 }
@@ -3163,12 +4295,12 @@ fn variable_value(
     build: fn(&[u8]) -> FfiResult<Value>,
 ) -> i32 {
     let out = out_slot!(out_value);
-    let limits = try_ffi!(codec_limits_from_handle(&limits));
+    let limits = try_ffi!(codec_limits_from_handle(limits));
     let maximum =
         try_ffi!(u64::try_from(limits.max_message_bytes()).map_err(|_| ERROR_RESOURCE_LIMIT));
     let bytes = try_ffi!(input_span(value, value_length, maximum));
     let value = try_ffi!(build(bytes));
-    *out = make_handle(Kind::Value, HandleValue::Value(value));
+    *out = try_ffi!(try_make_handle(Kind::Value, HandleValue::Value(value)));
     SUCCESS
 }
 
@@ -3223,13 +4355,16 @@ pub extern "C" fn kmipkit_ttlv_value_structure(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_value);
-        let limits = try_ffi!(codec_limits_from_handle(&limits));
+        let limits = try_ffi!(codec_limits_from_handle(limits));
         let structure = try_ffi!(owned_payload(structure, Kind::Structure));
         let HandleValue::Structure(structure) = structure else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        try_ffi!(check_structure_limits(&structure, limits));
-        *out = make_handle(Kind::Value, HandleValue::Value(Value::structure(structure)));
+        try_ffi!(check_structure_limits(&structure, &limits));
+        *out = try_ffi!(try_make_handle(
+            Kind::Value,
+            HandleValue::Value(Value::structure(structure))
+        ));
         SUCCESS
     })
 }
@@ -3240,7 +4375,10 @@ pub extern "C" fn kmipkit_ttlv_structure_create(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
-        *out = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(Structure::new())
+        ));
         SUCCESS
     })
 }
@@ -3258,14 +4396,14 @@ pub extern "C" fn kmipkit_ttlv_item_create(
         let HandleValue::Tag(tag) = &tag_handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let limits = try_ffi!(codec_limits_from_handle(&limits));
+        let limits = try_ffi!(codec_limits_from_handle(limits));
         let value = try_ffi!(owned_payload(value, Kind::Value));
         let HandleValue::Value(value) = value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let item = try_ffi!(Item::new(*tag, value).map_err(model_status));
-        try_ffi!(check_item_limits(&item, limits));
-        *out = make_handle(Kind::Item, HandleValue::Item(item));
+        try_ffi!(check_item_limits(&item, &limits));
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(item)));
         SUCCESS
     })
 }
@@ -3279,11 +4417,11 @@ pub extern "C" fn kmipkit_ttlv_structure_with_item(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
-        let limits = try_ffi!(codec_limits_from_handle(&limits));
+        let limits = try_ffi!(codec_limits_from_handle(limits));
         let _ = read_handle!(structure, Structure);
         let _ = read_handle!(item, Item);
-        let structure = consume_owner(structure);
-        let item = consume_owner(item);
+        let structure = try_ffi!(consume_owner(structure, Kind::Structure));
+        let item = try_ffi!(consume_owner(item, Kind::Item));
         let structure = try_ffi!(unwrap_payload(structure));
         let item = try_ffi!(unwrap_payload(item));
         let (HandleValue::Structure(mut structure), HandleValue::Item(item)) = (structure, item)
@@ -3291,8 +4429,11 @@ pub extern "C" fn kmipkit_ttlv_structure_with_item(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         try_ffi!(structure.try_push(item).map_err(model_status));
-        try_ffi!(check_structure_limits(&structure, limits));
-        *out = make_handle(Kind::Structure, HandleValue::Structure(structure));
+        try_ffi!(check_structure_limits(&structure, &limits));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
         SUCCESS
     })
 }
@@ -3307,7 +4448,10 @@ pub extern "C" fn kmipkit_ttlv_structure_view(
         let _ = read_handle!(structure, Structure);
         let owner = try_ffi!(clone_handle_owner(structure, Kind::Structure));
         let view = TtlvView::new(owner, ViewRoot::Structure, ViewTarget::Structure);
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(view));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(view)
+        ));
         SUCCESS
     })
 }
@@ -3343,7 +4487,7 @@ pub extern "C" fn kmipkit_ttlv_structure_view_item_at(
         };
         let index = try_ffi!(usize::try_from(index).map_err(|_| ERROR_INVALID_INPUT));
         let item = try_ffi!(view.item_at(index));
-        *out = make_handle(Kind::ItemView, HandleValue::ItemView(item));
+        *out = try_ffi!(try_make_handle(Kind::ItemView, HandleValue::ItemView(item)));
         SUCCESS
     })
 }
@@ -3360,7 +4504,7 @@ pub extern "C" fn kmipkit_ttlv_item_view_tag(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let tag = try_ffi!(item.with_item(Item::tag));
-        *out = make_handle(Kind::Tag, HandleValue::Tag(tag));
+        *out = try_ffi!(try_make_handle(Kind::Tag, HandleValue::Tag(tag)));
         SUCCESS
     })
 }
@@ -3394,7 +4538,10 @@ pub extern "C" fn kmipkit_ttlv_item_view_value(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let value = try_ffi!(item.item_value());
-        *out = make_handle(Kind::ValueView, HandleValue::ValueView(value));
+        *out = try_ffi!(try_make_handle(
+            Kind::ValueView,
+            HandleValue::ValueView(value)
+        ));
         SUCCESS
     })
 }
@@ -3409,7 +4556,10 @@ pub extern "C" fn kmipkit_ttlv_value_view(
         let _ = read_handle!(value, Value);
         let owner = try_ffi!(clone_handle_owner(value, Kind::Value));
         let view = TtlvView::new(owner, ViewRoot::Value, ViewTarget::Value);
-        *out = make_handle(Kind::ValueView, HandleValue::ValueView(view));
+        *out = try_ffi!(try_make_handle(
+            Kind::ValueView,
+            HandleValue::ValueView(view)
+        ));
         SUCCESS
     })
 }
@@ -3442,7 +4592,10 @@ pub extern "C" fn kmipkit_ttlv_value_view_structure(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let structure = try_ffi!(value.structure_from_value());
-        *out = make_handle(Kind::StructureView, HandleValue::StructureView(structure));
+        *out = try_ffi!(try_make_handle(
+            Kind::StructureView,
+            HandleValue::StructureView(structure)
+        ));
         SUCCESS
     })
 }

@@ -22,15 +22,6 @@ def _load_adapter() -> tuple[types.ModuleType, types.ModuleType, str]:
     package.__path__ = [str(PACKAGE_PATH)]
     sys.modules[package_name] = package
 
-    errors_spec = importlib.util.spec_from_file_location(
-        f"{package_name}.errors", PACKAGE_PATH / "errors.py"
-    )
-    if errors_spec is None or errors_spec.loader is None:
-        raise AssertionError("could not load Python error categories")
-    errors = importlib.util.module_from_spec(errors_spec)
-    sys.modules[errors_spec.name] = errors
-    errors_spec.loader.exec_module(errors)
-
     class FakeFFI:
         NULL = object()
 
@@ -60,6 +51,15 @@ def _load_adapter() -> tuple[types.ModuleType, types.ModuleType, str]:
     native.ffi = FakeFFI()
     native.lib = FakeLibrary()
     sys.modules[native.__name__] = native
+
+    errors_spec = importlib.util.spec_from_file_location(
+        f"{package_name}.errors", PACKAGE_PATH / "errors.py"
+    )
+    if errors_spec is None or errors_spec.loader is None:
+        raise AssertionError("could not load Python error categories")
+    errors = importlib.util.module_from_spec(errors_spec)
+    sys.modules[errors_spec.name] = errors
+    errors_spec.loader.exec_module(errors)
 
     handles_spec = importlib.util.spec_from_file_location(
         f"{package_name}._handles", PACKAGE_PATH / "_handles.py"
@@ -91,11 +91,43 @@ def _load_ttlv_adapter(package_name: str) -> types.ModuleType:
 
 
 class ConsumedHandleTests(unittest.TestCase):
+    def test_integer_normalization_ignores_noninteger_c_types_and_signatures(self) -> None:
+        handles, native, package_name = _load_adapter()
+        try:
+            native.ffi.sizeof = lambda _argument_type: 4
+            self.assertIsNone(
+                handles._fixed_width_integer_bounds(
+                    types.SimpleNamespace(kind="pointer", cname="uint32_t")
+                )
+            )
+            self.assertIsNone(
+                handles._fixed_width_integer_bounds(
+                    types.SimpleNamespace(kind="primitive", cname="uint32")
+                )
+            )
+            self.assertIsNone(
+                handles._fixed_width_integer_bounds(
+                    types.SimpleNamespace(kind="primitive", cname="float_t")
+                )
+            )
+
+            native.ffi.typeof = lambda _function: types.SimpleNamespace(kind="pointer")
+            arguments = (object(),)
+            self.assertIs(
+                handles._normalize_integer_arguments(lambda: 0, arguments), arguments
+            )
+        finally:
+            _unload_adapter(package_name)
+
     def test_native_view_call_pins_handle_until_cffi_returns(self) -> None:
         handles, native, package_name = _load_adapter()
         try:
             ttlv = _load_ttlv_adapter(package_name)
-            view = ttlv.TtlvStructureView(object())
+            owner = object()
+            view = handles._wrap_owned_handle(
+                ttlv.TtlvStructureView, object(), owner=owner
+            )
+            self.assertIs(view._owner, owner)
             native_call_entered = threading.Event()
             resume_native_call = threading.Event()
             close_started = threading.Event()
@@ -146,7 +178,12 @@ class ConsumedHandleTests(unittest.TestCase):
         handles, native, package_name = _load_adapter()
         try:
             with self.assertRaises(handles.errors.InvalidInputError):
-                handles.NativeHandle(native.ffi.NULL)
+                handles._wrap_owned_handle(handles.NativeHandle, native.ffi.NULL)
+            uninitialized = object.__new__(handles.NativeHandle)
+            with self.assertRaises(handles.errors.InvalidInputError):
+                handles.NativeHandle.__init__(
+                    uninitialized, object(), _token=object()
+                )
             with self.assertRaises(handles.errors.InvalidInputError):
                 handles._owned_bytes("\ud800")
             with self.assertRaises(handles.errors.InvalidInputError):
@@ -177,7 +214,7 @@ class ConsumedHandleTests(unittest.TestCase):
             class ProbeHandle(handles.NativeHandle):
                 _release_name = "release_handle"
 
-            source = ProbeHandle(object())
+            source = handles._wrap_owned_handle(ProbeHandle, object())
             with self.assertRaises(handles.errors.InvalidInputError):
                 source._restore(object(), None)
             with self.assertRaises(handles.errors.InvalidInputError):
@@ -190,7 +227,7 @@ class ConsumedHandleTests(unittest.TestCase):
             source.close()
 
             native.lib.fail_release = True
-            finalizer_probe = ProbeHandle(object())
+            finalizer_probe = handles._wrap_owned_handle(ProbeHandle, object())
             del finalizer_probe
             gc.collect()
             native.lib.fail_release = False
@@ -217,7 +254,7 @@ class ConsumedHandleTests(unittest.TestCase):
                         raise AssertionError("transfer was not resumed")
                     return pointer
 
-            source = PausingProbeHandle(native_handle)
+            source = handles._wrap_owned_handle(PausingProbeHandle, native_handle)
             transferred: list[object] = []
 
             def take() -> None:
@@ -250,11 +287,12 @@ class ConsumedHandleTests(unittest.TestCase):
         handles, native, package_name = _load_adapter()
         try:
             native_handle = object()
-            source = type(
+            probe_type = type(
                 "ProbeHandle",
                 (handles.NativeHandle,),
                 {"_release_name": "release_handle"},
-            )(native_handle)
+            )
+            source = handles._wrap_owned_handle(probe_type, native_handle)
 
             def consume(handle: Any) -> int:
                 self.assertIs(handle, native_handle)
@@ -274,11 +312,12 @@ class ConsumedHandleTests(unittest.TestCase):
         handles, native, package_name = _load_adapter()
         try:
             native_handle = object()
-            source = type(
+            probe_type = type(
                 "ProbeHandle",
                 (handles.NativeHandle,),
                 {"_release_name": "release_handle"},
-            )(native_handle)
+            )
+            source = handles._wrap_owned_handle(probe_type, native_handle)
 
             def reject_before_native_call(_handle: Any) -> int:
                 raise TypeError("argument conversion")

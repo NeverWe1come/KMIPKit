@@ -301,15 +301,19 @@ class MultiLanguageCoverageTests(unittest.TestCase):
                 "bindings/python/src/kmipkit/extensions.py",
                 "bindings/python/src/kmipkit/_generated/extension_registry.py",
                 "bindings/java/native/kmipkit_jni.cpp",
+            "bindings/java/native/response_identifier_validation.hpp",
             )
             excluded_paths = (
                 "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
                 "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java",
+                "bindings/python/src/kmipkit/_native_ffi/__init__.py",
+                "bindings/python/src/kmipkit/_native_ffi/ffi.py",
                 "bindings/java/src/test/java/org/kmipkit/RegistryTest.java",
                 "bindings/java/examples/RegistryExample.java",
                 "bindings/python/tests/test_registry.py",
                 "bindings/python/examples/registry_example.py",
                 "bindings/java/native/test/RegistryTest.cpp",
+            "bindings/java/native/tests/response_identifier_validation_test.cpp",
             )
             for relative in (*expected_paths, *excluded_paths):
                 path = root / relative
@@ -499,6 +503,67 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             with self.assertRaisesRegex(GATE.CoverageDataError, "Changed production code coverage 0/3.*95%"):
                 GATE._evaluate_coverage(root, rust_reports, "\n".join(changed_lines.values()), adapter_reports)
 
+    def test_changed_production_gate_ignores_brace_only_source_lines(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/src/main/java/org/kmipkit/Response.java"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source_lines = [
+                "class Response { static int value = 1;",
+                "    void operation() {}",
+                "}",
+                *(f"    void helper_{index}() {{}}" for index in range(17)),
+            ]
+            source.write_text("\n".join(source_lines) + "\n", encoding="utf-8")
+            diff = "\n".join(
+                (
+                    f"diff --git a/{relative} b/{relative}",
+                    f"--- a/{relative}",
+                    f"+++ b/{relative}",
+                    "@@ -0,0 +1,3 @@",
+                    "+class Response {",
+                    "+    void operation() {}",
+                    "+}",
+                )
+            )
+
+            results = GATE._evaluate_coverage(
+                root,
+                {},
+                diff,
+                adapter_reports={
+                    "Java adapters": {
+                        relative: {line: int(line != 3) for line in range(1, 21)}
+                    }
+                },
+                required_scopes={"java"},
+            )
+            rust_source = "crates/kmipkit-ttlv/src/lib.rs"
+            rust_path = root / rust_source
+            rust_path.parent.mkdir(parents=True)
+            rust_path.write_text("pub fn fixture() {}\n", encoding="utf-8")
+            rust_report = {rust_source: {1: 1}}
+            legacy_results = GATE._evaluate_coverage(
+                root,
+                {platform: rust_report for platform in ("ubuntu", "windows", "macos")},
+                diff,
+                adapter_reports={
+                    "Java adapters": {
+                        relative: {line: int(line != 3) for line in range(1, 21)}
+                    }
+                },
+            )
+
+        self.assertIn(
+            "Changed production coverage: 2/2 (100.00%) (95% minimum).",
+            results,
+        )
+        self.assertTrue(
+            any(result.startswith("Changed production coverage: 2/2 (100.00%)") for result in legacy_results)
+        )
+
     def test_jni_llvm_export_parser_accepts_the_native_bridge_file(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
@@ -632,6 +697,9 @@ diff --git a/bindings/java/native/kmipkit_jni.cpp b/bindings/java/native/kmipkit
         self.assertNotIn('(^|/)include/', script)
         native_build = (REPOSITORY_ROOT / "bindings/java/native/build.sh").read_text(encoding="utf-8")
         self.assertIn("kmipkit_jni.cpp", native_build)
+        self.assertIn("response_identifier_validation_test.cpp", native_build)
+        self.assertIn('"${KMIPKIT_JNI_COVERAGE:-}" = "llvm"', native_build)
+        self.assertIn('"$repository_root/tests/fixtures/api/generated"', native_build)
         self.assertIn("readlink -f", native_build, "Linux must resolve the javac symlink before locating jni.h")
         self.assertIn("-fprofile-instr-generate", native_build)
         self.assertIn("-fcoverage-mapping", native_build)

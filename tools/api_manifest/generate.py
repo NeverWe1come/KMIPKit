@@ -85,6 +85,31 @@ _C_INTEGER_TYPES = {
     "int64_t": ("i64", 64, True),
     "uint64_t": ("u64", 64, False),
 }
+_C_KEYWORDS = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
+    "else", "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long",
+    "register", "restrict", "return", "short", "signed", "sizeof", "static", "struct",
+    "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
+    "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary",
+    "_Noreturn", "_Static_assert", "_Thread_local",
+}
+# The public header is C++-includable; keep this to reserved C++20 tokens, not TS names.
+_CPP_KEYWORDS = {
+    "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch",
+    "char8_t", "char16_t",
+    "char32_t", "class", "compl", "concept", "consteval", "constexpr", "constinit",
+    "const_cast", "co_await", "co_return", "co_yield", "decltype", "delete", "dynamic_cast",
+    "explicit", "export", "false", "friend", "mutable", "namespace", "new", "noexcept",
+    "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected", "public",
+    "reinterpret_cast", "requires", "static_assert", "static_cast", "template", "this",
+    "thread_local", "throw", "true", "try", "typeid", "typename", "using", "virtual", "wchar_t",
+    "xor", "xor_eq",
+}
+_C_FAMILY_KEYWORDS = _C_KEYWORDS | _CPP_KEYWORDS
+_C_LAYOUT_FIELD_TYPE_PATTERN = re.compile(
+    r"(?P<const>const )?(?P<base>(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t))"
+    r"(?P<pointer> \*)?\Z"
+)
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
 _RUST_2024_KEYWORDS = {
@@ -513,7 +538,9 @@ def _feature_directory(root: Path, feature_id: Any) -> Path:
 
 
 def _status_from_document(content: str) -> str:
-    match = re.search(r"(?m)^\*\*Status\*\*:\s*(Approved|Accepted)\b", content)
+    match = re.search(
+        r"(?m)^(?:\*\*Status\*\*|Status):\s*(Approved|Accepted)\b", content
+    )
     if match is None:
         raise ManifestError("manifest owner source is not approved or accepted")
     return match.group(1)
@@ -1010,11 +1037,14 @@ def _validate_capability_mapping_inventories(
         for language in language_scope:
             expected = sorted(
                 {
-                    row["exportName"]
+                    row["languageMappings"][language]["name"]
                     for row in declarations
                     if row.get("capabilityId") == capability.get("capabilityId")
                     and row.get("declarationState") in {"declared", "verified"}
-                    and package_languages.get(row.get("packageId")) == language
+                    and language in row.get("languageMappings", {})
+                    and package_languages.get(
+                        row["languageMappings"][language].get("packageId")
+                    ) == language
                 }
             )
             if mappings.get(language) != expected:
@@ -1135,6 +1165,29 @@ def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> se
     return set(values)
 
 
+def _validate_c_value_layout(c_type: dict[str, Any], declared_types: set[str]) -> None:
+    """Validate the complete ordered C layout before emitting a fixed-width value."""
+    fields = c_type.get("fields", [])
+    field_names = [field["name"] for field in fields]
+    if len(field_names) != len(set(field_names)):
+        raise ManifestError("C value type contains duplicate field names")
+    if fields and c_type["kind"] != "fixed-width-value":
+        raise ManifestError("only fixed-width C values may declare fields")
+    if c_type.get("versioned") and fields and [
+        (field["name"], field["type"]) for field in fields[:2]
+    ] != [("struct_size", "uint32_t"), ("abi_version", "uint32_t")]:
+        raise ManifestError("versioned C value must begin with its size and ABI version")
+    for field in fields:
+        if field["name"] in _C_FAMILY_KEYWORDS:
+            raise ManifestError("C or C++ keyword cannot be used as a fixed-width C field name")
+        if not _is_c_layout_field_name(field["name"]):
+            raise ManifestError("invalid fixed-width C field name")
+        _rust_identifier(field["name"])
+        base_type, _ = _c_field_base_and_pointer_count(field["type"])
+        if base_type not in _C_INTEGER_TYPES and base_type not in declared_types:
+            raise ManifestError("C value field references an unknown type")
+
+
 def _validate_references(manifest: dict[str, Any]) -> None:
     root_requirements = set(manifest["requirementIds"])
     error_ids = _require_unique(manifest["errorCategories"], "id", "error category IDs")
@@ -1142,6 +1195,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     _require_unique(manifest["functions"], "id", "function IDs")
     _require_unique(manifest["errorCategories"], "cValue", "C error values")
     _require_unique(manifest["errorCategories"], "cCode", "C error codes")
+    _ordered_approved_c_type_layouts(manifest)
     if "publicDeclarations" in manifest:
         declarations_by_path = {
             (record["packageId"], record["exportName"]): record
@@ -1165,7 +1219,13 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                         raise ManifestError(
                             "error category does not resolve to its canonical language export"
                         )
+    excluded_c_functions = [
+        exclusion["cFunction"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("cFunction") is not None
+    ]
     c_symbols = [function["c"]["symbol"] for function in manifest["functions"]]
+    c_symbols.extend(function["symbol"] for function in excluded_c_functions)
     release_symbols = [
         record["c"]["releaseFunction"]
         for record in manifest["types"]
@@ -1193,6 +1253,9 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for record in manifest["types"]
         if record["c"]["kind"] == "opaque-handle"
     }
+    c_type_names = {record["c"]["name"] for record in manifest["types"]}
+    for type_record in manifest["types"]:
+        _validate_c_value_layout(type_record["c"], c_type_names)
     for record in manifest["functions"]:
         for language in ("c", "java", "python"):
             function_errors = set(record[language]["errorCategories"])
@@ -1212,6 +1275,93 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].rstrip("*").strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function handle parameter references an unknown opaque type")
+            elif param["kind"] == "consumed-handle-slot":
+                handle_name = param["handleType"]
+                if handle_name not in c_handle_names:
+                    raise ManifestError("function consumed handle slot references an unknown opaque type")
+                if param["type"] != f"{handle_name} **":
+                    raise ManifestError("function consumed handle slot does not match its opaque type")
+            elif param["kind"] == "input-value-pointer":
+                value_name = param["valueType"]
+                regular_value = next(
+                    (
+                        record["c"]
+                        for record in manifest["types"]
+                        if record["c"]["name"] == value_name
+                    ),
+                    None,
+                )
+                carrier_value = next(
+                    (
+                        carrier
+                        for carrier in _ordered_approved_c_type_layouts(manifest)
+                        if carrier["name"] == value_name
+                    ),
+                    None,
+                )
+                if not any(
+                    value is not None and value.get("kind") == "fixed-width-value"
+                    for value in (regular_value, carrier_value)
+                ):
+                    raise ManifestError("function input value pointer references an unknown fixed-width type")
+                if param["type"] != f"const {value_name} *" or param["ownership"] != "borrowed":
+                    raise ManifestError("function input value pointer does not match its borrowed const layout")
+            elif param["kind"] == "output-value-pointer":
+                value_name = param["valueType"]
+                regular_value = next(
+                    (
+                        record["c"]
+                        for record in manifest["types"]
+                        if record["c"]["name"] == value_name
+                    ),
+                    None,
+                )
+                carrier_value = next(
+                    (
+                        carrier
+                        for carrier in _ordered_approved_c_type_layouts(manifest)
+                        if carrier["name"] == value_name
+                    ),
+                    None,
+                )
+                if not any(
+                    value is not None and value.get("kind") == "fixed-width-value"
+                    for value in (regular_value, carrier_value)
+                ):
+                    raise ManifestError("function output value pointer references an unknown fixed-width type")
+                if param["type"] != f"{value_name} *":
+                    raise ManifestError("function output value pointer does not match its fixed-width type")
+            elif param["kind"] == "error-output":
+                value_name = param["valueType"]
+                if value_name not in c_handle_names:
+                    raise ManifestError("function error output references an unknown opaque handle")
+                if param["type"] != f"{value_name} **":
+                    raise ManifestError("function error output pointer does not match its opaque handle")
+            elif param["kind"] == "output-scalar-pointer":
+                if param["type"] != f"{param['valueType']} *":
+                    raise ManifestError("function scalar output pointer does not match its fixed-width type")
+            elif param["kind"] == "versioned-value-pointer":
+                value_name = param["type"].removeprefix("const ").removesuffix(" *")
+                value_record = next(
+                    (item["c"] for item in manifest["types"] if item["c"]["name"] == value_name),
+                    None,
+                )
+                carrier = next(
+                    (item for item in _ordered_approved_c_type_layouts(manifest) if item["name"] == value_name),
+                    None,
+                )
+                if not any(
+                    value is not None
+                    and value.get("kind") == "fixed-width-value"
+                    and value.get("versioned")
+                    for value in (value_record, carrier)
+                ):
+                    raise ManifestError("function versioned value pointer references an unknown versioned layout")
+                expected_const = param["direction"] == "input"
+                if param["type"] != f"{'const ' if expected_const else ''}{value_name} *":
+                    raise ManifestError("function versioned value pointer direction has the wrong const qualification")
+                if param["ownership"] != ("borrowed" if expected_const else "none"):
+                    raise ManifestError("function versioned value pointer direction has the wrong ownership")
             elif param["kind"] == "handle-array":
                 handle_name = param["handleType"]
                 if handle_name not in c_handle_names:
@@ -1225,7 +1375,10 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 handle_name = param["type"].split()[0].strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function output references an unknown opaque type")
-        if any(parameter["kind"] in {"handle", "handle-array"} for parameter in params):
+        if any(
+            parameter["kind"] in {"handle", "handle-array", "consumed-handle-slot"}
+            for parameter in params
+        ):
             if any(
                 "invalid_input" not in record[language]["errorCategories"]
                 for language in ("c", "java", "python")
@@ -1239,6 +1392,40 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 raise ManifestError("Java and Python Enumeration/Interval constructors must map invalid_input")
         if record["id"] == "ttlv_value_boolean" and "invalid_input" not in record["c"]["errorCategories"]:
             raise ManifestError("C Boolean construction must map invalid_input")
+
+    for exclusion in manifest.get("approvedExclusions", []):
+        c_function = exclusion.get("cFunction")
+        if c_function is None:
+            continue
+        if (
+            exclusion.get("packageId") != "c-kmipkit"
+            or c_function.get("symbol") != exclusion.get("exportName")
+            or not set(c_function.get("errorCategories", [])) <= error_ids
+        ):
+            raise ManifestError("C-only excluded function does not match its exact C export")
+        parameters = c_function.get("parameters", [])
+        names = [parameter["name"] for parameter in parameters]
+        if len(set(names)) != len(names):
+            raise ManifestError("C-only excluded function has duplicate parameter names")
+        for parameter in parameters:
+            if parameter["kind"] == "handle":
+                handle_name = parameter["type"].split()[0].rstrip("*").strip()
+                if handle_name not in c_handle_names:
+                    raise ManifestError("C-only excluded function references an unknown opaque handle")
+            elif parameter["kind"] == "output-value-pointer":
+                value_name = parameter["valueType"]
+                values = [
+                    record["c"]
+                    for record in manifest["types"]
+                    if record["c"]["name"] == value_name
+                ]
+                values.extend(
+                    carrier
+                    for carrier in _ordered_approved_c_type_layouts(manifest)
+                    if carrier["name"] == value_name
+                )
+                if not values or not any(value.get("kind") == "fixed-width-value" for value in values):
+                    raise ManifestError("C-only excluded function output references an unknown value layout")
 
     for record in manifest["types"]:
         if record["kind"] != "enum":
@@ -1279,6 +1466,163 @@ def _c_declaration(function: dict[str, Any]) -> str:
     return f"{function['c']['returnType']} {function['c']['symbol']}({arguments});"
 
 
+def _c_value_layout_is_complete(
+    declaration: dict[str, Any],
+    limits: list[dict[str, Any]],
+    declared_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> bool:
+    c_type = declaration["c"]
+    name = c_type["name"]
+    fields = c_type.get("fields", [])
+    expected = (
+        [f"{name}.{field['name']}" for field in fields]
+        if fields
+        else [f"{name}.{limit['cField']}" for limit in limits]
+    )
+    return include_blocked or all(field_name in declared_fields for field_name in expected)
+
+
+def _c_field_base_and_pointer_count(c_type: str) -> tuple[str, int]:
+    match = re.fullmatch(r"(?:const\s+)?([A-Za-z_][A-Za-z0-9_]*)(?:\s*(\*+))?", c_type)
+    if match is None:
+        raise ManifestError("C value field type cannot be represented in a public layout")
+    base_type, pointers = match.groups()
+    return base_type, len(pointers) if pointers else 0
+
+
+def _is_c_layout_field_name(value: Any) -> bool:
+    """Return whether a C/C++ header field name is syntactically safe and unreserved."""
+    return (
+        isinstance(value, str)
+        and re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", value) is not None
+        and "__" not in value
+        and value not in _C_FAMILY_KEYWORDS
+    )
+
+
+def _validate_ready_c_value_layouts(
+    manifest: dict[str, Any],
+    ready_c_exports: set[str] | None,
+    declared_c_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> None:
+    declarations = manifest["types"]
+    types_by_name = {record["c"]["name"]: record for record in declarations}
+    all_fields_ready = include_blocked or ready_c_exports is None
+
+    def type_is_ready(name: str) -> bool:
+        return ready_c_exports is None or name in ready_c_exports
+
+    def layout_is_complete(record: dict[str, Any]) -> bool:
+        return _c_value_layout_is_complete(
+            record,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=all_fields_ready,
+        )
+
+    for record in declarations:
+        c_type = record["c"]
+        if c_type["kind"] != "fixed-width-value" or not type_is_ready(c_type["name"]):
+            continue
+        if not c_type.get("fields") or not layout_is_complete(record):
+            continue
+        for field in c_type["fields"]:
+            base_type, pointer_count = _c_field_base_and_pointer_count(field["type"])
+            if base_type in _C_INTEGER_TYPES:
+                continue
+            target = types_by_name.get(base_type)
+            if target is None or not type_is_ready(base_type):
+                raise ManifestError("ready C value references a blocked C type")
+            target_c_type = target["c"]
+            if target_c_type["kind"] == "opaque-handle" and pointer_count == 0:
+                raise ManifestError("opaque C handle cannot be embedded by value")
+            if (
+                target_c_type["kind"] == "fixed-width-value"
+                and pointer_count == 0
+                and not layout_is_complete(target)
+            ):
+                raise ManifestError("ready C value references an incomplete C type by value")
+
+    for function in manifest["functions"]:
+        c_function = function["c"]
+        if ready_c_exports is not None and c_function["symbol"] not in ready_c_exports:
+            continue
+        signature_types = [c_function["returnType"]]
+        signature_types.extend(parameter["type"] for parameter in c_function["parameters"])
+        for signature_type in signature_types:
+            for name, record in types_by_name.items():
+                match = re.search(
+                    rf"(?:const\s+)?{re.escape(name)}(?:\s*(\*+))?(?![A-Za-z0-9_])",
+                    signature_type,
+                )
+                if match is None:
+                    continue
+                if not type_is_ready(name):
+                    raise ManifestError("ready C function references a blocked C type")
+                if (
+                    record["c"]["kind"] == "fixed-width-value"
+                    and not layout_is_complete(record)
+                    and not match.group(1)
+                ):
+                    raise ManifestError("ready C function uses an incomplete C value by value")
+
+
+def _ordered_ready_c_value_layouts(
+    manifest: dict[str, Any],
+    ready_c_exports: set[str] | None,
+    declared_c_fields: set[str],
+    *,
+    include_blocked: bool,
+) -> list[dict[str, Any]]:
+    all_fields_ready = include_blocked or ready_c_exports is None
+    records = {
+        record["c"]["name"]: record
+        for record in manifest["types"]
+        if record["c"]["kind"] == "fixed-width-value"
+        and record["c"].get("fields")
+        and (ready_c_exports is None or record["c"]["name"] in ready_c_exports)
+        and _c_value_layout_is_complete(
+            record,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=all_fields_ready,
+        )
+    }
+    types_by_name = {record["c"]["name"]: record for record in manifest["types"]}
+    ordered: list[dict[str, Any]] = []
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in visited:
+            return
+        if name in visiting:
+            raise ManifestError("C fixed-width value layouts contain a by-value cycle")
+        visiting.add(name)
+        record = records[name]
+        for field in record["c"]["fields"]:
+            base_type, pointer_count = _c_field_base_and_pointer_count(field["type"])
+            target = types_by_name.get(base_type)
+            if (
+                pointer_count == 0
+                and target is not None
+                and target["c"]["kind"] == "fixed-width-value"
+                and base_type in records
+            ):
+                visit(base_type)
+        visiting.remove(name)
+        visited.add(name)
+        ordered.append(record)
+
+    for name in records:
+        visit(name)
+    return ordered
+
+
 def _rust_c_type(c_type: str) -> str:
     match = re.fullmatch(r"(const\s+)?([A-Za-z_][A-Za-z0-9_]*)(\s*\*+)?", c_type)
     if match is None:
@@ -1288,13 +1632,15 @@ def _rust_c_type(c_type: str) -> str:
     pointer_count = stars.count("*") if stars else 0
     if pointer_count == 0:
         return rust_base
-    pointer = "*const" if const and pointer_count == 1 else "*mut"
-    return " ".join([pointer] * pointer_count + [rust_base])
+    pointer_kinds = ["*mut"] * pointer_count
+    if const:
+        pointer_kinds[-1] = "*const"
+    return " ".join([*pointer_kinds, rust_base])
 
 
 def _rust_identifier(name: str) -> str:
     if name in _RUST_RAW_IDENTIFIER_FORBIDDEN:
-        raise ManifestError("C parameter name cannot be represented as a Rust FFI identifier")
+        raise ManifestError("name cannot be represented as a Rust FFI identifier")
     return f"r#{name}" if name in _RUST_2024_KEYWORDS else name
 
 
@@ -1322,12 +1668,26 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
                 lines.append(f"pub const {const_name}: {name} = {value['value']};")
         elif c_type["kind"] == "fixed-width-value":
             lines.extend(["#[repr(C)]", f"pub struct {name} {{"])
-            if c_type.get("versioned"):
-                lines.extend(["    pub struct_size: u32,", "    pub abi_version: u32,"])
-            for limit in manifest["limits"]:
-                lines.append(f"    pub {limit['cField']}: u64,")
+            fields = c_type.get("fields")
+            if fields:
+                for field in fields:
+                    lines.append(
+                        f"    pub {_rust_identifier(field['name'])}: {_rust_c_type(field['type'])},"
+                    )
+            else:
+                if c_type.get("versioned"):
+                    lines.extend(["    pub struct_size: u32,", "    pub abi_version: u32,"])
+                for limit in manifest["limits"]:
+                    lines.append(f"    pub {limit['cField']}: u64,")
             lines.append("}")
         lines.append("")
+    for c_type in _ordered_approved_c_type_layouts(manifest):
+        lines.extend(["#[repr(C)]", f"pub struct {c_type['name']} {{"])
+        for field in c_type["fields"]:
+            lines.append(
+                f"    pub {_rust_identifier(field['name'])}: {_rust_c_type(field['type'])},"
+            )
+        lines.extend(["}", ""])
     lines.extend(["unsafe extern \"C\" {"])
     for declaration in manifest["types"]:
         c_type = declaration["c"]
@@ -1363,6 +1723,137 @@ def _ready_c_export_names(manifest: dict[str, Any]) -> set[str] | None:
     return names
 
 
+def _ordered_approved_c_type_layouts(
+    manifest: dict[str, Any],
+    *,
+    include_blocked: bool = False,
+) -> list[dict[str, Any]]:
+    """Validate and order approved C-only carrier layouts by value dependencies."""
+    layouts: dict[str, dict[str, Any]] = {}
+    for exclusion in manifest.get("approvedExclusions", []):
+        if not isinstance(exclusion, dict):
+            raise ManifestError("manifest approved exclusion is malformed")
+        c_type = exclusion.get("cType")
+        if c_type is None:
+            continue
+        if not isinstance(c_type, dict):
+            raise ManifestError("approved C carrier layout is malformed")
+        name = c_type.get("name")
+        if (
+            exclusion.get("packageId") != "c-kmipkit"
+            or name != exclusion.get("exportName")
+            or not isinstance(name, str)
+            or re.fullmatch(r"kmipkit_[a-z0-9_]+_t", name) is None
+            or c_type.get("kind") != "fixed-width-value"
+        ):
+            raise ManifestError("approved C carrier layout must match its excluded C export")
+        if name in layouts:
+            raise ManifestError("manifest contains a duplicate approved C carrier layout")
+        layouts[name] = c_type
+
+    regular_types = {
+        record.get("c", {}).get("name"): record
+        for record in manifest.get("types", [])
+        if isinstance(record.get("c", {}).get("name"), str)
+    }
+    if set(layouts) & set(regular_types):
+        raise ManifestError("approved C carrier layout duplicates a declared C type")
+    ready_c_exports = None if include_blocked else _ready_c_export_names(manifest)
+    declared_c_fields = {
+        declaration.get("exportName")
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "field"
+        and (
+            ready_c_exports is None
+            or declaration.get("declarationState") in {"declared", "verified"}
+        )
+    }
+    declared_c_fields.update(
+        exclusion.get("exportName")
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+    )
+
+    def regular_type_is_complete(name: str, record: dict[str, Any]) -> bool:
+        c_type = record.get("c", {})
+        if c_type.get("kind") == "enum":
+            return True
+        if c_type.get("kind") != "fixed-width-value":
+            return False
+        fields = c_type.get("fields") or [
+            {"name": limit.get("cField")}
+            for limit in manifest.get("limits", [])
+        ]
+        expected_fields = [f"{name}.{field['name']}" for field in fields]
+        return bool(expected_fields) and all(
+            field_name in declared_c_fields
+            and (ready_c_exports is None or field_name in ready_c_exports)
+            for field_name in expected_fields
+        )
+
+    by_value_dependencies: dict[str, set[str]] = {name: set() for name in layouts}
+    for name, c_type in layouts.items():
+        fields = c_type.get("fields")
+        if not isinstance(fields, list) or not fields:
+            raise ManifestError("approved C carrier layout must contain fields")
+        field_names: set[str] = set()
+        for field in fields:
+            if not isinstance(field, dict):
+                raise ManifestError("approved C carrier field is malformed")
+            field_name = field.get("name")
+            if (
+                not _is_c_layout_field_name(field_name)
+                or field_name in field_names
+            ):
+                raise ManifestError(
+                    "approved C carrier layout contains duplicate, invalid, or reserved fields"
+                )
+            field_names.add(field_name)
+            field_type = field.get("type")
+            match = (
+                _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field_type)
+                if isinstance(field_type, str)
+                else None
+            )
+            if match is None:
+                raise ManifestError("approved C carrier field has an unsafe or unsupported C type")
+            base_type = match.group("base")
+            if not base_type.startswith("kmipkit_"):
+                continue
+            if base_type in layouts:
+                if not match.group("pointer"):
+                    by_value_dependencies[name].add(base_type)
+                continue
+            referenced = regular_types.get(base_type)
+            if referenced is None:
+                raise ManifestError("approved C carrier field references an unknown KMIPKit type")
+            if not match.group("pointer") and referenced.get("c", {}).get("kind") == "opaque-handle":
+                raise ManifestError("approved C carrier cannot contain an opaque handle by value")
+            if not match.group("pointer") and not regular_type_is_complete(base_type, referenced):
+                raise ManifestError("approved C carrier contains an incomplete declared value by value")
+
+    ordered: list[dict[str, Any]] = []
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in visited:
+            return
+        if name in visiting:
+            raise ManifestError("approved C carrier layouts contain a by-value dependency cycle")
+        visiting.add(name)
+        for dependency in sorted(by_value_dependencies[name]):
+            visit(dependency)
+        visiting.remove(name)
+        visited.add(name)
+        ordered.append(layouts[name])
+
+    for name in layouts:
+        visit(name)
+    return ordered
+
+
 def render_c_header(
     manifest: dict[str, Any], *, include_blocked: bool = False, header_guard: str = "KMIPKIT_H"
 ) -> str:
@@ -1382,46 +1873,125 @@ def render_c_header(
         for declaration in manifest.get("publicDeclarations", [])
         if declaration.get("packageId") == "c-kmipkit"
         and declaration.get("kind") == "field"
+        and (
+            include_blocked
+            or declaration.get("declarationState") in {"declared", "verified"}
+        )
     }
+    declared_c_fields.update(
+        exclusion["exportName"]
+        for exclusion in manifest.get("approvedExclusions", [])
+        if exclusion.get("packageId") == "c-kmipkit"
+    )
+    _validate_ready_c_value_layouts(
+        manifest,
+        ready_c_exports,
+        declared_c_fields,
+        include_blocked=include_blocked,
+    )
     emitted: set[str] = set()
+    # Enums must be complete before value layouts can refer to them.
     for declaration in manifest["types"]:
         c_type = declaration["c"]
         name = c_type["name"]
         if ready_c_exports is not None and name not in ready_c_exports:
             continue
-        if name in emitted:
+        if c_type["kind"] != "enum" or name in emitted:
             continue
         emitted.add(name)
-        if c_type["kind"] == "opaque-handle":
-            lines.append(f"typedef struct {name} {name};")
-        elif c_type["kind"] == "enum":
-            lines.append(f"typedef {c_type['underlyingType']} {name};")
-            prefix = name[:-2].upper()
-            for value in declaration["enumRepresentation"]["values"]:
-                const_name = f"{prefix}_{re.sub(r'(?<!^)(?=[A-Z])', '_', value['name']).upper()}"
-                if ready_c_exports is not None and const_name not in ready_c_exports:
-                    continue
-                lines.append(f"#define {const_name} (({name}){value['value']})")
-        elif c_type["kind"] == "fixed-width-value":
-            ready_fields = [
-                limit["cField"]
-                for limit in manifest["limits"]
-                if f"{name}.{limit['cField']}" in declared_c_fields
-                and (
-                    ready_c_exports is None
-                    or f"{name}.{limit['cField']}" in ready_c_exports
-                )
-            ]
-            if not ready_fields:
-                lines.append(f"typedef struct {name} {name};")
-                lines.append("")
+        lines.append(f"typedef {c_type['underlyingType']} {name};")
+        prefix = name[:-2].upper()
+        for value in declaration["enumRepresentation"]["values"]:
+            const_name = f"{prefix}_{re.sub(r'(?<!^)(?=[A-Z])', '_', value['name']).upper()}"
+            if ready_c_exports is not None and const_name not in ready_c_exports:
                 continue
-            lines.append("typedef struct {")
-            if c_type.get("versioned"):
-                lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
-            for field in ready_fields:
-                lines.append(f"    uint64_t {field};")
-            lines.append(f"}} {name};")
+            lines.append(f"#define {const_name} (({name}){value['value']})")
+        lines.append("")
+
+    # Forward declarations make pointer members independent of manifest order.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if ready_c_exports is not None and name not in ready_c_exports:
+            continue
+        if c_type["kind"] == "opaque-handle" or (
+            c_type["kind"] == "fixed-width-value" and c_type.get("fields")
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            emitted.add(name)
+    if emitted:
+        lines.append("")
+
+    c_layouts = _ordered_approved_c_type_layouts(
+        manifest,
+        include_blocked=include_blocked,
+    )
+    for c_type in c_layouts:
+        lines.append(f"typedef struct {c_type['name']} {c_type['name']};")
+    if c_layouts:
+        lines.append("")
+
+    # Preserve the existing generated layout for limit records without explicit fields.
+    for declaration in manifest["types"]:
+        c_type = declaration["c"]
+        name = c_type["name"]
+        if (
+            c_type["kind"] != "fixed-width-value"
+            or c_type.get("fields")
+            or name in emitted
+            or (ready_c_exports is not None and name not in ready_c_exports)
+        ):
+            continue
+        emitted.add(name)
+        if not _c_value_layout_is_complete(
+            declaration,
+            manifest["limits"],
+            declared_c_fields,
+            include_blocked=include_blocked or ready_c_exports is None,
+        ):
+            lines.append(f"typedef struct {name} {name};")
+            lines.append("")
+            continue
+        lines.append("typedef struct {")
+        if c_type.get("versioned"):
+            lines.extend(["    uint32_t struct_size;", "    uint32_t abi_version;"])
+        for limit in manifest["limits"]:
+            lines.append(f"    uint64_t {limit['cField']};")
+        lines.append(f"}} {name};")
+        lines.append("")
+
+    for declaration in _ordered_ready_c_value_layouts(
+        manifest,
+        ready_c_exports,
+        declared_c_fields,
+        include_blocked=include_blocked,
+    ):
+        c_type = declaration["c"]
+        lines.append(f"struct {c_type['name']} {{")
+        lines.extend(f"    {field['type']} {field['name']};" for field in c_type["fields"])
+        lines.extend(["};", ""])
+    if ready_c_exports is not None:
+        carrier_layout_names = {layout["name"] for layout in c_layouts}
+        emitted_type_names = {
+            declaration["c"]["name"]
+            for declaration in manifest["types"]
+            if declaration["c"]["name"] in ready_c_exports
+        }
+        for c_type in c_layouts:
+            for field in c_type["fields"]:
+                match = _C_LAYOUT_FIELD_TYPE_PATTERN.fullmatch(field["type"])
+                base_type = match.group("base") if match is not None else ""
+                if (
+                    base_type.startswith("kmipkit_")
+                    and base_type not in emitted_type_names
+                    and base_type not in carrier_layout_names
+                ):
+                    raise ManifestError("approved C carrier references a blocked C type")
+    for c_type in c_layouts:
+        lines.append(f"struct {c_type['name']} {{")
+        for field in c_type["fields"]:
+            lines.append(f"    {field['type']} {field['name']};")
+        lines.append("};")
         lines.append("")
     for declaration in manifest["types"]:
         c_type = declaration["c"]
@@ -1464,6 +2034,20 @@ def render_c_header(
             ])
         lines.append(f"/* {requirement_comment} */")
         lines.append(_c_declaration(function))
+    for exclusion in manifest.get("approvedExclusions", []):
+        c_function = exclusion.get("cFunction")
+        if c_function is None or (
+            ready_c_exports is not None
+            and c_function["symbol"] not in ready_c_exports
+        ):
+            continue
+        documentation = c_function.get("documentation", [])
+        if documentation:
+            lines.append("/* " + documentation[0])
+            lines.extend(" * " + line for line in documentation[1:])
+            lines.append(" */")
+        lines.append(f"/* Approved exact C-only exclusion: {exclusion['exportName']} */")
+        lines.append(_c_declaration({"c": c_function}))
     lines.extend(["", "#ifdef __cplusplus", "}", "#endif", f"#endif /* {header_guard} */", ""])
     return "\n".join(lines)
 

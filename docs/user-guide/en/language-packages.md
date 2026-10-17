@@ -62,13 +62,27 @@ changes to this table.
 | `rust_transport_exchange` | declared | Rust-only transport exchange under accepted ADR-0014; it is not a foreign-language client operation. |
 | `public_binding_surface` | blocked | The complete public declaration inventory and mappings are not reconciled. |
 | `vendor_extension_registry` | declared | Exact shared mappings are recorded; parity verification remains pending and unreconciled exports stay blocked. |
-| `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions execution and response parity remain blocked. |
+| `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
+| `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |
+| `client_execution` | declared | Discover Versions request and response mappings are present in Rust, C, Java, and Python; complete 1.0 operation conformance remains pending. |
+| `crypto_response_ttlv` | declared | Generic response access is limited to approved Unique Identifier shape errors in successful MAC, MAC Verify, Sign, and Signature Verify responses. |
+| `production_transport` | declared | Rust and the three adapters expose the approved TLS 1.3 client transport configuration; interoperability evidence remains pending. |
+| `api_level_discovery` | declared | Rust, C, Java, and Python expose the local API-level taxonomy without network access. |
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
+| `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-All **56 / 56** KMIP `client_1_0` operation rows currently have manifest state
-`blocked`. Do not infer operation availability from types or implementation
-code elsewhere in the repository. KMIPKit does not claim full operation
-parity, a supported profile, or formal certification from this snapshot.
+Of the **56** KMIP `client_1_0` operation rows, **42 / 56** remain `blocked`.
+Ten rows are `declared`: Create, Create Key Pair, Create Split Key, Derive Key,
+Discover Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their
+four-language request and response mappings are recorded; `declared` is not
+evidence of complete operation conformance. Do not infer operation availability
+from types or implementation code elsewhere in the repository. Four operation
+mappings are `verified`: Certify, Check, Delegated Login, and Get Usage
+Allocation. The Get Usage Allocation mapping includes its optional identifier
+and signed count request, resolved identifier response, and common batch
+outcomes in Rust, C, Java, and Python. This mapping evidence does not claim full
+operation conformance. KMIPKit does not claim full operation parity, a supported
+profile, or formal certification from this snapshot.
 
 For the authoritative operation owners and per-capability mappings, see the
 [manifest](../../../specification/api/public-api.json) and the [public API

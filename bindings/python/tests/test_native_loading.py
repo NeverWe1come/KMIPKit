@@ -212,6 +212,11 @@ def test_wrong_architecture_binary_failure_is_redacted(tmp_path: Path) -> None:
         )
 
     assert loaded == [str(package_library)]
+    assert str(error.value) == (
+        "KMIPKit could not load the selected native library; install a package "
+        "for this OS and architecture or set KMIPKIT_NATIVE_LIBRARY to a "
+        "compatible library."
+    )
     assert "invalid ELF class" not in str(error.value)
     assert str(package_library) not in str(error.value)
     assert error.value.__suppress_context__
@@ -257,6 +262,10 @@ def test_reported_abi_mismatch_has_a_distinct_error(tmp_path: Path) -> None:
 
     assert "3" not in str(error.value)
     assert "4" not in str(error.value)
+    assert str(error.value) == (
+        "KMIPKit native library has an incompatible ABI version; install a "
+        "matching package or set KMIPKIT_NATIVE_LIBRARY to a compatible library."
+    )
 
 
 @pytest.mark.parametrize("name", ["_native_ffi.dll", "_native_ffi.so", "_native_ffi.dylib"])

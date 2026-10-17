@@ -26,10 +26,23 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", target_deps.display());
     cc::Build::new()
         .file(consumer_source)
-        .include(consumer_header)
+        .include(&consumer_header)
         .include(internal_header)
         .define("main", Some("kmipkit_extension_registry_c_consumer_main"))
         .flag_if_supported("/std:c11")
         .flag_if_supported("-std=c11")
         .compile("kmipkit_extension_registry_c_consumer");
+
+    let public_client_consumer = workspace_root.join("bindings/c/tests/client_abi_consumer.c");
+    println!(
+        "cargo:rerun-if-changed={}",
+        public_client_consumer.display()
+    );
+    cc::Build::new()
+        .file(public_client_consumer)
+        .include(&consumer_header)
+        .define("main", Some("kmipkit_client_abi_c_consumer_main"))
+        .flag_if_supported("/std:c11")
+        .flag_if_supported("-std=c11")
+        .compile("kmipkit_client_abi_c_consumer");
 }

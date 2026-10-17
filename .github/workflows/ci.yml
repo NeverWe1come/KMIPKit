@@ -243,6 +243,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest discover -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B tools/api_manifest/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B tools/extension_fixtures/generate.py --check
@@ -547,6 +549,46 @@ jobs:
           python -m pytest -q bindings/python/tests
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python bindings/python/examples/vendor_extension_registry.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run isolated offline Python wheel smoke
+        id: run-python-native-package-smoke
+        shell: pwsh
+        working-directory: bindings/python
+        run: |
+          $smokeRoot = Join-Path $env:RUNNER_TEMP 'kmipkit-python-native-package-smoke'
+          $wheelDirectory = Join-Path $smokeRoot 'wheel'
+          $consumerEnvironment = Join-Path $smokeRoot 'consumer-env'
+          New-Item -ItemType Directory -Force -Path $wheelDirectory | Out-Null
+
+          # Wheel building and dependency priming use local caches; each package consumer blocks runtime sockets.
+          maturin build --offline --release --out $wheelDirectory
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $wheel = Get-ChildItem -LiteralPath $wheelDirectory -Filter 'kmipkit-*.whl' | Select-Object -First 1
+          if (-not $wheel) { throw 'Maturin did not produce the KMIPKit wheel.' }
+
+          $nativeExtension = if ($IsWindows) { '.dll' } elseif ($IsMacOS) { '.dylib' } else { '.so' }
+          $wrongAbiLibrary = Join-Path $smokeRoot "wrong-abi$nativeExtension"
+          rustc --edition=2024 --crate-name kmipkit_wrong_abi --crate-type cdylib `
+            ../../tools/native_package_smoke/wrong_abi.rs -o $wrongAbiLibrary
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          uv venv --offline --python 3.12 $consumerEnvironment
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $consumerPython = if ($IsWindows) {
+            Join-Path $consumerEnvironment 'Scripts/python.exe'
+          } else {
+            Join-Path $consumerEnvironment 'bin/python'
+          }
+          uv pip install --offline --python $consumerPython cffi==1.17.1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          uv pip install --offline --no-deps --python $consumerPython $wheel.FullName
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          python -B ../../tools/native_package_smoke/python_smoke.py `
+            --consumer-python $consumerPython `
+            --wrong-abi-library $wrongAbiLibrary `
+            --smoke-root $smokeRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Diagnose job result

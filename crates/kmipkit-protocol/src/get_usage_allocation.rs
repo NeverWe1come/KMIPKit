@@ -84,7 +84,7 @@ impl GetUsageAllocationRequest {
 pub struct GetUsageAllocationResponse {
     result: KmipOperationResult,
     unique_identifier: Option<UniqueIdentifier>,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
 }
 
 impl GetUsageAllocationResponse {
@@ -109,17 +109,19 @@ impl GetUsageAllocationResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(GetUsageAllocationError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Get Usage Allocation")
-            .map_err(|_| GetUsageAllocationError::MalformedResponseItem)?;
-        let unique_identifier = if status.raw() == SUCCESS {
+        let (unique_identifier, response_ttlv) = if status.raw() == SUCCESS {
             let response_identifier = item
                 .with_response_payload(|payload| {
                     crate::lifecycle::successful_response_identifier(&payload)
                 })
                 .ok_or(GetUsageAllocationError::MissingSuccessPayload)?;
-            Some(response_identifier.ok_or(GetUsageAllocationError::MalformedSuccessPayload)?)
+            let unique_identifier =
+                response_identifier.ok_or(GetUsageAllocationError::MalformedSuccessPayload)?;
+            let response_ttlv = common::clone_response_item(item, "Get Usage Allocation")
+                .map_err(|_| GetUsageAllocationError::MalformedResponseItem)?;
+            (Some(unique_identifier), Some(response_ttlv))
         } else {
-            None
+            (None, None)
         };
 
         Ok(Self {
@@ -141,9 +143,13 @@ impl GetUsageAllocationResponse {
         self.unique_identifier.as_ref()
     }
 
-    /// Lends the complete ordered response item, including unknown fields.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered response item on success, including unknown fields.
+    ///
+    /// Pending and Failure results do not retain or expose generic response TTLV.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

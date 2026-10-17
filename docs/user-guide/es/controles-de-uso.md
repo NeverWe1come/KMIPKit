@@ -2,6 +2,19 @@
 
 KMIPKit implementa las operaciones iniciadas por el cliente Get Constraints, Get Usage Allocation, Set Constraints y Set Defaults de OASIS KMIP v2.1. Las formas de petición y respuesta siguen §§6.1.22, 6.1.23, 6.1.52 y 6.1.53. Estas operaciones transmiten y exponen la política del servidor; KMIPKit no evalúa ni aplica localmente las restricciones del servidor.
 
+Get Usage Allocation está mapeada en Rust, C, Java y Python. La petición
+conserva el Unique Identifier opcional y el Usage Limits Count exacto de 64
+bits con signo; el resultado correcto expone el identificador resuelto. El
+resultado común del lote conserva Pending y Failure, la correlación y el estado
+de entrega sin consultar ni reintentar automáticamente. Cuando termina con
+éxito, la respuesta también expone el TTLV genérico completo y ordenado,
+incluidos los campos desconocidos. Rust presta una vista; C devuelve una
+estructura que pertenece al llamador y debe liberarse con
+`kmipkit_ttlv_structure_release`; Java devuelve un `TtlvStructure` propiedad
+del resultado cerrable; y Python ofrece `response_ttlv` en la respuesta
+cerrable. Los accesores tipados de C, Java y Python no devuelven un TTLV
+genérico para resultados Failure o Pending.
+
 ## Construir peticiones de política
 
 La capa de protocolo acepta la `Structure` TTLV ordenada que proporciona el llamador. Completa Constraints y Defaults Information con valores adecuados para el servidor y tu política. Este ejemplo construye los payloads sin elegir valores de política:

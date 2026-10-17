@@ -44,6 +44,38 @@ public final class Client implements AutoCloseable {
         return new ClientBatchResponse(response);
     }
 
+    /** Executes one caller-ordered typed batch with exchange-local timeout overrides. */
+    public ClientBatchResponse executeWithOptions(
+            ClientBatch batch, CodecLimits limits, RequestOptions options)
+            throws ClientOperationException {
+        if (batch == null || limits == null || options == null) {
+            throw new InvalidInputException("client batch inputs are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long[] timeoutValues = timeoutValues(options);
+        long response = NativeHandle.withNativeHandles(() -> {
+            long client = handle.get();
+            long consumedBatch = batch.nativeHandleOwner().transfer();
+            return NativeExtensionRegistry.clientExecuteWithOptions(
+                    client, consumedBatch, NativeExtensionRegistry.codecLimitValues(limits), timeoutValues);
+        });
+        return new ClientBatchResponse(response);
+    }
+
+    private static long[] timeoutValues(RequestOptions options) {
+        TransportConfiguration.Timeout[] values = {
+            options.connectTimeout(), options.writeTimeout(), options.readTimeout(), options.totalTimeout()
+        };
+        long[] encoded = new long[values.length * 3];
+        for (int index = 0; index < values.length; index++) {
+            TransportConfiguration.Timeout value = values[index];
+            encoded[index * 3] = value.kind();
+            encoded[index * 3 + 1] = value.seconds();
+            encoded[index * 3 + 2] = value.nanoseconds();
+        }
+        return encoded;
+    }
+
     @Override
     public void close() {
         handle.close();

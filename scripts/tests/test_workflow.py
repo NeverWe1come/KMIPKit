@@ -333,9 +333,22 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_c_api_level_consumer_receives_expected_local_taxonomy(self) -> None:
+        cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            cmake,
+            r"(?ms)NAME kmipkit_client_abi_consumer\s+"
+            r"COMMAND kmipkit_client_abi_consumer\s+"
+            r"high-level\s+typed-protocol\s+generic-ttlv\s*\)",
+            "The standalone CTest consumer must receive the expected API-level values.",
+        )
+
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", java_job)
 
         prime = self.require_named_step(java_job, "Prime Gradle Java compile dependencies")
         self.assertIn("compileJava", prime.group(1))
@@ -355,6 +368,35 @@ class WorkflowContractTests(unittest.TestCase):
             gradle,
             "the packaged smoke must select the just-built library for its current matrix host",
         )
+
+        smoke = (REPOSITORY_ROOT / "bindings/java/src/test/nativeJarSmoke/java/NativeLibraryPackageSmoke.java").read_text(
+            encoding="utf-8"
+        )
+        for required in (
+            "verifyLoadSuccess",
+            "verifyMissingBundle",
+            "verifyUnsupportedArchitecture",
+            "verifyWrongAbi",
+            "checkNetworkWasBlocked",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, smoke)
+
+    def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
+        contents = self.require_workflow()
+        python_job = self.require_job(contents, "language-python")
+        self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", python_job)
+
+        step = self.require_named_step(python_job, "Run isolated offline Python wheel smoke")
+        for required in (
+            "maturin build --offline",
+            "uv venv --offline",
+            "uv pip install --offline --no-deps",
+            "python_smoke.py",
+            "wrong_abi.rs",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, step.group(1))
     def test_windows_c_consumer_uses_the_msvc_compatible_generator(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "language-c")
@@ -424,21 +466,22 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("name: coverage-ffi", job)
         self.assertIn("path: coverage-ffi/coverage.json", job)
         self.assertIn(
-            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked",
+            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
             collector,
         )
-        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --test c_api_coverage --all-features --locked", collector)
+        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked", collector)
         self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
-        self.assertIn("c_api_coverage\\.rs", collector)
+        self.assertIn(r"Running unittests src\/lib\.rs", collector)
+        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
         self.assertIn(
-            'test_binary_name="$(',
+            'mapfile -t test_binary_names < <(',
             collector,
         )
-        self.assertIn("sed -nE '/Running tests", collector)
+        self.assertIn("test_binaries=()", collector)
+        self.assertIn('test_binaries+=("${test_binary}")', collector)
         self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
-        self.assertIn("| tail -n 1", collector)
-        self.assertIn('test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"', collector)
-        self.assertNotIn('test_binaries=("${llvm_cov_target}"/debug/deps/c_api_coverage-*)', collector)
+        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
+        self.assertIn('coverage_objects+=(-object "${test_binary}")', collector)
         self.assertIn('rustc --print sysroot', collector)
         self.assertIn('rustc -vV', collector)
         self.assertIn('"${llvm_cov}" export -format=text', collector)
@@ -456,6 +499,20 @@ class WorkflowContractTests(unittest.TestCase):
         gate = self.require_job(contents, "coverage-gate")
         self.assertIn("coverage", gate)
         self.assertIn("pattern: coverage-*", gate)
+
+    def test_ffi_coverage_collection_runs_unit_and_public_c_consumer_targets(self) -> None:
+        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn(
+            "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
+            collector,
+        )
+        self.assertIn(r"Running unittests src\/lib\.rs", collector)
+        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
+        self.assertIn('test_binaries+=("${test_binary}")', collector)
+        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
 
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import struct
 import tempfile
@@ -194,6 +195,24 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_c_header_inventory_accounts_for_forward_declared_tagged_struct_fields(self):
+        header = (
+            "typedef struct kmipkit_transport_config_v1_t "
+            "kmipkit_transport_config_v1_t;\n"
+            "struct kmipkit_transport_config_v1_t {\n"
+            "    uint32_t struct_size;\n"
+            "    uint16_t endpoint_port;\n"
+            "};\n"
+        )
+        result = AUDIT.inventory_c_header(header)
+        actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertEqual(actual, {
+            ("type", "kmipkit_transport_config_v1_t"),
+            ("field", "kmipkit_transport_config_v1_t.struct_size"),
+            ("field", "kmipkit_transport_config_v1_t.endpoint_port"),
+        })
+        self.assertTrue(result["complete"])
+
     def test_c_header_inventory_accounts_for_multiple_fields_in_one_declaration(self):
         result = AUDIT.inventory_c_header("typedef struct { int left, right; } kmipkit_pair_t;\n")
         actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
@@ -369,6 +388,198 @@ class BindingExportAuditTests(unittest.TestCase):
         }.issubset(names))
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_includes_package_constructor_inherited_from_private_base(self):
+        sources = {
+            "kmipkit/_handles.py": "class NativeHandle:\n    def __init__(self, handle): ...\n",
+            "kmipkit/client.py": textwrap.dedent("""
+                from ._handles import NativeHandle
+                __all__ = ["Client"]
+                class Client(NativeHandle):
+                    pass
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        declarations = {row["exportName"]: row for row in result["declarations"]}
+        constructor = declarations["kmipkit.client.Client.__init__"]
+        self.assertEqual(constructor["kind"], "python-export")
+        self.assertEqual(constructor["location"], "inherited:kmipkit._handles.NativeHandle:2")
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_excludes_internal_lifecycle_hooks_but_keeps_public_protocol(self):
+        sources = {
+            "kmipkit/_handles.py": textwrap.dedent("""
+                class NativeHandle:
+                    def __init__(self, handle): ...
+                    def __del__(self): ...
+                    def close(self): ...
+                    def __enter__(self): ...
+                    def __exit__(self, *args): ...
+            """),
+            "kmipkit/client.py": textwrap.dedent("""
+                from dataclasses import dataclass
+                from ._handles import NativeHandle
+                __all__ = ["ClientConfig"]
+
+                @dataclass
+                class ClientConfig(NativeHandle):
+                    endpoint: str
+
+                    def __post_init__(self): ...
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        names = {row["exportName"] for row in result["declarations"]}
+        public_type = "kmipkit.client.ClientConfig"
+        self.assertTrue({
+            f"{public_type}.__init__",
+            f"{public_type}.close",
+            f"{public_type}.__enter__",
+            f"{public_type}.__exit__",
+        }.issubset(names))
+        self.assertNotIn(f"{public_type}.__post_init__", names)
+        self.assertNotIn(f"{public_type}.__del__", names)
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_includes_public_instance_fields_assigned_in_init(self):
+        source = textwrap.dedent("""
+            class BatchResult:
+                def __init__(self, items):
+                    self.items = items
+
+            class ClientExecutionError(Exception):
+                def __init__(self, status):
+                    self.status = status
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/client.py": source})
+        observed = {row["exportName"]: row["kind"] for row in result["declarations"]}
+        self.assertEqual(observed["kmipkit.client.BatchResult.items"], "field")
+        self.assertEqual(observed["kmipkit.client.ClientExecutionError.status"], "field")
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_includes_public_dataclass_generated_members(self):
+        sources = {
+            "kmipkit/client.py": textwrap.dedent("""
+                from dataclasses import dataclass
+                __all__ = ["BatchItemResult", "CustomValue"]
+
+                @dataclass(frozen=True)
+                class BatchItemResult:
+                    item_id: bytes
+
+                @dataclass(init=False, repr=False, eq=False)
+                class CustomValue:
+                    value: int
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        observed = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertTrue({
+            ("python-export", "kmipkit.client.BatchItemResult.__init__"),
+            ("python-export", "kmipkit.client.BatchItemResult.__repr__"),
+            ("python-export", "kmipkit.client.BatchItemResult.__eq__"),
+            ("python-export", "kmipkit.client.BatchItemResult.__hash__"),
+        }.issubset(observed))
+        custom = "kmipkit.client.CustomValue"
+        self.assertTrue({
+            ("field", f"{custom}.__dataclass_fields__"),
+            ("field", f"{custom}.__dataclass_params__"),
+            ("field", f"{custom}.__match_args__"),
+        }.issubset(observed))
+        self.assertFalse(any(
+            name in {f"{custom}.__init__", f"{custom}.__repr__", f"{custom}.__eq__",
+                     f"{custom}.__hash__", f"{custom}.__slots__", f"{custom}.__setattr__",
+                     f"{custom}.__delattr__"}
+            for _, name in observed
+        ))
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_audits_dataclass_generated_metadata_and_constructor_signature(self):
+        sources = {
+            "kmipkit/models.py": textwrap.dedent("""
+                import dataclasses as dc
+                __all__ = ["FrozenRecord", "ManualRecord"]
+
+                @dc.dataclass(frozen=True, slots=True)
+                class FrozenRecord:
+                    required: int
+                    label: str = "x"
+
+                @dc.dataclass(init=False, match_args=False, slots=False,
+                              frozen=False, repr=False, eq=False)
+                class ManualRecord:
+                    value: int
+
+                @dc.dataclass
+                class MutableRecord:
+                    value: int
+
+                @dc.dataclass
+                class ExplicitHashRecord:
+                    value: int
+
+                    def __hash__(self):
+                        return 1
+
+                @dc.dataclass
+                class SuppressedHashRecord:
+                    value: int
+                    __hash__ = None
+            """),
+        }
+        result = AUDIT.inventory_python_sources(sources)
+        declarations = {row["exportName"]: row for row in result["declarations"]}
+        frozen = "kmipkit.models.FrozenRecord"
+        self.assertTrue({
+            f"{frozen}.__init__",
+            f"{frozen}.__repr__",
+            f"{frozen}.__eq__",
+            f"{frozen}.__hash__",
+            f"{frozen}.__setattr__",
+            f"{frozen}.__delattr__",
+            f"{frozen}.__match_args__",
+            f"{frozen}.__slots__",
+            f"{frozen}.__dataclass_fields__",
+            f"{frozen}.__dataclass_params__",
+        }.issubset(declarations))
+        self.assertEqual(
+            declarations[f"{frozen}.__init__"].get("signature"),
+            "(required: int, label: str = 'x') -> None",
+        )
+        manual = "kmipkit.models.ManualRecord"
+        self.assertIn(f"{manual}.__dataclass_fields__", declarations)
+        self.assertIn(f"{manual}.__dataclass_params__", declarations)
+        self.assertNotIn(f"{manual}.__init__", declarations)
+        self.assertNotIn(f"{manual}.__match_args__", declarations)
+        self.assertNotIn(f"{manual}.__slots__", declarations)
+        self.assertEqual(declarations["kmipkit.models.MutableRecord.__hash__"]["kind"], "field")
+        self.assertEqual(declarations["kmipkit.models.ExplicitHashRecord.__hash__"]["kind"], "python-export")
+        self.assertEqual(declarations["kmipkit.models.SuppressedHashRecord.__hash__"]["kind"], "field")
+        self.assertEqual(
+            sum(name == "kmipkit.models.SuppressedHashRecord.__hash__" for name in declarations),
+            1,
+        )
+        self.assertTrue(result["complete"])
+
+    def test_python_inventory_fails_closed_for_dynamic_dataclass_options(self):
+        source = textwrap.dedent("""
+            from dataclasses import dataclass
+            __all__ = ["DynamicRecord"]
+
+            def slots_enabled():
+                return True
+
+            @dataclass(slots=slots_enabled())
+            class DynamicRecord:
+                value: int
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/models.py": source})
+        self.assertFalse(result["complete"])
+        self.assertIn(
+            {"packageId": "python-kmipkit", "exportName": "kmipkit.models.DynamicRecord",
+             "reason": "dynamic-dataclass-options"},
+            result["issues"],
+        )
+
     def test_python_inventory_resolves_private_module_values_and_property_exports(self):
         sources = {
             "kmipkit/_ffi/__init__.py": "ffi = object()\nlib = object()\n",
@@ -419,6 +630,198 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual(names.count("kmipkit.errors"), 1)
         self.assertNotIn("kmipkit.errors.annotations", names)
         self.assertTrue(result["complete"])
+
+    def test_python_inventory_omits_private_external_import_aliases(self):
+        source = "from enum import IntEnum as _IntEnum\nclass Choice(_IntEnum): pass\n"
+        result = AUDIT.inventory_python_sources({"kmipkit/errors.py": source})
+        names = {row["exportName"] for row in result["declarations"]}
+        self.assertIn("kmipkit.errors.Choice", names)
+        self.assertNotIn("kmipkit.errors._IntEnum", names)
+        self.assertTrue(result["complete"])
+
+    def test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        manifest_path = repo_root / "specification/api/public-api.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in manifest["approvedExclusions"]
+        }
+
+        native_members = {
+            "CLIENT", "CLIENT_BATCH", "CLIENT_BATCH_ITEM_RESPONSE",
+            "CLIENT_BATCH_RESPONSE", "CODEC_LIMITS", "TRANSPORT_CONFIGURATION",
+            "clientBatchAddErrorContinuationValue", "clientBatchAddItem",
+            "clientExecuteWithOptions",
+            "clientBatchCreate", "clientBatchItemResponseMetadata",
+            "clientBatchItemResponsePendingCorrelationValue",
+            "clientBatchItemResponseDiscoverVersionsSupportedVersions",
+            "clientBatchItemResponseUniqueBatchItemId",
+            "clientBatchItemCreate", "clientBatchItemCreateKeyPair",
+            "clientBatchItemCreateSplitKey", "clientBatchItemCertify",
+            "clientBatchItemCheck",
+            "clientBatchItemResponseCreate",
+            "clientBatchItemResponseCreateKeyPair",
+            "clientBatchItemResponseCreateSplitKey",
+            "clientBatchItemResponseCertify",
+            "clientBatchItemResponseCheck",
+            "clientBatchItemResponseMetadataV2",
+            "clientBatchItemHash", "clientBatchItemMac",
+            "clientBatchItemMacVerify", "clientBatchItemSign",
+            "clientBatchItemSignatureVerify", "clientBatchItemResponseHash",
+            "clientBatchItemResponseMac", "clientBatchItemResponseMacVerify",
+            "clientBatchItemResponseSign",
+            "clientBatchItemResponseSignatureVerify",
+            "clientBatchItemGetUsageAllocation",
+            "clientBatchItemResponseGetUsageAllocation",
+            "clientBatchItemWithUniqueBatchItemId", "clientBatchResponseItemAt",
+            "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
+            "clientBatchSetClientCorrelationValue", "clientBatchSetOrderOption",
+            "clientBatchSetRequestTimestamp", "clientCreate", "clientExecute",
+            "transportConfigCreate",
+        }
+        expected_native = {
+            ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{member}")
+            for member in native_members
+        }
+        actual_native = {
+            key for key in exclusions
+            if key[0] == "java-kmipkit"
+            and key[1].startswith("org.kmipkit.NativeExtensionRegistry.")
+        }
+        self.assertEqual(expected_native, actual_native)
+        self.assertNotIn(
+            ("java-kmipkit", "org.kmipkit.NativeExtensionRegistry"), exclusions
+        )
+        for key in expected_native:
+            exclusion = exclusions[key]
+            self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+            self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+            self.assertIn("ffi-and-bindings.md", exclusion["evidence"])
+
+        get_usage_request = exclusions[(
+            "java-kmipkit",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetUsageAllocation",
+        )]["evidence"]
+        self.assertIn(
+            "identifier kind, optional text or numeric identifier, and usage limits count",
+            get_usage_request,
+        )
+        self.assertNotIn("only transfers opaque handles", get_usage_request)
+
+        get_usage_response = exclusions[(
+            "java-kmipkit",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation",
+        )]["evidence"]
+        self.assertIn(
+            "Object[] tuple of presence fields, typed identifier data, and an owned response-TTLV handle",
+            get_usage_response,
+        )
+        self.assertIn("parseGetUsageAllocationResponse", get_usage_response)
+        self.assertNotIn("only transfers opaque handles", get_usage_response)
+
+        java_boilerplate = {
+            "org.kmipkit.extensions.BatchOutcomeKind.equals",
+            "org.kmipkit.extensions.BatchOutcomeKind.hashCode",
+            "org.kmipkit.extensions.BatchOutcomeKind.toString",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.equals",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.hashCode",
+            "org.kmipkit.extensions.TransportConfiguration.Timeout.toString",
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.valueOf",
+            "org.kmipkit.extensions.TransportConfiguration.Encoding.values",
+            "org.kmipkit.extensions.ClientBatchItemResult.HashResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.MacResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.MacVerifyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SignResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.toString",
+        }
+        for path in java_boilerplate:
+            self.assertIn(("java-kmipkit", path), exclusions)
+
+        for path in java_boilerplate:
+            if path.endswith("Response.toString"):
+                self.assertIn("redacted", exclusions[("java-kmipkit", path)]["reason"])
+
+        dataclass_names = (
+            "kmipkit.client.BatchItemResult",
+            "kmipkit.client.Endpoint",
+            "kmipkit.client.TimeoutLimit",
+            "kmipkit.client.TransportConfig",
+            "kmipkit.client.TransportInput",
+            "kmipkit.client.TrustSource",
+            "kmipkit.extensions.ExtensionRegistryLimits",
+            "kmipkit.metadata.Version",
+        )
+        dataclass_artifacts = (
+            "__dataclass_fields__", "__dataclass_params__", "__delattr__",
+            "__eq__", "__hash__", "__match_args__", "__repr__", "__setattr__",
+            "__slots__",
+        )
+        expected_python = {
+            ("python-kmipkit", f"{class_name}.{member}")
+            for class_name in dataclass_names
+            for member in dataclass_artifacts
+        }
+        for key in expected_python:
+            self.assertIn(key, exclusions)
+        approved_constructor_exclusions = {
+            "kmipkit.client.BatchItemResult": (
+                "read-only ClientBatchResponse traversal",
+                "KMIPKIT-0043-FR-012",
+            ),
+            "kmipkit.metadata.Version": (
+                "runtime metadata query remain mapped",
+                "KMIPKIT-0043-FR-021",
+            ),
+        }
+        for class_name in dataclass_names:
+            constructor = ("python-kmipkit", f"{class_name}.__init__")
+            if class_name in approved_constructor_exclusions:
+                exclusion = exclusions[constructor]
+                evidence_phrase, requirement = approved_constructor_exclusions[class_name]
+                self.assertIn(evidence_phrase, exclusion["evidence"])
+                self.assertIn(requirement, exclusion["evidence"])
+            else:
+                self.assertNotIn(constructor, exclusions)
+        for class_name in dataclass_names:
+            repr_exclusion = exclusions[("python-kmipkit", f"{class_name}.__repr__")]
+            self.assertIn("test_secret_bearing_client_records_redact_repr", repr_exclusion["evidence"])
+
+        self.assertIn(("python-kmipkit", "kmipkit.client"), exclusions)
+
+        python_response_ttlv = next(
+            row for row in manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit.errors.ClientExecutionError.response_ttlv"
+        )
+        self.assertEqual(python_response_ttlv["kind"], "field")
+
+        local_conveniences = {
+            ("java-kmipkit", "org.kmipkit.extensions.ClientBatch.itemCount"),
+            ("python-kmipkit", "kmipkit.client.Client.closed"),
+            ("python-kmipkit", "kmipkit.client.Batch.closed"),
+            ("python-kmipkit", "kmipkit.client.BatchResult.closed"),
+        }
+        for key in local_conveniences:
+            self.assertTrue(key in exclusions, f"missing exact exclusion {key}")
+            self.assertIn("language-only convenience", exclusions[key]["reason"])
+            self.assertIn("KMIPKIT-0043-FR-021", exclusions[key]["evidence"])
+    def test_checked_in_binding_export_report_reconciles_every_package(self):
+        repo_root = Path(__file__).resolve().parents[3]
+        report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-17.json"
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {package["packageId"] for package in report["packages"]},
+            {"c-kmipkit", "java-kmipkit", "python-kmipkit"},
+        )
+        for package in report["packages"]:
+            with self.subTest(package=package["packageId"]):
+                self.assertTrue(package["complete"])
+                self.assertTrue(package["matchesManifest"])
+                self.assertEqual(package["missingFromManifest"], [])
+                self.assertEqual(package["notObserved"], [])
+                self.assertEqual(package["kindMismatches"], [])
+                self.assertEqual(package["issues"], [])
 
     def test_python_inventory_collapses_explicit_overload_group_to_one_export(self):
         sources = {

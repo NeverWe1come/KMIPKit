@@ -25,10 +25,37 @@ unsafe extern "C" {
     fn kmipkit_extension_registry_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
 }
 
+#[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
+unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
+}
+
 #[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
+    fn kmipkit_codec_limits_create(
+        max_message_bytes: u64,
+        max_structure_depth: u64,
+        max_elements: u64,
+        out_limits: *mut *mut kmipkit_codec_limits_t,
+    ) -> i32;
     fn kmipkit_codec_limits_release(limits: *mut kmipkit_codec_limits_t);
+    fn kmipkit_last_error_get(
+        out_status: *mut i32,
+        out_category: *mut u32,
+        out_cause: *mut u32,
+        out_delivery: *mut u32,
+    ) -> i32;
 }
 
 #[test]
@@ -104,6 +131,245 @@ fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
     peer.join().expect("the loopback TLS peer completes");
 }
 
+#[test]
+fn generated_public_client_abi_consumer_compiles_and_runs() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "api-levels.shared.v1")
+        .expect("the API-level fixture case exists");
+    let expected_output = &case["expectedOutput"];
+    assert_eq!(case["capability"], "api_level_discovery");
+    assert_eq!(expected_output["networkCalls"], 0);
+    assert_eq!(
+        expected_output["distinctFromKmipOperation"],
+        "Discover Versions"
+    );
+    assert_eq!(
+        expected_output["operationMappingCompleteness"],
+        "not-asserted"
+    );
+    let expected_levels = expected_output["apiLevels"]
+        .as_array()
+        .expect("fixture API levels are an array")
+        .iter()
+        .map(|level| {
+            CString::new(level.as_str().expect("API level IDs are strings"))
+                .expect("API level IDs have no NUL byte")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(expected_levels.len(), 3);
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let mut arguments = vec![executable.as_ptr().cast_mut()];
+    arguments.extend(
+        expected_levels
+            .iter()
+            .map(|level| level.as_ptr().cast_mut()),
+    );
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    // SAFETY: the compiled consumer includes the generated public header, receives
+    // one live argv string, and releases every created handle before returning.
+    let result =
+        unsafe { kmipkit_client_abi_c_consumer_main(argument_count, arguments.as_mut_ptr()) };
+
+    assert_eq!(
+        result, 0,
+        "generated public C client ABI consumer must pass its implementation checks"
+    );
+}
+
+#[test]
+fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the public C client connects to the local peer");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        tls.write_all(&mixed_discover_versions_response())
+            .expect("the typed KMIP response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let mut arguments = [
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot and the successful handle is
+    // retained for the C call, then released by this Rust test harness.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(
+        !limits.is_null(),
+        "configured codec limits must return a handle"
+    );
+    // SAFETY: all argv entries remain live and NUL terminated for the synchronous
+    // C call; the consumer is compiled against the generated public header only.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the configured limits call returned this live handle and the C consumer only
+    // borrowed it while synchronously executing the batch.
+    unsafe {
+        kmipkit_codec_limits_release(limits);
+    }
+
+    let mut last_status = 0;
+    let mut last_category = 0;
+    let mut last_cause = 0;
+    let mut last_delivery = 0;
+    // SAFETY: all four arguments are writable scalar outputs for this call.
+    let metadata_status = unsafe {
+        kmipkit_last_error_get(
+            &raw mut last_status,
+            &raw mut last_category,
+            &raw mut last_cause,
+            &raw mut last_delivery,
+        )
+    };
+    assert_eq!(metadata_status, 0);
+    assert_eq!(
+        result,
+        0,
+        "generated public C consumer failed (status {last_status}, category {last_category}, cause {last_cause}, delivery {last_delivery}); server exchanges: {}",
+        exchange_count.load(Ordering::Relaxed)
+    );
+    peer.join().expect("the loopback TLS peer completes");
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
+fn generated_public_c_consumer_traverses_retained_error_ttlv_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has an address")
+        .port();
+    let port = CString::new(port.to_string()).expect("port contains no NUL byte");
+    let server_config = mtls_server_config(&pki);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener.accept().expect("the public C client connects");
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
+        assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+        tls.write_all(&mac_response_missing_unique_identifier())
+            .expect("the malformed typed response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_public_client_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary path has no NUL byte");
+    let mut arguments = [
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot for this call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv strings and the limits handle remain live for this synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_error_ttlv_tls(
+            argument_count,
+            arguments.as_mut_ptr(),
+            limits,
+        )
+    };
+    // SAFETY: the test created this handle and the C consumer only borrowed it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+
+    assert_eq!(
+        result, 0,
+        "public C consumer must inspect and release retained TTLV"
+    );
+    peer.join().expect("the loopback TLS peer completes");
+}
+
 fn controlled_mtls_peer(
     listener: &TcpListener,
     server_config: Arc<ServerConfig>,
@@ -130,13 +396,30 @@ fn controlled_mtls_peer(
 
     let (second_stream, _) = listener
         .accept()
-        .expect("the explicit post-dispatch call reaches the controlled peer");
+        .expect("the response-shape-error call reaches the controlled peer");
     second_stream
         .set_read_timeout(Some(std::time::Duration::from_secs(5)))
         .expect("post-dispatch peer read timeout is configured");
-    let connection = ServerConnection::new(retry_server_config)
+    let connection = ServerConnection::new(Arc::clone(&retry_server_config))
         .expect("the TLS 1.3 server connection is configured");
     let mut tls = StreamOwned::new(connection, second_stream);
+    let request = read_ttlv_frame(&mut tls).expect("response-shape-error request arrives fully");
+    assert!(request.starts_with(&[0x42, 0x00, 0x78]));
+    tls.write_all(&mismatched_discover_versions_response())
+        .expect("mismatched response fixture is written");
+    tls.flush()
+        .expect("the malformed typed response is flushed");
+    let _ = tls.get_ref().shutdown(Shutdown::Both);
+
+    let (third_stream, _) = listener
+        .accept()
+        .expect("the explicit post-dispatch transport-failure call reaches the peer");
+    third_stream
+        .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+        .expect("transport-failure peer read timeout is configured");
+    let connection = ServerConnection::new(retry_server_config)
+        .expect("the TLS 1.3 server connection is configured");
+    let mut tls = StreamOwned::new(connection, third_stream);
     let request = read_ttlv_frame(&mut tls).expect("post-dispatch request arrives fully");
     assert!(request.starts_with(&[0x42, 0x00, 0x78]));
     let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -331,7 +614,316 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-fn structure<const N: usize>(tag: u32, children: [Vec<u8>; N]) -> Vec<u8> {
+// This TLS batch returns 15 ordered items: the original eight, five crypto
+// operations, Certify, and Derive Key for the generated C consumer to inspect.
+fn mixed_discover_versions_response() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version.clone(),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 15),
+        ],
+    );
+    let response_payload = structure(
+        0x0042_007C,
+        [protocol_version.clone(), protocol_version.clone()],
+    );
+    structure(
+        0x0042_007B,
+        std::iter::once(header)
+            .chain(discover_version_response_items(response_payload))
+            .chain(creation_response_items())
+            .chain(cryptographic_response_items())
+            .chain([derive_key_response_item()]),
+    )
+}
+
+fn derive_key_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 5),
+            ttlv_item(0x0042_0093, 0x08, b"derive"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    ttlv_item(0x0042_0094, 0x07, b"derived-key"),
+                    ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                ],
+            ),
+        ],
+    )
+}
+
+fn cryptographic_response_items() -> [Vec<u8>; 6] {
+    let correlation = [0x41, 0x00, 0x42];
+    let response_identifier = b"response-id";
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 39),
+                ttlv_item(0x0042_0093, 0x08, b"hash-0"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_00C2, 0x08, b"hash-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 35),
+                ttlv_item(0x0042_0093, 0x08, b"mac-00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        ttlv_item(0x0042_00C4, 0x08, b"mac-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 36),
+                ttlv_item(0x0042_0093, 0x08, b"macvfy"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        enumeration(0x0042_0128, 1),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 33),
+                ttlv_item(0x0042_0093, 0x08, b"sign00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        ttlv_item(0x0042_00C7, 0x08, b"signature-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 34),
+                ttlv_item(0x0042_0093, 0x08, b"sigvfy"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, response_identifier),
+                        enumeration(0x0042_0128, 1),
+                        ttlv_item(0x0042_00C2, 0x08, b"recovered-response-data"),
+                        ttlv_item(0x0042_00D6, 0x08, &correlation),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 6),
+                ttlv_item(0x0042_0093, 0x08, b"certif"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [ttlv_item(0x0042_0094, 0x07, b"issued-certificate")],
+                ),
+            ],
+        ),
+    ]
+}
+
+fn discover_version_response_items(response_payload: Vec<u8>) -> [Vec<u8>; 4] {
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-0"),
+                enumeration(0x0042_007F, 0),
+                response_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-1"),
+                enumeration(0x0042_007F, 2),
+                ttlv_item(0x0042_0006, 0x08, &[0x00, 0xa1, 0x7f]),
+                structure(0x0042_007C, []),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-2"),
+                enumeration(0x0042_007F, 1),
+                enumeration(0x0042_007E, 1),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 30),
+                ttlv_item(0x0042_0093, 0x08, b"item-3"),
+                enumeration(0x0042_007F, 0),
+                structure(0x0042_007C, []),
+            ],
+        ),
+    ]
+}
+
+fn creation_response_items() -> [Vec<u8>; 4] {
+    let create_payload = structure(
+        0x0042_007C,
+        [enumeration(0x0042_0057, 7), integer(0x0042_0094, -8)],
+    );
+    let create_key_pair_payload = structure(
+        0x0042_007C,
+        [
+            enumeration(0x0042_0066, u32::MAX),
+            ttlv_item(0x0042_006F, 0x07, "public-key-α".as_bytes()),
+        ],
+    );
+    let create_split_key_payload = structure(
+        0x0042_007C,
+        (0..100_001).map(|index| integer(0x0042_0094, index)),
+    );
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 1),
+                ttlv_item(0x0042_0093, 0x08, b"item-4"),
+                enumeration(0x0042_007F, 0),
+                create_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 1),
+                ttlv_item(0x0042_0093, 0x08, b"item-5"),
+                enumeration(0x0042_007F, 1),
+                enumeration(0x0042_007E, 5),
+                ttlv_item(0x0042_007D, 0x07, "création refusée ✓".as_bytes()),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 2),
+                ttlv_item(0x0042_0093, 0x08, b"item-6"),
+                enumeration(0x0042_007F, 0),
+                create_key_pair_payload,
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 40),
+                ttlv_item(0x0042_0093, 0x08, b"item-7"),
+                enumeration(0x0042_007F, 0),
+                create_split_key_payload,
+            ],
+        ),
+    ]
+}
+
+fn mismatched_discover_versions_response() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version.clone(),
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 30),
+            ttlv_item(0x0042_0093, 0x08, &[0xaa]),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, [ttlv_item(0x0042_0069, 0x08, &[2, 1])]),
+        ],
+    );
+    structure(
+        0x0042_007B,
+        [
+            header,
+            item,
+            ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+        ],
+    )
+}
+
+fn mac_response_missing_unique_identifier() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = structure(
+        0x0042_007C,
+        [
+            ttlv_item(0x0042_00C4, 0x08, &[0x5a]),
+            ttlv_item(0x0054_0001, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 35),
+            ttlv_item(0x0042_0093, 0x08, b"item-0"),
+            enumeration(0x0042_007F, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007B, [header, item])
+}
+
+fn structure(tag: u32, children: impl IntoIterator<Item = Vec<u8>>) -> Vec<u8> {
     let value = children.into_iter().flatten().collect::<Vec<_>>();
     ttlv_item(tag, 0x01, &value)
 }
