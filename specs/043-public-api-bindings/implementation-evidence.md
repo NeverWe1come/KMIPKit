@@ -2907,6 +2907,32 @@ coverage result. T046 remains unchecked and the manifest row remains
 and changed-code coverage gates. These local results are not an OASIS
 certification, profile-conformance, or interoperability claim.
 
+### Coverage gate integrity follow-up
+
+An independent review of the changed-code coverage helper found two ways its
+line classifier could omit executable code from the denominator: it could
+continue Rust signature parsing past an inline function body, and it could
+accept `COVERAGE-EXCLUDE` text inside literals or block comments as a real
+comment. The parser now stops at the first function body. The exclusion
+scanner tokenizes Python comments and lexes Rust, C++, and Java line comments
+while respecting ordinary and raw strings, Rust lifetimes and nested block
+comments, and Java text blocks. Empty inline Rust function bodies remain
+counted as executable lines.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `b569b171` | Inline Rust body followed by a multiline function | Expected failure: the inline body was classified as a signature line. |
+| Green | `6222d023` | Focused Rust changed-line classifier test | PASS for a non-empty inline body; later edge coverage retained in `7c5c52ab`. |
+| Red | `e2320f02` | Marker text in Rust/Python/C++/Java literals and a C++ block comment | Expected failure in all five cases: each line was excluded. |
+| Red | `fd025bf3` | Empty inline Rust function body | Expected failure: the function line was classified as declaration-only. |
+| Red | `4e98f062` | Rust lifetime before a real marker and nested block-comment decoy | Expected failure in both cases. |
+| Green | `7c5c52ab` | Full coverage-gate unit suite | PASS: 62 tests, 3 skipped; includes real-comment reason validation and all parser regressions. |
+
+The earlier PR CI run `39045613758` targeted `dd7487c` and failed before these
+corrections were pushed; its result does not validate the current tree. The
+updated branch still requires a fresh cross-platform CI run and aggregate
+coverage result before T046 can be checked off.
+
 ### T045 follow-up — documented unreachable JNI consistency branches
 
 Current-head run `39037196761` completed with every platform, binding,
