@@ -187,7 +187,9 @@ final class ClientFacadeTlsIntegrationTest {
                 TtlvStructure privateAttributes = TtlvStructure.create();
                 TtlvStructure publicAttributes = TtlvStructure.create();
                 TtlvStructure splitAttributes = TtlvStructure.create();
-                TtlvStructure delegatedLoginRights = TtlvStructure.create()) {
+                TtlvStructure delegatedLoginRights = TtlvStructure.create();
+                TtlvStructure derivationParameters = TtlvStructure.create();
+                TtlvStructure derivedAttributes = TtlvStructure.create()) {
             assertThrows(InvalidInputException.class,
                     () -> client.executeWithOptions(null, null, null));
             assertNativeRequestOptionsRejected(client, new long[11]);
@@ -231,7 +233,11 @@ final class ClientFacadeTlsIntegrationTest {
                             .withUniqueBatchItemId(uniqueBatchItemId(11)))
                     .add(ClientBatchItem.delegatedLogin(delegatedLoginRights,
                                     60L, null, 3, null)
-                            .withUniqueBatchItemId(uniqueBatchItemId(12)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(12)))
+                    .add(ClientBatchItem.deriveKey(2,
+                                    List.of(UniqueIdentifier.textString("source-key")),
+                                    0xfeed_beefL, derivationParameters, derivedAttributes)
+                            .withUniqueBatchItemId(uniqueBatchItemId(13)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -247,8 +253,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult certified = response.itemAt(9);
                     ClientBatchItemResult allocated = response.itemAt(10);
                     ClientBatchItemResult checked = response.itemAt(11);
-                    ClientBatchItemResult delegated = response.itemAt(12)) {
-                assertEquals(13, response.itemCount());
+                    ClientBatchItemResult delegated = response.itemAt(12);
+                    ClientBatchItemResult derived = response.itemAt(13)) {
+                assertEquals(14, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -363,6 +370,18 @@ final class ClientFacadeTlsIntegrationTest {
                             delegatedResponse.ticketValue().orElseThrow());
                     assertTrue(delegatedResponse.ticketTtlv().isPresent());
                     assertFalse(delegatedResponse.toString().contains("delegated-ticket-secret"));
+                }
+                try (ClientBatchItemResult.DeriveKeyResponse deriveKeyResponse =
+                                derived.deriveKeyResponse().orElseThrow();
+                        TtlvStructureView deriveKeyTtlv = deriveKeyResponse.responseTtlv().view()) {
+                    assertEquals(0, derived.resultStatus());
+                    assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
+                            deriveKeyResponse.uniqueIdentifier().kind());
+                    assertEquals("derived-key", deriveKeyResponse.uniqueIdentifier().text());
+                    assertEquals(2, deriveKeyTtlv.itemCount());
+                    assertEquals(0x0042_0094, tagAt(deriveKeyTtlv, 0));
+                    assertEquals(0x0054_0001, tagAt(deriveKeyTtlv, 1));
+                    assertFalse(deriveKeyResponse.toString().contains("derived-key"));
                 }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
@@ -776,6 +795,12 @@ final class ClientFacadeTlsIntegrationTest {
             }
         }
         return false;
+    }
+
+    private static long tagAt(TtlvStructureView structure, long index) {
+        try (TtlvItemView item = structure.itemAt(index); Tag tag = item.tag()) {
+            return tag.raw();
+        }
     }
 
     private static List<?> cryptoOperations() throws Exception {
