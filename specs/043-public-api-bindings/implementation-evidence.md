@@ -2933,6 +2933,36 @@ corrections were pushed; its result does not validate the current tree. The
 updated branch still requires a fresh cross-platform CI run and aggregate
 coverage result before T046 can be checked off.
 
+### T046 follow-up — reconcile Derive Key export and readiness contracts
+
+The later CI run `39046640764` on `b43a192` found two T046 acceptance gaps:
+the FFI panic-boundary test still expected 189 exports after Derive Key added
+three symbols (192 observed), and the Python export audit had no exact
+exclusions for the ten generated `DeriveKeyResponse` dataclass artifacts. The
+selected coverage aggregate failed because its required producers had failed.
+The broader local API-manifest suite also exposed stale readiness assertions:
+Java and Python public declaration counts, two Check JNI bridge exclusions,
+and the bilingual capability snapshot had not been updated for the current
+manifest. These were expectations and documentation gaps; the mapped operation
+surface itself was unchanged by the corrections.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `894cb2c2` | `test_derive_key_response_python_dataclass_artifacts_are_exactly_excluded` | Expected failure: the exact ten generated Python dataclass exports were not inventoried. |
+| Green | `523eb4c4` | Focused manifest/readiness tests, parity tests, script contracts, fixture contracts, workspace tests, and generator check | PASS: 6 focused regressions; 51 parity/mapping tests; 285 script tests (26 skipped); 17 fixture tests (1 skipped); `cargo test --workspace --all-features`; all 12 manifest outputs verified. The full 359-test API-manifest run initially had four stale expectation failures; the four affected contracts now pass in the focused rerun. |
+| Refactor | Evidence-only follow-up | `git diff --check` | Records the CI diagnosis, corrected inventory counts, bilingual readiness summary, and current completion gate without changing runtime behavior. |
+
+The manifest now records only the exact generated Python dataclass members as
+approved exclusions, and its outputs are regenerated from the manifest input.
+The C export guard expects 192 functions. The Java and Python inventory
+assertions match 552 and 524 declarations; their observed Check JNI bridge
+members are included in the exact bridge-exclusion assertion. Both language
+guides now report 42 blocked, 10 declared (including Derive Key), and 4
+verified operation mappings. T046 remains unchecked and Derive Key remains
+`declared` until a fresh current-head cross-platform CI run and coverage gates
+pass. This evidence does not claim OASIS certification or full operation
+conformance.
+
 ### T045 follow-up — documented unreachable JNI consistency branches
 
 Current-head run `39037196761` completed with every platform, binding,
