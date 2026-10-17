@@ -843,6 +843,7 @@ fn crypto_observation_reconciles_expected_and_observed_outcomes() {
     for observed in [
         "target_rejected",
         "response_validation_failed",
+        "semantic_mismatch",
         "setup_rejected",
     ] {
         let row = serde_json::json!({
@@ -925,16 +926,18 @@ fn multipart_matrix_rows_construct_all_three_typed_parts() {
         match row["operation"].as_str().expect("operation") {
             "Hash" => {
                 let initial = HashRequest::new(hash_parameters(&row).expect("Hash parameters"))
+                    .with_data(OperationData::ByteString(SecretBytes::new(b"a".to_vec())))
                     .with_init_indicator(true);
                 assert!(initial.validate_multipart_shape().is_ok(), "{id}");
                 assert!(initial.to_ttlv_payload().is_ok(), "{id}");
                 let middle = HashRequest::new(hash_parameters(&row).expect("Hash parameters"))
                     .with_correlation_value(SecretBytes::new(vec![1]))
-                    .with_init_indicator(false);
+                    .with_data(OperationData::ByteString(SecretBytes::new(b"b".to_vec())));
                 assert!(middle.validate_multipart_shape().is_ok(), "{id}");
                 assert!(middle.to_ttlv_payload().is_ok(), "{id}");
                 let final_part = HashRequest::new(hash_parameters(&row).expect("Hash parameters"))
                     .with_correlation_value(SecretBytes::new(vec![1]))
+                    .with_data(OperationData::ByteString(SecretBytes::new(b"c".to_vec())))
                     .with_final_indicator(true);
                 assert!(final_part.validate_multipart_shape().is_ok(), "{id}");
                 assert!(final_part.to_ttlv_payload().is_ok(), "{id}");
@@ -4757,23 +4760,27 @@ fn run_hash_multipart_case(
     row: &JsonValue,
 ) -> Result<(), Box<dyn Error>> {
     let id = case_id(row)?;
-    let initial = HashRequest::new(hash_parameters(row)?).with_init_indicator(true);
-    let mut correlation = execute_hash_multipart_part(client, id, initial, "Hash initial", true)?;
-    correlation = execute_hash_multipart_part(
-        client,
-        id,
-        HashRequest::new(hash_parameters(row)?)
-            .with_correlation_value(copy_secret(&correlation))
-            .with_init_indicator(false),
-        "Hash middle",
-        true,
-    )?;
+    let initial = HashRequest::new(hash_parameters(row)?)
+        .with_data(OperationData::ByteString(SecretBytes::new(b"a".to_vec())))
+        .with_init_indicator(true);
+    let correlation = execute_hash_multipart_part(client, id, initial, "Hash initial")?
+        .ok_or("target response received; Hash initial omitted Correlation Value")?;
+    let middle = HashRequest::new(hash_parameters(row)?)
+        .with_correlation_value(copy_secret(&correlation))
+        .with_data(OperationData::ByteString(SecretBytes::new(b"b".to_vec())));
+    let _middle_response_correlation =
+        execute_hash_multipart_part(client, id, middle, "Hash middle")?;
+    let expected_digest = decode_hex(known_answer_digest(
+        required_parameter_text(row, "hash")?,
+        false,
+    )?)?;
     let final_result = super::common::execute_case(
         client,
         id,
         ClientRequest::hash(
             HashRequest::new(hash_parameters(row)?)
-                .with_correlation_value(correlation)
+                .with_correlation_value(copy_secret(&correlation))
+                .with_data(OperationData::ByteString(SecretBytes::new(b"c".to_vec())))
                 .with_final_indicator(true),
         ),
         "Hash",
@@ -4781,8 +4788,13 @@ fn run_hash_multipart_case(
             let result = response.hash().ok_or_else(|| {
                 "target response received; final Hash result is absent".to_owned()
             })?;
-            if result.data().is_some() {
-                return Err("target response received; multipart Hash returned Data".to_owned());
+            let data = result.data().ok_or_else(|| {
+                "target response received; final multipart Hash omitted digest Data".to_owned()
+            })?;
+            if !data.with_bytes(|bytes| bytes == expected_digest.as_slice()) {
+                return Err(
+                    "target response received; final multipart Hash digest did not match the independent SHA known-answer vector".to_owned(),
+                );
             }
             Ok(())
         },
@@ -4806,8 +4818,7 @@ fn execute_hash_multipart_part(
     id: &str,
     request: HashRequest,
     label: &str,
-    require_correlation: bool,
-) -> Result<SecretBytes, Box<dyn Error>> {
+) -> Result<Option<SecretBytes>, Box<dyn Error>> {
     super::common::execute_case(
         client,
         id,
@@ -4817,14 +4828,7 @@ fn execute_hash_multipart_part(
             let result = response
                 .hash()
                 .ok_or_else(|| format!("target response received; {label} result is absent"))?;
-            let correlation = result.correlation_value().ok_or_else(|| {
-                if require_correlation {
-                    format!("target response received; {label} omitted Correlation Value")
-                } else {
-                    format!("{label} omitted Correlation Value")
-                }
-            })?;
-            Ok(copy_secret(correlation))
+            Ok(result.correlation_value().map(copy_secret))
         },
     )
 }

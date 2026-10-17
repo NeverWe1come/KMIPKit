@@ -1862,6 +1862,7 @@ fn validate_observed_result(row: &serde_json::Value) {
                 | "setup_rejected"
                 | "fixture_unavailable"
                 | "response_validation_failed"
+                | "semantic_mismatch"
                 | "malformed_response"
                 | "unsupported"
                 | "client_blocked"
