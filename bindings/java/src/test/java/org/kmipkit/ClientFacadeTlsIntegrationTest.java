@@ -419,11 +419,12 @@ final class ClientFacadeTlsIntegrationTest {
                                 exportFailed.exportResponse().orElseThrow();
                         TtlvStructureView exportFailureTtlv = exportFailure.responseTtlv().view()) {
                     assertEquals(1, exportFailed.resultStatus());
+                    assertEquals(5, exportFailed.resultReason().orElseThrow());
                     assertTrue(exportFailure.objectTypeRaw().isEmpty());
                     assertTrue(exportFailure.uniqueIdentifier().isEmpty());
                     assertTrue(exportFailure.attributes().isEmpty());
                     assertTrue(exportFailure.anyObject().isEmpty());
-                    assertEquals(4, exportFailureTtlv.itemCount());
+                    assertTagOrder(exportFailureTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007e);
                 }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);

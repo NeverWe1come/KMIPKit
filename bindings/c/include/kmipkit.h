@@ -623,12 +623,12 @@ int32_t kmipkit_client_batch_item_response_delegated_login_ttlv(kmipkit_client_b
  */
 /* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
 int32_t kmipkit_client_batch_item_export(const kmipkit_unique_identifier_v1_t * unique_identifier, uint8_t has_key_format_type, uint32_t key_format_type, uint8_t has_key_wrap_type, uint32_t key_wrap_type, uint8_t has_key_compression_type, uint32_t key_compression_type, kmipkit_ttlv_structure_t * key_wrapping_specification, kmipkit_client_batch_item_t ** out_item);
-/* Returns a typed Export result for Success and KMIP Failure. On Success, the caller owns copies of the required Attributes and opaque Any Object structures; on Failure the payload outputs are empty.
+/* Returns a typed Export result for any Export item, regardless of KMIP result status. On Success, the caller owns copies of the required Attributes and opaque Any Object structures; on non-success the payload outputs are empty.
  * The caller must release each non-null structure output with kmipkit_ttlv_structure_release. Response data remains sensitive and is omitted from diagnostics.
  */
 /* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */
 int32_t kmipkit_client_batch_item_response_export(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_payload_present, uint32_t * out_object_type, kmipkit_unique_identifier_v1_t * out_unique_identifier, kmipkit_ttlv_structure_t ** out_attributes, kmipkit_ttlv_structure_t ** out_any_object);
-/* Returns a caller-owned copy of the complete ordered Export response TTLV for Success and KMIP Failure; returns no structure for a non-Export result.
+/* Returns a caller-owned copy of the complete ordered Export response TTLV for any Export item, regardless of result status; returns no structure for a non-Export result.
  * The caller must release a non-null output with kmipkit_ttlv_structure_release. Raw response contents are sensitive and are not included in diagnostics.
  */
 /* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */

@@ -105,9 +105,21 @@ final class ExportResponseMappingTest {
     @Test
     void exportResponseRejectsPayloadPresenceOutsideBooleanRange() {
         NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
 
-        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseExportResponse(
-                new Object[] {new long[] {1, 2, 0}, null, new long[] {0, 0, 0}}));
+        InvalidInputException exception = assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseExportResponse(new Object[] {
+                    new long[] {1, 2, 0}, null, new long[] {0, 0, responseTtlv}
+                }));
+        assertEquals("native Export payload presence is invalid", exception.getMessage());
+        try {
+            assertThrows(InvalidInputException.class, () -> {
+                long view = NativeExtensionRegistry.ttlvStructureView(responseTtlv);
+                NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE_VIEW, view);
+            });
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, responseTtlv);
+        }
     }
 
     @Test
