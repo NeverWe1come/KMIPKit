@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
+C_HEADER = ROOT / "bindings" / "c" / "include" / "kmipkit.h"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-EXPORT"
 OWNER_SPEC = "specs/023-key-material-transfer/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
@@ -29,6 +30,21 @@ PARITY_EVIDENCE = {
     "crates/kmipkit-client/tests/unit/export_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs",
+}
+PYTHON_DATACLASS_DUNDER_EXPORTS = {
+    f"kmipkit.client.ExportResponse.{member}"
+    for member in (
+        "__dataclass_fields__",
+        "__dataclass_params__",
+        "__delattr__",
+        "__eq__",
+        "__hash__",
+        "__init__",
+        "__match_args__",
+        "__repr__",
+        "__setattr__",
+        "__slots__",
+    )
 }
 EXPECTED_MAPPINGS = {
     "rust": {
@@ -129,6 +145,25 @@ class ExportParityManifestTests(unittest.TestCase):
         self.assertEqual(1, len(operations))
         self.assertEqual("verified", operations[0]["apiState"])
         self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
+
+    def test_generated_c_header_exposes_the_three_export_abi_symbols(self) -> None:
+        header = C_HEADER.read_text(encoding="utf-8")
+        for symbol in EXPECTED_MAPPINGS["c"]:
+            with self.subTest(symbol=symbol):
+                self.assertIn(f"{symbol}(", header)
+
+    def test_java_table218_accessors_are_method_declarations(self) -> None:
+        for declaration_id in ("T047:java:04", "T047:java:05", "T047:java:06", "T047:java:07", "T047:java:08"):
+            with self.subTest(declaration_id=declaration_id):
+                self.assertEqual("java-member", self.declarations[declaration_id]["kind"])
+
+    def test_python_generated_exportresponse_members_have_exact_exclusions(self) -> None:
+        exclusions = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+        }
+        self.assertTrue(PYTHON_DATACLASS_DUNDER_EXPORTS <= exclusions)
 
 
 if __name__ == "__main__":
