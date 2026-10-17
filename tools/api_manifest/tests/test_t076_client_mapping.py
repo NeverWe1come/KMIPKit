@@ -1390,22 +1390,55 @@ class T076ClientMappingTests(unittest.TestCase):
 
         generated_members = {
             f"kmipkit.{module}.{record}.{member}"
-            for module, record in (
-                ("client", "BatchItemMetadataV2"),
-                ("extensions", "UniqueIdentifier"),
+            for module, record, members in (
+                (
+                    "client",
+                    "BatchItemMetadataV2",
+                    (
+                        "__dataclass_fields__",
+                        "__dataclass_params__",
+                        "__delattr__",
+                        "__eq__",
+                        "__hash__",
+                        "__init__",
+                        "__match_args__",
+                        "__repr__",
+                        "__setattr__",
+                        "__slots__",
+                    ),
+                ),
+                (
+                    "extensions",
+                    "UniqueIdentifier",
+                    (
+                        "__dataclass_fields__",
+                        "__dataclass_params__",
+                        "__delattr__",
+                        "__eq__",
+                        "__hash__",
+                        "__init__",
+                        "__match_args__",
+                        "__repr__",
+                        "__setattr__",
+                        "__slots__",
+                    ),
+                ),
+                (
+                    "client",
+                    "DelegatedLoginResponse",
+                    (
+                        "__match_args__",
+                        "__hash__",
+                        "__repr__",
+                        "__dataclass_fields__",
+                        "__dataclass_params__",
+                        "__init__",
+                        "__slots__",
+                        "__eq__",
+                    ),
+                ),
             )
-            for member in (
-                "__dataclass_fields__",
-                "__dataclass_params__",
-                "__delattr__",
-                "__eq__",
-                "__hash__",
-                "__init__",
-                "__match_args__",
-                "__repr__",
-                "__setattr__",
-                "__slots__",
-            )
+            for member in members
         }
         exclusions = {
             row["exportName"]: row

@@ -165,6 +165,15 @@ class DelegatedLoginParityManifestTests(unittest.TestCase):
         self.assertEqual("verified", operations[0]["apiState"])
         self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
 
+    def test_java_ticket_ttlv_getter_does_not_claim_a_native_entrypoint(self) -> None:
+        function = next(
+            row
+            for row in self.manifest["functions"]
+            if row["id"] == "client_batch_item_response_delegated_login_ttlv"
+        )
+
+        self.assertNotIn("jniSymbol", function["java"])
+
 
 if __name__ == "__main__":
     unittest.main()
