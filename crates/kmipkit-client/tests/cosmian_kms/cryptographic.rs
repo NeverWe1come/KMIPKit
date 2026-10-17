@@ -4959,3 +4959,37 @@ fn hex_nibble(value: u8) -> Result<u8, Box<dyn Error>> {
         _ => Err("known-answer vector contains a non-hexadecimal character".into()),
     }
 }
+#[test]
+fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
+    let object = signature_key_object(vec![0x30, 0x00], 5, 4, false)
+        .expect("well-formed public key fixture");
+    let format = object.with_value(|value| {
+        let kmipkit_ttlv::ValueView::Structure(fields) = value else {
+            return None;
+        };
+        fields
+            .children()
+            .iter()
+            .find(|field| field.tag().raw() == KEY_BLOCK)
+            .and_then(|key_block| {
+                key_block.with_value(|value| {
+                    let kmipkit_ttlv::ValueView::Structure(key_fields) = value else {
+                        return None;
+                    };
+                    key_fields
+                        .children()
+                        .iter()
+                        .find(|field| field.tag().raw() == KEY_FORMAT_TYPE)
+                        .and_then(|format| {
+                            format.with_value(|value| match value {
+                                kmipkit_ttlv::ValueView::Enumeration(value) => Some(*value),
+                                _ => None,
+                            })
+                        })
+                })
+            })
+    });
+
+    assert_eq!(format, Some(4), "Cosmian imports public SPKI using PKCS#8");
+}
+
