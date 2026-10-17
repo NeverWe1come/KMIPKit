@@ -52,9 +52,9 @@
 - Reuse the T076 batch options and common result metadata for Pending, Failure, correlation, and delivery evidence.
 - Do not add operation-specific transport behavior, polling, retries, or local accounting.
 
-- [ ] Implement only what the Red tests require.
-- [ ] Run the focused ABI, C consumer, JNI/Java, CFFI/Python, and manifest checks.
-- [ ] Commit implementation and generated output as the signed-off Green change.
+- [x] Implement only what the Red tests require.
+- [x] Run the focused ABI, C consumer, JNI/Java, CFFI/Python, and manifest checks.
+- [x] Commit implementation and generated output as the signed-off Green change (`1a3bfdc9`).
 
 ### Task 3: Reconcile documentation and evidence (Refactor)
 
@@ -62,6 +62,6 @@
 - Update `specs/043-public-api-bindings/tasks.md`, `implementation-evidence.md`, `traceability.md`, operation dependency documentation, and the public API documentation in English and Spanish.
 - Refine tests and adapters without changing the approved behavior.
 
-- [ ] Run all focused checks again, then the required workspace formatting, lint, tests, coverage, and generated-output checks available in this environment.
-- [ ] Verify T049 is complete, the operation manifest row is verified, and no T078 or unrelated-operation scope changed.
-- [ ] Commit documentation, traceability, and cleanup as the signed-off Refactor change.
+- [x] Run all focused checks again, then the required workspace formatting, lint, tests, coverage, and generated-output checks available in this environment; results are in `specs/043-public-api-bindings/implementation-evidence.md`.
+- [x] Verify T049 is complete, the operation manifest row is verified, and no T078 or unrelated-operation scope changed.
+- [x] Commit documentation, traceability, and cleanup as the signed-off Refactor change.

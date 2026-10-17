@@ -2377,3 +2377,71 @@ The independent T082 QA review found the requested coverage cases present. The
 security review found no new issue in the added test-only coverage. The exact
 failed-run artifacts pass local replay, and the corrected head passes the full
 cross-platform CI matrix; T082 is complete.
+
+## T049 — Get Usage Allocation mapping
+
+T049 advances only the approved four-language API mapping for Get Usage
+Allocation. Its owner is `specs/025-policy-controls/spec.md` (KMIPKIT-0039,
+formally approved 2026-10-11). The normative request and response are OASIS KMIP
+Specification v2.1 §6.1.23, Tables 232–234; the signed Usage Limits Count uses
+the Long Integer encoding in §7.40, Table 392. The mapping records the optional
+Unique Identifier, exact signed 64-bit count, resolved response identifier,
+common Success/Pending/Failure result, correlation and delivery state, and
+redacted diagnostics. It does not implement the local Usage Allocation guard
+(T078) or change another operation.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `1240f80d` | `cargo test -p kmipkit-ffi get_usage_allocation --lib`; MSVC C ABI consumer compile; `bindings/java/gradlew.bat test --no-daemon`; Python 3.12 focused pytest; `python -B -m unittest tools.api_manifest.tests.test_get_usage_allocation_parity_manifest -v` | Expected failures identify absent C constructor/getter symbols, Java builder/typed response mapping, Python builder/result mapping, and the blocked manifest row. The existing fake-transport Rust contract was not changed. |
+| Green | `1a3bfdc9` | `cargo test -p kmipkit-protocol get_usage_allocation`; `cargo test -p kmipkit-client get_usage_allocation`; `cargo test -p kmipkit-ffi get_usage_allocation --lib`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs`; `uv run --with pytest python -B -m pytest -q bindings/python/tests/test_get_usage_allocation_operation.py`; `bindings/java/gradlew.bat test --no-daemon --rerun-tasks`; `python -B tools/api_manifest/generate.py --write` | PASS: 8 protocol tests, 6 client tests, 2 FFI tests, 1 compiled C consumer test, 5 Python tests, and 204 Java tests (3 skipped); pinned generation updated the manifest outputs. |
+| Refactor | this commit | Focused and workspace verification recorded below; generator check; docs, traceability, and scope review | PASS: documentation and traceability updated, the T049 task is checked, and the reviewed manifest row is `verified`. |
+
+The implementation reuses T076's typed batch request/response and options.
+Pending is returned without an automatic Poll or retry; failures do not expose
+an allocation response. C, Java, and Python surface owned typed results, while
+the caller's identifier and signed count retain their specified values. Tests
+cover request shape, success and resolved identifier, Pending, Failure,
+delivery state, ownership, and diagnostic redaction. Generated C, Rust, Java,
+Python, and parity fixture files came only from the pinned generator; the
+generator check reports 12 outputs verified.
+
+The full API manifest suite initially ran 347 tests with two inventory
+assertion failures and three Windows symlink-permission skips. The two expected
+counts were stale on clean base `de5150dc` as well as this branch. The
+additional exact exclusions are
+`rust-kmipkit-protocol::kmipkit_protocol::ProtocolError::retains_generic_response`
+and `rust-kmipkit::kmipkit::ProtocolError::retains_generic_response`; both are
+already explicit rows in `approvedExclusions`, approved under accepted
+ADR-0003, and tied to KMIPKIT-0021-FR-015. Their two observed declarations
+therefore account for the 22→24 exclusion count and 9,532→9,534 observed count.
+Only those stale expected values were updated in
+`test_shared_rust_inventory.py`; mapped declaration count (264), blocked
+declaration count (31), and the exact exclusion-path equality check are
+unchanged.
+
+The T049-related fixture collision in
+`test_rejects_symlinked_output_parent_without_writing_outside_root` was fixed
+by removing the copied fixture `bindings` directory before creating its
+symlink. On this Windows host this test skips only because symlink creation is
+denied with `WinError 1314`; the corresponding manifest path-safety behavior
+is exercised on symlink-capable CI. The full API manifest suite is rerun after
+the stale count corrections; its final result is recorded in the verification
+table below.
+
+| Refactor verification | Result |
+|---|---|
+| `cargo fmt --all --check` | PASS |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | PASS |
+| `cargo test --workspace --all-features` | PASS; full workspace suite exits 0, including the updated 181-export panic-boundary assertion |
+| `cargo llvm-cov --workspace --all-features` | PASS; 42,942 lines, 31,617 covered (92.66% workspace line coverage) |
+| `cargo llvm-cov report --summary-only --workspace` | PASS; confirms the same 92.66% total |
+| `python -B tools/api_manifest/generate.py --check` | PASS; 12 generated outputs verified |
+| `uv run --with jsonschema==4.26.0 python -B -m unittest discover -s tools/api_manifest/tests -p 'test_*.py' -v` | PASS; 347 tests, 0 failures/errors, 3 Windows symlink-permission skips (362.530 s) |
+| `git diff --check` | PASS |
+
+The generated wrapper was rebuilt through the pinned Maturin 1.9.4 wheel and
+installed into a temporary consumer environment. A direct CFFI ABI smoke call
+verified both an absent identifier with `INT64_MIN` and a present text
+identifier with `INT64_MAX`. The full Java Gradle suite passed; focused C, Rust,
+Python, and manifest parity checks above passed. The post-correction full
+manifest-suite result is recorded in the verification table above.

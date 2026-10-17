@@ -50,7 +50,7 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch`
 with a closed typed request set. The currently implemented operation variants
 are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
-Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Get Usage Allocation, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke. The API does not accept generic Item values, raw message bytes, or
@@ -58,6 +58,15 @@ caller-implemented conversions.
 Discover Versions is explicit and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
+
+Get Usage Allocation follows KMIP v2.1 §6.1.23, Tables 232–234, and encodes
+Usage Limits Count as the exact signed Long Integer from §7.40, Table 392.
+Its request accepts an optional Unique Identifier; a successful typed response
+exposes the resolved Unique Identifier. The Rust, C, Java, and Python facades
+share the operation mapping while the common batch result retains Success,
+Pending, Failure, correlation, and request-delivery state. Pending is returned
+to the caller without automatic polling or retry. The mapping follows the
+approved contract in [policy controls](../../specs/025-policy-controls/spec.md).
 
 KMIPKIT-0013 constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level

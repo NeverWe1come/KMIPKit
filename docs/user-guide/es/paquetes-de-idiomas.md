@@ -75,13 +75,17 @@ tabla.
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **46 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **45 / 56** siguen en
 estado `blocked`. Diez filas están `declared`: Certify, Create, Create Key
 Pair, Create Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y
 Signature Verify. Sus mapeos de solicitud y respuesta para cuatro lenguajes
 están registrados; `declared` no demuestra la conformidad completa de las
 operaciones. No se debe inferir que una operación está disponible porque haya
-tipos o código en otra parte del repositorio. Esta instantánea no afirma paridad
+tipos o código en otra parte del repositorio. Get Usage Allocation es una
+operación `verified`: su petición con identificador opcional y contador con
+signo, la respuesta con identificador resuelto y los resultados comunes del
+lote están mapeados en Rust, C, Java y Python. Esta evidencia de mapeo no afirma
+la conformidad completa de la operación. Esta instantánea no afirma paridad
 completa de operaciones, compatibilidad con un perfil ni certificación formal
 de KMIPKit.
 

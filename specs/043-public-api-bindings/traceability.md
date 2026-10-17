@@ -52,3 +52,9 @@ The API feature itself is project-defined. Each operation inventory row maps to 
 ## Operation-level traceability rule
 
 For every capability that corresponds to a KMIP operation, its manifest declaration and conformance evidence cite the exact section from `contracts/operation-dependencies.md` and the owning approved operation specification's stable requirement IDs. This table is an API parity contract, not a substitute for operation requirement traceability. Do not mark an OASIS clause verified merely because generated bindings compile.
+
+## T049 — Get Usage Allocation mapping
+
+| Task | Approved owner and normative source | Contract and stable trace IDs | Four-language mapping and parity evidence |
+|---|---|---|---|
+| T049 | `specs/025-policy-controls/spec.md` (`KMIPKIT-0039`, approved 2026-10-11); OASIS KMIP Specification v2.1 §6.1.23 Tables 232–234 and §7.40 Table 392 | Optional Unique Identifier, required exact signed Long Integer Usage Limits Count, required resolved Unique Identifier on success, and common Success/Pending/Failure plus delivery state; `KMIPKIT-025-T232-REQUEST`, `KMIPKIT-025-T233-RESPONSE`, `KMIPKIT-025-T234-ERROR`, `KMIPKIT-0039-FR-001`–`FR-008` (excluding guard-only owner FR-009), `KMIPKIT-REQ-SPEC-6.1.23-002-001`, and `KMIPKIT-0043-FR-004/005/007–010/012/013/015/017/018/021/022` | Rust `GetUsageAllocationRequest`/`ClientRequest`/typed response; C constructor and success-only response accessor; Java `ClientBatchItem` builder and owned result; Python builder and result value. Evidence: Rust protocol/client tests, FFI ABI tests, compiled C client consumer, Java JNI/JUnit tests, Python CFFI tests, and generated manifest parity fixture. Pending is retained without polling; failure does not produce an allocation response; diagnostics are redacted and no retry occurs. |

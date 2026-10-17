@@ -17,7 +17,11 @@ fn get_usage_allocation_constructor_copies_identifier_and_preserves_signed_count
     let mut item = ptr::null_mut();
 
     assert_eq!(
-        kmipkit_client_batch_item_get_usage_allocation(&identifier, i64::MAX, &mut item),
+        kmipkit_client_batch_item_get_usage_allocation(
+            &raw const identifier,
+            i64::MAX,
+            &raw mut item,
+        ),
         SUCCESS
     );
     assert!(!item.is_null());

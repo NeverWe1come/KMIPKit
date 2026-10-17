@@ -139,6 +139,9 @@ class PackageDocumentationContractTests(unittest.TestCase):
         declared_operations = [
             operation for operation in operations if operation["apiState"] == "declared"
         ]
+        verified_operations = [
+            operation for operation in operations if operation["apiState"] == "verified"
+        ]
         self.assertEqual(
             [operation["name"] for operation in declared_operations],
             [
@@ -154,7 +157,14 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Signature Verify",
             ],
         )
-        self.assertEqual(len(operations), blocked_operations + len(declared_operations))
+        self.assertEqual(
+            [operation["name"] for operation in verified_operations],
+            ["Get Usage Allocation"],
+        )
+        self.assertEqual(
+            len(operations),
+            blocked_operations + len(declared_operations) + len(verified_operations),
+        )
 
         for guide, operation_phrase in (
             (self.english, "full operation parity"),

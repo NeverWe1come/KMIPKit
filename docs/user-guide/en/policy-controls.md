@@ -2,6 +2,12 @@
 
 KMIPKit implements the client-initiated Get Constraints, Get Usage Allocation, Set Constraints, and Set Defaults operations from OASIS KMIP v2.1. The request and response layouts follow §§6.1.22, 6.1.23, 6.1.52, and 6.1.53. These operations transmit and expose server policy; KMIPKit does not evaluate or enforce server-side constraints locally.
 
+Get Usage Allocation is mapped across Rust, C, Java, and Python. Its request
+preserves the optional Unique Identifier and exact signed 64-bit Usage Limits
+Count; a successful result exposes the resolved identifier. The common batch
+result preserves Pending and Failure, correlation, and delivery state without
+automatic polling or retry.
+
 ## Build policy requests
 
 The protocol layer accepts the ordered TTLV `Structure` supplied by the caller. Fill Constraints and Defaults Information with values appropriate to the server and your policy. This example shows payload construction without choosing policy values:
