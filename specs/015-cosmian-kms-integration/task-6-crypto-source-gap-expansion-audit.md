@@ -24,6 +24,10 @@ The inventory adds 146 not-run rows to `tests/integration/cosmian/capability-mat
 
 The raw/prehashed distinction for PQC rows only selects Data versus DigestedData bytes accepted by the source path. It does not claim standardized prehash, context, or streaming semantics.
 
+## Observed Create Key Pair outcomes
+
+All 24 source-discrepancy Create Key Pair probes returned typed success. KMIPKit validated both the private and public Unique Identifier fields, so these cases count as observed KMIPKit–Cosmian interoperability. The cases remain marked as source/documentation discrepancies because their algorithm values are outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration; they do not establish KMIP 2.1 conformance for those values. Two additional ConfigurableKEM curve-only profiles were rejected and remain failures.
+
 ## Conservative exclusions
 
 - No extra HMAC-SHA-256 Create endpoints: both 8-bit and 8192-bit rows already existed.

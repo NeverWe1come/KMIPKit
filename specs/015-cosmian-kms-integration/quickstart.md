@@ -3,7 +3,7 @@
 This quickstart deploys Cosmian KMS 5.28.0 locally and runs KMIPKit's opt-in,
 typed integration suite. Its exhaustive manifest contains 6,429 rows across
 all 35 advertised operation paths and applicable object, format, encoding,
-algorithm, and parameter combinations. It records 3,376 successful typed
+algorithm, and parameter combinations. It records 3,400 successful typed
 interoperability outcomes; remaining results include target rejections, setup
 failures, malformed or invalid responses, and explicit fixture blockers. This
 does not claim complete KMIP 2.1 conformance or formal certification.
@@ -76,8 +76,10 @@ removed.
 The pinned local image was exercised with the complete ignored suite. The
 manifest contains 6,429 records: 6,417 executable cases and 12 non-executable
 normative exclusions. All executable rows have a measured outcome or an
-explicit fixture/setup blocker; 3,376 rows passed typed-response and
-operation-specific checks and count as interoperability successes. The latest
+explicit fixture/setup blocker; 3,400 rows passed typed-response and
+operation-specific checks and count as interoperability successes. This
+includes 24 successful Create Key Pair source-discrepancy probes; their
+algorithm values remain outside the KMIP 2.1 enumeration. The latest
 serial suite ended with 101 passed and 9 failed test functions, so the report
 preserves server rejections and KMIPKit response-validation failures rather
 than calling the run green.

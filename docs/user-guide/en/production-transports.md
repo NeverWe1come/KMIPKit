@@ -182,9 +182,12 @@ The repository includes an opt-in Docker Compose deployment of Cosmian KMS
 5.28.0 and ignored live tests that use the typed Rust client over mutually
 authenticated TLS. Follow the [local Cosmian test guide](../../../tests/integration/cosmian/README.md)
 for setup, full-suite and family commands, the exhaustive per-case matrix, and
-current interoperability results. The latest complete full-suite run recorded 3,376
-interoperability successes and 9 failing test functions; a targeted follow-up
-then measured 15 cipher findings. Failures remain individually visible in the matrix.
+current interoperability results. The latest complete full-suite run recorded 3,400
+interoperability successes and 9 failing test functions; this includes 24
+Create Key Pair source-discrepancy probes with successful typed responses and
+validated key identifiers. Those profiles remain outside KMIP 2.1 conformance
+claims. A targeted follow-up then measured 15 cipher findings. Failures remain
+individually visible in the matrix.
 
 ## A local, executable request example
 

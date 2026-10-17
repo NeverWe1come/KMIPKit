@@ -1,6 +1,6 @@
 # Cosmian 5.28.0 exhaustive integration evidence
 
-**Status: implementation and matrix execution complete; interoperability failures and final PR gates remain open.** The test suite exercises KMIPKit's typed Rust client over the pinned local binary TTLV/mTLS endpoint. The matrix records each observed result without counting expected-finding assertions as success. This report does not claim complete KMIP 2.1 conformance or certification.
+**Status: implementation and matrix execution complete; interoperability failures and final PR gates remain open.** The test suite exercises KMIPKit's typed Rust client over the pinned local binary TTLV/mTLS endpoint. A typed success counts as observed interoperability when the operation-specific response postconditions pass, including successful source-discrepancy probes; merely matching an expected finding does not count. This report does not claim complete KMIP 2.1 conformance or certification.
 
 ## Scope and measured totals
 
@@ -9,13 +9,13 @@ The pinned target is `ghcr.io/cosmian/kms:5.28.0@sha256:7b60fd4484930969906caa57
 | Family | Rows | Typed success responses | Interoperability successes | Rejected | Setup rejected | Response validation failed | Other findings |
 |---|---:|---:|---:|---:|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 80 | 3 | 0 | 2 | 2 malformed; 1 setup blocked; 1 unsupported |
-| Cryptographic | 1,466 | 660 | 616 | 387 | 331 | 88 | — |
+| Cryptographic | 1,466 | 660 | 640 | 387 | 331 | 88 | — |
 | Key management | 216 | 12 | 12 | 201 | 3 | 0 | — |
 | Import/Export/Register transfer | 4,640 | 2,722 | 2,668 | 890 | 978 | 50 | — |
 | RNG | 6 | 0 | 0 | 0 | 0 | 0 | 6 malformed |
-| **Executable total** | **6,417** | **3,474** | **3,376** | **1,481** | **1,312** | **140** | **10 fixture/setup/malformed/unsupported** |
+| **Executable total** | **6,417** | **3,474** | **3,400** | **1,481** | **1,312** | **140** | **10 fixture/setup/malformed/unsupported** |
 
-The 98 typed responses on finding rows (44 crypto and 54 transfer) are excluded from the 3,376 interoperability successes. Rejection means a well-formed KMIP failure response; setup rejection means a prerequisite failed before the target operation was sent; response-validation failure means the request was delivered but KMIPKit could not accept or satisfy a typed-response postcondition; malformed response means required response shape was missing. These categories remain distinct in each matrix record.
+Of the 98 successful typed responses on source-gap/discrepancy rows, 24 Create Key Pair cases are counted as observed interoperability because KMIPKit validated both returned key identifiers. The remaining 74 (20 cryptographic and 54 transfer) stay separately classified pending the same postcondition review. The 24 profiles remain source-documentation discrepancies because their algorithm values are outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration; their success is not a KMIP 2.1 conformance claim. Rejection means a well-formed KMIP failure response; setup rejection means a prerequisite failed before the target operation was sent; response-validation failure means the request was delivered but KMIPKit could not accept or satisfy a typed-response postcondition; malformed response means required response shape was missing. These categories remain distinct in each matrix record.
 
 The 12 normative exclusions are six invalid RNG Parameters combinations and six invalid Certify subject-OID-only CSR combinations. They were not sent. The exact request/fixture limitations and OASIS citations are recorded on the corresponding rows and in `specs/015-cosmian-kms-integration/research.md`.
 
@@ -45,7 +45,7 @@ The latest complete serial run used the pinned image above and rustls 0.23.46. I
 
 ### Cryptographic operations and RNG
 
-The 1,466 crypto rows include 1,220 expected typed-success cases, six source gaps and 240 documentation/source discrepancies. Offline typed builders construct all expected-success requests; exact finding preflight serializes 246 requests (284 TTLV payloads including multipart rows). All 30 post-quantum Certify finding cases have encoding-matched CSR fixture paths. Live results are 616 interoperability successes, 44 typed responses on finding rows, 387 target rejections, 331 setup rejections, and 88 response-validation failures. A targeted run sent the 15 formerly blocked cipher findings: all 12 ConfigurableKEM profile/direction combinations completed typed operation-specific postconditions; the three AES/RSA hybrid requests were rejected by the target after delivery. All remain non-interoperability findings.
+The 1,466 crypto rows include 1,220 expected typed-success cases, six source gaps and 240 documentation/source discrepancies. Offline typed builders construct all expected-success requests; exact finding preflight serializes 246 requests (284 TTLV payloads including multipart rows). All 30 post-quantum Certify finding cases have encoding-matched CSR fixture paths. Live results are 640 interoperability successes, 20 other typed responses on finding rows, 387 target rejections, 331 setup rejections, and 88 response-validation failures. Create Key Pair recorded 57/59 interoperability successes: 33 previously counted cases plus 24 source-discrepancy cases whose typed response contained both validated key identifiers; two ConfigurableKEM curve-only profiles returned Cryptographic Failure. A targeted run sent the 15 formerly blocked cipher findings: all 12 ConfigurableKEM profile/direction combinations completed typed operation-specific postconditions; the three AES/RSA hybrid requests were rejected by the target after delivery. Those cipher finding rows remain separately classified.
 
 The 88 crypto response-validation failures comprise 81 HMAC prerequisite responses where the peer omitted Operation (Status 1, Reason 4) and seven Hash-streaming typed postcondition failures. The matrix does not infer an unrecorded missing field for the Hash responses. All six valid RNG length-only cases returned malformed typed responses missing Operation, with Status 1 and Reason 4. OASIS KMIP v2.1 §6.1.49/Table 316 and §6.1.50/Table 319 define the respective request payloads; §8.6/Table 399 governs the response Operation field. No RNG bytes, seeds, private keys, passwords, or response bodies are recorded.
 

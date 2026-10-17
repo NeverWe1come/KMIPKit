@@ -117,8 +117,9 @@ used rustls 0.23.46 and ended with 101 passed and 9 failed test functions after
 `84947A36B3557C22402DA12F918898F1743F913E4153A4A025120A7E4B2C0051`). The
 nine failing functions are the crypto, key-management and transfer matrix
 runners; six specific lifecycle cases; and the RNG runner. Their failures
-remain visible; expected-finding assertions do not turn them into
-interoperability successes. The run emitted 6,412 unique `case_id` results;
+remain visible. An expected-finding assertion alone does not count as success;
+a finding probe that returns a typed success and satisfies its operation-specific
+postconditions can count as observed interoperability. The run emitted 6,412 unique `case_id` results;
 five standalone lifecycle tests have their observations recorded by test name
 in the report and manifest. The six valid RNG responses are classified as
 response-validation failures because the typed response omitted Operation;
@@ -129,19 +130,23 @@ ps --all` returned no services.
 | Test family | Cases | Typed successes | Interoperability successes | Other measured outcomes |
 |---|---:|---:|---:|---|
 | Lifecycle and probes | 89 | 80 | 80 | 3 rejected; 2 response-validation failures; 2 malformed responses; 1 setup-blocked; 1 unsupported |
-| Cryptographic | 1,466 | 660 | 616 | 387 rejected; 331 setup-rejected; 88 response-validation failures |
+| Cryptographic | 1,466 | 660 | 640 | 387 rejected; 331 setup-rejected; 88 response-validation failures |
 | Key management | 216 | 12 | 12 | 201 rejected; 3 setup-rejected |
 | Import/Export/Register transfer | 4,640 | 2,722 | 2,668 | 890 rejected; 978 setup-rejected; 50 response-validation failures |
 | RNG | 6 | 0 | 0 | 6 malformed responses |
-| **Total executable rows** | **6,417** | **3,474** | **3,376** | **1,481 rejected; 1,312 setup-rejected; 140 response-validation failures; 10 other findings** |
+| **Total executable rows** | **6,417** | **3,474** | **3,400** | **1,481 rejected; 1,312 setup-rejected; 140 response-validation failures; 10 other findings** |
 
 Twelve normative exclusions were not sent: six invalid RNG Parameters
 combinations and six invalid Certify subject-OID-only CSR combinations. Of the
-3,474 typed responses, 98 belong to source-gap/discrepancy finding rows and
-therefore have `interoperability=false`. The 15 targeted cipher probes add 12
-typed responses and three target rejections; none counts as advertised KMIP
-2.1 interoperability. The matrix stores all per-case
-classifications and safe reason codes.
+3,474 typed responses, 74 source-gap/discrepancy observations remain outside the
+interoperability count (20 cryptographic and 54 transfer). The 24 Create Key
+Pair source-discrepancy probes returned typed success with both key identifiers
+validated, so they count as observed KMIPKit–Cosmian interoperability; their
+algorithm values remain outside the pinned KMIP 2.1 enumeration and are not a
+KMIP conformance claim. The separate 15 targeted cipher probes add 12 typed
+responses and three target rejections; those finding rows remain outside the
+interoperability count. The matrix stores all per-case classifications and safe
+reason codes.
 
 Notable results include: Discover Versions passes; Check SplitKey passes with
 the optional usage mask omitted; Query returns Success but omits the required

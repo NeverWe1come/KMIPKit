@@ -552412,8 +552412,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_512 (0x00000039): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552477,8 +552477,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_768 (0x0000003A): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552542,8 +552542,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_1024 (0x0000003B): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552606,8 +552606,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLDSA_44 (0x0000003C): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552670,8 +552670,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLDSA_65 (0x0000003D): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552734,8 +552734,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLDSA_87 (0x0000003E): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552798,8 +552798,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHA2_128s (0x0000003F): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552862,8 +552862,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHA2_128f (0x00000040): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552926,8 +552926,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHA2_192s (0x00000041): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -552990,8 +552990,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHA2_192f (0x00000042): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553054,8 +553054,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHA2_256s (0x00000043): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553118,8 +553118,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHA2_256f (0x00000044): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553182,8 +553182,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHAKE_128s (0x00000045): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553246,8 +553246,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHAKE_128f (0x00000046): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553310,8 +553310,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHAKE_192s (0x00000047): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553374,8 +553374,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHAKE_192f (0x00000048): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553438,8 +553438,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHAKE_256s (0x00000049): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553502,8 +553502,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for SLHDSA_SHAKE_256f (0x0000004A): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. Create Key Pair source dispatch is recorded as a source discrepancy probe. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553570,8 +553570,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_512 (0x00000039): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. ConfigurableKEM itself is the high-bit Cosmian vendor extension 0x88800003; the nested MLKEM numeric profile is source-only. This row represents a source-documented post-only or hybrid key-pair profile. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553643,8 +553643,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_768 (0x0000003A): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. ConfigurableKEM itself is the high-bit Cosmian vendor extension 0x88800003; the nested MLKEM numeric profile is source-only. This row represents a source-documented post-only or hybrid key-pair profile. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553716,8 +553716,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_512 (0x00000039): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. ConfigurableKEM itself is the high-bit Cosmian vendor extension 0x88800003; the nested MLKEM numeric profile is source-only. This row represents a source-documented post-only or hybrid key-pair profile. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553789,8 +553789,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_768 (0x0000003A): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. ConfigurableKEM itself is the high-bit Cosmian vendor extension 0x88800003; the nested MLKEM numeric profile is source-only. This row represents a source-documented post-only or hybrid key-pair profile. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553862,8 +553862,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_512 (0x00000039): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. ConfigurableKEM itself is the high-bit Cosmian vendor extension 0x88800003; the nested MLKEM numeric profile is source-only. This row represents a source-documented post-only or hybrid key-pair profile. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {
@@ -553935,8 +553935,8 @@
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "reason": "A typed response was observed for this source-discrepancy probe; it is not counted as advertised-operation interoperability."
+        "interoperability": true,
+        "reason": "Cosmian returned typed success and KMIPKit validated the private and public Unique Identifier fields. Counted as observed interoperability; the separate source-documentation discrepancy remains because this profile is outside the pinned KMIP 2.1 Cryptographic Algorithm enumeration."
       },
       "notes": "Source-only numeric discrepancy probe for MLKEM_768 (0x0000003A): Cosmian KMS 5.28.0 source contains this enum/dispatch path, but the pinned OASIS KMIP 2.1 Cryptographic Algorithm enumeration does not define this name or value. This is not a KMIP 2.1 conformance claim. ConfigurableKEM itself is the high-bit Cosmian vendor extension 0x88800003; the nested MLKEM numeric profile is source-only. This row represents a source-documented post-only or hybrid key-pair profile. Non-FIPS/provider availability remains unobserved.",
       "wire_enum_values": {

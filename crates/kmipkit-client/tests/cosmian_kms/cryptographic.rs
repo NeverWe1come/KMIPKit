@@ -894,8 +894,7 @@ fn successful_create_key_pair_source_probes_count_as_interoperability() {
     for row in rows {
         let id = case_id(&row).unwrap_or_else(|error| panic!("{error}"));
         assert_eq!(
-            row["observed_result"]["classification"],
-            "typed_success",
+            row["observed_result"]["classification"], "typed_success",
             "{id}"
         );
         assert_eq!(row["observed_result"]["interoperability"], true, "{id}");
@@ -1706,6 +1705,8 @@ fn cryptographic_observation_line(
         .as_str()
         .unwrap_or("unknown_expected_outcome");
     let operation = row["operation"].as_str().unwrap_or_default();
+    // The expected/source classification is separate from the measured result:
+    // Create Key Pair probes count when the typed response postcondition passes.
     let observed_success = observed_result_classification == "typed_success"
         && request_sent == "true"
         && (expected_outcome == "typed_success" || operation == "Create Key Pair");
