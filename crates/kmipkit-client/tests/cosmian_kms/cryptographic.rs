@@ -676,6 +676,18 @@ fn crypto_error_classification_separates_setup_from_target_rejections() {
 }
 
 #[test]
+fn malformed_target_response_is_not_a_target_rejection_or_interoperability_success() {
+    let row = serde_json::json!({"case_id": "case-1", "operation": "Encrypt"});
+    let response_error = "case case-1 Encrypt: typed response rejected by KMIPKit; wire operation None, Result Status Some(1), Result Reason Some(4)";
+
+    let observed = classify_case_error(&row, response_error);
+
+    assert_eq!(observed, "response_validation_failed");
+    assert_ne!(observed, "target_rejected");
+    assert_ne!(observed, "typed_success");
+}
+
+#[test]
 fn sha224_known_answer_vectors_cover_signature_prehash() {
     assert_eq!(
         known_answer_digest("SHA-224", false).expect("SHA-224 abc digest"),
