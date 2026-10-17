@@ -108,6 +108,8 @@ fn cosmian_lifecycle_manifest_cases_have_typed_executors() {
         "Modify Attribute",
         "Set Attribute",
         "Validate",
+        "Adjust Attribute",
+        "Re-certify",
     ];
     let manifest_cases: std::collections::BTreeSet<_> = manifest["cases"]
         .as_array()
