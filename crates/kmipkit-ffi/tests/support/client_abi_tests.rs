@@ -1121,6 +1121,35 @@ fn ffi_delegated_login_response_getters_clear_outputs_for_invalid_item() {
     );
     assert_eq!(ttlv_present, 0);
     assert!(ticket_ttlv.is_null());
+
+    let malformed_value = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::Structure(Structure::new()),
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_response_delegated_login(
+            malformed_value,
+            &mut present,
+            &mut ticket_present,
+            &mut ticket_type,
+            &mut ticket_value,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!((present, ticket_present, ticket_type), (0, 0, 0));
+    assert!(ticket_value.data.is_null());
+    assert_eq!(ticket_value.length, 0);
+    assert_eq!(
+        kmipkit_client_batch_item_response_delegated_login_ttlv(
+            malformed_value,
+            &mut ttlv_present,
+            &mut ticket_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(ticket_ttlv.is_null());
+    release(malformed_value, Kind::ClientBatchItemResponse);
 }
 
 #[test]
@@ -1169,6 +1198,57 @@ fn ffi_delegated_login_response_getters_return_ticket_fields_and_owned_ttlv() {
     assert_eq!(ttlv_present, 1);
     assert!(!ticket_ttlv.is_null());
     kmipkit_ttlv_structure_release(ticket_ttlv);
+
+    let response_item = reference_handle(item, Kind::ClientBatchItemResponse)
+        .expect("successful delegated-login item remains registered");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &response_item.value else {
+        panic!("the response item constructor uses the expected handle payload");
+    };
+    let out_of_range_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(response),
+            index: usize::MAX,
+        },
+    );
+    let mut out_of_range_present = 9;
+    let mut out_of_range_ticket_present = 9;
+    let mut out_of_range_ticket_type = u32::MAX;
+    let mut out_of_range_ticket_value = byte_span(b"secret sentinel");
+    assert_eq!(
+        kmipkit_client_batch_item_response_delegated_login(
+            out_of_range_item,
+            &mut out_of_range_present,
+            &mut out_of_range_ticket_present,
+            &mut out_of_range_ticket_type,
+            &mut out_of_range_ticket_value,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(
+        (
+            out_of_range_present,
+            out_of_range_ticket_present,
+            out_of_range_ticket_type,
+        ),
+        (0, 0, 0)
+    );
+    assert!(out_of_range_ticket_value.data.is_null());
+    assert_eq!(out_of_range_ticket_value.length, 0);
+    let mut out_of_range_ttlv_present = 9;
+    let mut out_of_range_ticket_ttlv = ptr::dangling_mut::<kmipkit_ttlv_structure_t>();
+    assert_eq!(
+        kmipkit_client_batch_item_response_delegated_login_ttlv(
+            out_of_range_item,
+            &mut out_of_range_ttlv_present,
+            &mut out_of_range_ticket_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(out_of_range_ttlv_present, 0);
+    assert!(out_of_range_ticket_ttlv.is_null());
+    release(out_of_range_item, Kind::ClientBatchItemResponse);
+    drop(response_item);
     kmipkit_client_batch_item_response_release(item);
 }
 
@@ -2142,6 +2222,20 @@ fn ffi_create_key_pair_getter_copies_successful_typed_identifiers() {
 
     kmipkit_client_batch_item_response_release(key_pair_item);
     kmipkit_client_batch_response_release(response_handle);
+}
+
+#[test]
+fn ffi_get_usage_allocation_getter_rejects_a_missing_output_record() {
+    let mut present = 9;
+    assert_eq!(
+        kmipkit_client_batch_item_response_get_usage_allocation(
+            ptr::null_mut(),
+            &mut present,
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 9);
 }
 
 #[test]

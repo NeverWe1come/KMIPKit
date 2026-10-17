@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from bisect import bisect_left, bisect_right
+from functools import lru_cache
 import html
 import json
 import os
@@ -1106,7 +1107,82 @@ def _is_executable_changed_line(
     source_lines = source_lines_cache[source]
     if line < 1 or line > len(source_lines):
         raise CoverageDataError(f"Changed production line is outside its source file: {source}:{line}.")
+    if source.endswith(".rs") and line in _rust_function_signature_lines(tuple(source_lines)):
+        return False
     return not _is_structural_only_source_line(source_lines[line - 1])
+
+
+@lru_cache(maxsize=32)
+def _rust_function_signature_lines(source_lines: tuple[str, ...]) -> frozenset[int]:
+    """Return one-based Rust function declaration lines that contain no body code."""
+    declaration_lines: set[int] = set()
+    declaration_start = re.compile(
+        r"^\s*(?:(?:pub(?:\([^)]*\))?|unsafe|async|const|default|extern(?:\s+\"[^\"]+\")?)\s+)*fn\s+[A-Za-z_][A-Za-z0-9_]*\b"
+    )
+    line_index = 0
+    while line_index < len(source_lines):
+        if not declaration_start.match(source_lines[line_index]):
+            line_index += 1
+            continue
+
+        start = line_index
+        paren_depth = 0
+        bracket_depth = 0
+        angle_depth = 0
+        in_string = False
+        escaped = False
+        body_location: tuple[int, int] | None = None
+        for candidate_index in range(start, len(source_lines)):
+            candidate = source_lines[candidate_index]
+            column = 0
+            while column < len(candidate):
+                character = candidate[column]
+                following = candidate[column + 1] if column + 1 < len(candidate) else ""
+                if in_string:
+                    if escaped:
+                        escaped = False
+                    elif character == "\\":
+                        escaped = True
+                    elif character == '"':
+                        in_string = False
+                    column += 1
+                    continue
+                if character == "/" and following == "/":
+                    break
+                if character == '"':
+                    in_string = True
+                elif character == "(":
+                    paren_depth += 1
+                elif character == ")":
+                    paren_depth = max(0, paren_depth - 1)
+                elif character == "[":
+                    bracket_depth += 1
+                elif character == "]":
+                    bracket_depth = max(0, bracket_depth - 1)
+                elif character == "<":
+                    angle_depth += 1
+                elif character == ">":
+                    angle_depth = max(0, angle_depth - 1)
+                elif character == "{" and not (paren_depth or bracket_depth or angle_depth):
+                    body_location = (candidate_index, column)
+                    break
+                column += 1
+            if body_location is not None:
+                break
+
+        if body_location is None:
+            line_index += 1
+            continue
+
+        body_line, body_column = body_location
+        body_tail = source_lines[body_line][body_column + 1 :].split("//", 1)[0].strip()
+        inline_body_has_code = bool(body_tail and any(char not in "}; " for char in body_tail))
+        if body_line > start:
+            declaration_end = body_line - 1 if inline_body_has_code else body_line
+            declaration_lines.update(range(start + 1, declaration_end + 2))
+        line_index = body_line + 1
+
+    return frozenset(declaration_lines)
 
 
 def _run_git_diff(workspace: Path, base: str, merge: str) -> str:
