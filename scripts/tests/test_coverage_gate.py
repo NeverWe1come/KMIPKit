@@ -870,6 +870,37 @@ trait Example { fn declaration(&self); }
 
         self.assertTrue(is_executable)
 
+    def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "jobjectArray response() {\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE: Successful FFI getters normalize this field.\n"
+                "    return nullptr;\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            source_lines: dict[str, list[str]] = {}
+
+            excluded = GATE._is_executable_changed_line(root, relative, 2, source_lines)
+            adjacent = GATE._is_executable_changed_line(root, relative, 3, source_lines)
+
+            source.write_text(
+                "jobjectArray response() {\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE:\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(GATE.CoverageDataError, "requires a reason"):
+                GATE._is_executable_changed_line(root, relative, 2, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
     def test_changed_rust_line_parser_decodes_git_quoted_unicode_paths(self) -> None:
         self.require_gate()
         diff = r'''diff --git "a/crates/kmipkit-ttlv/src/parser-\303\261 name.rs" "b/crates/kmipkit-ttlv/src/parser-\303\261 name.rs"
