@@ -19,6 +19,62 @@ Of the 98 typed-success responses on source-gap/discrepancy rows, 24 Create Key 
 
 The 12 normative exclusions are six invalid RNG Parameters combinations and six invalid Certify subject-OID-only CSR combinations. They were not sent. The exact request/fixture limitations and OASIS citations are recorded on the corresponding rows and in `specs/015-cosmian-kms-integration/research.md`.
 
+## Operation-level interoperability summary
+
+These summaries count only executable cases whose typed response and operation-specific postconditions passed. The denominator is the number of executable cases for that operation; standards-invalid normative exclusions are omitted. The per-case ledger remains authoritative.
+
+### Operations with observed interoperable cases
+
+| KMIP 2.1 operation | Interoperable / executed cases |
+|---|---:|
+| Activate | 5 / 6 |
+| Add Attribute | 6 / 7 |
+| Check | 7 / 7 |
+| Create | 70 / 72, plus 2 typed DSA successes ✅† |
+| Create Key Pair | 57 / 59 ✅‡ |
+| Create Split Key | 9 / 9 |
+| Decrypt | 222 / 234 |
+| Delete Attribute | 7 / 7 |
+| Destroy | 7 / 7 |
+| Discover Versions | 1 / 1 |
+| Encrypt | 287 / 300 |
+| Export | 807 / 1,291 |
+| Get | 797 / 1,279 |
+| Get Attribute List | 7 / 7 |
+| Get Attributes | 7 / 7 |
+| Hash | 14 / 24 |
+| Import | 593 / 1,041 |
+| Join Split Key | 3 / 3 |
+| Locate | 6 / 7 |
+| Register | 583 / 1,029 |
+| Revoke | 7 / 7 |
+| Set Attribute (Modify) | 16 / 16 |
+| Validate | 4 / 6 |
+
+† Both DSA `Create` cases (2048 and 3072 bits) returned typed successful responses and passed their operation-specific postconditions. Cosmian's support documentation does not list these cases, although its implementation accepts them. This is an observed implementation/documentation discrepancy, not evidence of a broader DSA support profile.
+
+‡ The 57 `Create Key Pair` successes comprise 28 cases using standard enumerated values, 5 using vendor extensions, and 24 source-only probes using numeric values outside the KMIP 2.1 enumeration. Those 24 are observed interoperability with Cosmian's implementation, not KMIP 2.1 conformance for the values. The two rejected cases use ConfigurableKEM with P-256 and Curve25519; both returned `Operation Failed / Cryptographic Failure`.
+
+For `Set Attribute (Modify)`, the matrix exercises Set Attribute and Modify Attribute separately: eight cases each, all successful.
+
+### Published as supported, with no interoperable case yet
+
+| Operation | Interoperable / executed cases | Observed result |
+|---|---:|---|
+| Certify | 0 / 203 | All 203 target requests were rejected with `Operation Not Supported`. Six standards-invalid CSR cases were not sent and are excluded from the denominator. |
+| Derive Key | 0 / 129 | All 129 target requests were rejected with `Operation Not Supported`. |
+| MAC | 0 / 36 | The target operation was never sent: 9 cases were blocked by prerequisite setup rejections; the other 27 HMAC fixture Import responses omitted `Batch Item Operation`, so KMIPKit rejected setup. |
+| MAC Verify | 0 / 54 | The target operation was never sent: all 54 HMAC fixture Import responses omitted `Batch Item Operation`, so KMIPKit rejected setup. |
+| Query | 0 / 1 | Cosmian returned success but omitted required `Protection Storage Masks`; KMIPKit rejected the typed response. |
+| RNG Retrieve | 0 / 4 | All four executable requests received error responses missing `Batch Item Operation`. Four invalid-parameter cases were not sent and are excluded. |
+| RNG Seed | 0 / 2 | Both executable requests received error responses missing `Batch Item Operation`. Two invalid-parameter cases were not sent and are excluded. |
+| Re-key | 0 / 40 | All 40 target requests were rejected with `Operation Not Supported`. |
+| Re-key Key Pair | 0 / 35 | 32 target requests were rejected with `Operation Not Supported`; 3 cases were rejected during prerequisite setup with `Cryptographic Failure`, before the target operation was sent. |
+| Sign | 0 / 163 | All target requests returned `Item Not Found`; this response alone does not establish that the operation is unimplemented. |
+| Signature Verify | 0 / 321 | 312 cases were rejected during prerequisite setup with `Item Not Found`, before the target operation was sent; the other 9 target requests returned `Item Not Found`. |
+
+These are measured outcomes against the pinned local Cosmian KMS 5.28.0 binary TTLV/mTLS deployment. The findings and their attribution are tracked per case in [`capability-matrix.json`](../../tests/integration/cosmian/capability-matrix.json); an observed failure is not automatically attributed to KMIPKit or Cosmian without supporting evidence.
+
 ## Full serial run and teardown
 
 The complete ignored suite ran serially against the pinned image with:
