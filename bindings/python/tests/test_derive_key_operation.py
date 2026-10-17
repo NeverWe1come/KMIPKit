@@ -7,7 +7,7 @@ import pytest
 from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit._ffi import ffi as ttlv_ffi
-from kmipkit.errors import InvalidInputError
+from kmipkit.errors import InvalidInputError, ResourceLimitError
 
 
 def test_derive_key_builder_preserves_ordered_identifier_wire_types(monkeypatch) -> None:
@@ -73,6 +73,22 @@ def test_derive_key_builder_rejects_missing_source_identifiers(monkeypatch) -> N
         with pytest.raises(InvalidInputError):
             extensions.client_batch_item_derive_key(
                 2, (), 1, parameters, attributes
+            )
+
+
+def test_derive_key_builder_rejects_identifier_bytes_over_operation_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(extensions, "_MAX_OPERATION_INPUT_BYTES", 3)
+    monkeypatch.setattr(
+        extensions, "_make_handle", lambda *_args: pytest.fail("oversized inputs reached the ABI")
+    )
+    identifiers = (extensions.UniqueIdentifier.text_string("source-a"),)
+
+    with ttlv.ttlv_structure_create() as parameters, ttlv.ttlv_structure_create() as attributes:
+        with pytest.raises(ResourceLimitError):
+            extensions.client_batch_item_derive_key(
+                2, identifiers, 1, parameters, attributes
             )
 
 

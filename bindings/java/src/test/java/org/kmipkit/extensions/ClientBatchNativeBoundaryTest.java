@@ -55,6 +55,34 @@ final class ClientBatchNativeBoundaryTest {
     }
 
     @Test
+    void exportJniRejectsUnknownIdentifierKinds() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemExport(
+                        77, null, 0, false, 0, false, 0, false, 0, 0));
+    }
+
+    @Test
+    void exportJniRejectsIdentifierPayloadWhenIdentifierIsAbsent() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemExport(
+                        0, new byte[] {1}, 0, false, 0, false, 0, false, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemExport(
+                        0, null, 1, false, 0, false, 0, false, 0, 0));
+    }
+
+    @Test
+    void extensionIdentityLookupRejectsNegativeIndex() {
+        try (TtlvStructure attributes = TtlvStructure.create();
+                ClientBatchItem item = ClientBatchItem.create(7, attributes, null)) {
+            long nativeItem = item.nativeHandleOwner().get();
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemExtensionIdentityAt(
+                            nativeItem, -1));
+        }
+    }
+
+    @Test
     void splitKeyFactoryMarshalsTextAndEnumerationIdentifiers() {
         try (TtlvStructure attributes = TtlvStructure.create();
                 ClientBatchItem textIdentifier = ClientBatchItem.createSplitKey(
@@ -166,6 +194,8 @@ final class ClientBatchNativeBoundaryTest {
                 () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseExport(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseDeriveKey(0));
         assertThrows(InvalidInputException.class,

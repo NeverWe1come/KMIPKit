@@ -2496,6 +2496,186 @@ fn ffi_export_failure_has_no_typed_payload_and_preserves_response_ttlv() {
 }
 
 #[test]
+fn ffi_derive_key_constructor_rejects_absent_source_identifier() {
+    let parameters = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let identifier = empty_unique_identifier_output_v1();
+    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+
+    assert_eq!(
+        kmipkit_client_batch_item_derive_key(
+            7,
+            &raw const identifier,
+            1,
+            1,
+            parameters,
+            attributes,
+            &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    release(parameters, Kind::Structure);
+    release(attributes, Kind::Structure);
+}
+
+#[test]
+fn ffi_derive_key_constructor_requires_attributes() {
+    let parameters = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut identifier = empty_unique_identifier_output_v1();
+    identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION;
+    identifier.enumeration_value = 7;
+    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+
+    assert_eq!(
+        kmipkit_client_batch_item_derive_key(
+            7,
+            &raw const identifier,
+            1,
+            1,
+            parameters,
+            ptr::null_mut(),
+            &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    release(parameters, Kind::Structure);
+}
+
+#[test]
+fn ffi_export_request_accepts_all_optional_selectors_omitted() {
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_export(ptr::null(), 0, 0, 0, 0, 0, 0, ptr::null_mut(), &mut item,),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    kmipkit_client_batch_item_release(item);
+
+    for (has_key_format, has_key_wrap, has_key_compression) in [(2, 0, 0), (0, 2, 0), (0, 0, 2)] {
+        let mut rejected_item = ptr::dangling_mut();
+        assert_eq!(
+            kmipkit_client_batch_item_export(
+                ptr::null(),
+                has_key_format,
+                0,
+                has_key_wrap,
+                0,
+                has_key_compression,
+                0,
+                ptr::null_mut(),
+                &mut rejected_item,
+            ),
+            ERROR_INVALID_INPUT
+        );
+        assert!(rejected_item.is_null());
+    }
+}
+
+#[test]
+fn ffi_export_response_getters_reject_inconsistent_internal_handles() {
+    let wrong_variant: *mut kmipkit_client_batch_item_response_t = try_make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::Structure(Structure::new()),
+    )
+    .expect("test response handle is registered");
+    let mut present = 9;
+    let mut payload_present = 9;
+    let mut object_type = u32::MAX;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut attributes = ptr::dangling_mut();
+    let mut any_object = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_export(
+            wrong_variant,
+            &mut present,
+            &mut payload_present,
+            &mut object_type,
+            &mut identifier,
+            &mut attributes,
+            &mut any_object,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!((present, payload_present, object_type), (0, 0, 0));
+    assert!(attributes.is_null());
+    assert!(any_object.is_null());
+
+    present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_export_ttlv(
+            wrong_variant,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(wrong_variant);
+
+    let valid_item = failed_cryptographic_item(
+        ClientRequest::export(ExportRequest::new()),
+        0x2b,
+        b"export-invalid-index",
+    );
+    let valid_item_handle =
+        reference_handle(valid_item, Kind::ClientBatchItemResponse).expect("test response is live");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &valid_item_handle.value else {
+        panic!("test response uses the client batch response variant");
+    };
+    let invalid_index: *mut kmipkit_client_batch_item_response_t = try_make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(response),
+            index: usize::MAX,
+        },
+    )
+    .expect("test response with an invalid index is registered");
+
+    present = 9;
+    payload_present = 9;
+    object_type = u32::MAX;
+    identifier = empty_unique_identifier_output_v1();
+    attributes = ptr::dangling_mut();
+    any_object = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_export(
+            invalid_index,
+            &mut present,
+            &mut payload_present,
+            &mut object_type,
+            &mut identifier,
+            &mut attributes,
+            &mut any_object,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!((present, payload_present, object_type), (0, 0, 0));
+    assert!(attributes.is_null());
+    assert!(any_object.is_null());
+
+    present = 9;
+    response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_export_ttlv(
+            invalid_index,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+
+    kmipkit_client_batch_item_response_release(invalid_index);
+    kmipkit_client_batch_item_response_release(valid_item);
+}
+
+#[test]
 fn ffi_get_usage_allocation_getter_borrows_successful_identifier_and_clears_failure() {
     let response_identifier = b"allocation-object";
     let successful_item = successful_cryptographic_item(
