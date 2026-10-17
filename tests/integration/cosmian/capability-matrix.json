@@ -12194,19 +12194,14 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "setup_rejected",
-        "request_sent": false,
+        "classification": "typed_success",
+        "request_sent": true,
         "response_received": true,
-        "target_request_sent": false,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "setup_request_sent": true,
-        "setup_response_received": true,
-        "reason": "Cosmian rejected a prerequisite operation before the matrix target was sent (Status 1, Reason 10: Cryptographic Failure)."
+        "target_request_sent": true,
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
-      "notes": "Non-FIPS; create user decryption key from case-owned master key, not an ordinary RSA/EC pair.",
+      "notes": "Non-FIPS; create user decryption key from case-owned master key, not an ordinary RSA/EC pair. ParentLink uses the KMIP 2.1 Link Type value 0x00000108.",
       "wire_enum_values": {
         "cryptographic_algorithm": {
           "name": "CoverCrypt",
@@ -16468,7 +16463,7 @@
         "vendor_algorithm_value": "0x88800004",
         "policy": "disposable master access structure"
       },
-      "key_format": null,
+      "key_format": "CoverCryptSecretKey",
       "encoding": "binary-TTLV",
       "fixture": null,
       "setup": [
@@ -16502,21 +16497,23 @@
       "test_family": "cosmian_kms::cryptographic",
       "execution_status": "planned_for_tasks_4_6",
       "observed_result": {
-        "classification": "rejected",
+        "classification": "typed_success",
         "request_sent": true,
         "response_received": true,
         "target_request_sent": true,
-        "interoperability": false,
-        "result_status": 1,
-        "result_reason": 10,
-        "result_reason_name": "Cryptographic Failure",
-        "reason": "Cosmian returned a typed KMIP failure for the target request (Status 1, Reason 10: Cryptographic Failure)."
+        "interoperability": true,
+        "reason": "KMIPKit received a typed success response and the case runner completed its operation-specific postconditions."
       },
-      "notes": "Produces linked PrivateKey/PublicKey; each replacement case provisions its own original pair. Non-FIPS/provider requirements are runtime prerequisites, not observed support.",
+      "notes": "Produces linked PrivateKey/PublicKey; each replacement case provisions its own original pair. Non-FIPS/provider requirements are runtime prerequisites, not observed support. The 5.28.0 implementation expects cover_crypt_access_structure although the versioned KMIP example uses cover_crypt_policy.",
       "wire_enum_values": {
         "cryptographic_algorithm": {
           "name": "CoverCrypt",
           "value": "0x88800004",
+          "classification": "vendor_extension"
+        },
+        "key_format_type": {
+          "name": "CoverCryptSecretKey",
+          "value": "0x8880000C",
           "classification": "vendor_extension"
         }
       }

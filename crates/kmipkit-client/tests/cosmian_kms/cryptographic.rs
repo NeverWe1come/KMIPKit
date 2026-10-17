@@ -25,6 +25,7 @@ const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
+const OBJECT_TYPE_ATTRIBUTE: u32 = 0x0042_0057;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const PKCS8_KEY_FORMAT_TYPE: u32 = 4;
 const KEY_BLOCK: u32 = 0x0042_0040;
@@ -1365,7 +1366,7 @@ fn direct_kem_decrypt_uses_its_algorithm_as_the_key_algorithm() {
 }
 
 #[test]
-fn covercrypt_create_builders_keep_policy_and_parent_link_dimensions() {
+fn covercrypt_create_builders_keep_access_structure_and_parent_link_dimensions() {
     const MASTER_ID: &str = "offline-covercrypt-master-private-id";
     const ACCESS_POLICY: &str =
         "Security Level::Confidential && (Department::FIN || Department::HR)";
@@ -1395,6 +1396,10 @@ fn covercrypt_create_builders_keep_policy_and_parent_link_dimensions() {
         structure_contains_text(&user_payload.view(), LINKED_OBJECT_IDENTIFIER, MASTER_ID),
         "CoverCrypt user key must link to the matching master private key"
     );
+    assert!(
+        structure_contains_enumeration(&user_payload.view(), LINK_TYPE, 0x0000_0108),
+        "CoverCrypt user key ParentLink must use its assigned Link Type value"
+    );
 
     let master_payload = row_key_pair_request(
         master_row,
@@ -1405,34 +1410,34 @@ fn covercrypt_create_builders_keep_policy_and_parent_link_dimensions() {
     .expect("CoverCrypt Create Key Pair request")
     .into_ttlv_payload()
     .expect("CoverCrypt Create Key Pair TTLV payload");
-    let policy = vendor_attribute_bytes(&master_payload.view(), "cover_crypt_policy")
-        .expect("CoverCrypt master policy vendor attribute");
-    let parsed_policy: JsonValue =
-        serde_json::from_slice(&policy).expect("CoverCrypt master policy JSON bytes");
-    assert_eq!(parsed_policy["version"], "V2");
-    assert_eq!(parsed_policy["last_attribute_value"], 7);
+    let access_structure =
+        vendor_attribute_bytes(&master_payload.view(), "cover_crypt_access_structure")
+            .expect("CoverCrypt master access-structure vendor attribute");
+    let parsed_access_structure: JsonValue = serde_json::from_slice(&access_structure)
+        .expect("CoverCrypt master access-structure JSON bytes");
     assert_eq!(
-        parsed_policy["dimensions"]["Security Level"]["order"],
-        serde_json::json!(["Protected", "Confidential", "Top Secret"])
+        parsed_access_structure["Security Level::<"],
+        serde_json::json!(["Protected", "Confidential", "Top Secret::+"])
     );
     assert_eq!(
-        parsed_policy["dimensions"]["Department"]["attributes"]
-            .as_object()
-            .map(serde_json::Map::len),
-        Some(4)
+        parsed_access_structure["Department"],
+        serde_json::json!(["RnD", "HR", "MKG", "FIN"])
     );
     assert!(
-        parsed_policy["dimensions"]["Security Level"]["attributes"]["Top Secret"]["encryption_hint"]
-            == "Hybridized",
-        "CoverCrypt master policy must preserve the hybridized Top Secret dimension"
+        structure_contains_enumeration(
+            &master_payload.view(),
+            KEY_FORMAT_TYPE_ATTRIBUTE,
+            0x8880_000C,
+        ),
+        "CoverCrypt master Create Key Pair must request CoverCryptSecretKey"
     );
     assert!(
-        master_payload
-            .view()
-            .children()
-            .iter()
-            .all(|item| item.tag().raw() != KEY_FORMAT_TYPE_ATTRIBUTE),
-        "Create Key Pair row does not request a Key Format Type"
+        structure_contains_enumeration(&master_payload.view(), OBJECT_TYPE_ATTRIBUTE, 4),
+        "CoverCrypt master Create Key Pair must identify its PrivateKey object type"
+    );
+    assert!(
+        !structure_contains_tag(&master_payload.view(), CRYPTOGRAPHIC_USAGE_MASK),
+        "CoverCrypt master Create Key Pair must leave usage masks to server defaults"
     );
 }
 
@@ -2642,7 +2647,7 @@ fn build_create_request(
             .ok_or_else(|| format!("case {id} CoverCrypt Create has no master private key"))?;
         let key_format = wire_enum_value(row, "key_format_type")?;
         let link = super::structure([
-            super::kmip_item(LINK_TYPE, Value::enumeration(0x08))?,
+            super::kmip_item(LINK_TYPE, Value::enumeration(0x0000_0108))?,
             super::kmip_item(
                 LINKED_OBJECT_IDENTIFIER,
                 Value::text_string(parent_id.to_owned()),
@@ -2711,59 +2716,12 @@ fn covercrypt_access_policy() -> &'static str {
     "Security Level::Confidential && (Department::FIN || Department::HR)"
 }
 
-fn covercrypt_master_policy() -> Result<Vec<u8>, Box<dyn Error>> {
-    let policy = serde_json::json!({
-        "version": "V2",
-        "last_attribute_value": 7,
-        "dimensions": {
-            "Security Level": {
-                "order": ["Protected", "Confidential", "Top Secret"],
-                "attributes": {
-                    "Protected": {
-                        "rotation_values": [5],
-                        "encryption_hint": "Classic",
-                        "write_status": "EncryptDecrypt"
-                    },
-                    "Confidential": {
-                        "rotation_values": [6],
-                        "encryption_hint": "Classic",
-                        "write_status": "EncryptDecrypt"
-                    },
-                    "Top Secret": {
-                        "rotation_values": [7],
-                        "encryption_hint": "Hybridized",
-                        "write_status": "EncryptDecrypt"
-                    }
-                }
-            },
-            "Department": {
-                "order": null,
-                "attributes": {
-                    "RnD": {
-                        "rotation_values": [1],
-                        "encryption_hint": "Classic",
-                        "write_status": "EncryptDecrypt"
-                    },
-                    "HR": {
-                        "rotation_values": [2],
-                        "encryption_hint": "Classic",
-                        "write_status": "EncryptDecrypt"
-                    },
-                    "MKG": {
-                        "rotation_values": [3],
-                        "encryption_hint": "Classic",
-                        "write_status": "EncryptDecrypt"
-                    },
-                    "FIN": {
-                        "rotation_values": [4],
-                        "encryption_hint": "Classic",
-                        "write_status": "EncryptDecrypt"
-                    }
-                }
-            }
-        }
+fn covercrypt_master_access_structure() -> Result<Vec<u8>, Box<dyn Error>> {
+    let access_structure = serde_json::json!({
+        "Security Level::<": ["Protected", "Confidential", "Top Secret::+"],
+        "Department": ["RnD", "HR", "MKG", "FIN"]
     });
-    Ok(serde_json::to_vec(&policy)?)
+    Ok(serde_json::to_vec(&access_structure)?)
 }
 
 fn vendor_attribute_bytes(
@@ -2840,6 +2798,40 @@ fn structure_contains_text(
             }
             _ => false,
         })
+    })
+}
+
+fn structure_contains_enumeration(
+    structure: &kmipkit_ttlv::StructureView<'_>,
+    expected_tag: u32,
+    expected_value: u32,
+) -> bool {
+    structure.children().iter().any(|item| {
+        if item.tag().raw() == expected_tag
+            && item.with_value(|value| {
+                matches!(value, kmipkit_ttlv::ValueView::Enumeration(actual) if *actual == expected_value)
+            })
+        {
+            return true;
+        }
+        item.with_value(|value| match value {
+            kmipkit_ttlv::ValueView::Structure(child) => {
+                structure_contains_enumeration(&child, expected_tag, expected_value)
+            }
+            _ => false,
+        })
+    })
+}
+
+fn structure_contains_tag(structure: &kmipkit_ttlv::StructureView<'_>, expected_tag: u32) -> bool {
+    structure.children().iter().any(|item| {
+        item.tag().raw() == expected_tag
+            || item.with_value(|value| match value {
+                kmipkit_ttlv::ValueView::Structure(child) => {
+                    structure_contains_tag(&child, expected_tag)
+                }
+                _ => false,
+            })
     })
 }
 
@@ -3078,29 +3070,40 @@ fn row_key_pair_request(
         )?);
     }
     if row["algorithm"] == "CoverCrypt" {
+        common_items.push(super::kmip_item(
+            KEY_FORMAT_TYPE_ATTRIBUTE,
+            Value::enumeration(wire_enum_value(row, "key_format_type")?),
+        )?);
+        common_items.push(super::kmip_item(
+            OBJECT_TYPE_ATTRIBUTE,
+            Value::enumeration(object_type_raw(row)?),
+        )?);
         common_items.push(covercrypt_vendor_attribute(
-            "cover_crypt_policy",
-            Value::byte_string(covercrypt_master_policy()?),
+            "cover_crypt_access_structure",
+            Value::byte_string(covercrypt_master_access_structure()?),
         )?);
     }
-    let request = CreateKeyPairRequest::new()
-        .with_common_attributes(AttributeSet::try_new(common_items)?)
-        .with_private_key_attributes(AttributeSet::try_new([super::kmip_item(
-            CRYPTOGRAPHIC_USAGE_MASK,
-            Value::integer(if configurable_kem {
-                KEY_USAGE_DECRYPT
-            } else {
-                private_usage
-            }),
-        )?])?)
-        .with_public_key_attributes(AttributeSet::try_new([super::kmip_item(
-            CRYPTOGRAPHIC_USAGE_MASK,
-            Value::integer(if configurable_kem {
-                KEY_USAGE_ENCRYPT
-            } else {
-                public_usage
-            }),
-        )?])?);
+    let mut request =
+        CreateKeyPairRequest::new().with_common_attributes(AttributeSet::try_new(common_items)?);
+    if row["algorithm"] != "CoverCrypt" {
+        request = request
+            .with_private_key_attributes(AttributeSet::try_new([super::kmip_item(
+                CRYPTOGRAPHIC_USAGE_MASK,
+                Value::integer(if configurable_kem {
+                    KEY_USAGE_DECRYPT
+                } else {
+                    private_usage
+                }),
+            )?])?)
+            .with_public_key_attributes(AttributeSet::try_new([super::kmip_item(
+                CRYPTOGRAPHIC_USAGE_MASK,
+                Value::integer(if configurable_kem {
+                    KEY_USAGE_ENCRYPT
+                } else {
+                    public_usage
+                }),
+            )?])?);
+    }
     Ok(request)
 }
 
