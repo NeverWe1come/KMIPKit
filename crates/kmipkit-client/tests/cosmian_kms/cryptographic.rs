@@ -231,7 +231,10 @@ fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_en
         row["parameters"]["algorithm_dimension"],
         "subject ASN.1 OID only; no CryptographicAlgorithm enumeration is sent"
     );
-    assert_eq!(row["wire_enum_values"]["cryptographic_algorithm"]["value"], JsonValue::Null);
+    assert_eq!(
+        row["wire_enum_values"]["cryptographic_algorithm"]["value"],
+        JsonValue::Null
+    );
     assert_eq!(
         row["wire_enum_values"]["cryptographic_algorithm"]["classification"],
         "not_sent_asn1_oid_only"
@@ -248,7 +251,9 @@ fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_en
     .expect("offline Certify TTLV payload");
 
     assert_eq!(enum_field(&payload, CERTIFICATE_REQUEST_TYPE), Some(2));
-    assert!(byte_string_field_length(&payload, CERTIFICATE_REQUEST_VALUE).is_some_and(|len| len > 0));
+    assert!(
+        byte_string_field_length(&payload, CERTIFICATE_REQUEST_VALUE).is_some_and(|len| len > 0)
+    );
     let attribute_contract = payload
         .view()
         .children()
@@ -282,8 +287,9 @@ fn post_quantum_certify_finding_builds_exact_pkcs10_request_without_algorithm_en
 }
 
 #[test]
-fn pqc_certify_pem_and_der_both_use_the_pkcs10_request_type() {
+fn pqc_certify_pem_and_der_use_their_kmip_request_types() {
     const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
+    // OASIS KMIP v2.1 §11.8, Table 439 assigns PKCS#10=2 and PEM=3.
     for case_id in [
         "cosmian-528-certify-certificaterequest-mldsa-44-subject-oid-only-pem",
         "cosmian-528-certify-certificaterequest-mldsa-44-subject-oid-only-der",
@@ -293,6 +299,15 @@ fn pqc_certify_pem_and_der_both_use_the_pkcs10_request_type() {
             .into_iter()
             .find(|row| row["case_id"] == case_id)
             .unwrap_or_else(|| panic!("missing Certify case {case_id}"));
+        let (expected_name, expected_value) = if case_id.ends_with("-pem") {
+            ("PEM", 3)
+        } else {
+            ("PKCS10", 2)
+        };
+        assert_eq!(
+            row["wire_enum_values"]["certificate_request_type"]["name"],
+            expected_name
+        );
 
         validate_exact_finding_probe_dimensions(&row)
             .unwrap_or_else(|error| panic!("case {case_id}: {error}"));
@@ -302,7 +317,10 @@ fn pqc_certify_pem_and_der_both_use_the_pkcs10_request_type() {
         )
         .and_then(|request| request.into_ttlv_payload().map_err(Into::into))
         .unwrap_or_else(|error| panic!("case {case_id}: {error}"));
-        assert_eq!(enum_field(&payload, CERTIFICATE_REQUEST_TYPE), Some(2));
+        assert_eq!(
+            enum_field(&payload, CERTIFICATE_REQUEST_TYPE),
+            Some(expected_value)
+        );
         assert_eq!(enum_field(&payload, CRYPTOGRAPHIC_ALGORITHM), None);
     }
 }
