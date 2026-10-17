@@ -1335,74 +1335,12 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
             continue;
         };
         match disposition(row) {
-            Ok(CaseDisposition::Executable(_)) => match dispatch_case(row, Some(&mut client)) {
-                Ok(()) => println!(
-                    "{}",
-                    cryptographic_observation_line(row, "typed_success", "true")
-                ),
-                Err(error) => {
-                    let detail = error.to_string();
-                    let operation = row["operation"].as_str().unwrap_or_default();
-                    let delivery = target_operation_delivery(row, operation, &detail);
-                    let observed = match delivery {
-                        TargetOperationDelivery::ResponseReceived
-                        | TargetOperationDelivery::SetupResponseReceived => {
-                            classify_case_error(row, &detail)
-                        }
-                        TargetOperationDelivery::NotSent => "setup_or_client_blocked",
-                        TargetOperationDelivery::Uncertain => "delivery_uncertain",
-                    };
-                    let request_sent = match delivery {
-                        TargetOperationDelivery::ResponseReceived => "true",
-                        TargetOperationDelivery::SetupResponseReceived
-                        | TargetOperationDelivery::NotSent => "false",
-                        TargetOperationDelivery::Uncertain => "unknown",
-                    };
-                    println!(
-                        "{} detail={error}",
-                        cryptographic_observation_line(row, observed, request_sent)
-                    );
-                    let classification = observed;
-                    failures.push(format!("{id} ({classification}): {error}"));
-                }
-            },
-            Ok(CaseDisposition::ExpectedFindingProbe {
-                operation,
-                ..
-            }) => match dispatch_operation(row, Some(&mut client), operation) {
-                Ok(()) => println!(
-                    "{}",
-                    cryptographic_observation_line(row, "typed_success", "true")
-                ),
-                Err(error) => {
-                    let detail = error.to_string();
-                    let delivery = target_operation_delivery(row, operation, &detail);
-                    let observed = match delivery {
-                        TargetOperationDelivery::ResponseReceived => {
-                            classify_case_error(row, &detail)
-                        }
-                        TargetOperationDelivery::SetupResponseReceived => "setup_rejected",
-                        TargetOperationDelivery::NotSent => "setup_or_client_blocked",
-                        TargetOperationDelivery::Uncertain => "delivery_uncertain",
-                    };
-                    let request_sent = match delivery {
-                        TargetOperationDelivery::ResponseReceived => "true",
-                        TargetOperationDelivery::SetupResponseReceived
-                        | TargetOperationDelivery::NotSent => "false",
-                        TargetOperationDelivery::Uncertain => "unknown",
-                    };
-                    println!(
-                        "{} setup_response_received={} detail={detail}",
-                        cryptographic_observation_line(row, observed, request_sent),
-                        delivery == TargetOperationDelivery::SetupResponseReceived
-                    );
-                    if delivery != TargetOperationDelivery::ResponseReceived {
-                        failures.push(format!(
-                            "{id} (finding probe did not reach target operation): {detail}"
-                        ));
-                    }
-                }
-            },
+            Ok(CaseDisposition::Executable(_)) => {
+                execute_typed_success_row(row, id, &mut client, &mut failures);
+            }
+            Ok(CaseDisposition::ExpectedFindingProbe { operation, .. }) => {
+                execute_finding_probe_row(row, id, operation, &mut client, &mut failures);
+            }
             Err(error) => {
                 println!("case_id={id} classification=registry_error detail={error}");
                 failures.push(format!("{id} (registry_error): {error}"));
@@ -1417,6 +1355,85 @@ fn cosmian_528_cryptographic_matrix_serial_live_runner() {
         selected_count,
         failures.join("; ")
     );
+}
+
+fn execute_typed_success_row(
+    row: &JsonValue,
+    id: &str,
+    client: &mut kmipkit_client::Client,
+    failures: &mut Vec<String>,
+) {
+    match dispatch_case(row, Some(client)) {
+        Ok(()) => println!(
+            "{}",
+            cryptographic_observation_line(row, "typed_success", "true")
+        ),
+        Err(error) => {
+            let detail = error.to_string();
+            let operation = row["operation"].as_str().unwrap_or_default();
+            let delivery = target_operation_delivery(row, operation, &detail);
+            let observed = match delivery {
+                TargetOperationDelivery::ResponseReceived
+                | TargetOperationDelivery::SetupResponseReceived => {
+                    classify_case_error(row, &detail)
+                }
+                TargetOperationDelivery::NotSent => "setup_or_client_blocked",
+                TargetOperationDelivery::Uncertain => "delivery_uncertain",
+            };
+            let request_sent = match delivery {
+                TargetOperationDelivery::ResponseReceived => "true",
+                TargetOperationDelivery::SetupResponseReceived
+                | TargetOperationDelivery::NotSent => "false",
+                TargetOperationDelivery::Uncertain => "unknown",
+            };
+            println!(
+                "{} detail={error}",
+                cryptographic_observation_line(row, observed, request_sent)
+            );
+            failures.push(format!("{id} ({observed}): {error}"));
+        }
+    }
+}
+
+fn execute_finding_probe_row(
+    row: &JsonValue,
+    id: &str,
+    operation: &str,
+    client: &mut kmipkit_client::Client,
+    failures: &mut Vec<String>,
+) {
+    match dispatch_operation(row, Some(client), operation) {
+        Ok(()) => println!(
+            "{}",
+            cryptographic_observation_line(row, "typed_success", "true")
+        ),
+        Err(error) => {
+            let detail = error.to_string();
+            let delivery = target_operation_delivery(row, operation, &detail);
+            let observed = match delivery {
+                TargetOperationDelivery::ResponseReceived => classify_case_error(row, &detail),
+                TargetOperationDelivery::SetupResponseReceived => "setup_rejected",
+                TargetOperationDelivery::NotSent => "setup_or_client_blocked",
+                TargetOperationDelivery::Uncertain => "delivery_uncertain",
+            };
+            let request_sent = match delivery {
+                TargetOperationDelivery::ResponseReceived => "true",
+                TargetOperationDelivery::SetupResponseReceived
+                | TargetOperationDelivery::NotSent => "false",
+                TargetOperationDelivery::Uncertain => "unknown",
+            };
+            println!(
+                "{} setup_response_received={} detail={detail}",
+                cryptographic_observation_line(row, observed, request_sent),
+                delivery == TargetOperationDelivery::SetupResponseReceived
+            );
+            if delivery != TargetOperationDelivery::ResponseReceived {
+                failures.push(format!(
+                    "{id} (finding probe did not reach target operation): {detail}"
+                ));
+            }
+        }
+    }
 }
 
 fn client_for_matrix_row(
