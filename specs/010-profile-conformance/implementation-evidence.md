@@ -3678,3 +3678,34 @@ The ephemeral readiness check `py -3 -B tools/normative_catalog/report.py --read
 Local T043 verification passed: `py -3 -B -m unittest scripts.tests.test_branch_protection scripts.tests.test_ci_summary -v` ran 32 tests successfully; `cargo fmt --all --check`, `py -3 -B tools/normative_catalog/generate_profiles.py --check`, `py -3 -B tools/api_manifest/generate.py --check`, immutable-source verification against `d5d5ab75ec9318d7d646c6ba85c5e56559ace21e`, the 16 source-gap regression tests, and serial reruns of catalog validation and report checks all passed. The first parallel catalog/report invocation transiently reported unsafe/unavailable input, but the exact serial reruns passed with no source or catalog changes; the authoritative CI inventory job also passed.
 
 After the release merge and current policy evidence were pushed, GitHub Actions run `38999021526` completed successfully at head `46e757bc6488157b1945a74d827fc2ff38fae828`: all 37 checks passed, including the full Rust matrix, three-platform bindings and C consumers, sanitizers, source/catalog inventory, and coverage gates. The worktree was clean at that verified head. T043's verification is complete; branch protection, the protected Actions App key, and the release evidence environment remain administrator-owned release-readiness blockers.
+
+### KMIPKIT-0010 T002 — pinned-source closure and case audit (2026-10-17)
+
+This audit-only update consolidates the source results in `research.md`; it changes no runtime code, generated output, catalog mapping, or pinned OASIS source. It preserves the three unresolved source-gap inventory rows exactly and does not infer requirement IDs. The independent oracle comparison covers all 18 client profiles: 14 `client_1_0`, one conditional HTTPS profile, and three profiles retained `out_of_scope`. Baseline Client's closure is 907 clauses (877 Specification plus 30 Profiles) and 251 requirement IDs (241 Specification plus 10 Profiles). Its §6.1 item 1 includes the entire Specification source; item 2 includes Profiles §3.1 with applicable §§3.1.1/3.1.2 records and the rest of the §3.1 subclauses; item 3 includes §5.1.1. T002 remains unchecked because the normative requirement crosswalk remains incomplete.
+
+| Stage | Command or result | Outcome |
+|---|---|---|
+| Full pinned catalog regression suite | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v` | PASS: 589 tests, 9 skipped for unavailable Windows symlink/POSIX-only capabilities. |
+| Catalog validation | `py -3 -B -m tools.normative_catalog.validate --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,118 records. |
+| Independent profile generation check | `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check` | PASS: generated profile metadata current. |
+| Deterministic report check | `py -3 -B tools/normative_catalog/report.py --repo-root . --check` | PASS: coverage report current. |
+| Normative source candidate audit | `py -3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff --check` | PASS: 1,411 normative candidates match the reviewed clause ledger. |
+| Immutable OASIS source check | `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff` | PASS: pinned OASIS upstream files match the PR base. |
+| Profile fixture and CN01 case audit | `py -3 -B tools/normative_catalog/audit_case_sources.py --repo-root .` | PASS: 93 Profiles IDs/hrefs and 110 CN01 IDs match their defining sections; 0 catalog-to-source mismatches; 10 source-internal official-ID/href-name divergences, all retained as pinned-source defects and listed in `research.md`. |
+| Cross-source exact-ID search | Read-only PowerShell search of the 93 `profile_test_case` and 110 `official_conformance_test` `official_case_id` values in the opposite pinned HTML file. | PASS: 0/93 Profiles case IDs occur in CN01; 0/110 CN01 `TC-*` IDs occur in Profiles. This records distinct source inventories and creates no cross-source links. |
+| Whitespace check | `git diff --check` | PASS after the documentation update. |
+
+The cross-source exact-ID result is reproducible with this read-only PowerShell query:
+
+```powershell
+$catalog = Get-Content 'specification/catalog/kmip-2.1.json' -Raw | ConvertFrom-Json
+$profileCases = @($catalog.test_cases | Where-Object evidence_category -eq 'profile_test_case')
+$cn01 = Get-Content 'specification/oasis/kmip-2.1/upstream/kmip-testcases-v2.1-cn01.html' -Raw
+$cn01Matches = @($profileCases | Where-Object { $cn01.Contains($_.official_case_id) })
+$operationCases = @($catalog.test_cases | Where-Object evidence_category -eq 'official_conformance_test')
+$profiles = Get-Content 'specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html' -Raw
+$profileMatches = @($operationCases | Where-Object { $profiles.Contains($_.official_case_id) })
+[pscustomobject]@{ profile_ids_in_cn01 = $cn01Matches.Count; tc_ids_in_profiles = $profileMatches.Count }
+```
+
+The first concurrent invocation of catalog validation and case audit reported transient unsafe/unavailable input while the full 589-test suite was reading the catalog. Both commands passed when rerun serially; generated checks, source audit, and immutable-source check also passed. No source or catalog files changed. The three unresolved source findings remain: (1) Specification §6.1 lines 22417–22420, `KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE`, with null `source_clause_id`, unspecified actor, null candidate ID, and empty expected-client-ID list; (2) Specification §6.1 paragraph 009 lines 22498–22499, `KMIPKIT-CLAUSE-SPEC-6.1-009` / `KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009`, with a client request-parameter context but unresolved force/scope and no candidate or expected client requirement IDs; (3) Specification §9.17 lines 45156–45158, `KMIPKIT-CLAUSE-SPEC-9.17-001` / `KMIPKIT-SOURCE-GAP-SPEC-9.17-001`, whose first MAY is response/server context and second MAY has unspecified actor/direction, with no expected client IDs. These source sections enter every profile's whole-Spec closure; the three records retain no fabricated requirement IDs, keep `requirement_crosswalk_complete: false`, and block readiness for the 15 `client_1_0`/conditional profiles. The other three profile rows remain `out_of_scope`. T002 remains open pending authoritative disposition of these gaps; no complete conformance requirement set is claimed and T003 is not started. No new Red/Green implementation tranche applies because this update adds no code or regression test; the existing T002 Red/Green records remain separate above.

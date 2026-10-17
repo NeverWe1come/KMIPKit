@@ -803,3 +803,66 @@ Pinned §9.17 lines 45156–45158 combines two MAY statements: the Result Messag
 ### Baseline §3.1.1 TLS 1.2 MAY traceability (2026-10-16)
 
 Profiles §3.1.1 clause `KMIPKIT-CLAUSE-PROF-3.1.1-004` is retained in Baseline's clause closure. Its MAY requirement `KMIPKIT-REQ-PROF-3.1.1-004` remains catalogued as `out_of_scope` because ADR-0005 restricts KMIPKit 1.0 to TLS 1.3. The independent oracle likewise retains the source clause but excludes this requirement from the effective Baseline requirement IDs. A regression now protects both sides of that boundary and requires a missing catalog requirement record to be reported by exact stable ID. This does not enable TLS 1.2 or mark T003 complete.
+
+## T002 pinned-source audit result — 2026-10-17
+
+This audit compares the checked-in client profile records and independent closure oracle with only the immutable OASIS Specification v2.1, Profiles v2.1, and Test Cases CN01 files under `specification/oasis/kmip-2.1/upstream/`. It does not edit those files or infer normative text from Usage Guide examples. Exact stable requirement IDs remain in `specification/catalog/kmip-2.1.json`; the independent expected closure is `tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json`. The catalog validator and full normative-catalog test suite pass against those checked-in sources.
+
+The independent oracle and catalog agree on direct source-clause roots, expanded clause closures, and requirement-ID sets for all 18 client profiles. Fourteen are `client_1_0`, HTTPS Client is `conditional`, and JSON, PKCS#11, and XML Client remain `out_of_scope`. The exact stable IDs and their metadata are not duplicated here: the catalog arrays are the reviewed profile map, and the independent oracle tests those arrays against source reviews. The table reports each record's direct Profiles section roots, total clause closure, requirement-ID count, dependency, and linked case count so the source scope can be audited at a glance.
+
+| Client profile | Applicability | Direct Profiles sections | Closure clauses | Requirement IDs | Dependency | Linked cases |
+|---|---|---|---:|---:|---|---:|
+| `KMIPKIT-PROFILE-AES-XTS-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.13.1, 6.1, 6.30 | 915 | 255 | Baseline Client | 18 |
+| `KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.8.1, 6.1, 6.16 | 915 | 255 | Baseline Client | 20 |
+| `KMIPKIT-PROFILE-BASELINE-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.1.1, 6.1 | 907 | 251 | — | 16 |
+| `KMIPKIT-PROFILE-CRYPTOGRAPHIC-ADVANCED-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.9.2, 6.1, 6.19 | 916 | 256 | Baseline Client | 34 |
+| `KMIPKIT-PROFILE-CRYPTOGRAPHIC-BASIC-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.9.1, 6.1, 6.18 | 916 | 256 | Baseline Client | 37 |
+| `KMIPKIT-PROFILE-CRYPTOGRAPHIC-RNG-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.9.3, 6.1, 6.20 | 916 | 256 | Baseline Client | 21 |
+| `KMIPKIT-PROFILE-HTTPS-CLIENT` | `conditional` | §§3.2, 4.1.2, 5.3.1, 6.1, 6.4 | 929 | 265 | Baseline Client | 17 |
+| `KMIPKIT-PROFILE-JSON-CLIENT` | `out_of_scope` | §§3.1, 4.1.2, 5.5.2, 6.1, 6.8 | 916 | 247 | Baseline Client | 17 |
+| `KMIPKIT-PROFILE-OPAQUE-MANAGED-OBJECT-STORE-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.10.1, 6.1, 6.24 | 915 | 255 | Baseline Client | 18 |
+| `KMIPKIT-PROFILE-PKCS11-CLIENT` | `out_of_scope` | §§3.1, 4.1.2, 5.18.3, 6.1, 6.34 | 922 | 252 | Baseline Client | 17 |
+| `KMIPKIT-PROFILE-QUANTUM-SAFE-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.15, 5.17, 6.1, 6.32 | 921 | 257 | Baseline Client | 18 |
+| `KMIPKIT-PROFILE-STORAGE-ARRAY-SELF-ENCRYPTING-DRIVES-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.11.1, 6.1, 6.26 | 916 | 256 | Baseline Client | 19 |
+| `KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.7.3, 6.1, 6.14 | 918 | 257 | Baseline Client | 20 |
+| `KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-BASIC-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.7.1, 6.1, 6.12 | 915 | 255 | Baseline Client | 20 |
+| `KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.7.2, 6.1, 6.13 | 918 | 257 | Baseline Client | 20 |
+| `KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.6.1, 6.1, 6.10 | 915 | 255 | Baseline Client | 17 |
+| `KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT` | `client_1_0` | §§3.1, 4.1.2, 5.12.2, 5.12.3, 5.12.4, 6.1, 6.28 | 942 | 279 | Baseline Client | 19 |
+| `KMIPKIT-PROFILE-XML-CLIENT` | `out_of_scope` | §§3.1, 4.1.2, 5.4.2, 6.1, 6.6 | 916 | 247 | Baseline Client | 17 |
+
+### Normative inheritance and Baseline requirement map
+
+All 18 client profile records include Profiles v2.1 §6.1. The catalog's seven source-reviewed inclusion edges expand those references recursively through source subclauses: §6.1 item 1 includes the whole KMIP Specification v2.1 source; item 2 includes Profiles §3.1 and §§3.1.1–3.1.4; item 3 includes Baseline conditions in §5.1.1; PKCS#11 §5.18.3 item 2 includes §5.18.1; Tape Library §6.28 item 6 includes §5.12.6; and §§6.13/6.14 item 3 each include §5.7.1. The four profile-specific non-Baseline edges remain attached to their source profile records even where that profile is outside the 1.0 scope. Same-source dot-delimited subclauses are included; the Usage Guide is informative and neither its text nor examples add requirements.
+
+| Inclusion ID | Pinned Profiles reference | Included source |
+|---|---|---|
+| `KMIPKIT-INCLUSION-PROF-BASELINE-SPEC` | §6.1 item 1 | Entire KMIP Specification v2.1 source (`included_section: null`). |
+| `KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH` | §6.1 item 2 | Profiles §3.1, including its applicable subclauses. |
+| `KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS` | §6.1 item 3 | Profiles §5.1.1. |
+| `KMIPKIT-INCLUSION-PROF-PKCS11-ENCODING` | §5.18.3 item 2 | Profiles §5.18.1. |
+| `KMIPKIT-INCLUSION-PROF-TAPE-LIBRARY-TEST-CASES` | §6.28 item 6 | Profiles §5.12.6. |
+| `KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT` | §6.13 item 3 | Profiles §5.7.1. |
+| `KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT` | §6.14 item 3 | Profiles §5.7.1. |
+
+For Baseline Client, Profiles v2.1 §6.1 item 1 (pinned HTML lines 10479–10484) maps to `KMIPKIT-INCLUSION-PROF-BASELINE-SPEC`, covering all 877 Specification source clauses and every requirement classified client-applicable to 1.0. Server-only and out-of-scope clauses remain in the source closure but do not become client requirements. Item 2 (lines 10484–10485) maps to `KMIPKIT-INCLUSION-PROF-BASELINE-BASIC-AUTH`, covering Profiles §3.1 and its §§3.1.1–3.1.4 subclauses. Item 3 (line 10486) maps to `KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS`, covering §5.1.1. With the direct §4.1.2 and §6.1 clauses, this yields the exact 907-clause closure (877 Specification plus 30 Profiles clauses) in both catalog and oracle.
+
+The resulting Baseline requirement array contains 251 IDs (241 Specification and 10 Profiles IDs). The five mapped §3.1/§3.1.1/§3.1.2 Profile IDs are `KMIPKIT-REQ-PROF-3.1-001` (SHALL), `KMIPKIT-REQ-PROF-3.1.1-002` (SHOULD), `KMIPKIT-REQ-PROF-3.1.1-005` (SHALL NOT), `KMIPKIT-REQ-PROF-3.1.2-002` (SHALL), and `KMIPKIT-REQ-PROF-3.1.2-005` (SHALL NOT); the remaining five IDs come from §§4.1.2 and 6.1. `KMIPKIT-REQ-PROF-3.1.1-004` remains recorded as an out-of-scope TLS 1.2 MAY and is not in Baseline's effective requirement array. The conditional TLS 1.2 cipher-suite statement in §3.1.2-004 and server duties in §§3.1.3–3.1.4 remain source-linked with their client/server boundary dispositions; no client requirement ID is fabricated for them. The source-reviewed requirements, including keyword and scope, resolve through exact clause IDs in the catalog.
+
+### Official case and cross-source results
+
+The offline case audit verifies each official ID in the source assigned by its evidence category: all 93/93 profile case IDs and exact fixture `raw_href` values resolve to the corresponding Profiles heading/section; all 110/110 `TC-*` operation examples resolve to their CN01 section. An explicit cross-source exact-ID search found 0/93 Profiles case IDs in CN01 and 0/110 CN01 `TC-*` IDs in Profiles. These are separate source-defined inventories, so no cross-source link is added. A matching case ID or fixture link is evidence only and does not itself create a normative requirement or prove fixture execution.
+
+The catalog-to-source audit reports zero mismatches. It also reports ten pinned-source internal official-ID/href-basename divergences; those exact ID/href pairs are listed in the preceding “Current pinned official case source audit” section and remain source defects, not rewritten catalog links. Exact pinned `raw_href` values are retained even where the filename suffix or number differs from the heading ID.
+
+### Unresolved normative source findings
+
+Three source interpretations remain unassigned after review. Their exact source-gap inventory values are retained: `scope_disposition: unresolved`, `candidate_requirement_id: null`, and `expected_client_requirement_ids: []`. All 18 profile inventory rows retain the whole-Spec inclusion in their clause closure; therefore each closure references these Specification sections. The 15 `client_1_0`/conditional profiles cannot treat them as complete client requirement mappings. JSON, PKCS#11, and XML remain `out_of_scope`, and are not promoted into 1.0 obligations.
+
+| Stable source-gap ID | Source-clause ID | Exact source | Unresolved inventory row and point |
+|---|---|---|---|
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE` | `null` | Specification v2.1 §6.1, pinned HTML lines 22417–22420 | `source_clause_id: null`; actor is unspecified, `source_keywords: []`, and status is `force_and_actor_unresolved`. The lower-case “optionally” preface does not establish a formal keyword or a client actor. |
+| `KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009` | `KMIPKIT-CLAUSE-SPEC-6.1-009` | Specification v2.1 §6.1 paragraph 009, lines 22498–22499; `KMIPKIT-DISC-045` also cites Tables 196, 214, 235, 259, and 334 | Actor and direction are identified as client request parameters, but the lower-case “required” force conflicts with the multi-part procedure for affected forms; digest-only single-part Sign remains an open question. `source_keywords: []`, candidate requirement ID is null, and status is `unresolved_source_interpretation`. |
+| `KMIPKIT-SOURCE-GAP-SPEC-9.17-001` | `KMIPKIT-CLAUSE-SPEC-9.17-001` | Specification v2.1 §9.17, lines 45156–45158 | The first MAY describes a response field; the separate end-user/logging MAY has unspecified actor/direction. The clause review records the first atom as server-only context, the second as unresolved, and `expected_client_requirement_ids: []`. Aggregate status is `scope_unresolved`. |
+
+Other §6.1 procedures `KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-011` through `-020` remain source-exact client-scope procedure context with no standalone requirement IDs; paragraphs 006–008 remain generic request-parameter context, not additional requirements. The separately catalogued server-only, mixed/out-of-scope, out-of-scope, and 1.1 rows retain their existing dispositions. The three records above are the only source-gap rows whose `scope_disposition` remains `unresolved` in the independent oracle; they keep `requirement_crosswalk_complete: false` and profile readiness blocked. Source-clause closure and official-case audits are complete, but normative requirement closure remains incomplete. No conformance claim, implementation-completion claim, or T003 work follows from this audit.
