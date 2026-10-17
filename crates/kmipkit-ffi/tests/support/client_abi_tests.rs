@@ -994,13 +994,22 @@ fn ffi_delegated_login_constructor_validates_typed_fields_and_requires_rights() 
     let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
     assert_eq!(
         kmipkit_client_batch_item_delegated_login(
-            ptr::null_mut(), 0, 0, 0, 0, ptr::null_mut(), &mut item,
+            ptr::null_mut(),
+            0,
+            0,
+            0,
+            0,
+            ptr::null_mut(),
+            &mut item,
         ),
         ERROR_INVALID_INPUT
     );
     assert!(item.is_null());
 
-    let rights = make_handle(Kind::Structure, HandleValue::Structure(kmipkit_ttlv::Structure::new()));
+    let rights = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(kmipkit_ttlv::Structure::new()),
+    );
     for (lease_kind, lease_value, count_present, count) in [
         (3, 0, 0, 0),
         (0, 1, 0, 0),

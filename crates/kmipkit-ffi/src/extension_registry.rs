@@ -35,10 +35,10 @@ use kmipkit_client::{
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, DelegatedLoginRequest, GetUsageAllocationRequest, HashRequest, MacRequest, MacVerifyRequest,
-    ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    UniqueIdentifier,
+    CreateSplitKeyRequest, DelegatedLoginRequest, GetUsageAllocationRequest, HashRequest,
+    MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext, OperationData, ProtocolError,
+    ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -2864,9 +2864,7 @@ pub extern "C" fn kmipkit_client_batch_item_delegated_login(
         let mut request = DelegatedLoginRequest::new(rights);
         if let Some(lease_time) = lease_time {
             request = match lease_time {
-                DelegatedLoginLeaseTime::Interval(value) => {
-                    request.with_lease_time_interval(value)
-                }
+                DelegatedLoginLeaseTime::Interval(value) => request.with_lease_time_interval(value),
                 DelegatedLoginLeaseTime::DateTime(value) => {
                     request.with_lease_time_date_time(value)
                 }

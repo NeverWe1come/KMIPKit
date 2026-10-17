@@ -84,10 +84,32 @@ Use `DelegatedLoginRequest` when the application has a rights structure defined
 for its KMIP server. The library preserves that TTLV structure; it does not
 interpret rights or claim the server granted them.
 
+The typed client entry points are available in all four 1.0 languages:
+
+| Language | Request mapping | Typed response mapping |
+| --- | --- | --- |
+| Rust | `ClientRequest::delegated_login(DelegatedLoginRequest::new(rights))` | `DelegatedLoginResponse::ticket()` and `Ticket` accessors |
+| C | `kmipkit_client_batch_item_delegated_login(...)` | `kmipkit_client_batch_item_response_delegated_login(...)` |
+| Java | `ClientBatchItem.delegatedLogin(...)` | `ClientBatchItemResult.delegatedLoginResponse()` |
+| Python | `client_batch_item_delegated_login(...)` | `BatchItemResult.delegated_login_response` |
+
+Each binding also exposes the complete ordered Ticket TTLV structure, including
+unknown children, while preserving unknown Ticket Type values. Treat both the
+Ticket Value and the generic Ticket structure as secret data. C's Ticket Value
+span is borrowed from the response item and expires when that item is released.
+Java's `ticketValue()` returns a caller-owned `byte[]` copy that the application
+must clear; KMIPKit wipes its internal Java buffers and the response's owned
+copy when closed. Python's `ticket_value` returns immutable `bytes`, which the
+Python runtime cannot deterministically clear; KMIPKit wipes its mutable owned
+buffer and the response's generic TTLV copy when `close()` is called. Rust
+exposes Ticket Value through a callback and owns it in a zeroizing secret type.
+Never log a Ticket, its generic TTLV, or any Ticket Value copy.
+
 ## Scope and limitations
 
-These examples compile against the Rust client/protocol APIs. The approved
-KMIPKIT-0043 manifest still governs C, Java, and Python parity. Project tests
-cover the pinned Login CN01 §2.48 fixture; source-derived tests for the other
-listed cases are not official fixture passes. This guide makes no claim of
-server interoperability or formal certification.
+The code examples compile against the Rust client/protocol APIs. Cross-language
+Delegated Login mappings and parity evidence are recorded in the approved
+KMIPKIT-0043 manifest and its traceability record. Project tests cover the
+pinned Login CN01 §2.48 fixture; source-derived tests for the other listed
+cases are not official fixture passes. This guide makes no claim of server
+interoperability or formal certification.

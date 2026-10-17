@@ -2697,3 +2697,41 @@ accurately, while rejecting the old handle-only claim.
 | Red | `64bb354f` | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports.BindingExportAuditTests.test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions -v` | Expected failure: the request exclusion evidence does not identify identifier kind/value and usage limits count; it incorrectly says the JNI method only transfers opaque handles. |
 | Green | `f33ae707` | Same focused manifest test; `python -B tools/api_manifest/generate.py --write`; `python -B tools/api_manifest/generate.py --check` | PASS: the JNI evidence now records the semantic request inputs and the response tuple's typed identifier and owned TTLV handle; all 12 generated outputs are current. The Rust totals reconcile as 9,534 observed (7,646 direct + 1,888 conditional), 9,510 matched (7,627 direct + 1,883 conditional), and 24 exact exclusions. |
 | Refactor | this commit | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_binding_exports -v`; `python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-17.json`; `python -B tools/api_manifest/audit_rust_exports.py --repo-root . --report specs/043-public-api-bindings/reports/rust-export-report-2026-10-17.json --check`; `python -B tools/api_manifest/generate.py --check`; `git diff --check`; GitHub Actions run 39011352794 | PASS: all 43 binding-export tests; C 291/291, Java 528/528, Python 500/500 exact matches with zero missing, stale, or kind-mismatched paths; Rust 9,510/9,510 with 24 exact exclusions and zero issues; all 12 generated outputs verify. Current-head cross-platform CI and selected coverage gates passed on commit `18e06f9a4f71ff995c8fc23c186dfd73f589d17c`; T011 acceptance criteria are complete. |
+
+## T045 — Delegated Login four-language mapping
+
+T045 maps the approved KMIPKIT-0038 Delegated Login contract into the existing
+Rust/C/Java/Python client facades. The normative source is OASIS KMIP
+Specification v2.1 §6.1.12, Tables 199–201; Ticket children follow §7.39,
+Table 391, and Ticket Type is open per §11.57, Table 488. The immutable local
+source `specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html` was
+checked read-only at SHA-256
+`8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf`.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `50aa73be`, `818546e8`, `7e568bcc`, `f76a9048`, `bfef99c3` | Binding and manifest regression tests; `mvn -q -Dtest=DelegatedLoginMappingTest test`; `python -B -m unittest tools.api_manifest.tests.test_delegated_login_parity_manifest -v` | Expected failures exposed absent C/Java/Python mappings and missing manifest parity. The Java malformed-native-tuple regression failed before implementation because the input Ticket Value array remained nonzero (first byte was 109). The later traceability regression failed because catalog tags `KMIPKIT-ELEM-TAG-42014A` and `KMIPKIT-ELEM-TAG-42014B` were not yet listed for the Ticket fields. Red fixtures were corrected to use actual public Python TTLV structures and to assert catalog trace IDs outside the manifest requirement-ID schema. |
+| Green | `e4c7cedb` | Focused protocol, client, FFI, C, Java, Python, and manifest checks below; `python -B tools/api_manifest/generate.py --write` | PASS: generated 12 manifest outputs from the approved mapping; typed request/result accessors preserve the signed and unsigned wire ranges, unknown Ticket Type, ordered generic Ticket structure, secret redaction, ownership, and common delivery/result evidence. |
+| Refactor | this commit | `cargo fmt --all`; `cargo fmt --all --check`; focused manifest parity; documentation, traceability, and task review; `git diff --check` | PASS: format and traceability are current, English and Spanish user guides describe all four facades and secret-copy limits, and T045 is checked with the verification limits recorded below. |
+
+Focused verification results:
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-protocol --all-features delegated_login` | PASS: 9 tests. |
+| `cargo test -p kmipkit-client --all-features delegated_login` | PASS: 6 tests; the optional local Cosmian interoperability test remains ignored because it requires a local Cosmian KMS 5.28.0 instance. |
+| `$abiLibDirs = Get-ChildItem target/debug/build -Directory -Filter 'kmipkit-ffi-*' | ForEach-Object { $out = Join-Path $_.FullName 'out'; if (Test-Path (Join-Path $out 'kmipkit_client_abi_c_consumer.lib')) { $out } }; $env:LIB = (@($abiLibDirs) + @($env:LIB) | Where-Object { $_ }) -join ';'; cargo test -p kmipkit-ffi --no-default-features --lib ffi_delegated_login` | PASS: 2 FFI tests. Without that temporary linker search path, MSVC reports `LNK1181` for the C consumer library; the build script emits the library in its `out` directory but the test link invocation does not resolve it. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS. The vendored aws-lc build reports its existing stdalign probe and missing NASM warnings, but Clippy exits successfully. |
+| `cmd /c 'call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64 && cl.exe /nologo /W4 /WX /std:c11 /I bindings\c\include bindings\c\tests\client_abi_consumer.c /link /LIBPATH:target\debug kmipkit_ffi.dll.lib /OUT:"%TEMP%\kmipkit-client-abi-consumer-t045.exe" && set "PATH=target\debug;%PATH%" && "%TEMP%\kmipkit-client-abi-consumer-t045.exe" high-level typed-protocol generic-ttlv'` | PASS: the C consumer compiles with warnings as errors and exits 0 against the freshly built DLL. It checks that the Delegated Login constructor is callable and that response accessors clear output slots for an invalid item; it does not exercise successful C accessor values. |
+| `mvn -q -Dtest=DelegatedLoginMappingTest test` | PASS: 6 tests, 0 failures, 0 errors. The build compiled the JNI DLL from the updated bridge. |
+| From `bindings/python`: `$env:KMIPKIT_NATIVE_LIBRARY = (Resolve-Path '..\..\target\debug\kmipkit_ffi.dll').Path; $env:PYTHONPATH = 'src'; uv run --no-project --with pytest --with cffi python -m pytest tests/test_delegated_login.py -q` | PASS: 12 tests. |
+| `python -B -m unittest tools.api_manifest.tests.test_delegated_login_parity_manifest -v` | PASS: 2 tests. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs verified. |
+| `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+Coverage and cross-platform CI were not run for this task-specific head in this
+local-only pass. The FFI test command required the process-local MSVC `LIB`
+workaround described above; the independently compiled C consumer passed
+without it. No OASIS fixture for Delegated Login is present in the pinned local
+bundle, so these are project-derived tests, not official fixture passes. No
+server interoperability, profile support, or certification claim is made.
