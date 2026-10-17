@@ -1387,6 +1387,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "<kmipkit_client::RequestOptions as core::default::Default>::default",
     ),
     (
+        "rust-observed-4bb888b1c681b20dd34d",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::derive_key",
+    ),
+    (
         "rust-observed-397ee0115e79bd8b9749",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",

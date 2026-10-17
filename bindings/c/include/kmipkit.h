@@ -202,6 +202,10 @@ void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 #define KMIPKIT_ERROR_TRANSPORT ((int32_t)9)
 #define KMIPKIT_ERROR_SERVER_RESULT ((int32_t)10)
 
+/* Creates a typed KMIP 2.1 Derive Key request from §6.1.14, Table 205. Source Unique Identifiers are required, ordered, and may repeat; unknown Object Type and Derivation Method values are preserved. Derivation Parameters and Attributes are borrowed and copied by the call. The source array is bounded to 100,000 identifiers and 16 MiB of aggregate Text String bytes.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-REQ-SPEC-6.1.14-001-001, KMIPKIT-REQ-SPEC-6.1.14-001-002, KMIPKIT-REQ-SPEC-6.1.14-001-003, KMIPKIT-REQ-SPEC-6.1.14-001-004, KMIPKIT-REQ-SPEC-6.1.14-002, KMIPKIT-REQ-SPEC-6.1.14-006-001, KMIPKIT-REQ-SPEC-6.1.14-006-002, KMIPKIT-REQ-SPEC-6.1.14-007-001, KMIPKIT-REQ-SPEC-6.1.14-007-002, KMIPKIT-REQ-SPEC-7.12-003, KMIPKIT-REQ-SPEC-7.12-005-001 */
+int32_t kmipkit_client_batch_item_derive_key(uint32_t object_type, const kmipkit_unique_identifier_v1_t * unique_identifiers, uint64_t unique_identifier_count, uint32_t derivation_method, kmipkit_ttlv_structure_t * derivation_parameters, kmipkit_ttlv_structure_t * attributes, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0012-FR-002, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_identity_create(const uint8_t * vendor_identifier_data, uint64_t vendor_identifier_length, const uint8_t * name_data, uint64_t name_length, const uint8_t * version_data, uint64_t version_length, kmipkit_extension_identity_t ** out_identity);
 /* KMIPKIT-0012-FR-009, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */

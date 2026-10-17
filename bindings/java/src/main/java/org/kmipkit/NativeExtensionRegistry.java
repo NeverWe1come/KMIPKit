@@ -130,6 +130,9 @@ public final class NativeExtensionRegistry {
             long leaseTimeValue, boolean hasRequestCount, int requestCount, long usageLimits);
     public static native long clientBatchItemGetUsageAllocation(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber, long usageLimitsCount);
+    public static native long clientBatchItemDeriveKey(long objectType, int[] identifierKinds,
+            byte[][] identifierTexts, long[] identifierNumbers, long derivationMethod,
+            long derivationParameters, long attributes);
     public static native long clientBatchItemHash(
             long parameters, long data, @Nullable byte[] correlationValue,
             int initIndicator, int finalIndicator);

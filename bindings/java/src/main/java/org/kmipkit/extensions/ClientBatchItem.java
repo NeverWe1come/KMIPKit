@@ -17,6 +17,7 @@ public final class ClientBatchItem implements AutoCloseable {
     private static final int MAX_NATIVE_INPUT_ARRAY_BYTES = 16 * 1024 * 1024;
     private static final int MAX_UNIQUE_BATCH_ITEM_ID_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
     private static final int MAX_OPERATION_INPUT_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
+    private static final int MAX_DERIVE_KEY_SOURCE_IDENTIFIERS = 100_000;
 
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
@@ -192,6 +193,73 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Derive Key request preserving ordered and repeated source identifiers. */
+    public static ClientBatchItem deriveKey(
+            long objectType,
+            List<UniqueIdentifier> uniqueIdentifiers,
+            long derivationMethod,
+            TtlvStructure derivationParameters,
+            TtlvStructure attributes) {
+        requireU32(objectType, "Object Type");
+        requireU32(derivationMethod, "Derivation Method");
+        requireStructure(derivationParameters, "Derivation Parameters");
+        requireStructure(attributes, "Derive Key Attributes");
+        if (uniqueIdentifiers == null) {
+            throw new InvalidInputException("Derive Key source identifiers are required");
+        }
+        int count = uniqueIdentifiers.size();
+        if (count == 0) {
+            throw new InvalidInputException("Derive Key requires at least one source identifier");
+        }
+        if (count > MAX_DERIVE_KEY_SOURCE_IDENTIFIERS) {
+            throw new ResourceLimitException("Derive Key source identifier count exceeds the configured limit");
+        }
+
+        List<UniqueIdentifier> identifiers;
+        try {
+            identifiers = List.copyOf(uniqueIdentifiers);
+        } catch (NullPointerException exception) {
+            throw new InvalidInputException("Derive Key source identifiers contain a null value");
+        }
+        if (identifiers.size() != count) {
+            throw new InvalidInputException("Derive Key source identifier list changed during validation");
+        }
+
+        long totalTextBytes = 0;
+        for (UniqueIdentifier identifier : identifiers) {
+            if (identifier == null) {
+                throw new InvalidInputException("Derive Key source identifiers contain a null value");
+            }
+            if (identifier.kind() == UniqueIdentifier.Kind.TEXT_STRING) {
+                totalTextBytes += utf8Length(identifier.text());
+                if (totalTextBytes > MAX_OPERATION_INPUT_BYTES) {
+                    throw new ResourceLimitException("Derive Key source identifiers exceed the configured limit");
+                }
+            }
+        }
+
+        int[] kinds = new int[count];
+        byte[][] texts = new byte[count][];
+        long[] numbers = new long[count];
+        try {
+            for (int index = 0; index < count; index++) {
+                UniqueIdentifier identifier = identifiers.get(index);
+                kinds[index] = identifier.nativeKind();
+                texts[index] = identifier.nativeText();
+                numbers[index] = identifier.nativeNumber();
+            }
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemDeriveKey(
+                    objectType, kinds, texts, numbers, derivationMethod,
+                    derivationParameters.handle(), attributes.handle()));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            for (byte[] text : texts) {
+                clearNativeCopies(text);
+            }
+        }
+    }
+
     /** Creates a Hash request with required Cryptographic Parameters and optional Data/framing fields. */
     public static ClientBatchItem hash(
             TtlvStructure parameters,
@@ -346,6 +414,27 @@ public final class ClientBatchItem implements AutoCloseable {
         if (value != null && value.length > MAX_OPERATION_INPUT_BYTES) {
             throw new ResourceLimitException("operation input exceeds the configured limit");
         }
+    }
+
+    private static int utf8Length(String value) {
+        int length = 0;
+        for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (current <= 0x7f) {
+                length++;
+            } else if (current <= 0x7ff) {
+                length += 2;
+            } else if (Character.isHighSurrogate(current)) {
+                length += 4;
+                index++;
+            } else {
+                length += 3;
+            }
+            if (length > MAX_OPERATION_INPUT_BYTES) {
+                return length;
+            }
+        }
+        return length;
     }
 
     private static void clearNativeCopies(byte[]... values) {
