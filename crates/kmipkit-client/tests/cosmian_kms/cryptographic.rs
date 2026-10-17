@@ -4395,6 +4395,12 @@ fn signature_key_object(
 }
 
 #[test]
+fn symmetric_key_object_tag_matches_kmip_2_1() {
+    // OASIS KMIP v2.1 §11.56, Table 487 assigns Symmetric Key tag 0x42008F.
+    assert_eq!(SYMMETRIC_KEY, 0x0042_008F);
+}
+
+#[test]
 fn cosmian_independent_public_key_fixture_uses_pkcs8_spki_format() {
     let object =
         signature_key_object(vec![0x30, 0x00], 4, false).expect("well-formed public key fixture");

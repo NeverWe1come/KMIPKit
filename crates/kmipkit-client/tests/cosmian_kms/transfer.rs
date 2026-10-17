@@ -2875,7 +2875,8 @@ mod inventory_tests {
                 crate::common::required_text(row, "case_id").expect("HMAC fixture case ID");
             let object = fixture_object(row, ObjectType::from_raw(2))
                 .unwrap_or_else(|error| panic!("{case_id}: HMAC fixture: {error}"));
-            assert_eq!(object.tag().raw(), SYMMETRIC_KEY, "{case_id}");
+            // OASIS KMIP v2.1 §11.56, Table 487 assigns Symmetric Key tag 0x42008F.
+            assert_eq!(object.tag().raw(), 0x0042_008F, "{case_id}");
             let expected_format = enum_value(row, "key_format_type")
                 .unwrap_or_else(|| panic!("{case_id}: missing format enum"));
             assert!(
