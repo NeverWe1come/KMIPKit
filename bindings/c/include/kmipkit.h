@@ -358,15 +358,23 @@ int32_t kmipkit_ttlv_value_interval(uint32_t value, kmipkit_ttlv_value_t ** out_
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_value_date_time_extended(int64_t value, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
+int32_t kmipkit_ttlv_value_big_integer(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
+/* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_value_text_string(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_value_byte_string(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t value_length, kmipkit_ttlv_value_t ** out_value);
+/* Transfers ownership of structure after the output slot and limits handle are valid. If validation fails before transfer, the caller retains structure; after transfer, the caller must not use or release it, even if this function returns an error.
+ */
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_value_structure(kmipkit_ttlv_structure_t * structure, kmipkit_codec_limits_t * limits, kmipkit_ttlv_value_t ** out_value);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_structure_create(kmipkit_ttlv_structure_t ** out_structure);
+/* Transfers ownership of value only after the output slot, tag, and limits are valid. If validation fails before transfer, the caller retains value; after transfer, the caller must not use or release it, even if this function returns an error.
+ */
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_item_create(kmipkit_tag_t * tag, kmipkit_ttlv_value_t * value, kmipkit_codec_limits_t * limits, kmipkit_ttlv_item_t ** out_item);
+/* Transfers ownership of each input structure and item as it is accepted. Validation errors before transfer leave that handle caller-owned; after transfer, the caller must not use or release it, even if later processing returns an error.
+ */
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_ttlv_structure_with_item(kmipkit_ttlv_structure_t * structure, kmipkit_ttlv_item_t * item, kmipkit_codec_limits_t * limits, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */

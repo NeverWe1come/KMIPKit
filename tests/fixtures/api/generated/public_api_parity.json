@@ -5727,6 +5727,7 @@
           "kmipkit_ttlv_structure_view_t",
           "kmipkit_ttlv_structure_with_item",
           "kmipkit_ttlv_tag_value",
+          "kmipkit_ttlv_value_big_integer",
           "kmipkit_ttlv_value_boolean",
           "kmipkit_ttlv_value_byte_string",
           "kmipkit_ttlv_value_date_time",
@@ -5793,6 +5794,7 @@
           "org.kmipkit.ttlv.TtlvStructureView.itemAt",
           "org.kmipkit.ttlv.TtlvStructureView.itemCount",
           "org.kmipkit.ttlv.TtlvValue",
+          "org.kmipkit.ttlv.TtlvValue.BigInteger",
           "org.kmipkit.ttlv.TtlvValue.Boolean",
           "org.kmipkit.ttlv.TtlvValue.ByteString",
           "org.kmipkit.ttlv.TtlvValue.DateTime",
@@ -5861,6 +5863,7 @@
           "kmipkit.ttlv.ttlv_structure_view_item_at",
           "kmipkit.ttlv.ttlv_structure_view_item_count",
           "kmipkit.ttlv.ttlv_structure_with_item",
+          "kmipkit.ttlv.ttlv_value_big_integer",
           "kmipkit.ttlv.ttlv_value_boolean",
           "kmipkit.ttlv.ttlv_value_byte_string",
           "kmipkit.ttlv.ttlv_value_date_time",
@@ -5915,6 +5918,7 @@
           "kmipkit_ttlv::Tag",
           "kmipkit_ttlv::Tag::raw",
           "kmipkit_ttlv::Value",
+          "kmipkit_ttlv::Value::big_integer",
           "kmipkit_ttlv::Value::boolean",
           "kmipkit_ttlv::Value::byte_string",
           "kmipkit_ttlv::Value::date_time",
@@ -14468,6 +14472,9 @@
     },
     {
       "c": {
+        "documentation": [
+          "Transfers ownership of structure after the output slot and limits handle are valid. If validation fails before transfer, the caller retains structure; after transfer, the caller must not use or release it, even if this function returns an error."
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit"
@@ -14613,6 +14620,9 @@
     },
     {
       "c": {
+        "documentation": [
+          "Transfers ownership of value only after the output slot, tag, and limits are valid. If validation fails before transfer, the caller retains value; after transfer, the caller must not use or release it, even if this function returns an error."
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit"
@@ -14728,6 +14738,9 @@
     },
     {
       "c": {
+        "documentation": [
+          "Transfers ownership of each input structure and item as it is accepted. Validation errors before transfer leave that handle caller-owned; after transfer, the caller must not use or release it, even if later processing returns an error."
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit"
@@ -41156,6 +41169,138 @@
         "status": "Approved"
       },
       "capabilityId": "generic_ttlv_model",
+      "declarationId": "ttlv_value_big_integer:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv_value_big_integer",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_big_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.BigInteger",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_big_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Value::big_integer",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "ttlv_value_big_integer:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.ttlv.TtlvValue.BigInteger",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_big_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.BigInteger",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_big_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Value::big_integer",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "ttlv_value_big_integer:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.ttlv_value_big_integer",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_big_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.BigInteger",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_big_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Value::big_integer",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
       "declarationId": "ttlv_value_boolean:c",
       "declarationState": "declared",
       "exportName": "kmipkit_ttlv_value_boolean",
@@ -48609,6 +48754,50 @@
         "KMIPKIT-0004-FR-001",
         "KMIPKIT-0004-FR-003",
         "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "generic_ttlv_model",
+      "declarationId": "rust-observed-0a4fc4f9fd433bfb9ca5",
+      "declarationState": "declared",
+      "exportName": "kmipkit_ttlv::Value::big_integer",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_value_big_integer",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.TtlvValue.BigInteger",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.ttlv_value_big_integer",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::Value::big_integer",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "packageId": "rust-kmipkit-ttlv",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
         "KMIPKIT-0004-FR-008",
         "KMIPKIT-0004-FR-009",
         "KMIPKIT-0004-FR-010",

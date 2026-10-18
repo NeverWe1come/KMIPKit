@@ -591,6 +591,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_ttlv::Value::structure",
     ),
     (
+        "rust-observed-0a4fc4f9fd433bfb9ca5",
+        "rust-kmipkit-ttlv",
+        "kmipkit_ttlv::Value::big_integer",
+    ),
+    (
         "rust-observed-d2ed421cedc410ddef9c",
         "rust-kmipkit-ttlv",
         "kmipkit_ttlv::Value::text_string",

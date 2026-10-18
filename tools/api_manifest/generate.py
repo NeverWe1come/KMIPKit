@@ -2073,6 +2073,7 @@ def _encode_generated_text(value: str) -> bytes:
 def _registry_function_v1_projection(record: dict[str, Any]) -> dict[str, Any]:
     """Preserve one full-manifest function in the original registry-slice shape."""
     projected = deepcopy(record)
+    projected.get("c", {}).pop("documentation", None)
     projected["requirementIds"] = [
         requirement for requirement in projected["requirementIds"]
         if requirement.startswith("KMIPKIT-0012-")
