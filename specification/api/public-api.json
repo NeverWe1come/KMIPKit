@@ -265433,6 +265433,222 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__init__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the JoinSplitKeyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.JoinSplitKeyResponse.__repr__",
+      "reason": "This exact __repr__ is a redacted diagnostic representation and is not an independent KMIPKit protocol capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; JoinSplitKeyResponse's unique identifier, complete response TTLV, and close lifecycle are mapped individually. This exact T052 exclusion preserves the response record's redacted representation."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.__init__",
+      "reason": "This exact Python __init__ implements the public SplitKeyReference constructor already mapped by split_key_reference_create; it is not an independent cross-language capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; the SplitKeyReference type and split_key_reference_create constructor map the four-language creation capability. This exact T052 exclusion covers only the Python constructor dunder."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.unique_identifier",
+      "reason": "This exact Python readback property repeats caller-known constructor inputs; the C ABI consumes those values at split_key_reference_create and keeps the reference opaque, so readback is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps SplitKeyReference creation in four languages, and callers retain the same identifier and local threshold values they supplied."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.split_key_threshold",
+      "reason": "This exact Python readback property repeats caller-known constructor inputs; the C ABI consumes those values at split_key_reference_create and keeps the reference opaque, so readback is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps SplitKeyReference creation in four languages, and callers retain the same identifier and local threshold values they supplied."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.closed",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021; T052 maps explicit SplitKeyReference close/release in the four-language API. This exact exclusion covers only the Python lifecycle convenience."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.__enter__",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021; T052 maps explicit SplitKeyReference close/release in the four-language API. This exact exclusion covers only the Python lifecycle convenience."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.__exit__",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021; T052 maps explicit SplitKeyReference close/release in the four-language API. This exact exclusion covers only the Python lifecycle convenience."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.__repr__",
+      "reason": "This exact __repr__ is redacted Python diagnostic presentation, not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps the SplitKeyReference type and lifecycle, while this exact representation keeps identifier text redacted."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.extensions.SplitKeyReference.__slots__",
+      "reason": "This exact member is Python storage metadata and not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-021; T052's SplitKeyReference behavior is mapped through the type and constructor, and this exact exclusion covers implementation storage metadata only."
     }
   ],
   "apiLevels": [
