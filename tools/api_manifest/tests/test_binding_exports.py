@@ -856,7 +856,7 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("kmipkit.handle.Handle.close", names)
         self.assertTrue(result["complete"])
 
-    def test_java_overloads_that_share_a_manifest_path_remain_incomplete(self):
+    def test_java_overloads_that_share_a_manifest_path_keep_exact_signatures(self):
         output = """
             public class org.example.Client {
               public void send(java.lang.String);
@@ -864,8 +864,37 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         """
         result = AUDIT.inventory_javap_outputs({"Client.class": output})
-        self.assertFalse(result["complete"])
-        self.assertEqual(result["issues"][0]["reason"], "multiple-declarations-share-export-path")
+        self.assertTrue(result["complete"])
+        declaration = next(
+            row for row in result["declarations"]
+            if row["exportName"] == "org.example.Client.send"
+        )
+        self.assertEqual(
+            declaration["signatures"],
+            ["public void send(java.lang.String)", "public void send(byte[])"]
+        )
+
+    def test_java_manifest_must_declare_all_overload_signatures(self):
+        output = """
+            public class org.example.Client {
+              public void send(java.lang.String);
+              public void send(byte[]);
+            }
+        """
+        report = AUDIT.inventory_javap_outputs({"Client.class": output})
+        declaration = {
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Client.send",
+            "kind": "java-member",
+            "javaSignatures": ["public void send(java.lang.String)", "public void send(byte[])"]
+        }
+        exact = AUDIT.compare(report, {"publicDeclarations": [declaration]}, "java-kmipkit")
+        self.assertTrue(exact["matchesManifest"])
+
+        declaration.pop("javaSignatures")
+        missing = AUDIT.compare(report, {"publicDeclarations": [declaration]}, "java-kmipkit")
+        self.assertFalse(missing["matchesManifest"])
+        self.assertIn("java-overload-signatures-not-declared", {row["reason"] for row in missing["issues"]})
 
     def test_javap_inventory_keeps_compiler_generated_enum_members(self):
         output = """
