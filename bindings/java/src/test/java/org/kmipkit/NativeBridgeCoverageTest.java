@@ -111,6 +111,10 @@ final class NativeBridgeCoverageTest {
                 () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseJoinSplitKey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.ttlvStructureView(0));
     }
 
     @Test

@@ -12,9 +12,9 @@ use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCatego
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
-    GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, LocateRequest,
-    ObjectGroupMember, ObjectType, OperationData, SecretBytes, SecretText, SplitKeyMethod,
-    StorageStatusMask, UniqueIdentifier,
+    GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
+    LocateRequest, ObjectGroupMember, ObjectType, OperationData, SecretBytes, SecretText,
+    SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -3829,6 +3829,173 @@ fn ffi_join_split_key_bounds_aggregate_repeated_identifier_bytes() {
         item.is_null(),
         "rejected requests do not create a batch item"
     );
+}
+
+#[test]
+fn ffi_join_split_key_request_preserves_enumeration_and_integer_identifiers() {
+    let mut enumeration_identifier = empty_unique_identifier_output_v1();
+    enumeration_identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION;
+    enumeration_identifier.enumeration_value = u32::MAX;
+    let mut integer_identifier = empty_unique_identifier_output_v1();
+    integer_identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+    integer_identifier.integer_value = i32::MIN;
+
+    let mut enumeration_reference = ptr::null_mut();
+    assert_eq!(
+        kmipkit_split_key_reference_create(
+            &raw const enumeration_identifier,
+            1,
+            &raw mut enumeration_reference,
+        ),
+        SUCCESS
+    );
+    let mut integer_reference = ptr::null_mut();
+    assert_eq!(
+        kmipkit_split_key_reference_create(
+            &raw const integer_identifier,
+            2,
+            &raw mut integer_reference,
+        ),
+        SUCCESS
+    );
+
+    let mut references = [enumeration_reference, integer_reference];
+    let mut item = ptr::null_mut();
+    let status = kmipkit_client_batch_item_join_split_key(
+        7,
+        references.as_mut_ptr(),
+        2,
+        0,
+        0,
+        ptr::null_mut(),
+        ptr::null_mut(),
+        &raw mut item,
+    );
+
+    kmipkit_client_batch_item_release(item);
+    kmipkit_split_key_reference_release(integer_reference);
+    kmipkit_split_key_reference_release(enumeration_reference);
+
+    assert_eq!(status, SUCCESS);
+    assert!(!item.is_null());
+}
+
+#[test]
+fn ffi_join_split_key_response_getters_fail_closed_for_invalid_and_failed_items() {
+    let request = ClientRequest::join_split_key(JoinSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        vec![SplitKeyReference::new(UniqueIdentifier::TextString(
+            "source-fragment".to_owned(),
+        ))
+        .with_split_key_threshold(1)],
+    ));
+    let failed_item = failed_cryptographic_item(request, 0x29, b"join-split-failed");
+    let response_owner = reference_handle(failed_item, Kind::ClientBatchItemResponse)
+        .expect("the failed response item remains a live handle");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &response_owner.value else {
+        panic!("the test helper returns a response-item handle");
+    };
+    let response = Arc::clone(response);
+
+    let mismatched_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_join_split_key(
+            mismatched_item,
+            &raw mut present,
+            &raw mut identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+
+    let invalid_index_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(&response),
+            index: usize::MAX,
+        },
+    );
+    present = 9;
+    assert_eq!(
+        kmipkit_client_batch_item_response_join_split_key(
+            invalid_index_item,
+            &raw mut present,
+            &raw mut identifier,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+
+    let mut invalid_output = empty_unique_identifier_output_v1();
+    invalid_output.abi_version = 2;
+    assert_eq!(
+        kmipkit_client_batch_item_response_join_split_key(
+            failed_item,
+            &raw mut present,
+            &raw mut invalid_output,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    present = 9;
+    assert_eq!(
+        kmipkit_client_batch_item_response_join_split_key(
+            failed_item,
+            &raw mut present,
+            &raw mut identifier,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+
+    let mut response_ttlv = ptr::null_mut();
+    present = 9;
+    assert_eq!(
+        kmipkit_client_batch_item_response_join_split_key_ttlv(
+            mismatched_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+
+    present = 9;
+    assert_eq!(
+        kmipkit_client_batch_item_response_join_split_key_ttlv(
+            invalid_index_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+
+    present = 9;
+    assert_eq!(
+        kmipkit_client_batch_item_response_join_split_key_ttlv(
+            failed_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+
+    kmipkit_client_batch_item_response_release(invalid_index_item);
+    kmipkit_client_batch_item_response_release(mismatched_item);
+    kmipkit_client_batch_item_response_release(failed_item);
 }
 
 #[test]

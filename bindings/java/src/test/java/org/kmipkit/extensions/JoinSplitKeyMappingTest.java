@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -126,6 +127,31 @@ final class JoinSplitKeyMappingTest {
                 new Object[] {new long[] {0}, null, new long[] {0}}).isEmpty());
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
                 .parseJoinSplitKeyResponse(new Object[] {new long[] {1}, null, new long[] {0}}));
+    }
+
+    @Test
+    void absentResponseWithUnexpectedFieldsReleasesTransferredTtlv() {
+        try (TtlvStructure source = responseTtlv(CodecLimits.defaults())) {
+            long handle = source.nativeHandleOwner().transfer();
+            Object[] identifier = new Object[] {
+                new long[] {1, 1, 0, 0}, "unexpected-id".getBytes(StandardCharsets.UTF_8)
+            };
+
+            assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                    .parseJoinSplitKeyResponse(new Object[] {new long[] {0}, identifier, new long[] {handle}}));
+            assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvStructureView(handle));
+        }
+    }
+
+    @Test
+    void successfulResponseWithoutIdentifierReleasesTransferredTtlv() {
+        try (TtlvStructure source = responseTtlv(CodecLimits.defaults())) {
+            long handle = source.nativeHandleOwner().transfer();
+
+            assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                    .parseJoinSplitKeyResponse(new Object[] {new long[] {1}, null, new long[] {handle}}));
+            assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvStructureView(handle));
+        }
     }
 
     private static TtlvStructure responseTtlv(CodecLimits limits) {

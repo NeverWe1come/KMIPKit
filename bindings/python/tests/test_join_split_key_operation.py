@@ -208,6 +208,100 @@ def test_join_split_key_response_owns_ttlv_and_redacts_identifier(
     assert result.response_ttlv.closed
 
 
+@pytest.mark.parametrize("presence_value", [2, 255])
+def test_join_split_key_response_rejects_non_boolean_presence_output(
+    monkeypatch: pytest.MonkeyPatch,
+    presence_value: int,
+) -> None:
+    response_calls, ttlv_calls, _released = _install_join_split_key_response_abi(
+        monkeypatch, response_present=presence_value
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._join_split_key_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert response_calls == ["response"]
+    assert ttlv_calls == []
+
+
+def test_join_split_key_response_rejects_identifier_when_response_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_calls, ttlv_calls, _released = _install_join_split_key_response_abi(
+        monkeypatch, response_present=0, identifier_text="unexpected-identifier"
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._join_split_key_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert response_calls == ["response"]
+    assert ttlv_calls == []
+
+
+def test_join_split_key_response_rejects_inconsistent_empty_identifier_when_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_calls, ttlv_calls, _released = _install_join_split_key_response_abi(
+        monkeypatch,
+        response_present=0,
+        malformed_absent_identifier=True,
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._join_split_key_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert response_calls == ["response"]
+    assert ttlv_calls == []
+
+
+def test_join_split_key_response_rejects_success_without_identifier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_calls, ttlv_calls, _released = _install_join_split_key_response_abi(
+        monkeypatch, response_present=1
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._join_split_key_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert response_calls == ["response"]
+    assert ttlv_calls == []
+
+
+@pytest.mark.parametrize(
+    ("response_ttlv_present", "include_handle", "expected_release"),
+    [(0, True, True), (1, False, False), (2, True, True)],
+)
+def test_join_split_key_response_rejects_mismatched_ttlv_presence_and_handle(
+    monkeypatch: pytest.MonkeyPatch,
+    response_ttlv_present: int,
+    include_handle: bool,
+    expected_release: bool,
+) -> None:
+    handle = _take_join_split_key_response_ttlv_handle() if include_handle else ffi.NULL
+    address = int(ffi.cast("uintptr_t", handle)) if include_handle else None
+    response_calls, ttlv_calls, released = _install_join_split_key_response_abi(
+        monkeypatch,
+        response_present=1,
+        identifier_text="split-key-id",
+        response_ttlv_present=response_ttlv_present,
+        response_ttlv_handle=handle,
+    )
+
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._join_split_key_response(SimpleNamespace(_pointer=lambda: object()))
+
+        assert response_calls == ["response"]
+        assert ttlv_calls == ["response_ttlv"]
+        assert released == ([address] if expected_release else [])
+    finally:
+        if include_handle and address not in released:
+            ttlv_lib.kmipkit_ttlv_structure_release(
+                ttlv_ffi.cast("kmipkit_ttlv_structure_t *", address)
+            )
+
+
 def test_join_split_key_result_dispatch_uses_operation_0x29_and_success_only(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -306,3 +400,64 @@ def _response_tag_at(view: ttlv.TtlvStructureView, index: int) -> int:
     finally:
         tag.close()
         item_view.close()
+
+
+def _install_join_split_key_response_abi(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    response_present: int,
+    identifier_text: str | None = None,
+    malformed_absent_identifier: bool = False,
+    response_ttlv_present: int = 1,
+    response_ttlv_handle: object = ffi.NULL,
+) -> tuple[list[str], list[str], list[int]]:
+    response_calls: list[str] = []
+    ttlv_calls: list[str] = []
+    released: list[int] = []
+    identifier_storage = ffi.new("uint8_t[]", b"identifier")
+    if identifier_text is not None:
+        identifier_storage = ffi.new("uint8_t[]", identifier_text.encode("utf-8"))
+
+    def response(_item: object, present: object, identifier: object) -> int:
+        response_calls.append("response")
+        present[0] = response_present  # type: ignore[index]
+        if identifier_text is not None:
+            identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+            identifier.text_data = identifier_storage  # type: ignore[attr-defined]
+            identifier.text_length = len(identifier_text.encode("utf-8"))  # type: ignore[attr-defined]
+        elif malformed_absent_identifier:
+            identifier.text_data = identifier_storage  # type: ignore[attr-defined]
+            identifier.text_length = 1  # type: ignore[attr-defined]
+        return 0
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        ttlv_calls.append("response_ttlv")
+        present[0] = response_ttlv_present  # type: ignore[index]
+        output[0] = response_ttlv_handle  # type: ignore[index]
+        return 0
+
+    def release_structure(handle: object) -> None:
+        address = int(ffi.cast("uintptr_t", handle))
+        released.append(address)
+        ttlv_lib.kmipkit_ttlv_structure_release(
+            ttlv_ffi.cast("kmipkit_ttlv_structure_t *", address)
+        )
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_join_split_key=response,
+            kmipkit_client_batch_item_response_join_split_key_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=release_structure,
+        ),
+    )
+    return response_calls, ttlv_calls, released
+
+
+def _take_join_split_key_response_ttlv_handle() -> object:
+    structure = _join_split_key_response_ttlv()
+    raw_handle, owner = structure._take()
+    assert owner is None
+    address = int(ttlv_ffi.cast("uintptr_t", raw_handle))
+    return ffi.cast("kmipkit_ttlv_structure_t *", address)
