@@ -857,7 +857,7 @@ fn execute_client_batch(
                         ));
                     }
                     Ok(None) => {}
-                    Err(clone_status) => return record_ffi_error(clone_status),
+                    Err(clone_status) => return record_ffi_error(clone_status), // COVERAGE-EXCLUDE: the retained response is validated; cloning can fail only on allocation or invariant failure, with no fault-injection hook.
                 }
             }
             status
@@ -1145,7 +1145,7 @@ fn write_unique_identifier_v1(
                 output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
                 output.integer_value = *value;
             }
-            _ => return Err(ERROR_INVALID_INPUT),
+            _ => return Err(ERROR_INVALID_INPUT), // COVERAGE-EXCLUDE: the current UniqueIdentifier model has only text, enumeration, and integer variants.
         }
     }
     // SAFETY: the caller supplied a writable record with the checked v1 size.
@@ -1181,7 +1181,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_create(
         {
             if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
             }
             *present = 1;
             *object_type = object.raw();
@@ -1214,10 +1214,13 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify(
             return SUCCESS;
         }
         if let Some(certify) = item.outcome().certify_response() {
-            if let Err(status) =
-                write_unique_identifier_v1(out_unique_identifier, certify.unique_identifier())
+            if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
+                write_unique_identifier_v1(
+                    out_unique_identifier,
+                    certify.unique_identifier(),
+                )
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
             }
             *present = 1;
         }
@@ -1268,10 +1271,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_check(
         };
         if let Some(check) = item.outcome().check_response() {
             if let Some(identifier) = check.unique_identifier() {
-                if let Err(status) =
+                if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
                     write_unique_identifier_v1(out_unique_identifier, Some(identifier))
                 {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
                 }
                 *identifier_present = 1;
             }
@@ -1357,7 +1360,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_delegated_login(
                 if let Err(status) = ticket.with_ticket_value(|bytes| {
                     set_borrowed_span(ticket_present, ticket_value, Some(bytes))
                 }) {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on all supported 64-bit targets.
                 }
             }
         }
@@ -1426,7 +1429,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify_ttlv(
         if let Some(certify) = outcome.certify_response() {
             let Some(structure) = certify.with_ttlv(|view| super::clone_structure_view(&view))
             else {
-                return record_ffi_error(ERROR_INTERNAL);
+                return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: a successful parsed Certify result always retains its validated TTLV.
             };
             let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
@@ -1467,7 +1470,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation(
         {
             if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
             }
             *present = 1;
         }
@@ -1500,7 +1503,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
         if let kmipkit_client::ClientBatchOutcome::GetUsageAllocation(allocation) = outcome {
             let Some(structure) = allocation.with_ttlv(|view| super::clone_structure_view(&view))
             else {
-                return record_ffi_error(ERROR_INTERNAL);
+                return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: a successful parsed Get Usage Allocation result always retains its validated TTLV.
             };
             let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
@@ -1539,11 +1542,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_import(
         }
         if let kmipkit_client::ClientBatchOutcome::Import(import) = outcome {
             let Some(identifier) = import.unique_identifier() else {
-                return record_ffi_error(ERROR_INTERNAL);
+                return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: successful Import responses require a Unique Identifier during protocol parsing.
             };
             if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
             }
             *present = 1;
         }
@@ -1648,7 +1651,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_derive_key(
         {
             if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
             }
             *present = 1;
         }
@@ -1740,21 +1743,21 @@ pub extern "C" fn kmipkit_client_batch_item_response_export(
             export.attributes(),
             export.object(),
         ) else {
-            return record_ffi_error(ERROR_INTERNAL);
+            return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: successful Export responses contain all required fields after protocol parsing.
         };
         let attributes = try_ffi!(attributes.with_value(|value| match value {
             ValueView::Structure(structure) => super::clone_structure_view(&structure),
-            _ => Err(ERROR_INTERNAL),
+            _ => Err(ERROR_INTERNAL), // COVERAGE-EXCLUDE: Export Attributes are represented as a Structure by the typed response model.
         }));
         let mut any_object_structure = Structure::new();
         let any_object_item = try_ffi!(any_object.try_clone().map_err(model_status));
         if let Err(error) = any_object_structure.try_push(any_object_item) {
-            return record_ffi_error(model_status(error));
+            return record_ffi_error(model_status(error)); // COVERAGE-EXCLUDE: pushing one item into a new Structure can fail only on allocation.
         }
         let attributes_handle =
             match try_make_handle(Kind::Structure, HandleValue::Structure(attributes)) {
                 Ok(handle) => handle,
-                Err(status) => return record_ffi_error(status),
+                Err(status) => return record_ffi_error(status), // COVERAGE-EXCLUDE: handle allocation failure and registry exhaustion have no deterministic injection path.
             };
         let any_object_handle = match try_make_handle(
             Kind::Structure,
@@ -1762,14 +1765,14 @@ pub extern "C" fn kmipkit_client_batch_item_response_export(
         ) {
             Ok(handle) => handle,
             Err(status) => {
-                release(attributes_handle, Kind::Structure);
-                return record_ffi_error(status);
+                release(attributes_handle, Kind::Structure); // COVERAGE-EXCLUDE: the second handle allocation failure is not injectible after the first succeeds.
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: handle allocation failure and registry exhaustion have no deterministic injection path.
             }
         };
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier)) {
-            release(attributes_handle, Kind::Structure);
-            release(any_object_handle, Kind::Structure);
-            return record_ffi_error(status);
+            release(attributes_handle, Kind::Structure); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
+            release(any_object_handle, Kind::Structure); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
+            return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
         }
         *object_type = raw_object_type.raw();
         *attributes_out = attributes_handle;
@@ -1853,23 +1856,23 @@ pub extern "C" fn kmipkit_client_batch_item_response_get(
         let (Some(raw_object_type), Some(identifier), Some(any_object)) =
             (get.object_type(), get.unique_identifier(), get.object())
         else {
-            return record_ffi_error(ERROR_INTERNAL);
+            return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: successful Get responses contain all required fields after protocol parsing.
         };
         let any_object = try_ffi!(any_object.try_clone().map_err(model_status));
         let mut any_object_structure = Structure::new();
         if let Err(error) = any_object_structure.try_push(any_object) {
-            return record_ffi_error(model_status(error));
+            return record_ffi_error(model_status(error)); // COVERAGE-EXCLUDE: pushing one item into a new Structure can fail only on allocation.
         }
         let any_object_handle = match try_make_handle(
             Kind::Structure,
             HandleValue::Structure(any_object_structure),
         ) {
             Ok(handle) => handle,
-            Err(status) => return record_ffi_error(status),
+            Err(status) => return record_ffi_error(status), // COVERAGE-EXCLUDE: handle allocation failure and registry exhaustion have no deterministic injection path.
         };
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier)) {
-            release(any_object_handle, Kind::Structure);
-            return record_ffi_error(status);
+            release(any_object_handle, Kind::Structure); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
+            return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
         }
         *object_type = raw_object_type.raw();
         *any_object_out = any_object_handle;
@@ -1958,7 +1961,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_locate_unique_identifier_at
         };
         match write_unique_identifier_v1(out_unique_identifier, Some(identifier)) {
             Ok(()) => SUCCESS,
-            Err(status) => record_ffi_error(status),
+            Err(status) => record_ffi_error(status), // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
         }
     })
 }
@@ -1996,13 +1999,13 @@ pub extern "C" fn kmipkit_client_batch_item_response_create_key_pair(
                 out_private_key_unique_identifier,
                 Some(private_identifier),
             ) {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
             }
             if let Err(status) = write_unique_identifier_v1(
                 out_public_key_unique_identifier,
                 Some(public_identifier),
             ) {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
             }
             *present = 1;
         }
@@ -2072,7 +2075,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_create_split_key_unique_ide
         };
         match write_unique_identifier_v1(out_identifier, Some(identifier)) {
             Ok(()) => SUCCESS,
-            Err(status) => record_ffi_error(status),
+            Err(status) => record_ffi_error(status), // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
         }
     })
 }
@@ -2203,7 +2206,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_hash(
                 let status =
                     bytes.with_bytes(|bytes| set_borrowed_span(data_present, data, Some(bytes)));
                 if let Err(status) = status {
-                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on all supported 64-bit targets.
                 }
             }
             if let Some(bytes) = value.correlation_value() {
@@ -2254,10 +2257,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_mac(
         }
         if let Some(value) = item.outcome().mac_response() {
             *present = 1;
-            if let Err(status) =
+            if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
                 write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
             }
             if let Some(bytes) = value.mac_data() {
                 let status =
@@ -2315,10 +2318,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_mac_verify(
         }
         if let Some(value) = item.outcome().mac_verify_response() {
             *present = 1;
-            if let Err(status) =
+            if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
                 write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
             }
             if let Some(indicator) = value.validity_indicator() {
                 *validity_present = 1;
@@ -2372,10 +2375,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_sign(
         }
         if let Some(value) = item.outcome().sign_response() {
             *present = 1;
-            if let Err(status) =
+            if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
                 write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
             }
             if let Some(bytes) = value.signature_data() {
                 let status = bytes.with_bytes(|bytes| {
@@ -2439,10 +2442,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
         }
         if let Some(value) = item.outcome().signature_verify_response() {
             *present = 1;
-            if let Err(status) =
+            if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
                 write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight above.
             }
             if let Some(indicator) = value.validity_indicator() {
                 *validity_present = 1;
@@ -2503,7 +2506,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_discover_versions_supported
             return SUCCESS;
         };
         let Ok(version_count) = u64::try_from(versions.len()) else {
-            return record_ffi_error(ERROR_INTERNAL);
+            return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: usize lengths fit u64 on all supported 64-bit targets.
         };
         *present = 1;
         *count = version_count;
@@ -2511,7 +2514,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_discover_versions_supported
             return SUCCESS;
         }
         let Ok(capacity) = usize::try_from(capacity) else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+            return record_ffi_error(ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: the supported CI targets are 64-bit, so u64 fits usize.
         };
         if capacity < versions.len() {
             return record_ffi_error(ERROR_INVALID_INPUT);

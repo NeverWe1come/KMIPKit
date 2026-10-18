@@ -3973,7 +3973,11 @@ fn ffi_import_getters_reject_invalid_output_records_and_inconsistent_handles() {
     );
     identifier = empty_unique_identifier_output_v1();
     assert_eq!(
-        kmipkit_client_batch_item_response_import(invalid_index_item, &mut present, &mut identifier),
+        kmipkit_client_batch_item_response_import(
+            invalid_index_item,
+            &mut present,
+            &mut identifier
+        ),
         ERROR_INTERNAL
     );
     assert_eq!(
