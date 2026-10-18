@@ -3,6 +3,7 @@ package org.kmipkit.extensions;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +53,32 @@ final class DeriveKeyMappingTest {
             assertThrows(ResourceLimitException.class, () -> ClientBatchItem.deriveKey(
                     2, Collections.nCopies(100_001, UniqueIdentifier.integer(7)), 1,
                     derivationParameters, attributes));
+        }
+    }
+
+    @Test
+    void requestBuilderRejectsSourceIdentifierListThatChangesDuringValidation() {
+        List<UniqueIdentifier> changingList = new AbstractList<>() {
+            private int sizeReads;
+
+            @Override
+            public UniqueIdentifier get(int index) {
+                if (index != 0) {
+                    throw new IndexOutOfBoundsException(index);
+                }
+                return UniqueIdentifier.integer(7);
+            }
+
+            @Override
+            public int size() {
+                return sizeReads++ == 0 ? 2 : 1;
+            }
+        };
+
+        try (TtlvStructure derivationParameters = TtlvStructure.create();
+             TtlvStructure attributes = TtlvStructure.create()) {
+            assertThrows(InvalidInputException.class, () -> ClientBatchItem.deriveKey(
+                    2, changingList, 1, derivationParameters, attributes));
         }
     }
 
