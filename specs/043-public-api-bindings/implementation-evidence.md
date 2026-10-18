@@ -3771,13 +3771,21 @@ Focused verification on the correction:
 |---|---|
 | `python -B -m unittest tools.api_manifest.tests.test_generate tools.api_manifest.tests.test_import_parity_manifest` | PASS: 67 tests, 2 platform skips. |
 | `.venv-t031\Scripts\python.exe -B tools\api_manifest\generate.py --check` | PASS: all 12 generated outputs current. |
-| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact --nocapture` | PASS: the compiled public C consumer called the Big Integer builder and completed the existing TLS 1.3 mTLS batch exchange. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact --nocapture` | PASS: the compiled public C consumer called the Big Integer builder, verified its public type view and exact `00 80 ff` octets, and completed the existing TLS 1.3 mTLS batch exchange. |
 | `mvn -q -f bindings/java/pom.xml '-Dtest=AdapterApiCoverageTest,NativeBridgeCoverageTest' test` | PASS: Java adapter/JNI focused tests. |
 | `uv run --no-project --python 3.12 --with pytest --with cffi pytest bindings/python/tests/test_extension_registry.py -q` | PASS: 23 tests and 100 subtests. |
 | `cargo fmt --all --check`; `git diff --check` | PASS. |
 
 The independent security source review reported no actionable findings. It
-was a source review, not a completed Codex Security scan. Independent QA was
-still in progress when this evidence was written. Final-head cross-platform CI
-and the repository coverage gates remain pending; T050 stays unchecked until
-those gates and QA pass.
+was a source review, not a completed Codex Security scan. Independent QA
+completed the C verification follow-up and found no remaining issue.
+Final-head cross-platform CI and the repository coverage gates remain pending;
+T050 stays unchecked until those gates pass.
+
+The QA verification follow-up `b38f9bb8` extends the public C consumer to
+assert the Big Integer type and exact `{0x00, 0x80, 0xff}` bytes through
+`kmipkit_ttlv_value_view_type`, `kmipkit_ttlv_value_view_byte_length`, and
+`kmipkit_ttlv_value_view_byte_at`. The focused C mTLS test passes with these
+assertions. This is test-only: the FFI implementation already copied the
+provided bytes unchanged into `Value::big_integer`, so no runtime behavior
+changed in this follow-up.
