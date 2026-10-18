@@ -1271,6 +1271,43 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             24,
         )
 
+    def test_codec_limits_release_maps_managed_java_value_lifecycle(self) -> None:
+        declarations = self.checked_in_manifest["publicDeclarations"]
+        by_package_and_export = {
+            (declaration["packageId"], declaration["exportName"]): declaration
+            for declaration in declarations
+        }
+        release = by_package_and_export[("c-kmipkit", "kmipkit_codec_limits_release")]
+        python_close = by_package_and_export[
+            ("python-kmipkit", "kmipkit.ttlv.CodecLimits.close")
+        ]
+        expected_mappings = {
+            "rust": ("rust-kmipkit-ttlv", "kmipkit_ttlv::codec::CodecLimits"),
+            "c": ("c-kmipkit", "kmipkit_codec_limits_release"),
+            "java": ("java-kmipkit", "org.kmipkit.ttlv.CodecLimits"),
+            "python": ("python-kmipkit", "kmipkit.ttlv.CodecLimits.close"),
+        }
+
+        for declaration in (release, python_close):
+            with self.subTest(declaration=declaration["declarationId"]):
+                self.assertEqual(declaration["declarationState"], "declared")
+                self.assertEqual(
+                    declaration["mappingSemantics"],
+                    "native-handle-release-managed-java-value",
+                )
+                self.assertEqual(
+                    {
+                        language: (mapping["packageId"], mapping["name"])
+                        for language, mapping in declaration["languageMappings"].items()
+                    },
+                    expected_mappings,
+                )
+
+        java_close = by_package_and_export.get(
+            ("java-kmipkit", "org.kmipkit.ttlv.CodecLimits.close")
+        )
+        self.assertIsNone(java_close)
+
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
         self.assertEqual(len(declarations), 578)
