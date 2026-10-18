@@ -172,6 +172,8 @@ final class GetLocateResponseMappingTest {
                 new Object[] {new long[] {1, 1, 1, 0x1_0000_0000L, 0}, new Object[0]}));
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
                 new Object[] {new long[] {1, 0, 0, 1, 0}, new Object[0]}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {1, 1, 1, 1, 1}, new Object[] {"not-an-identifier-tuple"}}));
     }
 
     // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.

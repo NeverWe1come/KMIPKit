@@ -715,6 +715,62 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
+    @Test
+    void locateResponseRejectsMoreThanOneHundredThousandIdentifiersAtJavaBoundaryOverTls()
+            throws Exception {
+        int identifierCount = 100_001;
+        Path serverStorePath = temporaryDirectory.resolve("large-locate-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("large-locate-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, locateResponseMessage(identifierCount)));
+        Thread peerThread = new Thread(peer, "kmipkit-java-large-locate-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        CodecLimits limits = CodecLimits.create(16 * 1024 * 1024L, 64, 400_000);
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create();
+                TtlvStructure attributes = TtlvStructure.create()) {
+            batch.add(ClientBatchItem.locate(null, null, null, null, attributes));
+            try (ClientBatchResponse response = client.execute(batch, limits);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertTrue(result.uniqueBatchItemId().isEmpty());
+                assertThrows(ResourceLimitException.class, result::locateResponse);
+            }
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
+        } finally {
+            listener.close();
+        }
+    }
+
     @Test
     void peerClosingAfterRequestSurfacesSanitizedTypedTransportFailure() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("transport-error-server.p12");
@@ -1439,6 +1495,24 @@ final class ClientFacadeTlsIntegrationTest {
         }
         byte[] payload = structure(0x42007c, identifiers.toByteArray());
         byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(40)),
+                item(0x42007f, 5, integer(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] locateResponseMessage(int identifierCount) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        ByteArrayOutputStream identifiers = new ByteArrayOutputStream();
+        byte[] identifier = item(0x420094, 7, new byte[] {'x'});
+        for (int index = 0; index < identifierCount; index++) {
+            identifiers.write(identifier);
+        }
+        byte[] payload = structure(0x42007c,
+                item(0x4200d5, 2, integer(identifierCount)), identifiers.toByteArray());
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, integer(8)),
                 item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);
     }

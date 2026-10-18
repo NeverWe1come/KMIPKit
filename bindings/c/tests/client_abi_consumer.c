@@ -1883,6 +1883,18 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 result = 230;
                 goto cleanup;
             }
+            present = 0xff;
+            payload_present = 0xff;
+            object_type = UINT32_MAX;
+            get_any_object = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+            if (kmipkit_client_batch_item_response_get(
+                    response_item, &present, &payload_present, &object_type,
+                    NULL, &get_any_object) != T076_ERROR_INVALID_INPUT ||
+                present != 0 || payload_present != 0 || object_type != 0 ||
+                get_any_object != 0) {
+                result = 235;
+                goto cleanup;
+            }
         }
         if (index == 18) {
             uint8_t present = 0;
@@ -1919,6 +1931,24 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                     result = 232;
                     goto cleanup;
                 }
+            }
+            kmipkit_unique_identifier_v1_t out_of_range_identifier = {0};
+            out_of_range_identifier.struct_size =
+                (uint32_t)sizeof(out_of_range_identifier);
+            out_of_range_identifier.abi_version = 1;
+            if (kmipkit_client_batch_item_response_locate_unique_identifier_at(
+                    response_item, identifier_count, &out_of_range_identifier) !=
+                    T076_ERROR_INVALID_INPUT ||
+                out_of_range_identifier.kind != 0 ||
+                out_of_range_identifier.text_data != 0 ||
+                out_of_range_identifier.text_length != 0) {
+                result = 236;
+                goto cleanup;
+            }
+            if (kmipkit_client_batch_item_response_locate_unique_identifier_at(
+                    response_item, 0, NULL) != T076_ERROR_INVALID_INPUT) {
+                result = 237;
+                goto cleanup;
             }
         }
         if (index == 19) {
