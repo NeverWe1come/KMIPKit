@@ -246,7 +246,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             c_header,
         )
 
-    def test_private_c_header_keeps_blocked_ffi_declarations_out_of_public_header(self) -> None:
+    def test_public_c_header_exposes_generic_ttlv_builders_for_import(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         outputs = generate.render_outputs(manifest)
         private_header = outputs[
@@ -255,8 +255,15 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
 
         self.assertIn("KMIPKIT_INTERNAL_H", private_header)
-        self.assertIn("kmipkit_ttlv_item_create", private_header)
-        self.assertNotIn("kmipkit_ttlv_item_create", public_header)
+        for symbol in (
+            "kmipkit_ttlv_value_byte_string",
+            "kmipkit_ttlv_value_text_string",
+            "kmipkit_ttlv_value_structure",
+            "kmipkit_ttlv_item_create",
+            "kmipkit_ttlv_structure_with_item",
+        ):
+            with self.subTest(symbol=symbol):
+                self.assertIn(f"{symbol}(", public_header)
 
     def test_public_header_exposes_error_ttlv_after_t081_mapping(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))

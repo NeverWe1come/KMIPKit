@@ -128,6 +128,72 @@ class ImportParityManifestTests(unittest.TestCase):
         self.assertEqual("verified", operations[0]["apiState"])
         self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
 
+    def test_import_generic_ttlv_builders_map_to_approved_shared_model(self) -> None:
+        expected_mappings = {
+            "ttlv_value_byte_string:c": {
+                "rust": "kmipkit_ttlv::Value::byte_string",
+                "c": "kmipkit_ttlv_value_byte_string",
+                "java": "org.kmipkit.ttlv.TtlvValue.ByteString",
+                "python": "kmipkit.ttlv.ttlv_value_byte_string",
+            },
+            "ttlv_value_text_string:c": {
+                "rust": "kmipkit_ttlv::Value::text_string",
+                "c": "kmipkit_ttlv_value_text_string",
+                "java": "org.kmipkit.ttlv.TtlvValue.TextString",
+                "python": "kmipkit.ttlv.ttlv_value_text_string",
+            },
+            "ttlv_value_structure:c": {
+                "rust": "kmipkit_ttlv::Value::structure",
+                "c": "kmipkit_ttlv_value_structure",
+                "java": "org.kmipkit.ttlv.TtlvValue.structure",
+                "python": "kmipkit.ttlv.ttlv_value_structure",
+            },
+            "ttlv_item_create:c": {
+                "rust": "kmipkit_ttlv::Item::new",
+                "c": "kmipkit_ttlv_item_create",
+                "java": "org.kmipkit.ttlv.TtlvItem.create",
+                "python": "kmipkit.ttlv.ttlv_item_create",
+            },
+            "ttlv_structure_with_item:c": {
+                "rust": "kmipkit_ttlv::Structure::try_push",
+                "c": "kmipkit_ttlv_structure_with_item",
+                "java": "org.kmipkit.ttlv.TtlvStructure.withItem",
+                "python": "kmipkit.ttlv.ttlv_structure_with_item",
+            },
+        }
+        required_requirements = {
+            "KMIPKIT-0004-FR-003",
+            "KMIPKIT-0004-FR-005",
+            "KMIPKIT-0004-FR-006",
+            "KMIPKIT-0004-FR-012",
+            "KMIPKIT-0043-FR-004",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-021",
+        }
+
+        for declaration_id, expected in expected_mappings.items():
+            with self.subTest(declaration=declaration_id):
+                declaration = self.declarations[declaration_id]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("generic_ttlv_model", declaration["capabilityId"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertEqual("specs/004-generic-ttlv-model/spec.md",
+                                 declaration["approvalSource"]["path"])
+                self.assertEqual("Approved", declaration["approvalSource"]["status"])
+                self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+                self.assertEqual(
+                    expected,
+                    {
+                        language: mapping["name"]
+                        for language, mapping in declaration["languageMappings"].items()
+                    },
+                )
+                self.assertTrue(required_requirements <= set(declaration["requirementIds"]))
+                self.assertFalse(
+                    any(requirement.startswith("KMIPKIT-0012-")
+                        for requirement in declaration["requirementIds"])
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
