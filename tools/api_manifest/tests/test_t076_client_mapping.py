@@ -1877,6 +1877,119 @@ class T076ClientMappingTests(unittest.TestCase):
                 else:
                     self.assertIn("dataclass", exclusion["reason"].lower())
 
+    def test_vendor_extension_native_handle_releases_map_to_all_four_languages(self) -> None:
+        rust_types = {
+            "ClientRequestMessageExtension": (
+                "rust-kmipkit-client",
+                "kmipkit_client::extension_registry::ClientRequestMessageExtension",
+            ),
+            "Compatibility": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::Compatibility",
+            ),
+            "Discriminator": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::Discriminator",
+            ),
+            "ExtensionChildRule": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionChildRule",
+            ),
+            "ExtensionDefinition": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionDefinition",
+            ),
+            "ExtensionIdentity": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionIdentity",
+            ),
+            "ExtensionInformation": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionInformation",
+            ),
+            "ExtensionOrderConstraint": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionOrderConstraint",
+            ),
+            "ExtensionRecognition": (
+                "rust-kmipkit-client",
+                "kmipkit_client::extension_registry::ExtensionRecognition",
+            ),
+            "ExtensionSchema": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ExtensionSchema",
+            ),
+            "RegisteredExtensionValue": (
+                "rust-kmipkit-client",
+                "kmipkit_client::extension_registry::RegisteredExtensionValue",
+            ),
+            "TtlvPath": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::TtlvPath",
+            ),
+            "ValidatedExtensionValue": (
+                "rust-kmipkit-protocol",
+                "kmipkit_protocol::extension::ValidatedExtensionValue",
+            ),
+        }
+        c_release_names = {
+            "ClientRequestMessageExtension": "kmipkit_client_request_message_extension_release",
+            "Compatibility": "kmipkit_extension_compatibility_release",
+            "Discriminator": "kmipkit_extension_discriminator_release",
+            "ExtensionChildRule": "kmipkit_extension_child_rule_release",
+            "ExtensionDefinition": "kmipkit_extension_definition_release",
+            "ExtensionIdentity": "kmipkit_extension_identity_release",
+            "ExtensionInformation": "kmipkit_extension_information_release",
+            "ExtensionOrderConstraint": "kmipkit_extension_order_constraint_release",
+            "ExtensionRecognition": "kmipkit_extension_recognition_release",
+            "ExtensionSchema": "kmipkit_extension_schema_release",
+            "RegisteredExtensionValue": "kmipkit_registered_extension_value_release",
+            "TtlvPath": "kmipkit_ttlv_path_release",
+            "ValidatedExtensionValue": "kmipkit_validated_extension_value_release",
+        }
+        declarations = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+        }
+        binding_requirements = {
+            "KMIPKIT-0012-FR-010",
+            "KMIPKIT-0043-FR-007",
+            "KMIPKIT-0043-FR-008",
+            "KMIPKIT-0043-FR-009",
+            "KMIPKIT-0043-FR-010",
+            "KMIPKIT-0043-FR-021",
+        }
+
+        for type_name, (rust_package, rust_name) in rust_types.items():
+            rust_type = declarations[(rust_package, rust_name)]
+            self.assertEqual("declared", rust_type["declarationState"])
+            self.assertEqual("vendor_extension_registry", rust_type["capabilityId"])
+            expected_mappings = {
+                "rust": (rust_package, rust_name),
+                "c": ("c-kmipkit", c_release_names[type_name]),
+                "java": ("java-kmipkit", f"org.kmipkit.extensions.{type_name}.close"),
+                "python": ("python-kmipkit", f"kmipkit.extensions.{type_name}.close"),
+            }
+            for language in ("c", "java", "python"):
+                package_id, export_name = expected_mappings[language]
+                row = declarations[(package_id, export_name)]
+                with self.subTest(type=type_name, language=language):
+                    self.assertEqual("declared", row["declarationState"])
+                    self.assertEqual("vendor_extension_registry", row["capabilityId"])
+                    self.assertEqual("native-handle-release", row["mappingSemantics"])
+                    self.assertTrue(binding_requirements <= set(row["requirementIds"]))
+                    self.assertEqual(
+                        "specs/012-vendor-extension-registry/spec.md",
+                        row["approvalSource"]["path"],
+                    )
+                    self.assertEqual(
+                        {
+                            language: {"packageId": target_package, "name": target_name}
+                            for language, (target_package, target_name) in expected_mappings.items()
+                        },
+                        row["languageMappings"],
+                    )
+
     def test_check_java_and_python_exports_match_observed_declaration_kinds(self) -> None:
         declarations = {
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
