@@ -3766,6 +3766,66 @@ fn ffi_join_split_key_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
 }
 
 #[test]
+fn ffi_join_split_key_bounds_aggregate_repeated_identifier_bytes() {
+    let identifier_length = usize::try_from(MAX_FFI_INPUT_BYTES / 2 + 1)
+        .expect("test identifier length fits the platform");
+    let identifier_text = vec![b'x'; identifier_length];
+    let identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier record fits the ABI size field"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: identifier_text.as_ptr(),
+        text_length: u64::try_from(identifier_text.len()).expect("test length fits u64"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    let mut reference = ptr::null_mut();
+    assert_eq!(
+        kmipkit_split_key_reference_create(&identifier, 1, &mut reference),
+        SUCCESS,
+        "one individually valid large identifier creates a reference"
+    );
+
+    let mut single_reference = [reference];
+    let mut item = ptr::null_mut();
+    let single_status = kmipkit_client_batch_item_join_split_key(
+        7,
+        single_reference.as_mut_ptr(),
+        1,
+        0,
+        0,
+        ptr::null_mut(),
+        ptr::null_mut(),
+        &mut item,
+    );
+    kmipkit_client_batch_item_release(item);
+
+    let mut repeated_references = [reference, reference];
+    item = ptr::null_mut();
+    let repeated_status = kmipkit_client_batch_item_join_split_key(
+        7,
+        repeated_references.as_mut_ptr(),
+        2,
+        0,
+        0,
+        ptr::null_mut(),
+        ptr::null_mut(),
+        &mut item,
+    );
+    kmipkit_client_batch_item_release(item);
+    kmipkit_split_key_reference_release(reference);
+
+    assert_eq!(single_status, SUCCESS, "the under-budget request remains valid");
+    assert_eq!(
+        repeated_status, ERROR_RESOURCE_LIMIT,
+        "repeated occurrences are rejected before aggregate cloning exceeds the FFI budget"
+    );
+    assert!(item.is_null(), "rejected requests do not create a batch item");
+}
+
+#[test]
 fn ffi_create_split_key_getters_copy_nonempty_identifiers_and_reject_out_of_range_index() {
     let response = create_split_key_success_response()
         .expect("the valid successful split-key response is associated with its request");
