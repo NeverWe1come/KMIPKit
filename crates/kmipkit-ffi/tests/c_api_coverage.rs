@@ -299,6 +299,10 @@ fn spawn_public_client_batch_peer(
             c_request_contains_exact_export_selectors(&request),
             "C ABI consumer must transmit the exact ordered Export selectors"
         );
+        assert!(
+            c_request_contains_empty_get_constraints(&request),
+            "C ABI consumer must transmit an empty Get Constraints payload"
+        );
         tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -492,6 +496,68 @@ fn c_request_contains_exact_export_selectors(encoded: &[u8]) -> bool {
             return false;
         };
         export_items.next().is_none() && has_exact_selectors(export_item)
+    })
+}
+
+fn c_request_contains_empty_get_constraints(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const GET_CONSTRAINTS: u32 = 56;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+
+    fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+        let mut matching = structure
+            .children()
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item.tag().raw() == tag);
+        let (index, _) = matching.next()?;
+        matching.next().is_none().then_some(index)
+    }
+
+    fn has_empty_request_payload(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let Some(payload_index) = unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+                return false;
+            };
+            batch_item.children()[payload_index].with_value(|value| {
+                matches!(value, ValueView::Structure(payload) if payload.children().is_empty())
+            })
+        })
+    }
+
+    fn has_operation(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            unique_child_index(&batch_item, OPERATION).is_some_and(|index| {
+                batch_item.children()[index].with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == GET_CONSTRAINTS),
+                )
+            })
+        })
+    }
+
+    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut get_constraints_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| has_operation(item));
+        let Some(request_item) = get_constraints_items.next() else {
+            return false;
+        };
+        get_constraints_items.next().is_none() && has_empty_request_payload(request_item)
     })
 }
 
@@ -819,8 +885,8 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-// This TLS batch returns 16 ordered items: the original eight, five crypto
-// operations, Certify, Derive Key, and Export for the generated C consumer.
+// This TLS batch returns 17 ordered items: the original eight, five crypto
+// operations, Certify, Derive Key, Export, and Get Constraints for the generated C consumer.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -831,7 +897,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 16),
+            integer(0x0042_000D, 17),
         ],
     );
     let response_payload = structure(
@@ -844,7 +910,29 @@ fn mixed_discover_versions_response() -> Vec<u8> {
             .chain(discover_version_response_items(response_payload))
             .chain(creation_response_items())
             .chain(cryptographic_response_items())
-            .chain([derive_key_response_item(), export_response_item()]),
+            .chain([
+                derive_key_response_item(),
+                export_response_item(),
+                get_constraints_response_item(),
+            ]),
+    )
+}
+
+fn get_constraints_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 56),
+            ttlv_item(0x0042_0093, 0x08, b"constr"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [structure(
+                    0x0042_0168,
+                    [ttlv_item(0x0054_1234, 0x07, b"constraints-secret-sentinel")],
+                )],
+            ),
+        ],
     )
 }
 

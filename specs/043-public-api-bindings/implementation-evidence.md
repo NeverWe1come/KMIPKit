@@ -3321,6 +3321,37 @@ and unrelated T047 planning file were left untouched.
 Concern: local FFI coverage is a package-wide 94.56% line result rather than a
 T048-only coverage calculation. The changed C paths are covered by focused
 success/failure ABI tests and the full FFI suite passes; repository CI remains
-the authority for selected-scope coverage gates. The coverage run emitted
-existing AWS-LC/NASM feature-detection and MSVC consumer-link warnings, without
-test failures.
+the authority for selected-scope coverage gates.
+
+### T048 review follow-up — C ownership and Python redaction evidence
+
+The Python redaction test now builds an actual `Constraints` structure with a
+vendor child containing `constraints-secret-sentinel`, reads that value before
+transferring the native handle and again through the owned response, then
+asserts that `repr` omits it. The compiled C consumer now sends the empty Get
+Constraints request in its TLS 1.3 mTLS batch, receives a successful §6.1.22
+response with a required Constraints Structure, copies the complete response
+TTLV, releases the response item and batch response, reads the copied nested
+sentinel from C, and releases the caller-owned Structure. Existing ABI code
+already supported the tested lifecycle; this is coverage-only evidence, not a
+product behavior change.
+
+Focused commands and results:
+
+| Command | Result |
+|---|---|
+| From `bindings/python`, with `PYTHONPATH=src` and `KMIPKIT_NATIVE_LIBRARY` set to `src/kmipkit/_native_ffi/_native_ffi.dll`: `uv run --no-project --with pytest --with cffi==2.0.0 --python 3.12 python -B -m pytest -q tests/test_get_constraints_operation.py` | PASS: 2 tests. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --nocapture` | PASS: 1 TLS C consumer test; request payload shape and successful copied TTLV are checked. |
+| `git diff --check` | PASS after removing the extra EOF blank line in the Python test. |
+| `cargo fmt --all --check` | PASS after formatting the response fixture. |
+
+The focused Windows run did not become warning-free on incremental replay.
+`aws-lc-sys` re-emits build-script diagnostics: an MSVC compile probe for its
+vendored `tests/compiler_features_tests/stdalign_check.c` returned exit code
+2, and two `NASM command not found or failed to execute` warnings were printed.
+The same run emitted MSVC LNK4217 static-link warnings that
+`kmipkit_codec_limits_create`, `kmipkit_codec_limits_release`, and
+`kmipkit_last_error_get` from `kmipkit_ffi.lib` are imported by test functions
+in `c_api_coverage.rs`; cargo also listed `kmipkit_codec_limits_defaults` in
+that linker diagnostic. The focused test passed. No dependency or build
+configuration was changed to suppress these toolchain diagnostics.

@@ -25,7 +25,54 @@ def test_get_constraints_builder_has_empty_request_payload(monkeypatch: pytest.M
 def test_get_constraints_response_owns_complete_ttlv_and_redacts_repr(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    native_copy = ttlv.ttlv_structure_create()
+    sentinel = b"constraints-secret-sentinel"
+    limits = ttlv.codec_limits_defaults()
+
+    def item(tag_value: int, value: ttlv.Value) -> ttlv.TtlvItem:
+        raw_tag = ttlv.raw_tag_from_raw(tag_value)
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+            raw_tag.close()
+
+    def response_structure() -> ttlv.Structure:
+        secret_item = item(
+            0x0054_1234,
+            ttlv.ttlv_value_text_string(sentinel, limits),
+        )
+        constraints = ttlv.ttlv_structure_with_item(
+            ttlv.ttlv_structure_create(), secret_item, limits
+        )
+        constraints_item = item(
+            0x0042_0168,
+            ttlv.ttlv_value_structure(constraints, limits),
+        )
+        return ttlv.ttlv_structure_with_item(
+            ttlv.ttlv_structure_create(), constraints_item, limits
+        )
+
+    def has_sentinel(structure: ttlv.Structure) -> bool:
+        with ttlv.ttlv_structure_view(structure) as root:
+            with ttlv.ttlv_structure_view_item_at(root, 0) as constraints_item:
+                with ttlv.ttlv_item_view_value(constraints_item) as constraints_value:
+                    with ttlv.ttlv_value_view_structure(constraints_value) as constraints:
+                        with ttlv.ttlv_structure_view_item_at(
+                            constraints, 0
+                        ) as secret_item:
+                            with ttlv.ttlv_item_view_value(secret_item) as secret_value:
+                                length = ttlv.ttlv_value_view_byte_length(secret_value)
+                                return bytes(
+                                    ttlv.ttlv_value_view_byte_at(secret_value, index)
+                                    for index in range(length)
+                                ) == sentinel
+
+    try:
+        native_copy = response_structure()
+    finally:
+        limits.close()
+    assert has_sentinel(native_copy)
     native_handle, owner = native_copy._take()
     assert owner is None
 
@@ -45,6 +92,7 @@ def test_get_constraints_response_owns_complete_ttlv_and_redacts_repr(
 
     assert isinstance(result, client.GetConstraintsResponse)
     assert isinstance(result.response_ttlv, ttlv.Structure)
+    assert has_sentinel(result.response_ttlv)
     assert "constraints-secret-sentinel" not in repr(result)
     result.close()
-
+    assert result.response_ttlv.closed
