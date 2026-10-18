@@ -12,8 +12,8 @@ use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCatego
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
-    GetUsageAllocationRequest, LocateRequest, ObjectType, OperationData, SecretBytes,
-    SplitKeyMethod, UniqueIdentifier,
+    GetRequest, GetUsageAllocationRequest, LocateRequest, ObjectGroupMember, ObjectType,
+    OperationData, SecretBytes, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -2572,6 +2572,244 @@ fn ffi_export_request_accepts_all_optional_selectors_omitted() {
         );
         assert!(rejected_item.is_null());
     }
+}
+
+#[test]
+fn ffi_get_constructor_preserves_table_220_optional_values_and_omission() {
+    // OASIS KMIP Specification v2.1 §6.1.19, Table 220.
+    let identifier_bytes = b"get-key";
+    let mut identifier = empty_unique_identifier_output_v1();
+    identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes.as_ptr();
+    identifier.text_length = u64::try_from(identifier_bytes.len()).expect("test id fits u64");
+    let wrapping_specification =
+        make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_get(
+            &raw const identifier,
+            1,
+            0xf123_4567,
+            1,
+            0xf123_4568,
+            1,
+            0xf123_4569,
+            wrapping_specification,
+            &raw mut item,
+        ),
+        SUCCESS
+    );
+    let handle = reference_handle(item, Kind::BatchItem).expect("Get item handle is registered");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("the constructor returns a batch item");
+    };
+    let ClientRequest::Get(request) = batch_item.request() else {
+        panic!("the constructor returns a typed Get request");
+    };
+    assert_eq!(request.unique_identifier(), Some(&UniqueIdentifier::TextString("get-key".into())));
+    assert_eq!(request.key_format_type().map(|value| value.raw()), Some(0xf123_4567));
+    assert_eq!(request.key_wrap_type().map(|value| value.raw()), Some(0xf123_4568));
+    assert_eq!(request.key_compression_type().map(|value| value.raw()), Some(0xf123_4569));
+    assert!(request.key_wrapping_specification().is_some());
+    kmipkit_client_batch_item_release(item);
+    release(wrapping_specification, Kind::Structure);
+
+    item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_get(
+            ptr::null(), 0, 0, 0, 0, 0, 0, ptr::null_mut(), &raw mut item,
+        ),
+        SUCCESS
+    );
+    let handle = reference_handle(item, Kind::BatchItem).expect("omitted Get item is registered");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("the constructor returns a batch item");
+    };
+    let ClientRequest::Get(request) = batch_item.request() else {
+        panic!("the constructor returns a typed Get request");
+    };
+    assert!(request.unique_identifier().is_none());
+    assert!(request.key_format_type().is_none());
+    assert!(request.key_wrap_type().is_none());
+    assert!(request.key_compression_type().is_none());
+    assert!(request.key_wrapping_specification().is_none());
+    kmipkit_client_batch_item_release(item);
+}
+
+#[test]
+fn ffi_locate_constructor_preserves_empty_attributes_and_raw_table_247_values() {
+    // OASIS KMIP Specification v2.1 §6.1.28, Table 247.
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_locate(
+            1,
+            -4,
+            1,
+            0,
+            1,
+            0x8000_0001,
+            1,
+            0xf123_4567,
+            attributes,
+            &raw mut item,
+        ),
+        SUCCESS
+    );
+    let handle = reference_handle(item, Kind::BatchItem).expect("Locate item handle is registered");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("the constructor returns a batch item");
+    };
+    let ClientRequest::Locate(request) = batch_item.request() else {
+        panic!("the constructor returns a typed Locate request");
+    };
+    assert_eq!(request.maximum_items(), Some(-4));
+    assert_eq!(request.offset_items(), Some(0));
+    assert_eq!(request.storage_status_mask(), Some(StorageStatusMask::from_raw(0x8000_0001)));
+    assert_eq!(request.object_group_member(), Some(ObjectGroupMember::from_raw(0xf123_4567)));
+    assert!(request.attributes().is_empty());
+    kmipkit_client_batch_item_release(item);
+    release(attributes, Kind::Structure);
+
+    let mut rejected = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_locate(
+            0, 0, 0, 0, 0, 0, 0, 0, ptr::null_mut(), &raw mut rejected,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(rejected.is_null());
+}
+
+#[test]
+fn ffi_get_response_copies_the_secret_any_object() {
+    // OASIS KMIP Specification v2.1 §6.1.19, Tables 221–222.
+    let any_object = ttlv_structure(
+        0x0042_008f,
+        [ttlv_structure(
+            0x0042_0040,
+            [ttlv_item(0x0042_0045, 0x08, b"get-secret-material")],
+        )],
+    );
+    let item = successful_cryptographic_item(
+        ClientRequest::Get(GetRequest::new()),
+        0x0a,
+        b"get-success",
+        vec![
+            ttlv_enumeration(0x0042_0057, 0xf123_4567),
+            ttlv_item(0x0042_0094, 0x07, b"get-secret-id"),
+            any_object,
+        ],
+    );
+    let mut present = 0;
+    let mut payload_present = 0;
+    let mut object_type = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut object = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_get(
+            item,
+            &raw mut present,
+            &raw mut payload_present,
+            &raw mut object_type,
+            &raw mut identifier,
+            &raw mut object,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, payload_present, object_type), (1, 1, 0xf123_4567));
+    assert_response_identifier(&identifier, b"get-secret-id");
+    assert!(!object.is_null());
+
+    let mut object_view = ptr::null_mut();
+    assert_eq!(kmipkit_ttlv_structure_view(object, &raw mut object_view), SUCCESS);
+    let mut object_count = 0;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(object_view, &raw mut object_count),
+        SUCCESS
+    );
+    assert_eq!(object_count, 1);
+    kmipkit_ttlv_structure_view_release(object_view);
+
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_ttlv_structure_release(object);
+}
+
+#[test]
+fn ffi_locate_response_preserves_repeated_identifiers_and_empty_success_payloads() {
+    // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
+    let request = LocateRequest::new(AttributeSet::try_new(Vec::new()).expect("empty criteria are valid"));
+    let item = successful_cryptographic_item(
+        ClientRequest::Locate(request),
+        0x08,
+        b"locate-success",
+        vec![
+            ttlv_integer(0x0042_00d5, 3),
+            ttlv_item(0x0042_0094, 0x07, b"first"),
+            ttlv_item(0x0042_0094, 0x07, b"second"),
+            ttlv_item(0x0042_0094, 0x07, b"first"),
+        ],
+    );
+    let mut present = 0;
+    let mut payload_present = 0;
+    let mut located_items_present = 0;
+    let mut located_items = i32::MIN;
+    let mut count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_locate(
+            item,
+            &raw mut present,
+            &raw mut payload_present,
+            &raw mut located_items_present,
+            &raw mut located_items,
+            &raw mut count,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, payload_present, located_items_present), (1, 1, 1));
+    assert_eq!((located_items, count), (3, 3));
+    for (index, expected) in [b"first".as_slice(), b"second", b"first"].into_iter().enumerate() {
+        let mut identifier = empty_unique_identifier_output_v1();
+        assert_eq!(
+            kmipkit_client_batch_item_response_locate_unique_identifier_at(
+                item,
+                u64::try_from(index).expect("test index fits u64"),
+                &raw mut identifier,
+            ),
+            SUCCESS
+        );
+        assert_response_identifier(&identifier, expected);
+    }
+    kmipkit_client_batch_item_response_release(item);
+
+    let empty_request = LocateRequest::new(AttributeSet::try_new(Vec::new()).expect("empty criteria are valid"));
+    let empty_item = successful_cryptographic_item(
+        ClientRequest::Locate(empty_request),
+        0x08,
+        b"locate-empty",
+        Vec::new(),
+    );
+    present = 0;
+    payload_present = 0;
+    located_items_present = 0;
+    located_items = i32::MIN;
+    count = u64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_locate(
+            empty_item,
+            &raw mut present,
+            &raw mut payload_present,
+            &raw mut located_items_present,
+            &raw mut located_items,
+            &raw mut count,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, payload_present, located_items_present), (1, 1, 0));
+    assert_eq!((located_items, count), (0, 0));
+    kmipkit_client_batch_item_response_release(empty_item);
 }
 
 #[test]

@@ -1117,6 +1117,73 @@ static int response_identifier_matches(
         memcmp(identifier->text_data, expected, (size_t)expected_length) == 0;
 }
 
+static int get_locate_abi_is_callable_from_c(void) {
+    /* OASIS KMIP Specification v2.1 §§6.1.19 and 6.1.28, Tables 220–222 and 247–249. */
+    static const uint8_t identifier_bytes[] = "get-locate-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1);
+
+    kmipkit_ttlv_structure_t *wrapping_specification = 0;
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_client_batch_item_t *get_item = 0;
+    kmipkit_client_batch_item_t *locate_item = 0;
+    if (kmipkit_ttlv_structure_create(&wrapping_specification) != 0 ||
+        kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_client_batch_item_get(
+            &identifier, 1, UINT32_C(0xf1234567), 1, UINT32_C(0xf1234568),
+            1, UINT32_C(0xf1234569), wrapping_specification, &get_item) != 0 ||
+        get_item == 0 ||
+        kmipkit_client_batch_item_locate(
+            1, -4, 1, 0, 1, UINT32_C(0x80000001), 1, UINT32_C(0xf1234567),
+            attributes, &locate_item) != 0 ||
+        locate_item == 0) {
+        kmipkit_client_batch_item_release(locate_item);
+        kmipkit_client_batch_item_release(get_item);
+        kmipkit_ttlv_structure_release(attributes);
+        kmipkit_ttlv_structure_release(wrapping_specification);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(locate_item);
+    kmipkit_client_batch_item_release(get_item);
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_ttlv_structure_release(wrapping_specification);
+
+    uint8_t present = 0xff;
+    uint8_t payload_present = 0xff;
+    uint8_t located_items_present = 0xff;
+    uint32_t object_type = UINT32_MAX;
+    int32_t located_items = INT32_MAX;
+    uint64_t identifier_count = UINT64_MAX;
+    kmipkit_unique_identifier_v1_t output_identifier = {0};
+    output_identifier.struct_size = (uint32_t)sizeof(output_identifier);
+    output_identifier.abi_version = 1;
+    kmipkit_ttlv_structure_t *object = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_response_get(
+            0, &present, &payload_present, &object_type, &output_identifier, &object) !=
+            T076_ERROR_INVALID_INPUT ||
+        present != 0 || payload_present != 0 || object_type != 0 ||
+        output_identifier.kind != 0 || object != 0) {
+        return 0;
+    }
+    present = 0xff;
+    payload_present = 0xff;
+    located_items_present = 0xff;
+    if (kmipkit_client_batch_item_response_locate(
+            0, &present, &payload_present, &located_items_present,
+            &located_items, &identifier_count) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || payload_present != 0 || located_items_present != 0 ||
+        located_items != 0 || identifier_count != 0) {
+        return 0;
+    }
+    return kmipkit_client_batch_item_response_locate_unique_identifier_at(
+               0, 0, &output_identifier) == T076_ERROR_INVALID_INPUT &&
+        output_identifier.kind == 0;
+}
+
 static int successful_crypto_response_is_readable(
     uint64_t index, kmipkit_client_batch_item_response_t *response_item) {
     static const uint8_t correlation_bytes[] = {0x41, 0x00, 0x42};
@@ -2161,6 +2228,7 @@ int main(int argc, char **argv) {
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
+        !get_locate_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
         !creation_create_key_pair_matches_shared_fixture() ||
