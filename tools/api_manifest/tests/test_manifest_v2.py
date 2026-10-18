@@ -383,6 +383,24 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDiscoverVersions"
                     )
                     self.assertEqual(manifest_functions[function["id"]], expected_function)
+                elif function["id"] in {
+                    "ttlv_value_structure",
+                    "ttlv_item_create",
+                    "ttlv_structure_with_item",
+                }:
+                    expected_function = json.loads(json.dumps(function))
+                    expected_function["c"]["documentation"] = {
+                        "ttlv_value_structure": [
+                            "Transfers ownership of structure after the output slot and limits handle are valid. If validation fails before transfer, the caller retains structure; after transfer, the caller must not use or release it, even if this function returns an error."
+                        ],
+                        "ttlv_item_create": [
+                            "Transfers ownership of value only after the output slot, tag, and limits are valid. If validation fails before transfer, the caller retains value; after transfer, the caller must not use or release it, even if this function returns an error."
+                        ],
+                        "ttlv_structure_with_item": [
+                            "Transfers ownership of each input structure and item as it is accepted. Validation errors before transfer leave that handle caller-owned; after transfer, the caller must not use or release it, even if later processing returns an error."
+                        ],
+                    }[function["id"]]
+                    self.assertEqual(manifest_functions[function["id"]], expected_function)
                 else:
                     self.assertEqual(manifest_functions[function["id"]], function)
         added_versioned_type = next(
@@ -1246,7 +1264,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         for requirement in declaration["requirementIds"]
                     )
                 )
-                self.assertIn("KMIPKIT-0043-FR-004", declaration["requirementIds"])
+                if declaration.get("mappingSemantics") == "native-handle-release":
+                    binding_requirement = {
+                        "c-kmipkit": "KMIPKIT-0043-FR-007",
+                        "java-kmipkit": "KMIPKIT-0043-FR-008",
+                        "python-kmipkit": "KMIPKIT-0043-FR-009",
+                    }[declaration["packageId"]]
+                    self.assertTrue(
+                        "KMIPKIT-0043-FR-004" in declaration["requirementIds"]
+                        or (
+                            binding_requirement in declaration["requirementIds"]
+                            and "KMIPKIT-0043-FR-010" in declaration["requirementIds"]
+                        )
+                    )
+                else:
+                    self.assertIn("KMIPKIT-0043-FR-004", declaration["requirementIds"])
                 self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
                 self.assertEqual(
                     declaration["approvalSource"]["path"],
@@ -1255,13 +1287,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                     else "specs/005-ttlv-wire-codec/spec.md",
                 )
         self.assertTrue(ttlv_declarations)
-        self.assertEqual(len(ttlv_declarations), 234)
+        self.assertEqual(len(ttlv_declarations), 267)
         self.assertEqual(
             sum(
                 declaration["capabilityId"] == "generic_ttlv_model"
                 for declaration in ttlv_declarations
             ),
-            210,
+            243,
         )
         self.assertEqual(
             sum(
@@ -1310,7 +1342,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 578)
+        self.assertEqual(len(declarations), 584)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1323,27 +1355,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
 
-    def test_new_java_close_declarations_remain_blocked_until_parity_is_reviewed(self) -> None:
+    def test_only_unmapped_internal_java_close_remains_blocked(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
         close_declarations = [
             declaration
             for declaration in declarations
             if declaration["exportName"].endswith(".close")
-            and declaration.get("blockedReason", "").startswith(
-                "This Java AutoCloseable declaration has no reviewed equivalent mapping"
-            )
+            and declaration["declarationState"] == "blocked"
         ]
 
-        self.assertEqual(len(close_declarations), 16)
-        self.assertTrue(
-            all(declaration["declarationState"] == "blocked" for declaration in close_declarations)
-        )
-        self.assertTrue(
-            all(
-                declaration["requirementIds"]
-                == ["KMIPKIT-0043-FR-008", "KMIPKIT-0043-FR-021"]
-                for declaration in close_declarations
-            )
+        self.assertEqual(
+            {declaration["exportName"] for declaration in close_declarations},
+            {"org.kmipkit.internal.NativeHandle.close"},
         )
         generic_ttlv_closes = [
             declaration
@@ -1355,9 +1378,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             {declaration["exportName"] for declaration in generic_ttlv_closes},
             {
                 "org.kmipkit.ttlv.Tag.close",
+                "org.kmipkit.ttlv.RawTag.close",
+                "org.kmipkit.ttlv.TtlvItem.close",
                 "org.kmipkit.ttlv.TtlvItemView.close",
                 "org.kmipkit.ttlv.TtlvStructure.close",
                 "org.kmipkit.ttlv.TtlvStructureView.close",
+                "org.kmipkit.ttlv.TtlvValue.close",
                 "org.kmipkit.ttlv.TtlvValueView.close",
             },
         )
@@ -1630,7 +1656,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 550)
+        self.assertEqual(len(declarations), 556)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")

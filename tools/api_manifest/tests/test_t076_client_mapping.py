@@ -1284,6 +1284,7 @@ class T076ClientMappingTests(unittest.TestCase):
             "kmipkit.ttlv.ttlv_structure_create",
             "kmipkit.ttlv.ttlv_structure_view",
             "kmipkit.ttlv.ttlv_value_integer",
+            "kmipkit.ttlv.ttlv_item_create",
         }
         for path in factories:
             with self.subTest(factory=path):
@@ -1293,10 +1294,6 @@ class T076ClientMappingTests(unittest.TestCase):
                     {"rust", "c", "java", "python"},
                     set(declaration["languageMappings"]),
                 )
-        for path in ("kmipkit.ttlv.ttlv_item_create",):
-            with self.subTest(blocked_factory=path):
-                self.assertEqual("blocked", declarations[path]["declarationState"])
-
     def test_remaining_python_exports_are_mapped_or_exactly_excluded(self) -> None:
         python_root = ROOT / "bindings" / "python" / "src" / "kmipkit"
         sources = {

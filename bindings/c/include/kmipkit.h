@@ -182,11 +182,24 @@ struct kmipkit_transport_config_v1_t {
     uint64_t max_request_bytes;
 };
 
+void kmipkit_extension_identity_release(kmipkit_extension_identity_t *handle);
+void kmipkit_extension_compatibility_release(kmipkit_extension_compatibility_t *handle);
+void kmipkit_ttlv_path_release(kmipkit_ttlv_path_t *handle);
+void kmipkit_extension_discriminator_release(kmipkit_extension_discriminator_t *handle);
+void kmipkit_extension_schema_release(kmipkit_extension_schema_t *handle);
+void kmipkit_extension_information_release(kmipkit_extension_information_t *handle);
+void kmipkit_extension_definition_release(kmipkit_extension_definition_t *handle);
 void kmipkit_client_extension_registry_release(kmipkit_client_extension_registry_t *handle);
 void kmipkit_client_configuration_release(kmipkit_client_configuration_t *handle);
+void kmipkit_validated_extension_value_release(kmipkit_validated_extension_value_t *handle);
+void kmipkit_registered_extension_value_release(kmipkit_registered_extension_value_t *handle);
+void kmipkit_client_request_message_extension_release(kmipkit_client_request_message_extension_t *handle);
 void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
 void kmipkit_client_batch_item_release(kmipkit_client_batch_item_t *handle);
+void kmipkit_extension_child_rule_release(kmipkit_extension_child_rule_t *handle);
+void kmipkit_extension_order_constraint_release(kmipkit_extension_order_constraint_t *handle);
 void kmipkit_ttlv_value_release(kmipkit_ttlv_value_t *handle);
+void kmipkit_extension_recognition_release(kmipkit_extension_recognition_t *handle);
 void kmipkit_raw_tag_release(kmipkit_raw_tag_t *handle);
 void kmipkit_tag_release(kmipkit_tag_t *handle);
 void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);

@@ -63,8 +63,8 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         self.assertEqual(inventory["observedRustDeclarationCount"], 9534)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 264)
-        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 31)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 270)
+        self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
         self.assertEqual(
             {record["packageId"] for record in inventory["crates"]},
@@ -282,18 +282,21 @@ class SharedRustInventoryTests(unittest.TestCase):
                     f"{declaration['declarationId']} maps {language} to a blocked export",
                 )
 
-    def test_unreconciled_destructors_and_helpers_are_blocked_without_mappings(self) -> None:
+    def test_only_unmapped_runtime_namespace_roots_remain_blocked(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         blocked = inventory["blockedUnreconciledDeclarations"]
 
-        self.assertEqual(len(blocked), 31)
+        self.assertEqual(
+            {row["exportName"] for row in blocked},
+            {"org.kmipkit.RuntimeMetadata", "kmipkit.metadata"},
+        )
         self.assertEqual(
             sum("callable public declaration" in row["blockedReason"] for row in blocked),
-            17,
+            0,
         )
         self.assertEqual(
             sum("No exact equivalent public Rust declaration" in row["blockedReason"] for row in blocked),
-            12,
+            0,
         )
         for row in blocked:
             source = next(
