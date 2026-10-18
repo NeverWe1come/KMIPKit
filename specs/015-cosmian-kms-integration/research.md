@@ -210,12 +210,15 @@ Four raw ECDSA Sign cases for P256/secp256k1 with requested SHA-384/SHA-512 are 
 The multipart follow-up is classified against OASIS KMIP v2.1 §6.1, §6.1.24 Tables 235–237, and
 §7.8. Section 6.1 defines the multipart sequence and §7.8 requires the server-generated Correlation
 Value from the first response on subsequent requests. Hash Table 235 marks request Data as required
-for single-part Hash and not required for multipart Hash; it does not prohibit supplying Data on
-multipart requests. The multipart sequence does not state a general Data requirement for
-intermediate requests. The revised KMIPKit test sends a, b, and c in three parts as explicit
-optional inputs, reuses the first response's Correlation Value on both later requests, and checks
-the final result against an independent SHA known-answer vector. The typed response parser now
-accepts optional multipart output Data, while single-part required output remains enforced. This
-test behavior does not establish that empty intermediate parts are accepted by every server.
+for single-part Hash and not required for multipart Hash, while the general §6.1 text says Data is
+always required except when Init or Final Indicator is true. KMIPKIT-0021 governs Hash, MAC, and
+Sign and takes operation-table field requiredness directly; KMIPKIT-0019's positional Data matrix
+is scoped to Encrypt and Decrypt. The integration amendment therefore records the intermediate
+Hash omission as an unresolved source interpretation and makes no conformance claim for it. The
+revised KMIPKit test sends a, b, and c in three parts as explicit inputs, reuses the first response's
+Correlation Value on both later requests, and checks the final result against an independent SHA
+known-answer vector. The typed response parser accepts optional multipart output Data, while
+single-part required output remains enforced. The live test does not exercise the disputed
+intermediate omission.
 
 Against pinned Cosmian 5.28.0, all seven multipart algorithms returned typed Success but the final digest mismatched the vector for `abc`. Inspection of the pinned `crate/server/src/core/operations/hash.rs` shows that the request Correlation Value is supplied as additional input to a fresh digest, while the intermediate response does not return updated Correlation Value. This matches the observed mismatch and points to Cosmian's multipart state handling; it is not a KMIPKit response parser failure. The three SHA-224 single-part requests were rejected as Operation Not Supported; the versioned algorithm documentation advertises SHA-224, but the pinned Hash implementation omits it. All ten outcomes remain non-interoperable, and Hash remains 14/24.

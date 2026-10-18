@@ -130,8 +130,10 @@ ps --all` returned no services.
 The targeted Hash follow-up accepts typed multipart responses and sends a, b, and c as explicit Data
 blocks while reusing the first response's Correlation Value. OASIS KMIP v2.1 §6.1 defines multipart
 sequencing, §7.8 defines Correlation Value reuse, and Hash §6.1.24, Table 235 marks Data as not
-required for multipart Hash. The test supplies these blocks as explicit inputs, not because the
-standard requires Data on every part. Seven server responses are typed Success but their final
+required for multipart Hash. The general §6.1 text says Data is always required except when Init or
+Final Indicator is true, so this project makes no conformance claim for the disputed omission of
+Data from an intermediate Hash request. This test supplies explicit inputs on all three parts.
+Seven server responses are typed Success but their final
 digests do not match the independent abc vectors; three SHA-224 requests are rejected although
 Cosmian's published algorithm list advertises SHA-224. Hash remains 14/24 interoperable cases.
 

@@ -91,11 +91,12 @@ FR-017 permits caller-provided multipart input data where the operation supports
 optional output data for multipart Hash, MAC, and Sign responses. Preserve required output on
 single-part responses and all TTLV structural checks. OASIS KMIP v2.1 §6.1 defines multipart request
 sequencing, §7.8 requires reuse of the first response's Correlation Value, and Hash §6.1.24, Table
-235 marks Data as required for single-part Hash but not required for multipart Hash. The table does
-not prohibit supplied multipart Data. The Cosmian Hash test therefore uses a, b, and c as explicit
-input blocks, reuses the initial Correlation Value, and validates a returned final digest against
-the independent abc known-answer vector. These blocks are test inputs, not a claim that every
-multipart request must include Data.
+235 marks Data as not required for multipart Hash. Section 6.1 also says Data is always required
+except when Init or Final Indicator is true. The project records this source interpretation as
+unresolved and makes no conformance claim for an intermediate Hash request that omits Data. The
+Cosmian Hash test uses a, b, and c as explicit input blocks, reuses the initial Correlation Value,
+and validates a returned final digest against the independent abc known-answer vector; it does not
+exercise the disputed omission case.
 
 ## Evidence and risks
 

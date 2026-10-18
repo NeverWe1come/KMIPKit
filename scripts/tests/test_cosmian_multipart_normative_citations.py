@@ -54,7 +54,7 @@ class CosmianMultipartNormativeCitationTests(unittest.TestCase):
             "traceability summary": _paragraph_starting(SPEC_DIR / "traceability.md", "The live matrix records"),
             "task report": _paragraph_starting(SPEC_DIR / "task-6-report.md", "The 81 crypto response-validation failures"),
             "Cosmian README": _paragraph_starting(REPOSITORY_ROOT / "tests/integration/cosmian/README.md", "The targeted Hash follow-up"),
-            "protocol rustdoc": " ".join(protocol_path.read_text(encoding="utf-8").splitlines()[216:220]),
+            "protocol rustdoc": _paragraph_starting(protocol_path, "/// Multipart sequencing"),
         }
 
         for label, context in contexts.items():

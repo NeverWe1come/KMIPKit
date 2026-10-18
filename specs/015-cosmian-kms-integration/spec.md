@@ -127,14 +127,15 @@ As a KMIPKit contributor, I can run every source-derived valid case for the 35 s
   required-input checks and invalid framing checks. For successful multipart Hash, MAC, and Sign
   responses, typed parsing MUST preserve optional operation output when present and MUST accept its
   absence; successful single-part responses MUST continue requiring operation output. Hash request
-  sequencing follows OASIS KMIP Specification v2.1 §6.1, Correlation Value reuse follows §7.8, and
-  Hash request fields follow §6.1.24, Table 235. Table 235 marks Data required for single-part Hash
-  and not required for multipart Hash; it does not prohibit supplying Data in multipart requests.
+  sequencing follows OASIS KMIP Specification v2.1 §6.1; Correlation Value reuse follows §7.8; Hash
+  fields follow §6.1.24, Table 235. Table 235 marks Data as not required for multipart Hash, while
+  §6.1 states that Data is always required except when Init or Final Indicator is true. The
+  project records this source interpretation as unresolved and makes no conformance claim for an
+  intermediate Hash request that omits Data. This test sends Data on every part.
   The integration test MUST send explicit a, b, and c Data blocks in its three parts, reuse the
   Correlation Value from the first response, and compare a returned final digest with an independent
-  known-answer vector before counting interoperability. This is the selected test input, not a claim
-  that OASIS requires Data in every multipart request. No conformance claim is made for empty
-  intermediate requests.
+  known-answer vector before counting interoperability. This is the selected test input; the live
+  test does not exercise the disputed omission case.
 
 ### Out of Scope
 

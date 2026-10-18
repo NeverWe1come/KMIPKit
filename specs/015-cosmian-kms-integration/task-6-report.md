@@ -146,9 +146,10 @@ after the intermediate part, which is consistent with the observed wrong final d
 single-part requests remain target rejections (Operation Not Supported): the versioned Cosmian
 algorithm page lists SHA-224, but the pinned Hash dispatch does not implement it. OASIS KMIP v2.1
 §6.1 defines multipart sequencing, §7.8 defines Correlation Value reuse, and Hash §6.1.24, Tables
-235–237 define request/response fields. Table 235 marks Data required for single-part Hash but not
-required for multipart Hash; the test supplies explicit Data blocks without treating them as a
-normative requirement. All six valid length-only RNG cases returned typed responses missing
+235–237 define request/response fields. Table 235 marks Hash Data as not required for multipart,
+while general §6.1 text says Data is always required except when Init or Final Indicator is true.
+The live test supplies Data on all parts and does not claim conformance for the disputed omission of
+Data from an intermediate Hash request. All six valid length-only RNG cases returned typed responses missing
 Operation (Status 1, Reason 4) and remain response_validation_failed. OASIS KMIP v2.1 §6.1.49/Table
 316 and §6.1.50/Table 319 define the RNG request payloads; §8.6/Table 399 governs the response
 Operation field. No RNG bytes, seeds, private keys, passwords, or response bodies are recorded.
@@ -184,8 +185,8 @@ The previous 50 Get/Export response-validation failures were caused by the integ
   coverage. The earlier rustls 0.23.45 dependency-policy issue was resolved by the approved
   KMIPKIT-0045 remediation merged into release/1.0.0; this branch resolves rustls 0.23.46 and adds
   no dependency waiver. Fresh local RustSec and hosted Dependency policy checks passed. The
-  source-citation correction adds a focused contract test and requires ordinary PR CI on the updated
-  head.
+  branch includes a focused citation-regression test, and the corrected citations require ordinary
+  PR CI on the updated head.
 
 ## Remaining release/review gates
 

@@ -141,7 +141,7 @@ fn request_requires_a_hashing_algorithm_in_cryptographic_parameters() {
 }
 
 #[test]
-fn request_requires_data_for_single_part_and_multipart_progression() {
+fn request_requires_data_for_single_part_but_accepts_it_for_multipart() {
     assert!(
         HashRequest::new(parameters(6)).to_ttlv_payload().is_err(),
         "Table 235 requires Data for a single-part request"
@@ -153,7 +153,7 @@ fn request_requires_data_for_single_part_and_multipart_progression() {
         )))
         .with_correlation_value(SecretBytes::new(b"stream-id".to_vec()))
         .to_ttlv_payload()
-        .expect("KMIP 2.1 §2.1 requires Data for a non-final multipart request");
+        .expect("caller-provided Data is accepted for a multipart Hash request");
     assert_eq!(
         field_tags(&multipart),
         [0x0042_002B, DATA, CORRELATION_VALUE]

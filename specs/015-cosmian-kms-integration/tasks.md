@@ -92,8 +92,9 @@ The approved scope expands the earlier selected integration to every applicable 
   vendor format selector resolved the 50 legacy-PKCS#12 response-validation findings. Offline
   Cosmian tests: 118 passed, 110 live tests ignored. Workspace tests and Clippy pass; workspace
   coverage is 92.93%; requirement/Compose contracts pass. Hosted CI run 39049893049 passed on the
-  exact pre-correction matrix head 5c3e4952be02422bff7149256efc617cea12692a; the source-citation
-  correction adds a focused contract test and must pass the ordinary PR CI on the updated head. Keep
+  exact pre-correction matrix head 5c3e4952be02422bff7149256efc617cea12692a; this branch adds a
+  focused source-citation regression test, and the corrected citations must pass ordinary PR CI on
+  the updated head. Keep
   PR #56 in draft; the independent-server release gate remains open. FR-001–FR-016; SC-001–SC-009.
 
 ## KMIP 2.1 multipart Hash correction — authorized 2026-10-17
@@ -104,9 +105,10 @@ The approved scope expands the earlier selected integration to every applicable 
   caller-provided input data on multipart requests while retaining single-part output checks and
   framing validation, and fixes the Hash test to send a, b, and c while reusing the first response's
   Correlation Value. OASIS KMIP v2.1 §6.1 defines multipart sequencing, §7.8 defines Correlation
-  Value reuse, and Hash §6.1.24, Table 235 marks Data required for single-part Hash but not required
-  for multipart Hash. The table does not prohibit supplied multipart Data, so the test's three
-  blocks are explicit input choices rather than a universal requirement. The selected pinned Cosmian
+  Value reuse, and Hash §6.1.24, Table 235 marks Data as not required for multipart Hash, while
+  §6.1 says Data is always required except when Init or Final Indicator is true. The project makes
+  no conformance claim for the disputed intermediate omission, and the test supplies Data on every
+  part. The selected pinned Cosmian
   5.28.0 run accepts the typed responses but all seven multipart algorithms return a final digest
   different from the independent abc known-answer vector; three SHA-224 cases remain Operation Not
   Supported as the pinned source omits SHA-224 despite its documentation. The seven multipart rows

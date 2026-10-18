@@ -70,7 +70,10 @@ responses where the server omitted Operation (Status 1, Reason 4). Seven multipa
 returned typed Success, but the final digest differed from the independent known-answer digest for
 input abc; they are semantic_mismatch, not parser failures. The corrected flow sends a, b, and c as
 explicit input blocks, reuses the first response's Correlation Value as described by OASIS KMIP v2.1
-§6.1 and §7.8, and follows Hash §6.1.24, Table 235, which does not require Data for multipart Hash.
+§6.1 and §7.8, and follows Hash §6.1.24, Table 235. Section 6.1 says Data is always required
+except when Init or Final is true, while Table 235 marks Hash Data as not required for multipart
+requests. The live test supplies Data on all three parts and makes no conformance claim for the
+disputed intermediate omission.
 The pinned Cosmian 5.28.0 Hash implementation does not propagate updated multipart state to the
 final request. All six valid length-only RNG requests received a response missing Operation (Status
 1, Reason 4); the matrix classifies them as response_validation_failed, never successful RNG
