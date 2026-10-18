@@ -1413,6 +1413,20 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             expected = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
             self.assertEqual(parity, expected)
 
+    def test_v2_c_ownership_docs_do_not_leak_into_v1_registry_projection(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        projection = generate._registry_manifest_v2(manifest)
+        projected_functions = {
+            function["id"]: function for function in projection["functions"]
+        }
+        for function_id in (
+            "ttlv_value_structure",
+            "ttlv_item_create",
+            "ttlv_structure_with_item",
+        ):
+            with self.subTest(function_id=function_id):
+                self.assertNotIn("documentation", projected_functions[function_id]["c"])
+
     def test_registry_parity_excludes_v2_only_error_categories(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
