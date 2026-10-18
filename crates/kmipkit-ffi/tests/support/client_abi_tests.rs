@@ -3817,12 +3817,18 @@ fn ffi_join_split_key_bounds_aggregate_repeated_identifier_bytes() {
     kmipkit_client_batch_item_release(item);
     kmipkit_split_key_reference_release(reference);
 
-    assert_eq!(single_status, SUCCESS, "the under-budget request remains valid");
+    assert_eq!(
+        single_status, SUCCESS,
+        "the under-budget request remains valid"
+    );
     assert_eq!(
         repeated_status, ERROR_RESOURCE_LIMIT,
         "repeated occurrences are rejected before aggregate cloning exceeds the FFI budget"
     );
-    assert!(item.is_null(), "rejected requests do not create a batch item");
+    assert!(
+        item.is_null(),
+        "rejected requests do not create a batch item"
+    );
 }
 
 #[test]

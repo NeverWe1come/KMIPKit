@@ -108,6 +108,15 @@ def test_join_split_key_builder_rejects_missing_and_insufficient_threshold_conte
     assert calls == []
 
 
+def test_join_split_key_rejects_aggregate_repeated_identifier_bytes_at_native_boundary() -> None:
+    reference = _split_reference("x" * ((16 * 1024 * 1024) // 2 + 1), 1)
+    try:
+        with pytest.raises(errors.ResourceLimitError):
+            extensions.client_batch_item_join_split_key(1, [reference, reference])
+    finally:
+        reference.close()
+
+
 def test_join_split_key_native_cffi_builder_creates_and_releases_the_typed_item() -> None:
     first = _split_reference("native-repeat-id", 1)
     second = _split_reference("native-repeat-id", 2)

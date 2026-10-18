@@ -1024,6 +1024,57 @@ cleanup:
     return result;
 }
 
+static int join_split_key_constructor_enforces_aggregate_identifier_budget_from_c(void) {
+    const size_t identifier_capacity = 16U * 1024U * 1024U;
+    const size_t repeated_identifier_length = identifier_capacity / 2U + 1U;
+    uint8_t *identifier_bytes = malloc(identifier_capacity);
+    kmipkit_split_key_reference_t *reference = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    if (identifier_bytes == 0) {
+        goto cleanup;
+    }
+    memset(identifier_bytes, 'x', identifier_capacity);
+
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)identifier_capacity;
+    if (kmipkit_split_key_reference_create(&identifier, 1, &reference) != 0) {
+        goto cleanup;
+    }
+    kmipkit_split_key_reference_t *exact_limit_occurrence[] = {reference};
+    if (kmipkit_client_batch_item_join_split_key(
+            1, exact_limit_occurrence, 1, 0, 0, 0, 0, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    kmipkit_split_key_reference_release(reference);
+    reference = 0;
+
+    identifier.text_length = (uint64_t)repeated_identifier_length;
+    if (kmipkit_split_key_reference_create(&identifier, 1, &reference) != 0) {
+        goto cleanup;
+    }
+    kmipkit_split_key_reference_t *repeated_occurrences[] = {reference, reference};
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_join_split_key(
+            1, repeated_occurrences, 2, 0, 0, 0, 0, &item) !=
+            KMIPKIT_ERROR_RESOURCE_LIMIT || item != 0) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_split_key_reference_release(reference);
+    free(identifier_bytes);
+    return result;
+}
+
 static int get_usage_allocation_response_accessor_clears_outputs(void) {
     kmipkit_unique_identifier_v1_t identifier = {0};
     identifier.struct_size = (uint32_t)sizeof(identifier);
@@ -2737,6 +2788,7 @@ int main(int argc, char **argv) {
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
         !join_split_key_constructor_pairs_each_identifier_with_its_threshold() ||
+        !join_split_key_constructor_enforces_aggregate_identifier_budget_from_c() ||
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||
         !creation_rejects_malformed_split_key_inputs() ||

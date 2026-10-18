@@ -245,6 +245,11 @@ largest supplied threshold. Thresholds stay local and are never serialized or
 looked up remotely; different entries may have different thresholds. KMIPKit
 does not combine key material locally.
 
+The C, Java, and Python bindings cap the combined UTF-8 text identifier bytes
+in one Join Split Key request at 16 MiB before copying them into the native
+request. Repeated occurrences each count toward this limit; an over-limit call
+returns a resource-limit error.
+
 Table 244 requires Object Type and one or more Unique Identifier entries. The
 request preserves their order and repetitions. Secret Data Type, Attributes,
 and Protection Storage Masks are optional. On Success, Table 245 requires the

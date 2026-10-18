@@ -3989,3 +3989,41 @@ missing-NASM warnings; Maven's JNI and Rust test links also emitted existing
 MSVC duplicate-symbol warnings. They did not prevent the focused builds or
 tests from succeeding. No official fixture, full OASIS conformance,
 interoperability, profile-support, or certification result is claimed.
+
+#### Security follow-up — aggregate Join Split Key identifier budget
+
+The shared C ABI now preflights every reference occurrence and its UTF-8 text
+length before cloning identifiers into the native request. The aggregate text
+identifier budget is 16 MiB, matching the existing per-input FFI byte ceiling.
+The preflight retains bounded opaque-handle owners while it validates, then
+copies only after the total is within budget. Identifier order, repetitions,
+per-entry thresholds, and under-budget requests remain supported. C, Java, and
+Python share this FFI boundary. The bilingual guide documents the limit.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — aggregate allocation regression | `2112472d` | Added a C ABI test with one 8 MiB+1 text identifier: one occurrence remained accepted, while two repeated occurrences were expected to return `ERROR_RESOURCE_LIMIT`. Before the guard, the repeated call returned success (status 0), so the test failed at the expected assertion. |
+| Green — bounded preflight | `50bbfd13` | Added a handle-retaining preflight that sums per-occurrence text bytes before any identifier clone; requests above 16 MiB now return `ERROR_RESOURCE_LIMIT`. |
+| Refactor — compiled C boundary coverage, API documentation, and verification record | this commit | Added the aggregate-limit check to the compiled C ABI consumer, pinning acceptance at exactly 16 MiB and rejection of a repeated handle above the limit with a cleared output. Documented the C/Java/Python aggregate input limit in English and Spanish, reconciled the FFI export-count assertion from 207 to 212 for the five new C functions, and recorded the security-fix evidence. |
+
+Focused verification after the Green commit:
+
+| Command or evidence | Result |
+|---|---|
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib join_split_key -- --nocapture` | PASS: 2 Join Split Key FFI tests, including the new aggregate-limit case and the owned ordered response TTLV consumer. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib` | PASS: all 149 FFI unit tests. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture` | PASS: compiled public client C consumer ran the exact-16-MiB accepted case and repeated-handle over-limit rejection with a null output. |
+| Independent read-only implementation review | PASS: aggregate accounting is before cloning, byte counting uses UTF-8 byte length with overflow checking, retained `Arc` owners protect against release races, and Java/Python reach the shared guard. Review findings for compiled-C boundary coverage and the verification command were addressed and verified above. |
+| `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS. |
+| `cargo fmt --all --check` | PASS after formatting the touched Rust files. |
+| `git diff --check` | PASS. |
+| `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=JoinSplitKeyMappingTest' test` | PASS: 6 Java tests, including the repeated-identifier aggregate-limit case; JNI built successfully. |
+| Python 3.12 full suite with pinned coverage dependencies, editable package rebuilt from this worktree, and `KMIPKIT_NATIVE_LIBRARY` pointed at a temporary copy of the local DLL | PASS: 492 tests; 98.13% package line coverage. The temporary copy keeps the wheel-build test from replacing a DLL loaded by the test process. |
+| `python scripts/test_user_guide_examples.py --guide docs/user-guide/en/key-derivation-and-transfer.md --guide docs/user-guide/es/derivacion-y-transferencia-de-claves.md` | PASS: both marked Rust guide examples compiled. |
+
+The initial Red run emitted existing nonfatal AWS-LC/MSVC and missing-NASM
+warnings; the expected test assertion then failed because the unguarded FFI
+call succeeded. The OOM-scale maximum was not attempted; the focused test
+demonstrates the same aggregate boundary with two 8 MiB+1 occurrences. The
+first full FFI test run also caught the stale export-count assertion; after
+updating it to account for five additional C exports, all 149 FFI tests passed.

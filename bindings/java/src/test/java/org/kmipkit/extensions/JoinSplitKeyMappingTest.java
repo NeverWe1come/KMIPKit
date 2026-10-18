@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
@@ -55,6 +56,16 @@ final class JoinSplitKeyMappingTest {
                 UniqueIdentifier.textString("one"), 1)) {
             assertThrows(InvalidInputException.class, () -> ClientBatchItem.joinSplitKey(
                     1, java.util.Arrays.asList(reference, null)));
+        }
+    }
+
+    @Test
+    void requestRejectsAggregateRepeatedIdentifierBytesAtTheNativeBoundary() {
+        String identifier = "x".repeat((16 * 1024 * 1024) / 2 + 1);
+        try (SplitKeyReference reference = new SplitKeyReference(
+                UniqueIdentifier.textString(identifier), 1)) {
+            assertThrows(ResourceLimitException.class, () -> ClientBatchItem.joinSplitKey(
+                    1, List.of(reference, reference)));
         }
     }
 

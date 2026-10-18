@@ -252,6 +252,11 @@ entradas sea mayor o igual que el mayor umbral suministrado. Los umbrales son
 locales: nunca se serializan ni se consultan al servidor, y pueden diferir
 entre entradas. KMIPKit no combina localmente el material de las claves.
 
+Los bindings C, Java y Python limitan a 16 MiB el total de bytes UTF-8 de los
+identificadores de texto de una petición Join Split Key, antes de copiarlos a
+la petición nativa. Cada ocurrencia repetida cuenta para este límite; si se
+supera, la llamada devuelve un error de límite de recursos.
+
 La Tabla 244 exige Object Type y una o más entradas Unique Identifier. La
 petición conserva su orden y las repeticiones. Secret Data Type, Attributes y
 Protection Storage Masks son opcionales. En Success, la Tabla 245 exige el
