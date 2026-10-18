@@ -2,7 +2,7 @@
 
 ## Status
 
-The Get and Locate four-language mapping is implemented in the existing T076 worktree. T038 remains unchecked pending controller review. No push, merge, or PR-state change was made.
+The Get and Locate four-language mapping is implemented in the existing T076 worktree. T038 remains unchecked pending final-head CI and controller review. PR #104 remains a draft and has not been merged.
 
 ## TDD commits
 
@@ -23,7 +23,7 @@ The Get and Locate four-language mapping is implemented in the existing T076 wor
 
 ## Concerns
 
-Windows Rust/JNI builds emitted the existing `aws-lc-sys` MSVC probe and missing-NASM warnings; builds and focused tests succeeded. Full workspace tests, selected coverage gates, and current-head CI were not run in this continuation. The mapping does not claim complete OASIS conformance, server behavior, interoperability, profile support, or certification.
+Windows Rust/JNI builds emitted the existing `aws-lc-sys` MSVC probe and missing-NASM warnings; builds and focused tests succeeded. The mapping does not claim complete OASIS conformance, server behavior, interoperability, profile support, or certification.
 
 ## Reviewer correction: Locate identifier-count preservation
 
@@ -40,4 +40,24 @@ The Java and Python adapters no longer impose the decoder's default 100,000-elem
 - Green, Python (`cwd: bindings/python`): `$env:UV_PROJECT_ENVIRONMENT='.venv-t038-fix'; $env:KMIPKIT_NATIVE_LIBRARY='C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\target\debug\kmipkit_ffi.dll'; uv run --offline --python 'C:\Users\ramp1953\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\python.exe' --with pytest python -m pytest -q tests/test_get_locate_operation.py` — PASS, 5 tests.
 - Green: `git diff --check` — PASS.
 
-T038 remains unchecked pending controller review. No push, merge, or PR-state change was made.
+T038 remains unchecked pending final-head CI and controller review. PR #104 remains a draft.
+
+## Workspace verification continuation
+
+The focused lint correction replaces three redundant closures in the FFI test
+with direct method references; it changes no runtime behavior. Initial
+workspace Clippy failed on those three test expressions. After the correction,
+the following checks passed on the current implementation tree:
+
+- `cargo fmt --all --check` — PASS.
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings` — PASS.
+- `cargo test --workspace --all-features` — PASS.
+- `cargo llvm-cov --workspace --all-features` — PASS; Rust workspace line
+  coverage was 92.55 percent, above the 90 percent workspace minimum.
+- `python -B tools/api_manifest/generate.py --check` — PASS; all 12 generated
+  outputs are current.
+- `git diff --check` — PASS.
+
+These local checks do not substitute for the selected-scope 95 percent changed
+code gate or cross-platform checks on the final pushed head. Those remain
+dependent on PR CI after the continuation commits are pushed.

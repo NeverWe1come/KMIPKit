@@ -2612,15 +2612,21 @@ fn ffi_get_constructor_preserves_table_220_optional_values_and_omission() {
         Some(&UniqueIdentifier::TextString("get-key".into()))
     );
     assert_eq!(
-        request.key_format_type().map(|value| value.raw()),
+        request
+            .key_format_type()
+            .map(kmipkit_protocol::KeyFormatType::raw),
         Some(0xf123_4567)
     );
     assert_eq!(
-        request.key_wrap_type().map(|value| value.raw()),
+        request
+            .key_wrap_type()
+            .map(kmipkit_protocol::KeyWrapType::raw),
         Some(0xf123_4568)
     );
     assert_eq!(
-        request.key_compression_type().map(|value| value.raw()),
+        request
+            .key_compression_type()
+            .map(kmipkit_protocol::KeyCompressionType::raw),
         Some(0xf123_4569)
     );
     assert!(request.key_wrapping_specification().is_some());
