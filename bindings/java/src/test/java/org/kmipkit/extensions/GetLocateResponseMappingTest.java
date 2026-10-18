@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.junit.jupiter.api.Test;
 
@@ -176,6 +177,17 @@ final class GetLocateResponseMappingTest {
                 new Object[] {new long[] {1, 0, 0, 1, 0}, new Object[0]}));
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
                 new Object[] {new long[] {1, 1, 1, 1, 1}, new Object[] {"not-an-identifier-tuple"}}));
+    }
+
+    @Test
+    void locateResponseRejectsIdentifierCountBeyondTheNativeArrayLimit() {
+        int identifierCount = 100_001;
+        Object[] identifiers = new Object[identifierCount];
+
+        assertThrows(ResourceLimitException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {
+                    new long[] {1, 1, 1, identifierCount, identifierCount}, identifiers
+                }));
     }
 
     // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
