@@ -2135,9 +2135,10 @@
         },
         "mappingSemantics": {
           "enum": [
-            "native-handle-release"
+            "native-handle-release",
+            "native-handle-release-managed-java-value"
           ],
-          "description": "Declares that Rust maps native handle release to dropping the owning public type."
+          "description": "Declares cross-language ownership semantics. Native handle release maps to Rust drop, C release, Java close, and Python close; native-handle-release-managed-java-value maps Java to an immutable managed value with no native handle while retaining Rust drop, C release, and Python close."
         },
         "parityEvidenceIds": {
           "$ref": "#/$defs/parityEvidenceIds"

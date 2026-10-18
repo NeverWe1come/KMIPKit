@@ -190,6 +190,7 @@ void kmipkit_ttlv_value_release(kmipkit_ttlv_value_t *handle);
 void kmipkit_raw_tag_release(kmipkit_raw_tag_t *handle);
 void kmipkit_tag_release(kmipkit_tag_t *handle);
 void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);
+void kmipkit_codec_limits_release(kmipkit_codec_limits_t *handle);
 void kmipkit_ttlv_structure_view_release(kmipkit_ttlv_structure_view_t *handle);
 void kmipkit_ttlv_item_view_release(kmipkit_ttlv_item_view_t *handle);
 void kmipkit_ttlv_value_view_release(kmipkit_ttlv_value_view_t *handle);

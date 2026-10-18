@@ -26517,6 +26517,47 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "public_binding_surface",
+      "declarationId": "CodecLimits:c-release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_codec_limits_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_codec_limits_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.CodecLimits",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.CodecLimits.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::codec::CodecLimits",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release-managed-java-value",
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md).",
         "kind": "feature-specification",
         "path": "specs/005-ttlv-wire-codec/spec.md",
@@ -46708,6 +46749,47 @@
         "KMIPKIT-0012-FR-012",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "public_binding_surface",
+      "declarationId": "python-observed-4a0f9cdd10b8877d4ea5",
+      "declarationState": "declared",
+      "exportName": "kmipkit.ttlv.CodecLimits.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_codec_limits_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.ttlv.CodecLimits",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.ttlv.CodecLimits.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_ttlv::codec::CodecLimits",
+          "packageId": "rust-kmipkit-ttlv"
+        }
+      },
+      "mappingSemantics": "native-handle-release-managed-java-value",
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {

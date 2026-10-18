@@ -20055,12 +20055,39 @@
       "exportName": "kmipkit_codec_limits_release",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::codec::CodecLimits"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_codec_limits_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.CodecLimits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.CodecLimits.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release-managed-java-value"
     },
     {
       "declarationId": "CodecLimits:java",
@@ -43770,12 +43797,39 @@
       "exportName": "kmipkit.ttlv.CodecLimits.close",
       "capabilityId": "public_binding_surface",
       "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::codec::CodecLimits"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_codec_limits_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.CodecLimits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.CodecLimits.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release-managed-java-value"
     },
     {
       "declarationId": "python-observed-594d44db1d67288a9770",

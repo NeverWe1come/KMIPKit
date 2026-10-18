@@ -973,7 +973,11 @@ def _validate_ready_mapping_targets(
         if declaration.get("declarationState") not in {"declared", "verified"}:
             continue
         mapping_semantics = declaration.get("mappingSemantics")
-        if mapping_semantics not in {None, "native-handle-release"}:
+        if mapping_semantics not in {
+            None,
+            "native-handle-release",
+            "native-handle-release-managed-java-value",
+        }:
             raise ManifestError("public declaration uses unknown mapping semantics")
         mappings = declaration.get("languageMappings", {})
         required_languages = (
@@ -992,11 +996,17 @@ def _validate_ready_mapping_targets(
                 raise ManifestError("ready public declaration mapping target has the wrong language")
             if target.get("declarationState") not in {"declared", "verified"}:
                 raise ManifestError("ready public declaration mapping target is blocked")
-            if mapping_semantics == "native-handle-release":
+            if mapping_semantics in {
+                "native-handle-release",
+                "native-handle-release-managed-java-value",
+            }:
+                managed_java_value = (
+                    mapping_semantics == "native-handle-release-managed-java-value"
+                )
                 expected_kind = {
                     "rust": "type",
                     "c": "c-symbol",
-                    "java": "java-member",
+                    "java": "type" if managed_java_value else "java-member",
                     "python": "python-export",
                 }[language]
                 if target.get("kind") != expected_kind:
@@ -1006,7 +1016,7 @@ def _validate_ready_mapping_targets(
                 target_name = mapping.get("name", "")
                 expected_suffix = {
                     "c": "_release",
-                    "java": ".close",
+                    "java": None if managed_java_value else ".close",
                     "python": ".close",
                 }.get(language)
                 if expected_suffix is not None and not target_name.endswith(
