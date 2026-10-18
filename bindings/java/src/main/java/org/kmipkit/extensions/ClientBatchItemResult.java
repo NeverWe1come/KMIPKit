@@ -11,12 +11,15 @@ import java.util.function.Supplier;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.jspecify.annotations.Nullable;
 
 /** Common, operation-independent metadata for one response batch item. */
 public final class ClientBatchItemResult implements AutoCloseable {
+    private static final int MAX_NATIVE_ARRAY_ELEMENTS = 100_000;
+
     private final NativeHandle handle;
 
     ClientBatchItemResult(long nativeHandle) {
@@ -1012,6 +1015,9 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
         if (fields[4] != identifiers.length) {
             throw new InvalidInputException("native Locate identifier count is inconsistent");
+        }
+        if (identifiers.length > MAX_NATIVE_ARRAY_ELEMENTS) {
+            throw new ResourceLimitException("Locate response identifier count exceeds the configured limit");
         }
         OptionalInt locatedItems = fields[2] == 1
                 ? OptionalInt.of((int) fields[3]) : OptionalInt.empty();

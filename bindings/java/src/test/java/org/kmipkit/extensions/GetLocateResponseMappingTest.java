@@ -192,8 +192,8 @@ final class GetLocateResponseMappingTest {
 
     // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
     @Test
-    void locateResponsePreservesIdentifiersBeyondTheDefaultDecoderLimit() {
-        int identifierCount = 100_001;
+    void locateResponsePreservesIdentifiersAtTheNativeArrayLimit() {
+        int identifierCount = 100_000;
         Object[] identifier = {new long[] {1, 1, 0, 0}, "repeated".getBytes()};
         Object[] identifiers = new Object[identifierCount];
         java.util.Arrays.fill(identifiers, identifier);
