@@ -4,6 +4,13 @@ use super::*;
 mod invariant_guard_tests;
 
 #[test]
+fn join_split_key_identifier_copy_maps_reservation_failure_to_resource_limit() {
+    let result = copy_join_split_key_identifier_with_reservation("identifier", |_, _| Err(()));
+
+    assert_eq!(result, Err(ERROR_RESOURCE_LIMIT));
+}
+
+#[test]
 fn register_request_create_consumes_every_input_when_attributes_have_a_live_view() {
     let attributes: *mut kmipkit_ttlv_structure_t =
         make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));

@@ -964,6 +964,14 @@ fn copy_join_split_key_references(
     Ok(references)
 }
 
+#[cfg(test)]
+fn copy_join_split_key_identifier_with_reservation<E>(
+    value: &str,
+    _reserve: impl FnOnce(&mut String, usize) -> Result<(), E>,
+) -> FfiResult<String> {
+    Ok(value.to_owned())
+}
+
 fn protocol_status(error: &ProtocolError) -> i32 {
     match error.kind() {
         ProtocolErrorKind::CompatibilityMismatch => ERROR_COMPATIBILITY_MISMATCH,
