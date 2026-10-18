@@ -3881,15 +3881,8 @@ fn ffi_join_split_key_request_preserves_enumeration_and_integer_identifiers() {
 }
 
 #[test]
-fn ffi_join_split_key_response_getters_fail_closed_for_invalid_and_failed_items() {
-    let request = ClientRequest::join_split_key(JoinSplitKeyRequest::new(
-        ObjectType::from_raw(7),
-        vec![
-            SplitKeyReference::new(UniqueIdentifier::TextString("source-fragment".to_owned()))
-                .with_split_key_threshold(1),
-        ],
-    ));
-    let failed_item = failed_cryptographic_item(request, 0x29, b"join-split-failed");
+fn ffi_join_split_key_response_identifier_getter_fails_closed_for_invalid_and_failed_items() {
+    let failed_item = failed_join_split_key_response_item();
     let response_owner = reference_handle(failed_item, Kind::ClientBatchItemResponse)
         .expect("the failed response item remains a live handle");
     let HandleValue::ClientBatchItemResponse { response, .. } = &response_owner.value else {
@@ -3956,8 +3949,33 @@ fn ffi_join_split_key_response_getters_fail_closed_for_invalid_and_failed_items(
     assert_eq!(present, 0);
     assert_eq!(identifier.kind, 0);
 
+    kmipkit_client_batch_item_response_release(invalid_index_item);
+    kmipkit_client_batch_item_response_release(mismatched_item);
+    kmipkit_client_batch_item_response_release(failed_item);
+}
+
+#[test]
+fn ffi_join_split_key_response_ttlv_getter_fails_closed_for_invalid_and_failed_items() {
+    let failed_item = failed_join_split_key_response_item();
+    let response_owner = reference_handle(failed_item, Kind::ClientBatchItemResponse)
+        .expect("the failed response item remains a live handle");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &response_owner.value else {
+        panic!("the test helper returns a response-item handle");
+    };
+    let response = Arc::clone(response);
+    let mismatched_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    let invalid_index_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(&response),
+            index: usize::MAX,
+        },
+    );
     let mut response_ttlv = ptr::null_mut();
-    present = 9;
+    let mut present = 9;
     assert_eq!(
         kmipkit_client_batch_item_response_join_split_key_ttlv(
             mismatched_item,
@@ -3996,6 +4014,17 @@ fn ffi_join_split_key_response_getters_fail_closed_for_invalid_and_failed_items(
     kmipkit_client_batch_item_response_release(invalid_index_item);
     kmipkit_client_batch_item_response_release(mismatched_item);
     kmipkit_client_batch_item_response_release(failed_item);
+}
+
+fn failed_join_split_key_response_item() -> *mut kmipkit_client_batch_item_response_t {
+    let request = ClientRequest::join_split_key(JoinSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        vec![
+            SplitKeyReference::new(UniqueIdentifier::TextString("source-fragment".to_owned()))
+                .with_split_key_threshold(1),
+        ],
+    ));
+    failed_cryptographic_item(request, 0x29, b"join-split-failed")
 }
 
 #[test]
