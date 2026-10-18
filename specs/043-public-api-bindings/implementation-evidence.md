@@ -3283,6 +3283,22 @@ It does not add protocol interpretation or claim full operation conformance.
 | Green correction | `9f54093b5c39f6b3661c35d2e7f0a3232cf3351f` | `cargo test -p kmipkit-ffi --all-features --lib every_exported_c_function_starts_inside_the_shared_panic_boundary`; `cargo llvm-cov -p kmipkit-ffi --all-features --summary-only` | PASS: updated the static exported-function inventory from 195 to 197 for the two new C functions; all 132 FFI unit tests and 5 C API coverage integration tests pass. Package line coverage is 94.56% across the FFI source files; the report is package-wide and is not a T048-only percentage. |
 | Refactor | this commit | Focused verification, generator check, format/lint/diff, documentation and traceability review | PASS: T048 is checked, owner requirement/table traceability and bilingual guides are updated, and the manifest marks Get Constraints `verified`. |
 
+### T048 CI correction — Python dataclass export inventory
+
+Cross-platform CI run `39091711349` exposed the same failure in the Python
+contract job on Ubuntu, Windows, and macOS:
+`test_remaining_python_exports_are_mapped_or_exactly_excluded` found ten
+generated `GetConstraintsResponse` dataclass members missing exact manifest
+exclusions. The selected-scope coverage job also failed because the required
+contract jobs failed; no product behavior failure was reported. The failed
+head is `12713eb0083e99ca6e0c680299f901c1505944b2`.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `6e962aa0` | `python -B -m unittest tools.api_manifest.tests.test_get_constraints_parity_manifest.GetConstraintsParityManifestTests.test_get_constraints_python_dataclass_artifacts_are_exactly_excluded -v` | Expected failure: the manifest had none of the ten exact `GetConstraintsResponse` generated-member exclusions. |
+| Green | `4fc1ec04` | `python -B -m unittest tools.api_manifest.tests.test_get_constraints_parity_manifest -v`; `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded -v`; `python -B tools/api_manifest/generate.py --check` | PASS: all 3 Get Constraints manifest tests and the previously failing export audit pass; all 12 generated outputs are current. |
+| Refactor | this commit | Update T048 task evidence and requirement traceability; `git diff --check` | PASS: task, implementation evidence, and traceability now record the exact exclusions and failing-head cause. A full cross-platform CI rerun on the corrected head is still required. |
+
 The Green implementation reuses the existing Rust `GetConstraintsRequest`,
 `ClientRequest`, and response TTLV. C constructs the empty request and returns
 a caller-owned complete TTLV copy only for Success. Java exposes an
