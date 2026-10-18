@@ -3631,3 +3631,34 @@ Updated local verification:
 The next PR-head selected-scope aggregation and cross-platform CI run are
 pending; T038 remains unchecked until the final head passes all gates and
 controller review.
+
+### T038 Java Locate native-array limit parity follow-up (2026-10-18)
+
+The independent scoped security review found no actionable security issue in
+the reviewed Rust FFI, JNI ownership, zeroization, or coverage changes. It did
+identify a test-reality mismatch: JNI rejects Locate response arrays above
+100,000 elements before allocation, while a parser-only Java test accepted
+100,001 values without exercising JNI. The Java mapper now applies the same
+100,000-element limit before allocating its copied identifier list and raises
+`ResourceLimitException` when a malformed native tuple exceeds it. This keeps
+the Java mapping behavior aligned with the existing JNI guard and the default
+TTLV element limit.
+
+Red, Green, and Refactor commits:
+
+- Red `797fd05e`: added the over-limit regression. The focused test failed as
+  expected because the mapper parsed the oversized tuple and raised
+  `InvalidInputException` for a null record instead of rejecting the count.
+- Green `76099b58`: enforced the native array limit before copying identifiers
+  and moved the accepted boundary case to 100,000 identifiers.
+- Refactor `b13e2a48`: shared the valid Locate tuple fixture between boundary
+  tests without changing behavior.
+
+Local verification:
+
+- The two over-limit and boundary tests — PASS: 2 tests.
+- `mvn --batch-mode -Dtest=GetLocateResponseMappingTest test` — PASS: 13 tests;
+  the Windows JNI library built successfully and the example ran.
+- The new PR-head selected-scope coverage aggregation and cross-platform CI
+  are pending for these commits. T038 remains unchecked until the updated head
+  passes those gates and the evidence is recorded.
