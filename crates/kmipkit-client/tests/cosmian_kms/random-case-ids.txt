@@ -1,0 +1,12 @@
+cosmian-528-rng-retrieve-0-parameters-false
+cosmian-528-rng-retrieve-0-parameters-true
+cosmian-528-rng-retrieve-1-parameters-false
+cosmian-528-rng-retrieve-1-parameters-true
+cosmian-528-rng-retrieve-32-parameters-false
+cosmian-528-rng-retrieve-32-parameters-true
+cosmian-528-rng-retrieve-65536-parameters-false
+cosmian-528-rng-retrieve-65536-parameters-true
+cosmian-528-rng-seed-0-parameters-false
+cosmian-528-rng-seed-0-parameters-true
+cosmian-528-rng-seed-32-parameters-false
+cosmian-528-rng-seed-32-parameters-true
