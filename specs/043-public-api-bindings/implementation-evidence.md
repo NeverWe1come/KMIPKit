@@ -4027,3 +4027,29 @@ call succeeded. The OOM-scale maximum was not attempted; the focused test
 demonstrates the same aggregate boundary with two 8 MiB+1 occurrences. The
 first full FFI test run also caught the stale export-count assertion; after
 updating it to account for five additional C exports, all 149 FFI tests passed.
+
+An independent resource-boundary review identified one further low-severity
+allocation-handling gap in the bounded copy pass: `String::clone()` could not
+translate a failed allocation into the FFI error contract. The follow-up uses
+`try_reserve_exact` before copying each already-budgeted text identifier and
+reports `ERROR_RESOURCE_LIMIT` if that reservation fails. Fixed-width
+identifier variants are copied by value. This does not change the 16 MiB
+aggregate limit or public ABI.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — reservation failure mapping | `f3366ec5` | Added a deterministic test that injects a failed reservation and requires `ERROR_RESOURCE_LIMIT`. The focused test compiled and failed at the assertion as expected: the test seam returned `Ok("identifier")` instead of `Err(6)`. |
+| Green — fallible text copy | `ca772d1d` | The shared copy path reserves exact text capacity fallibly before copying; reservation failures map to `ERROR_RESOURCE_LIMIT`. Enumeration and Integer identifiers are copied by value. |
+| Refactor — evidence and verification record | this commit | Recorded the independent allocation audit, executable Red result, and final cross-language verification below. |
+
+Verification after the fallible-copy Green commit:
+
+| Command or evidence | Result |
+|---|---|
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib join_split_key_identifier_copy_maps_reservation_failure_to_resource_limit` | PASS: deterministic reservation-failure mapping test. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib` | PASS: all 150 FFI unit tests. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture` | PASS: compiled public client C consumer accepted exactly 16 MiB and rejected an over-limit repeated handle with a cleared output. |
+| `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=JoinSplitKeyMappingTest' test` | PASS: 6 Java tests; JNI rebuilt successfully. |
+| Python 3.12 full suite with pinned coverage dependencies and editable package built from this worktree | PASS: 492 tests; 98.13% package line coverage. `KMIPKIT_NATIVE_LIBRARY` pointed to a temporary copy so the wheel-build test did not replace a loaded DLL. |
+| `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS. |
+| `cargo fmt --all --check` and `git diff --check` | PASS. |
