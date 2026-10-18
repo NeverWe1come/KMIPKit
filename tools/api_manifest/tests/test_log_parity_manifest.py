@@ -137,6 +137,39 @@ class LogParityManifestTests(unittest.TestCase):
         self.assertEqual("verified", operations[0]["apiState"])
         self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
 
+    def test_observed_rust_log_variants_map_to_log_facades_in_all_languages(self) -> None:
+        expected = {
+            "kmipkit_client::ClientRequest::Log": {
+                "rust": "kmipkit_client::ClientRequest::Log",
+                "c": "kmipkit_client_batch_item_log",
+                "java": "org.kmipkit.extensions.ClientBatchItem.log",
+                "python": "kmipkit.extensions.client_batch_item_log",
+            },
+            "kmipkit_client::ClientBatchOutcome::Log": {
+                "rust": "kmipkit_client::ClientBatchOutcome::Log",
+                "c": "kmipkit_client_batch_item_response_log_ttlv",
+                "java": "org.kmipkit.extensions.ClientBatchItemResult.logResponse",
+                "python": "kmipkit.client.BatchItemResult.log_response",
+            },
+        }
+        for export_name, expected_languages in expected.items():
+            declarations = [
+                row
+                for row in self.manifest["publicDeclarations"]
+                if row["exportName"] == export_name
+            ]
+            self.assertEqual(1, len(declarations), export_name)
+            declaration = declarations[0]
+            self.assertEqual(OPERATION_ID, declaration["capabilityId"])
+            self.assertEqual("verified", declaration["declarationState"])
+            self.assertEqual("four-language", declaration["parityScope"])
+            self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+            actual_languages = {
+                language: mapping["name"]
+                for language, mapping in declaration["languageMappings"].items()
+            }
+            self.assertEqual(expected_languages, actual_languages)
+
 
 if __name__ == "__main__":
     unittest.main()
