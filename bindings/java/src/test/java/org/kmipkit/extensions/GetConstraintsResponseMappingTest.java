@@ -71,6 +71,7 @@ final class GetConstraintsResponseMappingTest {
         assertThrows(InvalidInputException.class,
                 () -> ClientBatchItemResult.parseGetConstraintsResponse(
                         new Object[] {new long[] {0}, new long[] {handle}}));
+        ResponseTtlvTestSupport.assertReleased(handle);
     }
 
     private static TtlvStructure responseTtlv(CodecLimits limits) {
