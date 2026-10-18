@@ -24,3 +24,20 @@ The Get and Locate four-language mapping is implemented in the existing T076 wor
 ## Concerns
 
 Windows Rust/JNI builds emitted the existing `aws-lc-sys` MSVC probe and missing-NASM warnings; builds and focused tests succeeded. Full workspace tests, selected coverage gates, and current-head CI were not run in this continuation. The mapping does not claim complete OASIS conformance, server behavior, interoperability, profile support, or certification.
+
+## Reviewer correction: Locate identifier-count preservation
+
+The Java and Python adapters no longer impose the decoder's default 100,000-element limit on Locate response identifiers. Java rejects counts above `Integer.MAX_VALUE`, its array representation limit; Python rejects counts above `sys.maxsize`, its sequence representation limit. Both preserve all accepted identifiers in order, including repeats. The original T038 Red/Green/Refactor commits above are unchanged; this focused correction uses separate Red and Green commits:
+
+- Red: `07a211a2bdc73a5d11b9786b504941e7cab69d9e` — added Java and Python tests for 100,001 repeated identifiers.
+- Green: `9d2c3a4e191b045b9f88ef8e9def6b03b7588573` — replaced the binding-only 100,000 cap with each language's representation bound.
+
+### Correction verification
+
+- Red, Java (`cwd: bindings/java`): `mvn -Dtest=GetLocateResponseMappingTest test` — expected failure in the new test at the former Java 100,000 cap; 7 tests ran, 1 error.
+- Red, Python (`cwd: bindings/python`): `$env:UV_PROJECT_ENVIRONMENT='.venv-t038-fix'; $env:KMIPKIT_NATIVE_LIBRARY='C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\target\debug\kmipkit_ffi.dll'; uv run --offline --python 'C:\Users\ramp1953\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\python.exe' --with pytest python -m pytest -q tests/test_get_locate_operation.py -k beyond_default_decoder_limit` — expected failure with `ResourceLimitError` from the former cap.
+- Green, Java (`cwd: bindings/java`): `mvn -Dtest=GetLocateResponseMappingTest test` — PASS, 7 tests, 0 failures/errors.
+- Green, Python (`cwd: bindings/python`): `$env:UV_PROJECT_ENVIRONMENT='.venv-t038-fix'; $env:KMIPKIT_NATIVE_LIBRARY='C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\target\debug\kmipkit_ffi.dll'; uv run --offline --python 'C:\Users\ramp1953\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none\python.exe' --with pytest python -m pytest -q tests/test_get_locate_operation.py` — PASS, 5 tests.
+- Green: `git diff --check` — PASS.
+
+T038 remains unchecked pending controller review. No push, merge, or PR-state change was made.
