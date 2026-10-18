@@ -32,17 +32,25 @@ _PYTHON_PUBLIC_DUNDER_FIELDS = {
 }
 
 
-def _record(package: str, name: str, kind: str, location: str) -> dict[str, str]:
+def _record(package: str, name: str, kind: str, location: str) -> dict[str, Any]:
     return {"packageId": package, "exportName": name, "kind": kind, "location": location}
 
 
-def _report(records: list[dict[str, str]], issues: list[dict[str, str]]) -> dict[str, Any]:
-    unique: dict[tuple[str, str], dict[str, str]] = {}
+def _report(records: list[dict[str, Any]], issues: list[dict[str, str]]) -> dict[str, Any]:
+    unique: dict[tuple[str, str], dict[str, Any]] = {}
     for record in records:
         key = record["packageId"], record["exportName"]
         prior = unique.get(key)
         if prior is not None and prior["location"] != record["location"]:
-            issues.append({"packageId": key[0], "exportName": key[1], "reason": "multiple-declarations-share-export-path"})
+            prior_signatures = set(prior.get("signatures", []))
+            record_signatures = set(record.get("signatures", []))
+            if (prior["kind"] == record["kind"] == "java-member"
+                    and prior_signatures and record_signatures
+                    and prior_signatures.isdisjoint(record_signatures)):
+                prior["signatures"] = sorted(prior_signatures | record_signatures)
+            else:
+                issues.append({"packageId": key[0], "exportName": key[1],
+                               "reason": "multiple-declarations-share-export-path"})
         unique.setdefault(key, record)
     ordered = sorted(unique.values(), key=lambda r: (r["packageId"], r["exportName"], r["kind"]))
     unique_issues = {(i["packageId"], i["exportName"], i["reason"]): i for i in issues}
@@ -78,7 +86,7 @@ def _complete_include_guard(lines: list[str]) -> str | None:
 
 def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any]:
     """Read exported declarations from the installed public C header."""
-    records: list[dict[str, str]] = []
+    records: list[dict[str, Any]] = []
     issues: list[dict[str, str]] = []
     cleaned = re.sub(r"/\*.*?\*/|//[^\n]*", " ", source, flags=re.S)
     lines = cleaned.splitlines()
@@ -337,7 +345,7 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
             else:
                 member = signature.split()[-1]
             record = _record(package, f"{owner}.{member}", "java-member", f"{class_file}:{line_number}")
-            record["signature"] = signature
+            record["signatures"] = [signature]
             records.append(record)
     return _report(records, issues)
 
@@ -833,8 +841,28 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
     mismatches = sorted(key for key in set(observed) & set(declared)
                         if canonical_kind(observed[key]["kind"]) != canonical_kind(declared[key]["kind"]))
     path_matches = set(observed) & set(declared)
-    exact_matches = len(path_matches) - len(mismatches)
+    signature_issues: list[dict[str, str]] = []
+    if package == "java-kmipkit":
+        for key in sorted(path_matches):
+            observed_signatures = observed[key].get("signatures")
+            declared_signatures = declared[key].get("javaSignatures")
+            if not observed_signatures:
+                continue
+            if len(observed_signatures) > 1 and declared_signatures is None:
+                signature_issues.append({
+                    "packageId": package,
+                    "exportName": key[1],
+                    "reason": "java-overload-signatures-not-declared",
+                })
+            elif declared_signatures is not None and sorted(observed_signatures) != sorted(declared_signatures):
+                signature_issues.append({
+                    "packageId": package,
+                    "exportName": key[1],
+                    "reason": "java-signature-mismatch",
+                })
+    exact_matches = len(path_matches) - len(mismatches) - len(signature_issues)
     issues = list(report["issues"])
+    issues.extend(signature_issues)
     issues.extend({"packageId": package, "exportName": name, "reason": "duplicate-manifest-export-name"}
                   for name in duplicate_names)
     issues.extend({"packageId": key[0], "exportName": key[1],
@@ -844,8 +872,9 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
                    "reason": "manifest-export-also-excluded"}
                   for key in declaration_exclusion_overlaps)
     invalid_identities = bool(duplicate_names or duplicate_exclusions or declaration_exclusion_overlaps)
-    return {"packageId": package, "complete": report["complete"] and not invalid_identities,
-            "matchesManifest": not missing and not stale and not mismatches and not invalid_identities and report["complete"],
+    return {"packageId": package, "complete": report["complete"] and not invalid_identities and not signature_issues,
+            "matchesManifest": not missing and not stale and not mismatches and not invalid_identities
+            and not signature_issues and report["complete"],
             "counts": {"observed": len(observed), "manifest": len(package_rows), "matched": exact_matches,
                        "pathMatches": len(path_matches), "exactMatches": exact_matches,
                        "missingFromManifest": len(missing), "notObserved": len(stale), "kindMismatches": len(mismatches)},

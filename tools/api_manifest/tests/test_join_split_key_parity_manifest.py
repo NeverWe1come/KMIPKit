@@ -141,10 +141,10 @@ class JoinSplitKeyParityManifestTests(unittest.TestCase):
         self.assertEqual(
             [
                 "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
+                "java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
+                "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
                 "java.util.List<org.kmipkit.extensions.SplitKeyReference>, java.lang.Long, "
                 "org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure)",
-                "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
-                "java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
             ],
             request_factory["javaSignatures"],
         )
@@ -172,7 +172,9 @@ class JoinSplitKeyParityManifestTests(unittest.TestCase):
             "org.kmipkit.extensions.SplitKeyReference.toString",
         }
         self.assertTrue(expected <= set(exclusions))
-        self.assertTrue(all("T052" in exclusions[name]["evidence"] for name in expected))
+        self.assertTrue(all(
+            "KMIPKIT-0043-FR-021" in exclusions[name]["evidence"] for name in expected
+        ))
 
 
 if __name__ == "__main__":

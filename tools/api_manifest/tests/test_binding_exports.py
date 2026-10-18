@@ -651,6 +651,7 @@ class BindingExportAuditTests(unittest.TestCase):
         native_members = {
             "CLIENT", "CLIENT_BATCH", "CLIENT_BATCH_ITEM_RESPONSE",
             "CLIENT_BATCH_RESPONSE", "CODEC_LIMITS", "TRANSPORT_CONFIGURATION",
+            "SPLIT_KEY_REFERENCE",
             "clientBatchAddErrorContinuationValue", "clientBatchAddItem",
             "clientExecuteWithOptions",
             "clientBatchCreate", "clientBatchItemResponseMetadata",
@@ -659,10 +660,12 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponseUniqueBatchItemId",
             "clientBatchItemCreate", "clientBatchItemCreateKeyPair",
             "clientBatchItemCreateSplitKey", "clientBatchItemCertify",
+            "splitKeyReferenceCreate", "clientBatchItemJoinSplitKey",
             "clientBatchItemCheck",
             "clientBatchItemResponseCreate",
             "clientBatchItemResponseCreateKeyPair",
             "clientBatchItemResponseCreateSplitKey",
+            "clientBatchItemResponseJoinSplitKey",
             "clientBatchItemResponseCertify",
             "clientBatchItemResponseCheck",
             "clientBatchItemResponseMetadataV2",
@@ -678,6 +681,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemExport",
             "clientBatchItemResponseGetUsageAllocation",
             "clientBatchItemResponseExport",
+            "clientBatchItemInterop", "clientBatchItemResponseInterop",
             "clientBatchItemWithUniqueBatchItemId", "clientBatchResponseItemAt",
             "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
             "clientBatchSetClientCorrelationValue", "clientBatchSetOrderOption",
@@ -739,6 +743,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "org.kmipkit.extensions.ClientBatchItemResult.SignResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.GetUsageAllocationResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.JoinSplitKeyResponse.toString",
         }
         for path in java_boilerplate:
             self.assertIn(("java-kmipkit", path), exclusions)
@@ -871,7 +876,7 @@ class BindingExportAuditTests(unittest.TestCase):
         )
         self.assertEqual(
             declaration["signatures"],
-            ["public void send(java.lang.String)", "public void send(byte[])"]
+            ["public void send(byte[])", "public void send(java.lang.String)"]
         )
 
     def test_java_manifest_must_declare_all_overload_signatures(self):
@@ -888,11 +893,17 @@ class BindingExportAuditTests(unittest.TestCase):
             "kind": "java-member",
             "javaSignatures": ["public void send(java.lang.String)", "public void send(byte[])"]
         }
-        exact = AUDIT.compare(report, {"publicDeclarations": [declaration]}, "java-kmipkit")
+        class_declaration = {
+            "packageId": "java-kmipkit",
+            "exportName": "org.example.Client",
+            "kind": "type",
+        }
+        manifest = {"publicDeclarations": [class_declaration, declaration]}
+        exact = AUDIT.compare(report, manifest, "java-kmipkit")
         self.assertTrue(exact["matchesManifest"])
 
         declaration.pop("javaSignatures")
-        missing = AUDIT.compare(report, {"publicDeclarations": [declaration]}, "java-kmipkit")
+        missing = AUDIT.compare(report, manifest, "java-kmipkit")
         self.assertFalse(missing["matchesManifest"])
         self.assertIn("java-overload-signatures-not-declared", {row["reason"] for row in missing["issues"]})
 

@@ -258407,6 +258407,10 @@
         "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs"
+      ],
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
+        "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, java.util.List<org.kmipkit.extensions.SplitKeyReference>, java.lang.Long, org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure)"
       ]
     },
     {
@@ -258752,7 +258756,7 @@
     {
       "declarationId": "T052:response:ttlv:java",
       "packageId": "java-kmipkit",
-      "kind": "field",
+      "kind": "java-member",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.JoinSplitKeyResponse.responseTtlv",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
       "requirementIds": [
@@ -259024,7 +259028,7 @@
     {
       "declarationId": "T052:response:unique-identifier:java",
       "packageId": "java-kmipkit",
-      "kind": "field",
+      "kind": "java-member",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.JoinSplitKeyResponse.uniqueIdentifier",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
       "requirementIds": [
@@ -265288,7 +265292,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented."
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md."
     },
     {
       "packageId": "java-kmipkit",
@@ -265300,7 +265304,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented."
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md."
     },
     {
       "packageId": "java-kmipkit",
@@ -265649,6 +265653,114 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed for KMIPKIT-0043-FR-021; T052's SplitKeyReference behavior is mapped through the type and constructor, and this exact exclusion covers implementation storage metadata only."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SPLIT_KEY_REFERENCE",
+      "reason": "This exact public constant is an internal JNI handle-kind discriminator. The typed SplitKeyReference facade supplies the product capability; callers do not select native handle kinds.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 uses this exact constant only to bind its owned native reference. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.splitKeyReferenceCreate",
+      "reason": "This exact method is raw-handle JNI bridge plumbing for SplitKeyReference construction. The mapped constructor capability is exposed through the typed facade.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; this T052 JNI entry point is called by SplitKeyReference and is not an independent Java product API. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemJoinSplitKey",
+      "reason": "This exact method is raw-handle JNI bridge plumbing for the typed ClientBatchItem.joinSplitKey factory; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps the operation through ClientBatchItem.joinSplitKey. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJoinSplitKey",
+      "reason": "This exact method is raw-handle JNI bridge plumbing for the typed ClientBatchItemResult.joinSplitKeyResponse accessor; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps the result through ClientBatchItemResult.joinSplitKeyResponse. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.JoinSplitKeyResponse.toString",
+      "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 response stringification redacts the response TTLV."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.SplitKeyReference.<init>",
+      "reason": "This exact constructor path is represented by the mapped SplitKeyReference creation capability; the Python constructor has the same exact exclusion while the typed Java factory consumes the resulting value.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; the constructor creates the same paired identifier and threshold already mapped by SplitKeyReference::new and split_key_reference_create."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.SplitKeyReference.uniqueIdentifier",
+      "reason": "This exact readback method repeats the caller-known identifier supplied to construction. C keeps the reference opaque and Python has the same exact readback exclusion.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps creation and use of the paired reference, while this getter returns the unchanged local input."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.SplitKeyReference.splitKeyThreshold",
+      "reason": "This exact readback method repeats the caller-known threshold supplied to construction. C keeps the reference opaque and Python has the same exact readback exclusion.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps creation and use of the paired reference, while this getter returns the unchanged local input."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.SplitKeyReference.toString",
+      "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 stringification redacts identifier text."
     }
   ],
   "apiLevels": [
