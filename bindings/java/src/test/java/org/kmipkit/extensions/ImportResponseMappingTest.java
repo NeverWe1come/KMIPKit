@@ -97,15 +97,27 @@ final class ImportResponseMappingTest {
         long absentWithTtlv = responseTtlvHandle();
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseImportResponse(
                 new Object[] {new long[] {0}, null, new long[] {absentWithTtlv}}));
+        assertNativeStructureHandleReleased(absentWithTtlv);
 
         long incompleteSuccess = responseTtlvHandle();
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseImportResponse(
                 new Object[] {new long[] {1}, null, new long[] {incompleteSuccess}}));
+        assertNativeStructureHandleReleased(incompleteSuccess);
 
         long invalidIdentifier = responseTtlvHandle();
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseImportResponse(
                 new Object[] {new long[] {1}, new Object[] {new Object(), null},
                         new long[] {invalidIdentifier}}));
+        assertNativeStructureHandleReleased(invalidIdentifier);
+    }
+
+    private static void assertNativeStructureHandleReleased(long handle) {
+        assertThrows(InvalidInputException.class, () -> {
+            try (TtlvStructureView view = TtlvStructureView.fromNative(
+                    NativeExtensionRegistry.ttlvStructureView(handle), null)) {
+                view.itemCount();
+            }
+        });
     }
 
     private static TtlvStructure responseTtlv() {
