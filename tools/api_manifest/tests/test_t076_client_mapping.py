@@ -1334,9 +1334,51 @@ class T076ClientMappingTests(unittest.TestCase):
                 "ResourceLimitError",
             )
         }
+        join_split_response_dataclass_exclusions = {
+            f"kmipkit.client.JoinSplitKeyResponse.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
+        join_split_response_repr_exclusion = {
+            "kmipkit.client.JoinSplitKeyResponse.__repr__"
+        }
+        split_key_reference_constructor_exclusion = {
+            "kmipkit.extensions.SplitKeyReference.__init__"
+        }
+        split_key_reference_input_readbacks = {
+            "kmipkit.extensions.SplitKeyReference.unique_identifier",
+            "kmipkit.extensions.SplitKeyReference.split_key_threshold",
+        }
+        split_key_reference_lifecycle_exclusions = {
+            "kmipkit.extensions.SplitKeyReference.closed",
+            "kmipkit.extensions.SplitKeyReference.__enter__",
+            "kmipkit.extensions.SplitKeyReference.__exit__",
+        }
+        split_key_reference_repr_exclusion = {
+            "kmipkit.extensions.SplitKeyReference.__repr__"
+        }
+        split_key_reference_storage_exclusion = {
+            "kmipkit.extensions.SplitKeyReference.__slots__"
+        }
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
+            | join_split_response_dataclass_exclusions
+            | join_split_response_repr_exclusion
+            | split_key_reference_constructor_exclusion
+            | split_key_reference_input_readbacks
+            | split_key_reference_lifecycle_exclusions
+            | split_key_reference_repr_exclusion
+            | split_key_reference_storage_exclusion
             | {"kmipkit.metadata.Version.__init__"}
         )
         for path in sorted(exact_exclusions):
@@ -1353,6 +1395,33 @@ class T076ClientMappingTests(unittest.TestCase):
                 if path in context_manager_exclusions:
                     self.assertIn("context-manager syntax", exclusion["reason"])
                     self.assertIn("close lifecycle", exclusion["reason"])
+                elif path in join_split_response_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn("interpreter mechanics", exclusion["reason"])
+                    self.assertIn("T052", exclusion["evidence"])
+                elif path in join_split_response_repr_exclusion:
+                    self.assertIn("redacted", exclusion["reason"])
+                    self.assertIn("representation", exclusion["reason"])
+                    self.assertIn("T052", exclusion["evidence"])
+                elif path in split_key_reference_constructor_exclusion:
+                    self.assertIn("constructor", exclusion["reason"])
+                    self.assertIn("split_key_reference_create", exclusion["reason"])
+                    self.assertIn("T052", exclusion["evidence"])
+                elif path in split_key_reference_input_readbacks:
+                    self.assertIn("caller-known", exclusion["reason"])
+                    self.assertIn("constructor inputs", exclusion["reason"])
+                    self.assertIn("T052", exclusion["evidence"])
+                elif path in split_key_reference_lifecycle_exclusions:
+                    self.assertIn("lifecycle", exclusion["reason"])
+                    self.assertIn("close", exclusion["reason"])
+                    self.assertIn("T052", exclusion["evidence"])
+                elif path in split_key_reference_repr_exclusion:
+                    self.assertIn("redacted", exclusion["reason"])
+                    self.assertIn("presentation", exclusion["reason"])
+                    self.assertIn("T052", exclusion["evidence"])
+                elif path in split_key_reference_storage_exclusion:
+                    self.assertIn("storage metadata", exclusion["reason"])
+                    self.assertIn("T052", exclusion["evidence"])
                 elif path in exception_constructor_exclusions:
                     self.assertIn("exception constructor", exclusion["reason"])
                     self.assertIn("local", exclusion["reason"])
