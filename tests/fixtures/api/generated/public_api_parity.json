@@ -5676,6 +5676,126 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLocate",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for ClientBatchItemResult.locateResponse; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __dataclass_fields__.",
+      "exportName": "kmipkit.client.ImportResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __dataclass_params__.",
+      "exportName": "kmipkit.client.ImportResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __delattr__.",
+      "exportName": "kmipkit.client.ImportResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __eq__.",
+      "exportName": "kmipkit.client.ImportResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __hash__.",
+      "exportName": "kmipkit.client.ImportResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __init__.",
+      "exportName": "kmipkit.client.ImportResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse constructor is generated Python dataclass machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __match_args__.",
+      "exportName": "kmipkit.client.ImportResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. The response TTLV and Unique Identifier are redacted from its generated representation. This exclusion applies only to generated member __repr__.",
+      "exportName": "kmipkit.client.ImportResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse formatter is a Python presentation detail, not an independent cross-language operation; sensitive response fields are redacted."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __setattr__.",
+      "exportName": "kmipkit.client.ImportResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037-FR-001–FR-008 for T050; ImportResponse is mapped across all four facades, with its ordered owned response TTLV. This exclusion applies only to generated member __slots__.",
+      "exportName": "kmipkit.client.ImportResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ImportResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
     }
   ],
   "capabilities": [
