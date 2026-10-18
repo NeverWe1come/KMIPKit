@@ -12,8 +12,9 @@ use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCatego
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
-    GetRequest, GetUsageAllocationRequest, ImportRequest, LocateRequest, ObjectGroupMember,
-    ObjectType, OperationData, SecretBytes, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, LocateRequest,
+    ObjectGroupMember, ObjectType, OperationData, SecretBytes, SecretText, SplitKeyMethod,
+    StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -264,6 +265,10 @@ fn path_bytes(path: &Path) -> Vec<u8> {
 }
 
 fn pending_locate_response(unique_id: &[u8], correlation: &[u8]) -> Vec<u8> {
+    pending_response_for_operation(8, unique_id, correlation)
+}
+
+fn pending_response_for_operation(operation: u32, unique_id: &[u8], correlation: &[u8]) -> Vec<u8> {
     let protocol_version = ttlv_structure(
         0x0042_0069,
         [ttlv_integer(0x0042_006A, 2), ttlv_integer(0x0042_006B, 1)],
@@ -279,7 +284,7 @@ fn pending_locate_response(unique_id: &[u8], correlation: &[u8]) -> Vec<u8> {
     let item = ttlv_structure(
         0x0042_000F,
         [
-            ttlv_enumeration(0x0042_005C, 8),
+            ttlv_enumeration(0x0042_005C, operation),
             ttlv_item(0x0042_0093, 0x08, unique_id),
             ttlv_enumeration(0x0042_007F, 2),
             ttlv_item(0x0042_0006, 0x08, correlation),
@@ -1916,6 +1921,15 @@ fn execute_single_abi_response(
     batch_item_id: &[u8],
     response: Vec<u8>,
 ) -> Result<ClientBatchResponse, ClientError> {
+    execute_single_abi_response_with_async(request, batch_item_id, response, None)
+}
+
+fn execute_single_abi_response_with_async(
+    request: ClientRequest,
+    batch_item_id: &[u8],
+    response: Vec<u8>,
+    asynchronous_indicator: Option<u32>,
+) -> Result<ClientBatchResponse, ClientError> {
     let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
     let listener = TcpListener::bind(("127.0.0.1", 0)).expect("loopback binds");
     let port = listener
@@ -1980,9 +1994,12 @@ fn execute_single_abi_response(
         .expect("the empty approved extension registry is valid");
     let configuration = client_extension::ClientConfiguration::new(registry);
     let mut client = Client::new(configuration, transport).expect("client construction succeeds");
-    let batch = ClientBatch::from_items([
+    let mut batch = ClientBatch::from_items([
         ClientBatchItem::new(request).with_unique_batch_item_id(batch_item_id.to_vec())
     ]);
+    if let Some(indicator) = asynchronous_indicator {
+        batch = batch.with_asynchronous_indicator(indicator);
+    }
     let result = client.execute(batch, &CodecLimits::defaults());
     peer.join().expect("controlled local peer completes");
     result
@@ -3481,6 +3498,81 @@ fn ffi_get_constraints_ttlv_getter_rejects_inconsistent_internal_handles() {
     assert_eq!(present, 0);
     assert!(response_ttlv.is_null());
     kmipkit_client_batch_item_response_release(invalid_index_item);
+}
+
+#[test]
+fn ffi_interop_ttlv_getter_copies_success_failure_and_pending_responses() {
+    let request = || {
+        ClientRequest::interop(InteropRequest::new(
+            0xf123_4567,
+            SecretText::new("interop-identifier-sentinel".to_owned()),
+        ))
+    };
+    let success = successful_cryptographic_item(request(), 0x34, b"interop-success", Vec::new());
+    let failure = failed_cryptographic_item(request(), 0x34, b"interop-failure");
+    let pending_correlation = [0, 0xff, 0x80, 0x7f];
+    let pending_response = execute_single_abi_response_with_async(
+        request(),
+        b"interop-pending",
+        pending_response_for_operation(0x34, b"interop-pending", &pending_correlation),
+        Some(1),
+    )
+    .expect("the async request permits an Interop Pending response");
+    let pending_response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(pending_response)),
+    );
+    let mut pending = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(pending_response_handle, 0, &raw mut pending),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(pending_response_handle);
+
+    for (item, expected_count) in [(success, 4), (failure, 4), (pending, 5)] {
+        let mut present = 0;
+        let mut response_ttlv = ptr::null_mut();
+        assert_eq!(
+            client_abi::kmipkit_client_batch_item_response_interop_ttlv(
+                item,
+                &raw mut present,
+                &raw mut response_ttlv,
+            ),
+            SUCCESS
+        );
+        assert_eq!(present, 1);
+        assert!(!response_ttlv.is_null());
+
+        let mut view = ptr::null_mut();
+        assert_eq!(
+            kmipkit_ttlv_structure_view(response_ttlv, &raw mut view),
+            SUCCESS
+        );
+        let mut count = 0;
+        assert_eq!(
+            kmipkit_ttlv_structure_view_item_count(view, &raw mut count),
+            SUCCESS
+        );
+        assert_eq!(count, expected_count);
+        kmipkit_ttlv_structure_view_release(view);
+        kmipkit_ttlv_structure_release(response_ttlv);
+        kmipkit_client_batch_item_response_release(item);
+    }
+
+    let unrelated_item = successful_check_response_item(&successful_check_client_response());
+    let mut present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_interop_ttlv(
+            unrelated_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(unrelated_item);
 }
 
 #[test]

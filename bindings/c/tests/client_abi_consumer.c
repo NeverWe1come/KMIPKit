@@ -844,6 +844,15 @@ static int interop_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int interop_response_accessor_clears_invalid_outputs_from_c(void) {
+    uint8_t present = UINT8_MAX;
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    const int32_t status = kmipkit_client_batch_item_response_interop_ttlv(
+        0, &present, &response_ttlv);
+    return status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
+
 static int get_constraints_response_accessor_clears_outputs_from_c(void) {
     uint8_t present = 9;
     kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)1;
@@ -2626,6 +2635,7 @@ int main(int argc, char **argv) {
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
+        !interop_response_accessor_clears_invalid_outputs_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||

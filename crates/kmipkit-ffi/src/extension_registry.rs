@@ -37,10 +37,11 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
     DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest,
-    MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType, OpaqueObjectContext,
-    OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    HashRequest, ImportRequest, InteropRequest, KeyCompressionType, KeyFormatType, KeyWrapType,
+    LocateRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
+    SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -2642,6 +2643,36 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
         *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(ClientBatchItem::discover_versions())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates an Interop request from KMIP 2.1 §6.1.26, Table 241.
+///
+/// The Function Enumeration is open and the Identifier is a UTF-8 Text String.
+/// The identifier is retained only in the request's redacted, zeroizing secret type.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_interop(
+    interop_function: u32,
+    interop_identifier_data: *const u8,
+    interop_identifier_length: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(input_span(
+            interop_identifier_data,
+            interop_identifier_length,
+            MAX_FFI_INPUT_BYTES,
+        ));
+        let identifier = try_ffi!(std::str::from_utf8(identifier).map_err(|_| ERROR_INVALID_INPUT));
+        let request = InteropRequest::new(interop_function, SecretText::new(identifier.to_owned()));
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::interop(
+                request,
+            )))),
         ));
         SUCCESS
     })

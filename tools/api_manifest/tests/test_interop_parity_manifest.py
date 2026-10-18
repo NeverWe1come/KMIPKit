@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -42,17 +43,34 @@ EXPECTED_MAPPINGS = {
     },
 }
 REQUIREMENTS = {
+    "KMIPKIT-0042-FR-001",
+    "KMIPKIT-0042-FR-002",
+    "KMIPKIT-0042-FR-003",
+    "KMIPKIT-0042-FR-004",
+    "KMIPKIT-0042-FR-005",
+    "KMIPKIT-0042-FR-006",
+    "KMIPKIT-0042-FR-008",
+    "KMIPKIT-0043-FR-004",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-007",
+    "KMIPKIT-0043-FR-008",
+    "KMIPKIT-0043-FR-009",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-011",
+    "KMIPKIT-0043-FR-012",
+    "KMIPKIT-0043-FR-013",
+    "KMIPKIT-0043-FR-015",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-018",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022",
+}
+API_REQUIREMENTS = {value for value in REQUIREMENTS if value.startswith("KMIPKIT-0043-")}
+TRACEABILITY_IDS = {
     "KMIPKIT-028-T241-FUNCTION",
     "KMIPKIT-028-T241-IDENTIFIER",
     "KMIPKIT-028-T242-EMPTY",
     "KMIPKIT-028-T243-ERROR",
-    "KMIPKIT-0042-FR-001",
-    "KMIPKIT-0042-FR-003",
-    "KMIPKIT-0042-FR-004",
-    "KMIPKIT-0042-FR-005",
-    "KMIPKIT-0043-FR-004",
-    "KMIPKIT-0043-FR-010",
-    "KMIPKIT-0043-FR-021",
 }
 PARITY_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs",
@@ -110,7 +128,30 @@ class InteropParityManifestTests(unittest.TestCase):
                 linked_requirements.update(declaration["requirementIds"])
         for language, expected in EXPECTED_MAPPINGS.items():
             self.assertTrue(expected <= actual_mappings[language], language)
-        self.assertTrue(REQUIREMENTS <= linked_requirements)
+        self.assertEqual(REQUIREMENTS, linked_requirements)
+        self.assertFalse(any(value.startswith("KMIPKIT-0037-") for value in linked_requirements))
+        self.assertEqual("type", self.declarations["T051:result:type:java"]["kind"])
+        self.assertEqual("type", self.declarations["T051:result:type:python"]["kind"])
+        self.assertEqual("field", self.declarations["T051:result:responseTtlv:python"]["kind"])
+        self.assertEqual("field", self.declarations["T051:result:operation:python"]["kind"])
+        exclusions = {item["exportName"] for item in self.manifest["approvedExclusions"]}
+        self.assertTrue({
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemInterop",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseInterop",
+            "org.kmipkit.extensions.ClientBatchItemResult.InteropResponse.toString",
+            "kmipkit.client.InteropResponse.__repr__",
+        } <= exclusions)
+        traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertTrue(TRACEABILITY_IDS <= set(
+            token for token in traceability.replace("|", " ").split() if token.startswith("KMIPKIT-028-")
+        ))
+        mapping_traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+            encoding="utf-8"
+        )
+        t051_row = next(line for line in mapping_traceability.splitlines() if line.startswith("| T051 |"))
+        self.assertTrue(API_REQUIREMENTS <= set(re.findall(r"KMIPKIT-0043-FR-\d{3}", t051_row)))
 
     def test_generated_parity_inventory_contains_verified_interop_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))

@@ -2,7 +2,9 @@ package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.kmipkit.InvalidInputException;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientBatchItem;
 
@@ -17,5 +19,17 @@ final class InteropJavaFacadeTest {
         }
 
         assertArrayEquals(original, identifier);
+    }
+
+    @Test
+    void builderRejectsOutOfRangeFunctionNullIdentifierAndInvalidUtf8() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.interop(-1, new byte[0]));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.interop(1L << 32, new byte[0]));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.interop(1, null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.interop(1, new byte[] {(byte) 0xff}));
     }
 }

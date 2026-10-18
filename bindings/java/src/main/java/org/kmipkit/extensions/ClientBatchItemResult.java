@@ -141,6 +141,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetConstraintsResponse(values);
     }
 
+    /** Returns the complete typed Interop result for Success, Failure, or Pending. */
+    public Optional<InteropResponse> interopResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseInterop);
+        return parseInteropResponse(values);
+    }
+
     /** Returns a typed Export response for both Success and KMIP Failure outcomes. */
     public Optional<ExportResponse> exportResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -470,6 +477,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "GetConstraintsResponse[fields=redacted]"; }
+    }
+
+    /** Interop response with its complete ordered generic TTLV for every valid result status. */
+    public static final class InteropResponse implements AutoCloseable {
+        private final TtlvStructure responseTtlv;
+
+        private InteropResponse(TtlvStructure responseTtlv) {
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the full ordered response structure, including unknown fields. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "InteropResponse[responseTtlv=redacted]"; }
     }
 
     /** Successful Derive Key response with its owned complete generic TTLV. */
@@ -1108,6 +1131,23 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Get Constraints response is invalid");
         }
         return Optional.of(new GetConstraintsResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<InteropResponse> parseInteropResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Interop response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1, "native Interop response is invalid");
+        long[] handles = requireLongArray(tuple[1], 1, "native Interop response is invalid");
+        if (!responsePresent(fields)) {
+            if (handles[0] != 0) {
+                TtlvStructure.fromNative(handles[0], null).close();
+                throw new InvalidInputException("native absent Interop response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (handles[0] <= 0) {
+            throw new InvalidInputException("native Interop response is invalid");
+        }
+        return Optional.of(new InteropResponse(TtlvStructure.fromNative(handles[0], null)));
     }
 
     static Optional<ExportResponse> parseExportResponse(Object[] values) {

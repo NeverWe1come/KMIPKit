@@ -21,6 +21,42 @@ fn copy_transport_span(data: *const u8, length: u64, maximum: u64) -> FfiResult<
     Ok(owned)
 }
 
+/// Copies the complete typed Interop response for Success, Failure, or Pending.
+///
+/// The generic response is available only through the successful result handle;
+/// local transport, decoding, and validation errors do not expose response bodies.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_interop_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        let response = outcome.response();
+        let Some(interop) = response.interop() else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(interop.with_ttlv(|view| super::clone_structure_view(&view)));
+        *response_ttlv = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
 fn read_transport_file_with_budget(path: &str, budget: u64) -> FfiResult<Vec<u8>> {
     let metadata = fs::metadata(path).map_err(|_| ERROR_INVALID_INPUT)?;
     if metadata.len() > budget {

@@ -1606,6 +1606,25 @@ def client_batch_item_get_constraints() -> ClientBatchItem:
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_interop(
+    interop_function: int,
+    interop_identifier: str | bytes | bytearray | memoryview,
+) -> ClientBatchItem:
+    """Create a §6.1.26 Interop item with an open function and required identifier."""
+    raw_function = _integer_range(interop_function, 0, 0xFFFF_FFFF)
+    with _staging_buffer_scope() as staging_buffers:
+        raw_identifier, identifier = _owned_bytes(
+            interop_identifier, _MAX_OPERATION_INPUT_BYTES
+        )
+        staging_buffers.append(identifier)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_interop",
+            (raw_function, identifier, len(raw_identifier)),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_delegated_login(
     rights: ttlv.Structure,
     *,
@@ -2105,6 +2124,7 @@ __all__ = [
     "client_batch_item_certify",
     "client_batch_item_check",
     "client_batch_item_get_constraints",
+    "client_batch_item_interop",
     "client_batch_item_delegated_login",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_import",

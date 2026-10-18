@@ -280,6 +280,23 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates an Interop item with an open Function Enumeration and required UTF-8 Identifier. */
+    public static ClientBatchItem interop(long interopFunction, byte[] interopIdentifier) {
+        requireU32(interopFunction, "Interop Function");
+        if (interopIdentifier == null) {
+            throw new InvalidInputException("Interop Identifier is required");
+        }
+        requireOperationInputWithinLimit(interopIdentifier);
+        byte[] identifierCopy = interopIdentifier.clone();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemInterop(interopFunction, identifierCopy);
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierCopy);
+        }
+    }
+
     /** Creates an Export request, preserving unknown Table 217 selector values. */
     public static ClientBatchItem export(
             @Nullable UniqueIdentifier uniqueIdentifier,

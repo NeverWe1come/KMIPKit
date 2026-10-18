@@ -31,7 +31,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.23 | Get Usage Allocation | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T049 verifies the four-language typed request and result mapping against Tables 232–234 with common status and delivery handling |
 | §6.1.24 | Hash | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.25 | Import | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
-| §6.1.26 | Interop | KMIPKIT-0042 | Approved owner; KMIPKIT-0042 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.26 | Interop | KMIPKIT-0042 | Approved owner; KMIPKIT-0042 approval recorded 2026-10-11; T051 adds the four-language Interop mapping and local constructor plus response-object ownership evidence in this branch; final-head CI and review gates remain open |
 | §6.1.27 | Join Split Key | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
 | §6.1.28 | Locate | KMIPKIT-0017 | Approved owner; T038 records a verified four-language mapping and parity evidence; task review remains open and no complete OASIS conformance claim is made |
 | §6.1.29 | Log | KMIPKIT-0042 | Approved owner; KMIPKIT-0042 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |

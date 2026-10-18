@@ -499,6 +499,15 @@ ffi.cdef(
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_discover_versions(
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_interop(
+        uint32_t interop_function,
+        const uint8_t *interop_identifier_data,
+        uint64_t interop_identifier_length,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_response_interop_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_register_request_create(
         uint32_t object_type,
         kmipkit_ttlv_structure_t *attributes,

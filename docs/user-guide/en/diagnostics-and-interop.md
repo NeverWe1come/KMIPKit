@@ -15,6 +15,21 @@ values remain intact. Success has an empty operation payload. The restriction
 against production-server availability applies to the server. Implementing
 the client operation does not establish an interoperability result.
 
+The approved KMIPKIT-0042 mapping is also available through the C, Java and
+Python client facades. C creates the batch item with
+`kmipkit_client_batch_item_interop` and reads the complete valid response with
+`kmipkit_client_batch_item_response_interop_ttlv`; release the returned
+structure with `kmipkit_ttlv_structure_release`. Java uses
+`ClientBatchItem.interop` and `ClientBatchItemResult.interopResponse`; close
+the returned `InteropResponse`. Python uses `client_batch_item_interop` and
+`BatchItemResult.interop_response`; close the returned `InteropResponse`.
+The function value remains an open unsigned 32-bit Enumeration, and the
+identifier must be UTF-8. The response accessor is available for valid
+Success, Failure and Pending results; it does not expose a response body from
+local transport, decoding or validation errors. These accessors transfer an
+owned generic TTLV structure to the caller. Java and Python may retain
+additional runtime-managed copies of identifier or response data.
+
 ```rust,kmipkit-test
 use kmipkit_protocol::{InteropRequest, SecretText};
 
@@ -83,9 +98,10 @@ See the [public ownership contract](../../architecture/public-api.md).
 
 The examples are tested by `diagnostics_guide_examples.rs` and can be compiled
 directly with `python scripts/test_user_guide_examples.py --guide
-docs/user-guide/en/diagnostics-and-interop.md`. The Rust source-derived suites
-are linked in [feature traceability](../../../specs/028-diagnostics-interop/traceability.md).
-C/Java/Python typed mapping and parity remain gated by KMIPKIT-0043. No direct
+docs/user-guide/en/diagnostics-and-interop.md`. The Rust and binding suites
+are linked in [feature traceability](../../../specs/028-diagnostics-interop/traceability.md)
+and the KMIPKIT-0043 evidence record. The Interop mapping is implemented in
+all four languages; final PR and CI gates remain pending. No direct
 official OASIS fixture, profile support, certification or two-server
 interoperability claim follows from these examples.
 

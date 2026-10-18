@@ -48,3 +48,20 @@ fn interop_constructor_rejects_invalid_utf8_and_clears_output() {
     );
     assert!(item.is_null());
 }
+
+#[test]
+fn interop_response_ttlv_getter_clears_outputs_for_invalid_item() {
+    let mut present = u8::MAX;
+    let mut response_ttlv = ptr::dangling_mut();
+
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_interop_ttlv(
+            ptr::null_mut(),
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+}
