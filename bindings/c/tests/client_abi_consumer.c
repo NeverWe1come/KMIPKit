@@ -708,6 +708,23 @@ cleanup:
     return result;
 }
 
+static int get_constraints_constructor_is_callable_from_c(void) {
+    kmipkit_client_batch_item_t *item = 0;
+    if (kmipkit_client_batch_item_get_constraints(&item) != 0) {
+        return 0;
+    }
+    const int result = item != 0;
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
+static int get_constraints_response_accessor_clears_outputs_from_c(void) {
+    uint8_t present = 9;
+    kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)1;
+    const int32_t status = kmipkit_client_batch_item_response_get_constraints_ttlv(
+        0, &present, &response_ttlv);
+    return status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
 static int get_usage_allocation_constructor_is_callable_from_c(void) {
     static const uint8_t identifier_text[] = "allocation-object";
     kmipkit_unique_identifier_v1_t identifier = {0};
@@ -2040,6 +2057,8 @@ int main(int argc, char **argv) {
         !export_constructor_rejects_invalid_presence_from_c() ||
         !delegated_login_response_accessors_clear_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
+        !get_constraints_constructor_is_callable_from_c() ||
+        !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
         !creation_create_key_pair_matches_shared_fixture() ||
