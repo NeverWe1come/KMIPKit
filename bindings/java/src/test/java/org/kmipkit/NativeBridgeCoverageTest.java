@@ -76,6 +76,44 @@ final class NativeBridgeCoverageTest {
     }
 
     @Test
+    void nativeTypedResponseBridgesRejectNullItemHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreate(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCertify(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCheck(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGetConstraints(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseExport(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDeriveKey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseHash(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMac(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMacVerify(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseSign(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions(0));
+    }
+
+    @Test
     void nativeClientOperationBridgesRejectMalformedIdentifiersAndAbsentValues() {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemCheck(

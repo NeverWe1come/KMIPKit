@@ -63,6 +63,16 @@ final class GetConstraintsResponseMappingTest {
                         new Object[] {new long[] {1}, new long[] {0}}));
     }
 
+    @Test
+    void absentResponseReleasesUnexpectedOwnedTtlvBeforeRejectingIt() {
+        TtlvStructure unexpected = TtlvStructure.create();
+        long handle = unexpected.nativeHandleOwner().transfer();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseGetConstraintsResponse(
+                        new Object[] {new long[] {0}, new long[] {handle}}));
+    }
+
     private static TtlvStructure responseTtlv(CodecLimits limits) {
         TtlvStructure constraints = TtlvStructure.create();
         constraints = append(constraints, 0x0054_0001,

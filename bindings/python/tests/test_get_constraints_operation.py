@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, extensions, ttlv
+from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 from kmipkit._ffi import ffi as ttlv_ffi
 
@@ -96,3 +96,60 @@ def test_get_constraints_response_owns_complete_ttlv_and_redacts_repr(
     assert "constraints-secret-sentinel" not in repr(result)
     result.close()
     assert result.response_ttlv.closed
+
+
+def test_get_constraints_response_releases_unexpected_native_handle(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = client.ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    released: list[object] = []
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_get_constraints_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._get_constraints_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [handle]
+
+
+def test_get_constraints_response_releases_handle_when_ttlv_wrapping_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = client.ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    released: list[object] = []
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_get_constraints_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("invalid test handle")),
+    )
+
+    with pytest.raises(RuntimeError, match="invalid test handle"):
+        client._get_constraints_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [handle]
