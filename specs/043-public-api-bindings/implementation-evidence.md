@@ -3558,3 +3558,30 @@ Verification on the Green tree:
 - `python -B tools/api_manifest/generate.py --check` — PASS: all 12 generated outputs current.
 
 The Windows Rust/JNI builds continue to emit the existing `aws-lc-sys` MSVC probe and missing-NASM warnings; the builds and tests pass. Current local results do not replace the selected-scope coverage aggregation or final cross-platform CI. T038 remains unchecked until the updated PR head passes those gates and receives controller review.
+
+### T038 selected-scope coverage follow-up (2026-10-18)
+
+The prior PR check, run `39116903088`, passed its platform, binding, sanitizer,
+inventory, and dependency-policy jobs but failed the selected-scope coverage
+gate at `6,531/6,882` changed production lines (94.90%). The independent
+artifact audit found only two additional Get/Locate FFI guards reachable with
+valid public C calls: invalid Get identifier output and null Locate identifier
+output. Other uncovered accessor lines require impossible typed states, memory
+allocation failure, or platform-inaccessible integer overflow and were not
+forced with test-only production changes.
+
+The coverage-only follow-up adds C consumer checks for those two guards and
+their output-reset behavior; Java adds a TLS Locate response with 100,001
+identifiers to exercise the JNI resource limit, verifies an omitted optional
+Unique Batch Item ID for a single-item request, and rejects a malformed
+identifier tuple. No production behavior or coverage thresholds changed.
+
+Focused verification on the updated tree:
+
+- WSL Ubuntu C ABI build plus CMake consumer suite — PASS; all 3 CTest cases.
+- `mvn --batch-mode -Dtest=ClientFacadeTlsIntegrationTest,GetLocateResponseMappingTest compiler:testCompile surefire:test` — PASS; 22 tests, 0 failures/errors. This includes the over-limit TLS Locate case and JNI response mapping.
+- The compiled C consumer's null-output cases pass as part of the CTest suite.
+- `git diff --check` — PASS.
+
+The updated selected-scope aggregate and cross-platform CI are still pending;
+T038 remains unchecked until the final PR head passes those gates.
