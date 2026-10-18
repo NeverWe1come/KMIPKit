@@ -3884,10 +3884,10 @@ fn ffi_join_split_key_request_preserves_enumeration_and_integer_identifiers() {
 fn ffi_join_split_key_response_getters_fail_closed_for_invalid_and_failed_items() {
     let request = ClientRequest::join_split_key(JoinSplitKeyRequest::new(
         ObjectType::from_raw(7),
-        vec![SplitKeyReference::new(UniqueIdentifier::TextString(
-            "source-fragment".to_owned(),
-        ))
-        .with_split_key_threshold(1)],
+        vec![
+            SplitKeyReference::new(UniqueIdentifier::TextString("source-fragment".to_owned()))
+                .with_split_key_threshold(1),
+        ],
     ));
     let failed_item = failed_cryptographic_item(request, 0x29, b"join-split-failed");
     let response_owner = reference_handle(failed_item, Kind::ClientBatchItemResponse)
