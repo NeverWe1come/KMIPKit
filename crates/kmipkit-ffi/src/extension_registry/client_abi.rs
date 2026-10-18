@@ -1847,9 +1847,8 @@ pub extern "C" fn kmipkit_client_batch_item_response_locate(
             *located_items_present = 1;
             *located_items = value;
         }
-        *identifier_count = try_ffi!(
-            u64::try_from(locate.unique_identifiers().len()).map_err(|_| ERROR_RESOURCE_LIMIT)
-        );
+        *identifier_count = // COVERAGE-EXCLUDE: LLVM records the macro invocation's hit on its evaluated expression.
+            try_ffi!(u64::try_from(locate.unique_identifiers().len()).map_err(|_| ERROR_RESOURCE_LIMIT));
         SUCCESS
     })
 }

@@ -3602,3 +3602,32 @@ After correction, the focused Linux integration command
 passes. The new PR-head cross-platform jobs and selected-scope coverage
 aggregation remain pending; the failed run did not produce a valid coverage
 measurement for the updated test set.
+
+### T038 selected-scope gate diagnosis (2026-10-18)
+
+CI run `39120697746` passed its platform tests, sanitizers, C consumer,
+Java/JNI, Python, and selected coverage collection, but the changed-production
+gate measured `6,536/6,882` (94.97%), two covered lines short of the 95% minimum.
+The merged reports showed that the Java Locate parser's non-array native
+identifier guard was the only uncovered changed executable line in
+`ClientBatchItemResult`; the prior malformed-tuple assertion exercised a
+different guard. `GetLocateResponseMappingTest` now asserts the non-array case.
+
+The FFI report also showed that the successful Locate identifier-count
+conversion executes three times, but LLVM attributes the macro invocation line
+to zero hits and records those executions on the following expression line.
+That call-site line now has the repository's explicit `COVERAGE-EXCLUDE`
+reason; the conversion itself remains covered and the coverage threshold is
+unchanged. The marker parser and coverage-gate unit suite pass.
+
+Updated local verification:
+
+- `cargo fmt --all --check` — PASS.
+- `cargo test --locked -p kmipkit-ffi --all-features` — PASS: 141 unit and 5 C API integration tests.
+- `mvn --batch-mode -Dtest=GetLocateResponseMappingTest compiler:testCompile surefire:test` — PASS: 12 tests.
+- Coverage exclusion recognized at the Locate macro call site; coverage-gate unit suite — PASS: 65 tests.
+- `git diff --check` — PASS.
+
+The next PR-head selected-scope aggregation and cross-platform CI run are
+pending; T038 remains unchecked until the final head passes all gates and
+controller review.
