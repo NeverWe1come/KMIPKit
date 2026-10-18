@@ -1230,7 +1230,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(16)));
+                item(0x42000d, 2, integer(18)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1328,10 +1328,19 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] exportFailure = structure(0x42000f,
                 enumeration(0x0042_005c, 43), item(0x0042_0093, 8, uniqueBatchItemId(15)),
                 enumeration(0x0042_007f, 1), enumeration(0x0042_007e, 5));
+        byte[] constraintsPayload = structure(0x42007c,
+                structure(0x420168,
+                        item(0x540001, 8, "KMIPKit-constraints-sentinel".getBytes(StandardCharsets.US_ASCII))));
+        byte[] constraintsItem = structure(0x42000f,
+                enumeration(0x42005c, 0x38), item(0x420093, 8, uniqueBatchItemId(16)),
+                enumeration(0x42007f, 0), constraintsPayload);
+        byte[] constraintsFailure = structure(0x42000f,
+                enumeration(0x42005c, 0x38), item(0x420093, 8, uniqueBatchItemId(17)),
+                enumeration(0x42007f, 1), enumeration(0x42007e, 5));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
                 certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem,
-                exportItem, exportFailure);
+                exportItem, exportFailure, constraintsItem, constraintsFailure);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {
