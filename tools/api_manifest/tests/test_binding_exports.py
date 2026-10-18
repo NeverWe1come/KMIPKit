@@ -688,6 +688,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponseGetUsageAllocation",
             "clientBatchItemResponseExport",
             "clientBatchItemInterop", "clientBatchItemResponseInterop",
+            "clientBatchItemLog", "clientBatchItemResponseLog",
             "clientBatchItemWithUniqueBatchItemId", "clientBatchResponseItemAt",
             "clientBatchResponseItemCount", "clientBatchSetAsynchronousIndicator",
             "clientBatchSetClientCorrelationValue", "clientBatchSetOrderOption",
@@ -755,6 +756,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "org.kmipkit.extensions.ClientBatchItemResult.GetConstraintsResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.LogResponse.toString",
         }
         for path in java_boilerplate:
             self.assertIn(("java-kmipkit", path), exclusions)
@@ -772,6 +774,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "kmipkit.client.TrustSource",
             "kmipkit.extensions.ExtensionRegistryLimits",
             "kmipkit.metadata.Version",
+            "kmipkit.client.LogResponse",
         )
         dataclass_artifacts = (
             "__dataclass_fields__", "__dataclass_params__", "__delattr__",
@@ -794,6 +797,10 @@ class BindingExportAuditTests(unittest.TestCase):
                 "runtime metadata query remain mapped",
                 "KMIPKIT-0043-FR-021",
             ),
+            "kmipkit.client.LogResponse": (
+                "typed Log response and close lifecycle are inventoried",
+                "KMIPKIT-0043-FR-021",
+            ),
         }
         for class_name in dataclass_names:
             constructor = ("python-kmipkit", f"{class_name}.__init__")
@@ -806,7 +813,12 @@ class BindingExportAuditTests(unittest.TestCase):
                 self.assertNotIn(constructor, exclusions)
         for class_name in dataclass_names:
             repr_exclusion = exclusions[("python-kmipkit", f"{class_name}.__repr__")]
-            self.assertIn("test_secret_bearing_client_records_redact_repr", repr_exclusion["evidence"])
+            expected_repr_test = (
+                "test_log_operation.py"
+                if class_name == "kmipkit.client.LogResponse"
+                else "test_secret_bearing_client_records_redact_repr"
+            )
+            self.assertIn(expected_repr_test, repr_exclusion["evidence"])
 
         self.assertIn(("python-kmipkit", "kmipkit.client"), exclusions)
 

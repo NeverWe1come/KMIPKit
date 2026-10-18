@@ -171,6 +171,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Interop",
                 "Join Split Key",
                 "Locate",
+                "Log",
             ],
         )
         self.assertEqual(
@@ -192,6 +193,8 @@ class PackageDocumentationContractTests(unittest.TestCase):
             self.assertIn(f"{blocked_operations} / {len(operations)}", guide)
             normalized_guide = re.sub(r"\s+", " ", guide.lower())
             self.assertIn(operation_phrase, normalized_guide)
+            for operation in (*declared_operations, *verified_operations):
+                self.assertIn(operation["name"].lower(), normalized_guide)
 
     def test_vendor_extension_examples_document_native_handle_release_parity(self) -> None:
         english = (ROOT / "docs/user-guide/en/vendor-extensions.md").read_text(

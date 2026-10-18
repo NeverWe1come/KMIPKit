@@ -267328,19 +267328,19 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. Redaction is covered by test_log_operation.py; this is a binding implementation detail, not a separate facade capability, and the typed Log facade remains inventoried, tested, and documented."
     },
     {
       "packageId": "python-kmipkit",
       "exportName": "kmipkit.client.LogResponse.__repr__",
-      "reason": "This exact formatter emits only a constant redacted summary; its redaction behavior is covered by test_log_operation.py and is not a separate KMIP operation capability.",
+      "reason": "This exact formatter emits only a constant redacted representation; its redaction behavior is covered by test_log_operation.py and is not a separate KMIP operation capability.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. Redaction is covered by test_log_operation.py; this is a binding implementation detail, not a separate facade capability, and the typed Log facade remains inventoried, tested, and documented."
     },
     {
       "packageId": "python-kmipkit",
@@ -267352,7 +267352,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
     },
     {
       "packageId": "python-kmipkit",
@@ -267364,7 +267364,79 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LogResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LogResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. The typed Log response and close lifecycle are inventoried, tested, and documented; this exclusion applies only to generated Python dataclass machinery."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LogResponse.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LogResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. The typed Log response and close lifecycle are inventoried, tested, and documented; this exclusion applies only to generated Python dataclass machinery."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LogResponse.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LogResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. The typed Log response and close lifecycle are inventoried, tested, and documented; this exclusion applies only to generated Python dataclass machinery."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LogResponse.__init__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LogResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. The typed Log response and close lifecycle are inventoried, tested, and documented; this exclusion applies only to generated Python dataclass machinery."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LogResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LogResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. The typed Log response and close lifecycle are inventoried, tested, and documented; this exclusion applies only to generated Python dataclass machinery."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LogResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LogResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. The typed Log response and close lifecycle are inventoried, tested, and documented; this exclusion applies only to generated Python dataclass machinery."
     },
     {
       "packageId": "python-kmipkit",
@@ -267376,7 +267448,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008/021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented."
     }
   ],
   "apiLevels": [

@@ -4080,3 +4080,50 @@ client operation rows.
 | `python -B tools/api_manifest/audit_binding_exports.py --check --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-18.json` | PASS: exact C, Java, and Python export reconciliation with no issues or kind mismatches. |
 | `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs are current. |
 | `git diff --check` | PASS. |
+
+### T053 Log four-language mapping (2026-10-19)
+
+T053 adds the approved KMIPKIT-0042 Log operation to the C, Java, and Python
+facades and corrects its API manifest mapping. The Rust `LogRequest`, client
+request/outcome, and typed `LogResponse` are reused unchanged. The FFI accepts
+bounded UTF-8 text into the zeroizing `SecretText`; Java clears its JNI staging
+array, and Python clears its CFFI staging buffer. Each binding exposes the
+complete ordered generic response TTLV through an owned caller-side structure
+for valid Success, Failure, and Pending results. Local transport, decoding, or
+validation errors do not provide a response body. No operation conformance,
+interoperability, profile, or certification claim is made.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — required Log manifest parity | `b8f55b13` | Added tests requiring the approved owner, exact four-language declarations, stable OASIS trace IDs, and generated parity inventory. Before implementation, the manifest did not expose verified Log facade mappings. |
+| Red — facade and ABI behavior | `f0110954` | Added Python/CFFI, Java/JNI, Rust FFI, compiled C consumer, and TLS integration tests. The Java tests failed to compile because the C/JNI Log entry points and response facade were absent; the C consumer could not link the new symbols. |
+| Green — Log bindings and generated manifest | `f78d2ba9` | Added the C ABI request/response functions, Java/Python wrappers, exact Log language mappings, and generated outputs. Corrected the C consumer's expected invalid-handle status and the TLS fixture's batch count to 26. |
+| Red — successful C response ownership | `707b1ac4` | Extended the compiled C/mTLS contract to require a typed Log request and a successful response whose complete TTLV copy remains readable after the original result handle is released. The test failed because the C batch did not yet send Log. |
+| Green — C response ownership | `d176bb59` | Added the Log request to the compiled C/mTLS batch and asserted the caller-owned response copy's ordered outer tags after releasing the source result handle. The focused C/mTLS integration test now passes. |
+| Refactor — traceability and verification record | this commit | Added T053's exact approved owner, OASIS tables, stable IDs, API requirement links, security/ownership boundaries, C response ownership evidence, and command evidence. Current-head CI remains pending. |
+
+Focused verification after the Green commit:
+
+| Command or evidence | Result |
+|---|---|
+| `cargo test --locked -p kmipkit-protocol log_operation_tests` | PASS: 7 protocol tests for the request, response payload, redaction, unknown values, extensions, and malformed results. |
+| `cargo test --locked -p kmipkit-client log_execution_tests` | PASS: 9 client tests for one-shot dispatch, result preservation, empty success, Failure/Pending, correlation, redaction, and delivery state. |
+| `cargo test --locked -p kmipkit-ffi --all-features --lib` | PASS: 160 native FFI unit tests, including Log response TTLV ownership and Success/Failure/Pending. |
+| `cargo test --locked -p kmipkit-ffi --all-features --lib ffi_log_ttlv_getter_copies_success_failure_and_pending_responses -- --nocapture` | PASS: native C ABI getter returns a caller-owned complete TTLV for Success, Failure, and Pending. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact` | PASS: compiled C consumer calls the Log constructor and verifies invalid response-handle outputs are cleared. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact` | PASS: compiled C sends a typed Log request over TLS 1.3 mutual TLS, reads the successful complete response TTLV copy after releasing the source result handle, and releases the copied structure. |
+| `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=LogJavaFacadeTest,LogResponseMappingTest,ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange' test` | PASS: 7 tests, including Log request and response access through the JNI facade over a TLS 1.3 mutual-TLS exchange. |
+| `mvn --batch-mode --file bindings/java/pom.xml test` | PASS: 303 tests, 0 failures/errors, 3 existing skips; parity fixture compiles and the TLS integration tests pass. |
+| `uv run --project . --with-requirements requirements-coverage.txt pytest tests/test_log_operation.py -q` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` outside the repository and `KMIPKIT_NATIVE_LIBRARY` set to the just-built local library | PASS: 3 Python tests. |
+| `uv run --project . --with-requirements requirements-coverage.txt pytest -q` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` and a copy of the built native library outside the repository | PASS: 510 Python tests. |
+| `python -B -m unittest tools.api_manifest.tests.test_log_parity_manifest -v` | PASS: 2 manifest/parity tests. |
+| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests` | PASS: 395 tests, 0 failures, 3 skipped. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs are current. |
+| `cargo fmt --all --check` | PASS. |
+| `git diff --check` | PASS. |
+
+The Windows builds emitted existing nonfatal AWS-LC `stdalign_check.c` and
+missing-NASM warnings. Maven also emitted existing MSVC linker duplicate-symbol
+warnings; the focused test builds and results passed. Linux/macOS/Windows current
+head CI and the selected changed-code coverage gate remain the final T053
+verification gates.

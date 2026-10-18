@@ -1334,8 +1334,9 @@ class T076ClientMappingTests(unittest.TestCase):
                 "ResourceLimitError",
             )
         }
-        join_split_response_dataclass_exclusions = {
-            f"kmipkit.client.JoinSplitKeyResponse.{member}"
+        typed_response_dataclass_exclusions = {
+            f"kmipkit.client.{response}.{member}"
+            for response in ("JoinSplitKeyResponse", "LogResponse")
             for member in (
                 "__dataclass_fields__",
                 "__dataclass_params__",
@@ -1348,8 +1349,9 @@ class T076ClientMappingTests(unittest.TestCase):
                 "__slots__",
             )
         }
-        join_split_response_repr_exclusion = {
-            "kmipkit.client.JoinSplitKeyResponse.__repr__"
+        typed_response_repr_exclusions = {
+            f"kmipkit.client.{response}.__repr__"
+            for response in ("JoinSplitKeyResponse", "LogResponse")
         }
         split_key_reference_constructor_exclusion = {
             "kmipkit.extensions.SplitKeyReference.__init__"
@@ -1372,8 +1374,8 @@ class T076ClientMappingTests(unittest.TestCase):
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
-            | join_split_response_dataclass_exclusions
-            | join_split_response_repr_exclusion
+            | typed_response_dataclass_exclusions
+            | typed_response_repr_exclusions
             | split_key_reference_constructor_exclusion
             | split_key_reference_input_readbacks
             | split_key_reference_lifecycle_exclusions
@@ -1395,14 +1397,29 @@ class T076ClientMappingTests(unittest.TestCase):
                 if path in context_manager_exclusions:
                     self.assertIn("context-manager syntax", exclusion["reason"])
                     self.assertIn("close lifecycle", exclusion["reason"])
-                elif path in join_split_response_dataclass_exclusions:
-                    self.assertIn("dataclass-generated", exclusion["reason"])
-                    self.assertIn("interpreter mechanics", exclusion["reason"])
-                    self.assertIn("T052", exclusion["evidence"])
-                elif path in join_split_response_repr_exclusion:
+                elif path in typed_response_dataclass_exclusions:
+                    if path.endswith(
+                        (".__dataclass_fields__", ".__dataclass_params__", ".__slots__")
+                    ):
+                        self.assertTrue(
+                            "generated dataclass" in exclusion["reason"]
+                            or "dataclass-generated" in exclusion["reason"]
+                        )
+                        self.assertTrue(
+                            "not an independent facade capability"
+                            in exclusion["reason"]
+                            or "no independent KMIPKit capability" in exclusion["reason"]
+                        )
+                    else:
+                        self.assertIn("dataclass-generated", exclusion["reason"])
+                        self.assertIn("interpreter mechanics", exclusion["reason"])
+                    evidence_task = "T053" if ".LogResponse." in path else "T052"
+                    self.assertIn(evidence_task, exclusion["evidence"])
+                elif path in typed_response_repr_exclusions:
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])
-                    self.assertIn("T052", exclusion["evidence"])
+                    evidence_task = "T053" if ".LogResponse." in path else "T052"
+                    self.assertIn(evidence_task, exclusion["evidence"])
                 elif path in split_key_reference_constructor_exclusion:
                     self.assertIn("constructor", exclusion["reason"])
                     self.assertIn("split_key_reference_create", exclusion["reason"])
