@@ -3747,3 +3747,37 @@ TTLV value builder to create the nested Any Object. The public Import API
 accepts the resulting structure handle and is exercised from C; public C
 structure creation alone does not construct nested generic structure values.
 This test fixture detail adds no public TTLV builder or API.
+
+### T050 follow-up — public Big Integer builder and C ownership contract
+
+A review found that the public C facade could not construct Big Integer values
+for a generic Any Object, despite the Rust, Java, and Python constructors, and
+that the generated C declarations did not explain ownership transfer for three
+builders used to assemble generic TTLV. The correction maps the already
+approved KMIPKIT-0004 model capability; it does not change the Import request
+or generic model semantics. The v1 registry projection also had to remain
+byte-for-byte compatible when the v2 manifest gained C documentation.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — Big Integer and ownership parity | `a75db616` | Added manifest and public-header consumer regressions. They failed because the public C Big Integer declaration and all-language mapping were blocked and the three consumed-handle contracts were undocumented. |
+| Red — preserve v1 registry projection | `608db138` | Added a regression that failed when v2 C documentation leaked into the legacy v1 registry parity fixture. |
+| Green | `7a1b0fea` | Declared the approved Big Integer mapping across Rust/C/Java/Python, documented C handle-transfer points in the manifest, taught the pinned generator to exclude v2-only documentation from the v1 projection, and regenerated all 12 outputs. |
+| Refactor | this commit | Updated T050 status, API and bilingual guides, requirement traceability, and this verification record. |
+
+Focused verification on the correction:
+
+| Command | Result |
+|---|---|
+| `python -B -m unittest tools.api_manifest.tests.test_generate tools.api_manifest.tests.test_import_parity_manifest` | PASS: 67 tests, 2 platform skips. |
+| `.venv-t031\Scripts\python.exe -B tools\api_manifest\generate.py --check` | PASS: all 12 generated outputs current. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact --nocapture` | PASS: the compiled public C consumer called the Big Integer builder and completed the existing TLS 1.3 mTLS batch exchange. |
+| `mvn -q -f bindings/java/pom.xml '-Dtest=AdapterApiCoverageTest,NativeBridgeCoverageTest' test` | PASS: Java adapter/JNI focused tests. |
+| `uv run --no-project --python 3.12 --with pytest --with cffi pytest bindings/python/tests/test_extension_registry.py -q` | PASS: 23 tests and 100 subtests. |
+| `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+The independent security source review reported no actionable findings. It
+was a source review, not a completed Codex Security scan. Independent QA was
+still in progress when this evidence was written. Final-head cross-platform CI
+and the repository coverage gates remain pending; T050 stays unchecked until
+those gates and QA pass.

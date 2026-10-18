@@ -197,6 +197,11 @@ objeto de clave envuelto, aporta el Key Wrap Type raw cuando el objeto contiene
 Key Wrapping Data. KMIPKit conserva la representación recibida y no realiza
 unwrap ni operaciones criptográficas locales.
 
+Any Object se construye con el modelo TTLV genérico. Los valores Big Integer
+están disponibles en Rust, C, Java y Python; desde C se puede usar
+`kmipkit_ttlv_value_big_integer(limits, bytes, length, &value)`. La cabecera C
+documenta cuándo los constructores transfieren la propiedad de handles opacos.
+
 | Lenguaje | Crear la petición | Revisar un resultado correcto |
 |---|---|---|
 | Rust | `ImportRequest::new(...)` y `Client::import(...)` | `ClientBatchOutcome::Import` e `ImportResponse` |

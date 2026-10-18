@@ -192,6 +192,11 @@ key objects, pass the raw Key Wrap Type when the object contains Key Wrapping
 Data. KMIPKit preserves the supplied representation and performs no unwrap or
 local cryptographic operation.
 
+Any Object is built with the generic TTLV value model. Big Integer values are
+available in Rust, C, Java, and Python; C callers can use
+`kmipkit_ttlv_value_big_integer(limits, bytes, length, &value)`. The public C
+header documents ownership transfer for builders that accept opaque handles.
+
 | Language | Create the request | Inspect a successful result |
 |---|---|---|
 | Rust | `ImportRequest::new(...)` and `Client::import(...)` | `ClientBatchOutcome::Import` and `ImportResponse` |

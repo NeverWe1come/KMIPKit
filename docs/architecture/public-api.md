@@ -143,6 +143,11 @@ determines the Item Type. It also preserves child order, raw Enumeration
 values, bitmask bits, and exact Big Integer Item Value octets. The tree has
 KMIPKit's 64-level Structure limit.
 
+All four language facades can construct Big Integer values. The C constructor
+`kmipkit_ttlv_value_big_integer` accepts an explicit-length byte span and the
+configured codec limits; C structure/value/item builders document when their
+opaque-handle ownership transfers.
+
 The generic TTLV layer does not establish wire or protocol validity. It does
 not store original framing, encoded lengths, or padding bytes, and does not
 validate schema-specific field order, cardinality, required fields, or
