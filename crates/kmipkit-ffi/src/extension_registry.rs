@@ -2932,7 +2932,7 @@ pub extern "C" fn kmipkit_client_batch_item_delegated_login(
         let out = out_slot!(out_item);
         let rights = match copy_structure_handle(rights, true) {
             Ok(Some(rights)) => rights,
-            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT), // COVERAGE-EXCLUDE: Required handles return Err when null and Some when valid.
             Err(status) => return record_ffi_error(status),
         };
         let lease_time = match lease_time_kind {

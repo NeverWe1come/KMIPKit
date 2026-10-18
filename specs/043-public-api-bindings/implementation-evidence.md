@@ -1817,6 +1817,27 @@ transport 3,713/3,902 (95.16%), FFI 5,459/5,672 (96.24%), Java
 thresholds pass in this replay. A fresh current-head CI run remains required;
 the replay is not a substitute for CI.
 
+### T076 selected coverage rerun — 2026-10-18
+
+CI run `39101710813` included the two JNI fallback exclusions but still
+reported changed production coverage of 5,504/5,794, below the strict 95%
+threshold. Replaying that run's exact selected-scope artifacts against base
+`d5d5ab75ec9318d7d646c6ba85c5e56559ace21e` and merge
+`71a992f458faef5bdece8f201f724261f89ca1a9` identified the newly added
+`extension_registry.rs:2935` `Ok(None)` arm as an additional zero-hit line.
+That arm follows `copy_structure_handle(rights, true)`: the helper returns
+`Err` for a null required handle and `Some` for a valid handle, so `Ok(None)`
+is unreachable. The exact line now carries a documented exclusion. Replaying
+the same reports with `scripts/coverage_gate.py aggregate` passed all selected
+scope thresholds: changed production 5,504/5,793 (95.01%, including 17
+summary-only lines as uncovered), TTLV 735/741 (99.19%), protocol
+12,581/12,973 (96.98%), transport 3,713/3,902 (95.16%), FFI
+5,459/5,672 (96.24%), Java 2,314/2,365 (97.84%), Python 2,732/2,762
+(98.91%), JNI 3,223/3,709 (86.90%, including 17 summary-only lines as
+uncovered), and workspace 29,454/30,464 (96.68%). No threshold changed. A
+fresh current-head CI run remains required; this replay is not a substitute
+for CI.
+
 ## T077 — Local API-level taxonomy parity
 
 Rust, C, Java, and Python now expose the ordered local API taxonomy
