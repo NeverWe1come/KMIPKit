@@ -3659,6 +3659,17 @@ Local verification:
 - The two over-limit and boundary tests — PASS: 2 tests.
 - `mvn --batch-mode -Dtest=GetLocateResponseMappingTest test` — PASS: 13 tests;
   the Windows JNI library built successfully and the example ran.
-- The new PR-head selected-scope coverage aggregation and cross-platform CI
-  are pending for these commits. T038 remains unchecked until the updated head
-  passes those gates and the evidence is recorded.
+- CI run `39124569374` — PASS on implementation head `629db510`; all 34 required
+  checks passed and 2 conditional checks were skipped. This includes Rust 1.94
+  and stable on Linux, Windows, and macOS; C, Java/JNI, and Python integration;
+  sanitizers; generated/traceability checks; and selected-scope coverage.
+- Selected-scope coverage: changed production 6,539/6,883 (95.00%); TTLV
+  735/741 (99.19%); protocol 12,581/12,973 (96.98%); transport 3,713/3,902
+  (95.16%); FFI 5,669/5,889 (96.26%); Java 2,413/2,464 (97.93%); Python
+  2,847/2,877 (98.96%); JNI 3,386/3,910 (86.60%); workspace 29,664/30,681
+  (96.69%). All configured thresholds passed.
+
+With the approved owner specification, four-language mapping, TDD evidence,
+independent QA/security reviews, and successful implementation-head CI recorded,
+T038 is complete. The current follow-up commit only updates this evidence and
+the task checkbox; CI will verify that final documentation head separately.
