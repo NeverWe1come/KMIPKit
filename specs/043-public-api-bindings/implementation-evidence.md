@@ -3510,3 +3510,28 @@ coverage exclusions are used; the 95% threshold remains unchanged.
 The Windows builds emitted the known `aws-lc-sys` MSVC probe and missing-NASM
 warnings; the native library and C consumer built successfully. The remote
 selected-scope coverage gate on the updated head remains authoritative.
+
+## T038 — Get and Locate mapping
+
+The approved owner is `specs/017-managed-object-retrieval/spec.md` (`KMIPKIT-0017`). The mappings cite OASIS KMIP Specification v2.1 §6.1.19, Tables 220–222, and §6.1.28, Tables 247–249. They reuse the owner's canonical Rust request and response types. Get's successful Any Object is copied into a separately owned TTLV structure; native ownership zeroizes on release, and diagnostics redact both payload and identifier. Java/Python runtime-owned copies remain outside KMIPKit's zeroization guarantee. Locate preserves optional Located Items presence, repeated identifiers, and server order. The owner traceability ledger retains server-only and retired Locate dispositions. This task mapping does not claim complete OASIS operation conformance, server behavior, interoperability, profile support, or certification.
+
+Red, Green, and Refactor were recorded in distinct commits:
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red | `801f058f` | `python -B -m unittest tools.api_manifest.tests.test_get_locate_parity_manifest -v` — expected failure: 3 tests, 7 failures and 2 errors because Get/Locate were not verified in the manifest and generated C/parity entries were absent. |
+| Green | `ba9eff8` | The implementation and generated mappings below passed focused checks. The pinned generator wrote 12 outputs. |
+| Refactor | `f84026fa` | Rustfmt-only test cleanup and T038 traceability/operation-dependency updates; final format, generator, and manifest parity checks passed. |
+
+Focused verification on the Green implementation and final Refactor tree:
+
+- `python -B tools/api_manifest/generate.py --write` — PASS; generated 12 files from the pinned source manifest.
+- `python -B tools/api_manifest/generate.py --check` — PASS; all 12 generated outputs verified current.
+- `python -B -m unittest tools.api_manifest.tests.test_get_locate_parity_manifest -v` — PASS; 3 tests.
+- `cargo test -p kmipkit-ffi --all-features --lib` — PASS; 137 tests.
+- `cargo test -p kmipkit-ffi --all-features --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact` — PASS; the public C consumer compiled and ran (1 test).
+- `mvn -f bindings/java/pom.xml -Dtest=GetLocateResponseMappingTest test` — PASS; 6 tests, 0 failures/errors; JNI built.
+- `$env:PYTHONPATH=(Resolve-Path 'bindings/python/src').Path; $env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path 'target/debug/kmipkit_ffi.dll').Path; uv run --isolated --with pytest --with cffi --python 3.12 --no-project python -c "import pytest,sys; raise SystemExit(pytest.main(['bindings/python/tests/test_get_locate_operation.py','-q']))"` — PASS; 4 tests.
+- `cargo fmt --all --check` and `git diff --check` — PASS.
+
+The Windows Rust/JNI builds emitted existing `aws-lc-sys` MSVC probe and missing-NASM warnings; the Rust, C, and JNI binaries built and the focused tests passed. Full workspace tests, selected coverage gates, and current-head CI were not run in this continuation. T038 remains unchecked pending controller review.
