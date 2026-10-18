@@ -3694,7 +3694,7 @@ caller path over the existing mTLS fixture.
 | Green — four-language mapping | `c3b5f61697ecee98aff01753a5ae2527decd0955` | Added C/JNI/Python adapters, Rust client evidence, binding tests, authored manifest metadata/declarations, and all pinned generated outputs. |
 | Red — compiled C success path | `562ef51b` | The new C mTLS caller submitted 22 typed items while the peer returned the prior 21-item response. `generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls` failed as expected: C returned exit 108 (`status 8`, category 2, cause 2, delivery 3). |
 | Green — compiled C success path | `e04bb897` | The peer now checks the exact Import request and returns an ordered Import success with an unknown field. The C caller reads the typed Unique Identifier, releases the borrowed item, and validates its owned TTLV copy. The focused mTLS test passes with exactly one exchange. |
-| Refactor | Documentation/evidence commit recorded below | Splits the C request assertion into small helpers, adds bilingual guide and traceability updates, and records final verification. |
+| Refactor | `845a3dfff4c3e142ed1961ea6f727316ded9efba` | Splits the C request assertion into small helpers, adds bilingual guide and traceability updates, and records final verification. |
 
 The initial Red regression command was:
 
@@ -3712,7 +3712,8 @@ behavior remain in force. Java/Python document runtime-owned copies as outside
 KMIPKit zeroization control.
 
 The Refactor phase updates both language guides, this evidence, the T050 task
-status, and `traceability.md`. Its commit is recorded in the report follow-up.
+status, and `traceability.md`. Refactor commit `845a3dfff4c3e142ed1961ea6f727316ded9efba`
+is recorded in the task report.
 The focused local verification on the final implementation and documentation
 tree is:
 
