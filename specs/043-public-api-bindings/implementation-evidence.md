@@ -3406,23 +3406,42 @@ plus direct checks of defensive FFI handle validation.
 |---|---|---|---|
 | Red | `c00f776b` | `mvn -B -f bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange test` | Expected failure: the client sent 18 typed batch items while the TLS fixture still returned only 16; execution rejected the mismatched response before exposing an item. |
 | Green | `45867661` | Same focused Maven command | PASS: the fixture now returns 18 correlated results, including a successful Constraints Structure with an unknown vendor member and a failed Get Constraints result. The test confirms complete ordered TTLV, redacted output, and `Optional.empty()` for Failure. |
-| Refactor | this commit | Full Java, Python, FFI, formatting, and diff checks below | PASS locally; updated-head cross-platform CI and the selected-scope coverage gate remain pending. |
+| Refactor | `875458a3` | Full Java, Python, FFI, formatting, and diff checks below | PASS locally; updated-head cross-platform CI and the selected-scope coverage gate remain pending. |
 
-The Python dispatcher test exercises the successful operation/status branch and
-checks that the typed response is attached to the result and the native item and
-batch handles are released. A mutation changing the operation discriminator
-from `0x38` to `0x39` made the test fail because no mapped response was present;
-restoring the production discriminator made it pass. The FFI test verifies that
-a mismatched internal handle returns `ERROR_INVALID_INPUT`, an out-of-range
-response index returns `ERROR_INTERNAL`, and both paths clear output values.
+The Python dispatcher test covers three outcomes: Completed/Success attaches the
+typed response, Pending does not, and Completed/Failure does not. Each case also
+checks the common result metadata and releases the native item and batch handles.
+A mutation changing the operation discriminator from `0x38` to `0x39` made the
+successful case fail because no mapped response was present; restoring the
+production discriminator made it pass. The FFI test verifies that a mismatched
+internal handle returns `ERROR_INVALID_INPUT`, an out-of-range response index
+returns `ERROR_INTERNAL`, and both paths clear output values.
+
+The Python checks are reproducible from PowerShell with the built native DLL:
+
+```powershell
+$env:KMIPKIT_NATIVE_LIBRARY = (Resolve-Path 'bindings/python/src/kmipkit/_native_ffi/_native_ffi.dll').Path
+uv run --isolated --with pytest --with cffi --python 3.12 --no-project python -c "import sys; sys.path.insert(0, 'bindings/python/src'); import pytest; raise SystemExit(pytest.main(['bindings/python/tests/test_client.py', 'bindings/python/tests/test_get_constraints_operation.py', '-q']))"
+```
 
 | Command | Result |
 |---|---|
 | `mvn -B -f bindings/java/pom.xml test` | PASS: 257 tests, 0 failures, 0 errors, 3 skipped. |
-| Python 3.12 pytest for `test_client.py` and `test_get_constraints_operation.py` with the built native DLL | PASS: 197 tests. |
+| PowerShell Python 3.12 command above with the built native DLL | PASS: 199 tests. |
 | `cargo test -p kmipkit-ffi --all-features --lib` | PASS: 133 tests. |
 | `cargo fmt --all --check` | PASS. |
 | `git diff --check` | PASS. |
+
+### T048 QA follow-up — Pending and Failure dispatch coverage
+
+Independent QA identified that the Python dispatcher test did not exercise the
+Pending and Failure gates and that its full local invocation was not recorded.
+The parameterized regression now verifies that only Completed/Success attaches
+the typed response; Pending and Completed/Failure leave it absent. The focused
+three-case test passed, the full two-file Python suite passed (199 tests), and
+the PowerShell command above records the native DLL setup and reproducible
+invocation. No production behavior changed. QA re-review found no remaining
+material issues in these corrections.
 
 The local Windows Rust builds still print the known `aws-lc-sys` MSVC probe
 and missing-NASM warnings; the Java suite and FFI tests passed despite those

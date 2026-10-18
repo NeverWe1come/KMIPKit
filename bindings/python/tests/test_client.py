@@ -1142,8 +1142,19 @@ def test_batch_result_dispatches_export_operation_to_typed_mapper(
     assert released == ["item", "response"]
 
 
-def test_batch_result_dispatches_get_constraints_success_to_typed_mapper(
+@pytest.mark.parametrize(
+    ("outcome", "result_status", "expect_mapping"),
+    [
+        pytest.param(client.BatchOutcome.COMPLETED, 0, True, id="success"),
+        pytest.param(client.BatchOutcome.PENDING, 2, False, id="pending"),
+        pytest.param(client.BatchOutcome.COMPLETED, 1, False, id="failure"),
+    ],
+)
+def test_batch_result_dispatches_get_constraints_only_for_successful_completion(
     monkeypatch: pytest.MonkeyPatch,
+    outcome: client.BatchOutcome,
+    result_status: int,
+    expect_mapping: bool,
 ) -> None:
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
     item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
@@ -1154,6 +1165,8 @@ def test_batch_result_dispatches_get_constraints_success_to_typed_mapper(
     def metadata(_item: object, out: object) -> int:
         _initialize_metadata_v2(out)
         out.operation = 0x38  # type: ignore[attr-defined]
+        out.outcome_kind = int(outcome)  # type: ignore[attr-defined]
+        out.result_status = result_status  # type: ignore[attr-defined]
         return 0
 
     fake = SimpleNamespace(
@@ -1180,10 +1193,13 @@ def test_batch_result_dispatches_get_constraints_success_to_typed_mapper(
 
     result = client._batch_result(response_pointer)
     try:
+        assert result.items[0].outcome is outcome
         assert result.items[0].operation == 0x38
-        assert result.items[0].result_status == 0
-        assert result.items[0].get_constraints_response is get_constraints_response
-        assert len(dispatched) == 1
+        assert result.items[0].result_status == result_status
+        assert result.items[0].get_constraints_response is (
+            get_constraints_response if expect_mapping else None
+        )
+        assert len(dispatched) == int(expect_mapping)
     finally:
         result.close()
 
