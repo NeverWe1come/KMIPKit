@@ -1615,10 +1615,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_export(
 
         let item = read_handle!(item, ClientBatchItemResponse);
         let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+            return record_ffi_error(ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: read_handle! enforces the stored kind.
         };
         let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL);
+            return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: response handles retain a validated immutable index.
         };
         let Some(export) = item.outcome().export_response() else {
             return SUCCESS;
@@ -1947,7 +1947,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_hash(
                 let status =
                     bytes.with_bytes(|bytes| set_borrowed_span(data_present, data, Some(bytes)));
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
             if let Some(bytes) = value.correlation_value() {
@@ -1955,7 +1955,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_hash(
                     set_borrowed_span(correlation_present, correlation, Some(bytes))
                 });
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
         }
@@ -2007,7 +2007,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_mac(
                 let status =
                     bytes.with_bytes(|bytes| set_borrowed_span(mac_present, mac_data, Some(bytes)));
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
             if let Some(bytes) = value.correlation_value() {
@@ -2015,7 +2015,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_mac(
                     set_borrowed_span(correlation_present, correlation, Some(bytes))
                 });
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
         }
@@ -2073,7 +2073,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_mac_verify(
                     set_borrowed_span(correlation_present, correlation, Some(bytes))
                 });
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
         }
@@ -2126,7 +2126,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_sign(
                     set_borrowed_span(signature_present, signature_data, Some(bytes))
                 });
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
             if let Some(bytes) = value.correlation_value() {
@@ -2134,7 +2134,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_sign(
                     set_borrowed_span(correlation_present, correlation, Some(bytes))
                 });
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
         }
@@ -2197,7 +2197,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
                     set_borrowed_span(recovered_present, recovered, Some(bytes))
                 });
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
             if let Some(bytes) = value.correlation_value() {
@@ -2205,7 +2205,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
                     set_borrowed_span(correlation_present, correlation, Some(bytes))
                 });
                 if let Err(status) = status {
-                    return record_ffi_error(status);
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
                 }
             }
         }

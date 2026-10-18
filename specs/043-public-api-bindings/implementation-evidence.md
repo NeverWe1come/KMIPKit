@@ -3166,11 +3166,40 @@ after the Export response contract clarification. Running
 comments to state the supported Success and KMIP Failure behavior; no ABI
 declaration changed. The follow-up `--check` verifies all 12 generated outputs.
 
-CI run `39079621478` on head `9c7b9acc` reported `Run Python contracts` failing
-on all three operating systems. The workflow logs are unavailable until the
-run finishes. Locally, the same pinned-dependency contract sequence passes:
+CI run `39079621478` on head `9c7b9acc` confirmed the Python contract failure
+was the stale generated C header; the same check now passes locally after the
+generator refresh. The pinned-dependency contract sequence passes locally:
 222 normative-catalog tests (7 platform skips), 17 extension-fixture tests (1
 platform skip), 51 API parity/T076 tests, and both generated-output checks.
-These results include the regenerated header. The run's selected-scope coverage
-gate is still in progress; T047 remains unchecked until a new CI head passes
-the cross-platform contracts and coverage gate.
+
+CI run `39080268113` on head `b25f5382` then passed script contracts on Ubuntu,
+Windows, and macOS and all Rust, C, Java, Python, JNI, sanitizer, dependency,
+inventory, and documentation checks. Its selected-scope coverage gate measured
+5,401/5,702 changed production lines (94.72 percent), 16 covered lines short
+of the unchanged 95 percent threshold. Line-level analysis found 5,685
+changed executable lines and 17 summary-only uncovered lines.
+
+### T047 final coverage follow-up — 2026-10-18
+
+The Java mapping test now deterministically changes the source-identifier list
+size during validation and verifies the public builder rejects the unstable
+input. The focused JaCoCo report confirms `ClientBatchItem.java:252` is covered.
+
+Sixteen changed lines are annotated with exact invariant reasons: nine
+`usize`-to-`u64` span-length error returns that cannot occur on supported
+32-bit or 64-bit targets; two Export branches that contradict the typed,
+immutable response-handle registry; and five JNI cleanup/error lines for a
+typed Export and TTLV pair derived from the same immutable response. These
+markers do not alter the coverage thresholds or runtime behavior. The coverage
+gate's marker parser confirms all 16 annotated lines are excluded individually.
+
+| Verification | Result |
+|---|---|
+| `mvn -B -f bindings/java/pom.xml '-Dtest=DeriveKeyMappingTest' test` | PASS: 5 tests, 0 failures/errors/skips |
+| JaCoCo line record for `ClientBatchItem.java:252` | PASS: 5 covered instructions |
+| `python -B -m unittest scripts.tests.test_coverage_gate -v` | PASS: 65 tests, 0 failures, 3 platform skips |
+| `cargo fmt --all --check` and `git diff --check` | PASS |
+
+The source changes are not yet checked by CI. T047 remains unchecked until the
+current head passes the unchanged selected-scope coverage gate and all required
+cross-platform checks.

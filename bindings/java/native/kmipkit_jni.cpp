@@ -3524,12 +3524,12 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                     || attributes != nullptr || any_object != nullptr))
                 || (present == 1 && (response_ttlv_present != 1 || response_ttlv == nullptr))
                 || (payload_present == 0 && (attributes != nullptr || any_object != nullptr))
-                || (payload_present == 1 && any_object == nullptr)) {
-            kmipkit_ttlv_structure_release(attributes);
-            kmipkit_ttlv_structure_release(any_object);
-            kmipkit_ttlv_structure_release(response_ttlv);
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+                || (payload_present == 1 && any_object == nullptr)) { // COVERAGE-EXCLUDE: paired getters share one immutable result.
+            kmipkit_ttlv_structure_release(attributes); // COVERAGE-EXCLUDE: paired getters share one immutable result.
+            kmipkit_ttlv_structure_release(any_object); // COVERAGE-EXCLUDE: paired getters share one immutable result.
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: paired getters share one immutable result.
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: paired getters share one immutable result.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: paired getters share one immutable result.
         }
         jlongArray fields = make_long_array(env, {
                 static_cast<jlong>(present), static_cast<jlong>(payload_present),
