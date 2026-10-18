@@ -268,6 +268,21 @@ def test_join_split_key_response_rejects_success_without_identifier(
     assert ttlv_calls == []
 
 
+def test_join_split_key_response_returns_none_for_consistent_absent_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_calls, ttlv_calls, released = _install_join_split_key_response_abi(
+        monkeypatch, response_present=0
+    )
+
+    result = client._join_split_key_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert result is None
+    assert response_calls == ["response"]
+    assert ttlv_calls == []
+    assert released == []
+
+
 @pytest.mark.parametrize(
     ("response_ttlv_present", "include_handle", "expected_release"),
     [(0, True, True), (1, False, False), (2, True, True)],
@@ -297,6 +312,38 @@ def test_join_split_key_response_rejects_mismatched_ttlv_presence_and_handle(
         assert released == ([address] if expected_release else [])
     finally:
         if include_handle and address not in released:
+            ttlv_lib.kmipkit_ttlv_structure_release(
+                ttlv_ffi.cast("kmipkit_ttlv_structure_t *", address)
+            )
+
+
+def test_join_split_key_response_releases_ttlv_when_native_wrapper_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = _take_join_split_key_response_ttlv_handle()
+    address = int(ffi.cast("uintptr_t", handle))
+    response_calls, ttlv_calls, released = _install_join_split_key_response_abi(
+        monkeypatch,
+        response_present=1,
+        identifier_text="split-key-id",
+        response_ttlv_present=1,
+        response_ttlv_handle=handle,
+    )
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("test wrapper failure")),
+    )
+
+    try:
+        with pytest.raises(RuntimeError, match="test wrapper failure"):
+            client._join_split_key_response(SimpleNamespace(_pointer=lambda: object()))
+
+        assert response_calls == ["response"]
+        assert ttlv_calls == ["response_ttlv"]
+        assert released == [address]
+    finally:
+        if address not in released:
             ttlv_lib.kmipkit_ttlv_structure_release(
                 ttlv_ffi.cast("kmipkit_ttlv_structure_t *", address)
             )

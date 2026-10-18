@@ -2560,6 +2560,183 @@ fn ffi_derive_key_constructor_requires_attributes() {
     release(parameters, Kind::Structure);
 }
 
+fn import_test_object() -> Item {
+    Item::new(
+        RawTag::new(0x0042_008f)
+            .expect("Symmetric Key tag fits the KMIP tag field")
+            .try_checked()
+            .expect("Symmetric Key is allocated in KMIP 2.1"),
+        Value::structure(Structure::new()),
+    )
+    .expect("valid generic Any Object test item builds")
+}
+
+fn import_test_identifier(bytes: &[u8]) -> kmipkit_unique_identifier_v1_t {
+    kmipkit_unique_identifier_v1_t {
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        text_data: bytes.as_ptr(),
+        text_length: u64::try_from(bytes.len()).expect("test identifier length fits u64"),
+        ..empty_unique_identifier_output_v1()
+    }
+}
+
+#[test]
+fn ffi_import_constructor_rejects_missing_identifier_and_invalid_optional_flags() {
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut object_structure = Structure::new();
+    object_structure
+        .try_push(import_test_object())
+        .expect("Any Object test item fits the structure");
+    let object = make_handle(Kind::Structure, HandleValue::Structure(object_structure));
+    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+
+    assert_eq!(
+        kmipkit_client_batch_item_import(ptr::null(), 2, 0, 0, 0, 0, attributes, object, &mut item,),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+
+    let identifier_bytes = b"import-test-id";
+    let identifier = import_test_identifier(identifier_bytes);
+    for (has_replace, replace, has_wrap, wrap) in
+        [(2, 0, 0, 0), (0, 1, 0, 0), (0, 0, 2, 0), (0, 0, 0, 1)]
+    {
+        assert_eq!(
+            kmipkit_client_batch_item_import(
+                &raw const identifier,
+                2,
+                has_replace,
+                replace,
+                has_wrap,
+                wrap,
+                attributes,
+                object,
+                &mut item,
+            ),
+            ERROR_INVALID_INPUT
+        );
+        assert!(item.is_null());
+    }
+
+    release(object, Kind::Structure);
+    release(attributes, Kind::Structure);
+}
+
+#[test]
+fn ffi_import_constructor_requires_attributes_and_one_any_object_item() {
+    let identifier_bytes = b"import-test-id";
+    let identifier = import_test_identifier(identifier_bytes);
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut one_item = Structure::new();
+    one_item
+        .try_push(import_test_object())
+        .expect("Any Object test item fits the structure");
+    let object = make_handle(Kind::Structure, HandleValue::Structure(one_item));
+    let empty_object = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+
+    assert_eq!(
+        kmipkit_client_batch_item_import(
+            &raw const identifier,
+            2,
+            0,
+            0,
+            0,
+            0,
+            ptr::null_mut(),
+            object,
+            &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    assert_eq!(
+        kmipkit_client_batch_item_import(
+            &raw const identifier,
+            2,
+            0,
+            0,
+            0,
+            0,
+            attributes,
+            ptr::null_mut(),
+            &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    assert_eq!(
+        kmipkit_client_batch_item_import(
+            &raw const identifier,
+            2,
+            0,
+            0,
+            0,
+            0,
+            attributes,
+            empty_object,
+            &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+
+    release(empty_object, Kind::Structure);
+    release(object, Kind::Structure);
+    release(attributes, Kind::Structure);
+}
+
+#[test]
+fn ffi_import_constructor_preserves_explicit_raw_selector_values() {
+    let identifier_bytes = b"import-test-id";
+    let identifier = import_test_identifier(identifier_bytes);
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut object_structure = Structure::new();
+    object_structure
+        .try_push(import_test_object())
+        .expect("Any Object test item fits the structure");
+    let object = make_handle(Kind::Structure, HandleValue::Structure(object_structure));
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_import(
+            &raw const identifier,
+            0xf123_4567,
+            1,
+            1,
+            1,
+            0xf123_4568,
+            attributes,
+            object,
+            &mut item,
+        ),
+        SUCCESS
+    );
+    let handle = reference_handle(item, Kind::BatchItem).expect("Import item handle is live");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("Import handle contains a typed batch item");
+    };
+    let ClientRequest::Import(request) = batch_item.request() else {
+        panic!("batch item contains the requested Import operation");
+    };
+    assert_eq!(
+        request.unique_identifier(),
+        &UniqueIdentifier::TextString("import-test-id".into())
+    );
+    assert_eq!(request.object_type().raw(), 0xf123_4567);
+    assert_eq!(request.replace_existing(), Some(true));
+    assert_eq!(
+        request
+            .key_wrap_type()
+            .map(kmipkit_protocol::KeyWrapType::raw),
+        Some(0xf123_4568)
+    );
+
+    release(item, Kind::BatchItem);
+    release(object, Kind::Structure);
+    release(attributes, Kind::Structure);
+}
+
 #[test]
 fn ffi_export_request_accepts_all_optional_selectors_omitted() {
     let mut item = ptr::null_mut();

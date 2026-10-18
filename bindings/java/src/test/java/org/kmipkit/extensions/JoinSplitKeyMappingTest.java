@@ -61,6 +61,34 @@ final class JoinSplitKeyMappingTest {
     }
 
     @Test
+    void requestRejectsEmptyOrNullReferenceLists() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.joinSplitKey(1, List.of()));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.joinSplitKey(1, null));
+    }
+
+    @Test
+    void splitKeyReferenceRejectsInvalidConstructorArguments() {
+        assertThrows(InvalidInputException.class, () -> new SplitKeyReference(null, 1));
+        assertThrows(InvalidInputException.class, () -> new SplitKeyReference(
+                UniqueIdentifier.textString("one"), -1));
+        assertThrows(InvalidInputException.class, () -> new SplitKeyReference(
+                UniqueIdentifier.textString("one"), 0x1_0000_0000L));
+    }
+
+    @Test
+    void splitKeyReferenceRedactsIdentifierInToString() {
+        try (SplitKeyReference reference = new SplitKeyReference(
+                UniqueIdentifier.textString("private-split-key-id"), 3)) {
+            assertEquals(
+                    "SplitKeyReference[uniqueIdentifier=redacted, splitKeyThreshold=3]",
+                    reference.toString());
+            assertFalse(reference.toString().contains("private-split-key-id"));
+        }
+    }
+
+    @Test
     void requestRejectsAggregateRepeatedIdentifierBytesAtTheNativeBoundary() {
         String identifier = "x".repeat((16 * 1024 * 1024) / 2 + 1);
         try (SplitKeyReference reference = new SplitKeyReference(
@@ -150,6 +178,22 @@ final class JoinSplitKeyMappingTest {
 
             assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
                     .parseJoinSplitKeyResponse(new Object[] {new long[] {1}, null, new long[] {handle}}));
+            assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvStructureView(handle));
+        }
+    }
+
+    @Test
+    void malformedIdentifierAfterTtlvMaterializationReleasesTransferredTtlv() {
+        try (TtlvStructure source = responseTtlv(CodecLimits.defaults())) {
+            long handle = source.nativeHandleOwner().transfer();
+            Object[] malformedIdentifier = new Object[] {
+                new long[] {1, 1, 0, 0}, new byte[] {(byte) 0xc3, 0x28}
+            };
+
+            assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                    .parseJoinSplitKeyResponse(new Object[] {
+                        new long[] {1}, malformedIdentifier, new long[] {handle}
+                    }));
             assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvStructureView(handle));
         }
     }

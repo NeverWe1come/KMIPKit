@@ -7,7 +7,7 @@ import pytest
 
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi as client_ffi
-from kmipkit._ffi import ffi
+from kmipkit._ffi import ffi, lib as ttlv_lib
 
 
 def test_interop_builder_preserves_open_function_and_sensitive_identifier(
@@ -117,3 +117,108 @@ def test_interop_response_rejects_absent_indicator_with_owned_ttlv(
         client._interop_response(SimpleNamespace(_pointer=lambda: object()))
 
     assert released == [handle]
+
+
+def test_interop_response_releases_output_handle_when_abi_status_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle, address = _take_interop_response_ttlv_handle()
+    released = _install_interop_response_abi(
+        monkeypatch, status=4, present=1, handle=handle
+    )
+
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._interop_response(SimpleNamespace(_pointer=lambda: object()))
+
+        assert released == [address]
+    finally:
+        if address not in released:
+            ttlv_lib.kmipkit_ttlv_structure_release(
+                ffi.cast("kmipkit_ttlv_structure_t *", address)
+            )
+
+
+def test_interop_response_releases_output_handle_for_malformed_presence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle, address = _take_interop_response_ttlv_handle()
+    released = _install_interop_response_abi(
+        monkeypatch, status=0, present=2, handle=handle
+    )
+
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            client._interop_response(SimpleNamespace(_pointer=lambda: object()))
+
+        assert released == [address]
+    finally:
+        if address not in released:
+            ttlv_lib.kmipkit_ttlv_structure_release(
+                ffi.cast("kmipkit_ttlv_structure_t *", address)
+            )
+
+
+def test_interop_response_releases_output_handle_when_native_wrapper_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle, address = _take_interop_response_ttlv_handle()
+    released = _install_interop_response_abi(
+        monkeypatch, status=0, present=1, handle=handle
+    )
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("test wrapper failure")),
+    )
+
+    try:
+        with pytest.raises(RuntimeError, match="test wrapper failure"):
+            client._interop_response(SimpleNamespace(_pointer=lambda: object()))
+
+        assert released == [address]
+    finally:
+        if address not in released:
+            ttlv_lib.kmipkit_ttlv_structure_release(
+                ffi.cast("kmipkit_ttlv_structure_t *", address)
+            )
+
+
+def _take_interop_response_ttlv_handle() -> tuple[object, int]:
+    structure = ttlv.ttlv_structure_create()
+    native_handle, owner = structure._take()
+    assert owner is None
+    address = int(ffi.cast("uintptr_t", native_handle))
+    return client_ffi.cast("kmipkit_ttlv_structure_t *", address), address
+
+
+def _install_interop_response_abi(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    status: int,
+    present: int,
+    handle: object,
+) -> list[int]:
+    released: list[int] = []
+
+    def response_ttlv(_item: object, out_present: object, output: object) -> int:
+        out_present[0] = present  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return status
+
+    def release_structure(value: object) -> None:
+        address = int(client_ffi.cast("uintptr_t", value))
+        released.append(address)
+        ttlv_lib.kmipkit_ttlv_structure_release(
+            ffi.cast("kmipkit_ttlv_structure_t *", address)
+        )
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_interop_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=release_structure,
+        ),
+    )
+    return released
