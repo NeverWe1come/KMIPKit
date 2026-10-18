@@ -3585,3 +3585,20 @@ Focused verification on the updated tree:
 
 The updated selected-scope aggregate and cross-platform CI are still pending;
 T038 remains unchecked until the final PR head passes those gates.
+
+### T038 coverage test harness correction (2026-10-18)
+
+CI run `39120029895` showed that the new C invalid-output probe replaced the
+live Get Any Object output with a sentinel before the consumer's later
+readback. The ABI correctly cleared the invalid output, but the test then
+mistakenly inspected the cleared variable and returned consumer result 252.
+The same C consumer test failed in all Rust and coverage platform jobs, so
+their failures had one shared fixture cause. The test now preserves the valid
+owned Get handle, checks that the invalid call clears its output, and restores
+the preserved handle for the existing readback and release checks.
+
+After correction, the focused Linux integration command
+`cargo test --locked -p kmipkit-ffi --all-features --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact`
+passes. The new PR-head cross-platform jobs and selected-scope coverage
+aggregation remain pending; the failed run did not produce a valid coverage
+measurement for the updated test set.
