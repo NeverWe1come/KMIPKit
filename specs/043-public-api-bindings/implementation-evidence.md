@@ -4100,7 +4100,10 @@ interoperability, profile, or certification claim is made.
 | Green — Log bindings and generated manifest | `f78d2ba9` | Added the C ABI request/response functions, Java/Python wrappers, exact Log language mappings, and generated outputs. Corrected the C consumer's expected invalid-handle status and the TLS fixture's batch count to 26. |
 | Red — successful C response ownership | `707b1ac4` | Extended the compiled C/mTLS contract to require a typed Log request and a successful response whose complete TTLV copy remains readable after the original result handle is released. The test failed because the C batch did not yet send Log. |
 | Green — C response ownership | `d176bb59` | Added the Log request to the compiled C/mTLS batch and asserted the caller-owned response copy's ordered outer tags after releasing the source result handle. The focused C/mTLS integration test now passes. |
-| Refactor — traceability and verification record | this commit | Added T053's exact approved owner, OASIS tables, stable IDs, API requirement links, security/ownership boundaries, C response ownership evidence, and command evidence. Current-head CI remains pending. |
+| Refactor — initial evidence record | `f6c95049` | Added T053's approved owner, OASIS tables, stable IDs, API requirement links, security/ownership boundaries, C response ownership evidence, and initial command evidence. |
+| Red — observed Log client variants | `d07d28b` | Added a regression check for `ClientRequest::Log` and `ClientBatchOutcome::Log`; before correction it failed because both pointed to Interop facade symbols. |
+| Green — corrected mappings and owner traceability | `f31480bb` | Corrected all Log declaration mappings, restored the unrelated Interop mappings, linked `KMIPKIT-0042-FR-007` on each Log declaration and the manifest root, and regenerated the checked-in outputs. The expanded all-declaration test was also run against the pre-fix manifest and failed on an Interop response symbol; it passes against the corrected manifest. |
+| Refactor — preserve T052 exclusions and verification evidence | this commit | Restored strict T052 JoinSplitKey exclusion assertions, tested Log exclusions separately, updated the operation dependency gate, and recorded current verification results. Current-head CI remains pending. |
 
 Focused verification after the Green commit:
 
@@ -4116,9 +4119,10 @@ Focused verification after the Green commit:
 | `mvn --batch-mode --file bindings/java/pom.xml test` | PASS: 303 tests, 0 failures/errors, 3 existing skips; parity fixture compiles and the TLS integration tests pass. |
 | `uv run --project . --with-requirements requirements-coverage.txt pytest tests/test_log_operation.py -q` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` outside the repository and `KMIPKIT_NATIVE_LIBRARY` set to the just-built local library | PASS: 3 Python tests. |
 | `uv run --project . --with-requirements requirements-coverage.txt pytest -q` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` and a copy of the built native library outside the repository | PASS: 510 Python tests. |
-| `python -B -m unittest tools.api_manifest.tests.test_log_parity_manifest -v` | PASS: 2 manifest/parity tests. |
-| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests` | PASS: 395 tests, 0 failures, 3 skipped. |
-| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs are current. |
+| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests -p test_log_parity_manifest.py` | PASS: 3 Log manifest/parity tests; the new all-declaration check previously failed against the incorrect mappings. |
+| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests -p test_t076_client_mapping.py` | PASS: 46 T076 mapping tests, including strict T052 JoinSplitKey exclusion checks and separate T053 Log exclusion checks. |
+| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests` | PASS: 396 tests, 0 failures, 3 skipped. |
+| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs are current after regeneration. |
 | `cargo fmt --all --check` | PASS. |
 | `git diff --check` | PASS. |
 
