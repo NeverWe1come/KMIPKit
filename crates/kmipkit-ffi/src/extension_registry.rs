@@ -956,20 +956,35 @@ fn copy_join_split_key_references(
             return Err(ERROR_INVALID_INPUT);
         };
         let threshold = reference.split_key_threshold().ok_or(ERROR_INVALID_INPUT)?;
-        references.push(
-            SplitKeyReference::new(reference.unique_identifier().clone())
-                .with_split_key_threshold(threshold),
-        );
+        let identifier = try_clone_join_split_key_identifier(reference.unique_identifier())?;
+        references.push(SplitKeyReference::new(identifier).with_split_key_threshold(threshold));
     }
     Ok(references)
 }
 
-#[cfg(test)]
 fn copy_join_split_key_identifier_with_reservation<E>(
     value: &str,
-    _reserve: impl FnOnce(&mut String, usize) -> Result<(), E>,
+    reserve: impl FnOnce(&mut String, usize) -> Result<(), E>,
 ) -> FfiResult<String> {
-    Ok(value.to_owned())
+    let mut copy = String::new();
+    reserve(&mut copy, value.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    copy.push_str(value);
+    Ok(copy)
+}
+
+fn try_clone_join_split_key_identifier(
+    identifier: &UniqueIdentifier,
+) -> FfiResult<UniqueIdentifier> {
+    match identifier {
+        UniqueIdentifier::TextString(value) => Ok(UniqueIdentifier::TextString(
+            copy_join_split_key_identifier_with_reservation(value, |copy, length| {
+                copy.try_reserve_exact(length)
+            })?,
+        )),
+        UniqueIdentifier::Enumeration(value) => Ok(UniqueIdentifier::Enumeration(*value)),
+        UniqueIdentifier::Integer(value) => Ok(UniqueIdentifier::Integer(*value)),
+        _ => Err(ERROR_INVALID_INPUT),
+    }
 }
 
 fn protocol_status(error: &ProtocolError) -> i32 {
