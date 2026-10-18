@@ -107,6 +107,17 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetUsageAllocationResponse(values);
     }
 
+    /**
+     * Returns the generated identifier and complete generic TTLV from a successful Import.
+     * The returned response owns an independent TTLV copy; callers must close it when finished.
+     */
+    public Optional<ImportResponse> importResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseImport);
+        return parseImportResponse(values);
+    }
+
     /** Returns the typed Get result, with an independently owned secret-bearing Any Object copy. */
     public Optional<GetResponse> getResponse() {
         NativeExtensionRegistry.ensureLoaded();

@@ -1508,10 +1508,10 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420094, 7, "imported-object-secret-id".getBytes(StandardCharsets.UTF_8)),
                 item(0x540001, 8, "KMIPKit-import-sentinel".getBytes(StandardCharsets.US_ASCII)));
         byte[] importItem = structure(0x42000f,
-                enumeration(0x42005c, 39), item(0x420093, 8, uniqueBatchItemId(22)),
+                enumeration(0x42005c, 42), item(0x420093, 8, uniqueBatchItemId(22)),
                 enumeration(0x42007f, 0), importPayload);
         byte[] importFailure = structure(0x42000f,
-                enumeration(0x42005c, 39), item(0x420093, 8, uniqueBatchItemId(23)),
+                enumeration(0x42005c, 42), item(0x420093, 8, uniqueBatchItemId(23)),
                 enumeration(0x42007f, 1), enumeration(0x42007e, 5));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
