@@ -33,6 +33,11 @@ final class GetLocateResponseMappingTest {
                         -4, 0, 0x8000_0001L, 0xf123_4567L, attributes)) {
             assertTrue(locate != null);
         }
+
+        try (TtlvStructure attributes = TtlvStructure.create();
+                ClientBatchItem omitted = ClientBatchItem.locate(null, null, null, null, attributes)) {
+            assertTrue(omitted != null);
+        }
     }
 
     // OASIS KMIP Specification v2.1 §6.1.19, Tables 221–222.
@@ -68,7 +73,41 @@ final class GetLocateResponseMappingTest {
             assertTrue(response.objectTypeRaw().isEmpty());
             assertTrue(response.uniqueIdentifier().isEmpty());
             assertTrue(response.object().isEmpty());
+            assertTrue(response.toString().contains("objectTypeRaw=OptionalLong.empty"));
         }
+    }
+
+    @Test
+    void absentGetResponseIsEmptyAndMalformedIdentifierReleasesOwnedObject() {
+        assertTrue(ClientBatchItemResult.parseGetResponse(new Object[] {
+            new long[] {0, 0, 0}, null, new long[] {0}
+        }).isEmpty());
+
+        NativeExtensionRegistry.ensureLoaded();
+        long ownedObject = NativeExtensionRegistry.ttlvStructureCreate();
+        Object[] malformedIdentifier = {new long[] {1, 99, 0, 0}, new byte[] {0x41}};
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseGetResponse(
+                new Object[] {
+                    new long[] {1, 1, 7}, malformedIdentifier, new long[] {ownedObject}
+                }));
+        ResponseTtlvTestSupport.assertReleased(ownedObject);
+    }
+
+    @Test
+    void getResponseRejectsMalformedNativeTuplesAndHandlesStaleOwnedHandles() {
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseGetResponse(
+                new Object[] {new long[] {2, 0, 0}, null, new long[] {0}}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseGetResponse(
+                new Object[] {new long[] {1, 0, 7}, null, new long[] {0}}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseGetResponse(
+                new Object[] {new long[] {1, 1, 7}, null, new long[] {0}}));
+
+        NativeExtensionRegistry.ensureLoaded();
+        long releasedObject = NativeExtensionRegistry.ttlvStructureCreate();
+        NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, releasedObject);
+        Object[] identifier = {new long[] {1, 99, 0, 0}, new byte[] {0x41}};
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseGetResponse(
+                new Object[] {new long[] {1, 1, 7}, identifier, new long[] {releasedObject}}));
     }
 
     // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
@@ -87,6 +126,52 @@ final class GetLocateResponseMappingTest {
         assertEquals(
                 java.util.List.of("first", "second", "first"),
                 response.uniqueIdentifiers().stream().map(UniqueIdentifier::text).toList());
+    }
+
+    @Test
+    void locateResponseCoversAbsentFailureAndOmittedLocatedItems() {
+        assertTrue(ClientBatchItemResult.parseLocateResponse(new Object[] {
+            new long[] {0, 0, 0, 0, 0}, new Object[0]
+        }).isEmpty());
+
+        ClientBatchItemResult.LocateResponse failed = ClientBatchItemResult
+                .parseLocateResponse(new Object[] {
+                    new long[] {1, 0, 0, 0, 0}, new Object[0]
+                })
+                .orElseThrow();
+        assertTrue(failed.locatedItems().isEmpty());
+        assertTrue(failed.uniqueIdentifiers().isEmpty());
+
+        Object[] identifier = {new long[] {1, 1, 0, 0}, "located".getBytes()};
+        ClientBatchItemResult.LocateResponse withoutLocatedItems = ClientBatchItemResult
+                .parseLocateResponse(new Object[] {
+                    new long[] {1, 1, 0, 0, 1}, new Object[] {identifier}
+                })
+                .orElseThrow();
+        assertTrue(withoutLocatedItems.locatedItems().isEmpty());
+        assertEquals(java.util.List.of("located"), withoutLocatedItems.uniqueIdentifiers()
+                .stream().map(UniqueIdentifier::text).toList());
+    }
+
+    @Test
+    void locateResponseRejectsInconsistentPresenceAndIdentifierCount() {
+        Object[] identifier = {new long[] {1, 1, 0, 0}, "located".getBytes()};
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {1, 1, 0, 4, 1}, new Object[] {identifier}}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {1, 1, 0, 0, 0}, new Object[] {identifier}}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {0, 0, 0, 0, 1}, new Object[] {identifier}}));
+    }
+
+    @Test
+    void locateResponseRejectsMalformedTupleFieldsAndFailedPayloads() {
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {2, 0, 0, 0, 0}, new Object[0]}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {1, 1, 1, 0x1_0000_0000L, 0}, new Object[0]}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {1, 0, 0, 1, 0}, new Object[0]}));
     }
 
     // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.

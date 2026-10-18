@@ -211,6 +211,46 @@ final class ClientBatchNativeBoundaryTest {
                 () -> NativeExtensionRegistry.clientBatchItemResponseCheck(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseGet(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseLocate(0));
+    }
+
+    @Test
+    void getAndLocateFactoriesRejectMalformedOptionalValues() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGet(99, null, 0,
+                        false, 0, false, 0, false, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGet(0, null, 0,
+                        true, -1, false, 0, false, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGet(0, null, 0,
+                        true, 0x1_0000_0000L, false, 0, false, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemGet(0, null, 0,
+                        false, 1, false, 0, false, 0, 0));
+
+        long attributes = NativeExtensionRegistry.ttlvStructureCreate();
+        try {
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemLocate(
+                            false, 1, false, 0, false, 0, false, 0, attributes));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemLocate(
+                            false, 0, false, 1, false, 0, false, 0, attributes));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemLocate(
+                            false, 0, false, 0, true, 0x1_0000_0000L,
+                            false, 0, attributes));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemLocate(
+                            false, 0, false, 0, false, 0,
+                            true, 0x1_0000_0000L, attributes));
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, attributes);
+        }
     }
 
     @Test

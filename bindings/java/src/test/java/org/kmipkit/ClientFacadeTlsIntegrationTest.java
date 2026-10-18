@@ -251,7 +251,16 @@ final class ClientFacadeTlsIntegrationTest {
                     .add(ClientBatchItem.getConstraints()
                             .withUniqueBatchItemId(uniqueBatchItemId(16)))
                     .add(ClientBatchItem.getConstraints()
-                            .withUniqueBatchItemId(uniqueBatchItemId(17)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(17)))
+                    .add(ClientBatchItem.get(null, null, null, null, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(18)))
+                    .add(ClientBatchItem.locate(null, null, null, null, createAttributes)
+                            .withUniqueBatchItemId(uniqueBatchItemId(19)))
+                    .add(ClientBatchItem.get(UniqueIdentifier.textString("failed-get-request"),
+                                    null, null, null, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(20)))
+                    .add(ClientBatchItem.locate(null, null, null, null, createAttributes)
+                            .withUniqueBatchItemId(uniqueBatchItemId(21)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -272,8 +281,14 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult exported = response.itemAt(14);
                     ClientBatchItemResult exportFailed = response.itemAt(15);
                     ClientBatchItemResult constraints = response.itemAt(16);
-                    ClientBatchItemResult constraintsFailed = response.itemAt(17)) {
-                assertEquals(18, response.itemCount());
+                    ClientBatchItemResult constraintsFailed = response.itemAt(17);
+                    ClientBatchItemResult getMapped = response.itemAt(18);
+                    ClientBatchItemResult locateMapped = response.itemAt(19);
+                    ClientBatchItemResult getFailed = response.itemAt(20);
+                    ClientBatchItemResult locateFailed = response.itemAt(21)) {
+                assertEquals(22, response.itemCount());
+                assertTrue(completed.getResponse().isEmpty());
+                assertTrue(completed.locateResponse().isEmpty());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -452,6 +467,36 @@ final class ClientFacadeTlsIntegrationTest {
                 }
                 assertEquals(1, constraintsFailed.resultStatus());
                 assertTrue(constraintsFailed.getConstraintsResponse().isEmpty());
+
+                try (ClientBatchItemResult.GetResponse getResponse =
+                                getMapped.getResponse().orElseThrow();
+                        TtlvStructureView getObject = getResponse.object().orElseThrow().view()) {
+                    assertEquals(2, getResponse.objectTypeRaw().orElseThrow());
+                    assertEquals("get-response-secret-id",
+                            getResponse.uniqueIdentifier().orElseThrow().text());
+                    assertTagOrder(getObject, 0x42008f);
+                    assertTrue(containsByteString(getObject, 0x420045,
+                            "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII)));
+                    assertFalse(getResponse.toString().contains("get-response-secret-id"));
+                }
+                ClientBatchItemResult.LocateResponse locateResponse =
+                        locateMapped.locateResponse().orElseThrow();
+                assertEquals(3, locateResponse.locatedItems().orElseThrow());
+                assertEquals(List.of("locate-first", "locate-second", "locate-first"),
+                        locateResponse.uniqueIdentifiers().stream()
+                                .map(UniqueIdentifier::text).toList());
+                try (ClientBatchItemResult.GetResponse failedGetResponse =
+                        getFailed.getResponse().orElseThrow()) {
+                    ClientBatchItemResult.LocateResponse failedLocateResponse =
+                            locateFailed.locateResponse().orElseThrow();
+                    assertEquals(1, getFailed.resultStatus());
+                    assertTrue(failedGetResponse.objectTypeRaw().isEmpty());
+                    assertTrue(failedGetResponse.uniqueIdentifier().isEmpty());
+                    assertTrue(failedGetResponse.object().isEmpty());
+                    assertEquals(1, locateFailed.resultStatus());
+                    assertTrue(failedLocateResponse.locatedItems().isEmpty());
+                    assertTrue(failedLocateResponse.uniqueIdentifiers().isEmpty());
+                }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
             assertTrue(request.length >= 8);
@@ -1230,7 +1275,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(18)));
+                item(0x42000d, 2, integer(22)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1337,10 +1382,35 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] constraintsFailure = structure(0x42000f,
                 enumeration(0x42005c, 0x38), item(0x420093, 8, uniqueBatchItemId(17)),
                 enumeration(0x42007f, 1), enumeration(0x42007e, 5));
+        byte[] getObject = structure(0x42008f,
+                structure(0x420040,
+                        item(0x420045, 8, "KMIPKit-get-response-sentinel".getBytes(StandardCharsets.US_ASCII))));
+        byte[] getPayload = structure(0x42007c,
+                enumeration(0x420057, 2),
+                item(0x420094, 7, "get-response-secret-id".getBytes(StandardCharsets.UTF_8)),
+                getObject);
+        byte[] getItem = structure(0x42000f,
+                enumeration(0x42005c, 10), item(0x420093, 8, uniqueBatchItemId(18)),
+                enumeration(0x42007f, 0), getPayload);
+        byte[] locatePayload = structure(0x42007c,
+                item(0x4200d5, 2, integer(3)),
+                item(0x420094, 7, "locate-first".getBytes(StandardCharsets.UTF_8)),
+                item(0x420094, 7, "locate-second".getBytes(StandardCharsets.UTF_8)),
+                item(0x420094, 7, "locate-first".getBytes(StandardCharsets.UTF_8)));
+        byte[] locateItem = structure(0x42000f,
+                enumeration(0x42005c, 8), item(0x420093, 8, uniqueBatchItemId(19)),
+                enumeration(0x42007f, 0), locatePayload);
+        byte[] getFailure = structure(0x42000f,
+                enumeration(0x42005c, 10), item(0x420093, 8, uniqueBatchItemId(20)),
+                enumeration(0x42007f, 1), enumeration(0x42007e, 5));
+        byte[] locateFailure = structure(0x42000f,
+                enumeration(0x42005c, 8), item(0x420093, 8, uniqueBatchItemId(21)),
+                enumeration(0x42007f, 1), enumeration(0x42007e, 5));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
                 certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem,
-                exportItem, exportFailure, constraintsItem, constraintsFailure);
+                exportItem, exportFailure, constraintsItem, constraintsFailure, getItem, locateItem,
+                getFailure, locateFailure);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {

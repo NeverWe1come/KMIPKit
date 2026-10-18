@@ -1206,6 +1206,64 @@ def test_batch_result_dispatches_get_constraints_only_for_successful_completion(
     assert released == ["item", "response"]
 
 
+@pytest.mark.parametrize(
+    ("operation", "mapper_name", "accessor_name"),
+    [
+        pytest.param(0x0A, "_get_response", "get_response", id="get"),
+        pytest.param(0x08, "_locate_response", "locate_response", id="locate"),
+    ],
+)
+def test_batch_result_dispatches_get_and_locate_mappers(
+    monkeypatch: pytest.MonkeyPatch,
+    operation: int,
+    mapper_name: str,
+    accessor_name: str,
+) -> None:
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    mapped_response = object()
+    released: list[str] = []
+    dispatched: list[object] = []
+
+    def metadata(_item: object, out: object) -> int:
+        _initialize_metadata_v2(out)
+        out.operation = operation  # type: ignore[attr-defined]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
+        kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+        **_no_creation_response_symbols(),
+    )
+    monkeypatch.setattr(client, "lib", fake)
+    monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
+    monkeypatch.setattr(client, "_discover_versions_supported_versions", lambda _item: None)
+    monkeypatch.setattr(client, "_create_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_key_pair_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_split_key_response", lambda _item: None)
+
+    def mapper(item: object) -> object:
+        dispatched.append(item._pointer())  # type: ignore[attr-defined]
+        return mapped_response
+
+    monkeypatch.setattr(client, mapper_name, mapper)
+    result = client._batch_result(response_pointer)
+    try:
+        item_result = result.items[0]
+        assert item_result.operation == operation
+        assert getattr(item_result, accessor_name)() is mapped_response
+        assert dispatched == [item_pointer]
+    finally:
+        result.close()
+
+    assert released == ["item", "response"]
+
+
 def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

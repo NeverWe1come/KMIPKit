@@ -303,6 +303,10 @@ fn spawn_public_client_batch_peer(
             c_request_contains_empty_get_constraints(&request),
             "C ABI consumer must transmit an empty Get Constraints payload"
         );
+        assert!(
+            c_request_contains_get_and_locate(&request),
+            "C ABI consumer must transmit the Get identifier and empty Locate attributes"
+        );
         tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -559,6 +563,108 @@ fn c_request_contains_empty_get_constraints(encoded: &[u8]) -> bool {
         };
         get_constraints_items.next().is_none() && has_empty_request_payload(request_item)
     })
+}
+
+fn c_request_contains_get_and_locate(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        batch_items
+            .iter()
+            .filter(|item| c_request_has_get_source(item))
+            .count()
+            == 1
+            && batch_items
+                .iter()
+                .filter(|item| c_request_has_empty_locate_attributes(item))
+                .count()
+                == 2
+    })
+}
+
+fn c_request_has_get_source(item: &Item) -> bool {
+    const OPERATION: u32 = 0x0042_005C;
+    const GET: u32 = 10;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        let Some(operation_index) = c_unique_child_index(&batch_item, OPERATION) else {
+            return false;
+        };
+        if !batch_item.children()[operation_index]
+            .with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == GET))
+        {
+            return false;
+        }
+        let Some(payload_index) = c_unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+            return false;
+        };
+        batch_item.children()[payload_index].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                return false;
+            };
+            c_unique_child_index(&payload, UNIQUE_IDENTIFIER).is_some_and(|index| {
+                payload.children()[index]
+                    .with_value(|value| matches!(value, ValueView::TextString("get-source")))
+            }) && payload.children().len() == 1
+        })
+    })
+}
+
+fn c_request_has_empty_locate_attributes(item: &Item) -> bool {
+    const OPERATION: u32 = 0x0042_005C;
+    const LOCATE: u32 = 8;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        let Some(operation_index) = c_unique_child_index(&batch_item, OPERATION) else {
+            return false;
+        };
+        if !batch_item.children()[operation_index]
+            .with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == LOCATE))
+        {
+            return false;
+        }
+        let Some(payload_index) = c_unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+            return false;
+        };
+        batch_item.children()[payload_index].with_value(|value| {
+            let ValueView::Structure(payload) = value else {
+                return false;
+            };
+            c_unique_child_index(&payload, ATTRIBUTES).is_some_and(|index| {
+                payload.children()[index].with_value(|value| {
+                    matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty())
+                })
+            }) && payload.children().len() == 1
+        })
+    })
+}
+
+fn c_unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+    let mut matching = structure
+        .children()
+        .iter()
+        .enumerate()
+        .filter(|(_, item)| item.tag().raw() == tag);
+    let (index, _) = matching.next()?;
+    matching.next().is_none().then_some(index)
 }
 
 #[test]
@@ -885,8 +991,8 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-// This TLS batch returns 17 ordered items: the original eight, five crypto
-// operations, Certify, Derive Key, Export, and Get Constraints for the generated C consumer.
+// This TLS batch returns 21 ordered items: the original eight, five crypto
+// operations, Certify, Derive Key, Export, Get Constraints, and two Get/Locate pairs.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -897,7 +1003,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 17),
+            integer(0x0042_000D, 21),
         ],
     );
     let response_payload = structure(
@@ -914,7 +1020,77 @@ fn mixed_discover_versions_response() -> Vec<u8> {
                 derive_key_response_item(),
                 export_response_item(),
                 get_constraints_response_item(),
+                get_response_item(),
+                locate_response_item(),
+                get_failure_response_item(),
+                locate_failure_response_item(),
             ]),
+    )
+}
+
+fn get_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 10),
+            ttlv_item(0x0042_0093, 0x08, b"get-00"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    enumeration(0x0042_0057, 0xf123_4567),
+                    ttlv_item(0x0042_0094, 0x07, b"get-id"),
+                    structure(
+                        0x0054_0001,
+                        [ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad, 0x00, 0xff])],
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+fn locate_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 8),
+            ttlv_item(0x0042_0093, 0x08, b"loc-00"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    integer(0x0042_00D5, 3),
+                    ttlv_item(0x0042_0094, 0x07, b"first"),
+                    ttlv_item(0x0042_0094, 0x07, b"second"),
+                    ttlv_item(0x0042_0094, 0x07, b"first"),
+                ],
+            ),
+        ],
+    )
+}
+
+fn get_failure_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 10),
+            ttlv_item(0x0042_0093, 0x08, b"get-f0"),
+            enumeration(0x0042_007F, 1),
+            enumeration(0x0042_007E, 5),
+        ],
+    )
+}
+
+fn locate_failure_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 8),
+            ttlv_item(0x0042_0093, 0x08, b"loc-f0"),
+            enumeration(0x0042_007F, 1),
+            enumeration(0x0042_007E, 5),
+        ],
     )
 }
 

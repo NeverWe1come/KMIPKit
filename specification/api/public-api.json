@@ -18436,7 +18436,6 @@
         "class": "ClientBatchItemResult",
         "method": "locateResponse",
         "parameters": [],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLocate",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -257057,52 +257056,292 @@
       "evidence": "Reviewed for KMIPKIT-0043-T047; the callable ExportResponse API and its owned response fields are mapped individually. This exclusion applies only to the exact generated dataclass member."
     },
     {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGet",
-      "reason": "Internal JNI bridge for ClientBatchItem.get.",
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__init__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__repr__",
+      "reason": "This exact __repr__ is a redacted diagnostic representation and is not an independent KMIPKit protocol capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.GetResponse.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the GetResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__init__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__repr__",
+      "reason": "This exact __repr__ is a redacted diagnostic representation and is not an independent KMIPKit protocol capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.LocateResponse.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the LocateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGet",
+      "reason": "Internal JNI bridge for ClientBatchItem.get; it has no independent Java product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemGet calls the C ABI for ClientBatchItem.get and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary."
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLocate",
-      "reason": "Internal JNI bridge for ClientBatchItem.locate.",
+      "reason": "Internal JNI bridge for ClientBatchItem.locate; it has no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemLocate calls the C ABI for ClientBatchItem.locate and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary."
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGet",
-      "reason": "Internal JNI bridge for ClientBatchItemResult.getResponse.",
+      "reason": "Internal JNI bridge for ClientBatchItemResult.getResponse; it has no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemResponseGet calls the C ABI for ClientBatchItemResult.getResponse and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary."
     },
     {
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLocate",
-      "reason": "Internal JNI bridge for ClientBatchItemResult.locateResponse.",
+      "reason": "Internal JNI bridge for ClientBatchItemResult.locateResponse; it has no independent Java product capability.",
       "approvalSource": {
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation"
       },
-      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemResponseLocate calls the C ABI for ClientBatchItemResult.locateResponse and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary."
     }
   ],
   "apiLevels": [

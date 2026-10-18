@@ -163,7 +163,11 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Check",
                 "Delegated Login",
                 "Derive Key",
+                "Export",
+                "Get",
+                "Get Constraints",
                 "Get Usage Allocation",
+                "Locate",
             ],
         )
         self.assertEqual(

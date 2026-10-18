@@ -672,6 +672,8 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponseMac", "clientBatchItemResponseMacVerify",
             "clientBatchItemResponseSign",
             "clientBatchItemResponseSignatureVerify",
+            "clientBatchItemGet", "clientBatchItemLocate",
+            "clientBatchItemResponseGet", "clientBatchItemResponseLocate",
             "clientBatchItemGetUsageAllocation",
             "clientBatchItemExport",
             "clientBatchItemResponseGetUsageAllocation",
