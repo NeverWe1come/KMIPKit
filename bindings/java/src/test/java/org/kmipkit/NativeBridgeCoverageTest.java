@@ -130,7 +130,8 @@ final class NativeBridgeCoverageTest {
     }
 
     @Test
-    void nativeReleaseIgnoresForgedPositiveJniHandles() {
+    void nativeReleaseIgnoresNullAndForgedPositiveJniHandles() {
+        assertDoesNotThrow(() -> NativeExtensionRegistry.release(NativeExtensionRegistry.TAG, 0));
         assertDoesNotThrow(() -> NativeExtensionRegistry.release(NativeExtensionRegistry.TAG, 0x1000L));
     }
 

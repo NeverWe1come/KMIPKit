@@ -3446,3 +3446,24 @@ material issues in these corrections.
 The local Windows Rust builds still print the known `aws-lc-sys` MSVC probe
 and missing-NASM warnings; the Java suite and FFI tests passed despite those
 diagnostics. This evidence does not replace the required final-head CI result.
+
+### PR #104 coverage-gate follow-up — JNI presence and index boundaries
+
+CI run `39096946163` passed every job except the selected-scope coverage gate,
+which measured 5,569/5,867 changed production lines (below 95%). The Java JNI
+boundary suite now checks that a negative client-batch extension criticality
+index raises `InvalidInputException` and that releasing a null handle is a
+no-op. The C consumer now also verifies that Derive Key rejects missing
+required Attributes and Delegated Login rejects missing required Rights, with
+`INVALID_INPUT` and cleared output handles. These cases exercise three JNI
+lines and two C ABI lines identified as uncovered by the failing gate. No
+coverage exclusions are used; the 95% threshold remains unchanged.
+
+| Command | Result |
+|---|---|
+| `mvn -f bindings/java/pom.xml '-Dtest=ClientBatchNativeBoundaryTest,NativeBridgeCoverageTest' test` | PASS: 25 tests, 0 failures, 0 errors. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs` | PASS: public C ABI consumer compiled and passed. |
+
+The Windows builds emitted the known `aws-lc-sys` MSVC probe and missing-NASM
+warnings; the native library and C consumer built successfully. The remote
+selected-scope coverage gate on the updated head remains authoritative.

@@ -83,6 +83,15 @@ final class ClientBatchNativeBoundaryTest {
     }
 
     @Test
+    void extensionCriticalityLookupRejectsNegativeIndex() {
+        try (TtlvStructure attributes = TtlvStructure.create();
+                ClientBatchItem item = ClientBatchItem.create(7, attributes, null)) {
+            assertThrows(InvalidInputException.class,
+                    () -> item.extensionCriticalityIndicatorAt(-1));
+        }
+    }
+
+    @Test
     void splitKeyFactoryMarshalsTextAndEnumerationIdentifiers() {
         try (TtlvStructure attributes = TtlvStructure.create();
                 ClientBatchItem textIdentifier = ClientBatchItem.createSplitKey(

@@ -169,8 +169,16 @@ static int derive_key_constructor_is_callable_from_c(void) {
         identifiers[index].text_length = sizeof(source_identifier);
     }
     if (kmipkit_ttlv_structure_create(&derivation_parameters) != 0 ||
-        kmipkit_ttlv_structure_create(&attributes) != 0 ||
-        kmipkit_client_batch_item_derive_key(
+        kmipkit_ttlv_structure_create(&attributes) != 0) {
+        goto cleanup;
+    }
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_derive_key(
+            2, identifiers, 2, UINT32_C(0xfeedbeef),
+            derivation_parameters, 0, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_derive_key(
             2, identifiers, 2, UINT32_C(0xfeedbeef),
             derivation_parameters, attributes, &item) != 0 || item == 0) {
         goto cleanup;
@@ -230,6 +238,8 @@ static int delegated_login_constructor_is_callable_from_c(void) {
     int result = 0;
     if (kmipkit_ttlv_structure_create(&rights) != 0 ||
         kmipkit_ttlv_structure_create(&usage_limits) != 0 ||
+        kmipkit_client_batch_item_delegated_login(
+            0, 0, 0, 0, 0, usage_limits, &item) != T076_ERROR_INVALID_INPUT || item != 0 ||
         kmipkit_client_batch_item_delegated_login(
             rights, 2, INT64_MIN, 1, INT32_MIN, usage_limits, &item) != 0 || item == 0) {
         goto cleanup;
