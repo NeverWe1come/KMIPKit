@@ -3921,3 +3921,26 @@ without stubbing the JNI method. Local verification passed with
 `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=InteropJavaFacadeTest'
 test` (3 tests). The new pushed head must pass the complete CI run, including
 the changed-code coverage gate, before T051 is checked complete.
+
+### T051 successful JNI response coverage follow-up
+
+CI run `39152173011` still failed the selected changed-code gate at 6,883/7,252
+lines (94.91%; 95% required). Added an Interop request and matching successful
+response to `ClientFacadeTlsIntegrationTest.executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange`.
+The existing test uses the real Java JNI library over a mutual TLS 1.3 exchange;
+the new assertions check the typed `InteropResponse`, ordered owned response
+TTLV, and empty successful response payload. This covers the valid-present JNI
+response tuple path in addition to the null-handle error path.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — coverage gap | `39152173011` | The required CI gate remained below 95% after the invalid-handle JNI test. |
+| Green — successful JNI response case | `e4de33c4` | Added the native-backed successful Interop response case; focused Windows Maven test passed. |
+| Refactor — evidence and final gate | this commit | Recorded the exact coverage result, final-head CI status, and local integration test result. |
+
+Focused verification: `mvn --batch-mode --file bindings/java/pom.xml
+'-Dtest=ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange'
+test` passed (1 test, 0 failures/errors). Run `39153348822` is the current-head
+cross-platform and selected-coverage validation for `e4de33c4`; all 36 jobs
+passed. The selected changed-code gate measured 6,898/7,251 lines (95.13%),
+including 18 summary-only lines as uncovered, and passed the 95% minimum.
