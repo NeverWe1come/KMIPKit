@@ -80,18 +80,34 @@ cleanup:
     return result;
 }
 
-static int generic_big_integer_constructor_is_callable_from_c(void) {
+static int generic_big_integer_constructor_preserves_type_and_octets_from_c(void) {
     static const uint8_t value_bytes[] = {0x00, 0x80, 0xff};
     kmipkit_codec_limits_t *limits = 0;
     kmipkit_ttlv_value_t *value = 0;
+    kmipkit_ttlv_value_view_t *view = 0;
+    uint8_t actual_type = 0;
+    uint64_t actual_length = 0;
     int result = 0;
     if (kmipkit_codec_limits_defaults(&limits) != 0 ||
         kmipkit_ttlv_value_big_integer(
-            limits, value_bytes, (uint64_t)sizeof(value_bytes), &value) != 0 || value == 0) {
+            limits, value_bytes, (uint64_t)sizeof(value_bytes), &value) != 0 || value == 0 ||
+        kmipkit_ttlv_value_view(value, &view) != 0 || view == 0 ||
+        kmipkit_ttlv_value_view_type(view, &actual_type) != 0 ||
+        actual_type != KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER ||
+        kmipkit_ttlv_value_view_byte_length(view, &actual_length) != 0 ||
+        actual_length != (uint64_t)sizeof(value_bytes)) {
         goto cleanup;
+    }
+    for (uint64_t index = 0; index < actual_length; ++index) {
+        uint8_t actual_byte = 0;
+        if (kmipkit_ttlv_value_view_byte_at(view, index, &actual_byte) != 0 ||
+            actual_byte != value_bytes[index]) {
+            goto cleanup;
+        }
     }
     result = 1;
 cleanup:
+    kmipkit_ttlv_value_view_release(view);
     kmipkit_ttlv_value_release(value);
     kmipkit_codec_limits_release(limits);
     return result;
@@ -2586,7 +2602,7 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (!creation_create_matches_shared_fixture() ||
-        !generic_big_integer_constructor_is_callable_from_c() ||
+        !generic_big_integer_constructor_preserves_type_and_octets_from_c() ||
         !certify_constructor_is_callable_from_c() ||
         !certify_response_accessor_is_callable_from_c() ||
         !check_constructor_is_callable_from_c() ||
