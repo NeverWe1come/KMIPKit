@@ -3860,6 +3860,9 @@ allocation-failure injection; no coverage threshold or production behavior was
 changed.
 
 The pushed-head CI run `39143980784` passed its selected-scope coverage job and
-most matrix jobs, but several platform jobs were still running at this
-checkpoint. The final-head CI and selected-scope coverage gates remain pending
-for the follow-up commit. T050 and release parity remain open until they pass.
+most matrix jobs, but several platform jobs were still running at that
+checkpoint. The follow-up implementation head `8ed9b173` was verified by CI
+run `39144588070`, which completed successfully with all required jobs passing,
+including `Coverage gate / selected scopes`. The Import changed-production
+coverage gate and final-head CI requirement for T050 are satisfied on that
+implementation head; broader release parity work remains open.
