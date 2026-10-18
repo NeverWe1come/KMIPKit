@@ -268,7 +268,10 @@ final class ClientFacadeTlsIntegrationTest {
                             .withUniqueBatchItemId(uniqueBatchItemId(22)))
                     .add(ClientBatchItem.importObject(UniqueIdentifier.textString("import-source"),
                                     7, Boolean.FALSE, null, importAttributes, importAnyObject)
-                            .withUniqueBatchItemId(uniqueBatchItemId(23)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(23)))
+                    .add(ClientBatchItem.interop(0xf1234567L,
+                                    "interop-integration-test".getBytes(StandardCharsets.UTF_8))
+                            .withUniqueBatchItemId(uniqueBatchItemId(24)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -295,8 +298,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult getFailed = response.itemAt(20);
                     ClientBatchItemResult locateFailed = response.itemAt(21);
                     ClientBatchItemResult imported = response.itemAt(22);
-                    ClientBatchItemResult importFailed = response.itemAt(23)) {
-                assertEquals(24, response.itemCount());
+                    ClientBatchItemResult importFailed = response.itemAt(23);
+                    ClientBatchItemResult interop = response.itemAt(24)) {
+                assertEquals(25, response.itemCount());
                 assertTrue(completed.getResponse().isEmpty());
                 assertTrue(completed.locateResponse().isEmpty());
                 assertEquals(0, completed.resultStatus());
@@ -450,6 +454,18 @@ final class ClientFacadeTlsIntegrationTest {
                 }
                 assertEquals(1, importFailed.resultStatus());
                 assertTrue(importFailed.importResponse().isEmpty());
+                try (ClientBatchItemResult.InteropResponse interopResponse =
+                                interop.interopResponse().orElseThrow();
+                        TtlvStructureView interopTtlv = interopResponse.responseTtlv().view()) {
+                    assertEquals(0x34, interop.operation());
+                    assertEquals(0, interop.resultStatus());
+                    assertTagOrder(interopTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+                    try (TtlvItemView payload = interopTtlv.itemAt(3);
+                            TtlvValueView payloadValue = payload.value();
+                            TtlvStructureView payloadView = payloadValue.structure()) {
+                        assertEquals(0, payloadView.itemCount());
+                    }
+                }
                 try (ClientBatchItemResult.ExportResponse exportResponse =
                                 exported.exportResponse().orElseThrow();
                         TtlvStructureView exportTtlv = exportResponse.responseTtlv().view();
@@ -1375,7 +1391,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(24)));
+                item(0x42000d, 2, integer(25)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1515,11 +1531,14 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] importFailure = structure(0x42000f,
                 enumeration(0x42005c, 42), item(0x420093, 8, uniqueBatchItemId(23)),
                 enumeration(0x42007f, 1), enumeration(0x42007e, 5));
+        byte[] interopItem = structure(0x42000f,
+                enumeration(0x42005c, 0x34), item(0x420093, 8, uniqueBatchItemId(24)),
+                enumeration(0x42007f, 0), structure(0x42007c));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
                 certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem,
                 exportItem, exportFailure, constraintsItem, constraintsFailure, getItem, locateItem,
-                getFailure, locateFailure, importItem, importFailure);
+                getFailure, locateFailure, importItem, importFailure, interopItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {
