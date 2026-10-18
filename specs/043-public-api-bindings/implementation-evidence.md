@@ -3908,3 +3908,16 @@ expanded into this operation mapping. Final-head CI, including the selected
 changed-code coverage gate and supported-platform matrix, must pass before T051
 is checked complete. The later T071 shared native-backed cross-language corpus
 also remains a separate parity deliverable.
+
+### T051 JNI response bridge coverage follow-up
+
+CI run `39150214768` passed the platform, language, sanitizer, inventory,
+documentation, and dependency checks, but failed the selected changed-code
+coverage gate at 6,873/7,244 lines (94.88%; 95% required). Added
+`InteropJavaFacadeTest.nativeResponseBridgeRejectsNullResultHandle` to call the
+actual JNI response bridge with an invalid handle and assert the mapped
+`InvalidInputException`; this exercises the native status/error boundary
+without stubbing the JNI method. Local verification passed with
+`mvn --batch-mode --file bindings/java/pom.xml '-Dtest=InteropJavaFacadeTest'
+test` (3 tests). The new pushed head must pass the complete CI run, including
+the changed-code coverage gate, before T051 is checked complete.
