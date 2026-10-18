@@ -974,6 +974,49 @@ cleanup:
     return result;
 }
 
+static int join_split_key_constructor_pairs_each_identifier_with_its_threshold(void) {
+    static const uint8_t identifier_text[] = "repeated-split-id";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    kmipkit_split_key_reference_t *references[2] = {0};
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *masks = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    if (kmipkit_split_key_reference_create(&identifier, 1, &references[0]) != 0 ||
+        kmipkit_split_key_reference_create(&identifier, 2, &references[1]) != 0 ||
+        kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&masks) != 0 ||
+        kmipkit_client_batch_item_join_split_key(
+            UINT32_C(0xf1234567), references, 2, 1, UINT32_C(0xfedcba98),
+            attributes, masks, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    if (kmipkit_client_batch_item_join_split_key(
+            1, references, 1, 0, 0, 0, 0, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_join_split_key(
+            1, 0, 1, 0, 0, 0, 0, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(masks);
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_split_key_reference_release(references[1]);
+    kmipkit_split_key_reference_release(references[0]);
+    return result;
+}
+
 static int get_usage_allocation_response_accessor_clears_outputs(void) {
     kmipkit_unique_identifier_v1_t identifier = {0};
     identifier.struct_size = (uint32_t)sizeof(identifier);
@@ -2641,6 +2684,7 @@ int main(int argc, char **argv) {
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
+        !join_split_key_constructor_pairs_each_identifier_with_its_threshold() ||
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||
         !creation_rejects_malformed_split_key_inputs() ||
