@@ -136,6 +136,44 @@ class JoinSplitKeyParityManifestTests(unittest.TestCase):
         self.assertEqual("SplitKeyReference", reference["java"]["name"])
         self.assertEqual("SplitKeyReference", reference["python"]["name"])
 
+    def test_java_t052_inventory_records_overloads_kinds_and_exact_exclusions(self) -> None:
+        request_factory = self.declarations["T052:request:constructor:java"]
+        self.assertEqual(
+            [
+                "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
+                "java.util.List<org.kmipkit.extensions.SplitKeyReference>, java.lang.Long, "
+                "org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure)",
+                "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
+                "java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
+            ],
+            request_factory["javaSignatures"],
+        )
+        self.assertEqual(
+            "java-member", self.declarations["T052:response:ttlv:java"]["kind"]
+        )
+        self.assertEqual(
+            "java-member", self.declarations["T052:response:unique-identifier:java"]["kind"]
+        )
+
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit"
+        }
+        expected = {
+            "org.kmipkit.NativeExtensionRegistry.SPLIT_KEY_REFERENCE",
+            "org.kmipkit.NativeExtensionRegistry.splitKeyReferenceCreate",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemJoinSplitKey",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJoinSplitKey",
+            "org.kmipkit.extensions.ClientBatchItemResult.JoinSplitKeyResponse.toString",
+            "org.kmipkit.extensions.SplitKeyReference.<init>",
+            "org.kmipkit.extensions.SplitKeyReference.uniqueIdentifier",
+            "org.kmipkit.extensions.SplitKeyReference.splitKeyThreshold",
+            "org.kmipkit.extensions.SplitKeyReference.toString",
+        }
+        self.assertTrue(expected <= set(exclusions))
+        self.assertTrue(all("T052" in exclusions[name]["evidence"] for name in expected))
+
 
 if __name__ == "__main__":
     unittest.main()
