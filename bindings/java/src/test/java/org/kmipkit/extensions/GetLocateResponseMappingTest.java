@@ -185,9 +185,7 @@ final class GetLocateResponseMappingTest {
         Object[] identifiers = new Object[identifierCount];
 
         assertThrows(ResourceLimitException.class, () -> ClientBatchItemResult.parseLocateResponse(
-                new Object[] {
-                    new long[] {1, 1, 1, identifierCount, identifierCount}, identifiers
-                }));
+                successfulLocateTuple(identifiers)));
     }
 
     // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
@@ -199,15 +197,20 @@ final class GetLocateResponseMappingTest {
         java.util.Arrays.fill(identifiers, identifier);
 
         ClientBatchItemResult.LocateResponse response = ClientBatchItemResult
-                .parseLocateResponse(new Object[] {
-                    new long[] {1, 1, 1, identifierCount, identifierCount}, identifiers
-                })
+                .parseLocateResponse(successfulLocateTuple(identifiers))
                 .orElseThrow();
 
         assertEquals(identifierCount, response.uniqueIdentifiers().size());
         assertEquals("repeated", response.uniqueIdentifiers().get(0).text());
         assertEquals("repeated", response.uniqueIdentifiers()
                 .get(identifierCount - 1).text());
+    }
+
+    private static Object[] successfulLocateTuple(Object[] identifiers) {
+        int identifierCount = identifiers.length;
+        return new Object[] {
+            new long[] {1, 1, 1, identifierCount, identifierCount}, identifiers
+        };
     }
 
     // OASIS KMIP Specification v2.1 §6.1.19, Table 221.
