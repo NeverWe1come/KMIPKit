@@ -52,6 +52,7 @@ import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.RequestOptions;
+import org.kmipkit.extensions.SplitKeyReference;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.internal.NativeHandle;
@@ -754,6 +755,75 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(50_000, identifiers.get(50_000).number());
                 assertEquals(identifierCount - 1,
                         identifiers.get(identifiers.size() - 1).number());
+            }
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test
+    void joinSplitKeyResponseUsesNativeMappingAndRetainsOwnedTtlvOverTls() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("join-split-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("join-split-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, joinSplitKeyResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-join-split-response-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            try (SplitKeyReference reference = new SplitKeyReference(
+                    UniqueIdentifier.textString("source-fragment"), 1)) {
+                batch.add(ClientBatchItem.joinSplitKey(4, List.of(reference))
+                        .withUniqueBatchItemId(uniqueBatchItemId(0)));
+            }
+
+            ClientBatchItemResult.JoinSplitKeyResponse joined;
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(1, response.itemCount());
+                assertEquals(0, result.resultStatus());
+                joined = result.joinSplitKeyResponse().orElseThrow();
+            }
+
+            try (joined; TtlvStructureView responseTtlv = joined.responseTtlv().view()) {
+                assertEquals("joined-output-id", joined.uniqueIdentifier().text());
+                assertFalse(joined.toString().contains("joined-output-id"));
+                assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+                try (TtlvItemView payload = responseTtlv.itemAt(3);
+                        TtlvValueView payloadValue = payload.value();
+                        TtlvStructureView payloadView = payloadValue.structure()) {
+                    assertTagOrder(payloadView, 0x420094, 0x540001);
+                }
             }
             assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
         } finally {
@@ -1567,6 +1637,21 @@ final class ClientFacadeTlsIntegrationTest {
         }
         byte[] payload = structure(0x42007c, identifiers.toByteArray());
         byte[] responseItem = structure(0x42000f, item(0x42005c, 5, integer(40)),
+                item(0x42007f, 5, integer(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] joinSplitKeyResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "joined-output-id".getBytes(StandardCharsets.UTF_8)),
+                item(0x540001, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, integer(0x29)),
+                item(0x420093, 8, uniqueBatchItemId(0)),
                 item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);
     }
