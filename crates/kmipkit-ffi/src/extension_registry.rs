@@ -918,6 +918,52 @@ fn input_handle_array<T, U>(
     Ok(result)
 }
 
+fn copy_join_split_key_references(
+    array: *mut *mut kmipkit_split_key_reference_t,
+    count: u64,
+) -> FfiResult<Vec<SplitKeyReference>> {
+    let pointers = input_handle_pointers(array, count, 100_000)?;
+    let mut handles = Vec::new();
+    handles
+        .try_reserve_exact(pointers.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+
+    let mut total_identifier_bytes = 0_u64;
+    for pointer in pointers {
+        let handle = reference_handle(*pointer, Kind::SplitKeyReference)?;
+        let HandleValue::SplitKeyReference(reference) = &handle.value else {
+            return Err(ERROR_INVALID_INPUT);
+        };
+        if reference.split_key_threshold().is_none() {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        if let UniqueIdentifier::TextString(value) = reference.unique_identifier() {
+            let length = u64::try_from(value.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            total_identifier_bytes = total_identifier_bytes
+                .checked_add(length)
+                .filter(|total| *total <= MAX_FFI_INPUT_BYTES)
+                .ok_or(ERROR_RESOURCE_LIMIT)?;
+        }
+        handles.push(handle);
+    }
+
+    let mut references = Vec::new();
+    references
+        .try_reserve_exact(handles.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for handle in handles {
+        let HandleValue::SplitKeyReference(reference) = &handle.value else {
+            return Err(ERROR_INVALID_INPUT);
+        };
+        let threshold = reference.split_key_threshold().ok_or(ERROR_INVALID_INPUT)?;
+        references.push(
+            SplitKeyReference::new(reference.unique_identifier().clone())
+                .with_split_key_threshold(threshold),
+        );
+    }
+    Ok(references)
+}
+
 fn protocol_status(error: &ProtocolError) -> i32 {
     match error.kind() {
         ProtocolErrorKind::CompatibilityMismatch => ERROR_COMPATIBILITY_MISMATCH,
@@ -3215,22 +3261,7 @@ pub extern "C" fn kmipkit_client_batch_item_join_split_key(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let references = match input_handle_array(
-            references,
-            reference_count,
-            100_000,
-            Kind::SplitKeyReference,
-            |handle| {
-                let HandleValue::SplitKeyReference(reference) = &handle.value else {
-                    return Err(ERROR_INVALID_INPUT);
-                };
-                let threshold = reference.split_key_threshold().ok_or(ERROR_INVALID_INPUT)?;
-                Ok(
-                    SplitKeyReference::new(reference.unique_identifier().clone())
-                        .with_split_key_threshold(threshold),
-                )
-            },
-        ) {
+        let references = match copy_join_split_key_references(references, reference_count) {
             Ok(references) => references,
             Err(status) => return record_ffi_error(status),
         };
