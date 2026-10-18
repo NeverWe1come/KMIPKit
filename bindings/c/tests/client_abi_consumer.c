@@ -844,6 +844,22 @@ static int interop_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int log_constructor_is_callable_from_c(void) {
+    static const uint8_t message[] = "log-message-private-sentinel";
+    kmipkit_client_batch_item_t *item = 0;
+    if (kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item) != 0 || item == 0) {
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+
+    uint8_t present = UINT8_MAX;
+    kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_response_log_ttlv(0, &present, &response_ttlv) != 1) {
+        return 0;
+    }
+    return present == 0 && response_ttlv == 0;
+}
+
 static int interop_response_accessor_clears_invalid_outputs_from_c(void) {
     uint8_t present = UINT8_MAX;
     kmipkit_ttlv_structure_t *response_ttlv =
@@ -2781,6 +2797,7 @@ int main(int argc, char **argv) {
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
+        !log_constructor_is_callable_from_c() ||
         !interop_response_accessor_clears_invalid_outputs_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
