@@ -193,6 +193,37 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates an Import request from caller-supplied Attributes and opaque Any Object data. */
+    public static ClientBatchItem importObject(
+            UniqueIdentifier uniqueIdentifier,
+            long objectType,
+            @Nullable Boolean replaceExisting,
+            @Nullable Long keyWrapType,
+            TtlvStructure attributes,
+            TtlvStructure anyObject) {
+        if (uniqueIdentifier == null) {
+            throw new InvalidInputException("Import Unique Identifier is required");
+        }
+        requireU32(objectType, "Import Object Type");
+        if (keyWrapType != null) requireU32(keyWrapType, "Import Key Wrap Type");
+        requireStructure(attributes, "Import Attributes");
+        requireStructure(anyObject, "Import Any Object");
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemImport(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier), objectType,
+                            replaceExisting != null, Boolean.TRUE.equals(replaceExisting),
+                            keyWrapType != null, keyWrapType == null ? 0 : keyWrapType,
+                            handleOrNull(attributes), handleOrNull(anyObject)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Get request with the optional Table 220 fields in their canonical order. */
     public static ClientBatchItem get(
             @Nullable UniqueIdentifier uniqueIdentifier,

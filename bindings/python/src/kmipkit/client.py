@@ -859,6 +859,7 @@ class BatchItemResult:
     get_constraints_response: GetConstraintsResponse | None = field(default=None, repr=False)
     _get_response: GetResponse | None = field(default=None, repr=False)
     _locate_response: LocateResponse | None = field(default=None, repr=False)
+    import_response: ImportResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -958,6 +959,18 @@ class GetUsageAllocationResponse:
 
     def close(self) -> None:
         """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class ImportResponse:
+    """Successful Import response and its owned complete generic TTLV copy."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete response structure."""
         self.response_ttlv.close()
 
 
@@ -1334,6 +1347,13 @@ def _batch_result(handle: Any) -> BatchResult:
                 export_response = None
                 if int(metadata.operation) == 0x2B:
                     export_response = _export_response(item)
+                import_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x2A
+                ):
+                    import_response = _import_response(item)
                 get_response = None
                 if int(metadata.operation) == 0x0A:
                     get_response = _get_response(item)
@@ -1370,6 +1390,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         get_constraints_response=constraints_response,
                         _get_response=get_response,
                         _locate_response=locate_response,
+                        import_response=import_response,
                     )
                 )
             finally:
@@ -1780,6 +1801,47 @@ def _get_usage_allocation_response(
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return GetUsageAllocationResponse(unique_identifier, response_ttlv)
+
+
+def _import_response(item: _ClientBatchItemResponse) -> ImportResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_import(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_import_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return ImportResponse(unique_identifier, response_ttlv)
 
 
 def _get_response(item: _ClientBatchItemResponse) -> GetResponse | None:
@@ -2473,6 +2535,7 @@ __all__ = [
     "EndpointKind",
     "HashResponse",
     "GetUsageAllocationResponse",
+    "ImportResponse",
     "GetConstraintsResponse",
     "GetResponse",
     "LocateResponse",

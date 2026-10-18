@@ -251,6 +251,14 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_import(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_import_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_derive_key(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -442,6 +450,16 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_get_usage_allocation(
         const kmipkit_unique_identifier_v1_t *unique_identifier,
         int64_t usage_limits_count,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_import(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        uint32_t object_type,
+        uint8_t has_replace_existing,
+        uint8_t replace_existing,
+        uint8_t has_key_wrap_type,
+        uint32_t key_wrap_type,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_ttlv_structure_t *any_object,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_mac(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

@@ -12,8 +12,8 @@ use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCatego
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
-    GetRequest, GetUsageAllocationRequest, LocateRequest, ObjectGroupMember, ObjectType,
-    OperationData, SecretBytes, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    GetRequest, GetUsageAllocationRequest, ImportRequest, LocateRequest, ObjectGroupMember,
+    ObjectType, OperationData, SecretBytes, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -3281,6 +3281,100 @@ fn ffi_get_usage_allocation_ttlv_copies_success_and_excludes_failure_responses()
         SUCCESS
     );
     assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(failed_item);
+}
+
+fn import_test_request() -> ClientRequest {
+    let object = Item::new(
+        RawTag::new(0x0042_008f)
+            .expect("Symmetric Key tag fits the KMIP tag field")
+            .try_checked()
+            .expect("Symmetric Key is allocated in KMIP 2.1"),
+        Value::structure(Structure::new()),
+    )
+    .expect("valid generic Any Object test item builds");
+    ClientRequest::import(ImportRequest::new(
+        UniqueIdentifier::TextString("request-import-id".to_owned()),
+        ObjectType::from_raw(u32::MAX),
+        AttributeSet::new(),
+        object,
+    ))
+}
+
+#[test]
+fn ffi_import_response_exposes_success_identifier_and_owned_ordered_ttlv_only() {
+    let successful_item = successful_cryptographic_item(
+        import_test_request(),
+        0x2a,
+        b"import-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"imported-id"),
+            ttlv_enumeration(0x0054_0001, 0xf123_4567),
+        ],
+    );
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_import(successful_item, &mut present, &mut identifier,),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_response_identifier(&identifier, b"imported-id");
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_import_ttlv(
+            successful_item,
+            &mut ttlv_present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    let mut view = ptr::null_mut();
+    assert_eq!(
+        kmipkit_ttlv_structure_view(response_ttlv, &mut view),
+        SUCCESS
+    );
+    let mut count = 0;
+    assert_eq!(
+        kmipkit_ttlv_structure_view_item_count(view, &mut count),
+        SUCCESS
+    );
+    assert_eq!(
+        count, 4,
+        "the copied full response retains unknown trailing fields"
+    );
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(successful_item);
+
+    let failed_item = failed_cryptographic_item(import_test_request(), 0x2a, b"import-failure");
+    present = 9;
+    identifier = empty_unique_identifier_output_v1();
+    identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+    identifier.integer_value = -17;
+    assert_eq!(
+        kmipkit_client_batch_item_response_import(failed_item, &mut present, &mut identifier,),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert_eq!(identifier.integer_value, 0);
+    ttlv_present = 9;
+    response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_import_ttlv(
+            failed_item,
+            &mut ttlv_present,
+            &mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(ttlv_present, 0);
     assert!(response_ttlv.is_null());
     kmipkit_client_batch_item_response_release(failed_item);
 }

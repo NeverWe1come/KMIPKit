@@ -24095,6 +24095,441 @@
         "requestBoundary": "not-applicable",
         "returnType": "i32"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed Import request from KMIP v2.1 §6.1.25, Table 238. Required Attributes and the one-item Any Object are borrowed and copied into zeroizing protocol-owned storage; selectors and object values are preserved."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "input-value-pointer",
+            "name": "unique_identifier",
+            "ownership": "borrowed",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "object_type",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_replace_existing",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "replace_existing",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_key_wrap_type",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "key_wrap_type",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "any_object",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_import"
+      },
+      "id": "client_batch_item_import",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemImport",
+        "method": "importObject",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "objectType",
+            "type": "long"
+          },
+          {
+            "name": "replaceExisting",
+            "type": "Boolean"
+          },
+          {
+            "name": "keyWrapType",
+            "type": "Long"
+          },
+          {
+            "name": "attributes",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "anyObject",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_import",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_import",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "object_type",
+            "type": "int"
+          },
+          {
+            "name": "attributes",
+            "type": "ttlv.Structure"
+          },
+          {
+            "name": "any_object",
+            "type": "ttlv.Structure"
+          },
+          {
+            "name": "replace_existing",
+            "type": "bool | None"
+          },
+          {
+            "name": "key_wrap_type",
+            "type": "int | None"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_client_batch_item_import",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "*const kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "name": "object_type",
+            "type": "u32"
+          },
+          {
+            "name": "has_replace_existing",
+            "type": "u8"
+          },
+          {
+            "name": "replace_existing",
+            "type": "u8"
+          },
+          {
+            "name": "has_key_wrap_type",
+            "type": "u8"
+          },
+          {
+            "name": "key_wrap_type",
+            "type": "u32"
+          },
+          {
+            "name": "attributes",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "any_object",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_client_batch_item_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the resulting Unique Identifier only for a successful Import response. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_unique_identifier",
+            "ownership": "none",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_import"
+      },
+      "id": "client_batch_item_response_import",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseImport",
+        "method": "importResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<ImportResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_import",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.BatchItemResult.import_response",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "ImportResponse | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_import",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_unique_identifier",
+            "type": "*mut kmipkit_unique_identifier_v1_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Import result. Unknown fields and their order are preserved.",
+          "For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_response_ttlv",
+            "nullable": true,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_import_ttlv"
+      },
+      "id": "client_batch_item_response_import_ttlv",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseImport",
+        "method": "importResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<ImportResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_import_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.ImportResponse.response_ttlv",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "ttlv.Structure"
+      },
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_import_ttlv",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_response_ttlv",
+            "type": "*mut *mut kmipkit_ttlv_structure_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
     }
   ],
   "languages": [
@@ -25009,6 +25444,64 @@
       },
       "scope": "client_1_0",
       "section": "6.1.24"
+    },
+    {
+      "apiState": "verified",
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T050:request:c",
+          "T050:response:c",
+          "T050:result:responseTtlv:c"
+        ],
+        "java": [
+          "T050:request:java",
+          "T050:response:java",
+          "T050:result:type:java",
+          "T050:result:uniqueIdentifier:java",
+          "T050:result:responseTtlv:java",
+          "T050:result:close:java"
+        ],
+        "python": [
+          "T050:request:python",
+          "T050:response:python",
+          "T050:result:type:python",
+          "T050:result:uniqueIdentifier:python",
+          "T050:result:responseTtlv:python",
+          "T050:result:close:python"
+        ],
+        "rust": [
+          "rust-observed-1a8e2178a54e41059166",
+          "rust-observed-2c7e9cf9424c6ffec132",
+          "rust-observed-2081ca2bbc1fa2685a44",
+          "rust-observed-3fb008956f4e09aff689",
+          "rust-observed-d158c6a986c729f09583",
+          "rust-observed-2c48f94200ab15c4ee5f",
+          "rust-observed-49106ebf30f970ea5e3f"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0037",
+      "name": "Import",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0037",
+        "state": "approved"
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "scope": "client_1_0",
+      "section": "6.1.25"
     },
     {
       "apiState": "verified",
@@ -54951,6 +55444,73 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "rust-observed-2c7e9cf9424c6ffec132",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatchOutcome::Import",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.importResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.import_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`",
         "kind": "feature-specification",
         "path": "specs/017-managed-object-retrieval/spec.md",
@@ -55650,6 +56210,73 @@
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
         "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "rust-observed-1a8e2178a54e41059166",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::Import",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_import",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ]
     },
     {
@@ -58941,6 +59568,341 @@
         "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "rust-observed-2081ca2bbc1fa2685a44",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ImportRequest",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_import",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "rust-observed-3fb008956f4e09aff689",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ImportRequest::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_import",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "rust-observed-d158c6a986c729f09583",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ImportResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "rust-observed-2c48f94200ab15c4ee5f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ImportResponse::unique_identifier",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "rust-observed-49106ebf30f970ea5e3f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::ImportResponse::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ]
     },
     {
@@ -91442,6 +92404,1013 @@
         "KMIPKIT-REQ-SPEC-6.1.28-011",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:request:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_import",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_import",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:request:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.importObject",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_import",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:request:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.client_batch_item_import",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.importObject",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_import",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:response:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_import",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.importResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.import_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:response:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.importResponse",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.importResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.import_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:response:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.BatchItemResult.import_response",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.importResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.import_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::Import",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:type:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:type:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.ImportResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:uniqueIdentifier:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.uniqueIdentifier",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:uniqueIdentifier:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.ImportResponse.unique_identifier",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:responseTtlv:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_import_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:responseTtlv:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.responseTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:responseTtlv:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.ImportResponse.response_ttlv",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_import_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:close:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+      "declarationId": "T050:result:close:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.ImportResponse.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.ImportResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::ImportResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+        "bindings/python/tests/test_import_operation.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0037-FR-001",
+        "KMIPKIT-0037-FR-002",
+        "KMIPKIT-0037-FR-003",
+        "KMIPKIT-0037-FR-004",
+        "KMIPKIT-0037-FR-005",
+        "KMIPKIT-0037-FR-006",
+        "KMIPKIT-0037-FR-007",
+        "KMIPKIT-0037-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.25-001",
+        "KMIPKIT-REQ-SPEC-6.1.25-004",
+        "KMIPKIT-REQ-SPEC-6.1.25-006"
       ]
     }
   ],

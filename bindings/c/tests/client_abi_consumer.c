@@ -813,6 +813,42 @@ static int get_usage_allocation_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int import_constructor_rejects_invalid_table_238_inputs_from_c(void) {
+    static const uint8_t identifier_bytes[] = "import-id";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = 1;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1);
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *empty_object = 0;
+    kmipkit_client_batch_item_t *item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    int result = 0;
+    if (kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&empty_object) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_import(
+            &identifier, UINT32_MAX, 1, 0, 0, 0, attributes, empty_object, &item) !=
+            T076_ERROR_INVALID_INPUT || item != 0) {
+        goto cleanup;
+    }
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_import(
+            &identifier, UINT32_MAX, 2, 0, 0, 0, attributes, empty_object, &item) !=
+            T076_ERROR_INVALID_INPUT || item != 0) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(empty_object);
+    kmipkit_ttlv_structure_release(attributes);
+    return result;
+}
+
 static int get_usage_allocation_response_accessor_clears_outputs(void) {
     kmipkit_unique_identifier_v1_t identifier = {0};
     identifier.struct_size = (uint32_t)sizeof(identifier);
@@ -2416,6 +2452,7 @@ int main(int argc, char **argv) {
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
+        !import_constructor_rejects_invalid_table_238_inputs_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
         !creation_create_key_pair_matches_shared_fixture() ||
         !creation_create_split_key_matches_shared_fixture() ||

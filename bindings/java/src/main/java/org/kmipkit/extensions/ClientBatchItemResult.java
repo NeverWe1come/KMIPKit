@@ -423,6 +423,28 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
     }
 
+    /** Successful Import response with its independently owned complete generic TTLV. */
+    public static final class ImportResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final TtlvStructure responseTtlv;
+
+        private ImportResponse(UniqueIdentifier uniqueIdentifier, TtlvStructure responseTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.responseTtlv = responseTtlv;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns the full ordered response structure, including unknown fields. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() {
+            return "ImportResponse[uniqueIdentifier=redacted, responseTtlv=preserved]";
+        }
+    }
+
     /** Successful Get Constraints response with its complete ordered generic TTLV copy. */
     public static final class GetConstraintsResponse implements AutoCloseable {
         private final TtlvStructure responseTtlv;
@@ -947,6 +969,35 @@ public final class ClientBatchItemResult implements AutoCloseable {
         try {
             return Optional.of(new GetUsageAllocationResponse(
                     identifierRecord(tuple[1]), responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<ImportResponse> parseImportResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Import response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1, "native Import response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Import response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null || responseTtlvHandle[0] != 0) {
+                if (responseTtlvHandle[0] > 0) {
+                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+                }
+                throw new InvalidInputException("native absent Import response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (tuple[1] == null || responseTtlvHandle[0] <= 0) {
+            if (responseTtlvHandle[0] > 0) {
+                TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+            }
+            throw new InvalidInputException("native successful Import response is incomplete");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            return Optional.of(new ImportResponse(identifierRecord(tuple[1]), responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
             throw exception;

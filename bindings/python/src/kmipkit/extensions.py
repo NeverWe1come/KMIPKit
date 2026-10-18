@@ -1706,6 +1706,51 @@ def client_batch_item_get_usage_allocation(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_import(
+    unique_identifier: UniqueIdentifier,
+    object_type: int,
+    attributes: ttlv.Structure,
+    any_object: ttlv.Structure,
+    *,
+    replace_existing: bool | None = None,
+    key_wrap_type: int | None = None,
+) -> ClientBatchItem:
+    """Create an Import item from KMIP 2.1 §6.1.25, Table 238.
+
+    Attributes and Any Object are copied by the native ABI. Any Object must
+    contain exactly one outer TTLV item. Key Wrap Type remains a raw value and
+    is present only when the caller explicitly selects it.
+    """
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    if replace_existing is not None and not isinstance(replace_existing, bool):
+        errors.raise_for_status(4)
+    has_replace_existing = int(replace_existing is not None)
+    raw_replace_existing = int(replace_existing is True)
+    has_key_wrap_type = int(key_wrap_type is not None)
+    raw_key_wrap_type = 0 if key_wrap_type is None else _integer_range(
+        key_wrap_type, 0, 0xFFFF_FFFF
+    )
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_import",
+            (
+                identifier,
+                raw_object_type,
+                has_replace_existing,
+                raw_replace_existing,
+                has_key_wrap_type,
+                raw_key_wrap_type,
+                _native_structure(attributes, required=True),
+                _native_structure(any_object, required=True),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_get(
     unique_identifier: UniqueIdentifier | None = None,
     key_format_type: int | None = None,
@@ -2062,6 +2107,7 @@ __all__ = [
     "client_batch_item_get_constraints",
     "client_batch_item_delegated_login",
     "client_batch_item_get_usage_allocation",
+    "client_batch_item_import",
     "client_batch_item_get",
     "client_batch_item_locate",
     "client_batch_item_export",

@@ -37,9 +37,9 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
     DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, MacRequest,
-    MacVerifyRequest, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
-    ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
+    HashRequest, ImportRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest,
+    MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType, OpaqueObjectContext,
+    OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
     SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_transport::{
@@ -3129,6 +3129,98 @@ pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
         *out = try_ffi!(batch_item_handle(ClientRequest::get_usage_allocation(
             request
         )));
+        SUCCESS
+    })
+}
+
+fn import_request_from_handles(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    object_type: u32,
+    has_replace_existing: u8,
+    replace_existing: u8,
+    has_key_wrap_type: u8,
+    key_wrap_type: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    any_object: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<ImportRequest> {
+    let Some(unique_identifier) = copy_optional_identifier(unique_identifier)? else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let replace_existing = match has_replace_existing {
+        0 if replace_existing == 0 => None,
+        1 if replace_existing <= 1 => Some(replace_existing != 0),
+        _ => return Err(ERROR_INVALID_INPUT),
+    };
+    let key_wrap_type = match has_key_wrap_type {
+        0 if key_wrap_type == 0 => None,
+        1 => Some(KeyWrapType::from_raw(key_wrap_type)),
+        _ => return Err(ERROR_INVALID_INPUT),
+    };
+    let Some(attributes) = copy_attribute_set_handle(attributes, true)? else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    if any_object.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let object_handle = reference_handle(any_object, Kind::Structure)?;
+    let HandleValue::Structure(object_structure) = &object_handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let object_view = object_structure.view();
+    if object_view.children().len() != 1 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let object = object_view.children()[0]
+        .try_clone()
+        .map_err(model_status)?;
+    let mut request = ImportRequest::new(
+        unique_identifier,
+        ObjectType::from_raw(object_type),
+        attributes,
+        object,
+    );
+    if let Some(value) = replace_existing {
+        request = request.with_replace_existing(value);
+    }
+    if let Some(value) = key_wrap_type {
+        request = request.with_key_wrap_type(value);
+    }
+    Ok(request)
+}
+
+/// Creates a typed Import request from KMIP 2.1 §6.1.25, Table 238.
+///
+/// The Attributes and one-item Any Object structures are borrowed and copied
+/// into zeroizing protocol-owned storage. Raw object and selector values are
+/// preserved; no local unwrap or object transformation is performed.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_import(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    object_type: u32,
+    has_replace_existing: u8,
+    replace_existing: u8,
+    has_key_wrap_type: u8,
+    key_wrap_type: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    any_object: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = match import_request_from_handles(
+            unique_identifier,
+            object_type,
+            has_replace_existing,
+            replace_existing,
+            has_key_wrap_type,
+            key_wrap_type,
+            attributes,
+            any_object,
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::import(request)));
         SUCCESS
     })
 }
