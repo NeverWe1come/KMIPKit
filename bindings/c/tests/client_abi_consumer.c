@@ -1277,13 +1277,15 @@ static int successful_crypto_response_is_readable(
     return 0;
 }
 
+static int public_ttlv_contains_response_sentinel(kmipkit_ttlv_structure_t *structure);
+
 static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limits) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
     static const uint32_t expected_statuses[] = {
-        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     static const uint8_t expected_correlation[] = {0x00, 0xa1, 0x7f};
-    static const uint8_t expected_ids[17][6] = {
+    static const uint8_t expected_ids[19][6] = {
         {'i', 't', 'e', 'm', '-', '0'},
         {'i', 't', 'e', 'm', '-', '1'},
         {'i', 't', 'e', 'm', '-', '2'},
@@ -1301,6 +1303,8 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         {'d', 'e', 'r', 'i', 'v', 'e'},
         {'e', 'x', 'p', 'o', 'r', 't'},
         {'c', 'o', 'n', 's', 't', 'r'},
+        {'g', 'e', 't', '-', '0', '0'},
+        {'l', 'o', 'c', '-', '0', '0'},
     };
     static const uint8_t expected_failure_message[] = {
         'c', 'r', 0xc3, 0xa9, 'a', 't', 'i', 'o', 'n', ' ', 'r', 'e', 'f', 'u', 's', 0xc3,
@@ -1315,10 +1319,11 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     kmipkit_transport_config_t *transport = 0;
     kmipkit_client_t *client = 0;
     kmipkit_client_batch_t *batch = 0;
-    kmipkit_client_batch_item_t *items[17] = {0};
+    kmipkit_client_batch_item_t *items[19] = {0};
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_client_batch_item_response_t *response_item = 0;
     kmipkit_ttlv_structure_t *get_constraints_ttlv = 0;
+    kmipkit_ttlv_structure_t *get_any_object = 0;
     uint64_t response_count = 0;
     char *port_end = 0;
     const unsigned long port = strtoul(argv[5], &port_end, 10);
@@ -1385,7 +1390,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         result = 31;
         goto cleanup;
     }
-    for (uint64_t index = 0; index < 17; ++index) {
+    for (uint64_t index = 0; index < 19; ++index) {
         kmipkit_client_batch_item_t *identified_item = 0;
         if (index == 4 || index == 5) {
             kmipkit_ttlv_structure_t *attributes = 0;
@@ -1520,6 +1525,31 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 result = 40 + (int)index;
                 goto cleanup;
             }
+        } else if (index == 17) {
+            static const uint8_t request_identifier_bytes[] = "get-source";
+            kmipkit_unique_identifier_v1_t identifier = {0};
+            identifier.struct_size = (uint32_t)sizeof(identifier);
+            identifier.abi_version = 1;
+            identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+            identifier.text_data = request_identifier_bytes;
+            identifier.text_length = (uint64_t)(sizeof(request_identifier_bytes) - 1);
+            if (kmipkit_client_batch_item_get(
+                    &identifier, 0, 0, 0, 0, 0, 0, 0, &items[index]) != 0 ||
+                items[index] == 0) {
+                result = 40 + (int)index;
+                goto cleanup;
+            }
+        } else if (index == 18) {
+            kmipkit_ttlv_structure_t *attributes = 0;
+            if (kmipkit_ttlv_structure_create(&attributes) != 0 ||
+                kmipkit_client_batch_item_locate(
+                    0, 0, 0, 0, 0, 0, 0, 0, attributes, &items[index]) != 0 ||
+                items[index] == 0) {
+                kmipkit_ttlv_structure_release(attributes);
+                result = 40 + (int)index;
+                goto cleanup;
+            }
+            kmipkit_ttlv_structure_release(attributes);
         } else if (kmipkit_client_batch_item_discover_versions(&items[index]) != 0 ||
                    items[index] == 0) {
             result = 40 + (int)index;
@@ -1555,7 +1585,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     }
     batch = 0; /* consumed by execution */
     if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
-        response_count != 17) {
+        response_count != 19) {
         result = 201;
         goto cleanup;
     }
@@ -1809,6 +1839,61 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 goto cleanup;
             }
         }
+        if (index == 17) {
+            uint8_t present = 0;
+            uint8_t payload_present = 0;
+            uint32_t object_type = 0;
+            kmipkit_unique_identifier_v1_t identifier = {0};
+            identifier.struct_size = (uint32_t)sizeof(identifier);
+            identifier.abi_version = 1;
+            if (kmipkit_client_batch_item_response_get(
+                    response_item, &present, &payload_present, &object_type,
+                    &identifier, &get_any_object) != 0 ||
+                present != 1 || payload_present != 1 || object_type != UINT32_C(0xf1234567) ||
+                identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+                identifier.text_length != 6 || identifier.text_data == 0 ||
+                memcmp(identifier.text_data, "get-id", 6) != 0 || get_any_object == 0) {
+                result = 230;
+                goto cleanup;
+            }
+        }
+        if (index == 18) {
+            uint8_t present = 0;
+            uint8_t payload_present = 0;
+            uint8_t located_items_present = 0;
+            int32_t located_items = 0;
+            uint64_t identifier_count = 0;
+            static const uint8_t expected_located_identifiers[3][6] = {
+                {'f', 'i', 'r', 's', 't', 0},
+                {'s', 'e', 'c', 'o', 'n', 'd'},
+                {'f', 'i', 'r', 's', 't', 0},
+            };
+            static const uint64_t expected_lengths[3] = {5, 6, 5};
+            if (kmipkit_client_batch_item_response_locate(
+                    response_item, &present, &payload_present, &located_items_present,
+                    &located_items, &identifier_count) != 0 ||
+                present != 1 || payload_present != 1 || located_items_present != 1 ||
+                located_items != 3 || identifier_count != 3) {
+                result = 231;
+                goto cleanup;
+            }
+            for (uint64_t identifier_index = 0; identifier_index < identifier_count;
+                 ++identifier_index) {
+                kmipkit_unique_identifier_v1_t identifier = {0};
+                identifier.struct_size = (uint32_t)sizeof(identifier);
+                identifier.abi_version = 1;
+                if (kmipkit_client_batch_item_response_locate_unique_identifier_at(
+                        response_item, identifier_index, &identifier) != 0 ||
+                    identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+                    identifier.text_length != expected_lengths[identifier_index] ||
+                    identifier.text_data == 0 ||
+                    memcmp(identifier.text_data, expected_located_identifiers[identifier_index],
+                           (size_t)expected_lengths[identifier_index]) != 0) {
+                    result = 232;
+                    goto cleanup;
+                }
+            }
+        }
         if (kmipkit_client_batch_item_response_unique_batch_item_id(
                 response_item, &unique_id_present, &unique_id) != 0 ||
             unique_id_present != 1 || unique_id.length != sizeof(expected_ids[index]) ||
@@ -1875,6 +1960,12 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         kmipkit_client_batch_item_response_release(response_item);
         response_item = 0;
     }
+    if (!public_ttlv_contains_response_sentinel(get_any_object)) {
+        result = 252;
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_release(get_any_object);
+    get_any_object = 0;
     kmipkit_client_batch_response_release(response);
     response = 0;
     if (batch != 0) {
@@ -1892,9 +1983,10 @@ cleanup:
     kmipkit_client_batch_response_release(response);
     kmipkit_client_batch_release(batch);
     kmipkit_ttlv_structure_release(get_constraints_ttlv);
-    for (uint64_t index = 0; index < 17; ++index) {
+    for (uint64_t index = 0; index < 19; ++index) {
         kmipkit_client_batch_item_release(items[index]);
     }
+    kmipkit_ttlv_structure_release(get_any_object);
     kmipkit_client_release(client);
     kmipkit_transport_config_release(transport);
     kmipkit_client_configuration_release(configuration);
