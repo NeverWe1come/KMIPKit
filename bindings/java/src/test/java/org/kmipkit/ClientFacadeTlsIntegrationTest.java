@@ -247,7 +247,11 @@ final class ClientFacadeTlsIntegrationTest {
                                     0xfedc_ba98L, 0xfedc_ba99L, 0xfedc_ba9aL, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(14)))
                     .add(ClientBatchItem.export(null, null, null, null, null)
-                            .withUniqueBatchItemId(uniqueBatchItemId(15)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(15)))
+                    .add(ClientBatchItem.getConstraints()
+                            .withUniqueBatchItemId(uniqueBatchItemId(16)))
+                    .add(ClientBatchItem.getConstraints()
+                            .withUniqueBatchItemId(uniqueBatchItemId(17)));
             ClientBatchResponse batchResponse = client.executeWithOptions(
                     batch, CodecLimits.defaults(), RequestOptions.defaults());
             try (ClientBatchResponse response = batchResponse;
@@ -266,8 +270,10 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult delegated = response.itemAt(12);
                     ClientBatchItemResult derived = response.itemAt(13);
                     ClientBatchItemResult exported = response.itemAt(14);
-                    ClientBatchItemResult exportFailed = response.itemAt(15)) {
-                assertEquals(16, response.itemCount());
+                    ClientBatchItemResult exportFailed = response.itemAt(15);
+                    ClientBatchItemResult constraints = response.itemAt(16);
+                    ClientBatchItemResult constraintsFailed = response.itemAt(17)) {
+                assertEquals(18, response.itemCount());
                 assertEquals(0, completed.resultStatus());
                 assertTrue(completed.outcomeKind().isCompleted());
                 assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
@@ -426,6 +432,26 @@ final class ClientFacadeTlsIntegrationTest {
                     assertTrue(exportFailure.anyObject().isEmpty());
                     assertTagOrder(exportFailureTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007e);
                 }
+                try (ClientBatchItemResult.GetConstraintsResponse constraintsResponse =
+                                constraints.getConstraintsResponse().orElseThrow();
+                        TtlvStructureView constraintsTtlv = constraintsResponse.responseTtlv().view()) {
+                    assertEquals(0, constraints.resultStatus());
+                    assertTagOrder(constraintsTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+                    try (TtlvItemView payload = constraintsTtlv.itemAt(3);
+                            TtlvValueView payloadValue = payload.value();
+                            TtlvStructureView payloadView = payloadValue.structure()) {
+                        assertTagOrder(payloadView, 0x420168);
+                        try (TtlvItemView constraintsItem = payloadView.itemAt(0);
+                                TtlvValueView constraintsValue = constraintsItem.value();
+                                TtlvStructureView constraintsView = constraintsValue.structure()) {
+                            assertTrue(containsByteString(constraintsView, 0x540001,
+                                    "KMIPKit-constraints-sentinel".getBytes(StandardCharsets.US_ASCII)));
+                        }
+                    }
+                    assertFalse(constraintsResponse.toString().contains("constraints-sentinel"));
+                }
+                assertEquals(1, constraintsFailed.resultStatus());
+                assertTrue(constraintsFailed.getConstraintsResponse().isEmpty());
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
             assertTrue(request.length >= 8);
