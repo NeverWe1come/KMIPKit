@@ -80,6 +80,23 @@ cleanup:
     return result;
 }
 
+static int generic_big_integer_constructor_is_callable_from_c(void) {
+    static const uint8_t value_bytes[] = {0x00, 0x80, 0xff};
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    int result = 0;
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_value_big_integer(
+            limits, value_bytes, (uint64_t)sizeof(value_bytes), &value) != 0 || value == 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_ttlv_value_release(value);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
 static int certify_constructor_is_callable_from_c(void) {
     static const uint8_t request_value[] = {0x30, 0x82, 0x01, 0x00};
     kmipkit_byte_span_v1_t request_span = {
@@ -2569,6 +2586,7 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (!creation_create_matches_shared_fixture() ||
+        !generic_big_integer_constructor_is_callable_from_c() ||
         !certify_constructor_is_callable_from_c() ||
         !certify_response_accessor_is_callable_from_c() ||
         !check_constructor_is_callable_from_c() ||

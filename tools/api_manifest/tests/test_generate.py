@@ -256,6 +256,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
         self.assertIn("KMIPKIT_INTERNAL_H", private_header)
         for symbol in (
+            "kmipkit_ttlv_value_big_integer",
             "kmipkit_ttlv_value_byte_string",
             "kmipkit_ttlv_value_text_string",
             "kmipkit_ttlv_value_structure",
@@ -267,6 +268,77 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         ):
             with self.subTest(symbol=symbol):
                 self.assertIn(f"{symbol}(", public_header)
+
+    def test_public_big_integer_ttlv_declaration_has_four_language_parity(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = {
+            row["declarationId"]: row
+            for row in manifest["publicDeclarations"]
+            if row["declarationId"].startswith("ttlv_value_big_integer:")
+        }
+        expected = {
+            "ttlv_value_big_integer:c": "kmipkit_ttlv_value_big_integer",
+            "ttlv_value_big_integer:java": "org.kmipkit.ttlv.TtlvValue.BigInteger",
+            "ttlv_value_big_integer:python": "kmipkit.ttlv.ttlv_value_big_integer",
+        }
+        self.assertEqual(set(expected), set(declarations))
+        rust_declaration = next(
+            row
+            for row in manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit_ttlv::Value::big_integer"
+        )
+        self.assertEqual("declared", rust_declaration["declarationState"])
+        self.assertEqual("generic_ttlv_model", rust_declaration["capabilityId"])
+        self.assertIn("KMIPKIT-0004-FR-005", rust_declaration["requirementIds"])
+        self.assertIn("KMIPKIT-0043-FR-021", rust_declaration["requirementIds"])
+        expected_mappings = {
+            "rust": "kmipkit_ttlv::Value::big_integer",
+            "c": "kmipkit_ttlv_value_big_integer",
+            "java": "org.kmipkit.ttlv.TtlvValue.BigInteger",
+            "python": "kmipkit.ttlv.ttlv_value_big_integer",
+        }
+        for declaration_id, mapping_name in expected.items():
+            with self.subTest(declaration_id=declaration_id):
+                declaration = declarations[declaration_id]
+                self.assertEqual("declared", declaration["declarationState"])
+                self.assertEqual("generic_ttlv_model", declaration["capabilityId"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertEqual(mapping_name, declaration["exportName"])
+                self.assertIn("KMIPKIT-0004-FR-005", declaration["requirementIds"])
+                self.assertIn("KMIPKIT-0043-FR-021", declaration["requirementIds"])
+                mappings = declaration["languageMappings"]
+                self.assertEqual(set(expected_mappings), set(mappings))
+                for language, expected_name in expected_mappings.items():
+                    self.assertEqual(expected_name, mappings[language]["name"])
+
+    def test_public_c_header_documents_consumed_ttlv_handle_transfer(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        outputs = generate.render_outputs(manifest)
+        public_header = outputs["bindings/c/include/kmipkit.h"].decode("utf-8")
+
+        required_contracts = {
+            "ttlv_value_structure": (
+                "Transfers ownership of structure after the output slot and limits handle are valid. "
+                "If validation fails before transfer, the caller retains structure; after transfer, "
+                "the caller must not use or release it, even if this function returns an error."
+            ),
+            "ttlv_item_create": (
+                "Transfers ownership of value only after the output slot, tag, and limits are valid. "
+                "If validation fails before transfer, the caller retains value; after transfer, "
+                "the caller must not use or release it, even if this function returns an error."
+            ),
+            "ttlv_structure_with_item": (
+                "Transfers ownership of each input structure and item as it is accepted. Validation "
+                "errors before transfer leave that handle caller-owned; after transfer, the caller "
+                "must not use or release it, even if later processing returns an error."
+            ),
+        }
+        functions = {function["id"]: function for function in manifest["functions"]}
+        for function_id, contract in required_contracts.items():
+            with self.subTest(function_id=function_id):
+                documentation = " ".join(functions[function_id]["c"].get("documentation", []))
+                self.assertIn(contract, documentation)
+                self.assertIn(contract, public_header)
 
     def test_public_header_exposes_error_ttlv_after_t081_mapping(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
