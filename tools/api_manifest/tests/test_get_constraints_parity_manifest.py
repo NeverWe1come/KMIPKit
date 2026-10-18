@@ -61,6 +61,18 @@ class GetConstraintsParityManifestTests(unittest.TestCase):
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
 
+    def test_manifest_kinds_match_java_types_and_python_fields(self) -> None:
+        expected_kinds = {
+            "T048:result:type:java": "type",
+            "T048:result:type:python": "type",
+            "T048:result:responseTtlv:java": "java-member",
+            "T048:result:responseTtlv:python": "field",
+            "T048:response:python": "field",
+        }
+        for declaration_id, kind in expected_kinds.items():
+            with self.subTest(declaration=declaration_id):
+                self.assertEqual(kind, self.declarations[declaration_id]["kind"])
+
     def test_get_constraints_has_approved_four_language_mapping_and_evidence(self) -> None:
         self.assertEqual(1, len(self.operations))
         operation = self.operations[0]

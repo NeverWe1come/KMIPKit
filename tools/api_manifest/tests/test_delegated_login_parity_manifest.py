@@ -174,6 +174,12 @@ class DelegatedLoginParityManifestTests(unittest.TestCase):
 
         self.assertNotIn("jniSymbol", function["java"])
 
+    def test_python_ticket_value_property_is_inventoried_as_an_export(self) -> None:
+        self.assertEqual(
+            "python-export",
+            self.declarations["T045:delegated-login:ticket-value:python"]["kind"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
