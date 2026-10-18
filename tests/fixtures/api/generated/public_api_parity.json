@@ -60393,15 +60393,15 @@
       "kind": "variant",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_response_interop_ttlv",
+          "name": "kmipkit_client_batch_item_response_log_ttlv",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.interopResponse",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.logResponse",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.client.BatchItemResult.interop_response",
+          "name": "kmipkit.client.BatchItemResult.log_response",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -60428,6 +60428,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -61420,15 +61421,15 @@
       "kind": "variant",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_interop",
+          "name": "kmipkit_client_batch_item_log",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItem.interop",
+          "name": "org.kmipkit.extensions.ClientBatchItem.log",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.extensions.client_batch_item_interop",
+          "name": "kmipkit.extensions.client_batch_item_log",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -61455,6 +61456,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -65958,15 +65960,15 @@
       "kind": "type",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_interop",
+          "name": "kmipkit_client_batch_item_log",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItem.interop",
+          "name": "org.kmipkit.extensions.ClientBatchItem.log",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.extensions.client_batch_item_interop",
+          "name": "kmipkit.extensions.client_batch_item_log",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -65993,6 +65995,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -66024,15 +66027,15 @@
       "kind": "associated-item",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_interop",
+          "name": "kmipkit_client_batch_item_log",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItem.interop",
+          "name": "org.kmipkit.extensions.ClientBatchItem.log",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.extensions.client_batch_item_interop",
+          "name": "kmipkit.extensions.client_batch_item_log",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -66059,6 +66062,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -66090,15 +66094,15 @@
       "kind": "type",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_response_interop_ttlv",
+          "name": "kmipkit_client_batch_item_response_log_ttlv",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.InteropResponse",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LogResponse",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.client.InteropResponse",
+          "name": "kmipkit.client.LogResponse",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -66125,6 +66129,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -66156,15 +66161,15 @@
       "kind": "associated-item",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_response_interop_ttlv",
+          "name": "kmipkit_client_batch_item_metadata_v2_t.result_status",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.interopResponse",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.resultStatus",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.client.BatchItemResult.interop_response",
+          "name": "kmipkit.client.BatchItemResult.result_status",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -66191,6 +66196,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -66222,15 +66228,15 @@
       "kind": "associated-item",
       "languageMappings": {
         "c": {
-          "name": "kmipkit_client_batch_item_response_interop_ttlv",
+          "name": "kmipkit_client_batch_item_response_log_ttlv",
           "packageId": "c-kmipkit"
         },
         "java": {
-          "name": "org.kmipkit.extensions.ClientBatchItemResult.InteropResponse.responseTtlv",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LogResponse.responseTtlv",
           "packageId": "java-kmipkit"
         },
         "python": {
-          "name": "kmipkit.client.InteropResponse.response_ttlv",
+          "name": "kmipkit.client.LogResponse.response_ttlv",
           "packageId": "python-kmipkit"
         },
         "rust": {
@@ -66257,6 +66263,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -102586,6 +102593,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -102652,6 +102660,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -102718,6 +102727,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -102784,6 +102794,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -102850,6 +102861,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -102916,6 +102928,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -102982,6 +102995,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -103048,6 +103062,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -103115,6 +103130,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -103182,6 +103198,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -103248,6 +103265,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",
@@ -103314,6 +103332,7 @@
         "KMIPKIT-0042-FR-004",
         "KMIPKIT-0042-FR-005",
         "KMIPKIT-0042-FR-006",
+        "KMIPKIT-0042-FR-007",
         "KMIPKIT-0042-FR-008",
         "KMIPKIT-0043-FR-004",
         "KMIPKIT-0043-FR-005",

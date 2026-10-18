@@ -15,7 +15,7 @@ OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
 OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
-    *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 8)),
+    *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 7, 8)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)),
 }
 TRACEABILITY_IDS = {
@@ -40,6 +40,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit_protocol::LogRequest",
         "kmipkit_protocol::LogRequest::new",
         "kmipkit_protocol::LogResponse",
+        "kmipkit_protocol::LogResponse::result",
         "kmipkit_protocol::LogResponse::with_ttlv",
     },
     "c": {
@@ -60,6 +61,18 @@ EXPECTED_MAPPINGS = {
         "kmipkit.client.LogResponse.response_ttlv",
         "kmipkit.client.LogResponse.close",
     },
+}
+ALLOWED_LOG_DECLARATION_MAPPINGS = {
+    **EXPECTED_MAPPINGS,
+    "c": EXPECTED_MAPPINGS["c"]
+    | {
+        "kmipkit_client_batch_item_metadata_v2_t.result_status",
+        "kmipkit_ttlv_structure_release",
+    },
+    "java": EXPECTED_MAPPINGS["java"]
+    | {"org.kmipkit.extensions.ClientBatchItemResult.resultStatus"},
+    "python": EXPECTED_MAPPINGS["python"]
+    | {"kmipkit.client.BatchItemResult.result_status"},
 }
 
 
@@ -107,7 +120,7 @@ class LogParityManifestTests(unittest.TestCase):
                 linked_requirements.update(declaration["requirementIds"])
 
         for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertTrue(expected <= actual_mappings[language], language)
+            self.assertEqual(expected, actual_mappings[language], language)
         self.assertEqual(REQUIREMENTS, linked_requirements)
 
         traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(
@@ -127,6 +140,7 @@ class LogParityManifestTests(unittest.TestCase):
         self.assertTrue(
             linked_api_requirements <= set(re.findall(r"KMIPKIT-0043-FR-\d{3}", t053_row))
         )
+        self.assertIn("KMIPKIT-0042-FR-007", t053_row)
 
     def test_generated_parity_inventory_contains_verified_log_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
@@ -137,8 +151,8 @@ class LogParityManifestTests(unittest.TestCase):
         self.assertEqual("verified", operations[0]["apiState"])
         self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
 
-    def test_observed_rust_log_variants_map_to_log_facades_in_all_languages(self) -> None:
-        expected = {
+    def test_every_verified_log_declaration_maps_to_log_facades_in_all_languages(self) -> None:
+        expected_rust_declarations = {
             "kmipkit_client::ClientRequest::Log": {
                 "rust": "kmipkit_client::ClientRequest::Log",
                 "c": "kmipkit_client_batch_item_log",
@@ -151,13 +165,60 @@ class LogParityManifestTests(unittest.TestCase):
                 "java": "org.kmipkit.extensions.ClientBatchItemResult.logResponse",
                 "python": "kmipkit.client.BatchItemResult.log_response",
             },
+            "kmipkit_protocol::LogRequest": {
+                "rust": "kmipkit_protocol::LogRequest",
+                "c": "kmipkit_client_batch_item_log",
+                "java": "org.kmipkit.extensions.ClientBatchItem.log",
+                "python": "kmipkit.extensions.client_batch_item_log",
+            },
+            "kmipkit_protocol::LogRequest::new": {
+                "rust": "kmipkit_protocol::LogRequest::new",
+                "c": "kmipkit_client_batch_item_log",
+                "java": "org.kmipkit.extensions.ClientBatchItem.log",
+                "python": "kmipkit.extensions.client_batch_item_log",
+            },
+            "kmipkit_protocol::LogResponse": {
+                "rust": "kmipkit_protocol::LogResponse",
+                "c": "kmipkit_client_batch_item_response_log_ttlv",
+                "java": "org.kmipkit.extensions.ClientBatchItemResult.LogResponse",
+                "python": "kmipkit.client.LogResponse",
+            },
+            "kmipkit_protocol::LogResponse::result": {
+                "rust": "kmipkit_protocol::LogResponse::result",
+                "c": "kmipkit_client_batch_item_metadata_v2_t.result_status",
+                "java": "org.kmipkit.extensions.ClientBatchItemResult.resultStatus",
+                "python": "kmipkit.client.BatchItemResult.result_status",
+            },
+            "kmipkit_protocol::LogResponse::with_ttlv": {
+                "rust": "kmipkit_protocol::LogResponse::with_ttlv",
+                "c": "kmipkit_client_batch_item_response_log_ttlv",
+                "java": "org.kmipkit.extensions.ClientBatchItemResult.LogResponse.responseTtlv",
+                "python": "kmipkit.client.LogResponse.response_ttlv",
+            },
         }
-        for export_name, expected_languages in expected.items():
-            declarations = [
-                row
-                for row in self.manifest["publicDeclarations"]
-                if row["exportName"] == export_name
-            ]
+
+        verified_log_declarations = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == OPERATION_ID
+            and row.get("declarationState") == "verified"
+        ]
+        self.assertTrue(verified_log_declarations)
+        self.assertEqual(
+            REQUIREMENTS,
+            {
+                requirement
+                for row in verified_log_declarations
+                for requirement in row["requirementIds"]
+            },
+        )
+        for declaration in verified_log_declarations:
+            self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+            for language, mapping in declaration["languageMappings"].items():
+                self.assertIn(mapping["name"], ALLOWED_LOG_DECLARATION_MAPPINGS[language])
+
+        for export_name, expected_languages in expected_rust_declarations.items():
+            declarations = [row for row in verified_log_declarations if row["exportName"] == export_name]
             self.assertEqual(1, len(declarations), export_name)
             declaration = declarations[0]
             self.assertEqual(OPERATION_ID, declaration["capabilityId"])
