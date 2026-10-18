@@ -162,33 +162,91 @@ class ImportParityManifestTests(unittest.TestCase):
             },
         }
         required_requirements = {
-            "KMIPKIT-0004-FR-003",
-            "KMIPKIT-0004-FR-005",
-            "KMIPKIT-0004-FR-006",
-            "KMIPKIT-0004-FR-012",
-            "KMIPKIT-0043-FR-004",
-            "KMIPKIT-0043-FR-010",
-            "KMIPKIT-0043-FR-021",
+            "ttlv_value_byte_string:c": {
+                "KMIPKIT-0004-FR-001", "KMIPKIT-0004-FR-005",
+                "KMIPKIT-0004-FR-009", "KMIPKIT-0004-FR-010",
+                "KMIPKIT-0004-FR-012",
+            },
+            "ttlv_value_text_string:c": {
+                "KMIPKIT-0004-FR-001", "KMIPKIT-0004-FR-005",
+                "KMIPKIT-0004-FR-009", "KMIPKIT-0004-FR-010",
+                "KMIPKIT-0004-FR-012",
+            },
+            "ttlv_value_structure:c": {
+                "KMIPKIT-0004-FR-001", "KMIPKIT-0004-FR-003",
+                "KMIPKIT-0004-FR-006", "KMIPKIT-0004-FR-008",
+                "KMIPKIT-0004-FR-009", "KMIPKIT-0004-FR-010",
+                "KMIPKIT-0004-FR-012",
+            },
+            "ttlv_item_create:c": {
+                "KMIPKIT-0004-FR-003", "KMIPKIT-0004-FR-006",
+                "KMIPKIT-0004-FR-008", "KMIPKIT-0004-FR-009",
+                "KMIPKIT-0004-FR-010", "KMIPKIT-0004-FR-012",
+            },
+            "ttlv_structure_with_item:c": {
+                "KMIPKIT-0004-FR-003", "KMIPKIT-0004-FR-006",
+                "KMIPKIT-0004-FR-009", "KMIPKIT-0004-FR-010",
+                "KMIPKIT-0004-FR-012",
+            },
         }
 
         for declaration_id, expected in expected_mappings.items():
+            siblings = [
+                self.declarations[
+                    f"{declaration_id.rsplit(':', 1)[0]}:{language}"
+                ]
+                for language in {"c", "java", "python"}
+            ]
+            rust_declaration = next(
+                declaration
+                for declaration in self.manifest["publicDeclarations"]
+                if declaration.get("exportName") == expected["rust"]
+                and declaration.get("packageId") == "rust-kmipkit-ttlv"
+            )
+            siblings.append(rust_declaration)
+            for declaration in siblings:
+                sibling_id = declaration["declarationId"]
+                with self.subTest(declaration=sibling_id):
+                    self.assertEqual("declared", declaration["declarationState"])
+                    self.assertEqual("generic_ttlv_model", declaration["capabilityId"])
+                    self.assertEqual("four-language", declaration["parityScope"])
+                    self.assertEqual("specs/004-generic-ttlv-model/spec.md",
+                                     declaration["approvalSource"]["path"])
+                    self.assertEqual("Approved", declaration["approvalSource"]["status"])
+                    self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+                    self.assertEqual(
+                        expected,
+                        {
+                            language: mapping["name"]
+                            for language, mapping in declaration["languageMappings"].items()
+                        },
+                    )
+                    required = required_requirements[declaration_id] | {
+                        "KMIPKIT-0043-FR-004",
+                        "KMIPKIT-0043-FR-010",
+                        "KMIPKIT-0043-FR-021",
+                    }
+                    self.assertTrue(required <= set(declaration["requirementIds"]))
+                    self.assertFalse(
+                        any(requirement.startswith("KMIPKIT-0012-")
+                            for requirement in declaration["requirementIds"])
+                    )
+
+        release_mappings = {
+            "RawTag:c-release": "kmipkit_ttlv::RawTag",
+            "TtlvValue:c-release": "kmipkit_ttlv::Value",
+            "TtlvItem:c-release": "kmipkit_ttlv::Item",
+        }
+        for declaration_id, rust_name in release_mappings.items():
             with self.subTest(declaration=declaration_id):
                 declaration = self.declarations[declaration_id]
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual("generic_ttlv_model", declaration["capabilityId"])
-                self.assertEqual("four-language", declaration["parityScope"])
                 self.assertEqual("specs/004-generic-ttlv-model/spec.md",
                                  declaration["approvalSource"]["path"])
-                self.assertEqual("Approved", declaration["approvalSource"]["status"])
                 self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
-                self.assertEqual(
-                    expected,
-                    {
-                        language: mapping["name"]
-                        for language, mapping in declaration["languageMappings"].items()
-                    },
-                )
-                self.assertTrue(required_requirements <= set(declaration["requirementIds"]))
+                self.assertEqual(rust_name,
+                                 declaration["languageMappings"]["rust"]["name"])
                 self.assertFalse(
                     any(requirement.startswith("KMIPKIT-0012-")
                         for requirement in declaration["requirementIds"])

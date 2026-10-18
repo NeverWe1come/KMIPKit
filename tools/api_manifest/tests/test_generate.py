@@ -261,6 +261,9 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             "kmipkit_ttlv_value_structure",
             "kmipkit_ttlv_item_create",
             "kmipkit_ttlv_structure_with_item",
+            "kmipkit_raw_tag_release",
+            "kmipkit_ttlv_value_release",
+            "kmipkit_ttlv_item_release",
         ):
             with self.subTest(symbol=symbol):
                 self.assertIn(f"{symbol}(", public_header)
@@ -829,6 +832,36 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertIn('"vendor_extension_registry"', generated)
         self.assertNotIn('"public_binding_surface"', generated)
         self.assertNotIn('"rust_transport_exchange"', generated)
+
+    def test_java_public_api_splits_large_declaration_json_without_losing_content(self) -> None:
+        long_name = "x" * 70_000
+        projection = {
+            "publicPackages": [{"id": "java-kmipkit", "language": "java"}],
+            "publicDeclarations": [
+                {
+                    "declarationId": "large-java-declaration",
+                    "packageId": "java-kmipkit",
+                    "kind": "java-member",
+                    "languageMappings": {"java": {"name": long_name}},
+                }
+            ],
+        }
+
+        generated = generate.render_public_java_api(projection)
+        self.assertIn("DECLARATIONS_JSON_PARTS", generated)
+        self.assertIn('String.join("", DECLARATIONS_JSON_PARTS)', generated)
+        parts = [
+            json.loads(line.strip()[:-1])
+            for line in generated.splitlines()
+            if line.strip().startswith('"') and line.strip().endswith('",')
+        ]
+        self.assertGreater(len(parts), 1)
+        self.assertTrue(all(len(part.encode("utf-8")) < 60_000 for part in parts))
+        self.assertEqual(
+            '[{"declarationId":"large-java-declaration","kind":"java-member",'
+            f'"name":"{long_name}","packageId":"java-kmipkit"}}]',
+            "".join(parts),
+        )
 
     def _run_generator(self, root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         self.assertTrue(
