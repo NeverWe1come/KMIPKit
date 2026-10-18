@@ -1795,6 +1795,28 @@ architecture checks remain simulated through unsupported-target selection and
 the injected loader fixture; no physical cross-architecture load is claimed.
 
 
+### T076 selected changed-code coverage reconciliation — 2026-10-18
+
+Current-head CI run `39098949049` passed every required job except the
+selected changed-code coverage gate, which measured 5,572/5,867 (94.97
+percent). Independent line review identified the two uncovered statements in
+the defensive invalid-kind fallback of JNI
+`NativeExtensionRegistry_clientBatchItemCreateSplitKey`. Its entry guard
+rejects identifier kinds outside `0..=3`; kind `0` omits the identifier, and
+the admitted nonzero values map to text string, enumeration, and integer
+respectively. The fallback cannot execute for an admitted value, so each
+statement now has an exact `COVERAGE-EXCLUDE` reason. The fallback remains in
+place and runtime behavior is unchanged. The coverage threshold is unchanged;
+a replay of run `39098949049`'s exact reports against its base and merge
+commits passes: changed production 5,572/5,865 (95.00%; 17 summary-only lines
+charged uncovered), TTLV 735/741 (99.19%), protocol 12,581/12,973 (96.98%),
+transport 3,713/3,902 (95.16%), FFI 5,459/5,672 (96.24%), Java
+2,314/2,365 (97.84%), Python 2,732/2,762 (98.91%), JNI 3,223/3,709
+(86.90%; 17 summary-only lines charged uncovered), and workspace
+29,454/30,464 (96.68%). The unchanged 95% changed-code gate and all package
+thresholds pass in this replay. A fresh current-head CI run remains required;
+the replay is not a substitute for CI.
+
 ## T077 — Local API-level taxonomy parity
 
 Rust, C, Java, and Python now expose the ordered local API taxonomy

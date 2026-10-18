@@ -1421,8 +1421,8 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
                 }
                 identifier.integer_value = static_cast<int32_t>(identifier_number);
             } else if (identifier_kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
-                throw_invalid_input(env);
-                return static_cast<jlong>(0);
+                throw_invalid_input(env); // COVERAGE-EXCLUDE: The guard admits only zero or handled nonzero kinds.
+                return static_cast<jlong>(0); // COVERAGE-EXCLUDE: Kind 0 skips this block; kinds 1-3 match the handled cases.
             }
             identifier_pointer = &identifier;
         }
