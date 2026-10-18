@@ -430,10 +430,12 @@ final class ClientFacadeTlsIntegrationTest {
                     }
                     assertFalse(deriveKeyResponse.toString().contains("derived-key"));
                 }
-                try (ClientBatchItemResult.ImportResponse importResponse =
-                                imported.importResponse().orElseThrow();
+                assertEquals(0, imported.resultStatus());
+                ClientBatchItemResult.ImportResponse importResponse =
+                        imported.importResponse().orElseThrow();
+                imported.close();
+                try (importResponse;
                         TtlvStructureView importTtlv = importResponse.responseTtlv().view()) {
-                    assertEquals(0, imported.resultStatus());
                     assertEquals("imported-object-secret-id",
                             importResponse.uniqueIdentifier().text());
                     assertTagOrder(importTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
