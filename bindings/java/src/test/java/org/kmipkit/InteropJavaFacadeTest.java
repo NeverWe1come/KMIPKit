@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientBatchItem;
 
@@ -31,5 +32,11 @@ final class InteropJavaFacadeTest {
                 () -> ClientBatchItem.interop(1, null));
         assertThrows(InvalidInputException.class,
                 () -> ClientBatchItem.interop(1, new byte[] {(byte) 0xff}));
+    }
+
+    @Test
+    void nativeResponseBridgeRejectsNullResultHandle() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseInterop(0));
     }
 }
