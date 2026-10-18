@@ -311,6 +311,10 @@ fn spawn_public_client_batch_peer(
             c_request_contains_import(&request),
             "C ABI consumer must transmit the complete Import request through the public batch API"
         );
+        assert!(
+            c_request_contains_log(&request),
+            "C ABI consumer must transmit the typed Log request and message through the public batch API"
+        );
         tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -614,6 +618,75 @@ fn c_request_contains_import(encoded: &[u8]) -> bool {
             return false;
         }
         import_items.next().is_none()
+    })
+}
+
+fn c_request_contains_log(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const LOG: u32 = 44;
+    const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const LOG_MESSAGE: u32 = 0x0042_0141;
+
+    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let matching = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| {
+                item.with_value(|value| {
+                    let ValueView::Structure(batch_item) = value else {
+                        return false;
+                    };
+                    let mut operation = None;
+                    let mut identifier = None;
+                    let mut payload = None;
+                    for child in batch_item.children() {
+                        match child.tag().raw() {
+                            OPERATION if operation.is_none() => operation = Some(child),
+                            UNIQUE_BATCH_ITEM_ID if identifier.is_none() => identifier = Some(child),
+                            REQUEST_PAYLOAD if payload.is_none() => payload = Some(child),
+                            OPERATION | UNIQUE_BATCH_ITEM_ID | REQUEST_PAYLOAD => return false,
+                            _ => {}
+                        }
+                    }
+                    let Some(operation) = operation else {
+                        return false;
+                    };
+                    let Some(identifier) = identifier else {
+                        return false;
+                    };
+                    let Some(payload) = payload else {
+                        return false;
+                    };
+                    let correct_operation = operation.with_value(
+                        |value| matches!(value, ValueView::Enumeration(actual) if *actual == LOG),
+                    );
+                    let correct_id = identifier.with_value(
+                        |value| matches!(value, ValueView::ByteString(actual) if actual == b"log-00"),
+                    );
+                    let correct_payload = payload.with_value(|value| {
+                        let ValueView::Structure(payload) = value else {
+                            return false;
+                        };
+                        payload.children().len() == 1
+                            && payload.children()[0].tag().raw() == LOG_MESSAGE
+                            && payload.children()[0].with_value(|value| {
+                                matches!(value, ValueView::TextString(actual) if actual == "c-log-message")
+                            })
+                    });
+                    correct_operation && correct_id && correct_payload
+                })
+            })
+            .count();
+        matching == 1
     })
 }
 
@@ -1106,7 +1179,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 22),
+            integer(0x0042_000D, 23),
         ],
     );
     let response_payload = structure(
@@ -1128,7 +1201,20 @@ fn mixed_discover_versions_response() -> Vec<u8> {
                 get_failure_response_item(),
                 locate_failure_response_item(),
                 import_response_item(),
+                log_response_item(),
             ]),
+    )
+}
+
+fn log_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 44),
+            ttlv_item(0x0042_0093, 0x08, b"log-00"),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, []),
+        ],
     )
 }
 
