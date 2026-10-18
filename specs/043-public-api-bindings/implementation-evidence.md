@@ -3823,3 +3823,34 @@ and the missing `CodecLimits` release declaration. Local commits `6b491be1`
 and `7870c98a` refresh those outputs/counts and map the approved limits
 lifecycle; the new full local API-manifest suite passes. Cross-platform
 final-head CI still needs to run against the pushed head before review.
+
+### T082 follow-up — current-head Import coverage regression
+
+The later T076 additions increased the changed-production denominator after
+T082's earlier successful run. CI run `39140596390` on head `058847e4` therefore
+failed the unchanged selected-scope gate at 6,365/6,749 lines (94.31%; 95% is
+required). The uncovered-line report identified 48 FFI response lines in
+`client_abi.rs`: one invalid output-record path and four internal inconsistent
+handle paths are directly testable; the other 43 are invariant, platform-width,
+or allocation-failure branches without a deterministic valid-input trigger.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — Import response checks | `b980fe75` | Added Rust FFI invalid-record and internal-handle cases, Java Import tuple ownership/error cases, and Python absent/malformed response and cleanup cases. The preceding CI run is the failing coverage baseline. |
+| Green — reachable paths and exclusions | `533173a9` | Added exact `COVERAGE-EXCLUDE` reasons only to invariant, supported-width, repeated-preflight, and non-injectible allocation branches. The coverage threshold and production behavior are unchanged. |
+| Refactor — verification record | this commit | Reconciled the coverage diagnosis, test commands, and remaining final-head CI gate here. |
+
+Focused verification on the working head:
+
+| Command | Result |
+|---|---|
+| `cargo fmt --all --check`; `git diff --check` | PASS. |
+| `cargo test -p kmipkit-ffi --all-features ffi_import_getters_reject_invalid_output_records_and_inconsistent_handles` | PASS: the Import output-record and synthetic internal-handle branches return the expected errors. |
+| `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ImportResponseMappingTest test` | PASS: 5 tests. |
+| Python 3.12 `pytest bindings/python/tests/test_import_operation.py` in an isolated temporary uv environment with the locally built native library | PASS: 10 tests. The checkout's existing Python `.venv\lib64` symlink prevented uv from syncing in place, so the verification used a temporary environment and left the checkout environment untouched. |
+| `python -m unittest scripts.tests.test_coverage_gate` | PASS: 65 tests, 3 platform skips. |
+| Exact-line exclusion validation through `coverage_gate._is_executable_changed_line` | PASS: all 52 documented markers in `client_abi.rs` are on executable lines and include reasons. |
+
+The coverage gate has not yet been rerun on these commits. T050 and the release
+parity checks remain open until the pushed head passes the complete cross-
+platform CI matrix and selected-scope coverage gate.
