@@ -127,12 +127,13 @@ none counts as an interoperability success. Compose teardown
 completed, and `docker compose --file tests/integration/cosmian/compose.yaml
 ps --all` returned no services.
 
-The targeted Hash follow-up accepts typed multipart responses and sends `a`,
-`b`, and `c` while reusing the first response's Correlation Value, as specified
-by OASIS KMIP v2.1 §2.1 and §7.8. Seven server responses are typed Success but
-their final digests do not match the independent `abc` vectors; three SHA-224
-requests are rejected although Cosmian's published algorithm list advertises
-SHA-224. Hash remains 14/24 interoperable cases.
+The targeted Hash follow-up accepts typed multipart responses and sends a, b, and c as explicit Data
+blocks while reusing the first response's Correlation Value. OASIS KMIP v2.1 §6.1 defines multipart
+sequencing, §7.8 defines Correlation Value reuse, and Hash §6.1.24, Table 235 marks Data as not
+required for multipart Hash. The test supplies these blocks as explicit inputs, not because the
+standard requires Data on every part. Seven server responses are typed Success but their final
+digests do not match the independent abc vectors; three SHA-224 requests are rejected although
+Cosmian's published algorithm list advertises SHA-224. Hash remains 14/24 interoperable cases.
 
 | Test family | Cases | Typed successes | Interoperability successes | Other measured outcomes |
 |---|---:|---:|---:|---|

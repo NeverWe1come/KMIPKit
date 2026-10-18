@@ -135,7 +135,23 @@ The seven cases that had appeared as Decrypt failures were rerun against the pin
 
 The first two issues are fixed in the KMIPKit integration harness and their ledger rows now count as successful interoperability. No KMIPKit production-library changes were required. The three ECB and CoverCrypt live cases pass; Compose teardown leaves no server running. Cosmian's versioned [encryption algorithm documentation](https://docs.cosmian.com/versions/kms/5.28.0/certifications_and_compliance/cryptographic_algorithms/algorithms.html) describes the RSA/AES scheme and pure/hybrid KEM modes; its [Encrypt example](https://docs.cosmian.com/versions/kms/5.28.0/kmip_support/_encrypt.html) shows CoverCrypt's data framing. The implementation evidence is pinned to source commit `4ab3ee65829a903abb71f1298f400657fcee7ec9` in `crate/server/src/core/operations/{encrypt,decrypt}.rs` and `crate/crypto/src/crypto/kem.rs`.
 
-The 81 crypto response-validation failures are HMAC prerequisite responses where the peer omitted Operation (Status 1, Reason 4). The seven multipart Hash cases are now classified separately: the server returned typed Success responses, but each final digest differed from the independent known-answer digest for the three input blocks `a`, `b`, and `c`. KMIPKit now accepts the valid multipart response shape and the test preserves the first response's Correlation Value; these seven observations are semantic mismatches, not parser failures or interoperability successes. Cosmian 5.28.0's pinned `hash.rs` uses the Correlation Value as additional input to a fresh digest and does not return an updated value after the intermediate part, which is consistent with the observed wrong final digest. Three SHA-224 single-part requests remain target rejections (`Operation Not Supported`): the versioned Cosmian algorithm page lists SHA-224, but the pinned Hash dispatch does not implement it. These are a Cosmian documentation/source discrepancy; KMIPKit sends the standard Hashing Algorithm value. OASIS KMIP v2.1 §2.1 and Hash Table 235 differ textually on whether Data is required on an intermediate request; this test sends Data on every part and the change leaves prior empty-intermediate acceptance unchanged pending maintainer interpretation. All six valid RNG length-only cases returned typed responses missing Operation, with Status 1 and Reason 4; all six are classified as `response_validation_failed`. OASIS KMIP v2.1 §6.1.24, Tables 235–237 defines Hash request/response fields; §2.1 and §7.8 define multipart sequencing and Correlation Value reuse. OASIS KMIP v2.1 §6.1.49/Table 316 and §6.1.50/Table 319 define the RNG request payloads; §8.6/Table 399 governs the response Operation field. No RNG bytes, seeds, private keys, passwords, or response bodies are recorded.
+The 81 crypto response-validation failures are HMAC prerequisite responses where the peer omitted
+Operation (Status 1, Reason 4). The seven multipart Hash cases are classified separately: the server
+returned typed Success responses, but each final digest differed from the independent known-answer
+digest for the three input blocks a, b, and c. KMIPKit accepts the valid multipart response shape
+and the test preserves the first response's Correlation Value; these observations are semantic
+mismatches, not parser failures or interoperability successes. Cosmian 5.28.0's pinned hash.rs uses
+the Correlation Value as additional input to a fresh digest and does not return an updated value
+after the intermediate part, which is consistent with the observed wrong final digest. Three SHA-224
+single-part requests remain target rejections (Operation Not Supported): the versioned Cosmian
+algorithm page lists SHA-224, but the pinned Hash dispatch does not implement it. OASIS KMIP v2.1
+§6.1 defines multipart sequencing, §7.8 defines Correlation Value reuse, and Hash §6.1.24, Tables
+235–237 define request/response fields. Table 235 marks Data required for single-part Hash but not
+required for multipart Hash; the test supplies explicit Data blocks without treating them as a
+normative requirement. All six valid length-only RNG cases returned typed responses missing
+Operation (Status 1, Reason 4) and remain response_validation_failed. OASIS KMIP v2.1 §6.1.49/Table
+316 and §6.1.50/Table 319 define the RNG request payloads; §8.6/Table 399 governs the response
+Operation field. No RNG bytes, seeds, private keys, passwords, or response bodies are recorded.
 
 ### Key management and transfer
 
@@ -160,9 +176,22 @@ The previous 50 Get/Export response-validation failures were caused by the integ
 - Clean-checkout CI regression, Red/Green: run `39006703175` failed the offline Cosmian inventory tests on Linux, macOS and Windows because assertions assumed the ignored runtime-generated certificate/CSR directory existed. Green commit `8e81b1bb` validates the 30 PQC CSR-dependent probes against the actual fixture set, requires that set to be complete or absent, and keeps certificate path mapping checked when runtime files are absent. With no generated CSR fixtures, preflight is 216 runnable / 30 `NotSent`; with generated CSR fixtures, it is 246 / 0. The 15 earlier cipher blockers are now exact target probes and require no local private-key fixture. Targeted Clippy and formatting checks pass.
 - Latest offline command `cargo test --offline -p kmipkit-client --test cosmian_kms` passed 118 tests, failed zero and ignored 110 live tests. (Cargo emitted existing AWS-LC MSVC stdalign/NASM environment warnings that did not prevent the command from completing.)
 - Final local verification on the cipher-probe implementation: `cargo fmt --all --check`, `cargo test --offline --workspace --all-features`, and `cargo clippy --offline --workspace --all-targets --all-features -- -D warnings` passed. `cargo llvm-cov --workspace --all-features --summary-only` reported 92.93% workspace line coverage (above the 90% workspace gate).
-- Contract and integration verification passed: requirement traceability and pinned-image Compose checks (3 tests), normative inventory and generated-output checks in hosted CI, PowerShell/Compose configuration, `git diff --check`, and empty Compose status after the targeted run. Hosted CI run `39014453167` passed for implementation/matrix head `297b98d5` across Core, bindings, sanitizers, scripts, documentation, normative inventory, dependency policy and aggregate coverage. The final task-closeout documentation commit receives a final-head CI rerun.
-- The earlier dependency-policy issue for `rustls 0.23.45` is resolved by the approved KMIPKIT-0045 remediation merged into `release/1.0.0`; this branch resolves `rustls 0.23.46` and adds no dependency waiver. Fresh local RustSec policy and hosted Dependency policy both pass. Hosted run `39014453167` passed on `297b98d5`; the close-out docs update triggers a final-head rerun. Keep PR #56 in draft. The two-independent-KMIP-2.1-implementation release gate remains open.
+- Contract and integration verification passed: requirement traceability and pinned-image Compose
+  checks (3 tests), normative inventory and generated-output checks in hosted CI, PowerShell/Compose
+  configuration, git diff --check, and empty Compose status after the targeted run. Hosted CI run
+  39049893049 passed on the exact matrix head 5c3e4952be02422bff7149256efc617cea12692a across Core,
+  bindings, sanitizers, scripts, documentation, normative inventory, dependency policy and aggregate
+  coverage. The earlier rustls 0.23.45 dependency-policy issue was resolved by the approved
+  KMIPKIT-0045 remediation merged into release/1.0.0; this branch resolves rustls 0.23.46 and adds
+  no dependency waiver. Fresh local RustSec and hosted Dependency policy checks passed. The
+  source-citation correction adds a focused contract test and requires ordinary PR CI on the updated
+  head.
 
 ## Remaining release/review gates
 
-Keep PR #56 in draft. Hosted CI run `39014453167` passed on implementation and matrix head `297b98d5`, including dependency policy, all platform checks, sanitizers, bindings, normative inventory and aggregate coverage. The final T044 documentation close-out commit triggers one last head check. The exhaustive live run retains nine failed test functions; these target/interoperability outcomes remain recorded. The two-independent-KMIP-2.1-implementation release gate remains open.
+Keep PR #56 in draft. Hosted CI run 39049893049 passed on the exact matrix head
+5c3e4952be02422bff7149256efc617cea12692a, including dependency policy, all platform checks,
+sanitizers, bindings, normative inventory and aggregate coverage. The source-citation correction
+will receive ordinary PR CI on its updated head. The exhaustive live run retains nine failed test
+functions; these target/interoperability outcomes remain recorded. The
+two-independent-KMIP-2.1-implementation release gate remains open.

@@ -51,7 +51,30 @@ The 12 exclusions are six RNG parameter variants forbidden by the request struct
 
 The accepted crypto inventory has 1,466 standards-valid rows across ten operations; six standards-invalid Certify rows are excluded. Expected dispositions are 1,220 `typed_success`, six `documented_but_source_gap`, and 240 `source_documentation_discrepancy`. Offline builders encode every expected-success request. Exact finding preflight builds 246 requests (284 TTLV payloads including multipart rows); the 15 former cipher fixture blockers now have exact typed probes. All 30 post-quantum Certify finding cases have encoding-matched CSR fixture paths. PEM uses Certificate Request Type PEM (`3`), DER/PKCS#10 uses PKCS10 (`2`), following OASIS KMIP v2.1 §11.8/Table 439.
 
-The live matrix records 650 crypto interoperability successes, 20 other typed responses on finding rows, 383 target rejections, 325 setup rejections, 81 response-validation failures and seven Hash multipart semantic mismatches. Three standalone AES-ECB Encrypt cases also pass after replacing the invalid 19-byte input with one complete 16-byte block; Encrypt now records 287/300 interoperability successes. Create Key Pair has 57/59 successful interoperability cases: 24 additional source-discrepancy profiles returned valid typed results with both key identifiers; two ConfigurableKEM curve-only requests were rejected. These additional cases are observed implementation interoperability, not KMIP 2.1 enum conformance. The targeted follow-up confirms all 15 previously unavailable cipher findings reached the target: 12 vendor KEM cases passed typed postconditions and three AES/RSA requests were rejected; those cipher findings remain outside the advertised-operation count. On Decrypt, the earlier six setup rejections fell to two after fixing the three unaligned AES-ECB fixtures and CoverCrypt metadata framing. The ConfigurableKEM classical-only Create Key Pair requests still receive Cryptographic Failure before Decrypt is sent; the RSA/AES probe receives Operation Not Supported. The RSA/AES Decrypt fixture is ordinary RSA-OAEP data, not a genuine AES-GCM/RSA hybrid ciphertext. The 81 validation failures are HMAC prerequisite responses where the server omitted Operation (Status 1, Reason 4). Seven multipart Hash requests returned typed Success, but the final digest differed from the independent known-answer digest for input `abc`; they are `semantic_mismatch`, not parser failures. The corrected flow sends `a`, `b`, and `c` in the initial, intermediate, and final request and reuses the first response's Correlation Value as required by OASIS KMIP v2.1 §2.1 and §7.8. The pinned Cosmian 5.28.0 Hash implementation does not propagate updated multipart state to the final request. All six valid length-only RNG requests received a response missing Operation (Status 1, Reason 4); the matrix classifies them as `response_validation_failed`, never successful RNG exchanges. No RNG bytes or seed material is logged.
+The live matrix records 650 crypto interoperability successes, 20 other typed responses on finding
+rows, 383 target rejections, 325 setup rejections, 81 response-validation failures and seven Hash
+multipart semantic mismatches. Three standalone AES-ECB Encrypt cases also pass after replacing the
+invalid 19-byte input with one complete 16-byte block; Encrypt now records 287/300 interoperability
+successes. Create Key Pair has 57/59 successful interoperability cases: 24 additional
+source-discrepancy profiles returned valid typed results with both key identifiers; two
+ConfigurableKEM curve-only requests were rejected. These additional cases are observed
+implementation interoperability, not KMIP 2.1 enum conformance. The targeted follow-up confirms all
+15 previously unavailable cipher findings reached the target: 12 vendor KEM cases passed typed
+postconditions and three AES/RSA requests were rejected; those cipher findings remain outside the
+advertised-operation count. On Decrypt, the earlier six setup rejections fell to two after fixing
+the three unaligned AES-ECB fixtures and CoverCrypt metadata framing. The ConfigurableKEM
+classical-only Create Key Pair requests still receive Cryptographic Failure before Decrypt is sent;
+the RSA/AES probe receives Operation Not Supported. The RSA/AES Decrypt fixture is ordinary RSA-OAEP
+data, not a genuine AES-GCM/RSA hybrid ciphertext. The 81 validation failures are HMAC prerequisite
+responses where the server omitted Operation (Status 1, Reason 4). Seven multipart Hash requests
+returned typed Success, but the final digest differed from the independent known-answer digest for
+input abc; they are semantic_mismatch, not parser failures. The corrected flow sends a, b, and c as
+explicit input blocks, reuses the first response's Correlation Value as described by OASIS KMIP v2.1
+§6.1 and §7.8, and follows Hash §6.1.24, Table 235, which does not require Data for multipart Hash.
+The pinned Cosmian 5.28.0 Hash implementation does not propagate updated multipart state to the
+final request. All six valid length-only RNG requests received a response missing Operation (Status
+1, Reason 4); the matrix classifies them as response_validation_failed, never successful RNG
+exchanges. No RNG bytes or seed material are logged.
 
 ### Transfer, key-management, and lifecycle detail
 

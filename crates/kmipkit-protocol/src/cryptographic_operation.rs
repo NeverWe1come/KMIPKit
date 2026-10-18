@@ -216,8 +216,9 @@ pub(crate) fn secret_value(bytes: SecretBytes) -> Value {
 
 /// Validates single-part input presence and multipart framing.
 ///
-/// Multipart operation tables can omit input fields, while §2.1 allows clients
-/// to send a data block on each part. Preserve both choices for multipart calls.
+/// Multipart sequencing is defined in KMIP v2.1 §6.1 and Correlation Value reuse in §7.8. The
+/// operation payload tables determine each field's requiredness; Hash §6.1.24, Table 235, for
+/// example, does not require Data for multipart requests.
 pub(crate) fn validate_framing(
     has_input: bool,
     has_correlation: bool,

@@ -87,7 +87,15 @@ For subsequent implementation, record distinct Red/Green/Refactor evidence. Run 
 
 ## Multipart scope amendment — authorized 2026-10-17
 
-FR-017 permits caller-provided multipart input data where the operation supports it and accepts optional output data for multipart Hash, MAC, and Sign responses. Preserve required output on single-part responses and all TTLV structural checks. The Cosmian Hash test uses `a`, `b`, and `c` as three separate input blocks, reuses the initial Correlation Value, and validates a returned final digest against the independent `abc` known-answer vector. OASIS KMIP v2.1 §2.1 says Data is required except on initial or final parts, while Hash Table 235 says `No for multi-part`; this textual tension is recorded for maintainer interpretation. This change permits sending Data and leaves existing handling of omitted intermediate Data unchanged; the live test sends Data on all parts.
+FR-017 permits caller-provided multipart input data where the operation supports it and accepts
+optional output data for multipart Hash, MAC, and Sign responses. Preserve required output on
+single-part responses and all TTLV structural checks. OASIS KMIP v2.1 §6.1 defines multipart request
+sequencing, §7.8 requires reuse of the first response's Correlation Value, and Hash §6.1.24, Table
+235 marks Data as required for single-part Hash but not required for multipart Hash. The table does
+not prohibit supplied multipart Data. The Cosmian Hash test therefore uses a, b, and c as explicit
+input blocks, reuses the initial Correlation Value, and validates a returned final digest against
+the independent abc known-answer vector. These blocks are test inputs, not a claim that every
+multipart request must include Data.
 
 ## Evidence and risks
 
