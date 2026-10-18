@@ -167,6 +167,8 @@ final class GetLocateResponseMappingTest {
     @Test
     void locateResponseRejectsMalformedTupleFieldsAndFailedPayloads() {
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
+                new Object[] {new long[] {1, 1, 1, 0, 0}, "not-an-identifier-array"}));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
                 new Object[] {new long[] {2, 0, 0, 0, 0}, new Object[0]}));
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseLocateResponse(
                 new Object[] {new long[] {1, 1, 1, 0x1_0000_0000L, 0}, new Object[0]}));
