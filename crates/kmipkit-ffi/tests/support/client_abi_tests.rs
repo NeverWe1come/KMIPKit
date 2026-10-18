@@ -3732,6 +3732,7 @@ fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
     );
 }
 
+// KMIP Specification v2.1 §6.1.27, Tables 244–246.
 #[test]
 fn ffi_join_split_key_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
     let unknown_value = [0xde, 0xad, 0x00, 0xff];

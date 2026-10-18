@@ -974,6 +974,7 @@ cleanup:
     return result;
 }
 
+/* KMIP Specification v2.1 §6.1.27, Tables 244–246. */
 static int join_split_key_constructor_pairs_each_identifier_with_its_threshold(void) {
     static const uint8_t identifier_text[] = "repeated-split-id";
     kmipkit_unique_identifier_v1_t identifier = {0};

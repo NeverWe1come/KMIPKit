@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# KMIP Specification v2.1 §6.1.27, Tables 244–246.
+
 from types import SimpleNamespace
 
 import pytest

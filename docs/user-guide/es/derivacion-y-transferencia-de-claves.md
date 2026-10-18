@@ -240,3 +240,40 @@ fallo de validación local indica `NotSent`; los fallos de transporte conservan
 la evidencia de entrega más precisa disponible. Los resultados Pending siguen
 siendo explícitos si el llamador habilita el manejo asíncrono; KMIPKit no
 consulta su estado automáticamente.
+
+## API de Join Split Key en los cuatro lenguajes
+
+Join Split Key sigue OASIS KMIP Specification v2.1 §6.1.27, Tablas 244–246.
+Cada referencia empareja una ocurrencia de Unique Identifier con el Split Key
+Threshold conocido por quien llama para esa clave. Crea una referencia por
+cada entrada transmitida, incluidos los identificadores repetidos. Antes de
+enviar, KMIPKit exige al menos una referencia y comprueba que el número de
+entradas sea mayor o igual que el mayor umbral suministrado. Los umbrales son
+locales: nunca se serializan ni se consultan al servidor, y pueden diferir
+entre entradas. KMIPKit no combina localmente el material de las claves.
+
+La Tabla 244 exige Object Type y una o más entradas Unique Identifier. La
+petición conserva su orden y las repeticiones. Secret Data Type, Attributes y
+Protection Storage Masks son opcionales. En Success, la Tabla 245 exige el
+Unique Identifier resultante. Failure y Pending siguen siendo resultados
+comunes del lote; comprueba Result Status y conserva los metadatos compartidos
+de resultado y entrega antes de usar los campos de una respuesta correcta.
+
+| Lenguaje | Emparejar identificadores y umbrales locales | Revisar un resultado correcto |
+|---|---|---|
+| Rust | `SplitKeyReference::new(identifier).with_split_key_threshold(threshold)` | `ClientBatchOutcome::JoinSplitKey` y `JoinSplitKeyResponse::with_ttlv` |
+| C | Crear cada valor opaco con `kmipkit_split_key_reference_create`; pasar el array ordenado a `kmipkit_client_batch_item_join_split_key`; liberar cada handle después de la llamada | `kmipkit_client_batch_item_response_join_split_key` y `kmipkit_client_batch_item_response_join_split_key_ttlv` |
+| Java | `new SplitKeyReference(identifier, threshold)` en la lista ordenada de `ClientBatchItem.joinSplitKey(...)`; cerrar cada referencia | `ClientBatchItemResult.joinSplitKeyResponse()` y `JoinSplitKeyResponse.close()` |
+| Python | `extensions.SplitKeyReference(identifier, threshold)` en la secuencia ordenada de `extensions.client_batch_item_join_split_key(...)`; cerrar cada referencia | `BatchItemResult.join_split_key_response` y `JoinSplitKeyResponse.close()` |
+
+El accesor C de TTLV devuelve una copia propia e independiente de la respuesta
+completa y ordenada, incluidos los campos desconocidos; libérala con
+`kmipkit_ttlv_structure_release`. Las respuestas Java y Python poseen sus
+copias TTLV y deben cerrarse. Los arrays C solo toman prestados los handles de
+referencia durante la llamada al constructor, que copia al pedido el
+identificador y su contexto de umbral. Java y Python poseen sus handles de
+referencia y pueden conservar copias externas en el runtime, que no garantiza
+su puesta a cero determinista. Evita registrar o formatear identificadores y
+el TTLV raw de respuesta. Estas pruebas de API no afirman haber superado
+fixtures oficiales, conformidad OASIS, interoperabilidad, soporte de perfil
+ni certificación.

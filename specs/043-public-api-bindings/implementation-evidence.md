@@ -3944,3 +3944,48 @@ test` passed (1 test, 0 failures/errors). Run `39153348822` is the current-head
 cross-platform and selected-coverage validation for `e4de33c4`; all 36 jobs
 passed. The selected changed-code gate measured 6,898/7,251 lines (95.13%),
 including 18 summary-only lines as uncovered, and passed the 95% minimum.
+
+### T052 — Join Split Key mapping across Rust, C, Java, and Python
+
+T052 maps the approved KMIPKIT-0037 Join Split Key model and method into the
+public C ABI, Java/JNI, and Python/CFFI bindings. A foreign reference pairs one
+transmitted Unique Identifier occurrence with its own caller-known threshold.
+The threshold is copied as local context, never encoded, and checked before
+request creation; repeated identifiers and their order remain unchanged. The
+existing Rust wire model and protocol behavior are unchanged. Table 244's
+optional Secret Data Type, Attributes, and Protection Storage Masks are
+available in each builder. Successful results expose the required Unique
+Identifier and an owned complete ordered response TTLV; common Failure,
+Pending, result, correlation, delivery, redaction, ownership, and error behavior
+remain on the shared paths.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — parity contract | `e58a76ef` | Added focused C, Java, Python, and manifest tests before implementation. `python -B -m unittest tools.api_manifest.tests.test_join_split_key_parity_manifest` failed as expected because Join Split Key remained blocked in the public API manifest and had no per-language pair mapping. |
+| Green — implementation and generated mapping | `7f3bdbce` | Added the opaque per-reference C ABI, Java `SplitKeyReference`/JNI facade, Python CFFI facade, exact manifest mapping and reviewed exclusions, and pinned generated outputs. The compiled C consumer verifies threshold 1 with one identifier succeeds while threshold 2 with one identifier fails before request creation; it also reads the returned identifier and complete ordered response TTLV after releasing the source response item. Java and Python focused cases exercise repeated identifiers with thresholds 1 and 2, result metadata, owned TTLV, and redaction. |
+| Refactor — documentation and traceability | this commit | Added the bilingual API guide, T052's exact owner/OASIS/API requirement links, task evidence, and this phase record. The separate KMIPKIT-0037 T018 owner task is not changed here; this mapping supplies its Join Split Key evidence for the owner branch to reconcile. |
+
+Focused verification on the Refactor tree:
+
+| Command or evidence | Result |
+|---|---|
+| `cargo fmt --all --check` | PASS. |
+| `cargo test --locked -p kmipkit-protocol --lib join_split_key_operation_tests` | PASS: 9 tests, including repeated ordered identifiers and proof that threshold context is not serialized. |
+| `cargo test --locked -p kmipkit-client --lib join_split_key_execution_tests` | PASS: 3 tests, including pre-send threshold rejection, one dispatch, typed success, and no retry. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib extension_registry::client_abi::client_abi_tests::ffi_join_split_key_ttlv_is_a_complete_ordered_caller_owned_copy_from_c -- --exact --nocapture` | PASS: the Rust harness invokes a compiled C response consumer; it verifies the joined identifier and four ordered response fields, including the nested unknown field, after the source response item is released. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process -- --exact --nocapture` | PASS: the checked-in C consumer compiled and executed the exported ABI coverage path. |
+| `mvn -f bindings/java/pom.xml -Dtest=JoinSplitKeyMappingTest test` | PASS: 5 tests; JNI library built and focused Java tests passed. |
+| `C:\Users\ramp1953\AppData\Local\Temp\kmipkit-t052-python-20261018\Scripts\python.exe -m pytest -q bindings/python/tests/test_join_split_key_operation.py` | PASS: 6 Python 3.12 tests in the temporary isolated environment using the repository's pinned requirements; no global pytest install or dependency-version change. |
+| `python -B -m unittest tools.api_manifest.tests.test_join_split_key_parity_manifest` | PASS: 3 tests, including exact OASIS requirement links and reviewed exclusions. |
+| `python tools/api_manifest/generate.py --write` | PASS: regenerated all 12 outputs from `specification/api/public-api.json`; generated files were not hand-edited. |
+| `python tools/api_manifest/generate.py --check` | PASS: all 12 outputs verified current. |
+| `python scripts/test_user_guide_examples.py --guide docs/user-guide/en/key-derivation-and-transfer.md --guide docs/user-guide/es/derivacion-y-transferencia-de-claves.md` | PASS: both marked Rust guide examples compiled. |
+| `git diff --check` | PASS on the final documentation/evidence diff. |
+
+This task did not run full workspace tests, Clippy, aggregate coverage, or
+current-head cross-platform CI; root will perform the independent final branch
+checks. Local Windows builds emitted nonfatal AWS-LC `stdalign_check.c` and
+missing-NASM warnings; Maven's JNI and Rust test links also emitted existing
+MSVC duplicate-symbol warnings. They did not prevent the focused builds or
+tests from succeeding. No official fixture, full OASIS conformance,
+interoperability, profile-support, or certification result is claimed.

@@ -233,3 +233,39 @@ Every method returns the server result from one request. A local validation
 failure reports `NotSent`; transport failures retain their strongest delivery
 state. Pending results remain explicit when the caller enables asynchronous
 handling; KMIPKit does not poll automatically.
+
+## Join Split Key API across languages
+
+Join Split Key follows OASIS KMIP Specification v2.1 §6.1.27, Tables 244–246.
+Each reference pairs one Unique Identifier occurrence with that split key's
+caller-known Split Key Threshold. Create one reference per transmitted entry,
+including repeated identifiers. Before sending, KMIPKit requires at least one
+reference and checks that the entry count is greater than or equal to the
+largest supplied threshold. Thresholds stay local and are never serialized or
+looked up remotely; different entries may have different thresholds. KMIPKit
+does not combine key material locally.
+
+Table 244 requires Object Type and one or more Unique Identifier entries. The
+request preserves their order and repetitions. Secret Data Type, Attributes,
+and Protection Storage Masks are optional. On Success, Table 245 requires the
+resulting Unique Identifier. Failure and Pending remain common batch outcomes;
+read Result Status and retain the shared result and delivery metadata before
+using successful response fields.
+
+| Language | Pair identifiers and local thresholds | Read a successful result |
+|---|---|---|
+| Rust | `SplitKeyReference::new(identifier).with_split_key_threshold(threshold)` | `ClientBatchOutcome::JoinSplitKey` and `JoinSplitKeyResponse::with_ttlv` |
+| C | Create each opaque value with `kmipkit_split_key_reference_create`; pass the ordered pointer array to `kmipkit_client_batch_item_join_split_key`; release each handle after the call | `kmipkit_client_batch_item_response_join_split_key` and `kmipkit_client_batch_item_response_join_split_key_ttlv` |
+| Java | `new SplitKeyReference(identifier, threshold)` in the ordered list passed to `ClientBatchItem.joinSplitKey(...)`; close each reference | `ClientBatchItemResult.joinSplitKeyResponse()` and `JoinSplitKeyResponse.close()` |
+| Python | `extensions.SplitKeyReference(identifier, threshold)` in the ordered sequence passed to `extensions.client_batch_item_join_split_key(...)`; close each reference | `BatchItemResult.join_split_key_response` and `JoinSplitKeyResponse.close()` |
+
+The C response TTLV accessor returns an independent owned copy of the complete
+ordered response, including unknown fields; release it with
+`kmipkit_ttlv_structure_release`. Java and Python responses own their TTLV
+copies and must be closed. C arrays borrow reference handles only during the
+builder call, while the builder copies identifier and threshold context into
+the request. Java and Python own their reference handles and may retain
+external runtime copies; their runtimes do not promise deterministic
+zeroization of those copies. Avoid logging or formatting identifiers or raw
+response TTLV. These API tests do not claim official fixture, OASIS
+conformance, interoperability, profile support, or certification results.
