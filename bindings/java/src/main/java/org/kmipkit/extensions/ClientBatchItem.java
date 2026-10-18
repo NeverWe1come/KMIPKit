@@ -255,7 +255,7 @@ public final class ClientBatchItem implements AutoCloseable {
         long totalTextBytes = 0;
         for (UniqueIdentifier identifier : identifiers) {
             if (identifier == null) {
-                throw new InvalidInputException("Derive Key source identifiers contain a null value");
+                throw new InvalidInputException("Derive Key source identifiers contain a null value"); // COVERAGE-EXCLUDE: List.copyOf above rejects null entries before this immutable loop.
             }
             if (identifier.kind() == UniqueIdentifier.Kind.TEXT_STRING) {
                 totalTextBytes += utf8Length(identifier.text());

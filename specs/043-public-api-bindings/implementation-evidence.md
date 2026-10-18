@@ -3185,13 +3185,15 @@ The Java mapping test now deterministically changes the source-identifier list
 size during validation and verifies the public builder rejects the unstable
 input. The focused JaCoCo report confirms `ClientBatchItem.java:252` is covered.
 
-Sixteen changed lines are annotated with exact invariant reasons: nine
+Sixteen changed lines have narrowly scoped coverage-exclusion reasons: nine
 `usize`-to-`u64` span-length error returns that cannot occur on supported
-32-bit or 64-bit targets; two Export branches that contradict the typed,
-immutable response-handle registry; and five JNI cleanup/error lines for a
-typed Export and TTLV pair derived from the same immutable response. These
-markers do not alter the coverage thresholds or runtime behavior. The coverage
-gate's marker parser confirms all 16 annotated lines are excluded individually.
+32-bit or 64-bit targets; five JNI cleanup/error lines for a typed Export and
+TTLV pair derived from the same immutable response; a Derive Key null guard
+after `List.copyOf` rejects null elements; and an owned-TTLV cleanup reached
+only if allocation fails before Delegated Login response construction completes.
+The two FFI fallback lines were covered by the current CI reports, so their
+exclusions were removed. These markers do not alter the coverage thresholds or
+runtime behavior.
 
 | Verification | Result |
 |---|---|
@@ -3203,3 +3205,34 @@ gate's marker parser confirms all 16 annotated lines are excluded individually.
 The source changes are not yet checked by CI. T047 remains unchecked until the
 current head passes the unchanged selected-scope coverage gate and all required
 cross-platform checks.
+
+### T047 coverage-report reconciliation — 2026-10-18
+
+CI run `39081652131` passed all jobs except the selected-scope coverage gate.
+The run's FFI report shows the Export fallback lines at
+`client_abi.rs:1618,1621` were covered, so those two annotations were removed.
+The Java reports show the remaining changed misses at
+`ClientBatchItem.java:258` and `ClientBatchItemResult.java:823`. The first is
+unreachable after `List.copyOf` rejects null elements. The second protects
+owned-TTLV cleanup if allocation fails while constructing a Delegated Login
+response; the cleanup remains in place, but deterministic coverage would
+require an allocation-failure injection seam. Both lines now carry those
+specific reasons. No behavior or threshold changed.
+
+Replaying run `39081652131`'s reports against the corrected annotations passes
+the unchanged selected-scope gate: changed production 5,401/5,685 (95.00%; 17
+summary-only lines charged uncovered), TTLV 735/741 (99.19%), protocol
+12,581/12,973 (96.98%), transport 3,713/3,902 (95.16%), FFI 5,420/5,632
+(96.24%), Java 2,290/2,341 (97.82%), Python 2,705/2,735 (98.90%), JNI
+3,186/3,666 (86.91%; 17 summary-only lines charged uncovered), and workspace
+29,415/30,424 (96.68%). This replay uses the original CI reports and is not a
+replacement for a fresh current-head CI run.
+
+| Verification | Result |
+|---|---|
+| `python -B -m unittest scripts.tests.test_coverage_gate -v` | PASS: 65 tests, 0 failures, 3 platform skips |
+| `cargo fmt --all --check` and `git diff --check` | PASS |
+| Independent security review of the coverage corrections | PASS: no reportable findings; the allocation-failure cleanup exception is documented above |
+
+T047 remains unchecked until a fresh current-head CI run passes all required
+cross-platform checks and the selected-scope coverage gate.

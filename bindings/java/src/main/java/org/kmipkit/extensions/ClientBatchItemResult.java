@@ -820,7 +820,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 Arrays.fill(value, (byte) 0);
             }
             if (ownedTtlv != null) {
-                ownedTtlv.close();
+                ownedTtlv.close(); // COVERAGE-EXCLUDE: Only allocation failure before response construction leaves this wrapper owned here.
             } else if (rawHandle > 0) {
                 clearDelegatedLoginTtlvHandle(tuple, rawHandle);
                 NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);

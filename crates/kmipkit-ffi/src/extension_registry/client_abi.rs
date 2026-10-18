@@ -1615,10 +1615,10 @@ pub extern "C" fn kmipkit_client_batch_item_response_export(
 
         let item = read_handle!(item, ClientBatchItemResponse);
         let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: read_handle! enforces the stored kind.
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         let Some(item) = response.get(*index) else {
-            return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: response handles retain a validated immutable index.
+            return record_ffi_error(ERROR_INTERNAL);
         };
         let Some(export) = item.outcome().export_response() else {
             return SUCCESS;
