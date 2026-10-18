@@ -23,7 +23,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.15 | Destroy | KMIPKIT-0018 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.16 | Discover Versions | KMIPKIT-0007 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.17 | Encrypt | KMIPKIT-0019 | Candidate owner (autonomous implementation authorized, specification not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-045` and `KMIPKIT-DISC-046` remain tracked |
-| §6.1.18 | Export | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.18 | Export | KMIPKIT-0037 | Approved owner; T047 four-language mapping and parity evidence are verified in PR #104; current-head CI run `39083730360` passed, including selected-scope coverage. Release-branch integration awaits human merge; no complete OASIS conformance claim is implied |
 | §6.1.19 | Get | KMIPKIT-0017 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.20 | Get Attributes | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.21 | Get Attribute List | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |

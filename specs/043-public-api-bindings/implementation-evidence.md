@@ -3234,5 +3234,34 @@ replacement for a fresh current-head CI run.
 | `cargo fmt --all --check` and `git diff --check` | PASS |
 | Independent security review of the coverage corrections | PASS: no reportable findings; the allocation-failure cleanup exception is documented above |
 
-T047 remains unchecked until a fresh current-head CI run passes all required
-cross-platform checks and the selected-scope coverage gate.
+At the time of this reconciliation, T047 still awaited a fresh current-head CI
+run. Run `39083730360` subsequently passed every required check on head
+`ad06ad875c9ac5e49940bdd4283ec366fedbfcfb`, including the selected-scope
+coverage gate. The open PR remains subject to human review and merge.
+
+### T047 current-head CI and QA closure — 2026-10-18
+
+Current-head run `39083730360` checked out merge commit
+`ce49b3910b174d0c512ed409e5181aeb4e8343f4`, corresponding to PR head
+`ad06ad875c9ac5e49940bdd4283ec366fedbfcfb` and base
+`d5d5ab75ec9318d7d646c6ba85c5e56559ace21e`. Every required CI job passed,
+including Rust stable/MSRV on Linux, Windows, and macOS; C consumers on all
+three platforms; Java/JNI and Python matrices; documentation and inventory
+contracts; sanitizers, fuzz smoke, and the selected-scope coverage gate. The
+coverage reports were downloaded from this run and replayed against the exact
+base/merge commits. The replay passed with changed production 5,401/5,685
+(95.00%; 17 summary-only lines charged uncovered), TTLV 735/741 (99.19%),
+protocol 12,581/12,973 (96.98%), transport 3,713/3,902 (95.16%), FFI
+5,420/5,632 (96.24%), Java 2,290/2,341 (97.82%), Python 2,705/2,735
+(98.90%), JNI 3,186/3,666 (86.91%; 17 summary-only lines charged
+uncovered), and workspace 29,415/30,424 (96.68%). CI remains authoritative
+for threshold acceptance.
+
+Independent QA reviewed T047 against the approved feature criteria and found
+no functional parity, protocol mapping, ownership, traceability, or test
+findings. It identified one stale status discrepancy: this task and matrix
+still described Export as blocked after the mapping and current-head CI were
+complete, while the manifest already marked it verified. The task is now
+complete, and the dependency matrix records the verified PR evidence while
+stating that release-branch integration still awaits human merge. The separate
+security review of the coverage corrections found no reportable findings.
