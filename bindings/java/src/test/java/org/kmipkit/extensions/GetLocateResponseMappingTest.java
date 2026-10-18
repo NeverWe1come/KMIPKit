@@ -89,6 +89,26 @@ final class GetLocateResponseMappingTest {
                 response.uniqueIdentifiers().stream().map(UniqueIdentifier::text).toList());
     }
 
+    // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
+    @Test
+    void locateResponsePreservesIdentifiersBeyondTheDefaultDecoderLimit() {
+        int identifierCount = 100_001;
+        Object[] identifier = {new long[] {1, 1, 0, 0}, "repeated".getBytes()};
+        Object[] identifiers = new Object[identifierCount];
+        java.util.Arrays.fill(identifiers, identifier);
+
+        ClientBatchItemResult.LocateResponse response = ClientBatchItemResult
+                .parseLocateResponse(new Object[] {
+                    new long[] {1, 1, 1, identifierCount, identifierCount}, identifiers
+                })
+                .orElseThrow();
+
+        assertEquals(identifierCount, response.uniqueIdentifiers().size());
+        assertEquals("repeated", response.uniqueIdentifiers().get(0).text());
+        assertEquals("repeated", response.uniqueIdentifiers()
+                .get(identifierCount - 1).text());
+    }
+
     // OASIS KMIP Specification v2.1 §6.1.19, Table 221.
     @Test
     void successfulGetResponseRequiresTheAnyObjectTtlv() {

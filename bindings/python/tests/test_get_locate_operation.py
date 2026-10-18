@@ -158,3 +158,44 @@ def test_locate_response_preserves_repeated_identifier_order(monkeypatch) -> Non
         "first",
     ]
     assert calls == [0, 1, 2]
+
+
+def test_locate_response_preserves_identifiers_beyond_default_decoder_limit(monkeypatch) -> None:
+    identifier_count = 100_001
+    identifier_bytes = ffi.new("uint8_t[]", b"repeated")
+    call_count = 0
+
+    def response(_item, present, payload_present, located_items_present, located_items, count):
+        present[0] = 1
+        payload_present[0] = 1
+        located_items_present[0] = 1
+        located_items[0] = identifier_count
+        count[0] = identifier_count
+        return 0
+
+    def identifier_at(_item, _index, output):
+        nonlocal call_count
+        call_count += 1
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        output.text_data = identifier_bytes
+        output.text_length = len(b"repeated")
+        output.enumeration_value = 0
+        output.integer_value = 0
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_locate=response,
+            kmipkit_client_batch_item_response_locate_unique_identifier_at=identifier_at,
+        ),
+    )
+
+    result = client._locate_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert isinstance(result, client.LocateResponse)
+    assert len(result.unique_identifiers) == identifier_count
+    assert result.unique_identifiers[0].text == "repeated"
+    assert result.unique_identifiers[-1].text == "repeated"
+    assert call_count == identifier_count
