@@ -194,6 +194,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertIn("approvedExclusions", manifest)
         self.assertEqual(list(self.validator.iter_errors(manifest)), [])
 
+    def test_java_overload_signatures_are_only_valid_on_java_members(self) -> None:
+        declaration = copy.deepcopy(next(
+            row for row in self.checked_in_manifest["publicDeclarations"]
+            if row["declarationId"] == "T052:request:constructor:java"
+        ))
+        declaration["javaSignatures"] = [
+            "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
+            "java.util.List<org.kmipkit.extensions.SplitKeyReference>, java.lang.Long, "
+            "org.kmipkit.ttlv.TtlvStructure, org.kmipkit.ttlv.TtlvStructure)",
+            "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
+            "java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
+        ]
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        manifest["publicDeclarations"] = [declaration]
+        self.assertTrue(self.validator.is_valid(manifest))
+
+        malformed = copy.deepcopy(declaration)
+        malformed["kind"] = "type"
+        manifest["publicDeclarations"] = [malformed]
+        self.assertFalse(self.validator.is_valid(manifest))
+
+        malformed = copy.deepcopy(declaration)
+        malformed["javaSignatures"].append(malformed["javaSignatures"][0])
+        manifest["publicDeclarations"] = [malformed]
+        self.assertFalse(self.validator.is_valid(manifest))
+
     def test_rust_type_schema_accepts_mutable_pointer_to_pointer_c_abi_output(self) -> None:
         validator = Draft202012Validator(self.schema["$defs"]["rustType"])
 
