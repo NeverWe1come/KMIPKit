@@ -832,6 +832,18 @@ static int get_constraints_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int interop_constructor_is_callable_from_c(void) {
+    static const uint8_t identifier[] = "interop-private-sentinel";
+    kmipkit_client_batch_item_t *item = 0;
+    if (kmipkit_client_batch_item_interop(
+            UINT32_C(0xf1234567), identifier, sizeof(identifier) - 1, &item) != 0) {
+        return 0;
+    }
+    const int result = item != 0;
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
 static int get_constraints_response_accessor_clears_outputs_from_c(void) {
     uint8_t present = 9;
     kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)1;
@@ -2613,6 +2625,7 @@ int main(int argc, char **argv) {
         !delegated_login_response_accessors_clear_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
+        !interop_constructor_is_callable_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
