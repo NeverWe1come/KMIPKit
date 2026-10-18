@@ -3673,3 +3673,76 @@ With the approved owner specification, four-language mapping, TDD evidence,
 independent QA/security reviews, and successful implementation-head CI recorded,
 T038 is complete. The current follow-up commit only updates this evidence and
 the task checkbox; CI will verify that final documentation head separately.
+
+## T050 — Import API mapping
+
+T050 maps the already approved `specs/023-key-material-transfer/spec.md`
+(`KMIPKIT-0037`) Import contract to Rust, C, Java, and Python. The exact OASIS
+source is KMIP Specification v2.1 §6.1.25, Tables 238–240. It does not change
+the canonical Rust request or response model. The authored API manifest records
+approved-owner metadata, all four language declaration sets, three normative
+requirement IDs, and parity evidence. The pinned generator produced the
+checked-in declaration and parity outputs.
+
+Red, Green, and Refactor evidence uses separate development commits. This T050
+work has two regression slices: manifest readiness/parity and the successful C
+caller path over the existing mTLS fixture.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — manifest mapping | `450033bae51d4e79d75df4af902fcce1d98121e9` | Added two manifest tests. Before the mapping, the command below failed as expected because Import was blocked and generated parity lacked Import. |
+| Green — four-language mapping | `c3b5f61697ecee98aff01753a5ae2527decd0955` | Added C/JNI/Python adapters, Rust client evidence, binding tests, authored manifest metadata/declarations, and all pinned generated outputs. |
+| Red — compiled C success path | `562ef51b` | The new C mTLS caller submitted 22 typed items while the peer returned the prior 21-item response. `generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls` failed as expected: C returned exit 108 (`status 8`, category 2, cause 2, delivery 3). |
+| Green — compiled C success path | `e04bb897` | The peer now checks the exact Import request and returns an ordered Import success with an unknown field. The C caller reads the typed Unique Identifier, releases the borrowed item, and validates its owned TTLV copy. The focused mTLS test passes with exactly one exchange. |
+| Refactor | Documentation/evidence commit recorded below | Splits the C request assertion into small helpers, adds bilingual guide and traceability updates, and records final verification. |
+
+The initial Red regression command was:
+
+```text
+python -B -m unittest tools.api_manifest.tests.test_import_parity_manifest -v
+```
+
+The implementation preserves the caller's Any Object representation and
+explicit optional presence. The C boundary validates Table 238 selector and
+shape inputs and transfers only the selected object structure into the
+existing zeroizing protocol storage. Response TTLV is retained only for
+Completed/Success and includes unknown children in order. Existing redacted
+Import formatting and common failure, Pending, correlation, and delivery-state
+behavior remain in force. Java/Python document runtime-owned copies as outside
+KMIPKit zeroization control.
+
+The Refactor phase updates both language guides, this evidence, the T050 task
+status, and `traceability.md`. Its commit is recorded in the report follow-up.
+The focused local verification on the final implementation and documentation
+tree is:
+
+| Command | Result |
+|---|---|
+| `cargo test --locked -p kmipkit-protocol import_operation_tests -- --nocapture` | PASS: 10 tests, 0 failures. |
+| `cargo test --locked -p kmipkit-client import_execution_tests -- --nocapture` | PASS: 2 Import client tests, 0 failures. |
+| `cargo test --locked -p kmipkit-client four_operations_preserve_codes_batch_order_pending_and_one_exchange -- --nocapture` | PASS: 1 test; Import Pending/correlation, order, and one exchange are covered by the shared typed-batch contract. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib ffi_import_response_exposes_success_identifier_and_owned_ordered_ttlv_only -- --nocapture` | PASS: 1 FFI test; success exposes typed identifier and owned complete TTLV, while failure exposes neither. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture` | PASS: public C consumer compiled and ran, including Import invalid-selector and invalid-presence checks. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact --nocapture` | PASS: compiled C submits Import over TLS 1.3 mTLS, verifies its request and typed success identifier, releases the response item, then checks the caller-owned complete ordered TTLV copy; the peer observed one exchange. |
+| `mvn --batch-mode -Dtest=ImportResponseMappingTest test` (from `bindings/java`) | PASS: 4 tests, 0 failures/errors/skips; JNI library built and the example ran. |
+| `$env:PYTHONPATH='bindings/python/src'; $env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path 'target/debug/kmipkit_ffi.dll').Path; uv run --no-project --python 3.12 --with pytest --with cffi pytest bindings/python/tests/test_import_operation.py -q` | PASS: 4 tests. |
+| `python -B -m unittest tools.api_manifest.tests.test_import_parity_manifest -v` | PASS: 2 tests. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated files verified current. |
+| `cargo clippy --locked -p kmipkit-client -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS. |
+| `cargo fmt --all --check` | PASS. |
+| `git diff --check` | PASS; Git emitted only line-ending normalization warnings for the C consumer and authored JSON manifest. |
+
+The Windows Rust and JNI builds emitted existing `aws-lc-sys` MSVC probe and
+missing-NASM warnings; the focused binaries and tests passed. The C integration
+build also printed MSVC LNK4217 static-link warnings. The ordinary Python
+project venv was not usable in this run because `uv` could not remove its
+existing `.venv\lib64` directory, so the focused Python tests ran in an
+isolated temporary uv environment against the freshly built debug DLL. No
+workspace-wide test, coverage, or final-head cross-platform CI run is claimed
+here; those repository gates remain pending.
+
+The successful C caller's test fixture uses the repository's internal generic
+TTLV value builder to create the nested Any Object. The public Import API
+accepts the resulting structure handle and is exercised from C; public C
+structure creation alone does not construct nested generic structure values.
+This test fixture detail adds no public TTLV builder or API.

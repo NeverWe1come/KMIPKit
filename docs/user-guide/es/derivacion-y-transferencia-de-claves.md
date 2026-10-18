@@ -187,6 +187,32 @@ a cero la memoria que posee, pero los runtimes de Java y Python pueden conservar
 copias externas fuera de ese control. No formatees, registres ni incluyas los
 datos del objeto, Attributes o el TTLV raw de respuesta en errores.
 
+## API de Import en los cuatro lenguajes
+
+Import sigue OASIS KMIP Specification v2.1 §6.1.25, Tablas 238–240. El
+llamador aporta el Unique Identifier, el Object Type raw, Attributes y un
+elemento Any Object completo. `Replace Existing` se omite hasta que el llamador
+lo selecciona; por eso `false` explícito se distingue de la ausencia. Para un
+objeto de clave envuelto, aporta el Key Wrap Type raw cuando el objeto contiene
+Key Wrapping Data. KMIPKit conserva la representación recibida y no realiza
+unwrap ni operaciones criptográficas locales.
+
+| Lenguaje | Crear la petición | Revisar un resultado correcto |
+|---|---|---|
+| Rust | `ImportRequest::new(...)` y `Client::import(...)` | `ClientBatchOutcome::Import` e `ImportResponse` |
+| C | `kmipkit_client_batch_item_import` | `kmipkit_client_batch_item_response_import` y `kmipkit_client_batch_item_response_import_ttlv` |
+| Java | `ClientBatchItem.importObject(...)` | `ClientBatchItemResult.importResponse()` y `ImportResponse.close()` |
+| Python | `client_batch_item_import(...)` | `BatchItemResult.import_response` e `ImportResponse.close()` |
+
+En Success, el resultado tipado expone el Unique Identifier resultante y una
+copia propia del TTLV completo y ordenado, incluidos los campos desconocidos.
+Pending y Failure siguen siendo resultados comunes del lote y no exponen un
+TTLV de respuesta de éxito. Comprueba `Result Status` antes de usar datos
+tipados de éxito. Cada operación Import se envía una vez; KMIPKit no reintenta,
+consulta Pending ni envía una operación posterior. Cierra las copias de
+respuesta al terminar. KMIPKit pone a cero la memoria que posee; los runtimes de
+Java y Python pueden conservar copias externas fuera de ese control.
+
 El llamador aporta cada identificador exacto y el umbral conocido de su Split
 Key. KMIPKit requiere un contexto por ocurrencia y, antes de enviar, comprueba
 que el número de entradas —incluidos identificadores repetidos— alcance el

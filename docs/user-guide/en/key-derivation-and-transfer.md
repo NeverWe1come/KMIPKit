@@ -182,6 +182,31 @@ owns, but Java and Python runtimes may retain external copies outside that
 control. Do not format, log, or place object data, Attributes, or raw response
 TTLV in errors.
 
+## Import API across languages
+
+Import follows OASIS KMIP Specification v2.1 §6.1.25, Tables 238–240. The
+caller supplies the required Unique Identifier, raw Object Type, Attributes,
+and one complete Any Object item. `Replace Existing` is omitted until selected
+explicitly, so an explicit `false` remains distinct from absence. For wrapped
+key objects, pass the raw Key Wrap Type when the object contains Key Wrapping
+Data. KMIPKit preserves the supplied representation and performs no unwrap or
+local cryptographic operation.
+
+| Language | Create the request | Inspect a successful result |
+|---|---|---|
+| Rust | `ImportRequest::new(...)` and `Client::import(...)` | `ClientBatchOutcome::Import` and `ImportResponse` |
+| C | `kmipkit_client_batch_item_import` | `kmipkit_client_batch_item_response_import` and `kmipkit_client_batch_item_response_import_ttlv` |
+| Java | `ClientBatchItem.importObject(...)` | `ClientBatchItemResult.importResponse()` and `ImportResponse.close()` |
+| Python | `client_batch_item_import(...)` | `BatchItemResult.import_response` and `ImportResponse.close()` |
+
+On Success, the typed result exposes the resulting Unique Identifier and an
+owned copy of the complete ordered response TTLV, including unknown fields.
+Pending and Failure remain common batch outcomes and do not expose a success
+response TTLV. Read `Result Status` before using typed success data. Each Import
+operation is sent once; KMIPKit does not retry, poll, or issue a follow-up
+operation. Close response copies when finished. KMIPKit zeroizes memory it
+owns; Java and Python runtimes may retain external copies outside that control.
+
 The caller supplies exact identifier occurrences and their known Split Key
 thresholds. KMIPKit requires one context per occurrence and checks that the
 number of entries, including repeated identifiers, meets the largest supplied
