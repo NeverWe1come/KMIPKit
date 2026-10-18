@@ -863,6 +863,7 @@ class BatchItemResult:
     import_response: ImportResponse | None = field(default=None, repr=False)
     join_split_key_response: JoinSplitKeyResponse | None = field(default=None, repr=False)
     interop_response: InteropResponse | None = field(default=None, repr=False)
+    log_response: LogResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -1040,6 +1041,20 @@ class InteropResponse:
 
     def __repr__(self) -> str:
         return "InteropResponse(response_ttlv=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class LogResponse:
+    """Log result with an owned complete generic response TTLV."""
+
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return "LogResponse(response_ttlv=redacted)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1398,6 +1413,9 @@ def _batch_result(handle: Any) -> BatchResult:
                 interop_response = None
                 if int(metadata.operation) == 0x34:
                     interop_response = _interop_response(item)
+                log_response = None
+                if int(metadata.operation) == 0x2C:
+                    log_response = _log_response(item)
                 cryptographic_responses = (None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
@@ -1431,6 +1449,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         import_response=import_response,
                         join_split_key_response=join_split_key_response,
                         interop_response=interop_response,
+                        log_response=log_response,
                     )
                 )
             finally:
@@ -2109,6 +2128,31 @@ def _interop_response(item: _ClientBatchItemResponse) -> InteropResponse | None:
     return InteropResponse(response_ttlv)
 
 
+def _log_response(item: _ClientBatchItemResponse) -> LogResponse | None:
+    present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    status = lib.kmipkit_client_batch_item_response_log_ttlv(
+        item._pointer(), present, response_ttlv_output
+    )
+    if status != 0:
+        if response_ttlv_output[0] != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+        errors.raise_for_status(status)
+    if present[0] > 1 or (present[0] == 1) != (response_ttlv_output[0] != ffi.NULL):
+        if response_ttlv_output[0] != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        return None
+    address = int(ffi.cast("uintptr_t", response_ttlv_output[0]))
+    try:
+        response_ttlv = ttlv._structure_from_native_address(address)
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+        raise
+    return LogResponse(response_ttlv)
+
+
 def _derive_key_response(
     item: _ClientBatchItemResponse,
 ) -> DeriveKeyResponse:
@@ -2666,6 +2710,7 @@ __all__ = [
     "ImportResponse",
     "JoinSplitKeyResponse",
     "InteropResponse",
+    "LogResponse",
     "GetConstraintsResponse",
     "GetResponse",
     "LocateResponse",

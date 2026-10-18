@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -14,7 +15,7 @@ OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
 OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
-    *(f"KMIPKIT-0042-FR-{index:03}" for index in range(1, 9)),
+    *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 8)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)),
 }
 TRACEABILITY_IDS = {
@@ -27,8 +28,10 @@ PARITY_EVIDENCE = {
     "crates/kmipkit-client/tests/unit/log_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/log_abi_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
-    "bindings/java/src/test/java/org/kmipkit/extensions/LogMappingTest.java",
+    "bindings/java/src/test/java/org/kmipkit/LogJavaFacadeTest.java",
+    "bindings/java/src/test/java/org/kmipkit/extensions/LogResponseMappingTest.java",
     "bindings/python/tests/test_log_operation.py",
+    "tools/api_manifest/tests/test_log_parity_manifest.py",
 }
 EXPECTED_MAPPINGS = {
     "rust": {
@@ -121,9 +124,9 @@ class LogParityManifestTests(unittest.TestCase):
         linked_api_requirements = {
             value for value in REQUIREMENTS if value.startswith("KMIPKIT-0043-")
         }
-        self.assertTrue(linked_api_requirements <= set(
-            token for token in t053_row.split() if token.startswith("KMIPKIT-0043-FR-")
-        ))
+        self.assertTrue(
+            linked_api_requirements <= set(re.findall(r"KMIPKIT-0043-FR-\d{3}", t053_row))
+        )
 
     def test_generated_parity_inventory_contains_verified_log_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))

@@ -16,7 +16,7 @@ def test_log_builder_preserves_and_redacts_message(monkeypatch: Any) -> None:
     def make_handle(_kind: str, symbol: str, arguments: tuple[object, ...]) -> int:
         message, length = arguments
         assert isinstance(length, int)
-        calls.append((symbol, bytes(message), length))
+        calls.append((symbol, bytes(ffi.buffer(message, length)), length))
         return 37
 
     monkeypatch.setattr(extensions, "_make_handle", make_handle)

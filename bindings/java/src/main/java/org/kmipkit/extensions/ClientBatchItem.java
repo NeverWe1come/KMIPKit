@@ -349,6 +349,22 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a §6.1.29 Log item with a required UTF-8 message. */
+    public static ClientBatchItem log(byte[] logMessage) {
+        if (logMessage == null) {
+            throw new InvalidInputException("Log Message is required");
+        }
+        requireOperationInputWithinLimit(logMessage);
+        byte[] messageCopy = logMessage.clone();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemLog(messageCopy);
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(messageCopy);
+        }
+    }
+
     /** Creates an Export request, preserving unknown Table 217 selector values. */
     public static ClientBatchItem export(
             @Nullable UniqueIdentifier uniqueIdentifier,

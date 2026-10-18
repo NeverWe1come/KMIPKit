@@ -1668,6 +1668,21 @@ def client_batch_item_interop(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_log(
+    log_message: str | bytes | bytearray | memoryview,
+) -> ClientBatchItem:
+    """Create a §6.1.29 Log item with a required UTF-8 message."""
+    with _staging_buffer_scope() as staging_buffers:
+        raw_message, message = _owned_bytes(log_message, _MAX_OPERATION_INPUT_BYTES)
+        staging_buffers.append(message)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_log",
+            (message, len(raw_message)),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_delegated_login(
     rights: ttlv.Structure,
     *,
@@ -2214,6 +2229,7 @@ __all__ = [
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_interop",
+    "client_batch_item_log",
     "client_batch_item_delegated_login",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_import",

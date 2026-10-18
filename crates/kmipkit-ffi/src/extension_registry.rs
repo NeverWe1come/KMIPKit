@@ -38,10 +38,10 @@ use kmipkit_protocol::{
     CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
     DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
     HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
-    KeyFormatType, KeyWrapType, LocateRequest, MacRequest, MacVerifyRequest, ObjectGroupMember,
-    ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    RegisterRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, UniqueIdentifier,
+    KeyFormatType, KeyWrapType, LocateRequest, LogRequest, MacRequest, MacVerifyRequest,
+    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, ProtocolError,
+    ProtocolErrorKind, RegisterRequest, SecretBytes, SecretText, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -2754,6 +2754,33 @@ pub extern "C" fn kmipkit_client_batch_item_interop(
             HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::interop(
                 request,
             )))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP v2.1 §6.1.29, Table 250 Log request.
+///
+/// The caller must not submit secrets to the server log. The message is
+/// validated as UTF-8 and stored in the redacted, zeroizing secret type.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_log(
+    log_message_data: *const u8,
+    log_message_length: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let message = try_ffi!(input_span(
+            log_message_data,
+            log_message_length,
+            MAX_FFI_INPUT_BYTES,
+        ));
+        let message = try_ffi!(std::str::from_utf8(message).map_err(|_| ERROR_INVALID_INPUT));
+        let request = LogRequest::new(SecretText::new(message.to_owned()));
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::log(request)))),
         ));
         SUCCESS
     })

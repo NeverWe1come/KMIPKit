@@ -527,7 +527,15 @@ ffi.cdef(
         const uint8_t *interop_identifier_data,
         uint64_t interop_identifier_length,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_log(
+        const uint8_t *log_message_data,
+        uint64_t log_message_length,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_response_interop_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_log_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);

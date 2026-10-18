@@ -156,6 +156,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseInteropResponse(values);
     }
 
+    /** Returns the complete typed Log result for Success, Failure, or Pending. */
+    public Optional<LogResponse> logResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseLog);
+        return parseLogResponse(values);
+    }
+
     /** Returns a typed Export response for both Success and KMIP Failure outcomes. */
     public Optional<ExportResponse> exportResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -520,6 +527,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "InteropResponse[responseTtlv=redacted]"; }
+    }
+
+    /** Log response with its complete ordered generic TTLV for every valid result status. */
+    public static final class LogResponse implements AutoCloseable {
+        private final TtlvStructure responseTtlv;
+
+        private LogResponse(TtlvStructure responseTtlv) {
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the full ordered response structure, including unknown fields. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "LogResponse[responseTtlv=redacted]"; }
     }
 
     /** Successful Derive Key response with its owned complete generic TTLV. */
@@ -1205,6 +1228,23 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Interop response is invalid");
         }
         return Optional.of(new InteropResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<LogResponse> parseLogResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Log response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1, "native Log response is invalid");
+        long[] handles = requireLongArray(tuple[1], 1, "native Log response is invalid");
+        if (!responsePresent(fields)) {
+            if (handles[0] != 0) {
+                TtlvStructure.fromNative(handles[0], null).close();
+                throw new InvalidInputException("native absent Log response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (handles[0] <= 0) {
+            throw new InvalidInputException("native Log response is invalid");
+        }
+        return Optional.of(new LogResponse(TtlvStructure.fromNative(handles[0], null)));
     }
 
     static Optional<ExportResponse> parseExportResponse(Object[] values) {

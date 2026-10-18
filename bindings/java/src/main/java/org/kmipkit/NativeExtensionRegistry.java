@@ -154,6 +154,7 @@ public final class NativeExtensionRegistry {
             long attributes);
     public static native long clientBatchItemGetConstraints();
     public static native long clientBatchItemInterop(long interopFunction, byte[] interopIdentifier);
+    public static native long clientBatchItemLog(byte[] logMessage);
     public static native long clientBatchItemExport(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber,
             boolean hasKeyFormatType, long keyFormatType,
@@ -226,6 +227,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseLocate(long itemResponse);
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);
+    public static native Object[] clientBatchItemResponseLog(long itemResponse);
     public static native Object[] clientBatchItemResponseExport(long itemResponse);
     public static native Object[] clientBatchItemResponseDeriveKey(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateKeyPair(long itemResponse);

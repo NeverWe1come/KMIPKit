@@ -854,7 +854,8 @@ static int log_constructor_is_callable_from_c(void) {
 
     uint8_t present = UINT8_MAX;
     kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
-    if (kmipkit_client_batch_item_response_log_ttlv(0, &present, &response_ttlv) != 1) {
+    if (kmipkit_client_batch_item_response_log_ttlv(
+                0, &present, &response_ttlv) != T076_ERROR_INVALID_INPUT) {
         return 0;
     }
     return present == 0 && response_ttlv == 0;

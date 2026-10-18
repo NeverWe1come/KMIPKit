@@ -13,8 +13,8 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, ObjectGroupMember, ObjectType, OperationData, SecretBytes, SecretText,
-    SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
+    LocateRequest, LogRequest, ObjectGroupMember, ObjectType, OperationData, SecretBytes,
+    SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -3741,6 +3741,80 @@ fn ffi_interop_ttlv_getter_copies_success_failure_and_pending_responses() {
     let mut response_ttlv = ptr::dangling_mut();
     assert_eq!(
         client_abi::kmipkit_client_batch_item_response_interop_ttlv(
+            unrelated_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(unrelated_item);
+}
+
+#[test]
+fn ffi_log_ttlv_getter_copies_success_failure_and_pending_responses() {
+    let request = || {
+        ClientRequest::log(LogRequest::new(SecretText::new(
+            "log-message-private-sentinel".to_owned(),
+        )))
+    };
+    let success = successful_cryptographic_item(request(), 0x2c, b"log-success", Vec::new());
+    let failure = failed_cryptographic_item(request(), 0x2c, b"log-failure");
+    let pending_correlation = [0, 0xff, 0x80, 0x7f];
+    let pending_response = execute_single_abi_response_with_async(
+        request(),
+        b"log-pending",
+        pending_response_for_operation(0x2c, b"log-pending", &pending_correlation),
+        Some(1),
+    )
+    .expect("the async request permits a Log Pending response");
+    let pending_response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(pending_response)),
+    );
+    let mut pending = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(pending_response_handle, 0, &raw mut pending),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(pending_response_handle);
+
+    for (item, expected_count) in [(success, 4), (failure, 4), (pending, 5)] {
+        let mut present = 0;
+        let mut response_ttlv = ptr::null_mut();
+        assert_eq!(
+            client_abi::kmipkit_client_batch_item_response_log_ttlv(
+                item,
+                &raw mut present,
+                &raw mut response_ttlv,
+            ),
+            SUCCESS
+        );
+        assert_eq!(present, 1);
+        assert!(!response_ttlv.is_null());
+
+        let mut view = ptr::null_mut();
+        assert_eq!(
+            kmipkit_ttlv_structure_view(response_ttlv, &raw mut view),
+            SUCCESS
+        );
+        let mut count = 0;
+        assert_eq!(
+            kmipkit_ttlv_structure_view_item_count(view, &raw mut count),
+            SUCCESS
+        );
+        assert_eq!(count, expected_count);
+        kmipkit_ttlv_structure_view_release(view);
+        kmipkit_ttlv_structure_release(response_ttlv);
+        kmipkit_client_batch_item_response_release(item);
+    }
+
+    let unrelated_item = successful_check_response_item(&successful_check_client_response());
+    let mut present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_log_ttlv(
             unrelated_item,
             &raw mut present,
             &raw mut response_ttlv,

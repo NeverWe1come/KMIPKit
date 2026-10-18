@@ -272,9 +272,22 @@ final class ClientFacadeTlsIntegrationTest {
                             .withUniqueBatchItemId(uniqueBatchItemId(23)))
                     .add(ClientBatchItem.interop(0xf1234567L,
                                     "interop-integration-test".getBytes(StandardCharsets.UTF_8))
-                            .withUniqueBatchItemId(uniqueBatchItemId(24)));
-            ClientBatchResponse batchResponse = client.executeWithOptions(
-                    batch, CodecLimits.defaults(), RequestOptions.defaults());
+                            .withUniqueBatchItemId(uniqueBatchItemId(24)))
+                    .add(ClientBatchItem.log(
+                                    "log-message-private-sentinel".getBytes(StandardCharsets.UTF_8))
+                            .withUniqueBatchItemId(uniqueBatchItemId(25)));
+            ClientBatchResponse batchResponse;
+            try {
+                batchResponse = client.executeWithOptions(
+                        batch, CodecLimits.defaults(), RequestOptions.defaults());
+            } catch (ClientOperationException exception) {
+                throw new AssertionError(
+                        "batch execution failed with native status=" + exception.statusCode()
+                                + ", category=" + exception.categoryCode()
+                                + ", cause=" + exception.causeCode()
+                                + ", delivery=" + exception.deliveryStateCode(),
+                        exception);
+            }
             try (ClientBatchResponse response = batchResponse;
                     ClientBatchItemResult completed = response.itemAt(0);
                     ClientBatchItemResult pending = response.itemAt(1);
@@ -300,8 +313,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult locateFailed = response.itemAt(21);
                     ClientBatchItemResult imported = response.itemAt(22);
                     ClientBatchItemResult importFailed = response.itemAt(23);
-                    ClientBatchItemResult interop = response.itemAt(24)) {
-                assertEquals(25, response.itemCount());
+                    ClientBatchItemResult interop = response.itemAt(24);
+                    ClientBatchItemResult log = response.itemAt(25)) {
+                assertEquals(26, response.itemCount());
                 assertTrue(completed.getResponse().isEmpty());
                 assertTrue(completed.locateResponse().isEmpty());
                 assertEquals(0, completed.resultStatus());
@@ -466,6 +480,19 @@ final class ClientFacadeTlsIntegrationTest {
                             TtlvStructureView payloadView = payloadValue.structure()) {
                         assertEquals(0, payloadView.itemCount());
                     }
+                }
+                try (ClientBatchItemResult.LogResponse logResponse =
+                                log.logResponse().orElseThrow();
+                        TtlvStructureView logTtlv = logResponse.responseTtlv().view()) {
+                    assertEquals(0x2c, log.operation());
+                    assertEquals(0, log.resultStatus());
+                    assertTagOrder(logTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+                    try (TtlvItemView payload = logTtlv.itemAt(3);
+                            TtlvValueView payloadValue = payload.value();
+                            TtlvStructureView payloadView = payloadValue.structure()) {
+                        assertEquals(0, payloadView.itemCount());
+                    }
+                    assertFalse(logResponse.toString().contains("log-message-private-sentinel"));
                 }
                 try (ClientBatchItemResult.ExportResponse exportResponse =
                                 exported.exportResponse().orElseThrow();
@@ -1461,7 +1488,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(25)));
+                item(0x42000d, 2, integer(26)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1604,11 +1631,14 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] interopItem = structure(0x42000f,
                 enumeration(0x42005c, 0x34), item(0x420093, 8, uniqueBatchItemId(24)),
                 enumeration(0x42007f, 0), structure(0x42007c));
+        byte[] logItem = structure(0x42000f,
+                enumeration(0x42005c, 0x2c), item(0x420093, 8, uniqueBatchItemId(25)),
+                enumeration(0x42007f, 0), structure(0x42007c));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
                 certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem,
                 exportItem, exportFailure, constraintsItem, constraintsFailure, getItem, locateItem,
-                getFailure, locateFailure, importItem, importFailure, interopItem);
+                getFailure, locateFailure, importItem, importFailure, interopItem, logItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {
