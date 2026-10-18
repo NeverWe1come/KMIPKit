@@ -307,6 +307,10 @@ fn spawn_public_client_batch_peer(
             c_request_contains_get_and_locate(&request),
             "C ABI consumer must transmit the Get identifier and empty Locate attributes"
         );
+        assert!(
+            c_request_contains_import(&request),
+            "C ABI consumer must transmit the complete Import request through the public batch API"
+        );
         tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -589,6 +593,120 @@ fn c_request_contains_get_and_locate(encoded: &[u8]) -> bool {
                 .filter(|item| c_request_has_empty_locate_attributes(item))
                 .count()
                 == 2
+    })
+}
+
+fn c_request_contains_import(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const IMPORT: u32 = 42;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const REPLACE_EXISTING: u32 = 0x0042_0124;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const ANY_OBJECT: u32 = 0x0042_0085;
+    const VENDOR_FIELD: u32 = 0x0054_1234;
+    const OBJECT_BYTES: &[u8] = &[0xde, 0xad, 0x00, 0xff];
+
+    fn unique_child_index(structure: &kmipkit_ttlv::StructureView<'_>, tag: u32) -> Option<usize> {
+        let mut matching = structure
+            .children()
+            .iter()
+            .enumerate()
+            .filter(|(_, item)| item.tag().raw() == tag);
+        let (index, _) = matching.next()?;
+        matching.next().is_none().then_some(index)
+    }
+
+    fn bytes_equal(item: &Item, expected: &[u8]) -> bool {
+        item.with_value(
+            |value| matches!(value, ValueView::ByteString(actual) if actual == expected),
+        )
+    }
+
+    fn has_import_payload(item: &Item) -> bool {
+        item.with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let children = batch_item.children();
+            let Some(operation_index) = unique_child_index(&batch_item, OPERATION) else {
+                return false;
+            };
+            let Some(payload_index) = unique_child_index(&batch_item, REQUEST_PAYLOAD) else {
+                return false;
+            };
+            if !children[operation_index]
+                .with_value(|value| matches!(value, ValueView::Enumeration(actual) if *actual == IMPORT))
+            {
+                return false;
+            }
+            children[payload_index].with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    return false;
+                };
+                let fields = payload.children();
+                if fields.len() != 5
+                    || fields[0].tag().raw() != UNIQUE_IDENTIFIER
+                    || !fields[0].with_value(|value| {
+                        matches!(value, ValueView::TextString(actual) if actual == "import-key")
+                    })
+                    || fields[1].tag().raw() != OBJECT_TYPE
+                    || !fields[1].with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == 7)
+                    })
+                    || fields[2].tag().raw() != REPLACE_EXISTING
+                    || !fields[2].with_value(|value| matches!(value, ValueView::Boolean(false)))
+                    || fields[3].tag().raw() != ATTRIBUTES
+                    || fields[4].tag().raw() != ANY_OBJECT
+                {
+                    return false;
+                }
+                let attributes_are_empty = fields[3].with_value(|value| {
+                    matches!(value, ValueView::Structure(attributes) if attributes.children().is_empty())
+                });
+                let object_is_preserved = fields[4].with_value(|value| {
+                    let ValueView::Structure(object) = value else {
+                        return false;
+                    };
+                    let Some(index) = unique_child_index(&object, VENDOR_FIELD) else {
+                        return false;
+                    };
+                    object.children().len() == 1 && bytes_equal(&object.children()[index], OBJECT_BYTES)
+                });
+                attributes_are_empty && object_is_preserved
+            })
+        })
+    }
+
+    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let mut import_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| has_import_payload(item));
+        let Some(import_item) = import_items.next() else {
+            return false;
+        };
+        import_items.next().is_none()
+            && import_item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    return false;
+                };
+                unique_child_index(&batch_item, 0x0042_0093).is_some_and(|index| {
+                    batch_item.children()[index]
+                        .with_value(|value| {
+                            matches!(value, ValueView::ByteString(actual) if actual == b"import")
+                        })
+                })
+            })
     })
 }
 
@@ -1003,7 +1121,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 21),
+            integer(0x0042_000D, 22),
         ],
     );
     let response_payload = structure(
@@ -1024,7 +1142,26 @@ fn mixed_discover_versions_response() -> Vec<u8> {
                 locate_response_item(),
                 get_failure_response_item(),
                 locate_failure_response_item(),
+                import_response_item(),
             ]),
+    )
+}
+
+fn import_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 42),
+            ttlv_item(0x0042_0093, 0x08, b"import"),
+            enumeration(0x0042_007F, 0),
+            structure(
+                0x0042_007C,
+                [
+                    ttlv_item(0x0042_0094, 0x07, b"imported-id"),
+                    ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad, 0x00, 0xff]),
+                ],
+            ),
+        ],
     )
 }
 

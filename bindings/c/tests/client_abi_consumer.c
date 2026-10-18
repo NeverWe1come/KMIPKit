@@ -716,7 +716,7 @@ static int create_import_request(
         goto cleanup;
     }
     object_body = 0;
-    if (kmipkit_ttlv_raw_tag_create(UINT32_C(0x420093), &raw_tag) != 0 ||
+    if (kmipkit_ttlv_raw_tag_create(UINT32_C(0x420085), &raw_tag) != 0 ||
         kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
         kmipkit_ttlv_item_create(tag, object_value, limits, &any_object_item) != 0) {
         goto cleanup;
@@ -2003,9 +2003,6 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         if (index == 15 && !export_response_is_readable_from_c(response_item)) {
             goto cleanup;
         }
-        if (index == 21 && !import_response_is_readable_from_c(response_item)) {
-            goto cleanup;
-        }
         if (index == 16) {
             uint8_t present = 0;
             if (kmipkit_client_batch_item_response_get_constraints_ttlv(
@@ -2200,8 +2197,15 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         } else if (versions_present != 0 || version_count != 0) {
             goto cleanup;
         }
-        kmipkit_client_batch_item_response_release(response_item);
-        response_item = 0;
+        if (index == 21) {
+            if (!import_response_is_readable_from_c(response_item)) {
+                goto cleanup;
+            }
+            response_item = 0; /* the Import ownership check releases the borrowed item */
+        } else {
+            kmipkit_client_batch_item_response_release(response_item);
+            response_item = 0;
+        }
     }
     if (!public_ttlv_contains_response_sentinel(get_any_object)) {
         result = 252;
