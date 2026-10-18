@@ -3535,3 +3535,26 @@ Focused verification on the Green implementation and final Refactor tree:
 - `cargo fmt --all --check` and `git diff --check` — PASS.
 
 The Windows Rust/JNI builds emitted existing `aws-lc-sys` MSVC probe and missing-NASM warnings; the Rust, C, and JNI binaries built and the focused tests passed. The workspace continuation also passed `cargo fmt --all --check`, `cargo clippy --workspace --all-targets --all-features -- -D warnings`, `cargo test --workspace --all-features`, `cargo llvm-cov --workspace --all-features` (92.55 percent Rust workspace line coverage), `python -B tools/api_manifest/generate.py --check` (12 outputs current), and `git diff --check`. The focused Clippy correction only replaces three redundant closures in test code with direct method references. Final selected-scope changed-code coverage and cross-platform CI must still run on the pushed head. T038 remains unchecked pending final-head CI and controller review.
+
+### T038 cross-binding Get and Locate outcome coverage continuation (2026-10-18)
+
+This continuation extends the compiled public C consumer and Java mutual-TLS fixture through successful and failed Get/Locate responses. The C consumer sends both successful operations and a second failed Get/Locate pair, checks ordered Locate identifiers including duplicates, validates failure payload flags and reset outputs, and confirms the copied Get Any Object remains readable after batch-item responses are released. Java exercises the matching success and failure outcomes through the JNI facade and checks both accessors return an absent result for a nonmatching response operation. Java parser tests cover malformed native tuples, and JNI constructor tests cover unsigned-range and absent-value boundaries. Rust and Python test the corresponding ownership, tuple, and cleanup paths.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red | `06a0f1e3` | `cargo test -p kmipkit-ffi --all-features --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact` — expected failure before the peer fixture supplied the requested Get and Locate responses. |
+| Green | `7860da27` | Cross-binding tests, manifest parity classifications, generated fixtures, and bilingual package-guide corrections. |
+| Refactor | this commit | This entry records the final local verification below. |
+
+Verification on the Green tree:
+
+- `cargo test -p kmipkit-ffi --all-features` — PASS: 141 unit tests and 5 C API integration tests.
+- `cargo test --workspace --all-features` — PASS, including unit, integration, and documentation tests across the workspace.
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings` — PASS.
+- `cargo fmt --all --check` and `git diff --check` — PASS.
+- Focused Gradle tests for `ClientBatchNativeBoundaryTest`, `GetLocateResponseMappingTest`, and the mutual-TLS mixed-outcome test — PASS; the JNI native library built on Windows.
+- Python binding suite — PASS: 471 tests.
+- API manifest suite — PASS: 373 tests, 3 platform-specific skips.
+- `python -B tools/api_manifest/generate.py --check` — PASS: all 12 generated outputs current.
+
+The Windows Rust/JNI builds continue to emit the existing `aws-lc-sys` MSVC probe and missing-NASM warnings; the builds and tests pass. Current local results do not replace the selected-scope coverage aggregation or final cross-platform CI. T038 remains unchecked until the updated PR head passes those gates and receives controller review.
