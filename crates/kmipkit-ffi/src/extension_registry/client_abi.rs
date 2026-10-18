@@ -1741,6 +1741,157 @@ pub extern "C" fn kmipkit_client_batch_item_response_export_ttlv(
     })
 }
 
+/// Copies the typed Get response fields, including a zeroizing Any Object copy on Success.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_get(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_payload_present: *mut u8,
+    out_object_type: *mut u32,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_any_object: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let payload_present = scalar_out!(out_payload_present);
+        let object_type = scalar_out!(out_object_type);
+        let any_object_out = out_slot!(out_any_object);
+        *present = 0;
+        *payload_present = 0;
+        *object_type = 0;
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(get) = item.outcome().get_response() else {
+            return SUCCESS;
+        };
+        *present = 1;
+        if get.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+
+        let (Some(raw_object_type), Some(identifier), Some(any_object)) =
+            (get.object_type(), get.unique_identifier(), get.object())
+        else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let any_object = try_ffi!(any_object.try_clone().map_err(model_status));
+        let mut any_object_structure = Structure::new();
+        if let Err(error) = any_object_structure.try_push(any_object) {
+            return record_ffi_error(model_status(error));
+        }
+        let any_object_handle = match try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(any_object_structure),
+        ) {
+            Ok(handle) => handle,
+            Err(status) => return record_ffi_error(status),
+        };
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier)) {
+            release(any_object_handle, Kind::Structure);
+            return record_ffi_error(status);
+        }
+        *object_type = raw_object_type.raw();
+        *any_object_out = any_object_handle;
+        *payload_present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the completed Locate response's optional count and ordered identifier count.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_locate(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_payload_present: *mut u8,
+    out_located_items_present: *mut u8,
+    out_located_items: *mut i32,
+    out_unique_identifier_count: *mut u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let payload_present = scalar_out!(out_payload_present);
+        let located_items_present = scalar_out!(out_located_items_present);
+        let located_items = scalar_out!(out_located_items);
+        let identifier_count = scalar_out!(out_unique_identifier_count);
+        *present = 0;
+        *payload_present = 0;
+        *located_items_present = 0;
+        *located_items = 0;
+        *identifier_count = 0;
+
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(locate) = item.outcome().locate_response() else {
+            return SUCCESS;
+        };
+        *present = 1;
+        if locate.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        *payload_present = 1;
+        if let Some(value) = locate.located_items() {
+            *located_items_present = 1;
+            *located_items = value;
+        }
+        *identifier_count = try_ffi!(
+            u64::try_from(locate.unique_identifiers().len()).map_err(|_| ERROR_RESOURCE_LIMIT)
+        );
+        SUCCESS
+    })
+}
+
+/// Borrows one Locate response Unique Identifier in its original server order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_locate_unique_identifier_at(
+    item: *mut kmipkit_client_batch_item_response_t,
+    index: u64,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse {
+            response,
+            index: item_index,
+        } = &item.value
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*item_index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(locate) = item.outcome().locate_response() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(identifier) = usize::try_from(index)
+            .ok()
+            .and_then(|index| locate.unique_identifiers().get(index))
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match write_unique_identifier_v1(out_unique_identifier, Some(identifier)) {
+            Ok(()) => SUCCESS,
+            Err(status) => record_ffi_error(status),
+        }
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_create_key_pair(
     item: *mut kmipkit_client_batch_item_response_t,

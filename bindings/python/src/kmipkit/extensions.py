@@ -1706,6 +1706,86 @@ def client_batch_item_get_usage_allocation(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_get(
+    unique_identifier: UniqueIdentifier | None = None,
+    key_format_type: int | None = None,
+    key_wrap_type: int | None = None,
+    key_compression_type: int | None = None,
+    key_wrapping_specification: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.19 Get item with optional Table 220 fields."""
+    has_format = int(key_format_type is not None)
+    raw_format = 0 if key_format_type is None else _integer_range(
+        key_format_type, 0, 0xFFFF_FFFF
+    )
+    has_wrap = int(key_wrap_type is not None)
+    raw_wrap = 0 if key_wrap_type is None else _integer_range(key_wrap_type, 0, 0xFFFF_FFFF)
+    has_compression = int(key_compression_type is not None)
+    raw_compression = 0 if key_compression_type is None else _integer_range(
+        key_compression_type, 0, 0xFFFF_FFFF
+    )
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_get",
+            (
+                identifier,
+                has_format,
+                raw_format,
+                has_wrap,
+                raw_wrap,
+                has_compression,
+                raw_compression,
+                _native_structure(key_wrapping_specification),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_locate(
+    attributes: ttlv.Structure,
+    *,
+    maximum_items: int | None = None,
+    offset_items: int | None = None,
+    storage_status_mask: int | None = None,
+    object_group_member: int | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.28 Locate item with required Attributes."""
+    has_maximum = int(maximum_items is not None)
+    raw_maximum = 0 if maximum_items is None else _integer_range(
+        maximum_items, -(1 << 31), (1 << 31) - 1
+    )
+    has_offset = int(offset_items is not None)
+    raw_offset = 0 if offset_items is None else _integer_range(
+        offset_items, -(1 << 31), (1 << 31) - 1
+    )
+    has_storage_mask = int(storage_status_mask is not None)
+    raw_storage_mask = 0 if storage_status_mask is None else _integer_range(
+        storage_status_mask, 0, 0xFFFF_FFFF
+    )
+    has_group_member = int(object_group_member is not None)
+    raw_group_member = 0 if object_group_member is None else _integer_range(
+        object_group_member, 0, 0xFFFF_FFFF
+    )
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_locate",
+        (
+            has_maximum,
+            raw_maximum,
+            has_offset,
+            raw_offset,
+            has_storage_mask,
+            raw_storage_mask,
+            has_group_member,
+            raw_group_member,
+            _native_structure(attributes, required=True),
+        ),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_export(
     unique_identifier: UniqueIdentifier | None = None,
     key_format_type: int | None = None,
@@ -1982,6 +2062,8 @@ __all__ = [
     "client_batch_item_get_constraints",
     "client_batch_item_delegated_login",
     "client_batch_item_get_usage_allocation",
+    "client_batch_item_get",
+    "client_batch_item_locate",
     "client_batch_item_export",
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",

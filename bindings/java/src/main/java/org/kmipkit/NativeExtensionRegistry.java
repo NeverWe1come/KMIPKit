@@ -130,6 +130,18 @@ public final class NativeExtensionRegistry {
             long leaseTimeValue, boolean hasRequestCount, int requestCount, long usageLimits);
     public static native long clientBatchItemGetUsageAllocation(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber, long usageLimitsCount);
+    public static native long clientBatchItemGet(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber,
+            boolean hasKeyFormatType, long keyFormatType,
+            boolean hasKeyWrapType, long keyWrapType,
+            boolean hasKeyCompressionType, long keyCompressionType,
+            long keyWrappingSpecification);
+    public static native long clientBatchItemLocate(
+            boolean hasMaximumItems, int maximumItems,
+            boolean hasOffsetItems, int offsetItems,
+            boolean hasStorageStatusMask, long storageStatusMask,
+            boolean hasObjectGroupMember, long objectGroupMember,
+            long attributes);
     public static native long clientBatchItemGetConstraints();
     public static native long clientBatchItemExport(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber,
@@ -197,6 +209,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseCheck(long itemResponse);
     public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
     public static native Object[] clientBatchItemResponseGetUsageAllocation(long itemResponse);
+    public static native Object[] clientBatchItemResponseGet(long itemResponse);
+    public static native Object[] clientBatchItemResponseLocate(long itemResponse);
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseExport(long itemResponse);
     public static native Object[] clientBatchItemResponseDeriveKey(long itemResponse);

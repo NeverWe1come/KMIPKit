@@ -78,6 +78,19 @@
     "KMIPKIT-0014-FR-013",
     "KMIPKIT-0014-FR-014",
     "KMIPKIT-0014-FR-015",
+    "KMIPKIT-0017-FR-001",
+    "KMIPKIT-0017-FR-002",
+    "KMIPKIT-0017-FR-003",
+    "KMIPKIT-0017-FR-004",
+    "KMIPKIT-0017-FR-005",
+    "KMIPKIT-0017-FR-006",
+    "KMIPKIT-0017-FR-007",
+    "KMIPKIT-0017-FR-008",
+    "KMIPKIT-0017-FR-009",
+    "KMIPKIT-0017-FR-010",
+    "KMIPKIT-0017-FR-011",
+    "KMIPKIT-0017-FR-012",
+    "KMIPKIT-0017-FR-013",
     "KMIPKIT-0021-FR-001",
     "KMIPKIT-0021-FR-002",
     "KMIPKIT-0021-FR-004",
@@ -157,7 +170,14 @@
     "KMIPKIT-REQ-SPEC-6.1.14-006-002",
     "KMIPKIT-REQ-SPEC-6.1.14-007-001",
     "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+    "KMIPKIT-REQ-SPEC-6.1.19-001",
+    "KMIPKIT-REQ-SPEC-6.1.19-002",
     "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.28-001",
+    "KMIPKIT-REQ-SPEC-6.1.28-002",
+    "KMIPKIT-REQ-SPEC-6.1.28-011",
+    "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+    "KMIPKIT-REQ-SPEC-6.1.28-013-002",
     "KMIPKIT-REQ-SPEC-6.1.32-001",
     "KMIPKIT-REQ-SPEC-6.1.33-001-001",
     "KMIPKIT-REQ-SPEC-6.1.33-001-002",
@@ -17578,6 +17598,863 @@
           "internal"
         ],
         "returnType": "ttlv.Structure"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_get",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_client_batch_item_get",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "*const kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "name": "has_key_format_type",
+            "type": "u8"
+          },
+          {
+            "name": "key_format_type",
+            "type": "u32"
+          },
+          {
+            "name": "has_key_wrap_type",
+            "type": "u8"
+          },
+          {
+            "name": "key_wrap_type",
+            "type": "u32"
+          },
+          {
+            "name": "has_key_compression_type",
+            "type": "u8"
+          },
+          {
+            "name": "key_compression_type",
+            "type": "u32"
+          },
+          {
+            "name": "key_wrapping_specification",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_client_batch_item_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_get",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "name": "has_key_format_type",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "key_format_type",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_key_wrap_type",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "key_wrap_type",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_key_compression_type",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "key_compression_type",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "key_wrapping_specification",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "nullable": false,
+            "ownership": "library-owned"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates typed KMIP v2.1 Get from optional Table 220 selectors without synthesizing omitted values.",
+          "The caller-supplied Key Wrapping Specification is borrowed into the typed request."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "get",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "keyFormatType",
+            "type": "Long"
+          },
+          {
+            "name": "keyWrapType",
+            "type": "Long"
+          },
+          {
+            "name": "keyCompressionType",
+            "type": "Long"
+          },
+          {
+            "name": "keyWrappingSpecification",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemGet",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_get",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier | None"
+          },
+          {
+            "name": "key_format_type",
+            "type": "int | None"
+          },
+          {
+            "name": "key_wrap_type",
+            "type": "int | None"
+          },
+          {
+            "name": "key_compression_type",
+            "type": "int | None"
+          },
+          {
+            "name": "key_wrapping_specification",
+            "type": "ttlv.Structure | None"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_get",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_response_get",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_get",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_payload_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_object_type",
+            "type": "*mut u32"
+          },
+          {
+            "name": "out_unique_identifier",
+            "type": "*mut kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "name": "out_any_object",
+            "type": "*mut *mut kmipkit_ttlv_structure_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_get",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "ownership": "none",
+            "valueType": "uint8_t"
+          },
+          {
+            "name": "out_payload_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "ownership": "none",
+            "valueType": "uint8_t"
+          },
+          {
+            "name": "out_object_type",
+            "kind": "output-scalar-pointer",
+            "type": "uint32_t *",
+            "ownership": "none",
+            "valueType": "uint32_t"
+          },
+          {
+            "name": "out_unique_identifier",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "ownership": "none",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "name": "out_any_object",
+            "kind": "output",
+            "type": "kmipkit_ttlv_structure_t **",
+            "nullable": true,
+            "ownership": "library-owned"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Returns the typed Get result. Success exposes an independently owned zeroizing Any Object Structure copy; Failure contains no success-only fields.",
+          "The caller releases C Structure copies with kmipkit_ttlv_structure_release. Raw object contents are omitted from formatting and diagnostics."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "getResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseGet",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "Optional<GetResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.BatchItemResult.get_response",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_batch_item_response_get",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "GetResponse | None"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_locate",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "kmipkit_client_batch_item_locate",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "has_maximum_items",
+            "type": "u8"
+          },
+          {
+            "name": "maximum_items",
+            "type": "i32"
+          },
+          {
+            "name": "has_offset_items",
+            "type": "u8"
+          },
+          {
+            "name": "offset_items",
+            "type": "i32"
+          },
+          {
+            "name": "has_storage_status_mask",
+            "type": "u8"
+          },
+          {
+            "name": "storage_status_mask",
+            "type": "u32"
+          },
+          {
+            "name": "has_object_group_member",
+            "type": "u8"
+          },
+          {
+            "name": "object_group_member",
+            "type": "u32"
+          },
+          {
+            "name": "attributes",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_client_batch_item_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_locate",
+        "parameters": [
+          {
+            "name": "has_maximum_items",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "maximum_items",
+            "kind": "scalar",
+            "type": "int32_t"
+          },
+          {
+            "name": "has_offset_items",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "offset_items",
+            "kind": "scalar",
+            "type": "int32_t"
+          },
+          {
+            "name": "has_storage_status_mask",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "storage_status_mask",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "has_object_group_member",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "object_group_member",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "attributes",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "nullable": false,
+            "ownership": "library-owned"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates typed KMIP v2.1 Locate with required Attributes.",
+          "Preserves empty Attributes, omitted fields, explicit zero values, and raw selector values."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "locate",
+        "parameters": [
+          {
+            "name": "maximumItems",
+            "type": "Integer"
+          },
+          {
+            "name": "offsetItems",
+            "type": "Integer"
+          },
+          {
+            "name": "storageStatusMask",
+            "type": "Long"
+          },
+          {
+            "name": "objectGroupMember",
+            "type": "Long"
+          },
+          {
+            "name": "attributes",
+            "type": "TtlvStructure"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemLocate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_locate",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "ttlv.Structure"
+          },
+          {
+            "name": "maximum_items",
+            "type": "int | None"
+          },
+          {
+            "name": "offset_items",
+            "type": "int | None"
+          },
+          {
+            "name": "storage_status_mask",
+            "type": "int | None"
+          },
+          {
+            "name": "object_group_member",
+            "type": "int | None"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_locate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_response_locate",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_locate",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_payload_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_located_items_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_located_items",
+            "type": "*mut i32"
+          },
+          {
+            "name": "out_unique_identifier_count",
+            "type": "*mut u64"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_locate",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "ownership": "none",
+            "valueType": "uint8_t"
+          },
+          {
+            "name": "out_payload_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "ownership": "none",
+            "valueType": "uint8_t"
+          },
+          {
+            "name": "out_located_items_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "ownership": "none",
+            "valueType": "uint8_t"
+          },
+          {
+            "name": "out_located_items",
+            "kind": "output-scalar-pointer",
+            "type": "int32_t *",
+            "ownership": "none",
+            "valueType": "int32_t"
+          },
+          {
+            "name": "out_unique_identifier_count",
+            "kind": "output-scalar-pointer",
+            "type": "uint64_t *",
+            "ownership": "none",
+            "valueType": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Returns optional Located Items and repeated Unique Identifier count for a completed Locate response.",
+          "The caller reads identifiers by index; server order and repetition are preserved."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "locateResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLocate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "Optional<LocateResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.BatchItemResult.locate_response",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_batch_item_response_locate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "LocateResponse | None"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_response_locate_unique_identifier_at",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_locate_unique_identifier_at",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "index",
+            "type": "u64"
+          },
+          {
+            "name": "out_unique_identifier",
+            "type": "*mut kmipkit_unique_identifier_v1_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_locate_unique_identifier_at",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "index",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "out_unique_identifier",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "ownership": "none",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Copies one indexed Unique Identifier in original server order.",
+          "Out-of-range indexes are rejected without changing server results."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "locateResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLocate",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "LocateResponse"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.LocateResponse.unique_identifiers",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_batch_item_response_locate_unique_identifier_at",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "tuple[UniqueIdentifier, ...]"
       },
       "ordering": "not-applicable"
     }
@@ -109742,14 +110619,74 @@
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ClientBatchOutcome::GetCompleted",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::GetCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.get_response"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-3ede3db6530e554f6cd6",
@@ -110027,14 +110964,77 @@
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ClientBatchOutcome::LocateCompleted",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::LocateCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.locateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.locate_response"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-6769324f3e3f6bf80c00",
@@ -112100,14 +113100,74 @@
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ClientRequest::Get",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_get"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-3cedec82b95d034efc6c",
@@ -112413,14 +113473,77 @@
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ClientRequest::Locate",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Locate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-91a9559b313a7752bf47",
@@ -199647,14 +200770,74 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::GetRequest",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_get"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-f6bec1eb3ed6ee5dd803",
@@ -199829,42 +201012,222 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::GetResponse",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b8492258950285fb74be",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::GetResponse::object",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::object"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.object"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.object"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-79364499f8d23edbb6e7",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::GetResponse::object_type",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::object_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.objectTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.object_type_raw"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-54b32873b562455e7e98",
@@ -199899,14 +201262,74 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::GetResponse::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.unique_identifier"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-e1fbc60bc048bdd19e25",
@@ -201687,14 +203110,77 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::LocateRequest",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-f439a46d07fb7b09a304",
@@ -201855,28 +203341,154 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::LocateResponse",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-bec15365e44c2fb79fc9",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateResponse::located_items",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse::located_items"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.locatedItems"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse.located_items"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-3057f3cd6f25b9d165e9",
@@ -201911,14 +203523,77 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::LocateResponse::unique_identifiers",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse::unique_identifiers"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate_unique_identifier_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.uniqueIdentifiers"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse.unique_identifiers"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d389aebafb1b21a9f374",
@@ -202653,28 +204328,154 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ObjectGroupMember::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ObjectGroupMember::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-a4937291b5b6e595e042",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::ObjectGroupMember::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::ObjectGroupMember::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-4125660b33ef1a142765",
@@ -206453,28 +208254,154 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::StorageStatusMask::from_raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::StorageStatusMask::from_raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b5918d4a07217a75f879",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::StorageStatusMask::raw",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::StorageStatusMask::raw"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-3a4bfd7477699815b169",
@@ -247573,6 +249500,2193 @@
         "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs"
       ],
       "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "T038:get:c:request:01",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_get",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_get"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:c:response:02",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_get",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::GetCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.get_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:java:request:01",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.get",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_get"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:java:response:02",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.getResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::GetCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.get_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:java:type:03",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:java:object_type:04",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.objectTypeRaw",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::object_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.objectTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.object_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:java:unique_identifier:05",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.uniqueIdentifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.unique_identifier"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:java:object:06",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.object",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::object"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.object"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.object"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:java:close:07",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.close",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:python:request:01",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_get",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Get"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.get"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_get"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:python:response:02",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchItemResult.get_response",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::GetCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.getResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.get_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:python:type:03",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.GetResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:python:object_type:04",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.GetResponse.object_type_raw",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::object_type"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.objectTypeRaw"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.object_type_raw"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:python:unique_identifier:05",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.GetResponse.unique_identifier",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.unique_identifier"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:python:object:06",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.GetResponse.object",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse::object"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_get"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.object"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.object"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:get:python:close:07",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.GetResponse.close",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.19-001",
+        "KMIPKIT-REQ-SPEC-6.1.19-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::GetResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.GetResponse.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:c:request:01",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_locate",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Locate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:c:response:02",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_locate",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::LocateCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.locateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.locate_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:c:unique_identifiers:03",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_locate_unique_identifier_at",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse::unique_identifiers"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate_unique_identifier_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.uniqueIdentifiers"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse.unique_identifiers"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:java:request:01",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.locate",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Locate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:java:response:02",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.locateResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::LocateCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.locateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.locate_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:java:type:03",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:java:located_items:04",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.locatedItems",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse::located_items"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.locatedItems"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse.located_items"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:java:unique_identifiers:05",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.uniqueIdentifiers",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse::unique_identifiers"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate_unique_identifier_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.uniqueIdentifiers"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse.unique_identifiers"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:python:request:01",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_locate",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::Locate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.locate"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_locate"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:python:response:02",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchItemResult.locate_response",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::LocateCompleted"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.locateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.locate_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:python:type:03",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.LocateResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:python:located_items:04",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.LocateResponse.located_items",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse::located_items"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.locatedItems"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse.located_items"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T038:locate:python:unique_identifiers:05",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.LocateResponse.unique_identifiers",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOCATE",
+      "requirementIds": [
+        "KMIPKIT-0017-FR-001",
+        "KMIPKIT-0017-FR-002",
+        "KMIPKIT-0017-FR-003",
+        "KMIPKIT-0017-FR-004",
+        "KMIPKIT-0017-FR-005",
+        "KMIPKIT-0017-FR-006",
+        "KMIPKIT-0017-FR-007",
+        "KMIPKIT-0017-FR-008",
+        "KMIPKIT-0017-FR-009",
+        "KMIPKIT-0017-FR-010",
+        "KMIPKIT-0017-FR-011",
+        "KMIPKIT-0017-FR-012",
+        "KMIPKIT-0017-FR-013",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.28-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-002",
+        "KMIPKIT-REQ-SPEC-6.1.28-011",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+        "KMIPKIT-REQ-SPEC-6.1.28-013-002"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::LocateResponse::unique_identifiers"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_locate_unique_identifier_at"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LocateResponse.uniqueIdentifiers"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.LocateResponse.unique_identifiers"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
     }
   ],
   "approvedExclusions": [
@@ -252941,6 +257055,54 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed for KMIPKIT-0043-T047; the callable ExportResponse API and its owned response fields are mapped individually. This exclusion applies only to the exact generated dataclass member."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGet",
+      "reason": "Internal JNI bridge for ClientBatchItem.get.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLocate",
+      "reason": "Internal JNI bridge for ClientBatchItem.locate.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGet",
+      "reason": "Internal JNI bridge for ClientBatchItemResult.getResponse.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLocate",
+      "reason": "Internal JNI bridge for ClientBatchItemResult.locateResponse.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Internal NativeExtensionRegistry methods call the C ABI for typed four-language facades and are covered by T038 parity tests."
     }
   ],
   "apiLevels": [
@@ -253624,12 +257786,60 @@
       "name": "Get",
       "section": "6.1.19",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0017"
-      }
+      },
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "declarations": {
+        "rust": [
+          "rust-observed-d467d58171257be5a612",
+          "rust-observed-58575c34348e19658bd4",
+          "rust-observed-704059ee7886518d0118",
+          "rust-observed-8d2b646ff64462c03d18",
+          "rust-observed-79364499f8d23edbb6e7",
+          "rust-observed-511f2b60c9d96ed8a164",
+          "rust-observed-b8492258950285fb74be"
+        ],
+        "c": [
+          "T038:get:c:request:01",
+          "T038:get:c:response:02"
+        ],
+        "java": [
+          "T038:get:java:request:01",
+          "T038:get:java:response:02",
+          "T038:get:java:type:03",
+          "T038:get:java:object_type:04",
+          "T038:get:java:unique_identifier:05",
+          "T038:get:java:object:06",
+          "T038:get:java:close:07"
+        ],
+        "python": [
+          "T038:get:python:request:01",
+          "T038:get:python:response:02",
+          "T038:get:python:type:03",
+          "T038:get:python:object_type:04",
+          "T038:get:python:unique_identifier:05",
+          "T038:get:python:object:06",
+          "T038:get:python:close:07"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0017",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/get_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
@@ -253864,12 +258074,60 @@
       "name": "Locate",
       "section": "6.1.28",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "The owner is approved, but its canonical Rust API and complete four-language mapping are not yet verified.",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0017"
-      }
+      },
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/017-managed-object-retrieval/spec.md",
+        "status": "Approved",
+        "evidence": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      },
+      "declarations": {
+        "rust": [
+          "rust-observed-75c78b92458f67a2d3d3",
+          "rust-observed-10b65e56acbd55bdb961",
+          "rust-observed-efcf6361220877783e8c",
+          "rust-observed-dc477ae5a2b269c63724",
+          "rust-observed-bec15365e44c2fb79fc9",
+          "rust-observed-e86907f9bc4668abb4f3",
+          "rust-observed-f81808570c0e448ffebc",
+          "rust-observed-b5918d4a07217a75f879",
+          "rust-observed-d8e26ff8ff859475a2cd",
+          "rust-observed-a4937291b5b6e595e042"
+        ],
+        "c": [
+          "T038:locate:c:request:01",
+          "T038:locate:c:response:02",
+          "T038:locate:c:unique_identifiers:03"
+        ],
+        "java": [
+          "T038:locate:java:request:01",
+          "T038:locate:java:response:02",
+          "T038:locate:java:type:03",
+          "T038:locate:java:located_items:04",
+          "T038:locate:java:unique_identifiers:05"
+        ],
+        "python": [
+          "T038:locate:python:request:01",
+          "T038:locate:python:response:02",
+          "T038:locate:python:type:03",
+          "T038:locate:python:located_items:04",
+          "T038:locate:python:unique_identifiers:05"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0017",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
+        "bindings/python/tests/test_get_locate_operation.py",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
+        "tools/api_manifest/tests/test_get_locate_parity_manifest.py"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-LOG",

@@ -271,6 +271,24 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_get(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_payload_present,
+        uint32_t *out_object_type,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        kmipkit_ttlv_structure_t **out_any_object);
+    int32_t kmipkit_client_batch_item_response_locate(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_payload_present,
+        uint8_t *out_located_items_present,
+        int32_t *out_located_items,
+        uint64_t *out_unique_identifier_count);
+    int32_t kmipkit_client_batch_item_response_locate_unique_identifier_at(
+        kmipkit_client_batch_item_response_t *item,
+        uint64_t index,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
     int32_t kmipkit_client_batch_item_response_create_key_pair(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -399,6 +417,27 @@ ffi.cdef(
         uint8_t has_key_compression_type,
         uint32_t key_compression_type,
         kmipkit_ttlv_structure_t *key_wrapping_specification,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_get(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        uint8_t has_key_format_type,
+        uint32_t key_format_type,
+        uint8_t has_key_wrap_type,
+        uint32_t key_wrap_type,
+        uint8_t has_key_compression_type,
+        uint32_t key_compression_type,
+        kmipkit_ttlv_structure_t *key_wrapping_specification,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_locate(
+        uint8_t has_maximum_items,
+        int32_t maximum_items,
+        uint8_t has_offset_items,
+        int32_t offset_items,
+        uint8_t has_storage_status_mask,
+        uint32_t storage_status_mask,
+        uint8_t has_object_group_member,
+        uint32_t object_group_member,
+        kmipkit_ttlv_structure_t *attributes,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_get_usage_allocation(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

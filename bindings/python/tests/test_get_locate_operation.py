@@ -152,7 +152,7 @@ def test_locate_response_preserves_repeated_identifier_order(monkeypatch) -> Non
 
     assert isinstance(result, client.LocateResponse)
     assert result.located_items == 3
-    assert [identifier.text() for identifier in result.unique_identifiers] == [
+    assert [identifier.text for identifier in result.unique_identifiers] == [
         "first",
         "second",
         "first",

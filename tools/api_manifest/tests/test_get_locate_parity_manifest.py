@@ -20,7 +20,7 @@ OPERATIONS = {
         "expected": {
             "rust": {
                 "kmipkit_client::ClientRequest::Get",
-                "kmipkit_client::ClientBatchOutcome::Get",
+                "kmipkit_client::ClientBatchOutcome::GetCompleted",
                 "kmipkit_protocol::GetRequest",
                 "kmipkit_protocol::GetResponse",
                 "kmipkit_protocol::GetResponse::object_type",
@@ -57,7 +57,7 @@ OPERATIONS = {
         "expected": {
             "rust": {
                 "kmipkit_client::ClientRequest::Locate",
-                "kmipkit_client::ClientBatchOutcome::Locate",
+                "kmipkit_client::ClientBatchOutcome::LocateCompleted",
                 "kmipkit_protocol::LocateRequest",
                 "kmipkit_protocol::LocateResponse",
                 "kmipkit_protocol::LocateResponse::located_items",

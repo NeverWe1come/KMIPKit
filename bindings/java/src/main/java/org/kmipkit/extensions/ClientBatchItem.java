@@ -193,6 +193,55 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Get request with the optional Table 220 fields in their canonical order. */
+    public static ClientBatchItem get(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable Long keyFormatType,
+            @Nullable Long keyWrapType,
+            @Nullable Long keyCompressionType,
+            @Nullable TtlvStructure keyWrappingSpecification) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            if (keyFormatType != null) requireU32(keyFormatType, "Key Format Type");
+            if (keyWrapType != null) requireU32(keyWrapType, "Key Wrap Type");
+            if (keyCompressionType != null) requireU32(keyCompressionType, "Key Compression Type");
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemGet(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier),
+                            keyFormatType != null, keyFormatType == null ? 0 : keyFormatType,
+                            keyWrapType != null, keyWrapType == null ? 0 : keyWrapType,
+                            keyCompressionType != null,
+                            keyCompressionType == null ? 0 : keyCompressionType,
+                            handleOrNull(keyWrappingSpecification)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a Locate request, preserving optional Table 247 values and required Attributes. */
+    public static ClientBatchItem locate(
+            @Nullable Integer maximumItems,
+            @Nullable Integer offsetItems,
+            @Nullable Long storageStatusMask,
+            @Nullable Long objectGroupMember,
+            TtlvStructure attributes) {
+        requireStructure(attributes, "Locate Attributes");
+        if (storageStatusMask != null) requireU32(storageStatusMask, "Storage Status Mask");
+        if (objectGroupMember != null) requireU32(objectGroupMember, "Object Group Member");
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientBatchItemLocate(
+                        maximumItems != null, maximumItems == null ? 0 : maximumItems,
+                        offsetItems != null, offsetItems == null ? 0 : offsetItems,
+                        storageStatusMask != null, storageStatusMask == null ? 0 : storageStatusMask,
+                        objectGroupMember != null, objectGroupMember == null ? 0 : objectGroupMember,
+                        handleOrNull(attributes)));
+        return new ClientBatchItem(value, List.of());
+    }
+
     /** Creates the empty Get Constraints request from KMIP 2.1 §6.1.22, Table 229. */
     public static ClientBatchItem getConstraints() {
         NativeExtensionRegistry.ensureLoaded();

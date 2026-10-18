@@ -36,10 +36,11 @@ use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
-    DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetUsageAllocationRequest, HashRequest,
-    KeyCompressionType, KeyFormatType, KeyWrapType, MacRequest, MacVerifyRequest, ObjectType,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
-    SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
+    DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
+    HashRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, MacRequest,
+    MacVerifyRequest, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
+    ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3197,6 +3198,119 @@ pub extern "C" fn kmipkit_client_batch_item_export(
             request = request.with_key_wrapping_specification(value);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::Export(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 2.1 Get request from its optional Table 220 values.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_key_format_type: u8,
+    key_format_type: u32,
+    has_key_wrap_type: u8,
+    key_wrap_type: u32,
+    has_key_compression_type: u8,
+    key_compression_type: u32,
+    key_wrapping_specification: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let key_format_type = match has_key_format_type {
+            0 => None,
+            1 => Some(KeyFormatType::from_raw(key_format_type)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let key_wrap_type = match has_key_wrap_type {
+            0 => None,
+            1 => Some(KeyWrapType::from_raw(key_wrap_type)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let key_compression_type = match has_key_compression_type {
+            0 => None,
+            1 => Some(KeyCompressionType::from_raw(key_compression_type)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let wrapping_specification =
+            try_ffi!(copy_structure_handle(key_wrapping_specification, false));
+
+        let mut request = GetRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(value) = key_format_type {
+            request = request.with_key_format_type(value);
+        }
+        if let Some(value) = key_wrap_type {
+            request = request.with_key_wrap_type(value);
+        }
+        if let Some(value) = key_compression_type {
+            request = request.with_key_compression_type(value);
+        }
+        if let Some(value) = wrapping_specification {
+            request = request.with_key_wrapping_specification(value);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Get(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 2.1 Locate request with its required Table 247 Attributes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_locate(
+    has_maximum_items: u8,
+    maximum_items: i32,
+    has_offset_items: u8,
+    offset_items: i32,
+    has_storage_status_mask: u8,
+    storage_status_mask: u32,
+    has_object_group_member: u8,
+    object_group_member: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let maximum_items = match has_maximum_items {
+            0 => None,
+            1 => Some(maximum_items),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let offset_items = match has_offset_items {
+            0 => None,
+            1 => Some(offset_items),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let storage_status_mask = match has_storage_status_mask {
+            0 => None,
+            1 => Some(StorageStatusMask::from_raw(storage_status_mask)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let object_group_member = match has_object_group_member {
+            0 => None,
+            1 => Some(ObjectGroupMember::from_raw(object_group_member)),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let Some(attributes) = try_ffi!(copy_attribute_set_handle(attributes, true)) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+
+        let mut request = LocateRequest::new(attributes);
+        if let Some(value) = maximum_items {
+            request = request.with_maximum_items(value);
+        }
+        if let Some(value) = offset_items {
+            request = request.with_offset_items(value);
+        }
+        if let Some(value) = storage_status_mask {
+            request = request.with_storage_status_mask(value);
+        }
+        if let Some(value) = object_group_member {
+            request = request.with_object_group_member(value);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Locate(request)));
         SUCCESS
     })
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -16,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Common, operation-independent metadata for one response batch item. */
 public final class ClientBatchItemResult implements AutoCloseable {
+    private static final int MAX_RESPONSE_IDENTIFIER_COUNT = 100_000;
     private final NativeHandle handle;
 
     ClientBatchItemResult(long nativeHandle) {
@@ -101,6 +103,20 @@ public final class ClientBatchItemResult implements AutoCloseable {
         Object[] values = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponseGetUsageAllocation);
         return parseGetUsageAllocationResponse(values);
+    }
+
+    /** Returns the typed Get result, with an independently owned secret-bearing Any Object copy. */
+    public Optional<GetResponse> getResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseGet);
+        return parseGetResponse(values);
+    }
+
+    /** Returns the ordered Locate identifiers and optional Located Items value. */
+    public Optional<LocateResponse> locateResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseLocate);
+        return parseLocateResponse(values);
     }
 
     /** Returns the required Constraints payload in an owned complete response copy on Success. */
@@ -199,6 +215,53 @@ public final class ClientBatchItemResult implements AutoCloseable {
         public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
 
         @Override public String toString() { return "CreateResponse[objectType=" + objectType + ", uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Get fields and the independently owned secret-bearing Any Object. */
+    public static final class GetResponse implements AutoCloseable {
+        private final OptionalLong objectTypeRaw;
+        private final Optional<UniqueIdentifier> uniqueIdentifier;
+        private final @Nullable TtlvStructure object;
+
+        private GetResponse(OptionalLong objectTypeRaw,
+                Optional<UniqueIdentifier> uniqueIdentifier, @Nullable TtlvStructure object) {
+            this.objectTypeRaw = objectTypeRaw;
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.object = object;
+        }
+
+        /** Returns the raw unsigned Object Type only when the server returned Success. */
+        public OptionalLong objectTypeRaw() { return objectTypeRaw; }
+        /** Returns the response Unique Identifier only when the server returned Success. */
+        public Optional<UniqueIdentifier> uniqueIdentifier() { return uniqueIdentifier; }
+        /** Returns the caller-owned opaque Any Object Structure on Success. */
+        public Optional<TtlvStructure> object() { return Optional.ofNullable(object); }
+
+        @Override public void close() {
+            if (object != null) object.close();
+        }
+
+        @Override public String toString() {
+            return "GetResponse[objectTypeRaw=" + objectTypeRaw
+                    + ", uniqueIdentifier=" + (uniqueIdentifier.isPresent() ? "redacted" : "absent")
+                    + ", object=" + (object == null ? "absent" : "redacted") + "]";
+        }
+    }
+
+    /** Locate's optional count and response identifiers in their original wire order. */
+    public static final class LocateResponse {
+        private final OptionalInt locatedItems;
+        private final List<UniqueIdentifier> uniqueIdentifiers;
+
+        private LocateResponse(OptionalInt locatedItems, List<UniqueIdentifier> uniqueIdentifiers) {
+            this.locatedItems = locatedItems;
+            this.uniqueIdentifiers = List.copyOf(uniqueIdentifiers);
+        }
+
+        /** Returns the optional server-reported Located Items Integer. */
+        public OptionalInt locatedItems() { return locatedItems; }
+        /** Returns all response identifiers, retaining repetitions and server order. */
+        public List<UniqueIdentifier> uniqueIdentifiers() { return uniqueIdentifiers; }
     }
 
     /** Typed KMIP Export result and an owned copy of its complete ordered response TTLV. */
@@ -886,6 +949,79 @@ public final class ClientBatchItemResult implements AutoCloseable {
             responseTtlv.close();
             throw exception;
         }
+    }
+
+    static Optional<GetResponse> parseGetResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Get response is invalid");
+        long[] fields = requireLongArray(tuple[0], 3, "native Get response is invalid");
+        long[] objectHandle = requireLongArray(tuple[2], 1, "native Get response is invalid");
+        long ownedHandle = objectHandle[0];
+        TtlvStructure object = null;
+        try {
+            if ((fields[0] != 0 && fields[0] != 1)
+                    || (fields[1] != 0 && fields[1] != 1)
+                    || (fields[0] == 0 && (fields[1] != 0 || fields[2] != 0
+                            || tuple[1] != null || ownedHandle != 0))) {
+                throw new InvalidInputException("native Get response presence is invalid");
+            }
+            if (fields[0] == 0) return Optional.empty();
+            if (fields[1] == 0) {
+                if (fields[2] != 0 || tuple[1] != null || ownedHandle != 0) {
+                    throw new InvalidInputException("native failed Get response contains payload fields");
+                }
+                return Optional.of(new GetResponse(OptionalLong.empty(), Optional.empty(), null));
+            }
+            if (tuple[1] == null || ownedHandle <= 0) {
+                throw new InvalidInputException("native successful Get response is incomplete");
+            }
+            object = TtlvStructure.fromNative(ownedHandle, null);
+            UniqueIdentifier identifier = identifierRecord(tuple[1]);
+            return Optional.of(new GetResponse(
+                    OptionalLong.of(fields[2]), Optional.of(identifier), object));
+        } catch (RuntimeException exception) {
+            if (object != null) object.close();
+            else if (ownedHandle > 0) TtlvStructure.fromNative(ownedHandle, null).close();
+            throw exception;
+        }
+    }
+
+    static Optional<LocateResponse> parseLocateResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Locate response is invalid");
+        long[] fields = requireLongArray(tuple[0], 5, "native Locate response is invalid");
+        if (!(tuple[1] instanceof Object[] identifiers)) {
+            throw new InvalidInputException("native Locate identifiers are invalid");
+        }
+        if ((fields[0] != 0 && fields[0] != 1)
+                || (fields[1] != 0 && fields[1] != 1)
+                || (fields[2] != 0 && fields[2] != 1)
+                || fields[3] < Integer.MIN_VALUE || fields[3] > Integer.MAX_VALUE
+                || fields[4] < 0 || fields[4] > MAX_RESPONSE_IDENTIFIER_COUNT) {
+            throw new InvalidInputException("native Locate response fields are invalid");
+        }
+        if (fields[0] == 0) {
+            if (fields[1] != 0 || fields[2] != 0 || fields[3] != 0 || fields[4] != 0
+                    || identifiers.length != 0) {
+                throw new InvalidInputException("native absent Locate response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (fields[1] == 0) {
+            if (fields[2] != 0 || fields[3] != 0 || fields[4] != 0 || identifiers.length != 0) {
+                throw new InvalidInputException("native failed Locate response contains payload fields");
+            }
+            return Optional.of(new LocateResponse(OptionalInt.empty(), List.of()));
+        }
+        if (fields[4] != identifiers.length) {
+            throw new InvalidInputException("native Locate identifier count is inconsistent");
+        }
+        OptionalInt locatedItems = fields[2] == 1
+                ? OptionalInt.of((int) fields[3]) : OptionalInt.empty();
+        if (fields[2] == 0 && fields[3] != 0) {
+            throw new InvalidInputException("native omitted Located Items contains a value");
+        }
+        List<UniqueIdentifier> copiedIdentifiers = new ArrayList<>(identifiers.length);
+        for (Object identifier : identifiers) copiedIdentifiers.add(identifierRecord(identifier));
+        return Optional.of(new LocateResponse(locatedItems, copiedIdentifiers));
     }
 
     static Optional<GetConstraintsResponse> parseGetConstraintsResponse(Object[] values) {

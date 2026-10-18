@@ -857,6 +857,8 @@ class BatchItemResult:
     derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
     export_response: ExportResponse | None = field(default=None, repr=False)
     get_constraints_response: GetConstraintsResponse | None = field(default=None, repr=False)
+    _get_response: GetResponse | None = field(default=None, repr=False)
+    _locate_response: LocateResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -868,6 +870,14 @@ class BatchItemResult:
             self.result_reason,
             self.result_message,
         )
+
+    def get_response(self) -> GetResponse | None:
+        """Return Get's typed result and its owned opaque Any Object, when available."""
+        return self._get_response
+
+    def locate_response(self) -> LocateResponse | None:
+        """Return Locate's optional count and identifiers in server order, when available."""
+        return self._locate_response
 
 
 @dataclass(frozen=True, slots=True)
@@ -949,6 +959,34 @@ class GetUsageAllocationResponse:
     def close(self) -> None:
         """Release the caller-owned complete generic response structure."""
         self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class GetResponse:
+    """Typed Get fields with an independently owned, redacted Any Object copy."""
+
+    object_type_raw: int | None
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    object: ttlv.Structure | None = field(repr=False)
+
+    def close(self) -> None:
+        """Release the KMIPKit-owned Any Object copy; caller-made copies are separate."""
+        if self.object is not None:
+            self.object.close()
+
+    def __repr__(self) -> str:
+        return (
+            "GetResponse(object_type_raw="
+            f"{self.object_type_raw!r}, unique_identifier=redacted, object=redacted)"
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class LocateResponse:
+    """Optional Located Items and ordered Unique Identifiers returned by the server."""
+
+    located_items: int | None
+    unique_identifiers: tuple[extensions.UniqueIdentifier, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -1296,6 +1334,12 @@ def _batch_result(handle: Any) -> BatchResult:
                 export_response = None
                 if int(metadata.operation) == 0x2B:
                     export_response = _export_response(item)
+                get_response = None
+                if int(metadata.operation) == 0x0A:
+                    get_response = _get_response(item)
+                locate_response = None
+                if int(metadata.operation) == 0x08:
+                    locate_response = _locate_response(item)
                 cryptographic_responses = (None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
@@ -1324,6 +1368,8 @@ def _batch_result(handle: Any) -> BatchResult:
                         derive_key_response,
                         export_response,
                         get_constraints_response=constraints_response,
+                        _get_response=get_response,
+                        _locate_response=locate_response,
                     )
                 )
             finally:
@@ -1734,6 +1780,118 @@ def _get_usage_allocation_response(
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return GetUsageAllocationResponse(unique_identifier, response_ttlv)
+
+
+def _get_response(item: _ClientBatchItemResponse) -> GetResponse | None:
+    present = ffi.new("uint8_t *")
+    payload_present = ffi.new("uint8_t *")
+    object_type = ffi.new("uint32_t *")
+    identifier = _initialize_unique_identifier_output()
+    object_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_get(
+            item._pointer(), present, payload_present, object_type, identifier, object_output
+        )
+    )
+    object_handle = object_output[0]
+    if present[0] not in (0, 1) or payload_present[0] not in (0, 1) or (
+        present[0] == 0 and payload_present[0] != 0
+    ):
+        if object_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(object_handle)
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        if (
+            object_type[0] != 0
+            or _optional_output_identifier(identifier) is not None
+            or object_handle != ffi.NULL
+        ):
+            if object_handle != ffi.NULL:
+                lib.kmipkit_ttlv_structure_release(object_handle)
+            errors.raise_for_status(4)
+        return None
+    if payload_present[0] == 0:
+        if (
+            object_type[0] != 0
+            or _optional_output_identifier(identifier) is not None
+            or object_handle != ffi.NULL
+        ):
+            if object_handle != ffi.NULL:
+                lib.kmipkit_ttlv_structure_release(object_handle)
+            errors.raise_for_status(4)
+        return GetResponse(None, None, None)
+    if object_handle == ffi.NULL:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        lib.kmipkit_ttlv_structure_release(object_handle)
+        errors.raise_for_status(4)
+    try:
+        object_value = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", object_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(object_handle)
+        raise
+    return GetResponse(int(object_type[0]), unique_identifier, object_value)
+
+
+def _locate_response(item: _ClientBatchItemResponse) -> LocateResponse | None:
+    present = ffi.new("uint8_t *")
+    payload_present = ffi.new("uint8_t *")
+    located_items_present = ffi.new("uint8_t *")
+    located_items = ffi.new("int32_t *")
+    identifier_count = ffi.new("uint64_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_locate(
+            item._pointer(), present, payload_present, located_items_present,
+            located_items, identifier_count,
+        )
+    )
+    if (
+        present[0] not in (0, 1)
+        or payload_present[0] not in (0, 1)
+        or located_items_present[0] not in (0, 1)
+        or (present[0] == 0 and payload_present[0] != 0)
+    ):
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        if (
+            located_items_present[0] != 0
+            or located_items[0] != 0
+            or identifier_count[0] != 0
+        ):
+            errors.raise_for_status(4)
+        return None
+    if payload_present[0] == 0:
+        if (
+            located_items_present[0] != 0
+            or located_items[0] != 0
+            or identifier_count[0] != 0
+        ):
+            errors.raise_for_status(4)
+        return LocateResponse(None, ())
+    if identifier_count[0] > 100_000:
+        errors.raise_for_status(6)
+    if located_items_present[0] == 0 and located_items[0] != 0:
+        errors.raise_for_status(4)
+    count = int(identifier_count[0])
+    identifiers: list[extensions.UniqueIdentifier] = []
+    for index in range(count):
+        output = _initialize_unique_identifier_output()
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_locate_unique_identifier_at(
+                item._pointer(), index, output
+            )
+        )
+        identifier = _optional_output_identifier(output)
+        if identifier is None:
+            errors.raise_for_status(4)
+        identifiers.append(identifier)
+    return LocateResponse(
+        int(located_items[0]) if located_items_present[0] == 1 else None,
+        tuple(identifiers),
+    )
 
 
 def _get_constraints_response(
@@ -2316,6 +2474,8 @@ __all__ = [
     "HashResponse",
     "GetUsageAllocationResponse",
     "GetConstraintsResponse",
+    "GetResponse",
+    "LocateResponse",
     "MacResponse",
     "MacVerifyResponse",
     "RequestOptions",
