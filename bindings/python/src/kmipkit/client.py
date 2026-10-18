@@ -856,6 +856,7 @@ class BatchItemResult:
     delegated_login_response: DelegatedLoginResponse | None = field(default=None, repr=False)
     derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
     export_response: ExportResponse | None = field(default=None, repr=False)
+    get_constraints_response: GetConstraintsResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -943,6 +944,17 @@ class GetUsageAllocationResponse:
     """Successful Get Usage Allocation response and its owned complete generic TTLV."""
 
     unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class GetConstraintsResponse:
+    """Successful Get Constraints response and its owned complete generic TTLV."""
+
     response_ttlv: ttlv.Structure = field(repr=False)
 
     def close(self) -> None:
@@ -1267,6 +1279,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x11
                 ):
                     allocation_response = _get_usage_allocation_response(item)
+                constraints_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x38
+                ):
+                    constraints_response = _get_constraints_response(item)
                 derive_key_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -1304,6 +1323,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         delegated_login_response,
                         derive_key_response,
                         export_response,
+                        get_constraints_response=constraints_response,
                     )
                 )
             finally:
@@ -1714,6 +1734,31 @@ def _get_usage_allocation_response(
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return GetUsageAllocationResponse(unique_identifier, response_ttlv)
+
+
+def _get_constraints_response(
+    item: _ClientBatchItemResponse,
+) -> GetConstraintsResponse:
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_get_constraints_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return GetConstraintsResponse(response_ttlv)
 
 
 def _derive_key_response(
@@ -2270,6 +2315,7 @@ __all__ = [
     "EndpointKind",
     "HashResponse",
     "GetUsageAllocationResponse",
+    "GetConstraintsResponse",
     "MacResponse",
     "MacVerifyResponse",
     "RequestOptions",

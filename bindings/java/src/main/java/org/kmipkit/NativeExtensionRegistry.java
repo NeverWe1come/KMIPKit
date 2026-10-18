@@ -130,6 +130,7 @@ public final class NativeExtensionRegistry {
             long leaseTimeValue, boolean hasRequestCount, int requestCount, long usageLimits);
     public static native long clientBatchItemGetUsageAllocation(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber, long usageLimitsCount);
+    public static native long clientBatchItemGetConstraints();
     public static native long clientBatchItemExport(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber,
             boolean hasKeyFormatType, long keyFormatType,
@@ -196,6 +197,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseCheck(long itemResponse);
     public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
     public static native Object[] clientBatchItemResponseGetUsageAllocation(long itemResponse);
+    public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseExport(long itemResponse);
     public static native Object[] clientBatchItemResponseDeriveKey(long itemResponse);
     public static native Object[] clientBatchItemResponseCreateKeyPair(long itemResponse);

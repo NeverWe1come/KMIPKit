@@ -36,10 +36,10 @@ use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
-    DeriveKeyRequest, ExportRequest, GetUsageAllocationRequest, HashRequest, KeyCompressionType,
-    KeyFormatType, KeyWrapType, MacRequest, MacVerifyRequest, ObjectType, OpaqueObjectContext,
-    OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
+    DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetUsageAllocationRequest, HashRequest,
+    KeyCompressionType, KeyFormatType, KeyWrapType, MacRequest, MacVerifyRequest, ObjectType,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
+    SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -54,11 +54,11 @@ use std::time::Duration;
 #[path = "../tests/support/cryptographic_operation_abi_tests.rs"]
 mod cryptographic_operation_abi_tests;
 #[cfg(test)]
-#[path = "../tests/support/get_usage_allocation_abi_tests.rs"]
-mod get_usage_allocation_abi_tests;
-#[cfg(test)]
 #[path = "../tests/support/get_constraints_abi_tests.rs"]
 mod get_constraints_abi_tests;
+#[cfg(test)]
+#[path = "../tests/support/get_usage_allocation_abi_tests.rs"]
+mod get_usage_allocation_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/metadata_tests.rs"]
 mod metadata_tests;
@@ -3127,6 +3127,20 @@ pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::get_usage_allocation(
             request
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates the empty Get Constraints request from KMIP 2.1 §6.1.22, Table 229.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_get_constraints(
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        *out = try_ffi!(batch_item_handle(ClientRequest::GetConstraints(
+            GetConstraintsRequest::new(),
         )));
         SUCCESS
     })

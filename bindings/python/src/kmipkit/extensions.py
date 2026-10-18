@@ -1596,6 +1596,16 @@ def client_batch_item_check(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_get_constraints() -> ClientBatchItem:
+    """Create the empty Get Constraints request from KMIP 2.1 §6.1.22, Table 229."""
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_get_constraints",
+        (),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_delegated_login(
     rights: ttlv.Structure,
     *,
@@ -1969,6 +1979,7 @@ __all__ = [
     "client_batch_item_create_split_key",
     "client_batch_item_certify",
     "client_batch_item_check",
+    "client_batch_item_get_constraints",
     "client_batch_item_delegated_login",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_export",

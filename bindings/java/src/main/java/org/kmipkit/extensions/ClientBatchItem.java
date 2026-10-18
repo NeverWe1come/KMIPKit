@@ -193,6 +193,13 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates the empty Get Constraints request from KMIP 2.1 §6.1.22, Table 229. */
+    public static ClientBatchItem getConstraints() {
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeExtensionRegistry.clientBatchItemGetConstraints();
+        return new ClientBatchItem(value, List.of());
+    }
+
     /** Creates an Export request, preserving unknown Table 217 selector values. */
     public static ClientBatchItem export(
             @Nullable UniqueIdentifier uniqueIdentifier,

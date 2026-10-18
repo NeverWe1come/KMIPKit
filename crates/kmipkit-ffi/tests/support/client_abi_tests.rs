@@ -2791,6 +2791,64 @@ fn ffi_get_usage_allocation_ttlv_copies_success_and_excludes_failure_responses()
 }
 
 #[test]
+fn ffi_get_constraints_ttlv_copies_success_and_excludes_failure_responses() {
+    let constraints = ttlv_structure(
+        0x0042_0168,
+        [ttlv_item(0x0054_0001, 0x07, b"unknown-constraint")],
+    );
+    let success = execute_single_abi_response(
+        ClientRequest::get_constraints(),
+        b"get-constraints-success",
+        successful_cryptographic_response(0x38, b"get-constraints-success", vec![constraints]),
+    )
+    .expect("the successful Constraints response is accepted with unknown members");
+    let success_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(success)),
+    );
+    let mut successful_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(success_handle, 0, &raw mut successful_item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(success_handle);
+
+    let mut present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_constraints_ttlv(
+            successful_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(successful_item);
+
+    let failed_item = failed_cryptographic_item(
+        ClientRequest::get_constraints(),
+        0x38,
+        b"get-constraints-failure",
+    );
+    present = 9;
+    response_ttlv = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_constraints_ttlv(
+            failed_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(failed_item);
+}
+
+#[test]
 fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items() {
     let response = Arc::new(
         create_key_pair_success_response()

@@ -31,7 +31,7 @@ def test_get_constraints_response_owns_complete_ttlv_and_redacts_repr(
 
     def response_ttlv(_item: object, present: object, output: object) -> int:
         present[0] = 1  # type: ignore[index]
-        output[0] = ttlv_ffi.cast(
+        output[0] = client.ffi.cast(
             "kmipkit_ttlv_structure_t *", int(ttlv_ffi.cast("uintptr_t", native_handle))
         )  # type: ignore[index]
         return 0

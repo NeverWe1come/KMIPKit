@@ -38,7 +38,12 @@ final class GetConstraintsResponseMappingTest {
                     TtlvValueView payloadValue = payload.value();
                     TtlvStructureView payloadView = payloadValue.structure()) {
                 assertEquals(0x0042_0168, tagAt(payloadView, 0));
-                assertEquals(0x0054_0001, tagAt(payloadView, 1));
+                assertEquals(0x0054_0002, tagAt(payloadView, 1));
+                try (TtlvItemView constraints = payloadView.itemAt(0);
+                        TtlvValueView constraintsValue = constraints.value();
+                        TtlvStructureView constraintsView = constraintsValue.structure()) {
+                    assertEquals(0x0054_0001, tagAt(constraintsView, 0));
+                }
             }
             assertFalse(response.toString().contains("constraints-secret-sentinel"));
         }

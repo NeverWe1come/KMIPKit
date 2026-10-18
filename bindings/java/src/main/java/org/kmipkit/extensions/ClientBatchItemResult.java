@@ -103,6 +103,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetUsageAllocationResponse(values);
     }
 
+    /** Returns the required Constraints payload in an owned complete response copy on Success. */
+    public Optional<GetConstraintsResponse> getConstraintsResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseGetConstraints);
+        return parseGetConstraintsResponse(values);
+    }
+
     /** Returns a typed Export response for both Success and KMIP Failure outcomes. */
     public Optional<ExportResponse> exportResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -347,6 +356,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() {
             return "GetUsageAllocationResponse[uniqueIdentifier=redacted]";
         }
+    }
+
+    /** Successful Get Constraints response with its complete ordered generic TTLV copy. */
+    public static final class GetConstraintsResponse implements AutoCloseable {
+        private final TtlvStructure responseTtlv;
+
+        private GetConstraintsResponse(TtlvStructure responseTtlv) {
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the full ordered response, including the required Constraints structure. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "GetConstraintsResponse[fields=redacted]"; }
     }
 
     /** Successful Derive Key response with its owned complete generic TTLV. */
@@ -861,6 +886,25 @@ public final class ClientBatchItemResult implements AutoCloseable {
             responseTtlv.close();
             throw exception;
         }
+    }
+
+    static Optional<GetConstraintsResponse> parseGetConstraintsResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Get Constraints response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 1, "native Get Constraints response is invalid");
+        long[] handles = requireLongArray(
+                tuple[1], 1, "native Get Constraints response is invalid");
+        if (!responsePresent(fields)) {
+            if (handles[0] != 0) {
+                TtlvStructure.fromNative(handles[0], null).close();
+                throw new InvalidInputException("native absent response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (handles[0] <= 0) {
+            throw new InvalidInputException("native Get Constraints response is invalid");
+        }
+        return Optional.of(new GetConstraintsResponse(TtlvStructure.fromNative(handles[0], null)));
     }
 
     static Optional<ExportResponse> parseExportResponse(Object[] values) {

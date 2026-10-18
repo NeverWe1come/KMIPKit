@@ -10,12 +10,15 @@ fn get_constraints_constructor_creates_the_empty_typed_request() {
     );
     assert!(!item.is_null());
 
-    let handle = reference_handle(item, Kind::BatchItem)
-        .expect("the returned batch item handle is valid");
+    let handle =
+        reference_handle(item, Kind::BatchItem).expect("the returned batch item handle is valid");
     let HandleValue::BatchItem(batch_item) = &handle.value else {
         panic!("the constructor returns a batch item handle");
     };
-    assert!(matches!(batch_item.request(), ClientRequest::GetConstraints(_)));
+    assert!(matches!(
+        batch_item.request(),
+        ClientRequest::GetConstraints(_)
+    ));
 
     kmipkit_client_batch_item_release(item);
 }
@@ -26,7 +29,7 @@ fn get_constraints_ttlv_getter_clears_outputs_for_invalid_item() {
     let mut response_ttlv = ptr::dangling_mut();
 
     assert_eq!(
-        kmipkit_client_batch_item_response_get_constraints_ttlv(
+        client_abi::kmipkit_client_batch_item_response_get_constraints_ttlv(
             ptr::null_mut(),
             &raw mut present,
             &raw mut response_ttlv,
