@@ -3846,11 +3846,20 @@ Focused verification on the working head:
 |---|---|
 | `cargo fmt --all --check`; `git diff --check` | PASS. |
 | `cargo test -p kmipkit-ffi --all-features ffi_import_getters_reject_invalid_output_records_and_inconsistent_handles` | PASS: the Import output-record and synthetic internal-handle branches return the expected errors. |
-| `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ImportResponseMappingTest test` | PASS: 5 tests. |
+| `mvn --batch-mode --file bindings/java/pom.xml -Dtest=ImportResponseMappingTest test` | PASS: 5 tests; the malformed native tuple test verifies that each transferred TTLV handle is no longer usable after rejection. |
 | Python 3.12 `pytest bindings/python/tests/test_import_operation.py` in an isolated temporary uv environment with the locally built native library | PASS: 10 tests. The checkout's existing Python `.venv\lib64` symlink prevented uv from syncing in place, so the verification used a temporary environment and left the checkout environment untouched. |
 | `python -m unittest scripts.tests.test_coverage_gate` | PASS: 65 tests, 3 platform skips. |
 | Exact-line exclusion validation through `coverage_gate._is_executable_changed_line` | PASS: all 52 documented markers in `client_abi.rs` are on executable lines and include reasons. |
 
-The coverage gate has not yet been rerun on these commits. T050 and the release
-parity checks remain open until the pushed head passes the complete cross-
-platform CI matrix and selected-scope coverage gate.
+The Java ownership assertion was mutation-checked by temporarily omitting the
+absent-response close in `parseImportResponse`: the focused test failed because
+the native handle remained usable. Restoring the close made the full focused
+Java class pass. The two `Structure::try_push` exclusions now state both the
+64-level decoded-response depth invariant and the lack of deterministic
+allocation-failure injection; no coverage threshold or production behavior was
+changed.
+
+The pushed-head CI run `39143980784` passed its selected-scope coverage job and
+most matrix jobs, but several platform jobs were still running at this
+checkpoint. The final-head CI and selected-scope coverage gates remain pending
+for the follow-up commit. T050 and release parity remain open until they pass.

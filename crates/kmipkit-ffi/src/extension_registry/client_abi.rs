@@ -1752,7 +1752,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_export(
         let mut any_object_structure = Structure::new();
         let any_object_item = try_ffi!(any_object.try_clone().map_err(model_status));
         if let Err(error) = any_object_structure.try_push(any_object_item) {
-            return record_ffi_error(model_status(error)); // COVERAGE-EXCLUDE: pushing one item into a new Structure can fail only on allocation.
+            return record_ffi_error(model_status(error)); // COVERAGE-EXCLUDE: response depth keeps Any Object below the 64-level model cap; allocation failure has no deterministic injection hook.
         }
         let attributes_handle =
             match try_make_handle(Kind::Structure, HandleValue::Structure(attributes)) {
@@ -1861,7 +1861,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_get(
         let any_object = try_ffi!(any_object.try_clone().map_err(model_status));
         let mut any_object_structure = Structure::new();
         if let Err(error) = any_object_structure.try_push(any_object) {
-            return record_ffi_error(model_status(error)); // COVERAGE-EXCLUDE: pushing one item into a new Structure can fail only on allocation.
+            return record_ffi_error(model_status(error)); // COVERAGE-EXCLUDE: response depth keeps Any Object below the 64-level model cap; allocation failure has no deterministic injection hook.
         }
         let any_object_handle = match try_make_handle(
             Kind::Structure,
