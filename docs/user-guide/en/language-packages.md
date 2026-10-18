@@ -71,16 +71,22 @@ changes to this table.
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **42 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **41 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Five operation mappings
-are `verified`: Certify, Check, Delegated Login, Derive Key, and Get Usage
-Allocation. The Derive Key mapping rejects a successful result without its
-required Unique Identifier and preserves the complete ordered response TTLV in
-all four languages. The Get Usage Allocation mapping includes its optional
+or implementation code elsewhere in the repository. Six operation mappings
+are `verified`: Certify, Check, Delegated Login, Derive Key, Get Constraints,
+and Get Usage Allocation. The Derive Key mapping rejects a successful result
+without its required Unique Identifier and preserves the complete ordered
+response TTLV in all four languages. The Get Constraints mapping sends the
+empty §6.1.22 request and exposes its required ordered Constraints structure
+and full successful response TTLV in Rust, C, Java, and Python. C returns a
+caller-owned copy; Java and Python callers release their owned response with
+`close()`. Pending and failure results retain common result and delivery
+metadata without exposing successful-response TTLV or triggering a retry. The
+Get Usage Allocation mapping includes its optional
 identifier and signed count request, resolved identifier response, and common
 batch outcomes in Rust, C, Java, and Python. This mapping evidence does not
 claim full operation conformance. KMIPKit does not claim full operation parity,

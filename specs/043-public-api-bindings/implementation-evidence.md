@@ -3265,3 +3265,62 @@ complete, while the manifest already marked it verified. The task is now
 complete, and the dependency matrix records the verified PR evidence while
 stating that release-branch integration still awaits human merge. The separate
 security review of the coverage corrections found no reportable findings.
+
+## T048 — Get Constraints mapping
+
+T048 maps the already implemented canonical operation to the public C, Java,
+and Python facades under approved `specs/025-policy-controls` KMIPKIT-0039.
+The source contract is OASIS KMIP Specification v2.1 §6.1.22, Tables 229–231,
+and §7.7. The mapping preserves the empty request, required ordered Constraints
+Structure, unknown nested TTLV, common result and delivery metadata, owned
+successful-response TTLV, redacted diagnostics, and the no-retry behavior.
+It does not add protocol interpretation or claim full operation conformance.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `8c621fc9958d3d90bfa48fcd88f3102cc39e5bd3` | `cargo test -p kmipkit-ffi --all-features --lib get_constraints`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs`; Java focused Gradle tests; Python focused pytest; `python -B -m unittest tools.api_manifest.tests.test_get_constraints_parity_manifest -v` | Expected failures: public C constructor/getter unresolved, Java builder/typed mapper absent, Python builder/mapper absent, and manifest operation still blocked. Core Rust operation tests already existed and remained unchanged. |
+| Green | `60cdff925b8772d14f99fd2fd7a378ca8b4b1555` | `cargo test -p kmipkit-protocol -p kmipkit-client --lib get_constraints`; `cargo test -p kmipkit-ffi --all-features --lib get_constraints`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs`; Java focused Gradle tests with `--rerun-tasks`; Python 3.12 focused pytest; manifest parity unit tests and generator | PASS: 8 protocol tests, 7 client tests, 3 FFI tests, 1 compiled C consumer test, 4 Java tests, 2 Python tests, 2 manifest parity tests; generator wrote 12 outputs from the manifest input. |
+| Green correction | `9f54093b5c39f6b3661c35d2e7f0a3232cf3351f` | `cargo test -p kmipkit-ffi --all-features --lib every_exported_c_function_starts_inside_the_shared_panic_boundary`; `cargo llvm-cov -p kmipkit-ffi --all-features --summary-only` | PASS: updated the static exported-function inventory from 195 to 197 for the two new C functions; all 132 FFI unit tests and 5 C API coverage integration tests pass. Package line coverage is 94.56% across the FFI source files; the report is package-wide and is not a T048-only percentage. |
+| Refactor | this commit | Focused verification, generator check, format/lint/diff, documentation and traceability review | PASS: T048 is checked, owner requirement/table traceability and bilingual guides are updated, and the manifest marks Get Constraints `verified`. |
+
+The Green implementation reuses the existing Rust `GetConstraintsRequest`,
+`ClientRequest`, and response TTLV. C constructs the empty request and returns
+a caller-owned complete TTLV copy only for Success. Java exposes an
+`AutoCloseable` typed response; Python owns the copied structure and releases
+it through `close()`. Pending and Failure retain the common batch result and
+delivery evidence but expose no successful generic response TTLV. Generated
+Rust, C, Java, Python, and parity outputs were written only by the pinned
+`tools/api_manifest/generate.py`.
+
+Focused Green verification also passed:
+
+- `cargo fmt --all --check`
+- `cargo clippy -p kmipkit-protocol -p kmipkit-client -p kmipkit-ffi --all-targets --all-features -- -D warnings`
+- `python -B tools/api_manifest/generate.py --check` (12 outputs verified)
+- `python -B -m unittest tools.api_manifest.tests.test_get_constraints_parity_manifest -v` (2 passed)
+- `git diff --check`
+- Java focused Gradle tests (4 passed, using `--rerun-tasks`)
+- Python 3.12 focused pytest (2 passed)
+
+The implementation commits touched the C public header; Java JNI bridge,
+facade, result mapper, and parity tests; Python builder, result mapper, and
+parity tests; FFI constructor/getter and ABI tests; the source API manifest;
+and generator-produced Rust/C/Java/Python and parity fixtures. Refactor updates
+this task, this evidence log, the operation dependency matrix, traceability,
+and English/Spanish language guides.
+
+Self-review: the two C functions enter the shared panic boundary; C outputs
+are initialized before lookup and the response accessor returns no handle for
+Failure/Pending; Java cleans up an unexpected owned handle for absent results;
+Python cleans up invalid returned handles; public result text remains
+redacted; unknown nested TTLV and ordering are retained by copying the complete
+structure. No retry, Poll, network behavior, pinned OASIS file, or hand-edited
+generated output was introduced. The pre-existing untracked build artifacts
+and unrelated T047 planning file were left untouched.
+
+Concern: local FFI coverage is a package-wide 94.56% line result rather than a
+T048-only coverage calculation. The changed C paths are covered by focused
+success/failure ABI tests and the full FFI suite passes; repository CI remains
+the authority for selected-scope coverage gates. The coverage run emitted
+existing AWS-LC/NASM feature-detection and MSVC consumer-link warnings, without
+test failures.

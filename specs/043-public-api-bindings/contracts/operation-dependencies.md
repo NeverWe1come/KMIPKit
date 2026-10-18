@@ -27,7 +27,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.19 | Get | KMIPKIT-0017 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.20 | Get Attributes | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.21 | Get Attribute List | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
-| §6.1.22 | Get Constraints | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.22 | Get Constraints | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T048 verifies the four-language empty request and required Constraints response mapping against Tables 229–231, including generic response TTLV and common result/delivery handling |
 | §6.1.23 | Get Usage Allocation | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T049 verifies the four-language typed request and result mapping against Tables 232–234 with common status and delivery handling |
 | §6.1.24 | Hash | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.25 | Import | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
@@ -71,7 +71,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 - Linked to an approved/accepted owner: **37 operations**.
 - Linked to an unapproved candidate owner: **19 operations**.
 - No owner specification linked: **0 operations**.
-- All other blocked API rows remain gated on an accepted owner contract, canonical Rust API, four-language mapping, and verification evidence. Get Usage Allocation now has its T049 mapping evidence; T032 advances only §§6.1.8–6.1.10 after scoped evidence is recorded. These status records do not establish formal OASIS conformance.
+- All other blocked API rows remain gated on an accepted owner contract, canonical Rust API, four-language mapping, and verification evidence. Get Constraints and Get Usage Allocation now have their T048/T049 mapping evidence; T032 advances only §§6.1.8–6.1.10 after scoped evidence is recorded. These status records do not establish formal OASIS conformance.
 
 ## Advancement rule
 
