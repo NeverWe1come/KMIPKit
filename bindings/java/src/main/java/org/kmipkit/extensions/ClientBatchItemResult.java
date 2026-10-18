@@ -17,7 +17,6 @@ import org.jspecify.annotations.Nullable;
 
 /** Common, operation-independent metadata for one response batch item. */
 public final class ClientBatchItemResult implements AutoCloseable {
-    private static final int MAX_RESPONSE_IDENTIFIER_COUNT = 100_000;
     private final NativeHandle handle;
 
     ClientBatchItemResult(long nativeHandle) {
@@ -995,7 +994,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 || (fields[1] != 0 && fields[1] != 1)
                 || (fields[2] != 0 && fields[2] != 1)
                 || fields[3] < Integer.MIN_VALUE || fields[3] > Integer.MAX_VALUE
-                || fields[4] < 0 || fields[4] > MAX_RESPONSE_IDENTIFIER_COUNT) {
+                || fields[4] < 0 || fields[4] > Integer.MAX_VALUE) {
             throw new InvalidInputException("native Locate response fields are invalid");
         }
         if (fields[0] == 0) {

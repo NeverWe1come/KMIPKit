@@ -1871,7 +1871,7 @@ def _locate_response(item: _ClientBatchItemResponse) -> LocateResponse | None:
         ):
             errors.raise_for_status(4)
         return LocateResponse(None, ())
-    if identifier_count[0] > 100_000:
+    if identifier_count[0] > sys.maxsize:
         errors.raise_for_status(6)
     if located_items_present[0] == 0 and located_items[0] != 0:
         errors.raise_for_status(4)
