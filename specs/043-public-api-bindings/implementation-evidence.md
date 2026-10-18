@@ -3392,3 +3392,38 @@ mvn -B -f bindings/java/pom.xml -Dtest=GetConstraintsResponseMappingTest test
 The test correction is commit `fafa40af`. The full cross-platform CI run
 `39094687734` is pending on that final head; run `39094343312` used the prior
 head and is not final-head evidence.
+
+### T048 CI correction — successful Get Constraints facade coverage
+
+CI run `39094806135` on `41566b17094b2bb02d56a7757ccd961512306b71` passed all
+jobs except the selected-scope coverage gate, which measured 5,550/5,868 changed
+production lines (below 95%). The uncovered paths included the Java Get
+Constraints response bridge and high-level Python dispatch. This follow-up adds
+behavioral coverage for the successful Java response and the failure result,
+plus direct checks of defensive FFI handle validation.
+
+| Phase | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `c00f776b` | `mvn -B -f bindings/java/pom.xml -Dtest=ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange test` | Expected failure: the client sent 18 typed batch items while the TLS fixture still returned only 16; execution rejected the mismatched response before exposing an item. |
+| Green | `45867661` | Same focused Maven command | PASS: the fixture now returns 18 correlated results, including a successful Constraints Structure with an unknown vendor member and a failed Get Constraints result. The test confirms complete ordered TTLV, redacted output, and `Optional.empty()` for Failure. |
+| Refactor | this commit | Full Java, Python, FFI, formatting, and diff checks below | PASS locally; updated-head cross-platform CI and the selected-scope coverage gate remain pending. |
+
+The Python dispatcher test exercises the successful operation/status branch and
+checks that the typed response is attached to the result and the native item and
+batch handles are released. A mutation changing the operation discriminator
+from `0x38` to `0x39` made the test fail because no mapped response was present;
+restoring the production discriminator made it pass. The FFI test verifies that
+a mismatched internal handle returns `ERROR_INVALID_INPUT`, an out-of-range
+response index returns `ERROR_INTERNAL`, and both paths clear output values.
+
+| Command | Result |
+|---|---|
+| `mvn -B -f bindings/java/pom.xml test` | PASS: 257 tests, 0 failures, 0 errors, 3 skipped. |
+| Python 3.12 pytest for `test_client.py` and `test_get_constraints_operation.py` with the built native DLL | PASS: 197 tests. |
+| `cargo test -p kmipkit-ffi --all-features --lib` | PASS: 133 tests. |
+| `cargo fmt --all --check` | PASS. |
+| `git diff --check` | PASS. |
+
+The local Windows Rust builds still print the known `aws-lc-sys` MSVC probe
+and missing-NASM warnings; the Java suite and FFI tests passed despite those
+diagnostics. This evidence does not replace the required final-head CI result.

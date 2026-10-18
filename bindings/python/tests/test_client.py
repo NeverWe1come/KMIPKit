@@ -1142,6 +1142,54 @@ def test_batch_result_dispatches_export_operation_to_typed_mapper(
     assert released == ["item", "response"]
 
 
+def test_batch_result_dispatches_get_constraints_success_to_typed_mapper(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
+    item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
+    released: list[str] = []
+    get_constraints_response = object()
+    dispatched: list[object] = []
+
+    def metadata(_item: object, out: object) -> int:
+        _initialize_metadata_v2(out)
+        out.operation = 0x38  # type: ignore[attr-defined]
+        return 0
+
+    fake = SimpleNamespace(
+        kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
+        kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 1) or 0,
+        kmipkit_client_batch_response_item_at=lambda _ptr, _index, out: out.__setitem__(0, item_pointer) or 0,
+        kmipkit_client_batch_item_response_metadata_v2=metadata,
+        kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
+        kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+    )
+    monkeypatch.setattr(client, "lib", fake)
+    monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
+    monkeypatch.setattr(client, "_discover_versions_supported_versions", lambda _item: None)
+    monkeypatch.setattr(client, "_create_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_key_pair_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_split_key_response", lambda _item: None)
+
+    def get_constraints_mapper(item: object) -> object:
+        dispatched.append(item)
+        return get_constraints_response
+
+    monkeypatch.setattr(client, "_get_constraints_response", get_constraints_mapper)
+
+    result = client._batch_result(response_pointer)
+    try:
+        assert result.items[0].operation == 0x38
+        assert result.items[0].result_status == 0
+        assert result.items[0].get_constraints_response is get_constraints_response
+        assert len(dispatched) == 1
+    finally:
+        result.close()
+
+    assert released == ["item", "response"]
+
+
 def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

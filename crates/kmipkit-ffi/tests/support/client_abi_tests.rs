@@ -2849,6 +2849,52 @@ fn ffi_get_constraints_ttlv_copies_success_and_excludes_failure_responses() {
 }
 
 #[test]
+fn ffi_get_constraints_ttlv_getter_rejects_inconsistent_internal_handles() {
+    let response = Arc::new(
+        create_key_pair_success_response()
+            .expect("the successful key-pair response is associated with its request"),
+    );
+    let mismatched_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    let mut present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_constraints_ttlv(
+            mismatched_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(mismatched_item);
+
+    let invalid_index_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response,
+            index: usize::MAX,
+        },
+    );
+    present = 9;
+    response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_get_constraints_ttlv(
+            invalid_index_item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(invalid_index_item);
+}
+
+#[test]
 fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items() {
     let response = Arc::new(
         create_key_pair_success_response()
