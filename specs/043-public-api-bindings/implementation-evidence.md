@@ -3371,3 +3371,24 @@ The same run emitted MSVC LNK4217 static-link warnings that
 in `c_api_coverage.rs`; cargo also listed `kmipkit_codec_limits_defaults` in
 that linker diagnostic. The focused test passed. No dependency or build
 configuration was changed to suppress these toolchain diagnostics.
+
+### T048 review follow-up — Java observable ownership release
+
+QA identified that the absent Get Constraints response test asserted only that
+the parser rejected a nonzero owned TTLV handle. It did not independently
+prove that the handle had been released. The test now calls
+`ResponseTtlvTestSupport.assertReleased(handle)`, which probes the native
+registry and requires the transferred Structure token to be invalidated.
+
+Mutation evidence temporarily removed the parser's production close call. The
+focused test then failed specifically because the rejected response's native
+Structure remained live. The production close was restored; the same test
+suite passed with 4 tests, 0 failures, and 0 errors:
+
+```text
+mvn -B -f bindings/java/pom.xml -Dtest=GetConstraintsResponseMappingTest test
+```
+
+The test correction is commit `fafa40af`. The full cross-platform CI run
+`39094687734` is pending on that final head; run `39094343312` used the prior
+head and is not final-head evidence.
