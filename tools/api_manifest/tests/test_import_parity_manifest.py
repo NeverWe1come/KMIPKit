@@ -1,0 +1,133 @@
+"""Manifest regressions for the T050 Import mapping."""
+
+from __future__ import annotations
+
+import json
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[3]
+MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-IMPORT"
+OWNER_SPEC = "specs/023-key-material-transfer/spec.md"
+LANGUAGES = {"rust", "c", "java", "python"}
+EXPECTED_MAPPINGS = {
+    "rust": {
+        "kmipkit_client::ClientRequest::Import",
+        "kmipkit_client::ClientBatchOutcome::Import",
+        "kmipkit_protocol::ImportRequest",
+        "kmipkit_protocol::ImportRequest::new",
+        "kmipkit_protocol::ImportResponse",
+        "kmipkit_protocol::ImportResponse::with_ttlv",
+        "kmipkit_protocol::ImportResponse::unique_identifier",
+    },
+    "c": {
+        "kmipkit_client_batch_item_import",
+        "kmipkit_client_batch_item_response_import",
+        "kmipkit_client_batch_item_response_import_ttlv",
+    },
+    "java": {
+        "org.kmipkit.extensions.ClientBatchItem.importObject",
+        "org.kmipkit.extensions.ClientBatchItemResult.importResponse",
+        "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse",
+        "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.uniqueIdentifier",
+        "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.responseTtlv",
+        "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.close",
+    },
+    "python": {
+        "kmipkit.extensions.client_batch_item_import",
+        "kmipkit.client.BatchItemResult.import_response",
+        "kmipkit.client.ImportResponse",
+        "kmipkit.client.ImportResponse.unique_identifier",
+        "kmipkit.client.ImportResponse.response_ttlv",
+        "kmipkit.client.ImportResponse.close",
+    },
+}
+REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-6.1.25-001",
+    "KMIPKIT-REQ-SPEC-6.1.25-004",
+    "KMIPKIT-REQ-SPEC-6.1.25-006",
+    "KMIPKIT-0043-FR-004",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-007",
+    "KMIPKIT-0043-FR-008",
+    "KMIPKIT-0043-FR-009",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-011",
+    "KMIPKIT-0043-FR-012",
+    "KMIPKIT-0043-FR-013",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-018",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022",
+}
+PARITY_EVIDENCE = {
+    "crates/kmipkit-client/tests/unit/import_execution_tests.rs",
+    "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/extensions/ImportResponseMappingTest.java",
+    "bindings/python/tests/test_import_operation.py",
+}
+
+
+class ImportParityManifestTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.operations = [
+            row for row in self.manifest["operations"] if row["operationId"] == OPERATION_ID
+        ]
+        self.declarations = {
+            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
+        }
+
+    def test_import_has_approved_four_language_mapping_and_evidence(self) -> None:
+        self.assertEqual(1, len(self.operations))
+        operation = self.operations[0]
+        self.assertEqual("Import", operation["name"])
+        self.assertEqual("6.1.25", operation["section"])
+        self.assertEqual("verified", operation["apiState"])
+        self.assertEqual("KMIPKIT-0037", operation["featureSpecId"])
+        self.assertEqual("approved", operation["ownerDependency"]["state"])
+        self.assertEqual("KMIPKIT-0037", operation["ownerDependency"]["specId"])
+        self.assertEqual(OWNER_SPEC, operation["approvalEvidence"]["path"])
+        self.assertEqual("Approved", operation["approvalEvidence"]["status"])
+        self.assertNotIn("blockedReason", operation)
+        self.assertEqual(LANGUAGES, set(operation["declarations"]))
+        self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
+        for evidence in PARITY_EVIDENCE:
+            self.assertTrue((ROOT / evidence).is_file(), evidence)
+
+        linked_requirements: set[str] = set()
+        actual_mappings = {language: set() for language in LANGUAGES}
+        for language, declaration_ids in operation["declarations"].items():
+            self.assertTrue(declaration_ids, f"Import has no {language} declarations")
+            for declaration_id in declaration_ids:
+                declaration = self.declarations[declaration_id]
+                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertEqual("four-language", declaration["parityScope"])
+                self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+                self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
+                self.assertEqual("Approved", declaration["approvalSource"]["status"])
+                actual_mappings[language].add(
+                    declaration["languageMappings"][language]["name"]
+                )
+                linked_requirements.update(declaration["requirementIds"])
+        for language, expected in EXPECTED_MAPPINGS.items():
+            self.assertTrue(expected <= actual_mappings[language], language)
+        self.assertTrue(REQUIREMENTS <= linked_requirements)
+
+    def test_generated_parity_inventory_contains_verified_import_mapping(self) -> None:
+        generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
+        operations = [
+            row for row in generated["operations"] if row["operationId"] == OPERATION_ID
+        ]
+        self.assertEqual(1, len(operations))
+        self.assertEqual("verified", operations[0]["apiState"])
+        self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
+
+
+if __name__ == "__main__":
+    unittest.main()
