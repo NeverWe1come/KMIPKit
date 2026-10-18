@@ -61,7 +61,7 @@ changes to this table.
 | `ffi_runtime_metadata` | declared | Version and capability-query metadata is mapped in Rust, C, Java, and Python. |
 | `rust_transport_exchange` | declared | Rust-only transport exchange under accepted ADR-0014; it is not a foreign-language client operation. |
 | `public_binding_surface` | blocked | The complete public declaration inventory and mappings are not reconciled. |
-| `vendor_extension_registry` | declared | Exact shared mappings are recorded; parity verification remains pending and unreconciled exports stay blocked. |
+| `vendor_extension_registry` | declared | Exact shared mappings include Rust drop, C release, Java close, and Python close for native handles; parity verification remains pending. |
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
 | `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |
 | `client_execution` | declared | Discover Versions request and response mappings are present in Rust, C, Java, and Python; complete 1.0 operation conformance remains pending. |
@@ -71,14 +71,14 @@ changes to this table.
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **38 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **37 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Nine operation mappings
+or implementation code elsewhere in the repository. Ten operation mappings
 are `verified`: Certify, Check, Delegated Login, Derive Key, Export, Get,
-Get Constraints, Get Usage Allocation, and Locate. The Derive Key mapping rejects
+Get Constraints, Get Usage Allocation, Import, and Locate. The Derive Key mapping rejects
 a successful result without its required Unique Identifier and preserves the
 complete ordered response TTLV in all four languages. The Get Constraints mapping
 sends the empty §6.1.22 request and exposes its required ordered Constraints

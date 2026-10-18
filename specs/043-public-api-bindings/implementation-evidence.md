@@ -3789,3 +3789,37 @@ assert the Big Integer type and exact `{0x00, 0x80, 0xff}` bytes through
 assertions. This is test-only: the FFI implementation already copied the
 provided bytes unchanged into `Value::big_integer`, so no runtime behavior
 changed in this follow-up.
+
+### T076/T050 — lifecycle and generated-export inventory correction
+
+Two export-accounting gaps discovered while reconciling the complete facade
+inventory are closed here. The Import response's Python dataclass-generated
+members are individually excluded with the approved redacted-representation
+evidence. Thirteen vendor-extension native-handle lifecycle exports are now
+mapped to the implementations already present in each facade: Rust `Drop`, C
+`*_release`, and Java/Python `close()`. The capability remains `declared`; this
+mapping does not claim complete vendor-extension behavior parity.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — ImportResponse exports | `824dbc3c` | Added an export-inventory regression. It failed because ten Python dataclass-generated `ImportResponse` paths had no exact declaration or exclusion. |
+| Green — ImportResponse exports | `d9c8ea29` | Added exact exclusions for the generated paths and regenerated the parity inventory. |
+| Red — extension handle lifecycle | `6d550eae` | Added a manifest regression requiring all 13 observed C release and Java/Python close paths to map to their canonical Rust handles. It failed while those exports were blocked. |
+| Green — extension handle lifecycle | `1d9dee05` | Mapped the 13 existing release/close implementations across all four languages, updated the canonical manifest and regenerated the C, Java, Python, and parity outputs. |
+| Refactor | this commit | Updated English and Spanish package and extension guides, API inventory expectations, and this evidence record. |
+
+Verification on the refactor tree:
+
+| Command | Result |
+|---|---|
+| Focused manifest, shared-inventory, and bilingual-documentation tests (14 selected `unittest` cases) | PASS: 14 tests, 0 failures. |
+| `.venv-t031\Scripts\python.exe -B -m unittest discover -s tools/api_manifest/tests -v` | PASS: 383 tests, 0 failures, 3 platform skips. |
+| `.venv-t031\Scripts\python.exe -B tools\api_manifest\generate.py --check` | PASS: all 12 generated outputs current. |
+| `git diff --check` | PASS. |
+
+The previous PR-head CI run `39134140956` predates the local follow-ups. Its
+failures included stale extension-fixture outputs, a C export-count assertion,
+and the missing `CodecLimits` release declaration. Local commits `6b491be1`
+and `7870c98a` refresh those outputs/counts and map the approved limits
+lifecycle; the new full local API-manifest suite passes. Cross-platform
+final-head CI still needs to run against the pushed head before review.

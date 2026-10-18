@@ -167,6 +167,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Get",
                 "Get Constraints",
                 "Get Usage Allocation",
+                "Import",
                 "Locate",
             ],
         )
@@ -190,7 +191,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
             normalized_guide = re.sub(r"\s+", " ", guide.lower())
             self.assertIn(operation_phrase, normalized_guide)
 
-    def test_vendor_extension_examples_disclose_blocked_release_parity(self) -> None:
+    def test_vendor_extension_examples_document_native_handle_release_parity(self) -> None:
         english = (ROOT / "docs/user-guide/en/vendor-extensions.md").read_text(
             encoding="utf-8"
         )
@@ -199,12 +200,21 @@ class PackageDocumentationContractTests(unittest.TestCase):
         )
         self.assertIn("vendor_extension_registry", english)
         self.assertIn("declared", english)
-        self.assertIn("blocked", english)
-        self.assertIn("verified four-language 1.0 capability", english)
+        self.assertIn("Rust drops the value", english)
+        self.assertIn("C calls its matching `_release` function", english)
+        self.assertIn("Java and Python expose `close()`", english)
+        self.assertIn("No extension-handle release remains blocked", english)
+        self.assertIn(
+            "verified four-language 1.0 capability",
+            " ".join(english.split()),
+        )
         self.assertIn("vendor_extension_registry", spanish)
         self.assertIn("declared", spanish)
-        self.assertIn("bloqueados", spanish)
-        self.assertIn("capacidad 1.0 verificada", spanish)
+        self.assertIn("Rust descarta el valor", spanish)
+        self.assertIn("C llama a su función `_release` correspondiente", spanish)
+        self.assertIn("Java y Python exponen", spanish)
+        self.assertIn("El manifiesto ya no bloquea la liberación", spanish)
+        self.assertIn("capacidad 1.0 verificada", " ".join(spanish.split()))
 
 
 if __name__ == "__main__":
