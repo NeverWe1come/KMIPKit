@@ -157,6 +157,10 @@ def test_locate_response_preserves_repeated_identifier_order(monkeypatch) -> Non
         "second",
         "first",
     ]
+    formatted = repr(result)
+    assert "first" not in formatted
+    assert "second" not in formatted
+    assert formatted.count("value=redacted") == 3
     assert calls == [0, 1, 2]
 
 

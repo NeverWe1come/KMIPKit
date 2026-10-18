@@ -439,7 +439,10 @@ class PublicApiParityTests(unittest.TestCase):
                     java["package"] == "org.kmipkit"
                     or java["package"].startswith("org.kmipkit.")
                 )
-                if function["id"] == "client_batch_item_response_delegated_login_ttlv":
+                if function["id"] in {
+                    "client_batch_item_response_delegated_login_ttlv",
+                    "client_batch_item_response_locate_unique_identifier_at",
+                }:
                     self.assertNotIn("jniSymbol", java)
                 else:
                     self.assertTrue(java["jniSymbol"].startswith("Java_org_kmipkit_"))
@@ -469,6 +472,18 @@ class PublicApiParityTests(unittest.TestCase):
                     for row in aliases
                 }
                 self.assertEqual(len(java_signatures), 1)
+
+    def test_locate_identifier_index_helper_uses_the_response_jni_entrypoint(self) -> None:
+        functions = {function["id"]: function for function in self.manifest["functions"]}
+        response = functions["client_batch_item_response_locate"]
+        identifier_at = functions["client_batch_item_response_locate_unique_identifier_at"]
+
+        self.assertEqual(
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLocate",
+            response["java"]["jniSymbol"],
+        )
+        self.assertEqual("locateResponse", identifier_at["java"]["method"])
+        self.assertNotIn("jniSymbol", identifier_at["java"])
 
     def test_java_method_names_are_legal_java_identifiers(self) -> None:
         for function in self.manifest["functions"]:
