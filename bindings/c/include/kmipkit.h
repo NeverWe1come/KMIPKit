@@ -64,6 +64,7 @@ typedef struct kmipkit_timeout_limit_v1_t kmipkit_timeout_limit_v1_t;
 typedef struct kmipkit_protocol_version_v1_t kmipkit_protocol_version_v1_t;
 typedef struct kmipkit_unique_identifier_v1_t kmipkit_unique_identifier_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v2_t kmipkit_client_batch_item_metadata_v2_t;
+typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -213,6 +214,7 @@ void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
 void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t *handle);
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
+void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
 #define KMIPKIT_ERROR_INTERNAL ((int32_t)7)
 #define KMIPKIT_ERROR_PROTOCOL ((int32_t)8)
@@ -724,6 +726,25 @@ int32_t kmipkit_client_batch_item_interop(uint32_t interop_function, const uint8
  */
 /* KMIPKIT-0042-FR-001, KMIPKIT-0042-FR-002, KMIPKIT-0042-FR-003, KMIPKIT-0042-FR-004, KMIPKIT-0042-FR-005, KMIPKIT-0042-FR-006, KMIPKIT-0042-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_interop_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates one reference pairing a transmitted Unique Identifier occurrence with its caller-known Split Key Threshold. The threshold is local context and is never serialized.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_split_key_reference_create(const kmipkit_unique_identifier_v1_t * unique_identifier, uint32_t split_key_threshold, kmipkit_split_key_reference_t ** out_reference);
+/* Creates a typed KMIP v2.1 Join Split Key request from §6.1.27, Table 244. Every ordered reference pairs one Unique Identifier occurrence with its own caller-known threshold. Repetitions and order are preserved; reference handles and optional Structures are borrowed and copied. Thresholds are validation-only and never serialized.
+ */
+/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_client_batch_item_join_split_key(uint32_t object_type, kmipkit_split_key_reference_t ** references, uint64_t reference_count, uint8_t has_secret_data_type, uint32_t secret_data_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_structure_t * protection_storage_masks, kmipkit_client_batch_item_t ** out_item);
+/* Returns the joined object Unique Identifier only for a successful Join Split Key result.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_client_batch_item_response_join_split_key(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* Returns an owned copy of the complete ordered generic TTLV response for a successful Join Split Key result. Unknown fields and their order are preserved.
+ */
+/* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
+int32_t kmipkit_client_batch_item_response_join_split_key_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */

@@ -32,6 +32,7 @@ ffi.cdef(
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
     typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
+    typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
     typedef struct kmipkit_register_request_t kmipkit_register_request_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
@@ -259,6 +260,14 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_join_split_key(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_join_split_key_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_derive_key(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -460,6 +469,20 @@ ffi.cdef(
         uint32_t key_wrap_type,
         kmipkit_ttlv_structure_t *attributes,
         kmipkit_ttlv_structure_t *any_object,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_split_key_reference_create(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        uint32_t split_key_threshold,
+        kmipkit_split_key_reference_t **out_reference);
+    void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
+    int32_t kmipkit_client_batch_item_join_split_key(
+        uint32_t object_type,
+        kmipkit_split_key_reference_t **references,
+        uint64_t reference_count,
+        uint8_t has_secret_data_type,
+        uint32_t secret_data_type,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_ttlv_structure_t *protection_storage_masks,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_mac(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

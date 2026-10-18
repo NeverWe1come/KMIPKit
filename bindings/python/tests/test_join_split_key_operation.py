@@ -6,7 +6,8 @@ import pytest
 
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
-from kmipkit._ffi import ffi as ttlv_ffi
+from kmipkit._ffi import ffi as ttlv_ffi, lib as ttlv_lib
+from kmipkit import _handles
 
 
 def _split_reference(identifier: str, threshold: int):
@@ -22,19 +23,35 @@ def test_join_split_key_builder_preserves_repeated_reference_order_and_per_entry
     released: list[tuple[str, object]] = []
     next_handle = 100
 
-    def make_handle(_kind: str, symbol: str, arguments: tuple[object, ...]) -> int:
+    def make_handle(_kind: str, symbol: str, arguments: tuple[object, ...]) -> object:
         nonlocal next_handle
         next_handle += 1
         calls.append((symbol, arguments))
+        if symbol == "kmipkit_split_key_reference_create":
+            return extensions.ffi.cast("kmipkit_split_key_reference_t *", next_handle)
         return next_handle
 
     monkeypatch.setattr(extensions, "_make_handle", make_handle)
-    monkeypatch.setattr(extensions, "_invoke", lambda symbol, handle: released.append((symbol, handle)))
+    monkeypatch.setattr(
+        _handles,
+        "lib",
+        SimpleNamespace(
+            kmipkit_split_key_reference_release=lambda handle: released.append(
+                ("kmipkit_split_key_reference_release", handle)
+            ),
+            kmipkit_ttlv_structure_release=ttlv_lib.kmipkit_ttlv_structure_release,
+        ),
+    )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
     attributes = ttlv.ttlv_structure_create()
     masks = ttlv.ttlv_structure_create()
     references = (_split_reference("same-split-id", 1), _split_reference("same-split-id", 2))
     try:
+        assert [reference.unique_identifier.text for reference in references] == [
+            "same-split-id",
+            "same-split-id",
+        ]
+        assert [reference.split_key_threshold for reference in references] == [1, 2]
         item = extensions.client_batch_item_join_split_key(
             0xF1234567,
             references,
@@ -50,12 +67,19 @@ def test_join_split_key_builder_preserves_repeated_reference_order_and_per_entry
         ]
         assert [call[1][1] for call in calls[:2]] == [1, 2]
         native_references = calls[2][1][1]
-        assert [int(native_references[index]) for index in range(2)] == [101, 102]  # type: ignore[index]
+        assert [
+            int(extensions.ffi.cast("uintptr_t", native_references[index]))
+            for index in range(2)
+        ] == [101, 102]
         assert calls[2][1][2:5] == (2, 1, 0xFEDCBA98)
     finally:
+        for reference in references:
+            reference.close()
         masks.close()
         attributes.close()
-    assert released == [
+    assert [
+        (symbol, int(ffi.cast("uintptr_t", handle))) for symbol, handle in released
+    ] == [
         ("kmipkit_split_key_reference_release", 101),
         ("kmipkit_split_key_reference_release", 102),
     ]
@@ -65,12 +89,15 @@ def test_join_split_key_builder_rejects_missing_and_insufficient_threshold_conte
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
-    monkeypatch.setattr(
-        extensions,
-        "_make_handle",
-        lambda _kind, symbol, _arguments: calls.append(symbol) or 22,
-    )
+    def make_handle(_kind: str, symbol: str, _arguments: tuple[object, ...]) -> object:
+        calls.append(symbol)
+        if symbol == "kmipkit_split_key_reference_create":
+            return extensions.ffi.cast("kmipkit_split_key_reference_t *", 22)
+        return 22
+
+    monkeypatch.setattr(extensions, "_make_handle", make_handle)
     reference = _split_reference("one-split-id", 2)
+    calls.clear()
 
     with pytest.raises(errors.InvalidInputError):
         extensions.client_batch_item_join_split_key(1, [reference, None])  # type: ignore[list-item]
@@ -79,10 +106,34 @@ def test_join_split_key_builder_rejects_missing_and_insufficient_threshold_conte
     assert calls == []
 
 
+def test_join_split_key_native_cffi_builder_creates_and_releases_the_typed_item() -> None:
+    first = _split_reference("native-repeat-id", 1)
+    second = _split_reference("native-repeat-id", 2)
+    attributes = ttlv.ttlv_structure_create()
+    masks = ttlv.ttlv_structure_create()
+    item = None
+    try:
+        item = extensions.client_batch_item_join_split_key(
+            7,
+            (first, second),
+            secret_data_type=3,
+            attributes=attributes,
+            protection_storage_masks=masks,
+        )
+        assert not item.closed
+    finally:
+        if item is not None:
+            item.close()
+        masks.close()
+        attributes.close()
+        second.close()
+        first.close()
+
+
 def test_join_split_key_response_owns_ttlv_and_redacts_identifier(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    structure = ttlv.ttlv_structure_create()
+    structure = _join_split_key_response_ttlv()
     raw_handle, owner = structure._take()
     assert owner is None
     pointer = ffi.cast(
@@ -118,11 +169,129 @@ def test_join_split_key_response_owns_ttlv_and_redacts_identifier(
     assert result.unique_identifier == extensions.UniqueIdentifier.text_string("private-split-key-id")
     assert "private-split-key-id" not in repr(result)
     assert result.response_ttlv._pointer() == pointer
+    view = ttlv.ttlv_structure_view(result.response_ttlv)
+    try:
+        assert ttlv.ttlv_structure_view_item_count(view) == 4
+        assert [_response_tag_at(view, index) for index in range(4)] == [
+            0x0042_005C,
+            0x0042_0093,
+            0x0042_007F,
+            0x0042_007C,
+        ]
+        payload_item = ttlv.ttlv_structure_view_item_at(view, 3)
+        payload_value = ttlv.ttlv_item_view_value(payload_item)
+        payload_view = ttlv.ttlv_value_view_structure(payload_value)
+        try:
+            assert ttlv.ttlv_structure_view_item_count(payload_view) == 2
+            assert [_response_tag_at(payload_view, index) for index in range(2)] == [
+                0x0042_0094,
+                0x0054_0001,
+            ]
+        finally:
+            payload_view.close()
+            payload_value.close()
+            payload_item.close()
+    finally:
+        view.close()
     result.close()
     assert result.response_ttlv.closed
 
 
-def test_non_success_join_split_key_has_no_typed_response() -> None:
-    response_type = getattr(client, "JoinSplitKeyResponse", None)
-    assert response_type is not None, "the Python facade must expose typed Join Split Key results"
-    assert callable(getattr(client, "_join_split_key_response", None))
+def test_join_split_key_result_dispatch_uses_operation_0x29_and_success_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected = object()
+    calls: list[object] = []
+
+    def successful_response(item: object) -> object:
+        calls.append(item)
+        return expected
+
+    monkeypatch.setattr(client, "_join_split_key_response", successful_response)
+    item = object()
+    assert client._join_split_key_response_for_result(
+        item, outcome=client.BatchOutcome.COMPLETED, result_status=0, operation=0x29
+    ) is expected
+    assert calls == [item]
+    assert client._join_split_key_response_for_result(
+        item, outcome=client.BatchOutcome.COMPLETED, result_status=0, operation=0x2C
+    ) is None
+    assert client._join_split_key_response_for_result(
+        item, outcome=client.BatchOutcome.COMPLETED, result_status=1, operation=0x29
+    ) is None
+    assert client._join_split_key_response_for_result(
+        item, outcome=client.BatchOutcome.PENDING, result_status=0, operation=0x29
+    ) is None
+
+
+def test_failure_and_pending_join_split_key_results_retain_common_metadata() -> None:
+    failure = client.BatchItemResult(
+        client.BatchOutcome.COMPLETED,
+        1,
+        0xF1234567,
+        b"batch-item-id",
+        None,
+        operation=0x29,
+        result_message="join split key failed",
+    )
+    assert failure.metadata_v2.operation == 0x29
+    assert failure.metadata_v2.result_status == 1
+    assert failure.metadata_v2.result_reason == 0xF1234567
+    assert failure.metadata_v2.result_message == "join split key failed"
+    assert failure.join_split_key_response is None
+
+    pending = client.BatchItemResult(
+        client.BatchOutcome.PENDING,
+        0,
+        None,
+        b"batch-item-id",
+        b"pending-correlation",
+        operation=0x29,
+    )
+    assert pending.outcome == client.BatchOutcome.PENDING
+    assert pending.result_status == 0
+    assert pending.pending_correlation_value == b"pending-correlation"
+    assert pending.join_split_key_response is None
+
+
+def _join_split_key_response_ttlv() -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+
+    def item(tag_value: int, value: ttlv.Value) -> ttlv.TtlvItem:
+        raw_tag = ttlv.raw_tag_from_raw(tag_value)
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+            raw_tag.close()
+
+    try:
+        payload = ttlv.ttlv_structure_create()
+        for child in (
+            item(0x0042_0094, ttlv.ttlv_value_text_string(b"private-split-key-id", limits)),
+            item(0x0054_0001, ttlv.ttlv_value_byte_string(b"unknown-vendor-value", limits)),
+        ):
+            payload = ttlv.ttlv_structure_with_item(payload, child, limits)
+        payload_item = item(0x0042_007C, ttlv.ttlv_value_structure(payload, limits))
+        response = ttlv.ttlv_structure_create()
+        for child in (
+            item(0x0042_005C, ttlv.ttlv_value_enumeration(0x29)),
+            item(0x0042_0093, ttlv.ttlv_value_byte_string(b"batch-item-id", limits)),
+            item(0x0042_007F, ttlv.ttlv_value_enumeration(0)),
+            payload_item,
+        ):
+            response = ttlv.ttlv_structure_with_item(response, child, limits)
+        return response
+    finally:
+        limits.close()
+
+
+def _response_tag_at(view: ttlv.TtlvStructureView, index: int) -> int:
+    item_view = ttlv.ttlv_structure_view_item_at(view, index)
+    tag = ttlv.ttlv_item_view_tag(item_view)
+    try:
+        return ttlv.tag_value(tag)
+    finally:
+        tag.close()
+        item_view.close()

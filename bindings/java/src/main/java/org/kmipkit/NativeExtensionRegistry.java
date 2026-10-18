@@ -45,6 +45,7 @@ public final class NativeExtensionRegistry {
     public static final int CLIENT_BATCH_RESPONSE = 30;
     public static final int CLIENT_BATCH_ITEM_RESPONSE = 31;
     public static final int REGISTER_REQUEST = 32;
+    public static final int SPLIT_KEY_REFERENCE = 33;
 
     private static volatile boolean loaded;
 
@@ -134,6 +135,11 @@ public final class NativeExtensionRegistry {
             long identifierNumber, long objectType, boolean hasReplaceExisting,
             boolean replaceExisting, boolean hasKeyWrapType, long keyWrapType,
             long attributes, long anyObject);
+    public static native long splitKeyReferenceCreate(int identifierKind, byte[] identifierText,
+            long identifierNumber, long splitKeyThreshold);
+    public static native long clientBatchItemJoinSplitKey(long objectType, long[] references,
+            boolean hasSecretDataType, long secretDataType, long attributes,
+            long protectionStorageMasks);
     public static native long clientBatchItemGet(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber,
             boolean hasKeyFormatType, long keyFormatType,
@@ -215,6 +221,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
     public static native Object[] clientBatchItemResponseGetUsageAllocation(long itemResponse);
     public static native Object[] clientBatchItemResponseImport(long itemResponse);
+    public static native Object[] clientBatchItemResponseJoinSplitKey(long itemResponse);
     public static native Object[] clientBatchItemResponseGet(long itemResponse);
     public static native Object[] clientBatchItemResponseLocate(long itemResponse);
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);

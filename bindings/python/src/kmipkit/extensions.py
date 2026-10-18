@@ -23,6 +23,8 @@ from . import errors, ttlv
 from ._ffi import ffi, lib
 from ._handles import (
     NativeHandle,
+    _NATIVE_CALL_LOCK,
+    _NATIVE_HANDLE_TOKEN,
     _invoke,
     _invoke_consuming,
     _integer_range,
@@ -326,6 +328,47 @@ class UniqueIdentifier:
 
     def __repr__(self) -> str:
         return f"UniqueIdentifier(kind={self.kind.name}, value=redacted)"
+
+
+class SplitKeyReference(NativeHandle):
+    """Owned per-occurrence Join Split Key identifier and caller-known threshold."""
+
+    _release_name = "kmipkit_split_key_reference_release"
+    __slots__ = ("_unique_identifier", "_split_key_threshold")
+
+    def __new__(cls, *arguments: object, **keywords: object) -> SplitKeyReference:
+        del arguments, keywords
+        return object.__new__(cls)
+
+    def __init__(self, unique_identifier: UniqueIdentifier, split_key_threshold: int) -> None:
+        if not isinstance(unique_identifier, UniqueIdentifier):
+            errors.raise_for_status(4)
+        threshold = _integer_range(split_key_threshold, 0, 0xFFFF_FFFF)
+        with _staging_buffer_scope() as staging_buffers:
+            native_identifier, _owner = _native_unique_identifier(
+                unique_identifier, staging_buffers
+            )
+            handle = _make_handle(
+                "kmipkit_split_key_reference_t",
+                "kmipkit_split_key_reference_create",
+                (native_identifier, threshold),
+            )
+        super().__init__(handle, _token=_NATIVE_HANDLE_TOKEN)
+        self._unique_identifier = unique_identifier
+        self._split_key_threshold = threshold
+
+    @property
+    def unique_identifier(self) -> UniqueIdentifier:
+        """Return the identifier paired with this reference's local threshold."""
+        return self._unique_identifier
+
+    @property
+    def split_key_threshold(self) -> int:
+        """Return this occurrence's immutable local threshold context."""
+        return self._split_key_threshold
+
+    def __repr__(self) -> str:
+        return f"SplitKeyReference(unique_identifier=redacted, split_key_threshold={self.split_key_threshold})"
 
 
 class RegisterRequest(NativeHandle):
@@ -1770,6 +1813,51 @@ def client_batch_item_import(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_join_split_key(
+    object_type: int,
+    references: list[SplitKeyReference] | tuple[SplitKeyReference, ...],
+    *,
+    secret_data_type: int | None = None,
+    attributes: ttlv.Structure | None = None,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create KMIP 2.1 §6.1.27 Join Split Key with paired local thresholds."""
+    raw_object_type = _integer_range(object_type, 0, 0xFFFF_FFFF)
+    snapshot = _bounded_snapshot(references, 100_000)
+    if not snapshot or any(not isinstance(reference, SplitKeyReference) for reference in snapshot):
+        errors.raise_for_status(4)
+    if len(snapshot) < max(reference.split_key_threshold for reference in snapshot):
+        errors.raise_for_status(4)
+    raw_secret_type = 0 if secret_data_type is None else _integer_range(
+        secret_data_type, 0, 0xFFFF_FFFF
+    )
+    if attributes is not None and not isinstance(attributes, ttlv.Structure):
+        errors.raise_for_status(4)
+    if protection_storage_masks is not None and not isinstance(
+        protection_storage_masks, ttlv.Structure
+    ):
+        errors.raise_for_status(4)
+    with _NATIVE_CALL_LOCK:
+        native_references = ffi.new(
+            "kmipkit_split_key_reference_t *[]",
+            [reference._pointer() for reference in snapshot],
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_join_split_key",
+            (
+                raw_object_type,
+                native_references,
+                len(snapshot),
+                int(secret_data_type is not None),
+                raw_secret_type,
+                _native_structure(attributes),
+                _native_structure(protection_storage_masks),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_get(
     unique_identifier: UniqueIdentifier | None = None,
     key_format_type: int | None = None,
@@ -2107,6 +2195,7 @@ __all__ = [
     "OpaqueObjectContext",
     "RegisteredExtensionValue",
     "RegisterRequest",
+    "SplitKeyReference",
     "UniqueIdentifier",
     "UniqueIdentifierKind",
     "TtlvPath",
@@ -2128,6 +2217,7 @@ __all__ = [
     "client_batch_item_delegated_login",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_import",
+    "client_batch_item_join_split_key",
     "client_batch_item_get",
     "client_batch_item_locate",
     "client_batch_item_export",

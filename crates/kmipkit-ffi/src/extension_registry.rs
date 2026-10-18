@@ -20,12 +20,12 @@ use crate::{
     kmipkit_extension_information_t, kmipkit_extension_order_constraint_t,
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
     kmipkit_extension_schema_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
-    kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
-    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
-    kmipkit_validated_extension_value_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t,
+    kmipkit_split_key_reference_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
+    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
+    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_unique_identifier_v1_t, kmipkit_validated_extension_value_t,
 };
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
@@ -37,11 +37,11 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
     CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
     DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, InteropRequest, KeyCompressionType, KeyFormatType, KeyWrapType,
-    LocateRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
-    SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    StorageStatusMask, UniqueIdentifier,
+    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
+    KeyFormatType, KeyWrapType, LocateRequest, MacRequest, MacVerifyRequest, ObjectGroupMember,
+    ObjectType, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
+    RegisterRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -305,6 +305,7 @@ enum Kind {
     ClientBatch,
     ClientBatchResponse,
     ClientBatchItemResponse,
+    SplitKeyReference,
 }
 
 enum HandleValue {
@@ -347,6 +348,7 @@ enum HandleValue {
         response: Arc<ClientBatchResponse>,
         index: usize,
     },
+    SplitKeyReference(SplitKeyReference),
 }
 
 struct Handle {
@@ -1373,6 +1375,13 @@ pub extern "C" fn kmipkit_ttlv_structure_release(handle: *mut kmipkit_ttlv_struc
 pub extern "C" fn kmipkit_client_batch_item_release(handle: *mut kmipkit_client_batch_item_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::BatchItem);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_split_key_reference_release(handle: *mut kmipkit_split_key_reference_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::SplitKeyReference);
     });
 }
 
@@ -3163,6 +3172,106 @@ pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
         *out = try_ffi!(batch_item_handle(ClientRequest::get_usage_allocation(
             request
         )));
+        SUCCESS
+    })
+}
+
+/// Creates one owned identifier and its caller-known, local threshold context.
+/// The threshold is retained only for pre-send request validation and is never encoded.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_split_key_reference_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    split_key_threshold: u32,
+    out_reference: *mut *mut kmipkit_split_key_reference_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_reference);
+        let Some(unique_identifier) = try_ffi!(copy_optional_identifier(unique_identifier)) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let reference =
+            SplitKeyReference::new(unique_identifier).with_split_key_threshold(split_key_threshold);
+        *out = try_ffi!(try_make_handle(
+            Kind::SplitKeyReference,
+            HandleValue::SplitKeyReference(reference),
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 2.1 Join Split Key request from §6.1.27, Table 244.
+/// Reference handles are borrowed for this call; their identifier order and repetitions are
+/// copied into the request while their individual thresholds remain local validation context.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_join_split_key(
+    object_type: u32,
+    references: *mut *mut kmipkit_split_key_reference_t,
+    reference_count: u64,
+    has_secret_data_type: u8,
+    secret_data_type: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let references = match input_handle_array(
+            references,
+            reference_count,
+            100_000,
+            Kind::SplitKeyReference,
+            |handle| {
+                let HandleValue::SplitKeyReference(reference) = &handle.value else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                let threshold = reference.split_key_threshold().ok_or(ERROR_INVALID_INPUT)?;
+                Ok(
+                    SplitKeyReference::new(reference.unique_identifier().clone())
+                        .with_split_key_threshold(threshold),
+                )
+            },
+        ) {
+            Ok(references) => references,
+            Err(status) => return record_ffi_error(status),
+        };
+        if references.is_empty() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let maximum_threshold = references
+            .iter()
+            .filter_map(SplitKeyReference::split_key_threshold)
+            .max()
+            .unwrap_or(0);
+        if u64::try_from(references.len())
+            .map_or(true, |count| count < u64::from(maximum_threshold))
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let secret_data_type = match has_secret_data_type {
+            0 if secret_data_type == 0 => None,
+            1 => Some(secret_data_type),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let attributes = match copy_attribute_set_handle(attributes, false) {
+            Ok(attributes) => attributes,
+            Err(status) => return record_ffi_error(status),
+        };
+        let protection_storage_masks = match copy_structure_handle(protection_storage_masks, false)
+        {
+            Ok(masks) => masks,
+            Err(status) => return record_ffi_error(status),
+        };
+        let mut request = JoinSplitKeyRequest::new(ObjectType::from_raw(object_type), references);
+        if let Some(value) = secret_data_type {
+            request = request.with_secret_data_type(value);
+        }
+        if let Some(attributes) = attributes {
+            request = request.with_attributes(attributes);
+        }
+        if let Some(masks) = protection_storage_masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::join_split_key(request)));
         SUCCESS
     })
 }

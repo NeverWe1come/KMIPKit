@@ -112,7 +112,7 @@ class JoinSplitKeyParityManifestTests(unittest.TestCase):
 
         for language, expected in EXPECTED_MAPPINGS.items():
             self.assertTrue(expected <= actual_mappings[language], language)
-        self.assertTrue(REQUIREMENTS <= linked_requirements)
+        self.assertEqual(REQUIREMENTS, linked_requirements)
 
     def test_generated_parity_inventory_contains_verified_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))

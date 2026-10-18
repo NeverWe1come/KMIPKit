@@ -61,6 +61,10 @@ pub struct kmipkit_client_batch_response_t {
 pub struct kmipkit_client_batch_item_response_t {
     _private: [u8; 0],
 }
+#[repr(C)]
+pub struct kmipkit_split_key_reference_t {
+    _private: [u8; 0],
+}
 
 /// Common operation outcome fields, versioned independently from opaque handles.
 #[repr(C)]

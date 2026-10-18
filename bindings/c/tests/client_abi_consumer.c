@@ -999,7 +999,13 @@ static int join_split_key_constructor_pairs_each_identifier_with_its_threshold(v
     kmipkit_client_batch_item_release(item);
     item = 0;
     if (kmipkit_client_batch_item_join_split_key(
-            1, references, 1, 0, 0, 0, 0, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+            1, references, 1, 0, 0, 0, 0, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    if (kmipkit_client_batch_item_join_split_key(
+            1, references + 1, 1, 0, 0, 0, 0, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
         goto cleanup;
     }
     if (kmipkit_client_batch_item_join_split_key(
@@ -2521,6 +2527,51 @@ int kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
     result = 1;
 
 cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
+    kmipkit_client_batch_item_response_t *item) {
+    static const uint8_t expected_identifier[] = "joined-id";
+    static const uint32_t expected_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t identifier_present = 0;
+    uint8_t ttlv_present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    uint64_t count = 0;
+    int result = 0;
+
+    if (item == 0) {
+        return 0;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    if (kmipkit_client_batch_item_response_join_split_key(
+            item, &identifier_present, &identifier) != 0 || identifier_present != 1 ||
+        !response_identifier_matches(
+            &identifier, expected_identifier, (uint64_t)(sizeof(expected_identifier) - 1)) ||
+        kmipkit_client_batch_item_response_join_split_key_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 || ttlv_present != 1 ||
+        response_ttlv == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 ||
+        count != (uint64_t)(sizeof(expected_tags) / sizeof(expected_tags[0])) ||
+        !check_view_tags(view, expected_tags, count) ||
+        !public_ttlv_view_contains_response_sentinel(view, 0)) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(item);
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(response_ttlv);
     return result;

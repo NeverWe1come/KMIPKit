@@ -39,6 +39,7 @@ _MIN_I64 = -(1 << 63)
 _MAX_I64 = (1 << 63) - 1
 _MIN_I32 = -(1 << 31)
 _MAX_I32 = (1 << 31) - 1
+_JOIN_SPLIT_KEY_OPERATION = 0x29
 
 
 def _unsigned(value: int, bits: int, *, allow_zero: bool = True) -> int:
@@ -860,6 +861,7 @@ class BatchItemResult:
     _get_response: GetResponse | None = field(default=None, repr=False)
     _locate_response: LocateResponse | None = field(default=None, repr=False)
     import_response: ImportResponse | None = field(default=None, repr=False)
+    join_split_key_response: JoinSplitKeyResponse | None = field(default=None, repr=False)
     interop_response: InteropResponse | None = field(default=None, repr=False)
 
     @property
@@ -966,6 +968,18 @@ class GetUsageAllocationResponse:
 @dataclass(frozen=True, slots=True)
 class ImportResponse:
     """Successful Import response and its owned complete generic TTLV copy."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class JoinSplitKeyResponse:
+    """Successful Join Split Key response and its owned complete generic TTLV copy."""
 
     unique_identifier: extensions.UniqueIdentifier = field(repr=False)
     response_ttlv: ttlv.Structure = field(repr=False)
@@ -1369,6 +1383,12 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x2A
                 ):
                     import_response = _import_response(item)
+                join_split_key_response = _join_split_key_response_for_result(
+                    item,
+                    outcome=outcome,
+                    result_status=int(metadata.result_status),
+                    operation=int(metadata.operation),
+                )
                 get_response = None
                 if int(metadata.operation) == 0x0A:
                     get_response = _get_response(item)
@@ -1409,6 +1429,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         _get_response=get_response,
                         _locate_response=locate_response,
                         import_response=import_response,
+                        join_split_key_response=join_split_key_response,
                         interop_response=interop_response,
                     )
                 )
@@ -1861,6 +1882,64 @@ def _import_response(item: _ClientBatchItemResponse) -> ImportResponse | None:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return ImportResponse(unique_identifier, response_ttlv)
+
+
+def _join_split_key_response(
+    item: _ClientBatchItemResponse,
+) -> JoinSplitKeyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_join_split_key(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        if _optional_output_identifier(identifier) is not None:
+            errors.raise_for_status(4)
+        return None
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_join_split_key_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return JoinSplitKeyResponse(unique_identifier, response_ttlv)
+
+
+def _join_split_key_response_for_result(
+    item: _ClientBatchItemResponse,
+    *,
+    outcome: BatchOutcome | int,
+    result_status: int,
+    operation: int,
+) -> JoinSplitKeyResponse | None:
+    """Map only successful KMIP v2.1 Join Split Key result items to the typed response."""
+    if (
+        outcome != BatchOutcome.COMPLETED
+        or result_status != 0
+        or operation != _JOIN_SPLIT_KEY_OPERATION
+    ):
+        return None
+    return _join_split_key_response(item)
 
 
 def _get_response(item: _ClientBatchItemResponse) -> GetResponse | None:
@@ -2585,6 +2664,7 @@ __all__ = [
     "HashResponse",
     "GetUsageAllocationResponse",
     "ImportResponse",
+    "JoinSplitKeyResponse",
     "InteropResponse",
     "GetConstraintsResponse",
     "GetResponse",

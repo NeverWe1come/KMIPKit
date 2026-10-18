@@ -18,6 +18,7 @@ public final class ClientBatchItem implements AutoCloseable {
     private static final int MAX_UNIQUE_BATCH_ITEM_ID_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
     private static final int MAX_OPERATION_INPUT_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
     private static final int MAX_DERIVE_KEY_SOURCE_IDENTIFIERS = 100_000;
+    private static final int MAX_SPLIT_KEY_REFERENCES = 100_000;
 
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
@@ -222,6 +223,57 @@ public final class ClientBatchItem implements AutoCloseable {
         } finally {
             clearNativeCopies(identifierText);
         }
+    }
+
+    /** Creates a Join Split Key request with an individual local threshold for each reference. */
+    public static ClientBatchItem joinSplitKey(
+            long objectType,
+            List<SplitKeyReference> references,
+            @Nullable Long secretDataType,
+            @Nullable TtlvStructure attributes,
+            @Nullable TtlvStructure protectionStorageMasks) {
+        requireU32(objectType, "Join Split Key Object Type");
+        if (references == null || references.isEmpty() || references.size() > MAX_SPLIT_KEY_REFERENCES) {
+            throw new InvalidInputException("Join Split Key references are invalid");
+        }
+        long maximumThreshold = 0;
+        SplitKeyReference[] snapshot = references.toArray(SplitKeyReference[]::new);
+        for (SplitKeyReference reference : snapshot) {
+            if (reference == null) {
+                throw new InvalidInputException("Join Split Key reference is invalid");
+            }
+            maximumThreshold = Math.max(maximumThreshold, reference.splitKeyThreshold());
+        }
+        if (snapshot.length < maximumThreshold) {
+            throw new InvalidInputException("Join Split Key reference count is below its threshold");
+        }
+        if (secretDataType != null) requireU32(secretDataType, "Join Split Key Secret Data Type");
+        NativeHandle[] owners = new NativeHandle[snapshot.length + 2];
+        for (int index = 0; index < snapshot.length; index++) {
+            owners[index] = snapshot[index].nativeHandleOwner();
+        }
+        owners[snapshot.length] = attributes == null ? null : attributes.nativeHandleOwner();
+        owners[snapshot.length + 1] = protectionStorageMasks == null
+                ? null : protectionStorageMasks.nativeHandleOwner();
+        NativeExtensionRegistry.ensureLoaded();
+        long nativeHandle = NativeHandle.withNativeHandles(() -> NativeHandle.withValues(
+                java.util.Arrays.stream(owners).filter(java.util.Objects::nonNull)
+                        .toArray(NativeHandle[]::new), values -> {
+                    long[] nativeReferences = java.util.Arrays.copyOf(values, snapshot.length);
+                    int structureIndex = snapshot.length;
+                    long nativeAttributes = attributes == null ? 0 : values[structureIndex++];
+                    long nativeMasks = protectionStorageMasks == null ? 0 : values[structureIndex];
+                    return NativeExtensionRegistry.clientBatchItemJoinSplitKey(
+                            objectType, nativeReferences, secretDataType != null,
+                            secretDataType == null ? 0 : secretDataType,
+                            nativeAttributes, nativeMasks);
+                }));
+        return new ClientBatchItem(nativeHandle, List.of());
+    }
+
+    /** Creates a Join Split Key request with no optional Table 244 values. */
+    public static ClientBatchItem joinSplitKey(long objectType, List<SplitKeyReference> references) {
+        return joinSplitKey(objectType, references, null, null, null);
     }
 
     /** Creates a Get request with the optional Table 220 fields in their canonical order. */

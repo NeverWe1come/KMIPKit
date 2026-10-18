@@ -3650,6 +3650,9 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
 }
 
 #[test]
@@ -3726,6 +3729,38 @@ fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
     assert_eq!(
         result, 1,
         "the copied generic response must outlive its source item"
+    );
+}
+
+#[test]
+fn ffi_join_split_key_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
+    let unknown_value = [0xde, 0xad, 0x00, 0xff];
+    let request = JoinSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        vec![
+            SplitKeyReference::new(UniqueIdentifier::TextString("repeated-id".to_owned()))
+                .with_split_key_threshold(1),
+            SplitKeyReference::new(UniqueIdentifier::TextString("repeated-id".to_owned()))
+                .with_split_key_threshold(2),
+        ],
+    );
+    let item = successful_cryptographic_item(
+        ClientRequest::join_split_key(request),
+        0x29,
+        b"join-split-key",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"joined-id"),
+            ttlv_item(0x0054_0001, 0x08, &unknown_value),
+        ],
+    );
+
+    // SAFETY: the compiled C consumer receives this live response-item handle and takes ownership.
+    let result =
+        unsafe { kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(item) };
+
+    assert_eq!(
+        result, 1,
+        "C reads the returned identifier and complete ordered TTLV after releasing the source item"
     );
 }
 
