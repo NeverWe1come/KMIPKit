@@ -3866,3 +3866,45 @@ run `39144588070`, which completed successfully with all required jobs passing,
 including `Coverage gate / selected scopes`. The Import changed-production
 coverage gate and final-head CI requirement for T050 are satisfied on that
 implementation head; broader release parity work remains open.
+
+### T051 — Interop mapping across Rust, C, Java, and Python
+
+T051 implements the approved KMIPKIT-0042 Interop contract in the four public
+language surfaces. The C ABI validates and owns the open `uint32` Function and
+UTF-8 Identifier. C, Java, and Python can retrieve an owned copy of the full
+generic TTLV for valid Success, Failure, and Pending results. This explicit
+result accessor does not expose local transport, protocol, or validation error
+bodies. Java and Python wrappers redact formatting and release their owned
+TTLV handles. The public API manifest and its generated declarations now map
+the approved contract and exact exports; bilingual guides and both traceability
+ledgers describe the ownership and security boundaries.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — facade parity contract | `2bd214c5` | Added a manifest regression requiring an approved four-language Interop mapping, linked OASIS/feature evidence, exact public declarations, and response ownership evidence. The initial test failed because T051 had no verified manifest mapping. |
+| Red — verified mapping and exclusions | `0ee9c738` | Strengthened the test to require verified declarations and reviewed exact exclusions for JNI bridge methods and generated redacted formatter/dataclass members. The test failed while the declaration set and exclusions were absent. |
+| Green — implementation and generated mapping | `650a56af` | Added the Rust FFI constructor and generic response-TTLV getter, C declarations and consumer calls, Java JNI and owned facade, Python CFFI and owned facade, source manifest records, generated API outputs, focused tests, bilingual guide updates, and requirement traceability. |
+| Refactor — evidence and traceability audit | this commit | Added the distinct phase evidence, expanded the manifest regression to assert the complete set of linked requirements, and listed API FR-015 explicitly in T051 traceability because the mapping is generated from the reviewed manifest. |
+
+Focused verification on the refactor tree:
+
+| Command or evidence | Result |
+|---|---|
+| `cargo fmt --all --check` | PASS. |
+| `cargo test --locked -p kmipkit-ffi --all-features --lib interop_abi_tests -- --nocapture` | PASS: constructor validation/redaction and response getter status/invalid-handle cases. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture` | PASS: compiled C consumer exercises the Interop constructor and invalid output clearing. |
+| `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=InteropJavaFacadeTest,InteropResponseMappingTest' test` | PASS: 5 tests; the JNI library built successfully. Existing AWS-LC probe and linker warnings were non-fatal. |
+| Python 3.12 isolated environment: `pytest tests/test_interop_operation.py -q` with the locally built native library | PASS: 4 tests. The checkout `.venv` could not be reused because of its `lib64` permission issue; the temporary environment was outside the repository. |
+| `python -B -m unittest tools.api_manifest.tests.test_interop_parity_manifest -v` | PASS: 2 tests, including exact requirement-set and traceability consistency checks. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs are current. |
+| `cargo test --locked --workspace --all-features` | PASS on the implementation tree: workspace tests passed; 3 Cosmian integration cases were ignored because they require a local server. |
+| `cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked --json --output-path coverage-ffi/coverage.json` | PASS: all FFI unit and C consumer tests passed; crate line coverage was 93.86%, above its 85% transport/FFI gate. This aggregate result does not establish the changed-code 95% gate. |
+
+The full export audit still reports older, non-T051 Java/Python inventory
+discrepancies (including GetConstraints and other existing declarations). Its
+current findings contain no T051 export or kind mismatch; the dedicated T051
+manifest regression and generator check pass. These baseline findings are not
+expanded into this operation mapping. Final-head CI, including the selected
+changed-code coverage gate and supported-platform matrix, must pass before T051
+is checked complete. The later T071 shared native-backed cross-language corpus
+also remains a separate parity deliverable.
