@@ -21889,14 +21889,40 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_raw_tag_release",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::RawTag"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_raw_tag_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.RawTag.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.RawTag.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "RawTag:java",
@@ -22432,14 +22458,40 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_item_release",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_item_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItem.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvItem.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "TtlvItem:java",
@@ -23499,14 +23551,40 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_release",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "TtlvValue:java",
@@ -32657,42 +32735,132 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_item_create",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Item::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_item_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItem.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_item_create"
+        }
+      }
     },
     {
       "declarationId": "ttlv_item_create:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvItem.create",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Item::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_item_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItem.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_item_create"
+        }
+      }
     },
     {
       "declarationId": "ttlv_item_create:python",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_item_create",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Item::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_item_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItem.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_item_create"
+        }
+      }
     },
     {
       "declarationId": "ttlv_item_view_tag:c",
@@ -34489,51 +34657,129 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_structure_with_item",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Structure::try_push"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_with_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructure.withItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_structure_with_item"
+        }
+      }
     },
     {
       "declarationId": "ttlv_structure_with_item:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvStructure.withItem",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Structure::try_push"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_with_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructure.withItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_structure_with_item"
+        }
+      }
     },
     {
       "declarationId": "ttlv_structure_with_item:python",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_structure_with_item",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Structure::try_push"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_with_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructure.withItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_structure_with_item"
+        }
+      }
     },
     {
       "declarationId": "ttlv_tag_value:c",
@@ -34918,42 +35164,129 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_byte_string",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::byte_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_byte_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_byte_string"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_byte_string:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.ByteString",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::byte_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_byte_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_byte_string"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_byte_string:python",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_byte_string",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::byte_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_byte_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_byte_string"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_date_time:c",
@@ -36040,93 +36373,264 @@
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_structure",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_structure"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.structure"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_structure"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_structure:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.structure",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_structure"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.structure"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_structure"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_structure:python",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_structure",
-      "capabilityId": "vendor_extension_registry",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The existing v1 mapping points to the unpublished FFI bridge; its published Rust crate mapping still needs review in the full API inventory."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_structure"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.structure"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_structure"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_text_string:c",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
       "exportName": "kmipkit_ttlv_value_text_string",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::text_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_text_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.TextString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_text_string"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_text_string:java",
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.TextString",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::text_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_text_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.TextString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_text_string"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_text_string:python",
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.ttlv_value_text_string",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::text_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_text_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.TextString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_text_string"
+        }
+      }
     },
     {
       "declarationId": "ttlv_value_view:c",
@@ -43661,14 +44165,42 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.RawTag.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::RawTag"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_raw_tag_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.RawTag.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.RawTag.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "python-observed-1e91f406bf329fe90330",
@@ -43887,14 +44419,42 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.TtlvItem.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_item_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItem.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvItem.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "python-observed-dd7e082099501ebc8daf",
@@ -44197,14 +44757,42 @@
       "packageId": "python-kmipkit",
       "kind": "python-export",
       "exportName": "kmipkit.ttlv.Value.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The inherited native-handle lifecycle member is public on this wrapper but lacks a reviewed four-language mapping."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "python-observed-a23e7f26486cc82c1593",
@@ -45113,14 +45701,44 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Item::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Item::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_item_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItem.create"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_item_create"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-1c31722466c8dff3919c",
@@ -45259,14 +45877,43 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Structure::try_push",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Structure::try_push"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_with_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvStructure.withItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_structure_with_item"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b7b6373734f7fb6f4b07",
@@ -45856,14 +46503,45 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::structure",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::structure"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_structure"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.structure"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_structure"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-0a4fc4f9fd433bfb9ca5",
@@ -45884,28 +46562,86 @@
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::text_string",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::text_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_text_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.TextString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_text_string"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-95240f5d9bb662f09bbd",
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
       "exportName": "kmipkit_ttlv::Value::byte_string",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0004",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value::byte_string"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_byte_string"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.ByteString"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.ttlv_value_byte_string"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-32eb61e7cc5dca41858c",
@@ -221913,15 +222649,42 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.RawTag.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::RawTag"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_raw_tag_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.RawTag.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.RawTag.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "java-observed-9d92f64b187a72b540f8",
@@ -221974,15 +222737,42 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvItem.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_item_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvItem.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.TtlvItem.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "java-observed-904202341811dc6e8f4c",
@@ -222076,15 +222866,42 @@
       "packageId": "java-kmipkit",
       "kind": "java-member",
       "exportName": "org.kmipkit.ttlv.TtlvValue.close",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "generic_ttlv_model",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "This Java AutoCloseable declaration has no reviewed equivalent mapping across the four public languages; it is inventoried without advertising complete parity."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/004-generic-ttlv-model/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-ttlv",
+          "name": "kmipkit_ttlv::Value"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_value_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ttlv.TtlvValue.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.ttlv.Value.close"
+        }
+      },
+      "mappingSemantics": "native-handle-release"
     },
     {
       "declarationId": "java-observed-34aa1ad57dd64d49d05d",
@@ -260749,6 +261566,7 @@
         "rust": [
           "kmipkit_ttlv::Item",
           "kmipkit_ttlv::Item::item_type",
+          "kmipkit_ttlv::Item::new",
           "kmipkit_ttlv::Item::tag",
           "kmipkit_ttlv::Item::with_value",
           "kmipkit_ttlv::ItemType",
@@ -260769,6 +261587,7 @@
           "kmipkit_ttlv::RawTag::try_checked",
           "kmipkit_ttlv::Structure",
           "kmipkit_ttlv::Structure::new",
+          "kmipkit_ttlv::Structure::try_push",
           "kmipkit_ttlv::Structure::view",
           "kmipkit_ttlv::StructureView",
           "kmipkit_ttlv::StructureView::children",
@@ -260776,12 +261595,15 @@
           "kmipkit_ttlv::Tag::raw",
           "kmipkit_ttlv::Value",
           "kmipkit_ttlv::Value::boolean",
+          "kmipkit_ttlv::Value::byte_string",
           "kmipkit_ttlv::Value::date_time",
           "kmipkit_ttlv::Value::date_time_extended",
           "kmipkit_ttlv::Value::enumeration",
           "kmipkit_ttlv::Value::integer",
           "kmipkit_ttlv::Value::interval",
           "kmipkit_ttlv::Value::long_integer",
+          "kmipkit_ttlv::Value::structure",
+          "kmipkit_ttlv::Value::text_string",
           "kmipkit_ttlv::Value::with_value",
           "kmipkit_ttlv::ValueView",
           "kmipkit_ttlv::ValueView::Boolean::0",
@@ -260805,9 +261627,12 @@
           "KMIPKIT_TTLV_ITEM_TYPE_LONG_INTEGER",
           "KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE",
           "KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING",
+          "kmipkit_raw_tag_release",
           "kmipkit_raw_tag_t",
           "kmipkit_tag_release",
           "kmipkit_tag_t",
+          "kmipkit_ttlv_item_create",
+          "kmipkit_ttlv_item_release",
           "kmipkit_ttlv_item_t",
           "kmipkit_ttlv_item_type_t",
           "kmipkit_ttlv_item_view_release",
@@ -260826,15 +261651,20 @@
           "kmipkit_ttlv_structure_view_item_count",
           "kmipkit_ttlv_structure_view_release",
           "kmipkit_ttlv_structure_view_t",
+          "kmipkit_ttlv_structure_with_item",
           "kmipkit_ttlv_tag_value",
           "kmipkit_ttlv_value_boolean",
+          "kmipkit_ttlv_value_byte_string",
           "kmipkit_ttlv_value_date_time",
           "kmipkit_ttlv_value_date_time_extended",
           "kmipkit_ttlv_value_enumeration",
           "kmipkit_ttlv_value_integer",
           "kmipkit_ttlv_value_interval",
           "kmipkit_ttlv_value_long_integer",
+          "kmipkit_ttlv_value_release",
+          "kmipkit_ttlv_value_structure",
           "kmipkit_ttlv_value_t",
+          "kmipkit_ttlv_value_text_string",
           "kmipkit_ttlv_value_view",
           "kmipkit_ttlv_value_view_boolean",
           "kmipkit_ttlv_value_view_byte_at",
@@ -260853,12 +261683,15 @@
         "java": [
           "org.kmipkit.ttlv.RawTag",
           "org.kmipkit.ttlv.RawTag.checked",
+          "org.kmipkit.ttlv.RawTag.close",
           "org.kmipkit.ttlv.RawTag.fromRaw",
           "org.kmipkit.ttlv.RawTag.raw",
           "org.kmipkit.ttlv.Tag",
           "org.kmipkit.ttlv.Tag.close",
           "org.kmipkit.ttlv.Tag.raw",
           "org.kmipkit.ttlv.TtlvItem",
+          "org.kmipkit.ttlv.TtlvItem.close",
+          "org.kmipkit.ttlv.TtlvItem.create",
           "org.kmipkit.ttlv.TtlvItemType",
           "org.kmipkit.ttlv.TtlvItemType.BigInteger",
           "org.kmipkit.ttlv.TtlvItemType.Boolean",
@@ -260880,18 +261713,23 @@
           "org.kmipkit.ttlv.TtlvStructure.close",
           "org.kmipkit.ttlv.TtlvStructure.create",
           "org.kmipkit.ttlv.TtlvStructure.view",
+          "org.kmipkit.ttlv.TtlvStructure.withItem",
           "org.kmipkit.ttlv.TtlvStructureView",
           "org.kmipkit.ttlv.TtlvStructureView.close",
           "org.kmipkit.ttlv.TtlvStructureView.itemAt",
           "org.kmipkit.ttlv.TtlvStructureView.itemCount",
           "org.kmipkit.ttlv.TtlvValue",
           "org.kmipkit.ttlv.TtlvValue.Boolean",
+          "org.kmipkit.ttlv.TtlvValue.ByteString",
           "org.kmipkit.ttlv.TtlvValue.DateTime",
           "org.kmipkit.ttlv.TtlvValue.DateTimeExtended",
           "org.kmipkit.ttlv.TtlvValue.Enumeration",
           "org.kmipkit.ttlv.TtlvValue.Integer",
           "org.kmipkit.ttlv.TtlvValue.Interval",
           "org.kmipkit.ttlv.TtlvValue.LongInteger",
+          "org.kmipkit.ttlv.TtlvValue.TextString",
+          "org.kmipkit.ttlv.TtlvValue.close",
+          "org.kmipkit.ttlv.TtlvValue.structure",
           "org.kmipkit.ttlv.TtlvValue.view",
           "org.kmipkit.ttlv.TtlvValueView",
           "org.kmipkit.ttlv.TtlvValueView.booleanValue",
@@ -260921,11 +261759,13 @@
           "kmipkit.ttlv.ItemType.Structure",
           "kmipkit.ttlv.ItemType.TextString",
           "kmipkit.ttlv.RawTag",
+          "kmipkit.ttlv.RawTag.close",
           "kmipkit.ttlv.Structure",
           "kmipkit.ttlv.Structure.close",
           "kmipkit.ttlv.Tag",
           "kmipkit.ttlv.Tag.close",
           "kmipkit.ttlv.TtlvItem",
+          "kmipkit.ttlv.TtlvItem.close",
           "kmipkit.ttlv.TtlvItemView",
           "kmipkit.ttlv.TtlvItemView.close",
           "kmipkit.ttlv.TtlvStructureView",
@@ -260933,10 +261773,12 @@
           "kmipkit.ttlv.TtlvValueView",
           "kmipkit.ttlv.TtlvValueView.close",
           "kmipkit.ttlv.Value",
+          "kmipkit.ttlv.Value.close",
           "kmipkit.ttlv.raw_tag_from_raw",
           "kmipkit.ttlv.raw_tag_try_checked",
           "kmipkit.ttlv.raw_tag_value",
           "kmipkit.ttlv.tag_value",
+          "kmipkit.ttlv.ttlv_item_create",
           "kmipkit.ttlv.ttlv_item_view_tag",
           "kmipkit.ttlv.ttlv_item_view_type",
           "kmipkit.ttlv.ttlv_item_view_value",
@@ -260944,13 +261786,17 @@
           "kmipkit.ttlv.ttlv_structure_view",
           "kmipkit.ttlv.ttlv_structure_view_item_at",
           "kmipkit.ttlv.ttlv_structure_view_item_count",
+          "kmipkit.ttlv.ttlv_structure_with_item",
           "kmipkit.ttlv.ttlv_value_boolean",
+          "kmipkit.ttlv.ttlv_value_byte_string",
           "kmipkit.ttlv.ttlv_value_date_time",
           "kmipkit.ttlv.ttlv_value_date_time_extended",
           "kmipkit.ttlv.ttlv_value_enumeration",
           "kmipkit.ttlv.ttlv_value_integer",
           "kmipkit.ttlv.ttlv_value_interval",
           "kmipkit.ttlv.ttlv_value_long_integer",
+          "kmipkit.ttlv.ttlv_value_structure",
+          "kmipkit.ttlv.ttlv_value_text_string",
           "kmipkit.ttlv.ttlv_value_view",
           "kmipkit.ttlv.ttlv_value_view_boolean",
           "kmipkit.ttlv.ttlv_value_view_byte_at",

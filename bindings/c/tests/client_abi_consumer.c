@@ -6,37 +6,6 @@
 
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
-extern int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(
-    kmipkit_client_t *client,
-    kmipkit_client_batch_t **batch,
-    kmipkit_codec_limits_t *limits,
-    const kmipkit_request_options_v1_t *options,
-    kmipkit_client_batch_response_t **out_response,
-    kmipkit_ttlv_structure_t **out_error_response_ttlv);
-/* These generic TTLV builder exports let the C ABI fixture form valid Hash parameters. */
-extern int32_t kmipkit_ttlv_value_byte_string(
-    kmipkit_codec_limits_t *limits,
-    const uint8_t *value,
-    uint64_t value_length,
-    kmipkit_ttlv_value_t **out_value);
-extern int32_t kmipkit_ttlv_value_structure(
-    kmipkit_ttlv_structure_t *structure,
-    kmipkit_codec_limits_t *limits,
-    kmipkit_ttlv_value_t **out_value);
-extern int32_t kmipkit_ttlv_item_create(
-    kmipkit_tag_t *tag,
-    kmipkit_ttlv_value_t *value,
-    kmipkit_codec_limits_t *limits,
-    kmipkit_ttlv_item_t **out_item);
-extern int32_t kmipkit_ttlv_structure_with_item(
-    kmipkit_ttlv_structure_t *structure,
-    kmipkit_ttlv_item_t *item,
-    kmipkit_codec_limits_t *limits,
-    kmipkit_ttlv_structure_t **out_structure);
-extern void kmipkit_raw_tag_release(kmipkit_raw_tag_t *handle);
-extern void kmipkit_ttlv_value_release(kmipkit_ttlv_value_t *handle);
-extern void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);
-
 static int execute_with_options_and_error_ttlv_clears_outputs(void) {
     kmipkit_client_batch_response_t *response = (kmipkit_client_batch_response_t *)(uintptr_t)1;
     kmipkit_ttlv_structure_t *error_response = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
