@@ -6276,6 +6276,162 @@
       "exportName": "org.kmipkit.extensions.SplitKeyReference.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0038, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDelegatedLogin",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Delegated Login request factory; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0038, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Delegated Login response accessor; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0038 and KMIPKIT-0043-FR-021; the method only formats redacted diagnostic state and does not expose another product capability.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DelegatedLoginResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDeriveKey",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Derive Key request factory; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDeriveKey",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Derive Key response accessor; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037 and KMIPKIT-0043-FR-021; the method only formats redacted diagnostic state and does not expose another product capability.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DeriveKeyResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemImport",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Import request factory; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseImport",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Import response accessor; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037 and KMIPKIT-0043-FR-021; the method only formats redacted diagnostic state and does not expose another product capability.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0039, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetConstraints",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Get Constraints request factory; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0039, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetConstraints",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Get Constraints response accessor; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0039 and KMIPKIT-0043-FR-021; the method only formats redacted diagnostic state and does not expose another product capability.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetConstraintsResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/023-key-material-transfer/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed for KMIPKIT-0037 and KMIPKIT-0043-FR-021; the method only formats redacted diagnostic state and does not expose another product capability.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method is redacted diagnostic presentation and is not an independent KMIPKit capability."
     }
   ],
   "capabilities": [
@@ -93130,7 +93286,7 @@
       "declarationId": "T045:delegated-login:ticket-value:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.DelegatedLoginResponse.ticket_value",
-      "kind": "field",
+      "kind": "python-export",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_delegated_login",
@@ -95588,7 +95744,7 @@
       "declarationId": "T048:result:type:java",
       "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.GetConstraintsResponse",
-      "kind": "java-member",
+      "kind": "type",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_get_constraints_ttlv",
@@ -95853,7 +96009,7 @@
       "declarationId": "T048:response:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.BatchItemResult.get_constraints_response",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_get_constraints_ttlv",
@@ -95919,7 +96075,7 @@
       "declarationId": "T048:result:type:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.GetConstraintsResponse",
-      "kind": "python-export",
+      "kind": "type",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_get_constraints_ttlv",
@@ -95985,7 +96141,7 @@
       "declarationId": "T048:result:responseTtlv:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.GetConstraintsResponse.response_ttlv",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_get_constraints_ttlv",

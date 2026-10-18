@@ -4053,3 +4053,26 @@ Verification after the fallible-copy Green commit:
 | Python 3.12 full suite with pinned coverage dependencies and editable package built from this worktree | PASS: 492 tests; 98.13% package line coverage. `KMIPKIT_NATIVE_LIBRARY` pointed to a temporary copy so the wheel-build test did not replace a loaded DLL. |
 | `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS. |
 | `cargo fmt --all --check` and `git diff --check` | PASS. |
+
+### T076/T052 complete binding-export reconciliation follow-up (2026-10-18)
+
+A full observed-export audit found declaration-kind mismatches and unclassified
+Java bridge/diagnostic members in addition to the T052 Join Split Key paths.
+The manifest now records exact Java `NativeExtensionRegistry` bridge and
+redacted formatter exclusions, corrects Java/Python declaration kinds, and
+retains both public Java overload signatures for `ClientBatchItem.joinSplitKey`.
+All generated API outputs were refreshed from the manifest. The bilingual
+operation summary now counts Interop and Join Split Key among the verified
+client operation rows.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — delegated/constraints export inventory | `b7a85496` | Added exact inventory assertions before correcting the remaining observed Java/Python exports. |
+| Red — current audit evidence contract | `c38dd30b` | Required the checked-in report to reconcile every observed package export with no stale, missing, kind-mismatched, or issue paths. |
+| Green — manifest, generated API, docs, and audit report | this commit | C 322/322, Java 597/597, Python 569/569; zero missing/stale declarations, kind mismatches, or audit issues. `python -B tools/api_manifest/generate.py --check` verified all 12 generated outputs. |
+| Coverage test — Java Join Split Key response path | `23a3b791` | Added a TLS 1.3 fake-peer integration test that obtains the successful response through `ClientBatchItemResult.joinSplitKeyResponse()`, the JNI getter, and verifies identifier, redaction, ordered/unknown TTLV preservation, and owned-copy lifetime. Focused Maven test passed (1 test). The JNI LLVM line delta requires the Linux `coverage-jni` workflow artifact; Windows MSVC output is not LLVM-instrumented. |
+
+| `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests` | PASS: 393 tests; 3 documented Windows symlink skips. |
+| `python -B tools/api_manifest/audit_binding_exports.py --check --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-18.json` | PASS: exact C, Java, and Python export reconciliation with no issues or kind mismatches. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs are current. |
+| `git diff --check` | PASS. |

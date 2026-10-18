@@ -168,6 +168,8 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Get Constraints",
                 "Get Usage Allocation",
                 "Import",
+                "Interop",
+                "Join Split Key",
                 "Locate",
             ],
         )
