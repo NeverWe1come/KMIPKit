@@ -3926,6 +3926,67 @@ fn ffi_response_getters_reject_inconsistent_response_item_handles() {
     kmipkit_client_batch_item_response_release(invalid_index_item);
 }
 
+#[test]
+fn ffi_import_getters_reject_invalid_output_records_and_inconsistent_handles() {
+    let mut present = 9;
+    let mut invalid_identifier = empty_unique_identifier_output_v1();
+    invalid_identifier.struct_size -= 1;
+    assert_eq!(
+        kmipkit_client_batch_item_response_import(
+            ptr::null_mut(),
+            &mut present,
+            &mut invalid_identifier,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let response = Arc::new(
+        create_key_pair_success_response()
+            .expect("the valid successful typed response is associated with its request"),
+    );
+    let mismatched_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_import(mismatched_item, &mut present, &mut identifier),
+        ERROR_INVALID_INPUT
+    );
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_import_ttlv(
+            mismatched_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    kmipkit_client_batch_item_response_release(mismatched_item);
+
+    let invalid_index_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response,
+            index: usize::MAX,
+        },
+    );
+    identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_import(invalid_index_item, &mut present, &mut identifier),
+        ERROR_INTERNAL
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_response_import_ttlv(
+            invalid_index_item,
+            &mut present,
+            &mut response_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    kmipkit_client_batch_item_response_release(invalid_index_item);
+}
+
 fn assert_common_response_getters_return_status(
     item: *mut kmipkit_client_batch_item_response_t,
     expected_status: i32,

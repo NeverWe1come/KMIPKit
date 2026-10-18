@@ -92,12 +92,35 @@ final class ImportResponseMappingTest {
         NativeExtensionRegistry.ensureLoaded();
     }
 
+    @Test
+    void malformedNativeTuplesReleaseOwnedImportTtlvHandles() {
+        long absentWithTtlv = responseTtlvHandle();
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseImportResponse(
+                new Object[] {new long[] {0}, null, new long[] {absentWithTtlv}}));
+
+        long incompleteSuccess = responseTtlvHandle();
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseImportResponse(
+                new Object[] {new long[] {1}, null, new long[] {incompleteSuccess}}));
+
+        long invalidIdentifier = responseTtlvHandle();
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseImportResponse(
+                new Object[] {new long[] {1}, new Object[] {new Object(), null},
+                        new long[] {invalidIdentifier}}));
+    }
+
     private static TtlvStructure responseTtlv() {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure response = TtlvStructure.create();
         response = append(response, 0x0042_005c, TtlvValue.Enumeration(0), limits);
         return append(response, 0x0054_0001,
                 TtlvValue.ByteString(new byte[] {(byte) 0xde, 0, (byte) 0xff}, limits), limits);
+    }
+
+    private static long responseTtlvHandle() {
+        TtlvStructure source = responseTtlv();
+        long handle = source.nativeHandleOwner().transfer();
+        source.close();
+        return handle;
     }
 
     private static TtlvStructure append(
