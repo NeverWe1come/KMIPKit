@@ -1883,6 +1883,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 result = 230;
                 goto cleanup;
             }
+            kmipkit_ttlv_structure_t *saved_get_any_object = get_any_object;
             present = 0xff;
             payload_present = 0xff;
             object_type = UINT32_MAX;
@@ -1895,6 +1896,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 result = 235;
                 goto cleanup;
             }
+            get_any_object = saved_get_any_object;
         }
         if (index == 18) {
             uint8_t present = 0;
