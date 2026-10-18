@@ -828,7 +828,7 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertIn("KMIPKIT-0043-FR-021", exclusions[key]["evidence"])
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
-        report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-17.json"
+        report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-18.json"
         report = json.loads(report_path.read_text(encoding="utf-8"))
         self.assertEqual(
             {package["packageId"] for package in report["packages"]},
