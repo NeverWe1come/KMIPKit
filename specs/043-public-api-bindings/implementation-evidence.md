@@ -4071,8 +4071,12 @@ client operation rows.
 | Red — current audit evidence contract | `c38dd30b` | Required the checked-in report to reconcile every observed package export with no stale, missing, kind-mismatched, or issue paths. |
 | Green — manifest, generated API, docs, and audit report | this commit | C 322/322, Java 597/597, Python 569/569; zero missing/stale declarations, kind mismatches, or audit issues. `python -B tools/api_manifest/generate.py --check` verified all 12 generated outputs. |
 | Coverage test — Java Join Split Key response path | `23a3b791` | Added a TLS 1.3 fake-peer integration test that obtains the successful response through `ClientBatchItemResult.joinSplitKeyResponse()`, the JNI getter, and verifies identifier, redaction, ordered/unknown TTLV preservation, and owned-copy lifetime. Focused Maven test passed (1 test). The JNI LLVM line delta requires the Linux `coverage-jni` workflow artifact; Windows MSVC output is not LLVM-instrumented. |
+| Refactor — full Java verification and evidence | this commit | The complete Java test suite passed after the JNI integration test was added. |
 
+| Command or evidence | Result |
+|---|---|
 | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests` | PASS: 393 tests; 3 documented Windows symlink skips. |
+| `mvn --batch-mode --file bindings/java/pom.xml test` | PASS: 291 tests, 0 failures, 0 errors, 3 documented platform skips; JNI rebuilt successfully. |
 | `python -B tools/api_manifest/audit_binding_exports.py --check --report specs/043-public-api-bindings/reports/binding-export-report-2026-10-18.json` | PASS: exact C, Java, and Python export reconciliation with no issues or kind mismatches. |
 | `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs are current. |
 | `git diff --check` | PASS. |
