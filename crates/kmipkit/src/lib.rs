@@ -85,6 +85,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "generic_ttlv_model"
             | "production_transport"
             | "ttlv_wire_codec"
+            | "usage_allocation_guard"
             | "vendor_extension_registry"
             | "discover_versions_request_item"
             | "opaque_register_context"

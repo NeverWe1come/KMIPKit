@@ -46,6 +46,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "production_transport",
             "server_generated_creation",
             "ttlv_wire_codec",
+            "usage_allocation_guard",
             "vendor_extension_registry",
         ]
     );
@@ -338,7 +339,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
         })
         .collect();
 
-    assert_eq!(exports.len(), 229, "update the count when adding C exports");
+    assert_eq!(exports.len(), 238, "update the count when adding C exports");
     assert!(
         exports.iter().all(|uses_boundary| *uses_boundary),
         "every exported C function must enter the shared panic boundary first"
