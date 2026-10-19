@@ -13,7 +13,7 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LogRequest, ObjectGroupMember, ObjectType, OperationData, SecretBytes,
+    LocateRequest, LoginRequest, LogRequest, ObjectGroupMember, ObjectType, OperationData, SecretBytes,
     SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
@@ -1093,6 +1093,101 @@ fn ffi_delegated_login_constructor_validates_typed_fields_and_requires_rights() 
     assert!(invalid_item.is_null());
     kmipkit_client_batch_item_release(wrong_usage_limits);
     release(rights, Kind::Structure);
+}
+
+#[test]
+fn ffi_login_constructor_validates_optional_table_253_fields() {
+    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+    for (lease_kind, lease_value, count_present, count) in [
+        (3, 0, 0, 0),
+        (0, 1, 0, 0),
+        (1, -1, 0, 0),
+        (1, i64::from(u32::MAX) + 1, 0, 0),
+        (0, 0, 2, 0),
+        (0, 0, 0, 1),
+    ] {
+        item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+        assert_eq!(
+            kmipkit_client_batch_item_login(
+                lease_kind,
+                lease_value,
+                count_present,
+                count,
+                ptr::null_mut(),
+                &mut item,
+            ),
+            ERROR_INVALID_INPUT
+        );
+        assert!(item.is_null());
+    }
+
+    item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_login(2, i64::MIN, 1, i32::MIN, ptr::null_mut(), &mut item),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    kmipkit_client_batch_item_release(item);
+
+    let mut interval_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_login(
+            1,
+            i64::from(u32::MAX),
+            0,
+            0,
+            ptr::null_mut(),
+            &mut interval_item,
+        ),
+        SUCCESS
+    );
+    assert!(!interval_item.is_null());
+    kmipkit_client_batch_item_release(interval_item);
+}
+
+#[test]
+fn ffi_login_response_getters_return_raw_ticket_fields_and_owned_ttlv() {
+    let secret = b"login-abi-ticket";
+    let item = successful_cryptographic_item(
+        ClientRequest::Login(LoginRequest::new()),
+        0x2d,
+        b"login-abi",
+        vec![ttlv_structure(
+            0x0042_0149,
+            [
+                ttlv_enumeration(0x0042_014a, 0xfeed_beef),
+                ttlv_item(0x0042_014b, 0x08, secret),
+            ],
+        )],
+    );
+
+    let mut present = 0;
+    let mut ticket_present = 0;
+    let mut ticket_type = 0;
+    let mut ticket_value = byte_span(&[]);
+    assert_eq!(
+        kmipkit_client_batch_item_response_login(
+            item,
+            &mut present,
+            &mut ticket_present,
+            &mut ticket_type,
+            &mut ticket_value,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, ticket_present, ticket_type), (1, 1, 0xfeed_beef));
+    assert_response_span(ticket_value, secret);
+
+    let mut ttlv_present = 0;
+    let mut ticket_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_login_ttlv(item, &mut ttlv_present, &mut ticket_ttlv),
+        SUCCESS
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!ticket_ttlv.is_null());
+    kmipkit_ttlv_structure_release(ticket_ttlv);
+    kmipkit_client_batch_item_response_release(item);
 }
 
 #[test]
