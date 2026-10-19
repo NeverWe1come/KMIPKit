@@ -880,7 +880,7 @@ final class ClientFacadeTlsIntegrationTest {
 
     // OASIS KMIP Specification v2.1 §6.1.35, Tables 268–270.
     @Test
-    void obtainLeaseResponseTraversesNativeJniBridgeOverTls() throws Exception {
+    void obtainLeaseResponseUsesNativeJniBridgeAndRetainsOwnedTtlvOverTls() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("obtain-lease-server.p12");
         Path clientStorePath = temporaryDirectory.resolve("obtain-lease-client.p12");
         createKeyStore(serverStorePath, "server");
@@ -930,11 +930,19 @@ final class ClientFacadeTlsIntegrationTest {
                 lease = item.obtainLeaseResponse().orElseThrow();
             }
 
-            try (lease) {
+            try (lease; TtlvStructureView responseTtlv = lease.responseTtlv().view()) {
                 assertEquals(UniqueIdentifier.Kind.TEXT_STRING, lease.uniqueIdentifier().kind());
                 assertEquals("leased-object", lease.uniqueIdentifier().text());
                 assertEquals(0, lease.leaseTime());
                 assertEquals(-7, lease.lastChangeDate());
+                assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+                try (TtlvItemView payload = responseTtlv.itemAt(3);
+                        TtlvValueView payloadValue = payload.value();
+                        TtlvStructureView payloadStructure = payloadValue.structure()) {
+                    assertTagOrder(payloadStructure, 0x420094, 0x420049, 0x420048, 0x541234);
+                    assertTrue(containsByteString(payloadStructure, 0x541234,
+                            new byte[] {0x01, 0x00, (byte) 0xff}));
+                }
                 assertFalse(lease.toString().contains("leased-object"));
             }
             assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
