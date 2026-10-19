@@ -4153,7 +4153,20 @@ protocol behavior or make a conformance/certification claim.
 | Red — declaration inventory | `cd22ac9e` | Tightened parity expectations to account for the complete existing Rust Login contract declaration inventory before adding the new binding declarations. |
 | Red — shared Ticket API inventory | `faf6376b` | Adjusted parity checks to reuse the shared Rust Ticket declarations already mapped by T045 instead of duplicating them under Login. |
 | Green — Login API mapping and generated manifest | `249e6d6e` | Added the C ABI, Java/JNI and Python/CFFI facades, corresponding API inventory, and 12 generated outputs via the pinned generator. The T054 traceability row links the approved owner requirements, stable OASIS IDs, and borrowed/owned lifetimes. |
-| Refactor — verification and task evidence | this commit | Recorded the secret-lifecycle review, coverage results, environment warning, and exact verification evidence. T054 remains open until current-head cross-platform CI and the selected changed-code coverage gate pass. |
+| Refactor — verification and task evidence | `7397d555` | Recorded the secret-lifecycle review, coverage results, environment warning, and exact verification evidence. T054 remains open until current-head cross-platform CI and the selected changed-code coverage gate pass. |
+
+#### T054 inventory and response-test follow-ups
+
+| Follow-up | Commit | Evidence |
+|---|---|---|
+| Red — exact Login aggregate mappings | `882a1430` | Added contract tests that require the Login TTLV aggregate to map to its real JNI owner and reject unclassified generated Python dataclass exports. The prior CI script-contract job had reported the missing JNI owner and exact dataclass paths. |
+| Green — aggregate JNI owner and generated parity | `ab013509` | Recorded the actual aggregate JNI bridge owner in the manifest and regenerated the checked-in parity fixtures through the pinned generator. |
+| Refactor — shared parity expectations | `056f4559` | Reused the shared T076 parity expectations without weakening the exact mapping guard. |
+| Login adapter response-error characterization | `560cc09d` | Added Java, Python, and Rust FFI tests for malformed/inconsistent native outputs, Ticket cleanup, and redaction. These tests passed against the existing mapping; they do not claim that response access was absent. |
+| KMIP-valid Login failure fixture | `37299905` | Adjusted the Rust FFI fixture to use a valid failure result, with no Ticket, instead of an invalid success response. |
+| Failure result Ticket omission | `2f3536f1` | Asserted the typed Ticket accessor remains absent for the valid failure result. |
+| Python Login lease-time characterization | `38770e08` | Added tests for `Lease Time Date-Time = i64::MIN` and rejection when both optional lease-time fields are present. Both pass against the existing implementation; this commit changes tests only. |
+| Revert out-of-scope coverage-parser test | `100bc804` | Reverted test-only commit `2326dec7` after its isolated test failed against the unchanged gate and exact prior CI Cobertura showed no `_client_ffi.py` added-line intersection. No parser or threshold change remains. |
 
 #### QA follow-up: native successful-response coverage
 
@@ -4197,15 +4210,36 @@ structure, including the sensitive Ticket Value.
 |---|---|
 | `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_login_ -- --nocapture` | PASS: 2 focused Rust FFI Login tests. |
 | `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture` | PASS: compiled C consumer exercises the Login request entry point and fail-closed response outputs. Successful response span and owned-TTLV values are covered by the Rust FFI tests. |
-| `mvn.cmd -B -f <temporary-copy>/bindings/java/pom.xml '-Dexec.skip=true' verify` in the temporary snapshot after the focused mTLS run built its JNI DLL | PASS: 307 Java tests, 0 failures/errors, 3 existing platform skips; JaCoCo line coverage 2,667/2,741 (97.30%). All configured Java coverage checks passed. |
-| In the clean temporary Python snapshot, `uv run --project $project --with-requirements $requirements pytest -p no:cacheprovider --cov=kmipkit --cov-config=pyproject.toml --cov-report=term-missing --cov-report=xml:$report -q tests`, with `UV_PROJECT_ENVIRONMENT`, `COVERAGE_FILE`, and `$report` directed to temporary paths | PASS: 517 Python tests; 98.17% coverage, above the configured 85% adapter threshold. Maturin generated the CFFI declarations during package installation. |
+| `mvn --batch-mode --file bindings/java/pom.xml clean verify` in a detached temporary worktree at `38770e08` | PASS: 311 tests, 0 failures, 0 errors, 3 documented platform skips; JaCoCo line coverage 2,675/2,741 (97.59%). All configured Java coverage checks passed; the JNI DLL built and the example ran. |
+| Python 3.12 temporary environment: `python -m pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=xml:<temp>/python-full.xml --cov-report=term-missing`, with `COVERAGE_FILE=<temp>/.coverage` | PASS: 524 tests; 3,113/3,172 statements covered (98.14%), above the configured 85% adapter threshold. The two T054 lease-time tests ran from the current worktree; imported `client.py` and `extensions.py` matched the current source hashes. |
 | `cargo test --workspace --all-features --quiet` with `CARGO_TARGET_DIR` outside the worktree | PASS on the final rerun; all workspace suites and doctests passed. Three Cosmian interoperability tests are intentionally ignored because they require a local KMS 5.28.0. One earlier run failed only `kmipkit-test-support::dns::tests::retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved` (`left: 3`, `right: 2` at `dns_tests.rs:169`). The isolated test passed six consecutive runs; the 32-test support suite passed three parallel and one serial run; the subsequent full workspace rerun passed. No DNS support source or test was changed. |
 | `cargo llvm-cov --workspace --all-features --summary-only` with an external `CARGO_TARGET_DIR` | PASS: 45,083 lines, 3,363 missed, 92.54% workspace line coverage; 93.15% functions and 95.41% regions. |
-| `cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked --summary-only` | PASS: 94.36% FFI line coverage (6,776 lines), above the 85% FFI threshold. |
+| With `CARGO_TARGET_DIR` directed to `%TEMP%\kmipkit-t054-target-ffi-38770e08`: `cargo llvm-cov --package kmipkit-ffi --all-targets --all-features --locked --json --output-path %TEMP%\kmipkit-t054-coverage-38770e08\ffi-coverage-current.json` | PASS: 163 unit tests and 5 C ABI integration tests; 6,401/6,776 FFI lines covered (94.47%), above the 85% threshold. Login request-constructor and typed/TTLV response accessors have no uncovered executable lines in this report. The Windows MSVC AWS-LC probe/NASM and linker warnings were non-fatal. |
 | `python -B -m unittest tools.api_manifest.tests.test_login_parity_manifest -v` | PASS: 2 Login manifest/parity tests. |
 | `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs verified. |
 | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `git diff --check` | PASS. Clippy emitted only the existing nonfatal AWS-LC `stdalign_check.c` and missing-NASM fallback warnings; `git diff --check` emitted CRLF normalization notices for two existing files. |
-| CI `Coverage gate / selected scopes` (`.github/workflows/ci.yml` runs `python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base <pull-request-base-sha> --merge <pull-request-merge-sha> --summary-file <step-summary> --scopes-json <coverage-scopes-json>`) | This configured gate enforces ≥85% for Rust FFI, Java, Python, and JNI, plus ≥95% changed executable-line coverage. A new cross-platform result for the pushed T054 head is pending. |
+| CI `Coverage gate / selected scopes` (`.github/workflows/ci.yml` runs `python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base <pull-request-base-sha> --merge <pull-request-merge-sha> --summary-file <step-summary> --scopes-json <coverage-scopes-json>`) | This configured gate enforces ≥85% for Rust FFI, Java, Python, and JNI, plus ≥95% changed executable-line coverage. Current local head `38770e08` has not been pushed, so it has no CI result yet. Prior run `39210021630` failed at 7,255/7,688 changed-production lines (94.37%) and exposed manifest contract failures that were addressed by later commits; both the contract suite and 95% gate must pass on the final pushed head. |
+
+#### T054 post-CI coverage follow-up
+
+Commit `38770e08` adds Python-only characterization for the existing Login
+DateTime lease-time mapping and rejection of simultaneous lease-time fields;
+these two tests passed without a production-code change and close three
+previously uncovered Python Login lines. Commit `100bc804` reverts the test-only
+coverage parser experiment from `2326dec7`: its focused test failed against the
+unchanged parser, and the exact prior CI Cobertura artifact had no added-line
+intersection with `_client_ffi.py`, so it did not affect the changed-code gate.
+
+The fresh Windows JaCoCo report at `38770e08` leaves one Login-specific changed
+line uncovered in `ClientBatchItemResult.java:1155` (`ownedTtlv.close()` cleanup).
+The other Login response mapping lines are covered. Fresh Rust FFI and Python
+reports cover the T054 Login constructor, response accessors, and Python
+lease-time alternatives. The Linux JNI LLVM collector could not run locally:
+the WSL attempt failed in `bindings/java/native/build.sh:45` with `cargo: not
+found` (exit 127), while Windows is not supported by
+`scripts/collect_jni_coverage.sh`. Windows Maven verification does not produce
+instrumented JNI line coverage. The exact current-head 95% aggregate therefore
+remains for selected-scope CI; T054 is not complete until that gate passes.
 
 Full-workspace tests and coverage used an external Cargo target directory.
 Existing untracked worktree artifacts were not staged or cleaned.
