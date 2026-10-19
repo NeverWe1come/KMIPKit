@@ -56,6 +56,24 @@ fn response_bytes_with_batch_id(
     identifier: Option<&str>,
     batch_item_id: Option<&[u8]>,
 ) -> Vec<u8> {
+    response_bytes_with_identifier_value(
+        operation,
+        status,
+        reason,
+        correlation,
+        identifier.map(|value| kmipkit_ttlv::Value::text_string(value.to_owned())),
+        batch_item_id,
+    )
+}
+
+fn response_bytes_with_identifier_value(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    correlation: Option<&[u8]>,
+    identifier: Option<kmipkit_ttlv::Value>,
+    batch_item_id: Option<&[u8]>,
+) -> Vec<u8> {
     let version = test_structure([
         test_item(PROTOCOL_VERSION_MAJOR, kmipkit_ttlv::Value::integer(2)),
         test_item(PROTOCOL_VERSION_MINOR, kmipkit_ttlv::Value::integer(1)),
@@ -92,10 +110,7 @@ fn response_bytes_with_batch_id(
         ));
     }
     if let Some(identifier) = identifier {
-        let payload = test_structure([test_item(
-            UNIQUE_IDENTIFIER_TAG,
-            kmipkit_ttlv::Value::text_string(identifier.to_owned()),
-        )]);
+        let payload = test_structure([test_item(UNIQUE_IDENTIFIER_TAG, identifier)]);
         fields.push(test_item(
             RESPONSE_PAYLOAD,
             kmipkit_ttlv::Value::structure(payload),
@@ -142,14 +157,20 @@ fn execute_allocation(
     correlation: Option<&[u8]>,
     identifier: Option<&str>,
 ) -> Result<ClientBatchResponse, crate::ClientError> {
+    execute_allocation_response(response_bytes(
+        GET_USAGE_ALLOCATION,
+        status,
+        (status == 1).then_some(0x05),
+        correlation,
+        identifier,
+    ))
+}
+
+fn execute_allocation_response(
+    response: Vec<u8>,
+) -> Result<ClientBatchResponse, crate::ClientError> {
     let (mut client, _, _) = client_for(ExchangeScript::Success {
-        response: response_bytes(
-            GET_USAGE_ALLOCATION,
-            status,
-            (status == 1).then_some(0x05),
-            correlation,
-            identifier,
-        ),
+        response,
         request_write_chunks: Vec::new(),
     });
     client.execute(
@@ -222,6 +243,31 @@ fn successful_allocation_binds_returned_identifier_and_open_caller_unit() {
     assert_eq!(context.allocated_units(), ALLOCATION);
     assert_eq!(context.available_units(), ALLOCATION);
     assert_eq!(context.reserved_units(), 0);
+}
+
+#[test]
+fn usage_allocation_cannot_bind_the_id_placeholder_as_an_object_identifier() {
+    let allocation = execute_allocation_response(response_bytes_with_identifier_value(
+        GET_USAGE_ALLOCATION,
+        0,
+        None,
+        None,
+        Some(kmipkit_ttlv::Value::enumeration(1)),
+        None,
+    ))
+    .expect("the KMIP response carries a successful allocation result");
+    let item = allocation.get(0).expect("one allocation result");
+    let response_view = item.outcome().response();
+    let response = response_view
+        .get_usage_allocation()
+        .expect("the successful allocation response has its typed payload");
+
+    assert!(UsageAllocationContext::from_successful_allocation(
+        response,
+        ALLOCATION,
+        UNKNOWN_USAGE_UNIT,
+    )
+    .is_err());
 }
 
 #[test]
