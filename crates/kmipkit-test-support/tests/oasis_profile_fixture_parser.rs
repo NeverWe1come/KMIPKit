@@ -211,6 +211,242 @@ fn rejects_unknown_symbols_operations_malformed_pairs_and_reordered_steps() {
 }
 
 #[test]
+fn profile_fixture_rejects_invalid_document_shapes() {
+    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let wrong_root =
+        baseline
+            .replacen("<KMIP>", "<NotKmip>", 1)
+            .replacen("</KMIP>", "</NotKmip>", 1);
+    let one_message = "<KMIP><RequestMessage/></KMIP>";
+    let wrong_message_order = "<KMIP><ResponseMessage/><RequestMessage/></KMIP>";
+    let cases = [
+        (
+            "empty case identifier",
+            "",
+            baseline,
+            OasisCryptoFixtureError::XmlLimitOrDtd,
+        ),
+        (
+            "doctype declaration",
+            "BL-M-1-21",
+            "<!DOCTYPE KMIP><KMIP/>",
+            OasisCryptoFixtureError::XmlLimitOrDtd,
+        ),
+        (
+            "malformed XML",
+            "BL-M-1-21",
+            "<KMIP>",
+            OasisCryptoFixtureError::MalformedXml,
+        ),
+        (
+            "wrong root element",
+            "BL-M-1-21",
+            &wrong_root,
+            OasisCryptoFixtureError::InvalidFixtureShape,
+        ),
+        (
+            "empty fixture",
+            "BL-M-1-21",
+            "<KMIP/>",
+            OasisCryptoFixtureError::UnpairedMessages,
+        ),
+        (
+            "unpaired request",
+            "BL-M-1-21",
+            one_message,
+            OasisCryptoFixtureError::UnpairedMessages,
+        ),
+        (
+            "response before request",
+            "BL-M-1-21",
+            wrong_message_order,
+            OasisCryptoFixtureError::InvalidFixtureShape,
+        ),
+    ];
+
+    for (description, case_id, xml, expected_error) in cases {
+        assert_profile_fixture_error(case_id, xml, expected_error, description);
+    }
+}
+
+#[test]
+fn profile_fixture_rejects_invalid_batch_shapes() {
+    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let wrong_batch_header_order =
+        baseline.replacen("<RequestHeader>", "<BatchItem/><RequestHeader>", 1);
+    let zero_batch_count = baseline.replacen(
+        "<BatchCount type=\"Integer\" value=\"1\"/>",
+        "<BatchCount type=\"Integer\" value=\"0\"/>",
+        1,
+    );
+    let mismatched_batch_count = baseline.replacen(
+        "<BatchCount type=\"Integer\" value=\"1\"/>",
+        "<BatchCount type=\"Integer\" value=\"2\"/>",
+        1,
+    );
+    let malformed_batch_shape = baseline
+        .replacen("<RequestPayload>", "<OtherPayload>", 1)
+        .replacen("</RequestPayload>", "</OtherPayload>", 1);
+    let mismatched_operations = baseline.replacen("value=\"Interop\"", "value=\"Register\"", 1);
+    let operation = "<Operation type=\"Enumeration\" value=\"Interop\"/>";
+    let batch_ids = baseline.replacen(
+        operation,
+        &format!("{operation}\n    <UniqueBatchItemID type=\"ByteString\" value=\"request-id\"/>"),
+        2,
+    );
+    let mismatched_batch_ids =
+        batch_ids.replacen("value=\"request-id\"", "value=\"response-id\"", 1);
+    let cases = [
+        (
+            "batch item before header",
+            "BL-M-1-21",
+            &wrong_batch_header_order,
+            OasisCryptoFixtureError::UnsupportedFixtureConstruct,
+        ),
+        (
+            "zero batch count",
+            "BL-M-1-21",
+            &zero_batch_count,
+            OasisCryptoFixtureError::UnsupportedFixtureConstruct,
+        ),
+        (
+            "batch count mismatch",
+            "BL-M-1-21",
+            &mismatched_batch_count,
+            OasisCryptoFixtureError::UnsupportedFixtureConstruct,
+        ),
+        (
+            "unsupported batch item shape",
+            "BL-M-1-21",
+            &malformed_batch_shape,
+            OasisCryptoFixtureError::UnsupportedFixtureConstruct,
+        ),
+        (
+            "request and response operations differ",
+            "BL-M-1-21",
+            &mismatched_operations,
+            OasisCryptoFixtureError::MismatchedOperations,
+        ),
+        (
+            "request and response batch identifiers differ",
+            "BL-M-1-21",
+            &mismatched_batch_ids,
+            OasisCryptoFixtureError::MismatchedBatchItemIdentifiers,
+        ),
+    ];
+
+    for (description, case_id, xml, expected_error) in cases {
+        assert_profile_fixture_error(case_id, xml, expected_error, description);
+    }
+}
+
+fn assert_profile_fixture_error(
+    case_id: &str,
+    xml: &str,
+    expected_error: OasisCryptoFixtureError,
+    description: &str,
+) {
+    assert_eq!(
+        OasisProfileFixture::from_xml(case_id, xml, OasisProfileFixtureBindings::default()).err(),
+        Some(expected_error),
+        "{description}"
+    );
+}
+
+#[test]
+fn profile_fixture_errors_have_stable_payload_free_display() {
+    for (error, expected) in [
+        (
+            OasisCryptoFixtureError::MalformedXml,
+            "OASIS fixture XML is malformed",
+        ),
+        (
+            OasisCryptoFixtureError::XmlLimitOrDtd,
+            "OASIS fixture XML exceeds limits or contains a DTD",
+        ),
+        (
+            OasisCryptoFixtureError::XmlNodeLimit,
+            "OASIS fixture XML exceeds the configured node limit",
+        ),
+        (
+            OasisCryptoFixtureError::InvalidFixtureShape,
+            "OASIS fixture message shape is invalid",
+        ),
+        (
+            OasisCryptoFixtureError::UnpairedMessages,
+            "OASIS fixture request and response messages are unpaired",
+        ),
+        (
+            OasisCryptoFixtureError::MismatchedOperations,
+            "OASIS fixture request and response operations differ",
+        ),
+        (
+            OasisCryptoFixtureError::MismatchedBatchItemIdentifiers,
+            "OASIS profile fixture request and response batch IDs differ",
+        ),
+        (
+            OasisCryptoFixtureError::DuplicateSequence,
+            "OASIS fixture contains a duplicate operation sequence",
+        ),
+        (
+            OasisCryptoFixtureError::UnknownSymbol,
+            "OASIS fixture selected message contains an unsupported symbol",
+        ),
+        (
+            OasisCryptoFixtureError::InvalidTag,
+            "OASIS fixture selected message contains an invalid tag",
+        ),
+        (
+            OasisCryptoFixtureError::UnsupportedItemType,
+            "OASIS fixture selected message contains an unsupported TTLV Item Type",
+        ),
+        (
+            OasisCryptoFixtureError::InvalidValue,
+            "OASIS fixture selected message contains an invalid TTLV value",
+        ),
+        (
+            OasisCryptoFixtureError::TtlvLimit,
+            "OASIS fixture selected message exceeds TTLV model limits",
+        ),
+        (
+            OasisCryptoFixtureError::InvalidCatalog,
+            "KMIPKit normative catalog cannot resolve fixture values",
+        ),
+        (
+            OasisCryptoFixtureError::UnsupportedOperation,
+            "OASIS profile fixture operation is unsupported",
+        ),
+        (
+            OasisCryptoFixtureError::UnsupportedFixtureConstruct,
+            "OASIS profile fixture construct is unsupported",
+        ),
+        (
+            OasisCryptoFixtureError::ReorderedSteps,
+            "OASIS profile fixture source steps are reordered",
+        ),
+    ] {
+        assert_eq!(error.to_string(), expected);
+    }
+}
+
+#[test]
+fn profile_fixture_enforces_xml_node_limit_before_parsing_messages() {
+    const XML_NODES_ABOVE_LIMIT: usize = 250_001;
+    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let comments = "<!--x-->".repeat(XML_NODES_ABOVE_LIMIT);
+    let xml = baseline.replacen("<KMIP>", &format!("<KMIP>{comments}"), 1);
+
+    let error =
+        OasisProfileFixture::from_xml("BL-M-1-21", &xml, OasisProfileFixtureBindings::default())
+            .expect_err("the profile XML node limit is enforced before message parsing");
+    assert_eq!(error, OasisCryptoFixtureError::XmlNodeLimit);
+    assert_eq!(
+        error.to_string(),
+        "OASIS fixture XML exceeds the configured node limit"
+    );
+}
+
+#[test]
 fn profile_fixture_normalizes_rfc3339_timestamps_to_unix_seconds() {
     // KMIP Specification v2.1 §9.20 and Table 425 identify Time Stamp as a
     // DateTime field. These RFC 3339 strings exercise this fixture adapter's
