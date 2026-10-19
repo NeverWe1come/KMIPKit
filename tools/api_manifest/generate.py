@@ -1417,12 +1417,32 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                 count = param_by_name.get(param["countParameter"])
                 if count is None or count["kind"] != "scalar" or count["type"] != "uint64_t":
                     raise ManifestError("function handle array count must name a uint64_t scalar parameter")
+            elif param["kind"] == "input-array":
+                element_type = param["elementType"]
+                supported_elements = {
+                    "int8_t",
+                    "uint8_t",
+                    "int16_t",
+                    "uint16_t",
+                    "int32_t",
+                    "uint32_t",
+                    "int64_t",
+                    "uint64_t",
+                    "kmipkit_byte_span_v1_t",
+                }
+                if element_type not in supported_elements:
+                    raise ManifestError("function input array references an unsupported element type")
+                if param["type"] != f"const {element_type} *" or param["ownership"] != "borrowed":
+                    raise ManifestError("function input array must match its borrowed const element layout")
+                count = param_by_name.get(param["countParameter"])
+                if count is None or count["kind"] != "scalar" or count["type"] != "uint64_t":
+                    raise ManifestError("function input array count must name a uint64_t scalar parameter")
             elif param["kind"] == "output" and "**" in param["type"]:
                 handle_name = param["type"].split()[0].strip()
                 if handle_name not in c_handle_names:
                     raise ManifestError("function output references an unknown opaque type")
         if any(
-            parameter["kind"] in {"handle", "handle-array", "consumed-handle-slot"}
+            parameter["kind"] in {"handle", "handle-array", "input-array", "consumed-handle-slot"}
             for parameter in params
         ):
             if any(
@@ -2070,11 +2090,11 @@ def render_c_header(
             lines.append(" */")
         requirement_comment = ", ".join(function["requirementIds"])
         if any(
-            parameter["kind"] == "handle-array" and parameter["nullable"]
+            parameter["kind"] in {"handle-array", "input-array"} and parameter["nullable"]
             for parameter in function["c"]["parameters"]
         ):
             lines.extend([
-                "/* For nullable handle arrays, NULL is valid only when the linked count is zero.",
+                "/* For nullable arrays, NULL is valid only when the linked count is zero.",
                 " * Implementations must check the count before reading elements and return",
                 " * invalid_input when a NULL array has a nonzero count. */",
             ])

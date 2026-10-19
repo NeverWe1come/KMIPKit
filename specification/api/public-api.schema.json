@@ -773,6 +773,57 @@
             "name",
             "kind",
             "type",
+            "elementType",
+            "ownership",
+            "countParameter",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "input-array"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^const (?:int8_t|uint8_t|int16_t|uint16_t|int32_t|uint32_t|int64_t|uint64_t|kmipkit_[a-z0-9_]+_t) \\*$",
+              "description": "Borrowed pointer to a caller-owned array of fixed-width scalar or byte-span carrier values."
+            },
+            "elementType": {
+              "type": "string",
+              "enum": [
+                "int8_t",
+                "uint8_t",
+                "int16_t",
+                "uint16_t",
+                "int32_t",
+                "uint32_t",
+                "int64_t",
+                "uint64_t",
+                "kmipkit_byte_span_v1_t"
+              ]
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "countParameter": {
+              "$ref": "#/$defs/identifier",
+              "description": "Name of the uint64_t scalar parameter that counts array elements."
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether the array pointer may be NULL. When true, NULL is valid only when the linked count is zero; implementations must check the count before reading elements."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
             "handleType",
             "ownership",
             "countParameter",

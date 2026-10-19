@@ -195,6 +195,22 @@ def _apply_handle_array_contract(manifest: dict[str, object]) -> None:
         )
 
 
+def _apply_input_array_contract(manifest: dict[str, object]) -> None:
+    parameter = _find_c_parameter(manifest, "extension_schema_structure", "children")
+    parameter.clear()
+    parameter.update(
+        {
+            "name": "children",
+            "kind": "input-array",
+            "type": "const uint32_t *",
+            "elementType": "uint32_t",
+            "ownership": "borrowed",
+            "countParameter": "child_count",
+            "nullable": True,
+        }
+    )
+
+
 class ManifestGeneratorCliTests(unittest.TestCase):
     def test_v1_reference_validation_does_not_require_v2_declarations(self) -> None:
         manifest = json.loads(PUBLIC_API_V1_FIXTURE.read_text(encoding="utf-8"))
@@ -1350,6 +1366,63 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 root = _create_repo(Path(directory))
                 manifest = self._load_manifest(root)
                 _apply_handle_array_contract(manifest)
+                mutate(manifest)
+                self._write_manifest(root, manifest)
+
+                result = self._run_generator(root, "--write")
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
+
+    def test_input_arrays_require_supported_types_counts_and_invalid_input_mappings(self) -> None:
+        def missing_invalid_input(language: str):
+            def mutate(manifest: dict[str, object]) -> None:
+                _find_function(manifest, "extension_schema_structure")[language][
+                    "errorCategories"
+                ].remove("invalid_input")
+
+            return mutate
+
+        mutations = (
+            (
+                "unknown input element type",
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "children"
+                ).update(
+                    {
+                        "elementType": "kmipkit_unknown_value_t",
+                        "type": "const kmipkit_unknown_value_t *",
+                    }
+                ),
+            ),
+            (
+                "array pointer does not match element type",
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "children"
+                ).update({"type": "const uint64_t *"}),
+            ),
+            (
+                "unresolved count parameter",
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "children"
+                ).update({"countParameter": "missing_count"}),
+            ),
+            (
+                "count parameter is not uint64",
+                lambda manifest: _find_c_parameter(
+                    manifest, "extension_schema_structure", "child_count"
+                ).update({"type": "uint32_t"}),
+            ),
+            *(
+                (f"{language} invalid_input mapping", missing_invalid_input(language))
+                for language in ("c", "java", "python")
+            ),
+        )
+        for label, mutate in mutations:
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as directory:
+                root = _create_repo(Path(directory))
+                manifest = self._load_manifest(root)
+                _apply_input_array_contract(manifest)
                 mutate(manifest)
                 self._write_manifest(root, manifest)
 
