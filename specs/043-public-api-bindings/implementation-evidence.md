@@ -4319,3 +4319,23 @@ task's focused mapping evidence is complete. Full workspace coverage and
 cross-platform CI remain feature/release gates; these local results do not
 claim complete OASIS conformance, interoperability, profile support, or
 certification.
+
+##### T056 Python positional API compatibility follow-up (2026-10-19)
+
+Independent QA found that placing `BatchItemResult.obtain_lease_response`
+between existing response fields shifted positional arguments for this public
+Python dataclass. The field is now appended after every pre-existing field,
+and `_batch_result` supplies it by keyword so internal mapping does not depend
+on the public positional sequence.
+
+| Stage | Commit | Command | Result |
+|---|---|---|---|
+| Red | `3a5220a4` | From `bindings/python`: `$env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path '..\..\target\debug\kmipkit_ffi.dll').Path; .\.venv-t038-fix\Scripts\python.exe -m pytest tests/test_obtain_lease_operation.py::test_batch_item_result_preserves_legacy_positional_field_order -q` | EXPECTED FAIL: the legacy CheckResponse position populated the inserted ObtainLeaseResponse field; `result.check_response` was `None`. |
+| Green | `a41718a3` | From `bindings/python`: `$env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path '..\..\target\debug\kmipkit_ffi.dll').Path; .\.venv-t038-fix\Scripts\python.exe -m pytest tests/test_obtain_lease_operation.py tests/test_client.py -q` | PASS: 208 tests, including the old positional sequence and Obtain Lease mapping. |
+| Green | `a41718a3` | From `bindings/python`: `.\.venv-t038-fix\Scripts\python.exe -m compileall -q src/kmipkit/client.py tests/test_obtain_lease_operation.py`; repository root: `git diff --check` | PASS: Python sources compile and whitespace check is clean. |
+| Refactor | Follow-up evidence commit | `git diff --check`; rerun focused Python suites | PASS: evidence/task notes only; behavior is unchanged from Green. |
+
+The existing Python environment does not include Ruff: `python -m ruff check
+src/kmipkit/client.py tests/test_obtain_lease_operation.py` exits with
+`No module named ruff`. The focused tests and syntax compilation pass; no
+Ruff-specific check is claimed for this follow-up.
