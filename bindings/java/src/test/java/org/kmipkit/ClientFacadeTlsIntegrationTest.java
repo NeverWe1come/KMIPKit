@@ -1423,6 +1423,8 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static Object cryptoTypedResponse(String operationName, ClientBatchItemResult result) {
         return switch (operationName) {
+            case "encrypt" -> result.encryptResponse().orElseThrow();
+            case "decrypt" -> result.decryptResponse().orElseThrow();
             case "hash" -> result.hashResponse().orElseThrow();
             case "mac" -> result.macResponse().orElseThrow();
             case "macVerify" -> result.macVerifyResponse().orElseThrow();
