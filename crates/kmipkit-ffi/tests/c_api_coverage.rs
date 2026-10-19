@@ -1215,7 +1215,7 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-// This TLS batch returns 26 ordered items, including the successful Login Ticket, Encrypt, and Decrypt results.
+// This TLS batch returns 28 ordered items, including Login, Encrypt, Decrypt, Ping, and Query results.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -1226,7 +1226,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 26),
+            integer(0x0042_000D, 28),
         ],
     );
     let response_payload = structure(
@@ -1251,7 +1251,8 @@ fn mixed_discover_versions_response() -> Vec<u8> {
                 log_response_item(),
                 login_response_item(),
             ])
-            .chain(encrypt_decrypt_response_items()),
+            .chain(encrypt_decrypt_response_items())
+            .chain([ping_response_item(), query_response_item()]),
     )
 }
 
@@ -1302,6 +1303,38 @@ fn log_response_item() -> Vec<u8> {
             ttlv_item(0x0042_0093, 0x08, b"log-00"),
             enumeration(0x0042_007F, 0),
             structure(0x0042_007C, []),
+        ],
+    )
+}
+
+fn ping_response_item() -> Vec<u8> {
+    structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 59),
+            ttlv_item(0x0042_0093, 0x08, b"ping00"),
+            enumeration(0x0042_007f, 0),
+            structure(0x0042_007c, []),
+        ],
+    )
+}
+
+fn query_response_item() -> Vec<u8> {
+    let payload = structure(
+        0x0042_007c,
+        [
+            enumeration(0x0042_005c, 59),
+            structure(0x0042_015f, []),
+            structure(0x0042_0012, [integer(0x0042_0057, 7)]),
+        ],
+    );
+    structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 24),
+            ttlv_item(0x0042_0093, 0x08, b"query0"),
+            enumeration(0x0042_007f, 0),
+            payload,
         ],
     )
 }

@@ -1867,9 +1867,9 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
     static const uint32_t expected_statuses[] = {
-        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
+        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0};
     static const uint8_t expected_correlation[] = {0x00, 0xa1, 0x7f};
-    static const uint8_t expected_ids[26][6] = {
+    static const uint8_t expected_ids[28][6] = {
         {'i', 't', 'e', 'm', '-', '0'},
         {'i', 't', 'e', 'm', '-', '1'},
         {'i', 't', 'e', 'm', '-', '2'},
@@ -1896,6 +1896,8 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         {'l', 'o', 'g', 'i', 'n', '0'},
         {'e', 'n', 'c', '-', '0', '0'},
         {'d', 'e', 'c', '-', '0', '0'},
+        {'p', 'i', 'n', 'g', '0', '0'},
+        {'q', 'u', 'e', 'r', 'y', '0'},
     };
     static const uint8_t expected_failure_message[] = {
         'c', 'r', 0xc3, 0xa9, 'a', 't', 'i', 'o', 'n', ' ', 'r', 'e', 'f', 'u', 's', 0xc3,
@@ -1910,11 +1912,13 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     kmipkit_transport_config_t *transport = 0;
     kmipkit_client_t *client = 0;
     kmipkit_client_batch_t *batch = 0;
-    kmipkit_client_batch_item_t *items[26] = {0};
+    kmipkit_client_batch_item_t *items[28] = {0};
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_client_batch_item_response_t *response_item = 0;
     kmipkit_ttlv_structure_t *get_constraints_ttlv = 0;
     kmipkit_ttlv_structure_t *get_any_object = 0;
+    kmipkit_ttlv_structure_t *query_response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *query_response_view = 0;
     uint64_t response_count = 0;
     char *port_end = 0;
     const unsigned long port = strtoul(argv[5], &port_end, 10);
@@ -1981,7 +1985,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         result = 31;
         goto cleanup;
     }
-    for (uint64_t index = 0; index < 26; ++index) {
+    for (uint64_t index = 0; index < 28; ++index) {
         kmipkit_client_batch_item_t *identified_item = 0;
         if (index == 4 || index == 5) {
             kmipkit_ttlv_structure_t *attributes = 0;
@@ -2216,6 +2220,27 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 result = 40 + (int)index;
                 goto cleanup;
             }
+        } else if (index == 26) {
+            if (kmipkit_client_batch_item_ping(&items[index]) != 0 || items[index] == 0) {
+                result = 40 + (int)index;
+                goto cleanup;
+            }
+        } else if (index == 27) {
+            static const uint32_t functions[] = {
+                5, 1, UINT32_C(0x80000001), 5};
+            static const uint8_t first_group[] = "group-a";
+            static const uint8_t second_group[] = "group-a";
+            const kmipkit_byte_span_v1_t groups[] = {
+                {first_group, sizeof(first_group) - 1},
+                {second_group, sizeof(second_group) - 1},
+            };
+            if (kmipkit_client_batch_item_query(
+                    functions, sizeof(functions) / sizeof(functions[0]), 1, groups,
+                    sizeof(groups) / sizeof(groups[0]), &items[index]) != 0 ||
+                items[index] == 0) {
+                result = 40 + (int)index;
+                goto cleanup;
+            }
         } else if (kmipkit_client_batch_item_discover_versions(&items[index]) != 0 ||
                    items[index] == 0) {
             result = 40 + (int)index;
@@ -2251,7 +2276,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     }
     batch = 0; /* consumed by execution */
     if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
-        response_count != 26) {
+        response_count != 28) {
         result = 201;
         goto cleanup;
     }
@@ -2694,7 +2719,26 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         } else if (versions_present != 0 || version_count != 0) {
             goto cleanup;
         }
-        if (index == 21) {
+        if (index == 26) {
+            uint8_t present = 0;
+            if (kmipkit_client_batch_item_response_ping(response_item, &present) != 0 ||
+                present != 1) {
+                result = 253;
+                goto cleanup;
+            }
+            kmipkit_client_batch_item_response_release(response_item);
+            response_item = 0;
+        } else if (index == 27) {
+            uint8_t present = 0;
+            if (kmipkit_client_batch_item_response_query_ttlv(
+                    response_item, &present, &query_response_ttlv) != 0 ||
+                present != 1 || query_response_ttlv == 0) {
+                result = 254;
+                goto cleanup;
+            }
+            kmipkit_client_batch_item_response_release(response_item);
+            response_item = 0;
+        } else if (index == 21) {
             if (!import_response_is_readable_from_c(response_item)) {
                 goto cleanup;
             }
@@ -2722,6 +2766,19 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     get_any_object = 0;
     kmipkit_client_batch_response_release(response);
     response = 0;
+    static const uint32_t expected_query_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x42015f), UINT32_C(0x420012)};
+    if (kmipkit_ttlv_structure_view(query_response_ttlv, &query_response_view) != 0 ||
+        !check_view_tags(
+            query_response_view, expected_query_tags,
+            sizeof(expected_query_tags) / sizeof(expected_query_tags[0]))) {
+        result = 255;
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_view_release(query_response_view);
+    query_response_view = 0;
+    kmipkit_ttlv_structure_release(query_response_ttlv);
+    query_response_ttlv = 0;
     if (batch != 0) {
         result = 250;
         goto cleanup;
@@ -2737,7 +2794,9 @@ cleanup:
     kmipkit_client_batch_response_release(response);
     kmipkit_client_batch_release(batch);
     kmipkit_ttlv_structure_release(get_constraints_ttlv);
-    for (uint64_t index = 0; index < 24; ++index) {
+    kmipkit_ttlv_structure_view_release(query_response_view);
+    kmipkit_ttlv_structure_release(query_response_ttlv);
+    for (uint64_t index = 0; index < 28; ++index) {
         kmipkit_client_batch_item_release(items[index]);
     }
     kmipkit_ttlv_structure_release(get_any_object);
