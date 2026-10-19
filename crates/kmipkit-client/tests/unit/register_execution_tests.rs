@@ -26,6 +26,7 @@ const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
 const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
+const LINK_ATTRIBUTE: u32 = 0x0042_004A;
 const CERTIFICATE: u32 = 0x0042_0013;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const KEY_BLOCK: u32 = 0x0042_0040;
@@ -833,6 +834,10 @@ fn register_client_omits_signature_algorithm_when_x509_certificate_encodes_it() 
     assert!(
         !fields.attribute_tags.contains(&DIGITAL_SIGNATURE_ALGORITHM),
         "Digital Signature Algorithm is omitted from Attributes"
+    );
+    assert!(
+        !fields.attribute_tags.contains(&LINK_ATTRIBUTE),
+        "the client can represent the certificate without a Link when associated private-key material is unavailable"
     );
     assert_eq!(fields.certificate_der, OASIS_PKCS12_STEP_2_CERTIFICATE_DER);
     assert_eq!(

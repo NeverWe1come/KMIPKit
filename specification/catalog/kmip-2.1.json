@@ -89269,13 +89269,18 @@
       ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0036",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-client/src/execute.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "Pinned KMIP Specification v2.1 §4.31 paragraph 2, lines 15815–15819, states that a Managed Object MAY lack Links when associated key material is unavailable to the server or client. Table 92, lines 15968–16082, says Link is not always present, is initially set by Client or Server, and is modifiable/deletable by a client. The client-visible object state may be inbound or outbound; the source does not assign a message direction. This permission does not make omission valid for every operation or override operation-specific Link requirements. No typed Link behavior implementation, executable test, or official Test Case ID is linked; no conformance claim is made."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 paragraph 2, lines 15815–15819, permits a Managed Object to lack Links when associated key material is unavailable to the server or client. Table 92, lines 15968–16082, confirms Link is not always present and is modifiable/deletable by a client. The client Register path represents an X.509 Certificate with no Link to associated private-key material absent from the request input; the named fake-transport test checks that Link remains absent. This proves only the client-side representation path, not inbound acceptance by every operation or server acceptance. The source does not assign a message direction, so the catalog retains `direction: unclear`. No requirement-specific official Test Cases ID is linked; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.31-004",

@@ -18198,7 +18198,6 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-SPEC-9.11-001",
                 "KMIPKIT-REQ-SPEC-9.11-004-003",
                 "KMIPKIT-REQ-SPEC-9.20-001-002",
-                "KMIPKIT-REQ-SPEC-4.31-002",
             }
         observed_blocked_requirement_ids = {gap.partition(":")[0] for gap in gaps}
         self.assertEqual(
