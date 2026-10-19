@@ -657,7 +657,9 @@ fn ffi_successful_encrypt_response_getter_returns_typed_fields() {
     let identifier = b"encrypt-response-id";
     let encrypt = successful_cryptographic_item(
         ClientRequest::Encrypt(EncryptRequest::new(
-            None,
+            Some(UniqueIdentifier::TextString(
+                "encrypt-request-key".to_owned(),
+            )),
             Some(OperationData::ByteString(SecretBytes::new(
                 b"request-plaintext".to_vec(),
             ))),
@@ -723,7 +725,9 @@ fn ffi_successful_decrypt_response_getter_returns_typed_fields() {
     let identifier = b"decrypt-response-id";
     let decrypt = successful_cryptographic_item(
         ClientRequest::Decrypt(DecryptRequest::new(
-            None,
+            Some(UniqueIdentifier::TextString(
+                "decrypt-request-key".to_owned(),
+            )),
             Some(OperationData::ByteString(SecretBytes::new(
                 b"ciphertext".to_vec(),
             ))),

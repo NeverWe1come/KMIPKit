@@ -2530,6 +2530,146 @@ pub extern "C" fn kmipkit_client_batch_item_response_hash(
     })
 }
 
+/// Reads typed Encrypt result fields only for a successful result.
+/// Returned spans are borrowed from `item` and remain valid while it is alive.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_encrypt(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_data_present: *mut u8,
+    out_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_iv_counter_nonce_present: *mut u8,
+    out_iv_counter_nonce: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+    out_authenticated_encryption_tag_present: *mut u8,
+    out_authenticated_encryption_tag: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let data_present = scalar_out!(out_data_present);
+        let data = scalar_out!(out_data);
+        let iv_present = scalar_out!(out_iv_counter_nonce_present);
+        let iv = scalar_out!(out_iv_counter_nonce);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        let tag_present = scalar_out!(out_authenticated_encryption_tag_present);
+        let tag = scalar_out!(out_authenticated_encryption_tag);
+        *present = 0;
+        try_ffi!(set_borrowed_span(data_present, data, None));
+        try_ffi!(set_borrowed_span(iv_present, iv, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        try_ffi!(set_borrowed_span(tag_present, tag, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().encrypt_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(bytes) = value.data()
+                && let Err(status) =
+                    bytes.with_bytes(|bytes| set_borrowed_span(data_present, data, Some(bytes)))
+            {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+            }
+            if let Some(bytes) = value.iv_counter_nonce()
+                && let Err(status) =
+                    bytes.with_bytes(|bytes| set_borrowed_span(iv_present, iv, Some(bytes)))
+            {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+            }
+            if let Some(bytes) = value.correlation_value()
+                && let Err(status) = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                })
+            {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+            }
+            if let Some(bytes) = value.authenticated_encryption_tag()
+                && let Err(status) =
+                    bytes.with_bytes(|bytes| set_borrowed_span(tag_present, tag, Some(bytes)))
+            {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Reads typed Decrypt result fields only for a successful result.
+/// Returned spans are borrowed from `item` and remain valid while it is alive.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_decrypt(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_data_present: *mut u8,
+    out_data: *mut crate::kmipkit_byte_span_v1_t,
+    out_correlation_present: *mut u8,
+    out_correlation_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let data_present = scalar_out!(out_data_present);
+        let data = scalar_out!(out_data);
+        let correlation_present = scalar_out!(out_correlation_present);
+        let correlation = scalar_out!(out_correlation_value);
+        *present = 0;
+        try_ffi!(set_borrowed_span(data_present, data, None));
+        try_ffi!(set_borrowed_span(correlation_present, correlation, None));
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(value) = item.outcome().decrypt_response() {
+            *present = 1;
+            if let Err(status) =
+                write_unique_identifier_v1(out_unique_identifier, value.unique_identifier())
+            {
+                return record_ffi_error(status);
+            }
+            if let Some(bytes) = value.data()
+                && let Err(status) =
+                    bytes.with_bytes(|bytes| set_borrowed_span(data_present, data, Some(bytes)))
+            {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+            }
+            if let Some(bytes) = value.correlation_value()
+                && let Err(status) = bytes.with_bytes(|bytes| {
+                    set_borrowed_span(correlation_present, correlation, Some(bytes))
+                })
+            {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+            }
+        }
+        SUCCESS
+    })
+}
+
 /// Reads the typed MAC result fields. Returned byte spans are borrowed from `item`.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_mac(
