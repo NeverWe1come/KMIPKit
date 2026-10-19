@@ -1368,6 +1368,21 @@ class T076ClientMappingTests(unittest.TestCase):
         log_response_repr_exclusion = {
             "kmipkit.client.LogResponse.__repr__"
         }
+        login_response_dataclass_exclusions = {
+            f"kmipkit.client.LoginResponse.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__slots__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__eq__",
+            )
+        }
+        login_response_repr_exclusion = {
+            "kmipkit.client.LoginResponse.__repr__"
+        }
         split_key_reference_constructor_exclusion = {
             "kmipkit.extensions.SplitKeyReference.__init__"
         }
@@ -1393,6 +1408,8 @@ class T076ClientMappingTests(unittest.TestCase):
             | join_split_response_repr_exclusion
             | log_response_dataclass_exclusions
             | log_response_repr_exclusion
+            | login_response_dataclass_exclusions
+            | login_response_repr_exclusion
             | split_key_reference_constructor_exclusion
             | split_key_reference_input_readbacks
             | split_key_reference_lifecycle_exclusions
@@ -1436,6 +1453,14 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])
                     self.assertIn("T053", exclusion["evidence"])
+                elif path in login_response_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn("not an independent cross-language product capability", exclusion["reason"])
+                    self.assertIn("T054", exclusion["evidence"])
+                elif path in login_response_repr_exclusion:
+                    self.assertIn("redacted", exclusion["reason"])
+                    self.assertIn("presentation", exclusion["reason"])
+                    self.assertIn("T054", exclusion["evidence"])
                 elif path in split_key_reference_constructor_exclusion:
                     self.assertIn("constructor", exclusion["reason"])
                     self.assertIn("split_key_reference_create", exclusion["reason"])
@@ -1461,6 +1486,28 @@ class T076ClientMappingTests(unittest.TestCase):
                 else:
                     self.assertIn("runtime metadata", exclusion["reason"].lower())
                     self.assertIn("local runtime metadata value", exclusion["reason"].lower())
+
+    def test_login_response_dataclass_exports_have_exact_t054_exclusions(self) -> None:
+        expected = {
+            f"kmipkit.client.LoginResponse.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__slots__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__eq__",
+                "__repr__",
+            )
+        }
+        actual = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.LoginResponse.")
+        }
+        self.assertEqual(expected, actual)
 
     def test_python_export_inventory_and_facade_mappings_are_exactly_classified(self) -> None:
         semantic_exports = {

@@ -441,6 +441,7 @@ class PublicApiParityTests(unittest.TestCase):
                 )
                 if function["id"] in {
                     "client_batch_item_response_delegated_login_ttlv",
+                    "client_batch_item_response_login_ttlv",
                     "client_batch_item_response_locate_unique_identifier_at",
                 }:
                     self.assertNotIn("jniSymbol", java)
@@ -484,6 +485,21 @@ class PublicApiParityTests(unittest.TestCase):
         )
         self.assertEqual("locateResponse", identifier_at["java"]["method"])
         self.assertNotIn("jniSymbol", identifier_at["java"])
+
+    def test_login_ticket_ttlv_names_its_aggregate_jni_owner(self) -> None:
+        functions = {function["id"]: function for function in self.manifest["functions"]}
+        login_response = functions["client_batch_item_response_login"]
+        ticket_ttlv = functions["client_batch_item_response_login_ttlv"]
+
+        self.assertNotIn("jniSymbol", ticket_ttlv["java"])
+        self.assertEqual(
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLogin",
+            ticket_ttlv["java"].get("jniAggregateSymbol"),
+        )
+        self.assertEqual(
+            login_response["java"]["jniSymbol"],
+            ticket_ttlv["java"]["jniAggregateSymbol"],
+        )
 
     def test_java_method_names_are_legal_java_identifiers(self) -> None:
         for function in self.manifest["functions"]:
