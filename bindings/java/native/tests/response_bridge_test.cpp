@@ -49,7 +49,7 @@ struct State {
 int32_t get_response(
         void* context, uint8_t* present,
         kmipkit_unique_identifier_v1_t* identifier,
-        int64_t* fields, size_t* field_count) {
+        int64_t* fields, size_t field_capacity, size_t* field_count) {
     auto& state = *static_cast<State*>(context);
     ++state.response_get_calls;
     if (state.failure == Failure::response_getter) return state.response_status;
@@ -57,7 +57,7 @@ int32_t get_response(
     *identifier = state.identifier;
     const size_t reported_count = state.failure == Failure::excessive_fields
             ? std::numeric_limits<size_t>::max() : state.field_count;
-    for (size_t index = 0; index < state.field_count && index < 2; ++index) {
+    for (size_t index = 0; index < state.field_count && index < 2 && index < field_capacity; ++index) {
         fields[index] = state.field_values[index];
     }
     *field_count = reported_count;
@@ -76,7 +76,7 @@ int32_t get_response_ttlv(void* context, uint8_t* present, void** ttlv) {
 }
 
 bool validate_response(
-        void* context, uint8_t, const kmipkit_unique_identifier_v1_t&,
+        void* context, uint8_t, const kmipkit_unique_identifier_v1_t*,
         const int64_t*, size_t) {
     return static_cast<State*>(context)->failure != Failure::invalid_payload;
 }
@@ -85,8 +85,8 @@ void throw_status(void* context, int32_t status) {
     static_cast<State*>(context)->last_status = status;
 }
 
-void release_ttlv(void* context, void*) {
-    ++static_cast<State*>(context)->ttlv_releases;
+void release_ttlv(void* context, void* ttlv) {
+    if (ttlv != nullptr) ++static_cast<State*>(context)->ttlv_releases;
 }
 
 void* make_fields(void* context, uint8_t, const int64_t*, size_t) {
@@ -95,7 +95,7 @@ void* make_fields(void* context, uint8_t, const int64_t*, size_t) {
     return state.failure == Failure::fields_array ? nullptr : &state.fields_ref;
 }
 
-void* make_identifier(void* context, const kmipkit_unique_identifier_v1_t&) {
+void* make_identifier(void* context, const kmipkit_unique_identifier_v1_t*) {
     auto& state = *static_cast<State*>(context);
     ++state.identifier_calls;
     return state.failure == Failure::identifier_record ? nullptr : &state.identifier_ref;

@@ -42,6 +42,11 @@ fi
     "$script_dir/tests/response_identifier_validation_test.cpp" -o "$response_identifier_test"
 "$response_identifier_test"
 
+response_bridge_test="$native_output/response_bridge_test"
+"${CXX:-c++}" "$@" -I"$repository_root/tests/fixtures/api/generated" \
+    "$script_dir/tests/response_bridge_test.cpp" -o "$response_bridge_test"
+"$response_bridge_test"
+
 cargo build --locked -p kmipkit-ffi --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in

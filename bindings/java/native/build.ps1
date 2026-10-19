@@ -12,6 +12,7 @@ $jniSource = Join-Path $PSScriptRoot 'kmipkit_jni.cpp'
 $zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
 $clientBatchItemTransferTestSource = Join-Path $PSScriptRoot 'tests\client_batch_item_transfer_test.cpp'
 $responseIdentifierTestSource = Join-Path $PSScriptRoot 'tests\response_identifier_validation_test.cpp'
+$responseBridgeTestSource = Join-Path $PSScriptRoot 'tests\response_bridge_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
 $internalHeader = Join-Path $repositoryRoot 'tests\fixtures\api\generated'
 
@@ -84,6 +85,24 @@ if ($LASTEXITCODE -ne 0) {
 & $responseIdentifierTestExecutable
 if ($LASTEXITCODE -ne 0) {
     throw "JNI response identifier validation test failed with exit code $LASTEXITCODE."
+}
+
+$responseBridgeTestObject = Join-Path $nativeOutput 'response_bridge_test.obj'
+$responseBridgeTestExecutable = Join-Path $nativeOutput 'response_bridge_test.exe'
+$responseBridgeTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseBridgeTestCompiler += ' /I' + '"' + $internalHeader + '"'
+$responseBridgeTestCompiler += ' /Fo' + '"' + $responseBridgeTestObject + '"'
+$responseBridgeTestCompiler += ' ' + '"' + $responseBridgeTestSource + '"'
+$responseBridgeTestCompiler += ' /Fe:' + '"' + $responseBridgeTestExecutable + '"'
+$responseBridgeTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseBridgeTestCommand += $responseBridgeTestCompiler
+& $env:ComSpec /d /s /c $responseBridgeTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response bridge test compile failed with exit code $LASTEXITCODE."
+}
+& $responseBridgeTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response bridge test failed with exit code $LASTEXITCODE."
 }
 
 $jniInclude = Join-Path $javaHome 'include'
