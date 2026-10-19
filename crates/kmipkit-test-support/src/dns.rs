@@ -225,26 +225,16 @@ fn bind_local_dns_sockets_with<Udp, Tcp>(
         let udp_socket = match bind_udp(udp_bind_address) {
             Ok(socket) => socket,
             Err(source) => {
-                let error = with_dns_socket_bind_context("UDP", udp_bind_address, attempt, source);
-                if is_retryable_socket_pair_bind_error(error.kind())
-                    && attempt < MAX_SOCKET_PAIR_BIND_ATTEMPTS
-                {
-                    continue;
-                }
-                return Err(error);
+                retry_dns_socket_pair_bind("UDP", udp_bind_address, attempt, source)?;
+                continue;
             }
         };
         let local_addr = udp_local_addr(&udp_socket)?;
         match bind_tcp(local_addr) {
             Ok(listener) => return Ok((udp_socket, listener)),
             Err(source) => {
-                let error = with_dns_socket_bind_context("TCP", local_addr, attempt, source);
-                if is_retryable_socket_pair_bind_error(error.kind())
-                    && attempt < MAX_SOCKET_PAIR_BIND_ATTEMPTS
-                {
-                    continue;
-                }
-                return Err(error);
+                retry_dns_socket_pair_bind("TCP", local_addr, attempt, source)?;
+                continue;
             }
         }
     }
@@ -275,6 +265,21 @@ impl fmt::Display for DnsSocketBindError {
 impl Error for DnsSocketBindError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         Some(&self.source)
+    }
+}
+
+fn retry_dns_socket_pair_bind(
+    protocol: &'static str,
+    address: SocketAddr,
+    attempt: usize,
+    source: io::Error,
+) -> io::Result<()> {
+    let error = with_dns_socket_bind_context(protocol, address, attempt, source);
+    if is_retryable_socket_pair_bind_error(error.kind()) && attempt < MAX_SOCKET_PAIR_BIND_ATTEMPTS
+    {
+        Ok(())
+    } else {
+        Err(error)
     }
 }
 
