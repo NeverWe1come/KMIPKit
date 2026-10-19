@@ -1264,17 +1264,19 @@ def test_batch_result_dispatches_get_constraints_only_for_successful_completion(
 
 
 @pytest.mark.parametrize(
-    ("operation", "mapper_name", "accessor_name"),
+    ("operation", "mapper_name", "accessor_name", "accessor_is_method"),
     [
-        pytest.param(0x0A, "_get_response", "get_response", id="get"),
-        pytest.param(0x08, "_locate_response", "locate_response", id="locate"),
+        pytest.param(0x0A, "_get_response", "get_response", True, id="get"),
+        pytest.param(0x08, "_locate_response", "locate_response", True, id="locate"),
+        pytest.param(0x2C, "_log_response", "log_response", False, id="log"),
     ],
 )
-def test_batch_result_dispatches_get_and_locate_mappers(
+def test_batch_result_dispatches_get_locate_and_log_mappers(
     monkeypatch: pytest.MonkeyPatch,
     operation: int,
     mapper_name: str,
     accessor_name: str,
+    accessor_is_method: bool,
 ) -> None:
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
     item_pointer, _item_storage = _opaque("kmipkit_client_batch_item_response_t")
@@ -1313,7 +1315,8 @@ def test_batch_result_dispatches_get_and_locate_mappers(
     try:
         item_result = result.items[0]
         assert item_result.operation == operation
-        assert getattr(item_result, accessor_name)() is mapped_response
+        accessor = getattr(item_result, accessor_name)
+        assert (accessor() if accessor_is_method else accessor) is mapped_response
         assert dispatched == [item_pointer]
     finally:
         result.close()

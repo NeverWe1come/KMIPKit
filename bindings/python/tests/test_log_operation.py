@@ -106,3 +106,76 @@ def test_log_response_releases_owned_handle_when_presence_is_absent(
         client._log_response(SimpleNamespace(_pointer=lambda: object()))
 
     assert released == [address]
+
+
+def test_log_response_releases_output_when_abi_status_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = client_ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    released: list[object] = []
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 4
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_log_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._log_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [handle]
+
+
+def test_log_response_returns_none_when_native_response_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = client_ffi.NULL  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_log_ttlv=response_ttlv),
+    )
+
+    assert client._log_response(SimpleNamespace(_pointer=lambda: object())) is None
+
+
+def test_log_response_releases_native_handle_when_ttlv_wrapper_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = client_ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    released: list[object] = []
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    def fail_wrapper(_address: int) -> object:
+        raise RuntimeError("test Log response wrapper failure")
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_log_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(client.ttlv, "_structure_from_native_address", fail_wrapper)
+
+    with pytest.raises(RuntimeError, match="test Log response wrapper failure"):
+        client._log_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [handle]
