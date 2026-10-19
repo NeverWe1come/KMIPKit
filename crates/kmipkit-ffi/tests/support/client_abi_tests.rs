@@ -34,6 +34,9 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 use super::*;
 use crate::kmipkit_byte_span_v1_t;
 
+#[path = "query_ping_abi_tests.rs"]
+mod query_ping_abi_tests;
+
 const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;
 const ENCODING_PEM: u32 = 1;
