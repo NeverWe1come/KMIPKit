@@ -3743,3 +3743,13 @@ After adding `KMIPKIT-REQ-SPEC-9.17-001-002` to each whole-Spec client closure, 
 | Red | pending | `cargo test -p kmipkit-protocol result_message_client_access_has_an_optional_typed_rule --lib` | Expected Red: 1 test failed at the mapping-presence assertion; compilation succeeded, with no test error. |
 
 The Red commit changes tests only; catalog and independent oracle data have not yet been modified in this tranche. The earlier three §6.1/§9.17 gaps are adjudicated in the prior Green commit. T002 remains open pending the Green data update, full oracle/profile consistency checks, evidence refresh, and generated-report checks.
+
+### KMIPKIT-0010 T002 — final 20 source-applicability rows Red (2026-10-19)
+
+The final pinned-source review disposition assigns §4.11 to `server_only` and the other 19 rows to `profile_conditional`; the latter are conditional on the selected profile, attribute, or operation context and carry no profile membership IDs. Where KMIP 2.1 leaves the enforcement actor unnamed, client/consumer attribution is a project interpretation and is recorded separately from the source actor. The focused regression checks the crosswalk, catalog, and source-review obligation states, the absence of claimed profile membership, the §4.18 no-delete rule alongside its Pre-Active/Active modification exception, and the existing §6.1.34 requirement ID in client-to-server context.
+
+| Stage | DCO-signed commit | Command | Result |
+|---|---|---|---|
+| Red | This DCO-signed commit | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability` | Expected Red: 3 tests failed by assertion (no test errors). The crosswalk/catalog still had unresolved scope, source-obligation reviews retained unresolved dispositions, and actor/§4.18 rationale was not yet recorded. |
+
+The Red commit changes only the focused regression and this evidence. The catalog and independent oracle remain unchanged for these 20 rows until Green. T002 remains open.
