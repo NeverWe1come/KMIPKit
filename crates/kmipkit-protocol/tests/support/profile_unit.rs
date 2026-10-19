@@ -815,7 +815,7 @@ fn result_message_client_access_has_an_optional_typed_rule() {
         mapping.verification_category,
         GeneratedVerificationCategory::OptionalCapability
     );
-    assert!(mapping.constraints.is_empty());
+    assert_eq!(mapping.constraints, []);
     assert!(
         mapping
             .evaluator

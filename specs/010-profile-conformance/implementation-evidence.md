@@ -3808,9 +3808,11 @@ Independent QA found that the first documentation regression rejected the exact 
 
 ### CI correction — format Result Message mapping assertion (2026-10-19)
 
-CI run `39217747158` found a rustfmt-only failure in the Result Message optional-capability regression. Local `cargo fmt --all --check` reproduced the same single diff in `crates/kmipkit-protocol/tests/support/profile_unit.rs`; the correction changes only layout and does not alter behavior.
+CI run `39217747158` found a rustfmt failure in the Result Message optional-capability regression. Local `cargo fmt --all --check` reproduced the same single diff in `crates/kmipkit-protocol/tests/support/profile_unit.rs`; after that fix was pushed, CI run `39217954120` found `clippy::assert_is_empty` on the adjacent empty-constraints assertion. Local workspace Clippy reproduced that lint. Both corrections are confined to test assertions and do not alter behavior.
 
 | Stage | DCO-signed commit | Command or artifact | Result |
 |---|---|---|---|
 | Red | This DCO-signed corrective commit | `cargo fmt --all --check` | Expected Red: rustfmt requested multiline formatting for the `mapping.evaluator.is_some_and(...)` assertion. |
 | Green/Refactor | This DCO-signed formatting correction | `cargo fmt --all`; `cargo fmt --all --check`; `git diff --check` | PASS: all Rust formatting and whitespace checks pass; only assertion layout changed. |
+| Red | This DCO-signed Clippy correction | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | Expected Red: `clippy::assert_is_empty` rejected `assert!(mapping.constraints.is_empty())` in the same test module. |
+| Green/Refactor | This DCO-signed Clippy correction | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `cargo test -p kmipkit-protocol --test profile_validation --all-features --locked`; `cargo fmt --all --check`; `git diff --check` | PASS: workspace Clippy, all seven profile validation tests, formatting, and whitespace checks pass after expressing the empty constraint expectation with `assert_eq!`. |
