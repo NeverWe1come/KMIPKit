@@ -4928,6 +4928,102 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; LoginResponse Ticket fields and the owned generic Ticket TTLV are mapped across four languages. This exact member has no separate cross-language product capability.",
+      "exportName": "kmipkit.client.LoginResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse member is Python dataclass-generated introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; LoginResponse Ticket fields and the owned generic Ticket TTLV are mapped across four languages. This exact member has no separate cross-language product capability.",
+      "exportName": "kmipkit.client.LoginResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse member is Python dataclass-generated introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; LoginResponse Ticket fields and the owned generic Ticket TTLV are mapped across four languages. This exact member has no separate cross-language product capability.",
+      "exportName": "kmipkit.client.LoginResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse member is dataclass-generated Python value behavior, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; LoginResponse Ticket fields and the owned generic Ticket TTLV are mapped across four languages. This exact member has no separate cross-language product capability.",
+      "exportName": "kmipkit.client.LoginResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse member is dataclass-generated Python value behavior, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; LoginResponse Ticket fields and the owned generic Ticket TTLV are mapped across four languages. This exact member has no separate cross-language product capability.",
+      "exportName": "kmipkit.client.LoginResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse initializer is a dataclass-generated Python record constructor, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; LoginResponse Ticket fields and the owned generic Ticket TTLV are mapped across four languages. This exact member has no separate cross-language product capability.",
+      "exportName": "kmipkit.client.LoginResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse member is Python dataclass-generated pattern-matching metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; the Ticket Value is redacted from the LoginResponse representation and its other public fields are mapped across four languages.",
+      "exportName": "kmipkit.client.LoginResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse representation is explicitly redacted Ticket presentation behavior, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T054; LoginResponse Ticket fields and the owned generic Ticket TTLV are mapped across four languages. This exact member has no separate cross-language product capability.",
+      "exportName": "kmipkit.client.LoginResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact LoginResponse member is Python dataclass-generated introspection or storage metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T048; the successful Get Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __dataclass_fields__.",
       "exportName": "kmipkit.client.GetConstraintsResponse.__dataclass_fields__",
       "packageId": "python-kmipkit",
@@ -23911,6 +24007,7 @@
           "resource_limit",
           "internal"
         ],
+        "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLogin",
         "method": "ticketTtlv",
         "package": "org.kmipkit.extensions",
         "parameters": [],

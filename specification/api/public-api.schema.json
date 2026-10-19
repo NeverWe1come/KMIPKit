@@ -1186,6 +1186,11 @@
               "pattern": "^Java_[A-Za-z0-9_]+$",
               "description": "Present only when this public Java method directly maps to a JNI entry point."
             },
+            "jniAggregateSymbol": {
+              "type": "string",
+              "pattern": "^Java_[A-Za-z0-9_]+$",
+              "description": "Names the aggregate JNI entry point that returns this mapped value alongside other fields; the accessor has no direct JNI entry point."
+            },
             "errorCategories": {
               "$ref": "#/$defs/errorCategoryIds"
             },
