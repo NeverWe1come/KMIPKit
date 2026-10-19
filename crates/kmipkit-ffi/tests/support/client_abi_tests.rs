@@ -1247,11 +1247,12 @@ fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ti
     assert!(ticket_ttlv.is_null());
     release(wrong_variant, Kind::ClientBatchItemResponse);
 
-    let item = successful_cryptographic_item(
+    // KMIP 2.1 §6.1.30, Table 255 defines Login failure responses; the empty
+    // successful payload is invalid because Table 254 requires a Ticket.
+    let item = failed_cryptographic_item(
         ClientRequest::Login(LoginRequest::new()),
         0x2d,
         b"login-no-ticket",
-        Vec::new(),
     );
     present = 9;
     ticket_present = 9;
@@ -1267,7 +1268,7 @@ fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ti
         ),
         SUCCESS
     );
-    assert_eq!((present, ticket_present, ticket_type), (1, 0, 0));
+    assert_eq!((present, ticket_present, ticket_type), (0, 0, 0));
     assert!(ticket_value.data.is_null());
     assert_eq!(ticket_value.length, 0);
 
