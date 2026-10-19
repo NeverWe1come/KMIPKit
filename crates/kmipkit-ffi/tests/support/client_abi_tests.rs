@@ -1143,6 +1143,25 @@ fn ffi_login_constructor_validates_optional_table_253_fields() {
     );
     assert!(!interval_item.is_null());
     kmipkit_client_batch_item_release(interval_item);
+
+    let wrong_usage_limits = make_handle::<kmipkit_ttlv_structure_t>(
+        Kind::Structure,
+        HandleValue::Value(Value::integer(1)),
+    );
+    let mut invalid_usage_limits_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_login(
+            0,
+            0,
+            0,
+            0,
+            wrong_usage_limits,
+            &mut invalid_usage_limits_item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(invalid_usage_limits_item.is_null());
+    release(wrong_usage_limits, Kind::Structure);
 }
 
 #[test]
@@ -1187,6 +1206,124 @@ fn ffi_login_response_getters_return_raw_ticket_fields_and_owned_ttlv() {
     assert_eq!(ttlv_present, 1);
     assert!(!ticket_ttlv.is_null());
     kmipkit_ttlv_structure_release(ticket_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ticket() {
+    let wrong_variant: *mut kmipkit_client_batch_item_response_t = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::Structure(Structure::new()),
+    );
+    let mut present = 9;
+    let mut ticket_present = 9;
+    let mut ticket_type = u32::MAX;
+    let mut ticket_value = byte_span(b"secret sentinel");
+    assert_eq!(
+        kmipkit_client_batch_item_response_login(
+            wrong_variant,
+            &mut present,
+            &mut ticket_present,
+            &mut ticket_type,
+            &mut ticket_value,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!((present, ticket_present, ticket_type), (0, 0, 0));
+    assert!(ticket_value.data.is_null());
+    assert_eq!(ticket_value.length, 0);
+
+    present = 9;
+    let mut ticket_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_login_ttlv(
+            wrong_variant,
+            &mut present,
+            &mut ticket_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(ticket_ttlv.is_null());
+    release(wrong_variant, Kind::ClientBatchItemResponse);
+
+    let item = successful_cryptographic_item(
+        ClientRequest::Login(LoginRequest::new()),
+        0x2d,
+        b"login-no-ticket",
+        Vec::new(),
+    );
+    present = 9;
+    ticket_present = 9;
+    ticket_type = u32::MAX;
+    ticket_value = byte_span(b"secret sentinel");
+    assert_eq!(
+        kmipkit_client_batch_item_response_login(
+            item,
+            &mut present,
+            &mut ticket_present,
+            &mut ticket_type,
+            &mut ticket_value,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, ticket_present, ticket_type), (1, 0, 0));
+    assert!(ticket_value.data.is_null());
+    assert_eq!(ticket_value.length, 0);
+
+    present = 9;
+    ticket_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_login_ttlv(item, &mut present, &mut ticket_ttlv),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(ticket_ttlv.is_null());
+
+    let response_item = reference_handle(item, Kind::ClientBatchItemResponse)
+        .expect("successful Login item remains registered");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &response_item.value else {
+        panic!("the Login response handle stores its batch response and index");
+    };
+    let invalid_index = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(response),
+            index: usize::MAX,
+        },
+    );
+    present = 9;
+    ticket_present = 9;
+    ticket_type = u32::MAX;
+    ticket_value = byte_span(b"secret sentinel");
+    assert_eq!(
+        kmipkit_client_batch_item_response_login(
+            invalid_index,
+            &mut present,
+            &mut ticket_present,
+            &mut ticket_type,
+            &mut ticket_value,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!((present, ticket_present, ticket_type), (0, 0, 0));
+    assert!(ticket_value.data.is_null());
+    assert_eq!(ticket_value.length, 0);
+
+    present = 9;
+    ticket_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_login_ttlv(
+            invalid_index,
+            &mut present,
+            &mut ticket_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert!(ticket_ttlv.is_null());
+    release(invalid_index, Kind::ClientBatchItemResponse);
+    drop(response_item);
     kmipkit_client_batch_item_response_release(item);
 }
 

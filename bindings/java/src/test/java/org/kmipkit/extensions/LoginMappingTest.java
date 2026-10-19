@@ -72,4 +72,62 @@ final class LoginMappingTest {
             assertFalse(response.toString().contains("ticket-value"));
         }
     }
+
+    @Test
+    void responseMappingRejectsInconsistentAbsentAndPresentTicketFields() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseLoginResponse(new Object[] {
+                    new long[] {1, 0, 0}, null, new long[] {2}
+                }));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseLoginResponse(new Object[] {
+                    new long[] {0, 1, 3}, new byte[] {1}, new long[] {0}
+                }));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseLoginResponse(new Object[] {
+                    new long[] {1, 1, -1}, new byte[] {1}, new long[] {0}
+                }));
+    }
+
+    @Test
+    void responseMappingWipesSecretWhenNativeTupleValidationFails() {
+        byte[] secret = "malformed-login-ticket-secret".getBytes();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseLoginResponse(new Object[] {
+                    new long[] {1, 1, 0xfeed_beefL}, secret, "invalid ticket handle"
+                }));
+        assertArrayEquals(new byte[secret.length], secret);
+    }
+
+    @Test
+    void responseMappingCleansNativeResultWhenParserEntryFails() {
+        NativeExtensionRegistry.ensureLoaded();
+        long ticketTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        byte[] secret = "login-ticket-handoff-secret".getBytes();
+        long[] ticketHandle = {ticketTtlv};
+
+        AssertionError thrown = assertThrows(AssertionError.class,
+                () -> ClientBatchItemResult.parseLoginResponseAfterNativeReturn(
+                        new Object[] {
+                            new long[] {1, 1, 0xfeed_beefL}, secret, ticketHandle
+                        }, () -> {
+                            throw new AssertionError("injected parser factory failure");
+                        }));
+
+        assertEquals("injected parser factory failure", thrown.getMessage());
+        assertArrayEquals(new byte[secret.length], secret);
+        assertArrayEquals(new long[] {0}, ticketHandle);
+        TtlvStructure stale = TtlvStructure.fromNative(ticketTtlv, null);
+        assertThrows(InvalidInputException.class, stale::view);
+        stale.close();
+    }
+
+    @Test
+    void nativeResponseBridgeRejectsAnInvalidItemHandle() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseLogin(0));
+    }
 }
