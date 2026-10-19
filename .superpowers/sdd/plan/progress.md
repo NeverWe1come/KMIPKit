@@ -229,3 +229,8 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 - Current branch now has a reviewed complete source-derived oracle for all client-profile clause and requirement closures. Existing signed Red/Green implementation commits provide normative inclusion validation, safe bounded target parsing, deterministic generated Rust metadata, and selected-target reporting.
 - Fresh verification: generator suite 65 passed / 1 Windows symlink-privilege skip; catalog validation 4 sources / 1,411 clauses / 4,123 records; generated profile `--check` passed; coverage report `--check` passed; Rust `profile_validation` 7/7 passed. The adversarial generated-source compile/round-trip regression is included in the passing generator module.
 - T005-T007 are closed in the feature task ledger. T008 remains open for its distinct Refactor evidence commit. The new T003 Red test still identifies six selected Baseline MAY/OPTIONAL evidence gaps; no readiness or conformance claim.
+
+
+## T008 Refactor checkpoint (2026-10-19)
+- Closed T008 after re-running the full profile generator suite and deterministic profile/report output checks. Existing signed code Refactor `2b5a39b2` centralizes Rust literal validation; current test suite confirms bounded target reads, deterministic generation, and adversarial source compile/round-trip.
+- The current signed task-evidence commit records T008 separately from the T005-T007 Green checkpoint. T003 optional-evidence Red remains open for Green implementation; six selected Baseline MAY/OPTIONAL capabilities and the fixture/readiness gates are still unresolved.
