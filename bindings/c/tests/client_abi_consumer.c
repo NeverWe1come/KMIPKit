@@ -927,6 +927,46 @@ cleanup:
     return result;
 }
 
+static int login_response_is_readable_after_result_release_from_c(
+    kmipkit_client_batch_item_response_t *item) {
+    static const uint32_t expected_ticket_tags[] = {
+        UINT32_C(0x42014a), UINT32_C(0x42014b)};
+    static const uint8_t expected_ticket_value[] = "login-ticket-native-secret";
+    uint8_t response_present = 0;
+    uint8_t ticket_present = 0;
+    uint32_t ticket_type = 0;
+    kmipkit_byte_span_v1_t ticket_value = {0};
+    uint8_t ttlv_present = 0;
+    kmipkit_ttlv_structure_t *ticket_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *ticket_view = 0;
+    int result = 0;
+
+    if (item == 0 || kmipkit_client_batch_item_response_login(
+            item, &response_present, &ticket_present, &ticket_type, &ticket_value) != 0 ||
+        response_present != 1 || ticket_present != 1 || ticket_type != UINT32_C(0xfeedbeef) ||
+        ticket_value.length != sizeof(expected_ticket_value) - 1 || ticket_value.data == 0 ||
+        memcmp(ticket_value.data, expected_ticket_value, sizeof(expected_ticket_value) - 1) != 0 ||
+        kmipkit_client_batch_item_response_login_ttlv(item, &ttlv_present, &ticket_ttlv) != 0 ||
+        ttlv_present != 1 || ticket_ttlv == 0) {
+        goto cleanup;
+    }
+    /* The span is used only while its result-item owner is still live. */
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (kmipkit_ttlv_structure_view(ticket_ttlv, &ticket_view) != 0 ||
+        !check_view_tags(ticket_view, expected_ticket_tags,
+            (uint64_t)(sizeof(expected_ticket_tags) / sizeof(expected_ticket_tags[0])))) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_ttlv_structure_view_release(ticket_view);
+    kmipkit_ttlv_structure_release(ticket_ttlv);
+    return result;
+}
+
 static int interop_response_accessor_clears_invalid_outputs_from_c(void) {
     uint8_t present = UINT8_MAX;
     kmipkit_ttlv_structure_t *response_ttlv =
@@ -1630,9 +1670,9 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
     static const uint32_t expected_statuses[] = {
-        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0};
+        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0};
     static const uint8_t expected_correlation[] = {0x00, 0xa1, 0x7f};
-    static const uint8_t expected_ids[23][6] = {
+    static const uint8_t expected_ids[24][6] = {
         {'i', 't', 'e', 'm', '-', '0'},
         {'i', 't', 'e', 'm', '-', '1'},
         {'i', 't', 'e', 'm', '-', '2'},
@@ -1656,6 +1696,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         {'l', 'o', 'c', '-', 'f', '0'},
         {'i', 'm', 'p', 'o', 'r', 't'},
         {'l', 'o', 'g', '-', '0', '0'},
+        {'l', 'o', 'g', 'i', 'n', '0'},
     };
     static const uint8_t expected_failure_message[] = {
         'c', 'r', 0xc3, 0xa9, 'a', 't', 'i', 'o', 'n', ' ', 'r', 'e', 'f', 'u', 's', 0xc3,
@@ -1670,7 +1711,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     kmipkit_transport_config_t *transport = 0;
     kmipkit_client_t *client = 0;
     kmipkit_client_batch_t *batch = 0;
-    kmipkit_client_batch_item_t *items[23] = {0};
+    kmipkit_client_batch_item_t *items[24] = {0};
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_client_batch_item_response_t *response_item = 0;
     kmipkit_ttlv_structure_t *get_constraints_ttlv = 0;
@@ -1741,7 +1782,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         result = 31;
         goto cleanup;
     }
-    for (uint64_t index = 0; index < 23; ++index) {
+    for (uint64_t index = 0; index < 24; ++index) {
         kmipkit_client_batch_item_t *identified_item = 0;
         if (index == 4 || index == 5) {
             kmipkit_ttlv_structure_t *attributes = 0;
@@ -1939,6 +1980,12 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 result = 40 + (int)index;
                 goto cleanup;
             }
+        } else if (index == 23) {
+            if (kmipkit_client_batch_item_login(0, 0, 0, 0, 0, &items[index]) != 0 ||
+                items[index] == 0) {
+                result = 40 + (int)index;
+                goto cleanup;
+            }
         } else if (kmipkit_client_batch_item_discover_versions(&items[index]) != 0 ||
                    items[index] == 0) {
             result = 40 + (int)index;
@@ -1974,7 +2021,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     }
     batch = 0; /* consumed by execution */
     if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
-        response_count != 23) {
+        response_count != 24) {
         result = 201;
         goto cleanup;
     }
@@ -2423,6 +2470,11 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 goto cleanup;
             }
             response_item = 0; /* the Log ownership check releases the borrowed item */
+        } else if (index == 23) {
+            if (!login_response_is_readable_after_result_release_from_c(response_item)) {
+                goto cleanup;
+            }
+            response_item = 0; /* the Login ownership check releases the borrowed item */
         } else {
             kmipkit_client_batch_item_response_release(response_item);
             response_item = 0;
@@ -2451,7 +2503,7 @@ cleanup:
     kmipkit_client_batch_response_release(response);
     kmipkit_client_batch_release(batch);
     kmipkit_ttlv_structure_release(get_constraints_ttlv);
-    for (uint64_t index = 0; index < 23; ++index) {
+    for (uint64_t index = 0; index < 24; ++index) {
         kmipkit_client_batch_item_release(items[index]);
     }
     kmipkit_ttlv_structure_release(get_any_object);

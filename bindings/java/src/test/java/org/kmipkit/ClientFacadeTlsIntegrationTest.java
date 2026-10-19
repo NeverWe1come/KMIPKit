@@ -275,7 +275,9 @@ final class ClientFacadeTlsIntegrationTest {
                             .withUniqueBatchItemId(uniqueBatchItemId(24)))
                     .add(ClientBatchItem.log(
                                     "log-message-private-sentinel".getBytes(StandardCharsets.UTF_8))
-                            .withUniqueBatchItemId(uniqueBatchItemId(25)));
+                            .withUniqueBatchItemId(uniqueBatchItemId(25)))
+                    .add(ClientBatchItem.login(null, null, null, null)
+                            .withUniqueBatchItemId(uniqueBatchItemId(26)));
             ClientBatchResponse batchResponse;
             try {
                 batchResponse = client.executeWithOptions(
@@ -314,8 +316,9 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult imported = response.itemAt(22);
                     ClientBatchItemResult importFailed = response.itemAt(23);
                     ClientBatchItemResult interop = response.itemAt(24);
-                    ClientBatchItemResult log = response.itemAt(25)) {
-                assertEquals(26, response.itemCount());
+                    ClientBatchItemResult log = response.itemAt(25);
+                    ClientBatchItemResult login = response.itemAt(26)) {
+                assertEquals(27, response.itemCount());
                 assertTrue(completed.getResponse().isEmpty());
                 assertTrue(completed.locateResponse().isEmpty());
                 assertEquals(0, completed.resultStatus());
@@ -433,6 +436,23 @@ final class ClientFacadeTlsIntegrationTest {
                     assertTrue(delegatedResponse.ticketTtlv().isPresent());
                     assertFalse(delegatedResponse.toString().contains("delegated-ticket-secret"));
                 }
+                ClientBatchItemResult.LoginResponse loginResponse =
+                        login.loginResponse().orElseThrow();
+                TtlvStructure loginTicket = loginResponse.ticketTtlv().orElseThrow();
+                try (loginResponse) {
+                    assertEquals(0, login.resultStatus());
+                    assertEquals(0xfeed_beefL, loginResponse.ticketTypeRaw().orElseThrow());
+                    byte[] callerTicket = loginResponse.ticketValue().orElseThrow();
+                    assertArrayEquals("login-ticket-native-secret"
+                                    .getBytes(StandardCharsets.US_ASCII), callerTicket);
+                    assertFalse(loginResponse.toString().contains("login-ticket-native-secret"));
+                    try (TtlvStructureView ticketView = loginTicket.view()) {
+                        assertTagOrder(ticketView, 0x0042_014a, 0x0042_014b);
+                    }
+                    Arrays.fill(callerTicket, (byte) 0);
+                }
+                assertTrue(loginResponse.ticketValue().isEmpty());
+                assertTrue(loginResponse.ticketTtlv().isEmpty());
                 try (ClientBatchItemResult.DeriveKeyResponse deriveKeyResponse =
                                 derived.deriveKeyResponse().orElseThrow();
                         TtlvStructureView deriveKeyTtlv = deriveKeyResponse.responseTtlv().view()) {
@@ -1488,7 +1508,7 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(26)));
+                item(0x42000d, 2, integer(27)));
         byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
@@ -1634,11 +1654,17 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] logItem = structure(0x42000f,
                 enumeration(0x42005c, 0x2c), item(0x420093, 8, uniqueBatchItemId(25)),
                 enumeration(0x42007f, 0), structure(0x42007c));
+        byte[] loginTicket = structure(0x420149,
+                enumeration(0x42014a, 0xfeed_beef),
+                item(0x42014b, 8, "login-ticket-native-secret".getBytes(StandardCharsets.US_ASCII)));
+        byte[] loginItem = structure(0x42000f,
+                enumeration(0x42005c, 0x2d), item(0x420093, 8, uniqueBatchItemId(26)),
+                enumeration(0x42007f, 0), structure(0x42007c, loginTicket));
         return structure(0x42007b, header, successfulItem, pendingItem, failedItem, emptyItem,
                 createItem, createFailure, createKeyPairItem, createSplitKeyItem, textCreateItem,
                 certifyItem, allocationItem, checkItem, delegatedLoginItem, deriveKeyItem,
                 exportItem, exportFailure, constraintsItem, constraintsFailure, getItem, locateItem,
-                getFailure, locateFailure, importItem, importFailure, interopItem, logItem);
+                getFailure, locateFailure, importItem, importFailure, interopItem, logItem, loginItem);
     }
 
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {

@@ -315,6 +315,10 @@ fn spawn_public_client_batch_peer(
             c_request_contains_log(&request),
             "C ABI consumer must transmit the typed Log request and message through the public batch API"
         );
+        assert!(
+            c_request_contains_login(&request),
+            "C ABI consumer must transmit the typed Login request through the public batch API"
+        );
         tls.write_all(&mixed_discover_versions_response())
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
@@ -687,6 +691,50 @@ fn c_request_contains_log(encoded: &[u8]) -> bool {
             })
             .count();
         matching == 1
+    })
+}
+
+fn c_request_contains_login(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const LOGIN: u32 = 45;
+    const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+
+    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        message.children().iter().any(|item| {
+            if item.tag().raw() != BATCH_ITEM {
+                return false;
+            }
+            item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    return false;
+                };
+                let mut login = false;
+                let mut identifier = false;
+                for child in batch_item.children() {
+                    match child.tag().raw() {
+                        OPERATION => {
+                            login |= child.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(actual) if *actual == LOGIN)
+                            });
+                        }
+                        UNIQUE_BATCH_ITEM_ID => {
+                            identifier |= child.with_value(|value| {
+                                matches!(value, ValueView::ByteString(actual) if actual == b"login0")
+                            });
+                        }
+                        _ => {}
+                    }
+                }
+                login && identifier
+            })
+        })
     })
 }
 
@@ -1167,8 +1215,7 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-// This TLS batch returns 21 ordered items: the original eight, five crypto
-// operations, Certify, Derive Key, Export, Get Constraints, and two Get/Locate pairs.
+// This TLS batch returns 24 ordered items, including the successful Login Ticket.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -1179,7 +1226,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 23),
+            integer(0x0042_000D, 24),
         ],
     );
     let response_payload = structure(
@@ -1202,6 +1249,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
                 locate_failure_response_item(),
                 import_response_item(),
                 log_response_item(),
+                login_response_item(),
             ]),
     )
 }
@@ -1214,6 +1262,25 @@ fn log_response_item() -> Vec<u8> {
             ttlv_item(0x0042_0093, 0x08, b"log-00"),
             enumeration(0x0042_007F, 0),
             structure(0x0042_007C, []),
+        ],
+    )
+}
+
+fn login_response_item() -> Vec<u8> {
+    let ticket = structure(
+        0x0042_0149,
+        [
+            enumeration(0x0042_014A, 0xFEED_BEEF),
+            ttlv_item(0x0042_014B, 0x08, b"login-ticket-native-secret"),
+        ],
+    );
+    structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 45),
+            ttlv_item(0x0042_0093, 0x08, b"login0"),
+            enumeration(0x0042_007F, 0),
+            structure(0x0042_007C, [ticket]),
         ],
     )
 }
