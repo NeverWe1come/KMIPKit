@@ -30,6 +30,27 @@ final class ClientBatchItemPingQueryMappingTest {
     }
 
     @Test
+    void queryFactoryAcceptsMoreThanOneHundredThousandFunctionsAndGroups() {
+        int[] functions = new int[100_001];
+        String[] groups = new String[100_001];
+        java.util.Arrays.fill(functions, 1);
+        java.util.Arrays.fill(groups, "group");
+
+        try (ClientBatchItem item = ClientBatchItem.query(functions, groups)) {
+            assertEquals(0, item.extensionCount());
+        }
+    }
+
+    @Test
+    void queryFactoryAcceptsObjectGroupLargerThanDefaultMessageLimit() {
+        String objectGroup = "x".repeat(16 * 1024 * 1024 + 1);
+
+        try (ClientBatchItem item = ClientBatchItem.query(new int[] {1}, new String[] {objectGroup})) {
+            assertEquals(0, item.extensionCount());
+        }
+    }
+
+    @Test
     void queryFactoryRequiresAtLeastOneFunction() {
         assertThrows(InvalidInputException.class, () -> ClientBatchItem.query(null, null));
         assertThrows(InvalidInputException.class,

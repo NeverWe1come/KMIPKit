@@ -120,6 +120,27 @@ def test_native_ping_and_query_builders_return_owned_items() -> None:
         empty_groups.close()
 
 
+def test_native_query_builder_accepts_more_than_one_hundred_thousand_values() -> None:
+    functions = [1] * 100_001
+    groups = ["group"] * 100_001
+
+    item = extensions.client_batch_item_query(functions, groups)
+    try:
+        assert not item.closed
+    finally:
+        item.close()
+
+
+def test_native_query_builder_accepts_object_group_larger_than_default_limit() -> None:
+    object_group = "x" * (16 * 1024 * 1024 + 1)
+
+    item = extensions.client_batch_item_query([1], [object_group])
+    try:
+        assert not item.closed
+    finally:
+        item.close()
+
+
 @pytest.mark.parametrize(
     ("operation", "mapper_name", "result_field"),
     [

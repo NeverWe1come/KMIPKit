@@ -21,11 +21,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
+import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +73,7 @@ import org.kmipkit.ttlv.TtlvValueView;
 final class ClientFacadeTlsIntegrationTest {
     private static final char[] STORE_PASSWORD = "kmipkit-test".toCharArray();
     private static final byte[] CORRELATION = {0, (byte) 0xa1, 0x7f};
+    private static final int LARGE_RESPONSE_DATA_BYTES = 16 * 1024 * 1024 + 1;
 
     @TempDir
     Path temporaryDirectory;
@@ -147,6 +150,162 @@ final class ClientFacadeTlsIntegrationTest {
                 }
             }
         }
+    }
+
+    @Test
+    void pingAndQueryRoundTripThroughNativeJniOverDeterministicTls13Peer() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry(
+                "kmipkit-test-server",
+                testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD,
+                new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, pingQueryResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-ping-query-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] pingId = "ping-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] queryId = "query-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.ping().withUniqueBatchItemId(pingId));
+            batch.add(ClientBatchItem.query(
+                            new int[] {1, 2, 1}, new String[] {"group-b", "group-a"})
+                    .withUniqueBatchItemId(queryId));
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult pingResult = response.itemAt(0);
+                    ClientBatchItemResult queryResult = response.itemAt(1)) {
+                assertEquals(2, response.itemCount());
+                assertEquals(0x3b, pingResult.operation());
+                assertEquals(Boolean.TRUE, pingResult.pingResponse().orElseThrow());
+                assertEquals(0x18, queryResult.operation());
+                try (TtlvStructure queryPayload = queryResult.queryResponse().orElseThrow();
+                        TtlvStructureView payloadView = queryPayload.view();
+                        TtlvItemView masksItem = payloadView.itemAt(0);
+                        Tag masksTag = masksItem.tag()) {
+                    assertEquals(1, payloadView.itemCount());
+                    assertEquals(0x42015f, masksTag.raw());
+                    assertEquals(TtlvItemType.Structure, masksItem.itemType());
+                    try (TtlvValueView masksValue = masksItem.value();
+                            TtlvStructureView masks = masksValue.structure()) {
+                        assertEquals(0, masks.itemCount());
+                    }
+                }
+            }
+            request = peer.get(15, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        assertContains(request, enumeration(0x42005c, 0x3b));
+        assertContains(request, enumeration(0x42005c, 0x18));
+        assertContains(request, item(0x420093, 8, pingId));
+        assertContains(request, item(0x420093, 8, queryId));
+        assertContains(request, enumeration(0x420074, 1));
+        assertContains(request, enumeration(0x420074, 2));
+        assertContains(request, item(0x420056, 7, "group-b".getBytes(StandardCharsets.UTF_8)));
+        assertContains(request, item(0x420056, 7, "group-a".getBytes(StandardCharsets.UTF_8)));
+        assertTrue(peer.isDone());
+    }
+
+    @Test
+    void largeCryptoResponsesSurviveSourceCloseAndLargeQueryUsesElevatedElementLimit() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+
+        byte[] expectedData = largeResponseData();
+        byte[] encryptResponse = largeCryptoResponseMessage(0x1f, expectedData);
+        byte[] decryptResponse = largeCryptoResponseMessage(0x20, expectedData);
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> List.of(
+                serveOneResponse(listener, encryptResponse),
+                serveOneResponse(listener, decryptResponse),
+                serveOneResponse(listener, largeQueryResponseMessage())));
+        Thread peerThread = new Thread(peer, "kmipkit-java-large-crypto-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] encryptData;
+        byte[] decryptData;
+        byte[] queryRequest;
+        CodecLimits limits = CodecLimits.create(LARGE_RESPONSE_DATA_BYTES + 1024L, 64, 100_000);
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(10)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(10)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(30)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(45)))
+                        .build();
+                Client client = Client.create(extensions, transport)) {
+            encryptData = executeCryptoDataAfterSourceClose(client, 0x1f, limits);
+            decryptData = executeCryptoDataAfterSourceClose(client, 0x20, limits);
+
+            int[] functions = new int[100_001];
+            String[] objectGroups = new String[100_001];
+            for (int index = 0; index < functions.length; index++) {
+                functions[index] = (index & 1) + 1;
+                objectGroups[index] = "group-" + index;
+            }
+            CodecLimits queryLimits = CodecLimits.create(16 * 1024 * 1024L, 64, 400_000);
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(ClientBatchItem.query(functions, objectGroups)
+                        .withUniqueBatchItemId("large-query".getBytes(StandardCharsets.US_ASCII)));
+                try (ClientBatchResponse response = client.execute(batch, queryLimits);
+                        ClientBatchItemResult result = response.itemAt(0);
+                        TtlvStructure queryPayload = result.queryResponse().orElseThrow()) {
+                    assertEquals(0x18, result.operation());
+                    assertNotNull(queryPayload);
+                }
+            }
+
+            List<byte[]> requests = peer.get(60, TimeUnit.SECONDS);
+            assertEquals(3, requests.size());
+            queryRequest = requests.get(2);
+        } finally {
+            listener.close();
+        }
+
+        assertArrayEquals(expectedData, encryptData);
+        assertArrayEquals(expectedData, decryptData);
+        assertTrue(queryRequest.length > 3_000_000,
+                "the TLS peer must receive the encoded 100,001-function and 100,001-group Query");
+        assertContains(queryRequest, enumeration(0x420074, 1));
+        assertContains(queryRequest, item(0x420056, 7,
+                "group-100000".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
@@ -1476,6 +1635,48 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(0, process.exitValue(), "keytool must create the local TLS fixture");
     }
 
+    private static byte[] testFixture(String filename) throws Exception {
+        Path directory = Path.of("").toAbsolutePath();
+        while (directory != null) {
+            Path candidate = directory.resolve(
+                    Path.of("bindings", "python", "tests", "fixtures", "login-mtls", filename));
+            if (Files.isRegularFile(candidate)) return Files.readAllBytes(candidate);
+            directory = directory.getParent();
+        }
+        throw new IllegalStateException("shared deterministic mTLS fixture is missing");
+    }
+
+    private static SSLServerSocket deterministicMtlsListener(
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem, X509Certificate clientCertificate)
+            throws Exception {
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry("kmipkit-large-response-server", testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD, new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 2, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(30_000);
+        return listener;
+    }
+
+    private static X509Certificate testCertificate(byte[] pem) throws Exception {
+        return (X509Certificate) CertificateFactory.getInstance("X.509")
+                .generateCertificate(new java.io.ByteArrayInputStream(pem));
+    }
+
+    private static PrivateKey testPrivateKey(byte[] pem) throws Exception {
+        String encoded = new String(pem, StandardCharsets.US_ASCII)
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s", "");
+        byte[] der = Base64.getDecoder().decode(encoded);
+        return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(der));
+    }
+
     private static KeyStore loadKeyStore(Path path) throws Exception {
         KeyStore store = KeyStore.getInstance("PKCS12");
         try (InputStream input = Files.newInputStream(path)) {
@@ -1742,6 +1943,109 @@ final class ClientFacadeTlsIntegrationTest {
                 getFailure, locateFailure, importItem, importFailure, interopItem, logItem, loginItem);
     }
 
+    private static byte[] pingQueryResponseMessage() throws Exception {
+        byte[] pingId = "ping-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] queryId = "query-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(2)));
+        byte[] pingItem = structure(0x42000f,
+                enumeration(0x42005c, 0x3b),
+                item(0x420093, 8, pingId),
+                enumeration(0x42007f, 0),
+                structure(0x42007c));
+        byte[] queryPayload = structure(0x42007c, structure(0x42015f));
+        byte[] queryItem = structure(0x42000f,
+                enumeration(0x42005c, 0x18),
+                item(0x420093, 8, queryId),
+                enumeration(0x42007f, 0),
+                queryPayload);
+        return structure(0x42007b, header, pingItem, queryItem);
+    }
+
+    private static byte[] largeCryptoResponseMessage(int operation, byte[] data) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "large-response-key".getBytes(StandardCharsets.UTF_8)),
+                item(0x4200c2, 8, data));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, operation),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] largeQueryResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c, structure(0x42015f));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x18),
+                item(0x420093, 8, "large-query".getBytes(StandardCharsets.US_ASCII)),
+                enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] largeResponseData() {
+        byte[] data = new byte[LARGE_RESPONSE_DATA_BYTES];
+        for (int index = 0; index < data.length; index++) {
+            data[index] = (byte) ((index * 31 + 17) & 0xff);
+        }
+        return data;
+    }
+
+    private static byte[] executeCryptoDataAfterSourceClose(Client client, int operation, CodecLimits limits)
+            throws Exception {
+        if (operation == 0x1f) {
+            ClientBatchItemResult.EncryptResponse copied;
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(largeCryptoRequestItem(operation));
+                try (ClientBatchResponse response = client.execute(batch, limits)) {
+                    assertEquals(1, response.itemCount());
+                    try (ClientBatchItemResult source = response.itemAt(0)) {
+                        copied = source.encryptResponse().orElseThrow();
+                    }
+                }
+            }
+            try (copied) {
+                return copied.data().orElseThrow();
+            }
+        }
+        if (operation == 0x20) {
+            ClientBatchItemResult.DecryptResponse copied;
+            try (ClientBatch batch = ClientBatch.create()) {
+                batch.add(largeCryptoRequestItem(operation));
+                try (ClientBatchResponse response = client.execute(batch, limits)) {
+                    assertEquals(1, response.itemCount());
+                    try (ClientBatchItemResult source = response.itemAt(0)) {
+                        copied = source.decryptResponse().orElseThrow();
+                    }
+                }
+            }
+            try (copied) {
+                return copied.data().orElseThrow();
+            }
+        }
+        throw new IllegalArgumentException("unsupported large-response crypto operation");
+    }
+
+    private static ClientBatchItem largeCryptoRequestItem(int operation) {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("large-response-key");
+        try (TtlvStructure parameters = TtlvStructure.create();
+                TtlvValue data = TtlvValue.ByteString(new byte[] {0x01, 0x02}, CodecLimits.defaults())) {
+            ClientBatchItem item = operation == 0x1f
+                    ? ClientBatchItem.encrypt(identifier, parameters, data, null, null, null, null, null)
+                    : ClientBatchItem.decrypt(identifier, parameters, data, null, null, null, null, null, null);
+            return item.withUniqueBatchItemId(uniqueBatchItemId(0));
+        }
+    }
+
     private static byte[] discoverVersionsResponseMessage(int supportedVersionCount) throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
@@ -1851,6 +2155,15 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] enumeration(int tag, int value) throws Exception {
         return item(tag, 5, integer(value));
+    }
+
+    private static void assertContains(byte[] actual, byte[] expected) {
+        for (int offset = 0; offset <= actual.length - expected.length; offset++) {
+            if (Arrays.equals(expected, Arrays.copyOfRange(actual, offset, offset + expected.length))) {
+                return;
+            }
+        }
+        assertTrue(false, "request did not contain the expected encoded TTLV item");
     }
 
     private static byte[] longInteger(long value) {
