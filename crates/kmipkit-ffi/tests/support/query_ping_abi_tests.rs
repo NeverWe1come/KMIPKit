@@ -54,11 +54,82 @@ fn query_status_with_limits(
     status
 }
 
+fn custom_query_status(
+    max_message_bytes: u64,
+    max_structure_depth: u64,
+    max_elements: u64,
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+) -> i32 {
+    let mut limits = ptr::null_mut();
+    assert_eq!(
+        kmipkit_codec_limits_create(
+            max_message_bytes,
+            max_structure_depth,
+            max_elements,
+            &raw mut limits,
+        ),
+        SUCCESS
+    );
+    let status = query_status_with_limits(
+        limits,
+        functions,
+        function_count,
+        has_object_groups,
+        object_groups,
+        object_group_count,
+    );
+    kmipkit_codec_limits_release(limits);
+    status
+}
+
 #[test]
 fn ffi_query_builder_applies_codec_limits_before_copying_and_accepts_custom_limits() {
     let functions = vec![1_u32; 100_001];
     let group = b"group";
     let groups = vec![byte_span(group); 100_001];
+    assert_eq!(
+        query_status(
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "the compatibility constructor enforces default limits"
+    );
+    assert_eq!(
+        custom_query_status(
+            8 * 1024 * 1024,
+            3,
+            400_000,
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "Object Groups require four levels in the complete Request Message"
+    );
+    assert_eq!(
+        custom_query_status(
+            8 * 1024 * 1024,
+            2,
+            400_000,
+            functions.as_ptr(),
+            functions.len() as u64,
+            0,
+            ptr::null(),
+            0,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "a Query without Object Groups requires three message structure levels"
+    );
     let mut defaults = ptr::null_mut();
     assert_eq!(kmipkit_codec_limits_defaults(&raw mut defaults), SUCCESS);
     assert_eq!(
@@ -91,6 +162,41 @@ fn ffi_query_builder_applies_codec_limits_before_copying_and_accepts_custom_limi
         SUCCESS
     );
     kmipkit_codec_limits_release(custom);
+}
+
+#[test]
+fn ffi_query_builder_accepts_present_empty_object_groups_at_exact_ttlv_size() {
+    let function = QUERY_OPERATION;
+
+    assert_eq!(
+        custom_query_status(32, 4, 4, &function, 1, 1, ptr::null(), 0),
+        SUCCESS,
+        "Request Payload, Query Function, and empty Object Groups occupy 32 TTLV bytes"
+    );
+}
+
+#[test]
+fn ffi_query_builder_rejects_text_string_length_above_ttlv_item_length_limit() {
+    let function = QUERY_OPERATION;
+    let oversized_group = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: u64::from(u32::MAX) + 1,
+    };
+
+    assert_eq!(
+        custom_query_status(
+            u64::MAX,
+            64,
+            100,
+            &function,
+            1,
+            1,
+            &raw const oversized_group,
+            1,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "Text String Item Length is a four-byte unsigned TTLV field"
+    );
 }
 
 fn successful_response_item(
@@ -212,7 +318,10 @@ fn ffi_query_constructor_accepts_large_ordered_function_and_group_arrays() {
     let groups = vec![group_span; 100_001];
 
     assert_eq!(
-        query_status(
+        custom_query_status(
+            8 * 1024 * 1024,
+            64,
+            400_000,
             values.as_ptr(),
             values.len() as u64,
             1,
@@ -231,7 +340,16 @@ fn ffi_query_constructor_accepts_object_group_larger_than_default_message_limit(
     let group_span = [byte_span(&group)];
 
     assert_eq!(
-        query_status(functions.as_ptr(), 1, 1, group_span.as_ptr(), 1),
+        custom_query_status(
+            32 * 1024 * 1024,
+            64,
+            100_000,
+            functions.as_ptr(),
+            1,
+            1,
+            group_span.as_ptr(),
+            1,
+        ),
         SUCCESS,
         "Query input construction remains configurable; execution applies CodecLimits"
     );

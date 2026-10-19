@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
+import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvStructure;
 
 final class ClientBatchItemPingQueryMappingTest {
@@ -36,7 +39,16 @@ final class ClientBatchItemPingQueryMappingTest {
         java.util.Arrays.fill(functions, 1);
         java.util.Arrays.fill(groups, "group");
 
-        try (ClientBatchItem item = ClientBatchItem.query(functions, groups)) {
+        try (ClientBatchItem item = ClientBatchItem.queryWithLimits(
+                functions, groups, CodecLimits.create(8 * 1024 * 1024L, 64, 400_000))) {
+            assertEquals(0, item.extensionCount());
+        }
+    }
+
+    @Test
+    void queryFactoryAcceptsExactTtlvPayloadLimitForPresentEmptyObjectGroups() {
+        try (ClientBatchItem item = ClientBatchItem.queryWithLimits(
+                new int[] {1}, new String[0], CodecLimits.create(32, 4, 4))) {
             assertEquals(0, item.extensionCount());
         }
     }
@@ -45,9 +57,40 @@ final class ClientBatchItemPingQueryMappingTest {
     void queryFactoryAcceptsObjectGroupLargerThanDefaultMessageLimit() {
         String objectGroup = "x".repeat(16 * 1024 * 1024 + 1);
 
-        try (ClientBatchItem item = ClientBatchItem.query(new int[] {1}, new String[] {objectGroup})) {
+        try (ClientBatchItem item = ClientBatchItem.queryWithLimits(
+                new int[] {1}, new String[] {objectGroup},
+                CodecLimits.create(32 * 1024 * 1024L, 64, 100_000))) {
             assertEquals(0, item.extensionCount());
         }
+    }
+
+    @Test
+    void queryFactoryRejectsDefaultLimitExcessBeforeEncodingObjectGroups() {
+        String objectGroup = "x".repeat(1024 * 1024);
+        assertThrows(ResourceLimitException.class, () -> ClientBatchItem.queryWithLimits(
+                new int[] {1}, new String[] {objectGroup}, CodecLimits.create(32, 64, 100)));
+    }
+
+    @Test
+    void queryFactoryRejectsInsufficientStructureDepth() {
+        assertThrows(ResourceLimitException.class, () -> ClientBatchItem.queryWithLimits(
+                new int[] {1}, new String[] {"group"}, CodecLimits.create(1024, 3, 100)));
+        assertThrows(ResourceLimitException.class, () -> ClientBatchItem.queryWithLimits(
+                new int[] {1}, null, CodecLimits.create(1024, 2, 100)));
+    }
+
+    @Test
+    void queryJniBridgeRejectsInsufficientDepthBeforeInspectingGroupBytes() {
+        assertThrows(ResourceLimitException.class, () ->
+                NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                        new int[] {1}, new byte[][] {null}, new long[] {1024, 3, 100}));
+    }
+
+    @Test
+    void defaultQueryJniBridgeRejectsElementLimitBeforeInspectingGroupBytes() {
+        int[] functions = new int[100_001];
+        assertThrows(ResourceLimitException.class, () ->
+                NativeExtensionRegistry.clientBatchItemQuery(functions, new byte[][] {null}));
     }
 
     @Test
