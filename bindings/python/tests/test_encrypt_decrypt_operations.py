@@ -29,13 +29,14 @@ def _capture_constructor(
             except TypeError:
                 copied.append(argument)
                 continue
-            span = argument[0] if ctype.kind == "pointer" else argument
-            span_type = extensions.ffi.typeof(span)
+            span_type = ctype.item if ctype.kind == "pointer" else ctype
             if span_type.kind != "struct" or not span_type.cname.endswith(
                 "kmipkit_byte_span_v1_t"
             ):
                 copied.append(argument)
                 continue
+            span = argument[0] if ctype.kind == "pointer" else argument
+            span_type = extensions.ffi.typeof(span)
             length = int(span.length)
             raw = bytes(extensions.ffi.buffer(span.data, length)) if length else b""
             owner = extensions.ffi.new("uint8_t[]", raw) if raw else extensions.ffi.NULL
@@ -113,7 +114,8 @@ def test_crypto_operation_builders_preserve_typed_fields_and_optional_bytes(
         assert arguments[2] == data._pointer()
         span_positions = (3, 4, 7) if operation == "encrypt" else (3, 4, 5, 8)
         assert tuple(_span_bytes(arguments[index]) for index in span_positions) == expected_spans
-        assert arguments[-2:] == (2, 1)
+        indicator_positions = (5, 6) if operation == "encrypt" else (6, 7)
+        assert tuple(arguments[index] for index in indicator_positions) == (1, 2)
     finally:
         data.close()
         parameters.close()
@@ -166,8 +168,8 @@ def test_encrypt_decrypt_builders_preserve_absent_and_present_empty_octets(
         assert decrypt_args[3] == extensions.ffi.NULL
         assert encrypt_args[4] == extensions.ffi.NULL
         assert decrypt_args[5] == extensions.ffi.NULL
-        assert encrypt_args[-2:] == (0, 0)
-        assert decrypt_args[-2:] == (0, 0)
+        assert encrypt_args[5:7] == (0, 0)
+        assert decrypt_args[6:8] == (0, 0)
         assert encrypt_args[7] != extensions.ffi.NULL
         assert _span_bytes(encrypt_args[7]) == b""
         assert decrypt_args[4] != extensions.ffi.NULL

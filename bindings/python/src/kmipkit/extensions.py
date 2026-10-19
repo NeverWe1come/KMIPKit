@@ -2051,6 +2051,81 @@ def client_batch_item_export(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_encrypt(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    iv_counter_nonce: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+    authenticated_encryption_additional_data: bytes | bytearray | memoryview | None = None,
+) -> ClientBatchItem:
+    """Create an Encrypt request item without performing local cryptography."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        iv_counter_nonce_span, _ = _native_optional_span(iv_counter_nonce, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        additional_data, _ = _native_optional_span(
+            authenticated_encryption_additional_data, staging_buffers
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_encrypt",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                iv_counter_nonce_span,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+                additional_data,
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_decrypt(
+    unique_identifier: UniqueIdentifier | None = None,
+    parameters: ttlv.Structure | None = None,
+    data: ttlv.Value | None = None,
+    iv_counter_nonce: bytes | bytearray | memoryview | None = None,
+    authenticated_encryption_tag: bytes | bytearray | memoryview | None = None,
+    *,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    init_indicator: bool | None = None,
+    final_indicator: bool | None = None,
+    authenticated_encryption_additional_data: bytes | bytearray | memoryview | None = None,
+) -> ClientBatchItem:
+    """Create a Decrypt request item without performing local cryptography."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        iv_counter_nonce_span, _ = _native_optional_span(iv_counter_nonce, staging_buffers)
+        tag, _ = _native_optional_span(authenticated_encryption_tag, staging_buffers)
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        additional_data, _ = _native_optional_span(
+            authenticated_encryption_additional_data, staging_buffers
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_decrypt",
+            (
+                identifier,
+                _native_structure(parameters),
+                _native_value(data),
+                iv_counter_nonce_span,
+                tag,
+                correlation,
+                _native_optional_indicator(init_indicator),
+                _native_optional_indicator(final_indicator),
+                additional_data,
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_hash(
     parameters: ttlv.Structure,
     data: ttlv.Value | None = None,
@@ -2269,6 +2344,8 @@ __all__ = [
     "TtlvPath",
     "ValidatedExtensionValue",
     "client_batch_item_discover_versions",
+    "client_batch_item_encrypt",
+    "client_batch_item_decrypt",
     "client_batch_item_hash",
     "client_batch_item_mac",
     "client_batch_item_mac_verify",
