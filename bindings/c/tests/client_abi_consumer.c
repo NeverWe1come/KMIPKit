@@ -1487,6 +1487,99 @@ static int cryptographic_abi_symbols_are_callable(void) {
     return 1;
 }
 
+static int encrypt_decrypt_abi_is_callable_from_compiled_c(void) {
+    static const uint8_t request_bytes[] = {0x00, 0x81, 0xff};
+    static const uint8_t iv_bytes[] = {0x11, 0x12};
+    static const uint8_t tag_bytes[] = {0xa1, 0xa2};
+    static const uint8_t aad_bytes[] = {0xb1, 0xb2, 0xb3};
+    kmipkit_byte_span_v1_t iv = {iv_bytes, sizeof(iv_bytes)};
+    kmipkit_byte_span_v1_t tag = {tag_bytes, sizeof(tag_bytes)};
+    kmipkit_byte_span_v1_t aad = {aad_bytes, sizeof(aad_bytes)};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = (const uint8_t *)"cryptographic-key";
+    identifier.text_length = 17;
+
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_value_t *data = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_value_byte_string(
+            limits, request_bytes, sizeof(request_bytes), &data) != 0 ||
+        kmipkit_client_batch_item_encrypt(
+            &identifier, 0, data, &iv, 0, 1, 1, &aad, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    if (kmipkit_client_batch_item_decrypt(
+            &identifier, 0, data, &iv, &tag, 0, 1, 1, &aad, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+
+    uint8_t present = UINT8_MAX;
+    uint8_t data_present = UINT8_MAX;
+    uint8_t iv_present = UINT8_MAX;
+    uint8_t correlation_present = UINT8_MAX;
+    uint8_t tag_present = UINT8_MAX;
+    kmipkit_unique_identifier_v1_t response_identifier = {0};
+    response_identifier.struct_size = (uint32_t)sizeof(response_identifier);
+    response_identifier.abi_version = UINT32_C(1);
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    kmipkit_byte_span_v1_t response_data = {(const uint8_t *)(uintptr_t)1, UINT64_MAX};
+    kmipkit_byte_span_v1_t response_iv = {(const uint8_t *)(uintptr_t)1, UINT64_MAX};
+    kmipkit_byte_span_v1_t response_correlation = {(const uint8_t *)(uintptr_t)1, UINT64_MAX};
+    kmipkit_byte_span_v1_t response_tag = {(const uint8_t *)(uintptr_t)1, UINT64_MAX};
+    if (kmipkit_client_batch_item_response_encrypt(
+            0, &present, &response_identifier, &data_present, &response_data,
+            &iv_present, &response_iv, &correlation_present, &response_correlation,
+            &tag_present, &response_tag) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || data_present != 0 || iv_present != 0 ||
+        correlation_present != 0 || tag_present != 0 ||
+        response_identifier.kind != 0 || response_identifier.text_data != 0 ||
+        response_identifier.text_length != 0 || response_data.data != 0 ||
+        response_data.length != 0 || response_iv.data != 0 || response_iv.length != 0 ||
+        response_correlation.data != 0 || response_correlation.length != 0 ||
+        response_tag.data != 0 || response_tag.length != 0) {
+        goto cleanup;
+    }
+
+    present = UINT8_MAX;
+    data_present = UINT8_MAX;
+    correlation_present = UINT8_MAX;
+    response_identifier.kind = UINT32_MAX;
+    response_identifier.text_data = (const uint8_t *)(uintptr_t)1;
+    response_identifier.text_length = UINT64_MAX;
+    response_data.data = (const uint8_t *)(uintptr_t)1;
+    response_data.length = UINT64_MAX;
+    response_correlation.data = (const uint8_t *)(uintptr_t)1;
+    response_correlation.length = UINT64_MAX;
+    if (kmipkit_client_batch_item_response_decrypt(
+            0, &present, &response_identifier, &data_present, &response_data,
+            &correlation_present, &response_correlation) != T076_ERROR_INVALID_INPUT ||
+        present != 0 || data_present != 0 || correlation_present != 0 ||
+        response_identifier.kind != 0 || response_identifier.text_data != 0 ||
+        response_identifier.text_length != 0 || response_data.data != 0 ||
+        response_data.length != 0 || response_correlation.data != 0 ||
+        response_correlation.length != 0) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_value_release(data);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
 static int response_span_matches(
     kmipkit_byte_span_v1_t span, const uint8_t *expected, uint64_t expected_length) {
     return span.length == expected_length && span.data != 0 && expected != 0 &&
@@ -2058,7 +2151,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     }
     batch = 0; /* consumed by execution */
     if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
-        response_count != 24) {
+        response_count != 26) {
         result = 201;
         goto cleanup;
     }
@@ -2983,7 +3076,8 @@ int main(int argc, char **argv) {
         !creation_create_split_key_matches_shared_fixture() ||
         !creation_rejects_malformed_split_key_inputs() ||
         !creation_rejects_missing_required_attributes() ||
-        !cryptographic_abi_symbols_are_callable()) {
+        !cryptographic_abi_symbols_are_callable() ||
+        !encrypt_decrypt_abi_is_callable_from_compiled_c()) {
         return 7;
     }
 

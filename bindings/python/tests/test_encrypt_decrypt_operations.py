@@ -7,7 +7,6 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-
 from kmipkit import client, extensions, ttlv
 
 
@@ -265,6 +264,11 @@ def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
     buffers = [value.buffer for value in owned if value is not None]
     response.close()
     assert all(not any(buffer) for buffer in buffers)
-    assert all(getattr(response, name) is None for name in (
-        "data", "iv_counter_nonce", "correlation_value", "authenticated_encryption_tag"
-    ) if hasattr(response, name))
+    public_fields = (
+        "unique_identifier", "data", "iv_counter_nonce", "correlation_value",
+        "authenticated_encryption_tag",
+    )
+    for name in public_fields:
+        if hasattr(type(response), name):
+            with pytest.raises(RuntimeError, match="response is closed"):
+                getattr(response, name)

@@ -28,11 +28,21 @@ OPERATIONS = {
             "python": "kmipkit.client.BatchItemResult.encrypt_response",
         },
         "normative_requirements": {
+            "KMIPKIT-REQ-SPEC-4.16-001-001",
+            "KMIPKIT-REQ-SPEC-4.16-001-002",
+            "KMIPKIT-REQ-SPEC-4.16-002",
+            "KMIPKIT-REQ-SPEC-4.16-003",
             "KMIPKIT-REQ-SPEC-6.1.17-001-001",
             "KMIPKIT-REQ-SPEC-6.1.17-001-002",
             "KMIPKIT-REQ-SPEC-6.1.17-005-001",
             "KMIPKIT-REQ-SPEC-6.1.17-005-002",
             "KMIPKIT-REQ-SPEC-6.1.17-006",
+        },
+        "request_requirements": {
+            "KMIPKIT-REQ-SPEC-4.16-001-001",
+            "KMIPKIT-REQ-SPEC-4.16-001-002",
+            "KMIPKIT-REQ-SPEC-4.16-002",
+            "KMIPKIT-REQ-SPEC-4.16-003",
         },
     },
     "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
@@ -51,12 +61,22 @@ OPERATIONS = {
             "python": "kmipkit.client.BatchItemResult.decrypt_response",
         },
         "normative_requirements": {
+            "KMIPKIT-REQ-SPEC-4.16-001-001",
+            "KMIPKIT-REQ-SPEC-4.16-001-002",
+            "KMIPKIT-REQ-SPEC-4.16-002",
+            "KMIPKIT-REQ-SPEC-4.16-003",
             "KMIPKIT-REQ-SPEC-6.1.11-001-001",
             "KMIPKIT-REQ-SPEC-6.1.11-001-002",
             "KMIPKIT-REQ-SPEC-6.1.11-004-001",
             "KMIPKIT-REQ-SPEC-6.1.11-004-002",
             "KMIPKIT-REQ-SPEC-6.1.11-005",
             "KMIPKIT-REQ-SPEC-6.1.11-006",
+        },
+        "request_requirements": {
+            "KMIPKIT-REQ-SPEC-4.16-001-001",
+            "KMIPKIT-REQ-SPEC-4.16-001-002",
+            "KMIPKIT-REQ-SPEC-4.16-002",
+            "KMIPKIT-REQ-SPEC-4.16-003",
         },
     },
 }
@@ -135,6 +155,12 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                         self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
                         self.assertEqual("Approved", declaration["approvalSource"]["status"])
                         linked_requirements.update(declaration["requirementIds"])
+                        if endpoint == "request":
+                            self.assertTrue(
+                                expected["request_requirements"]
+                                <= set(declaration["requirementIds"]),
+                                f"request declaration omits shared §4.16 requirements: {language}",
+                            )
                     self.assertTrue(
                         any(req.startswith("KMIPKIT-0019-FR-") for req in function["requirementIds"])
                     )
