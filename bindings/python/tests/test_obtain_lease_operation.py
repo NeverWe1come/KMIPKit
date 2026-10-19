@@ -58,6 +58,10 @@ def test_batch_item_result_preserves_legacy_positional_field_order() -> None:
 
     assert result.check_response is check_response
     assert result.obtain_lease_response is None
+    assert client.BatchItemResult.__match_args__[-2:] == (
+        "encrypt_response",
+        "decrypt_response",
+    )
 
 
 def test_obtain_lease_response_preserves_zero_and_raw_datetime_and_redacts_identifier(
