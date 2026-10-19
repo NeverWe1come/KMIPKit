@@ -48,7 +48,7 @@ final class ClientBatchItemPingQueryMappingTest {
     @Test
     void queryFactoryAcceptsExactTtlvPayloadLimitForPresentEmptyObjectGroups() {
         try (ClientBatchItem item = ClientBatchItem.queryWithLimits(
-                new int[] {1}, new String[0], CodecLimits.create(32, 4, 4))) {
+                new int[] {1}, new String[0], CodecLimits.create(32, 4, 3))) {
             assertEquals(0, item.extensionCount());
         }
     }
@@ -77,6 +77,13 @@ final class ClientBatchItemPingQueryMappingTest {
                 new int[] {1}, new String[] {"group"}, CodecLimits.create(1024, 3, 100)));
         assertThrows(ResourceLimitException.class, () -> ClientBatchItem.queryWithLimits(
                 new int[] {1}, null, CodecLimits.create(1024, 2, 100)));
+    }
+
+    @Test
+    void queryTextStringLengthMatchesTheTtlvItemLengthField() {
+        assertEquals(0xffff_ffffL, ClientBatchItem.requireTtlvItemLength(0xffff_ffffL));
+        assertThrows(ResourceLimitException.class,
+                () -> ClientBatchItem.requireTtlvItemLength(0x1_0000_0000L));
     }
 
     @Test

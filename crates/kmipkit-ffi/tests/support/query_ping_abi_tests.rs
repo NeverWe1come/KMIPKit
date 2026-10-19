@@ -169,7 +169,7 @@ fn ffi_query_builder_accepts_present_empty_object_groups_at_exact_ttlv_size() {
     let function = QUERY_OPERATION;
 
     assert_eq!(
-        custom_query_status(32, 4, 4, &function, 1, 1, ptr::null(), 0),
+        custom_query_status(32, 4, 3, &function, 1, 1, ptr::null(), 0),
         SUCCESS,
         "Request Payload, Query Function, and empty Object Groups occupy 32 TTLV bytes"
     );

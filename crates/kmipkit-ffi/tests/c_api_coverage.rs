@@ -402,6 +402,11 @@ fn c_request_contains_large_query(encoded: &[u8]) -> bool {
     })
 }
 
+fn decode_test_request(encoded: &[u8]) -> Option<Item> {
+    let limits = kmipkit_ttlv::codec::CodecLimits::new(8_388_608, 64, 400_000).ok()?;
+    kmipkit_ttlv::codec::decode_with_limits(encoded, &limits).ok()
+}
+
 fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
     const BATCH_ITEM: u32 = 0x0042_000F;
     const OPERATION: u32 = 0x0042_005C;
@@ -481,7 +486,7 @@ fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {
         })
     }
 
-    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+    let Some(root) = decode_test_request(encoded) else {
         return false;
     };
     root.with_value(|value| {
@@ -572,7 +577,7 @@ fn c_request_contains_exact_export_selectors(encoded: &[u8]) -> bool {
         })
     }
 
-    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+    let Some(root) = decode_test_request(encoded) else {
         return false;
     };
     root.with_value(|value| {
@@ -634,7 +639,7 @@ fn c_request_contains_empty_get_constraints(encoded: &[u8]) -> bool {
         })
     }
 
-    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+    let Some(root) = decode_test_request(encoded) else {
         return false;
     };
     root.with_value(|value| {
@@ -655,7 +660,7 @@ fn c_request_contains_empty_get_constraints(encoded: &[u8]) -> bool {
 
 fn c_request_contains_get_and_locate(encoded: &[u8]) -> bool {
     const BATCH_ITEM: u32 = 0x0042_000F;
-    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+    let Some(root) = decode_test_request(encoded) else {
         return false;
     };
     root.with_value(|value| {
@@ -682,7 +687,7 @@ fn c_request_contains_get_and_locate(encoded: &[u8]) -> bool {
 
 fn c_request_contains_import(encoded: &[u8]) -> bool {
     const BATCH_ITEM: u32 = 0x0042_000F;
-    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+    let Some(root) = decode_test_request(encoded) else {
         return false;
     };
     root.with_value(|value| {
@@ -709,7 +714,7 @@ fn c_request_contains_log(encoded: &[u8]) -> bool {
     const REQUEST_PAYLOAD: u32 = 0x0042_0079;
     const LOG_MESSAGE: u32 = 0x0042_0141;
 
-    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+    let Some(root) = decode_test_request(encoded) else {
         return false;
     };
     root.with_value(|value| {
@@ -776,7 +781,7 @@ fn c_request_contains_login(encoded: &[u8]) -> bool {
     const LOGIN: u32 = 45;
     const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 
-    let Ok(root) = kmipkit_ttlv::codec::decode(encoded) else {
+    let Some(root) = decode_test_request(encoded) else {
         return false;
     };
     root.with_value(|value| {

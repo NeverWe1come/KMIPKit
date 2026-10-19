@@ -1957,7 +1957,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     transport_input.client_private_key.data.length = (uint64_t)strlen(argv[3]);
     transport_input.trust_certificates = trust_certificates;
     transport_input.trust_certificate_count = 1;
-    transport_input.max_request_bytes = UINT64_C(1048576);
+    transport_input.max_request_bytes = UINT64_C(8388608);
 
     registry_limits.struct_size = (uint32_t)sizeof(registry_limits);
     registry_limits.abi_version = 1;
@@ -2226,18 +2226,28 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
                 goto cleanup;
             }
         } else if (index == 27) {
-            static const uint32_t functions[] = {
-                5, 1, UINT32_C(0x80000001), 5};
-            static const uint8_t first_group[] = "group-a";
-            static const uint8_t second_group[] = "group-a";
-            const kmipkit_byte_span_v1_t groups[] = {
-                {first_group, sizeof(first_group) - 1},
-                {second_group, sizeof(second_group) - 1},
-            };
-            if (kmipkit_client_batch_item_query(
-                    functions, sizeof(functions) / sizeof(functions[0]), 1, groups,
-                    sizeof(groups) / sizeof(groups[0]), &items[index]) != 0 ||
-                items[index] == 0) {
+            const uint64_t query_count = UINT64_C(100001);
+            static const uint8_t group[] = "group-a";
+            uint32_t *functions = (uint32_t *)malloc(
+                (size_t)query_count * sizeof(*functions));
+            kmipkit_byte_span_v1_t *groups = (kmipkit_byte_span_v1_t *)calloc(
+                (size_t)query_count, sizeof(*groups));
+            if (functions == 0 || groups == 0) {
+                free(groups);
+                free(functions);
+                result = 40 + (int)index;
+                goto cleanup;
+            }
+            for (uint64_t query_index = 0; query_index < query_count; ++query_index) {
+                functions[query_index] = 5;
+                groups[query_index].data = group;
+                groups[query_index].length = sizeof(group) - 1;
+            }
+            const int32_t query_status = kmipkit_client_batch_item_query_with_limits(
+                limits, functions, query_count, 1, groups, query_count, &items[index]);
+            free(groups);
+            free(functions);
+            if (query_status != 0 || items[index] == 0) {
                 result = 40 + (int)index;
                 goto cleanup;
             }

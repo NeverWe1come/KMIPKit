@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from kmipkit import client, errors, extensions
+from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
 
@@ -101,6 +101,40 @@ def test_query_builder_requires_a_non_empty_function_sequence() -> None:
         extensions.client_batch_item_query([1], ["\ud800"])
 
 
+def test_query_builder_rejects_default_limit_excess_before_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        extensions,
+        "_bounded_snapshot",
+        lambda *_args: pytest.fail("query inputs must be preflighted before snapshotting"),
+    )
+    with pytest.raises(errors.ResourceLimitError):
+        extensions.client_batch_item_query([1] * 100_001, [])
+
+
+def test_query_with_limits_rejects_insufficient_structure_depth_before_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    limits = ttlv.codec_limits_create(1024, 3, 100)
+    monkeypatch.setattr(
+        extensions,
+        "_bounded_snapshot",
+        lambda *_args: pytest.fail("query inputs must be preflighted before snapshotting"),
+    )
+    try:
+        with pytest.raises(errors.ResourceLimitError):
+            extensions.client_batch_item_query_with_limits([1], ["group"], limits)
+        shallow_limits = ttlv.codec_limits_create(1024, 2, 100)
+        try:
+            with pytest.raises(errors.ResourceLimitError):
+                extensions.client_batch_item_query_with_limits([1], None, shallow_limits)
+        finally:
+            shallow_limits.close()
+    finally:
+        limits.close()
+
+
 def test_native_ping_and_query_builders_return_owned_items() -> None:
     ping = extensions.client_batch_item_ping()
     query = extensions.client_batch_item_query(
@@ -123,22 +157,28 @@ def test_native_ping_and_query_builders_return_owned_items() -> None:
 def test_native_query_builder_accepts_more_than_one_hundred_thousand_values() -> None:
     functions = [1] * 100_001
     groups = ["group"] * 100_001
+    limits = ttlv.codec_limits_create(8 * 1024 * 1024, 64, 400_000)
 
-    item = extensions.client_batch_item_query(functions, groups)
+    item = extensions.client_batch_item_query_with_limits(functions, groups, limits)
     try:
         assert not item.closed
     finally:
         item.close()
+        limits.close()
 
 
 def test_native_query_builder_accepts_object_group_larger_than_default_limit() -> None:
     object_group = "x" * (16 * 1024 * 1024 + 1)
+    limits = ttlv.codec_limits_create(32 * 1024 * 1024, 64, 100_000)
 
-    item = extensions.client_batch_item_query([1], [object_group])
+    item = extensions.client_batch_item_query_with_limits(
+        [1], [object_group], limits
+    )
     try:
         assert not item.closed
     finally:
         item.close()
+        limits.close()
 
 
 @pytest.mark.parametrize(

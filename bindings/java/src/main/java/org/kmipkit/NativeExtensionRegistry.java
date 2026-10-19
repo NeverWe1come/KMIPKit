@@ -115,6 +115,8 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemDiscoverVersions();
     public static native long clientBatchItemPing();
     public static native long clientBatchItemQuery(int[] functions, @Nullable byte[][] objectGroups);
+    public static native long clientBatchItemQueryWithLimits(
+            int[] functions, @Nullable byte[][] objectGroups, long[] codecLimits);
     public static native long clientBatchItemCreate(long objectType, long attributes, long protectionStorageMasks);
     public static native long clientBatchItemCreateKeyPair(long commonAttributes, long privateKeyAttributes,
             long publicKeyAttributes, long commonProtectionStorageMasks,

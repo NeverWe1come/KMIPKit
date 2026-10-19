@@ -602,6 +602,14 @@ ffi.cdef(
         const kmipkit_byte_span_v1_t *object_groups,
         uint64_t object_group_count,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_query_with_limits(
+        kmipkit_codec_limits_t *limits,
+        const uint32_t *functions,
+        uint64_t function_count,
+        uint8_t has_object_groups,
+        const kmipkit_byte_span_v1_t *object_groups,
+        uint64_t object_group_count,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_interop(
         uint32_t interop_function,
         const uint8_t *interop_identifier_data,

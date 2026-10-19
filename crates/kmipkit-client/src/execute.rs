@@ -879,6 +879,8 @@ const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const GET_ATTRIBUTE_LIST_OPERATION: u32 = 0x0000_000C;
 const GET_OPERATION: u32 = 0x0000_000A;
 const LOCATE_OPERATION: u32 = 0x0000_0008;
+const QUERY_REQUEST_STRUCTURE_DEPTH: usize = 3;
+const QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH: usize = 4;
 
 /// One closed typed request and its optional Unique Batch Item ID.
 pub struct ClientBatchItem {
@@ -904,6 +906,34 @@ impl ClientBatchItem {
     #[must_use]
     pub fn query(request: QueryRequest) -> Self {
         Self::new(ClientRequest::query(request))
+    }
+
+    /// Creates a Query batch item only when its payload fits the supplied codec limits.
+    ///
+    /// The client validates the complete batch again before encoding or sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free resource-limit error when the Query payload exceeds
+    /// the configured element or message-byte budget, or its request depth exceeds
+    /// the configured structure-depth limit.
+    pub fn query_with_limits(
+        request: QueryRequest,
+        limits: &CodecLimits,
+    ) -> Result<Self, ProtocolError> {
+        let (elements, encoded_bytes) = estimate_query_request_limits(&request)?;
+        let required_depth = if request.object_groups().is_some() {
+            QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH
+        } else {
+            QUERY_REQUEST_STRUCTURE_DEPTH
+        };
+        if elements > limits.max_elements()
+            || encoded_bytes > limits.max_message_bytes()
+            || required_depth > limits.max_structure_depth()
+        {
+            return Err(protocol_error(ProtocolErrorKind::ResourceLimit));
+        }
+        Ok(Self::query(request))
     }
 
     /// Creates a batch item for one locally validated KMIP 2.1 Register request.
@@ -3858,6 +3888,8 @@ impl Client {
             )
         })?;
         validate_attribute_mutation_policy(&batch)?;
+        validate_query_batch_limits(&batch, limits)
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
 
         let request_identities = batch
             .items
@@ -7548,6 +7580,88 @@ fn copy_structure(view: &StructureView<'_>) -> Result<Structure, ProtocolError> 
         structure.try_push(item).map_err(model_protocol_error)?;
     }
     Ok(structure)
+}
+
+fn validate_query_batch_limits(
+    batch: &ClientBatch,
+    limits: &CodecLimits,
+) -> Result<(), ProtocolError> {
+    let mut total_elements = 0_usize;
+    let mut total_encoded_bytes = 0_usize;
+    for item in &batch.items {
+        let ClientRequest::Query(request) = &item.request else {
+            continue;
+        };
+        let required_depth = if request.object_groups().is_some() {
+            QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH
+        } else {
+            QUERY_REQUEST_STRUCTURE_DEPTH
+        };
+        if required_depth > limits.max_structure_depth() {
+            return Err(protocol_error(ProtocolErrorKind::ResourceLimit));
+        }
+        let (elements, encoded_bytes) = estimate_query_request_limits(request)?;
+        total_elements = total_elements
+            .checked_add(elements)
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+        total_encoded_bytes = total_encoded_bytes
+            .checked_add(encoded_bytes)
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    }
+
+    if total_elements > limits.max_elements() || total_encoded_bytes > limits.max_message_bytes() {
+        return Err(protocol_error(ProtocolErrorKind::ResourceLimit));
+    }
+    Ok(())
+}
+
+fn estimate_query_request_limits(request: &QueryRequest) -> Result<(usize, usize), ProtocolError> {
+    let mut elements = request
+        .functions()
+        .len()
+        .checked_add(1)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    let function_bytes = request
+        .functions()
+        .len()
+        .checked_mul(16)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    let mut encoded_bytes = 8_usize
+        .checked_add(function_bytes)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+
+    if let Some(groups) = request.object_groups() {
+        elements = elements
+            .checked_add(1)
+            .and_then(|value| value.checked_add(groups.len()))
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+        let mut group_structure_bytes = 0_usize;
+        for group in groups {
+            ensure_query_text_length_is_ttlv_representable(group.len())?;
+            let padded_length = group
+                .len()
+                .checked_add(7)
+                .map(|value| value & !7)
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+            let group_item_bytes = 8_usize
+                .checked_add(padded_length)
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+            group_structure_bytes = group_structure_bytes
+                .checked_add(group_item_bytes)
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+        }
+        encoded_bytes = encoded_bytes
+            .checked_add(8)
+            .and_then(|value| value.checked_add(group_structure_bytes))
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    }
+    Ok((elements, encoded_bytes))
+}
+
+fn ensure_query_text_length_is_ttlv_representable(length: usize) -> Result<(), ProtocolError> {
+    u32::try_from(length)
+        .map(|_| ())
+        .map_err(|_| protocol_error(ProtocolErrorKind::ResourceLimit))
 }
 
 fn copy_value(view: ValueView<'_>) -> Result<Value, ProtocolError> {

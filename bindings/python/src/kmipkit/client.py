@@ -1726,9 +1726,9 @@ def _read_unique_identifier(output: Any) -> extensions.UniqueIdentifier:
         errors.raise_for_status(4)
     kind = int(output.kind)
     if kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
-        if output.text_length > _MAX_INPUT_BYTES or (
-            output.text_length != 0 and output.text_data == ffi.NULL
-        ):
+        if output.text_length > sys.maxsize:
+            errors.raise_for_status(6)
+        if output.text_length != 0 and output.text_data == ffi.NULL:
             errors.raise_for_status(4)
         raw = (
             bytes(ffi.buffer(output.text_data, int(output.text_length)))
@@ -1823,8 +1823,10 @@ def _optional_output_span(present: Any, value: Any) -> bytes | None:
         if value.data != ffi.NULL or value.length != 0:
             errors.raise_for_status(4)
         return None
-    if present[0] != 1 or value.length > _MAX_INPUT_BYTES:
+    if present[0] != 1:
         errors.raise_for_status(4)
+    if value.length > sys.maxsize:
+        errors.raise_for_status(6)
     if value.length and value.data == ffi.NULL:
         errors.raise_for_status(4)
     return bytes(ffi.buffer(value.data, int(value.length))) if value.length else b""
@@ -1835,8 +1837,10 @@ def _optional_output_secret_span(present: Any, value: Any) -> _SecretBytes | Non
         if value.data != ffi.NULL or value.length != 0:
             errors.raise_for_status(4)
         return None
-    if present[0] != 1 or value.length > _MAX_INPUT_BYTES:
+    if present[0] != 1:
         errors.raise_for_status(4)
+    if value.length > sys.maxsize:
+        errors.raise_for_status(6)
     if value.length and value.data == ffi.NULL:
         errors.raise_for_status(4)
     view = ffi.buffer(value.data, int(value.length)) if value.length else memoryview(b"")

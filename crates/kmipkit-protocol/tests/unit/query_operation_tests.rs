@@ -6,38 +6,10 @@ use crate::query_ping_fixtures::{
     response_item, response_message, structure,
 };
 use crate::{QueryError, QueryFunction, QueryRequest, QueryResponse, ResultValidationError};
-use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{ModelError, Value, ValueView};
 use std::error::Error;
 
 const STANDARD_QUERY_FUNCTIONS: [u32; 14] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-
-#[test]
-fn query_request_preflights_element_limits_before_ttlv_materialization() {
-    let request = QueryRequest::new([QueryFunction::OPERATIONS])
-        .with_object_groups(["group-a", "group-b"]);
-    let limits = CodecLimits::new(1024, 64, 3).expect("small element limits are valid");
-
-    let error = request
-        .validate_ttlv_payload_limits(&limits)
-        .expect_err("Query wrappers and their children exceed the configured element limit");
-
-    assert_eq!(error.kind(), crate::ProtocolErrorKind::ResourceLimit);
-}
-
-#[test]
-fn query_request_preflights_encoded_size_before_ttlv_materialization() {
-    let large_group = "g".repeat(512);
-    let request = QueryRequest::new([QueryFunction::OPERATIONS])
-        .with_object_groups([large_group.as_str()]);
-    let limits = CodecLimits::new(128, 64, 100).expect("small byte limits are valid");
-
-    let error = request
-        .validate_ttlv_payload_limits(&limits)
-        .expect_err("the Query payload exceeds the configured byte limit");
-
-    assert_eq!(error.kind(), crate::ProtocolErrorKind::ResourceLimit);
-}
 
 #[test]
 fn names_all_standard_query_function_values_and_preserves_future_values() {

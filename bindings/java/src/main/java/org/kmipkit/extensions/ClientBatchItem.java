@@ -13,6 +13,7 @@ import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.jspecify.annotations.Nullable;
@@ -24,7 +25,7 @@ public final class ClientBatchItem implements AutoCloseable {
     private static final int MAX_OPERATION_INPUT_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
     private static final int MAX_DERIVE_KEY_SOURCE_IDENTIFIERS = 100_000;
     private static final int MAX_SPLIT_KEY_REFERENCES = 100_000;
-    private static final int MAX_QUERY_VALUES = 100_000;
+    private static final long MAX_TTLV_ITEM_LENGTH = 0xffff_ffffL;
 
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
@@ -51,38 +52,36 @@ public final class ClientBatchItem implements AutoCloseable {
      * {@code objectGroups} omits Object Groups, while an empty array includes it as present-empty.
      */
     public static ClientBatchItem query(int[] functions, String[] objectGroups) {
+        return queryWithLimits(functions, objectGroups, CodecLimits.defaults());
+    }
+
+    /** Creates a KMIP Query request after checking it against caller-selected codec limits. */
+    public static ClientBatchItem queryWithLimits(
+            int[] functions, String[] objectGroups, CodecLimits limits) {
         if (functions == null || functions.length == 0) {
             throw new InvalidInputException("Query requires at least one function");
         }
-        if (functions.length > MAX_QUERY_VALUES) {
-            throw new ResourceLimitException("Query function count exceeds the configured limit");
+        if (limits == null) {
+            throw new InvalidInputException("Query codec limits are required");
         }
-        if (objectGroups != null && objectGroups.length > MAX_QUERY_VALUES) {
-            throw new ResourceLimitException("Query Object Group count exceeds the configured limit");
-        }
-
+        preflightQuery(functions, objectGroups, limits);
         byte[][] encodedGroups = null;
         try {
             if (objectGroups != null) {
                 encodedGroups = new byte[objectGroups.length][];
-                long totalBytes = 0;
                 for (int index = 0; index < objectGroups.length; index++) {
                     String objectGroup = objectGroups[index];
                     if (objectGroup == null) {
                         throw new InvalidInputException("Query Object Group must not be null");
                     }
                     byte[] encoded = encodeQueryObjectGroup(objectGroup);
-                    totalBytes += encoded.length;
-                    if (totalBytes > MAX_OPERATION_INPUT_BYTES) {
-                        throw new ResourceLimitException(
-                                "Query Object Groups exceed the configured input limit");
-                    }
                     encodedGroups[index] = encoded;
                 }
             }
             NativeExtensionRegistry.ensureLoaded();
             return new ClientBatchItem(
-                    NativeExtensionRegistry.clientBatchItemQuery(functions.clone(), encodedGroups),
+                    NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                            functions, encodedGroups, NativeExtensionRegistry.codecLimitValues(limits)),
                     List.of());
         } finally {
             if (encodedGroups != null) {
@@ -91,6 +90,68 @@ public final class ClientBatchItem implements AutoCloseable {
                 }
             }
         }
+    }
+
+    private static void preflightQuery(int[] functions, String[] objectGroups, CodecLimits limits) {
+        long elements = functions.length + 1L;
+        long encodedBytes = 8L + 16L * functions.length;
+        if (objectGroups != null) {
+            elements = checkedQueryAdd(elements, objectGroups.length + 1L);
+            encodedBytes = checkedQueryAdd(encodedBytes, 8L);
+            for (String group : objectGroups) {
+                if (group == null) {
+                    throw new InvalidInputException("Query Object Group must not be null");
+                }
+                long utf8Length = requireTtlvItemLength(strictUtf8Length(group));
+                long paddedLength = checkedQueryAdd(utf8Length, 7L) & ~7L;
+                encodedBytes = checkedQueryAdd(encodedBytes, checkedQueryAdd(8L, paddedLength));
+                if (encodedBytes > limits.maxMessageBytes()) {
+                    throw new ResourceLimitException("Query exceeds the configured message limit");
+                }
+            }
+        }
+        if (elements > limits.maxElements() || encodedBytes > limits.maxMessageBytes()) {
+            throw new ResourceLimitException("Query exceeds the configured codec limits");
+        }
+        long requiredDepth = objectGroups == null ? 3L : 4L;
+        if (requiredDepth > limits.maxStructureDepth()) {
+            throw new ResourceLimitException("Query exceeds the configured structure depth");
+        }
+    }
+
+    private static long strictUtf8Length(String value) {
+        long length = 0;
+        for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (Character.isHighSurrogate(current)) {
+                if (index + 1 >= value.length() || !Character.isLowSurrogate(value.charAt(index + 1))) {
+                    throw new InvalidInputException("Query Object Group is not valid Unicode");
+                }
+                index++;
+                length = checkedQueryAdd(length, 4L);
+            } else if (Character.isLowSurrogate(current)) {
+                throw new InvalidInputException("Query Object Group is not valid Unicode");
+            } else {
+                length = checkedQueryAdd(length,
+                        current <= 0x7f ? 1L : current <= 0x7ff ? 2L : 3L);
+            }
+        }
+        return length;
+    }
+
+    private static long checkedQueryAdd(long left, long right) {
+        try {
+            return Math.addExact(left, right);
+        } catch (ArithmeticException exception) {
+            throw new ResourceLimitException("Query exceeds the configured codec limits");
+        }
+    }
+
+    static long requireTtlvItemLength(long length) {
+        if (length < 0 || length > MAX_TTLV_ITEM_LENGTH) {
+            throw new ResourceLimitException("Query Object Group exceeds the TTLV Item Length limit");
+        }
+        return length;
     }
 
     private static byte[] encodeQueryObjectGroup(String value) {

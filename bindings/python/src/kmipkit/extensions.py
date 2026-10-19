@@ -13,6 +13,7 @@ generic TTLV intact; Python never infers identity by rescanning payload content.
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -85,9 +86,12 @@ _MAX_TEXT_BYTES_PER_FIELD = 4_096
 _MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024
 _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
 _MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024
-_MAX_QUERY_VALUES = 100_000
 _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
-    {"kmipkit_client_batch_item_ping", "kmipkit_client_batch_item_query"}
+    {
+        "kmipkit_client_batch_item_ping",
+        "kmipkit_client_batch_item_query",
+        "kmipkit_client_batch_item_query_with_limits",
+    }
 )
 
 
@@ -509,19 +513,32 @@ def _make_bytes(value: str) -> tuple[bytes, Any]:
     return _owned_bytes(value, _MAX_TEXT_BYTES_PER_FIELD)
 
 
-def _bounded_snapshot(values: object, maximum: int) -> tuple[Any, ...]:
+def _bounded_snapshot(values: object, maximum: int | None) -> tuple[Any, ...]:
     """Snapshot a declared list or tuple only after checking its true size."""
     if isinstance(values, list):
         count = list.__len__(values)
-        if count > maximum:
+        if maximum is not None and count > maximum:
             errors.raise_for_status(6)
-        return tuple(list.__iter__(values))
+        try:
+            return tuple(list.__iter__(values))
+        except MemoryError:
+            errors.raise_for_status(6)
     if isinstance(values, tuple):
         count = tuple.__len__(values)
-        if count > maximum:
+        if maximum is not None and count > maximum:
             errors.raise_for_status(6)
-        return tuple(tuple.__iter__(values))
+        try:
+            return tuple(tuple.__iter__(values))
+        except MemoryError:
+            errors.raise_for_status(6)
     errors.raise_for_status(4)
+
+
+def _sequence_length(values: list[Any] | tuple[Any, ...]) -> int:
+    """Read the backing list or tuple length without invoking subclass overrides."""
+    if isinstance(values, list):
+        return list.__len__(values)
+    return tuple.__len__(values)
 
 
 def create_extension_identity(
@@ -1404,22 +1421,105 @@ def client_batch_item_ping() -> ClientBatchItem:
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
-def client_batch_item_query(
+def _validate_query_ttlv_text_length(length: int) -> int:
+    if length < 0 or length > 0xFFFF_FFFF:
+        errors.raise_for_status(6)
+    return length
+
+
+def _client_batch_item_query(
     functions: list[int] | tuple[int, ...],
     object_groups: list[str] | tuple[str, ...] | None = None,
+    *,
+    limits: ttlv.CodecLimits | None = None,
 ) -> ClientBatchItem:
-    """Create Query while preserving raw function and Object Group order and duplicates."""
-    function_values = _bounded_snapshot(functions, _MAX_QUERY_VALUES)
-    if not function_values:
+    """Create Query while preserving order and duplicates, within explicit codec limits."""
+    if limits is not None and not isinstance(limits, ttlv.CodecLimits):
         errors.raise_for_status(4)
-    raw_functions = [
-        _integer_range(value, 0, 0xFFFF_FFFF) for value in function_values
-    ]
+    if not isinstance(functions, (list, tuple)):
+        errors.raise_for_status(4)
+    function_count = _sequence_length(functions)
+    if function_count == 0:
+        errors.raise_for_status(4)
+    if function_count > sys.maxsize // _client_ffi.sizeof("uint32_t"):
+        errors.raise_for_status(6)
+
+    max_elements = (
+        100_000 if limits is None else ttlv.codec_limits_max_elements(limits)
+    )
+    max_message_bytes = (
+        16 * 1024 * 1024
+        if limits is None
+        else ttlv.codec_limits_max_message_bytes(limits)
+    )
+    if object_groups is not None and not isinstance(object_groups, (list, tuple)):
+        errors.raise_for_status(4)
+    max_structure_depth = (
+        64 if limits is None else ttlv.codec_limits_max_structure_depth(limits)
+    )
+    group_count = 0 if object_groups is None else _sequence_length(object_groups)
+    required_elements = function_count + 1
+    estimated_bytes = 8 + function_count * 16
+    required_depth = 3 if object_groups is None else 4
+    if required_depth > max_structure_depth:
+        errors.raise_for_status(6)
+    if object_groups is not None:
+        required_elements += 1 + group_count
+        if group_count > sys.maxsize // _client_ffi.sizeof(
+            "kmipkit_byte_span_v1_t"
+        ):
+            errors.raise_for_status(6)
+        estimated_bytes += 8
+    if required_elements > max_elements or estimated_bytes > max_message_bytes:
+        errors.raise_for_status(6)
+
+    function_values = _bounded_snapshot(functions, max_elements)
     group_values = (
         None
         if object_groups is None
-        else _bounded_snapshot(object_groups, _MAX_QUERY_VALUES)
+        else _bounded_snapshot(object_groups, max_elements)
     )
+    function_count = len(function_values)
+    group_count = 0 if group_values is None else len(group_values)
+    required_elements = function_count + 1
+    estimated_bytes = 8 + function_count * 16
+    if group_values is not None:
+        required_elements += 1 + group_count
+        estimated_bytes += 8
+        if group_count > sys.maxsize // _client_ffi.sizeof(
+            "kmipkit_byte_span_v1_t"
+        ):
+            errors.raise_for_status(6)
+        for group in group_values:
+            if not isinstance(group, str):
+                errors.raise_for_status(4)
+            utf8_length = 0
+            character_count = str.__len__(group)
+            if character_count > max_message_bytes - min(estimated_bytes, max_message_bytes):
+                errors.raise_for_status(6)
+            for index in range(character_count):
+                codepoint = ord(str.__getitem__(group, index))
+                if 0xD800 <= codepoint <= 0xDFFF:
+                    errors.raise_for_status(4)
+                utf8_length += (
+                    1 if codepoint <= 0x7F else
+                    2 if codepoint <= 0x7FF else
+                    3 if codepoint <= 0xFFFF else 4
+                )
+            _validate_query_ttlv_text_length(utf8_length)
+            estimated_bytes += 8 + ((utf8_length + 7) & ~7)
+            if estimated_bytes > max_message_bytes:
+                errors.raise_for_status(6)
+    if required_elements > max_elements or estimated_bytes > max_message_bytes:
+        errors.raise_for_status(6)
+
+    raw_functions = [
+        _integer_range(value, 0, 0xFFFF_FFFF) for value in function_values
+    ]
+    if group_values is not None and len(group_values) > sys.maxsize // _client_ffi.sizeof(
+        "kmipkit_byte_span_v1_t"
+    ):
+        errors.raise_for_status(6)
     staged_buffers: list[Any] = []
     try:
         function_array = _client_ffi.new("uint32_t[]", raw_functions)
@@ -1436,26 +1536,13 @@ def client_batch_item_query(
             for index, group in enumerate(group_values):
                 if not isinstance(group, str):
                     errors.raise_for_status(4)
-                encoded_length = 0
-                for character in str.__iter__(group):
-                    codepoint = ord(character)
-                    encoded_length += (
-                        1
-                        if codepoint <= 0x7F
-                        else 2
-                        if codepoint <= 0x7FF
-                        else 3
-                        if codepoint <= 0xFFFF
-                        else 4
-                    )
-                    if encoded_length > _MAX_OPERATION_INPUT_BYTES:
-                        errors.raise_for_status(6)
-                if total_bytes + encoded_length > _MAX_OPERATION_INPUT_BYTES:
-                    errors.raise_for_status(6)
                 try:
                     encoded = str.encode(group, "utf-8")
                 except UnicodeEncodeError:
                     errors.raise_for_status(4)
+                _validate_query_ttlv_text_length(len(encoded))
+                if len(encoded) > sys.maxsize - total_bytes:
+                    errors.raise_for_status(6)
                 total_bytes += len(encoded)
                 data = _client_ffi.new("uint8_t[]", encoded) if encoded else _client_ffi.NULL
                 staged_buffers.append(data)
@@ -1464,17 +1551,34 @@ def client_batch_item_query(
             group_array = group_spans
             group_count = len(group_values)
 
-        handle = _make_handle(
-            "kmipkit_client_batch_item_t",
-            "kmipkit_client_batch_item_query",
-            (
-                function_array,
-                len(raw_functions),
-                has_groups,
-                group_array,
-                group_count,
-            ),
-        )
+        if limits is None:
+            handle = _make_handle(
+                "kmipkit_client_batch_item_t",
+                "kmipkit_client_batch_item_query",
+                (
+                    function_array,
+                    len(raw_functions),
+                    has_groups,
+                    group_array,
+                    group_count,
+                ),
+            )
+        else:
+            handle = _make_handle(
+                "kmipkit_client_batch_item_t",
+                "kmipkit_client_batch_item_query_with_limits",
+                (
+                    _client_ffi.cast(
+                        "kmipkit_codec_limits_t *",
+                        int(ffi.cast("uintptr_t", limits._pointer())),
+                    ),
+                    function_array,
+                    len(raw_functions),
+                    has_groups,
+                    group_array,
+                    group_count,
+                ),
+            )
     finally:
         for buffer in staged_buffers:
             if buffer != _client_ffi.NULL:
@@ -1482,6 +1586,23 @@ def client_batch_item_query(
                 if length:
                     _client_ffi.buffer(buffer, length)[:] = b"\x00" * length
     return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_query(
+    functions: list[int] | tuple[int, ...],
+    object_groups: list[str] | tuple[str, ...] | None = None,
+) -> ClientBatchItem:
+    """Create a Query batch item under the default codec limits."""
+    return _client_batch_item_query(functions, object_groups)
+
+
+def client_batch_item_query_with_limits(
+    functions: list[int] | tuple[int, ...],
+    object_groups: list[str] | tuple[str, ...] | None,
+    limits: ttlv.CodecLimits,
+) -> ClientBatchItem:
+    """Create a Query batch item under explicit, configurable codec limits."""
+    return _client_batch_item_query(functions, object_groups, limits=limits)
 
 
 def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
@@ -2453,6 +2574,7 @@ __all__ = [
     "client_batch_item_discover_versions",
     "client_batch_item_ping",
     "client_batch_item_query",
+    "client_batch_item_query_with_limits",
     "client_batch_item_encrypt",
     "client_batch_item_decrypt",
     "client_batch_item_hash",

@@ -282,7 +282,7 @@ final class ClientFacadeTlsIntegrationTest {
             }
             CodecLimits queryLimits = CodecLimits.create(16 * 1024 * 1024L, 64, 400_000);
             try (ClientBatch batch = ClientBatch.create()) {
-                batch.add(ClientBatchItem.query(functions, objectGroups)
+                batch.add(ClientBatchItem.queryWithLimits(functions, objectGroups, queryLimits)
                         .withUniqueBatchItemId("large-query".getBytes(StandardCharsets.US_ASCII)));
                 try (ClientBatchResponse response = client.execute(batch, queryLimits);
                         ClientBatchItemResult result = response.itemAt(0);

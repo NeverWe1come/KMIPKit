@@ -43,6 +43,10 @@ extern "C" int32_t kmipkit_client_batch_item_query(
         const uint32_t* functions, uint64_t function_count, uint8_t has_object_groups,
         const kmipkit_byte_span_v1_t* object_groups, uint64_t object_group_count,
         kmipkit_client_batch_item_t** out_item);
+extern "C" int32_t kmipkit_client_batch_item_query_with_limits(
+        kmipkit_codec_limits_t* limits, const uint32_t* functions, uint64_t function_count,
+        uint8_t has_object_groups, const kmipkit_byte_span_v1_t* object_groups,
+        uint64_t object_group_count, kmipkit_client_batch_item_t** out_item);
 extern "C" int32_t kmipkit_client_batch_item_response_ping(
         kmipkit_client_batch_item_response_t* item, uint8_t* out_present);
 extern "C" int32_t kmipkit_client_batch_item_response_query_ttlv(
@@ -172,10 +176,10 @@ constexpr uint32_t kTransportFlagTlsServerName = 1;
 constexpr uint32_t kTransportFlagTargetUri = 2;
 constexpr uint64_t kMaximumTransportInputBytes = 16 * 1024 * 1024;
 constexpr uint64_t kMaximumTransportInputCount = 4096;
-constexpr uint64_t kMaximumQueryValues = 100000;
 
 constexpr uint64_t kMaximumTextBytes = 4096;
 constexpr uint64_t kMaximumNativeInputArrayElements = 100000;
+constexpr uint64_t kMaximumTtlvItemLength = std::numeric_limits<uint32_t>::max();
 
 void throw_java(JNIEnv* env, const char* class_name, const char* message) noexcept {
     if (env->ExceptionCheck()) {
@@ -530,16 +534,89 @@ public:
             return false;
         }
         max_message_bytes_ = limits[0];
+        max_structure_depth_ = limits[1];
+        max_elements_ = limits[2];
         return value_ != nullptr;
     }
 
     kmipkit_codec_limits_t* get() const noexcept { return value_; }
     uint64_t max_message_bytes() const noexcept { return max_message_bytes_; }
+    uint64_t max_structure_depth() const noexcept { return max_structure_depth_; }
+    uint64_t max_elements() const noexcept { return max_elements_; }
 
 private:
     kmipkit_codec_limits_t* value_ = nullptr;
     uint64_t max_message_bytes_ = 0;
+    uint64_t max_structure_depth_ = 0;
+    uint64_t max_elements_ = 0;
 };
+
+bool preflight_query_inputs(JNIEnv* env, jintArray raw_functions, jobjectArray raw_object_groups,
+        uint64_t max_message_bytes, uint64_t max_structure_depth, uint64_t max_elements) {
+    if (raw_functions == nullptr) {
+        throw_invalid_input(env);
+        return false;
+    }
+    const jsize function_count = env->GetArrayLength(raw_functions);
+    if (function_count <= 0) {
+        throw_invalid_input(env);
+        return false;
+    }
+    const jsize group_count = raw_object_groups == nullptr
+            ? 0 : env->GetArrayLength(raw_object_groups);
+    const uint64_t required_depth = raw_object_groups == nullptr ? 3 : 4;
+    if (required_depth > max_structure_depth) {
+        throw_status(env, 6);
+        return false;
+    }
+
+    uint64_t estimated_elements = static_cast<uint64_t>(function_count) + 1;
+    uint64_t estimated_bytes = 8 + static_cast<uint64_t>(function_count) * 16;
+    if (raw_object_groups != nullptr) {
+        if (estimated_elements > std::numeric_limits<uint64_t>::max() -
+                static_cast<uint64_t>(group_count) - 1) {
+            throw_status(env, 6);
+            return false;
+        }
+        estimated_elements += static_cast<uint64_t>(group_count) + 1;
+        if (estimated_bytes > std::numeric_limits<uint64_t>::max() - 8) {
+            throw_status(env, 6);
+            return false;
+        }
+        estimated_bytes += 8;
+    }
+    if (estimated_elements > max_elements || estimated_bytes > max_message_bytes) {
+        throw_status(env, 6);
+        return false;
+    }
+
+    for (jsize index = 0; index < group_count; ++index) {
+        jobject raw_group = env->GetObjectArrayElement(raw_object_groups, index);
+        if (raw_group == nullptr) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return false;
+        }
+        const jsize length = env->GetArrayLength(reinterpret_cast<jbyteArray>(raw_group));
+        env->DeleteLocalRef(raw_group);
+        const uint64_t raw_length = static_cast<uint64_t>(length);
+        if (raw_length > kMaximumTtlvItemLength ||
+                raw_length > std::numeric_limits<uint64_t>::max() - 7) {
+            throw_status(env, 6);
+            return false;
+        }
+        const uint64_t padded_length = (raw_length + 7) & ~UINT64_C(7);
+        if (estimated_bytes > std::numeric_limits<uint64_t>::max() - 8 - padded_length) {
+            throw_status(env, 6);
+            return false;
+        }
+        estimated_bytes += 8 + padded_length;
+        if (estimated_bytes > max_message_bytes) {
+            throw_status(env, 6);
+            return false;
+        }
+    }
+    return true;
+}
 
 template <typename Value, typename Function>
 Value return_scalar(JNIEnv* env, Value fallback, Function&& function) noexcept {
@@ -973,13 +1050,16 @@ private:
 };
 
 jbyteArray span_to_java_bytes(JNIEnv* env, uint8_t present, kmipkit_byte_span_v1_t span) {
-    if (!kmipkit::jni::is_valid_response_byte_span(present, span)
-            || span.length > kMaximumTransportInputBytes
-            || span.length > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+    if (!kmipkit::jni::is_valid_response_byte_span(present, span)) {
         throw_invalid_input(env);
         return nullptr;
     }
     if (present == 0) return nullptr;
+    if (span.length > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+        throw_java(env, "org/kmipkit/ResourceLimitException",
+                "native response exceeds Java array limits");
+        return nullptr;
+    }
     const jsize length = static_cast<jsize>(span.length);
     jbyteArray result = env->NewByteArray(length);
     if (result != nullptr && length != 0) {
@@ -1263,20 +1343,9 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemQuery(
         JNIEnv* env, jclass, jintArray raw_functions, jobjectArray raw_object_groups) {
     return guarded<jlong>(env, 0, [&] {
-        if (raw_functions == nullptr) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
-        }
+        if (!preflight_query_inputs(env, raw_functions, raw_object_groups,
+                16 * 1024 * 1024, 64, 100000)) return static_cast<jlong>(0);
         const jsize function_count = env->GetArrayLength(raw_functions);
-        if (function_count <= 0) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
-        }
-        if (static_cast<uint64_t>(function_count) > kMaximumQueryValues) {
-            throw_java(env, "org/kmipkit/ResourceLimitException",
-                    "Query function count exceeds the configured limit");
-            return static_cast<jlong>(0);
-        }
         std::vector<jint> raw_function_values(static_cast<size_t>(function_count));
         env->GetIntArrayRegion(raw_functions, 0, function_count, raw_function_values.data());
         if (env->ExceptionCheck()) return static_cast<jlong>(0);
@@ -1289,14 +1358,8 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
         const uint8_t has_object_groups = raw_object_groups == nullptr ? 0 : 1;
         std::vector<std::vector<uint8_t>> group_bytes;
         std::vector<kmipkit_byte_span_v1_t> group_spans;
-        uint64_t total_group_bytes = 0;
         if (raw_object_groups != nullptr) {
             const jsize group_count = env->GetArrayLength(raw_object_groups);
-            if (static_cast<uint64_t>(group_count) > kMaximumQueryValues) {
-                throw_java(env, "org/kmipkit/ResourceLimitException",
-                        "Query Object Group count exceeds the configured limit");
-                return static_cast<jlong>(0);
-            }
             group_bytes.reserve(static_cast<size_t>(group_count));
             group_spans.reserve(static_cast<size_t>(group_count));
             for (jsize index = 0; index < group_count; ++index) {
@@ -1306,16 +1369,11 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
                     return static_cast<jlong>(0);
                 }
                 std::vector<uint8_t> bytes;
-                const bool copied = read_java_bytes(
-                        env, reinterpret_cast<jbyteArray>(raw_group), bytes, false);
+                const bool copied = read_bytes(
+                        env, reinterpret_cast<jbyteArray>(raw_group),
+                        static_cast<uint64_t>(std::numeric_limits<jsize>::max()), bytes);
                 env->DeleteLocalRef(raw_group);
                 if (!copied) return static_cast<jlong>(0);
-                if (bytes.size() > kMaximumTransportInputBytes - total_group_bytes) {
-                    throw_java(env, "org/kmipkit/ResourceLimitException",
-                            "Query Object Groups exceed the configured input limit");
-                    return static_cast<jlong>(0);
-                }
-                total_group_bytes += static_cast<uint64_t>(bytes.size());
                 group_bytes.push_back(std::move(bytes));
             }
             for (const auto& bytes : group_bytes) group_spans.push_back(byte_span(bytes));
@@ -1324,6 +1382,70 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
         kmipkit_client_batch_item_t* output = nullptr;
         const int32_t status = kmipkit_client_batch_item_query(
                 functions.data(), static_cast<uint64_t>(functions.size()), has_object_groups,
+                group_spans.empty() ? nullptr : group_spans.data(),
+                static_cast<uint64_t>(group_spans.size()), &output);
+        if (status != 0) {
+            kmipkit_client_batch_item_release(output);
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (output == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(output);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemQueryWithLimits(
+        JNIEnv* env, jclass, jintArray raw_functions, jobjectArray raw_object_groups,
+        jlongArray raw_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        if (!preflight_query_inputs(env, raw_functions, raw_object_groups,
+                limits.max_message_bytes(), limits.max_structure_depth(), limits.max_elements())) {
+            return static_cast<jlong>(0);
+        }
+        const jsize function_count = env->GetArrayLength(raw_functions);
+        const jsize group_count = raw_object_groups == nullptr
+                ? 0 : env->GetArrayLength(raw_object_groups);
+
+        std::vector<jint> raw_function_values(static_cast<size_t>(function_count));
+        env->GetIntArrayRegion(raw_functions, 0, function_count, raw_function_values.data());
+        if (env->ExceptionCheck()) return static_cast<jlong>(0);
+        std::vector<uint32_t> functions;
+        functions.reserve(raw_function_values.size());
+        for (jint value : raw_function_values) {
+            functions.push_back(static_cast<uint32_t>(value));
+        }
+
+        std::vector<std::vector<uint8_t>> group_bytes;
+        std::vector<kmipkit_byte_span_v1_t> group_spans;
+        if (raw_object_groups != nullptr) {
+            group_bytes.reserve(static_cast<size_t>(group_count));
+            group_spans.reserve(static_cast<size_t>(group_count));
+            for (jsize index = 0; index < group_count; ++index) {
+                jobject raw_group = env->GetObjectArrayElement(raw_object_groups, index);
+                if (raw_group == nullptr) {
+                    if (!env->ExceptionCheck()) throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+                std::vector<uint8_t> bytes;
+                const bool copied = read_bytes(
+                        env, reinterpret_cast<jbyteArray>(raw_group),
+                        static_cast<uint64_t>(std::numeric_limits<jsize>::max()), bytes);
+                env->DeleteLocalRef(raw_group);
+                if (!copied) return static_cast<jlong>(0);
+                group_bytes.push_back(std::move(bytes));
+            }
+            for (const auto& bytes : group_bytes) group_spans.push_back(byte_span(bytes));
+        }
+
+        kmipkit_client_batch_item_t* output = nullptr;
+        const int32_t status = kmipkit_client_batch_item_query_with_limits(
+                limits.get(), functions.data(), static_cast<uint64_t>(functions.size()),
+                raw_object_groups == nullptr ? 0 : 1,
                 group_spans.empty() ? nullptr : group_spans.data(),
                 static_cast<uint64_t>(group_spans.size()), &output);
         if (status != 0) {

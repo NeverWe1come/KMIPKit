@@ -3756,58 +3756,144 @@ pub extern "C" fn kmipkit_client_batch_item_query(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let raw_functions = try_ffi!(input_array(functions, function_count, u64::MAX));
-        let mut query_functions = Vec::new();
-        if query_functions
-            .try_reserve_exact(raw_functions.len())
-            .is_err()
-        {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        }
-        query_functions.extend(raw_functions.iter().copied().map(QueryFunction::from_raw));
-
-        let groups = match has_object_groups {
-            0 if object_group_count == 0 => None,
-            1 => {
-                let spans = try_ffi!(input_array(object_groups, object_group_count, u64::MAX));
-                let mut values = Vec::new();
-                if values.try_reserve_exact(spans.len()).is_err() {
-                    return record_ffi_error(ERROR_RESOURCE_LIMIT);
-                }
-                let mut total_bytes = 0_u64;
-                for span in spans {
-                    let remaining = try_ffi!(
-                        (isize::MAX as u64)
-                            .checked_sub(total_bytes)
-                            .ok_or(ERROR_RESOURCE_LIMIT)
-                    );
-                    let bytes = try_ffi!(input_span(span.data, span.length, remaining));
-                    total_bytes = match total_bytes.checked_add(span.length) {
-                        Some(total) if isize::try_from(total).is_ok() => total,
-                        _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
-                    };
-                    let Ok(text) = std::str::from_utf8(bytes) else {
-                        return record_ffi_error(ERROR_INVALID_INPUT);
-                    };
-                    let mut value = String::new();
-                    if value.try_reserve_exact(text.len()).is_err() {
-                        return record_ffi_error(ERROR_RESOURCE_LIMIT);
-                    }
-                    value.push_str(text);
-                    values.push(value);
-                }
-                Some(values)
-            }
-            _ => return record_ffi_error(ERROR_INVALID_INPUT),
-        };
-
-        let mut request = QueryRequest::new(query_functions);
-        if let Some(groups) = groups {
-            request = request.with_object_groups(groups);
-        }
-        *out = try_ffi!(batch_item_handle(ClientRequest::query(request)));
+        let limits = CodecLimits::defaults();
+        *out = try_ffi!(query_batch_item_with_limits(
+            &limits,
+            functions,
+            function_count,
+            has_object_groups,
+            object_groups,
+            object_group_count,
+        ));
         SUCCESS
     })
+}
+
+/// Creates a typed client-initiated Query item after checking its complete TTLV budget.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_query_with_limits(
+    limits: *mut kmipkit_codec_limits_t,
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const crate::kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let limits = try_ffi!(codec_limits_from_handle(limits));
+        *out = try_ffi!(query_batch_item_with_limits(
+            &limits,
+            functions,
+            function_count,
+            has_object_groups,
+            object_groups,
+            object_group_count,
+        ));
+        SUCCESS
+    })
+}
+
+fn query_batch_item_with_limits(
+    limits: &CodecLimits,
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const crate::kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+) -> FfiResult<*mut kmipkit_client_batch_item_t> {
+    if has_object_groups > 1 || (has_object_groups == 0 && object_group_count != 0) {
+        return Err(ERROR_INVALID_INPUT);
+    }
+
+    let function_count_usize = usize::try_from(function_count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let group_count_usize =
+        usize::try_from(object_group_count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let mut estimated_elements = function_count_usize
+        .checked_add(1)
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+    let mut estimated_bytes = 8_usize
+        .checked_add(
+            function_count_usize
+                .checked_mul(16)
+                .ok_or(ERROR_RESOURCE_LIMIT)?,
+        )
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+
+    let required_depth = if has_object_groups == 1 { 4 } else { 3 };
+    if estimated_elements > limits.max_elements()
+        || estimated_bytes > limits.max_message_bytes()
+        || required_depth > limits.max_structure_depth()
+    {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+
+    let spans = if has_object_groups == 1 {
+        estimated_elements = estimated_elements
+            .checked_add(1)
+            .and_then(|count| count.checked_add(group_count_usize))
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        if estimated_elements > limits.max_elements() || 4 > limits.max_structure_depth() {
+            return Err(ERROR_RESOURCE_LIMIT);
+        }
+        Some(input_array(object_groups, object_group_count, u64::MAX)?)
+    } else {
+        None
+    };
+
+    if let Some(spans) = spans {
+        estimated_bytes = estimated_bytes.checked_add(8).ok_or(ERROR_RESOURCE_LIMIT)?;
+        for span in spans {
+            u32::try_from(span.length).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            let length = usize::try_from(span.length).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            let padded_length = length
+                .checked_add(7)
+                .map(|value| value & !7)
+                .ok_or(ERROR_RESOURCE_LIMIT)?;
+            estimated_bytes = estimated_bytes
+                .checked_add(8)
+                .and_then(|bytes| bytes.checked_add(padded_length))
+                .ok_or(ERROR_RESOURCE_LIMIT)?;
+        }
+    }
+
+    if estimated_elements > limits.max_elements() || estimated_bytes > limits.max_message_bytes() {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+
+    let raw_functions = input_array(functions, function_count, function_count)?;
+    let mut query_functions = Vec::new();
+    query_functions
+        .try_reserve_exact(raw_functions.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    query_functions.extend(raw_functions.iter().copied().map(QueryFunction::from_raw));
+
+    let groups = if let Some(spans) = spans {
+        let mut values = Vec::new();
+        values
+            .try_reserve_exact(spans.len())
+            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        for span in spans {
+            let bytes = input_span(span.data, span.length, u64::MAX)?;
+            let text = std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+            let mut value = String::new();
+            value
+                .try_reserve_exact(text.len())
+                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            value.push_str(text);
+            values.push(value);
+        }
+        Some(values)
+    } else {
+        None
+    };
+
+    let mut request = QueryRequest::new(query_functions);
+    if let Some(groups) = groups {
+        request = request.with_object_groups(groups);
+    }
+    batch_item_handle(ClientRequest::query(request))
 }
 
 #[unsafe(no_mangle)]

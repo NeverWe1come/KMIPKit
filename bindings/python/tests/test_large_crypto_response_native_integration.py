@@ -283,9 +283,10 @@ def test_query_with_100001_functions_and_groups_reaches_native_tls_peer() -> Non
     try:
         with configuration, client.Client.create(configuration, _transport(port)) as kmip_client:
             with ttlv.codec_limits_create(32 * 1024 * 1024, 64, 400_000) as limits:
-                item = extensions.client_batch_item_query(
+                item = extensions.client_batch_item_query_with_limits(
                     [1] * 100_001,
                     ["large-object-group"] * 100_001,
+                    limits,
                 )
                 batch = client.Batch.create()
                 batch.add_item(extensions.with_unique_batch_item_id(item, _BATCH_ITEM_ID))
