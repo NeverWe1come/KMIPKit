@@ -3788,8 +3788,9 @@ The final research record distinguishes OASIS text from project recommendations,
 
 ### KMIPKIT-0010 T002 follow-up — bound Result Message aggregation evidence (2026-10-19)
 
-The security architecture review found that the §9.17 scope helper is called only from focused tests, while the research text incorrectly attributed source-atom aggregation to the production catalog validator. The normative interpretation is unaffected: KMIP 2.1 is silent on this project validator architecture, and the recorded `mixed` scope remains the approved project interpretation. The correction will describe the aggregation as focused regression evidence and state the production validator's actual check; no broader validator behavior is being added.
+The security architecture review found that the §9.17 scope helper is called only from focused tests, while the research text incorrectly attributed source-atom aggregation to the production catalog validator. The normative interpretation is unaffected: KMIP 2.1 is silent on this project validator architecture, and the recorded `mixed` scope remains the approved project interpretation. The correction describes the aggregation as focused regression evidence and states the production validator's actual check; no broader validator behavior is being added.
 
 | Stage | DCO-signed commit | Command or artifact | Result |
 |---|---|---|---|
 | Red | This DCO-signed Red commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` | Expected Red: assertion failed because the research did not yet identify focused regression evidence or the production catalog validator and retained the inaccurate validator-derivation claim. |
+| Green | This DCO-signed Green commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` | PASS: the research accurately bounds the aggregation evidence and records the production validator's behavior. |
