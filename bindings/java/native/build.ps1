@@ -13,6 +13,7 @@ $zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
 $clientBatchItemTransferTestSource = Join-Path $PSScriptRoot 'tests\client_batch_item_transfer_test.cpp'
 $responseIdentifierTestSource = Join-Path $PSScriptRoot 'tests\response_identifier_validation_test.cpp'
 $responseBridgeTestSource = Join-Path $PSScriptRoot 'tests\response_bridge_test.cpp'
+$responseSecretArrayScopeTestSource = Join-Path $PSScriptRoot 'tests\response_secret_array_scope_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
 $internalHeader = Join-Path $repositoryRoot 'tests\fixtures\api\generated'
 
@@ -103,6 +104,23 @@ if ($LASTEXITCODE -ne 0) {
 & $responseBridgeTestExecutable
 if ($LASTEXITCODE -ne 0) {
     throw "JNI response bridge test failed with exit code $LASTEXITCODE."
+}
+
+$responseSecretArrayScopeTestObject = Join-Path $nativeOutput 'response_secret_array_scope_test.obj'
+$responseSecretArrayScopeTestExecutable = Join-Path $nativeOutput 'response_secret_array_scope_test.exe'
+$responseSecretArrayScopeTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseSecretArrayScopeTestCompiler += ' /Fo' + '"' + $responseSecretArrayScopeTestObject + '"'
+$responseSecretArrayScopeTestCompiler += ' ' + '"' + $responseSecretArrayScopeTestSource + '"'
+$responseSecretArrayScopeTestCompiler += ' /Fe:' + '"' + $responseSecretArrayScopeTestExecutable + '"'
+$responseSecretArrayScopeTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseSecretArrayScopeTestCommand += $responseSecretArrayScopeTestCompiler
+& $env:ComSpec /d /s /c $responseSecretArrayScopeTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response secret-array scope test compile failed with exit code $LASTEXITCODE."
+}
+& $responseSecretArrayScopeTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response secret-array scope test failed with exit code $LASTEXITCODE."
 }
 
 $jniInclude = Join-Path $javaHome 'include'
