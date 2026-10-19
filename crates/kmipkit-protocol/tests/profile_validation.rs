@@ -1,10 +1,12 @@
 //! Selection regressions trace Baseline Client's KMIP Profiles v2.1 §§3.1,
 //! 3.1.1, 3.1.2, and 6.1 closure and the KMIP Specification v2.1 §14.1 client
-//! profile prerequisite through the checked-in normative catalog.
+//! profile prerequisite through the checked-in normative catalog. Normative
+//! sources are the pinned OASIS `kmip-profiles-v2.1-os.html` and
+//! `kmip-spec-v2.1-os.html` files; stable catalog IDs are asserted below.
 
 use kmipkit_protocol::{
     ProfileValidationErrorCode, ProfileValidationSelection,
-    profiles_generated::{CLIENT_PROFILES, GeneratedVerificationCategory},
+    profiles_generated::{CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedVerificationCategory},
 };
 
 const BASELINE: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -37,6 +39,24 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
         );
     }
     assert!(target.requirement_ids.contains(&"KMIPKIT-REQ-SPEC-2.3-001"));
+
+    // KMIP Profiles v2.1 §6.1 item 1 incorporates the entire KMIP
+    // Specification. KMIP Specification v2.1 §14.1 supplies the client
+    // profile prerequisite and complete-closure claim gate.
+    for whole_spec_requirement in ["KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"] {
+        assert!(target.requirement_ids.contains(&whole_spec_requirement));
+    }
+    for whole_spec_clause in [
+        "KMIPKIT-CLAUSE-SPEC-14.1-001",
+        "KMIPKIT-CLAUSE-SPEC-14.1-002",
+    ] {
+        assert!(target.source_clause_ids.contains(&whole_spec_clause));
+    }
+
+    // KMIP Profiles v2.1 §6.1 item 2 incorporates §3.1 and its subclauses.
+    // Its TLS 1.2 MAY is kept traceable, but ADR-0005's TLS 1.3-only boundary
+    // makes it out of scope for KMIPKit 1.0 and excludes it from effective
+    // Baseline requirements.
     for inherited_requirement in [
         "KMIPKIT-REQ-PROF-3.1.1-002",
         "KMIPKIT-REQ-PROF-3.1.1-005",
@@ -45,6 +65,21 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
     ] {
         assert!(target.requirement_ids.contains(&inherited_requirement));
     }
+    assert!(
+        target
+            .source_clause_ids
+            .contains(&"KMIPKIT-CLAUSE-PROF-3.1.1-004")
+    );
+    assert!(
+        !target
+            .requirement_ids
+            .contains(&"KMIPKIT-REQ-PROF-3.1.1-004")
+    );
+    assert!(
+        CLIENT_REQUIREMENTS
+            .iter()
+            .all(|requirement| requirement.requirement_id != "KMIPKIT-REQ-PROF-3.1.1-004")
+    );
 
     let error = ProfileValidationSelection::new([BASELINE])
         .validate()
@@ -196,7 +231,7 @@ fn generated_client_keywords_retain_all_five_verification_obligations() {
         .iter()
         .flat_map(|profile| profile.requirement_ids)
         .filter_map(|requirement_id| {
-            kmipkit_protocol::profiles_generated::CLIENT_REQUIREMENTS
+            CLIENT_REQUIREMENTS
                 .iter()
                 .find(|requirement| requirement.requirement_id == *requirement_id)
                 .map(|requirement| requirement.verification_category)
@@ -215,4 +250,85 @@ fn generated_client_keywords_retain_all_five_verification_obligations() {
             "missing category {expected:?}"
         );
     }
+
+    for requirement in CLIENT_REQUIREMENTS {
+        let expected_category = match requirement.source_keyword {
+            Some("MUST" | "SHALL" | "REQUIRED") => {
+                Some(GeneratedVerificationCategory::RequiredBehavior)
+            }
+            Some("MUST NOT" | "SHALL NOT") => {
+                Some(GeneratedVerificationCategory::ProhibitedBehavior)
+            }
+            Some("SHOULD" | "RECOMMENDED") => {
+                Some(GeneratedVerificationCategory::RecommendedBehaviorOrDeviation)
+            }
+            Some("SHOULD NOT") => {
+                Some(GeneratedVerificationCategory::DiscouragedAbsenceOrDeviation)
+            }
+            Some("MAY" | "OPTIONAL") => Some(GeneratedVerificationCategory::OptionalCapability),
+            Some(keyword) => panic!("unclassified OASIS normative keyword {keyword}"),
+            None => None,
+        };
+        if let Some(expected_category) = expected_category {
+            assert_eq!(
+                requirement.verification_category, expected_category,
+                "wrong evidence category for {} from source clause {:?}",
+                requirement.requirement_id, requirement.source_clause_ids
+            );
+        }
+    }
+}
+
+#[test]
+fn baseline_selection_succeeds_only_after_complete_typed_rules_and_matching_tests_exist() {
+    // OASIS KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1
+    // require the complete inherited clause closure. A successful result must
+    // therefore mean every applicable requirement has an executable typed
+    // rule and category-appropriate passing test evidence.
+    let result = ProfileValidationSelection::new([BASELINE])
+        .validate()
+        .expect("Baseline selection requires complete rule and test coverage");
+
+    assert!(result.profile_ids().iter().any(|id| id == BASELINE));
+    for whole_spec_requirement in ["KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"] {
+        assert!(
+            result
+                .requirement_ids()
+                .iter()
+                .any(|id| id == whole_spec_requirement)
+        );
+    }
+    for inherited_requirement in [
+        "KMIPKIT-REQ-PROF-3.1.1-002",
+        "KMIPKIT-REQ-PROF-3.1.1-005",
+        "KMIPKIT-REQ-PROF-3.1.2-002",
+        "KMIPKIT-REQ-PROF-3.1.2-005",
+    ] {
+        assert!(
+            result
+                .requirement_ids()
+                .iter()
+                .any(|id| id == inherited_requirement)
+        );
+    }
+}
+
+#[test]
+fn complete_in_scope_non_target_profile_selection_includes_its_dependencies() {
+    // OASIS KMIP Profiles v2.1 §6.30 defines AES-XTS Client. Runtime selection
+    // is explicit and independent of the Baseline-only target manifest; this
+    // profile's normative dependency closure includes Baseline Client.
+    let target = CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == AES_XTS)
+        .expect("the generated catalog includes AES-XTS Client");
+    assert_eq!(target.applicability, "client_1_0");
+    assert!(!target.selected_target);
+
+    let result = ProfileValidationSelection::new([AES_XTS])
+        .validate()
+        .expect("a complete in-scope non-target profile remains explicitly selectable");
+
+    assert!(result.profile_ids().iter().any(|id| id == BASELINE));
+    assert!(result.profile_ids().iter().any(|id| id == AES_XTS));
 }
