@@ -12,6 +12,13 @@ ORACLE_PATH = REPO_ROOT / "tools/normative_catalog/tests/fixtures/profile-closur
 CATALOG_PATH = REPO_ROOT / "specification/catalog/kmip-2.1.json"
 
 SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.11-001"
+BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-4.1-001-001",
+    "KMIPKIT-REQ-SPEC-4.1-001-002",
+    "KMIPKIT-REQ-SPEC-4.1-001-003",
+    "KMIPKIT-REQ-SPEC-4.18-001-001",
+    "KMIPKIT-REQ-SPEC-4.18-001-002",
+}
 CONDITIONAL_REQUIREMENTS = {
     "KMIPKIT-REQ-SPEC-4.1-001-001",
     "KMIPKIT-REQ-SPEC-4.1-001-002",
@@ -65,20 +72,43 @@ class T002FinalApplicabilityTests(unittest.TestCase):
              if row["scope_state"] == "unresolved"],
             [],
         )
+        client_profile_ids = sorted(
+            profile["profile_id"]
+            for profile in self.oracle["profiles"]
+            if profile["role"] == "client"
+        )
 
         mismatches = []
         for requirement_id, expected_scope in FINAL_DISPOSITIONS.items():
             crosswalk = self.crosswalk[requirement_id]
             requirement = self.requirements[requirement_id]
             expected_role = "server" if requirement_id == SERVER_ONLY_REQUIREMENT else "client"
+            expected_profiles = (
+                client_profile_ids
+                if requirement_id in BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS
+                else []
+            )
             actual = (
                 crosswalk["scope_state"],
+                crosswalk["applies_to"],
                 requirement["scope_state"],
                 requirement["profile_ids"],
                 crosswalk["role"],
                 requirement["role"],
             )
-            expected = (expected_scope, expected_scope, [], expected_role, expected_role)
+            expected_applies_to = (
+                "all_client_profiles"
+                if requirement_id in BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS
+                else []
+            )
+            expected = (
+                expected_scope,
+                expected_applies_to,
+                expected_scope,
+                expected_profiles,
+                expected_role,
+                expected_role,
+            )
             if actual != expected:
                 mismatches.append((requirement_id, expected, actual))
         self.assertEqual(mismatches, [])
@@ -128,6 +158,10 @@ class T002FinalApplicabilityTests(unittest.TestCase):
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
+        self.assertIn(
+            "Pinned OASIS KMIP Specification v2.1",
+            use_after_deactivation["review_note"],
+        )
         self.assertIn("extraordinary", use_after_deactivation["review_note"].casefold())
         self.assertIn("special permission", use_after_deactivation["review_note"].casefold())
 
