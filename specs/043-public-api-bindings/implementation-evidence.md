@@ -4559,3 +4559,17 @@ requirements. Current-head CI and the selected-scope changed-code coverage gate
 have not been run for this worktree, so T055 remains unchecked pending those
 gates. No OASIS conformance, profile-support, interoperability, or certification
 claim is made.
+
+### T084 — Native Python Logout regression (2026-10-20)
+
+This follow-up adds a Python integration test that builds a real Ticket TTLV
+structure, calls Logout through the Python CFFI facade, sends it over a local
+TLS 1.3 mutual-authentication connection, and asserts the wire operation/Ticket
+and successful `logout_response` presence. It adds no protocol behavior and
+does not mark T055 complete.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `b9fe9b1b` | On detached pre-T055 snapshot `8347d1d4`, build/install the Python package with `maturin develop`, then run `tests/test_logout_native_integration.py` | Expected Red: `kmipkit.extensions` has no `client_batch_item_logout` API. The test detects the missing Python mapping before any transport exchange. |
+| Red | `b9fe9b1b` | Run the new test from the current source tree against its pre-existing ignored generated `ffi.py` and the rebuilt local DLL | Expected source-tree failure: that stale generated CFFI wrapper did not declare the Logout constructor, despite the current public header declaring it. This was a stale local build artifact, not a product gap. |
+| Green | This DCO-signed evidence commit | In `bindings/python`, run `maturin develop` to regenerate the CFFI bindings from the current public header; then run `test_logout_native_integration.py` and `test_logout_operation.py` with `KMIPKIT_NATIVE_LIBRARY` pointing at the current local DLL | PASS: native TLS 1.3/mTLS Logout round-trip and all 4 existing stubbed Logout tests; combined focused run 5/5. No production source changes were needed. |
