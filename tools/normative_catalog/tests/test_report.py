@@ -65,6 +65,40 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    def test_confined_rust_path_accepts_a_resolved_repository_alias(self) -> None:
+        from tools.normative_catalog.report import _confined_rust_path
+
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            repository = temporary_root / "repository"
+            repository.mkdir()
+            relative = Path("crates/kmipkit-protocol/src/lib.rs")
+            target = repository / relative
+            target.parent.mkdir(parents=True)
+            target.write_text("", encoding="utf-8")
+
+            alias = temporary_root / "repository-alias"
+            if os.name == "nt":
+                subprocess.run(
+                    ["cmd.exe", "/c", "mklink", "/J", str(alias), str(repository)],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+            else:
+                alias.symlink_to(repository, target_is_directory=True)
+
+            try:
+                self.assertEqual(
+                    repository.resolve() / relative,
+                    _confined_rust_path(alias, alias / relative),
+                )
+            finally:
+                if os.name == "nt":
+                    alias.rmdir()
+                else:
+                    alias.unlink()
+
     @staticmethod
     def _write_profile_module_tree(repository: Path, *, include_test_file: bool) -> None:
         crate = repository / "crates/kmipkit-protocol"
