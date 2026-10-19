@@ -27,6 +27,13 @@ OPERATIONS = {
             "java": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse",
             "python": "kmipkit.client.BatchItemResult.encrypt_response",
         },
+        "normative_requirements": {
+            "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+            "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+            "KMIPKIT-REQ-SPEC-6.1.17-006",
+        },
     },
     "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
         "name": "Decrypt",
@@ -42,6 +49,14 @@ OPERATIONS = {
             "c": "kmipkit_client_batch_item_response_decrypt",
             "java": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse",
             "python": "kmipkit.client.BatchItemResult.decrypt_response",
+        },
+        "normative_requirements": {
+            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+            "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+            "KMIPKIT-REQ-SPEC-6.1.11-005",
+            "KMIPKIT-REQ-SPEC-6.1.11-006",
         },
     },
 }
@@ -85,32 +100,48 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                 for evidence in EVIDENCE:
                     self.assertTrue((ROOT / evidence).is_file(), evidence)
 
-                mapped_functions = {
-                    name
-                    for function in self.functions.values()
-                    if function["id"] in {
-                        f"client_batch_item_{expected['name'].lower()}",
-                        f"client_batch_item_response_{expected['name'].lower()}",
-                    }
-                    for name in (
-                        function["c"]["symbol"],
-                        function["java"].get("jniSymbol", ""),
-                        function["python"].get("cffiSymbol", ""),
+                linked_requirements: set[str] = set()
+                operation_name = expected["name"].lower()
+                for endpoint in ("request", "response"):
+                    function_id = (
+                        f"client_batch_item_{operation_name}"
+                        if endpoint == "request"
+                        else f"client_batch_item_response_{operation_name}"
                     )
-                }
-                self.assertIn(expected["request"]["c"], mapped_functions)
-                self.assertIn(expected["response"]["c"], mapped_functions)
-                for function_id in (
-                    f"client_batch_item_{expected['name'].lower()}",
-                    f"client_batch_item_response_{expected['name'].lower()}",
-                ):
                     function = self.functions[function_id]
+                    actual_mappings = {
+                        "rust": f"{function['rust']['module']}::{function['rust']['name']}",
+                        "c": function["c"]["symbol"],
+                        "java": (
+                            f"org.kmipkit.{function['java']['package'].split('.')[-1]}"
+                            f".{function['java']['class']}.{function['java']['method']}"
+                        ),
+                        "python": function["python"]["function"],
+                    }
+                    self.assertEqual(expected[endpoint], actual_mappings)
+                    for language in LANGUAGES:
+                        declaration_ids = operation["declarations"][language]
+                        self.assertEqual(2, len(declaration_ids), language)
+                        declaration = next(
+                            row for row in self.manifest["publicDeclarations"]
+                            if row["declarationId"] == declaration_ids[0 if endpoint == "request" else 1]
+                        )
+                        self.assertEqual(operation_id, declaration["capabilityId"])
+                        self.assertEqual("verified", declaration["declarationState"])
+                        self.assertEqual("four-language", declaration["parityScope"])
+                        self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+                        self.assertEqual(expected[endpoint][language],
+                                         declaration["languageMappings"][language]["name"])
+                        self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
+                        self.assertEqual("Approved", declaration["approvalSource"]["status"])
+                        linked_requirements.update(declaration["requirementIds"])
                     self.assertTrue(
                         any(req.startswith("KMIPKIT-0019-FR-") for req in function["requirementIds"])
                     )
                     self.assertTrue(
                         any(req.startswith("KMIPKIT-0043-FR-") for req in function["requirementIds"])
                     )
+                self.assertTrue(expected["normative_requirements"] <= linked_requirements)
 
     def test_generated_parity_inventory_contains_both_verified_operations(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
@@ -123,6 +154,32 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
         for operation_id, operation in operations.items():
             self.assertEqual("verified", operation["apiState"], operation_id)
             self.assertEqual(LANGUAGES, set(operation["declarations"]), operation_id)
+
+    def test_typed_response_close_is_traced_as_secret_buffer_release(self) -> None:
+        declarations = {
+            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
+        }
+        for operation, section in (("Encrypt", "6.1.17"), ("Decrypt", "6.1.11")):
+            operation_id = f"KMIPKIT-ELEM-OP-C2S-{operation.upper()}"
+            with self.subTest(operation=operation):
+                for language in ("java", "python"):
+                    declaration_id = f"T040:{operation.lower()}:response-close:{language}"
+                    declaration = declarations[declaration_id]
+                    self.assertEqual("verified", declaration["declarationState"])
+                    self.assertEqual("native-handle-release", declaration["mappingSemantics"])
+                    self.assertEqual(operation_id, declaration["capabilityId"])
+                    self.assertIn("KMIPKIT-0019-FR-009", declaration["requirementIds"])
+                    self.assertIn("KMIPKIT-0043-FR-013", declaration["requirementIds"])
+                    self.assertEqual(section, self.operations[operation_id]["section"])
+                    self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+                self.assertIn(
+                    f"org.kmipkit.extensions.ClientBatchItemResult.{operation}Response.close",
+                    declarations[f"T040:{operation.lower()}:response-close:java"]["exportName"],
+                )
+                self.assertEqual(
+                    f"kmipkit.client.{operation}Response.close",
+                    declarations[f"T040:{operation.lower()}:response-close:python"]["exportName"],
+                )
 
 
 if __name__ == "__main__":
