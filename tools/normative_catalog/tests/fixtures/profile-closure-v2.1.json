@@ -21463,7 +21463,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": "all_client_profiles",
-      "review_note": "KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.",
+    "review_note": "KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.",
       "source_obligation_order": 1,
       "source_actor": "object consumer; source does not name the enforcing actor"
     },
@@ -21668,7 +21668,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": "all_client_profiles",
-      "review_note": "KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.18, source atom 1: after Deactivation Date, use is prohibited except for decryption, signature verification, or unwrapping, only under extraordinary circumstances and only when special permission is granted. KMIP 2.1 describes an object consumer but does not identify the enforcer; client-consumer attribution is the project interpretation when a selected profile uses this attribute. KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIPKit does not perform cryptographic operations.",
       "source_obligation_order": 1,
       "source_actor": "object consumer; source does not identify enforcer"
     },
@@ -21685,7 +21685,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": "all_client_profiles",
-      "review_note": "KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIP Specification v2.1 §§4.1 and 4.18 do not name the enforcing endpoint. Mapping object-consumer restrictions to client-facing profile behavior is a project interpretation; KMIPKit does not perform cryptographic operations.",
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.18, lines 13418-13424 and Table 64, lines 13463-13574: the prose exception to changing/deleting applies only in Pre-Active or Active; Table 64 says the client may modify only in those states and separately says `Deletable by client: No`. The project reading is that the client may modify only in Pre-Active/Active and may never delete. Client attribution and conditional profile scope are project interpretations because this clause does not name the enforcement actor. KMIP Profiles v2.1 §5.1.1 item 3 (pinned kmip-profiles-v2.1-os.html, lines 4541-4561) explicitly selects Activation Date and Deactivation Date for Baseline Client; all 18 client-profile records in the reviewed oracle depend on Baseline Client. These five requirements therefore apply to all 18 profile records. KMIPKit does not perform cryptographic operations.",
       "source_obligation_order": 2,
       "source_actor": "source does not identify whether client request or server lifecycle enforcement is constrained"
     },
