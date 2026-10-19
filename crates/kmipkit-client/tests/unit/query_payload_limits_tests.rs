@@ -81,3 +81,25 @@ fn query_text_string_limit_matches_the_ttlv_item_length_field() {
         assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
     }
 }
+
+#[test]
+fn query_parent_structure_lengths_match_the_ttlv_item_length_field() {
+    assert_eq!(ensure_query_ttlv_structure_length_is_representable(u32::MAX as usize), Ok(()));
+    if usize::BITS > u32::BITS {
+        let error = ensure_query_ttlv_structure_length_is_representable(
+            usize::try_from(u64::from(u32::MAX) + 1)
+                .expect("the test runs this boundary on a 64-bit target"),
+        )
+        .expect_err("TTLV Structure Item Length is limited to an unsigned 32-bit value");
+        assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
+    }
+}
+
+#[test]
+fn query_with_limits_rejects_an_empty_function_list() {
+    let limits = CodecLimits::defaults();
+    let error = ClientBatchItem::query_with_limits(QueryRequest::new([]), &limits)
+        .expect_err("KMIP Query requires at least one Query Function");
+
+    assert_eq!(error.kind(), ProtocolErrorKind::InvalidInput);
+}

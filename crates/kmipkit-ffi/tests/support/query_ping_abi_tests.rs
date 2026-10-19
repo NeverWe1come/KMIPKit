@@ -233,16 +233,8 @@ fn ffi_ping_and_query_constructors_cover_empty_and_counted_inputs() {
     assert!(!ping.is_null());
     kmipkit_client_batch_item_release(ping);
 
-    assert_eq!(
-        query_status(ptr::null(), 0, 0, ptr::null(), 0),
-        SUCCESS,
-        "an empty Query payload remains representable"
-    );
-    assert_eq!(
-        query_status(ptr::null(), 0, 1, ptr::null(), 0),
-        SUCCESS,
-        "an explicitly present empty Object Group list remains representable"
-    );
+    assert_eq!(query_status(ptr::null(), 0, 0, ptr::null(), 0), ERROR_INVALID_INPUT);
+    assert_eq!(query_status(ptr::null(), 0, 1, ptr::null(), 0), ERROR_INVALID_INPUT);
 
     let functions = [1, 0x8000_0001, 1];
     let first_group = b"group-a";
@@ -257,6 +249,29 @@ fn ffi_ping_and_query_constructors_cover_empty_and_counted_inputs() {
             groups.len() as u64,
         ),
         SUCCESS
+    );
+}
+
+#[test]
+fn ffi_query_preflight_rejects_parent_structure_length_overflow_before_copying() {
+    let length = u64::from(u32::MAX) - 7;
+    let spans = [kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length,
+    }];
+    assert_eq!(
+        custom_query_status(
+            u64::MAX,
+            64,
+            u64::MAX,
+            [1].as_ptr(),
+            1,
+            1,
+            spans.as_ptr(),
+            1,
+        ),
+        ERROR_RESOURCE_LIMIT,
+        "Object Groups parent Item Length must be checked before dereferencing the span"
     );
 }
 

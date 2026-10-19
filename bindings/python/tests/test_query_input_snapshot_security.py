@@ -30,6 +30,12 @@ def test_query_text_string_length_matches_the_ttlv_item_length_field() -> None:
         extensions._validate_query_ttlv_text_length(0x1_0000_0000)
 
 
+def test_query_parent_structure_length_matches_the_ttlv_item_length_field() -> None:
+    assert extensions._validate_query_ttlv_structure_length(0xFFFF_FFFF) == 0xFFFF_FFFF
+    with pytest.raises(errors.ResourceLimitError):
+        extensions._validate_query_ttlv_structure_length(0x1_0000_0000)
+
+
 def test_query_with_limits_rechecks_bounded_snapshot_before_native_staging(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

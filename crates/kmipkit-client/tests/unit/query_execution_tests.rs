@@ -197,6 +197,27 @@ fn empty_query_is_not_sent() {
 }
 
 #[test]
+fn query_payload_budget_does_not_replace_complete_request_message_limit() {
+    let limits = CodecLimits::new(32, 64, 3).expect("the Query payload fits these limits");
+    let payload_request = QueryRequest::new([QueryFunction::OPERATIONS])
+        .with_object_groups(std::iter::empty::<&str>());
+    assert!(ClientBatchItem::query_with_limits(payload_request, &limits).is_ok());
+
+    let (mut client, transport, _) =
+        client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 1 });
+    let error = client
+        .query(
+            QueryRequest::new([QueryFunction::OPERATIONS])
+                .with_object_groups(std::iter::empty::<&str>()),
+            &limits,
+        )
+        .expect_err("the complete Request Message includes wrappers beyond the Query payload");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn query_failure_preserves_kmip_result_and_transport_delivery_without_retry() {
     let response = asynchronous_response_bytes(QUERY, 1, Some(1), None, None);
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
