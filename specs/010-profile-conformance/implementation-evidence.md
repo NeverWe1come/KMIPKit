@@ -3932,3 +3932,13 @@ Independent QA requested client-seam evidence that an additional base-protocol o
 | Refactor - cover allowed base-operation pass-through in the profiled client seam | `cargo test -p kmipkit-client --lib profile_preflight_tests --all-features --locked` | PASS: all 9 profile preflight tests, including the new profiled `Discover Versions` pass-through case. Existing AWS-LC stdalign/NASM messages are non-fatal; the command exited successfully. No production behavior changed. |
 
 The existing request-rule and transport-restriction rejection tests cover `NotSent` and zero exchanges, but their historical commits do not record a distinct observed Red result. This evidence gap remains open; no Red failure is inferred or fabricated here. The test-only QA correction does not close T010 or imply profile readiness.
+
+### KMIPKIT-0010 T030 — catalog traceability Red (2026-10-19)
+
+The new traceability regression checks client-profile closure and inherited Baseline requirement IDs, typed-rule requirement/clause/category/test links, active test references, and resolvable implementation and verification references. The registry loader regression supplies a syntactically valid mapping whose test path and symbol do not exist. This is a catalog/tooling evidence check only; it does not claim all profile requirements have implementations or typed rules.
+
+| Stage | Exact command | Exact result |
+|---|---|---|
+| Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_unresolvable_test_evidence tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | Expected Red: `Ran 2 tests; FAILED (failures=4)`. The registry accepted a missing test reference, and three typed mapping evidence rows for `KMIPKIT-REQ-SPEC-3.1-001` pointed to nonexistent `GetRequest::into_ttlv_payload` (the implementation method is `to_ttlv_payload`). The test exposed one stale catalog symbol and fail-open test-reference resolution. |
+
+This Red commit records tests and failure evidence only. Green must validate registry test paths/symbols and correct the catalog's stale implementation reference; generated reports must be regenerated with the pinned tool. Existing owner assignments and currently unimplemented profile requirements remain unchanged.

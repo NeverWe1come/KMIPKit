@@ -912,6 +912,104 @@ class FeatureTraceabilityTests(unittest.TestCase):
         )
         self.assertEqual([], incorrectly_owned_base_requirements)
 
+    def test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests(self) -> None:
+        from tools.normative_catalog.generate_profiles import _verification_category
+        from tools.normative_catalog.report import (
+            _RULE_TEST_KIND_BY_CATEGORY,
+            load_typed_rule_mappings,
+        )
+
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirements = {
+            row["requirement_id"]: row for row in catalog["requirements"]
+        }
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        in_scope_client_requirement_ids = {
+            requirement_id
+            for profile in catalog["profiles"]
+            if profile.get("role") == "client"
+            and profile.get("applicability") in {"client_1_0", "conditional"}
+            for requirement_id in profile.get("requirement_ids", [])
+        }
+        source_clause_ids = {row["clause_id"] for row in catalog["source_clauses"]}
+        for profile in catalog["profiles"]:
+            if profile.get("role") != "client" or profile.get("applicability") not in {
+                "client_1_0",
+                "conditional",
+            }:
+                continue
+            with self.subTest(profile_id=profile["profile_id"]):
+                self.assertTrue(profile.get("source_clause_ids"))
+                self.assertTrue(profile.get("requirement_ids"))
+                self.assertTrue(set(profile["source_clause_ids"]).issubset(source_clause_ids))
+                self.assertTrue(
+                    set(profile["requirement_ids"]).issubset(requirements),
+                    profile["profile_id"],
+                )
+
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile.get("profile_id") == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        for inherited_requirement_id in (
+            "KMIPKIT-REQ-PROF-3.1.1-002",
+            "KMIPKIT-REQ-PROF-3.1.1-005",
+            "KMIPKIT-REQ-PROF-3.1.2-002",
+            "KMIPKIT-REQ-PROF-3.1.2-005",
+        ):
+            self.assertIn(inherited_requirement_id, baseline["requirement_ids"])
+
+        mappings = load_typed_rule_mappings(ROOT)
+        self.assertTrue(mappings)
+
+        for mapping in mappings:
+            requirement_id = mapping["requirement_id"]
+            with self.subTest(requirement_id=requirement_id, test_id=mapping["test_id"]):
+                self.assertIn(requirement_id, requirements)
+                self.assertIn(requirement_id, in_scope_client_requirement_ids)
+                requirement = requirements[requirement_id]
+                if requirement_id.startswith("KMIPKIT-REQ-PROF-"):
+                    self.assertEqual(requirement.get("feature_spec"), "KMIPKIT-0010")
+                else:
+                    self.assertNotEqual(requirement.get("feature_spec"), "KMIPKIT-0010")
+
+                source_clause_id = mapping["source_clause_id"]
+                self.assertIn(source_clause_id, clauses)
+                self.assertIn(source_clause_id, requirement.get("source_clause_ids", []))
+                keyword = requirement.get("source_keyword") or requirement.get("source_force")
+                category = _verification_category(keyword)
+                self.assertEqual(mapping["verification_category"], category)
+                self.assertEqual(mapping["test_kind"], _RULE_TEST_KIND_BY_CATEGORY[category])
+                self.assertIsNotNone(mapping["test_id"])
+                self.assertIn(mapping["test_id"], requirement.get("verification_refs", []))
+                self.assertTrue(
+                    self._is_executable_test_ref(mapping["test_id"]),
+                    mapping["test_id"],
+                )
+
+                for reference in requirement.get("implementation_refs", []):
+                    path, separator, symbol = reference.partition("::")
+                    source_file = _read_confined_test_source(path)
+                    self.assertIsNotNone(source_file, reference)
+                    if separator:
+                        _, source = source_file or (None, "")
+                        source_without_comments = _strip_rust_comments_and_literals(source)
+                        self.assertIsNotNone(source_without_comments, reference)
+                        self.assertIsNotNone(
+                            re.search(
+                                rf"\b(?:fn|struct|enum|trait|type|const|static)\s+{re.escape(symbol.split('::')[-1])}\b",
+                                source_without_comments or "",
+                            ),
+                            reference,
+                        )
+
+                for reference in requirement.get("verification_refs", []):
+                    path, separator, _ = reference.partition("::")
+                    self.assertIsNotNone(_read_confined_test_source(path), reference)
+                    if separator:
+                        self.assertTrue(self._is_executable_test_ref(reference), reference)
+
     @staticmethod
     def _is_executable_test_ref(test_ref: str) -> bool:
         test_path, separator, test_name = test_ref.partition("::")
