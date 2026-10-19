@@ -801,6 +801,18 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
 }
 
 #[test]
+fn result_message_client_access_has_an_optional_typed_rule() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.17-001-002";
+
+    assert!(
+        TYPED_RULE_MAPPINGS
+            .iter()
+            .any(|mapping| mapping.requirement_id == REQUIREMENT_ID),
+        "the client-accessible Result Message MAY needs a typed optional-capability rule"
+    );
+}
+
+#[test]
 fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-4.1.2-007";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-PROF-4.1.2-007";

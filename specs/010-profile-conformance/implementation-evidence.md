@@ -3734,4 +3734,12 @@ The read-only pinned-source audit mapped all 30 Specification table-body require
 |---|---|---|---|
 | Red | `1097fc2d` | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_profile_conditional_structural_rows_are_not_client_profile_requirements tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_disc_011_and_012_preserve_literal_normative_inclusions` | Expected Red: 2 tests ran; 32 assertions failed because the 30 table-row records lacked the common profile-applicability rationale and §5.5 form/operation citations, and no accepted literal-inclusion disposition existed for DISC-011/012. No test errors occurred. |
 
+### KMIPKIT-0010 T002 — Result Message client-access rule Red (2026-10-19)
+
+After adding `KMIPKIT-REQ-SPEC-9.17-001-002` to each whole-Spec client closure, the profile's typed-rule registry also needs a matching optional-capability entry. The new focused regression checks for that catalog-linked rule before implementation; it failed by assertion because no such mapping existed.
+
+| Stage | DCO-signed commit | Command | Result |
+|---|---|---|---|
+| Red | pending | `cargo test -p kmipkit-protocol result_message_client_access_has_an_optional_typed_rule --lib` | Expected Red: 1 test failed at the mapping-presence assertion; compilation succeeded, with no test error. |
+
 The Red commit changes tests only; catalog and independent oracle data have not yet been modified in this tranche. The earlier three §6.1/§9.17 gaps are adjudicated in the prior Green commit. T002 remains open pending the Green data update, full oracle/profile consistency checks, evidence refresh, and generated-report checks.
