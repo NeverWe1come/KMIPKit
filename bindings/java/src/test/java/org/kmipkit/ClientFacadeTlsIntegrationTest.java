@@ -878,6 +878,71 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    // OASIS KMIP Specification v2.1 §6.1.35, Tables 268–270.
+    @Test
+    void obtainLeaseResponseTraversesNativeJniBridgeOverTls() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("obtain-lease-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("obtain-lease-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, obtainLeaseResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-obtain-lease-response-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.obtainLease(UniqueIdentifier.textString("lease-request-id"))
+                    .withUniqueBatchItemId(uniqueBatchItemId(0)));
+
+            ClientBatchItemResult.ObtainLeaseResponse lease;
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult item = response.itemAt(0)) {
+                assertEquals(1, response.itemCount());
+                assertEquals(0x10, item.operation());
+                assertEquals(0, item.resultStatus());
+                lease = item.obtainLeaseResponse().orElseThrow();
+            }
+
+            try (lease) {
+                assertEquals(UniqueIdentifier.Kind.TEXT_STRING, lease.uniqueIdentifier().kind());
+                assertEquals("leased-object", lease.uniqueIdentifier().text());
+                assertEquals(0, lease.leaseTime());
+                assertEquals(-7, lease.lastChangeDate());
+                assertFalse(lease.toString().contains("leased-object"));
+            }
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
+        } finally {
+            listener.close();
+        }
+    }
+
     // OASIS KMIP Specification v2.1 §6.1.28, Tables 248–249.
     @Test
     void locateResponseRejectsMoreThanOneHundredThousandIdentifiersAtJavaBoundaryOverTls()
@@ -1707,6 +1772,23 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x540001, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
         byte[] responseItem = structure(0x42000f,
                 item(0x42005c, 5, integer(0x29)),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                item(0x42007f, 5, integer(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] obtainLeaseResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "leased-object".getBytes(StandardCharsets.UTF_8)),
+                item(0x420049, TtlvItemType.Interval.code(), integer(0)),
+                item(0x420048, TtlvItemType.DateTime.code(), longInteger(-7)),
+                item(0x541234, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, integer(0x10)),
                 item(0x420093, 8, uniqueBatchItemId(0)),
                 item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);
