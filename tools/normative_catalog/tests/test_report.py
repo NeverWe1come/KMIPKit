@@ -65,6 +65,21 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    @staticmethod
+    def _write_profile_module_tree(repository: Path, *, include_test_file: bool) -> None:
+        crate = repository / "crates/kmipkit-protocol"
+        (crate / "src").mkdir(parents=True, exist_ok=True)
+        (crate / "Cargo.toml").write_text(
+            '[package]\nname = "fixture-protocol"\nversion = "0.1.0"\n',
+            encoding="utf-8",
+        )
+        (crate / "src/lib.rs").write_text("#[cfg(test)]\nmod profile;\n", encoding="utf-8")
+        if include_test_file:
+            with (crate / "src/profile.rs").open("a", encoding="utf-8") as profile_source:
+                profile_source.write(
+                    '\n#[cfg(test)]\n#[path = "../tests/support/profile_unit.rs"]\nmod tests;\n'
+                )
+
     def test_typed_rule_registry_reader_parses_a_complete_static_mapping(self) -> None:
         from tools.normative_catalog.report import load_typed_rule_mappings
 
@@ -95,6 +110,7 @@ class CoverageReportTests(unittest.TestCase):
                 "#[test]\nfn production_discover_versions_rule_accepts_only_kmip_21_offers() {}\n",
                 encoding="utf-8",
             )
+            self._write_profile_module_tree(repository, include_test_file=True)
 
             self.assertEqual(
                 [
@@ -140,6 +156,7 @@ class CoverageReportTests(unittest.TestCase):
 """,
                 encoding="utf-8",
             )
+            self._write_profile_module_tree(repository, include_test_file=True)
 
             with self.assertRaisesRegex(ValueError, "unresolvable typed profile rule test evidence"):
                 load_typed_rule_mappings(repository)
@@ -174,6 +191,7 @@ class CoverageReportTests(unittest.TestCase):
                 'const EXAMPLE: &str = r#"\n#[test]\nfn ghost_test() {}\n"#;\n',
                 encoding="utf-8",
             )
+            self._write_profile_module_tree(repository, include_test_file=True)
 
             with self.assertRaisesRegex(ValueError, "unresolvable typed profile rule test evidence"):
                 load_typed_rule_mappings(repository)
@@ -205,6 +223,43 @@ class CoverageReportTests(unittest.TestCase):
             test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
             test_path.parent.mkdir(parents=True)
             test_path.write_text("#[test]\nfn ghost_test() {}\n", encoding="utf-8")
+            self._write_profile_module_tree(repository, include_test_file=False)
+
+            with self.assertRaisesRegex(ValueError, "unresolvable typed profile rule test evidence"):
+                load_typed_rule_mappings(repository)
+
+    def test_typed_rule_registry_rejects_test_at_wrong_inline_module_path(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(validate_discover_versions_rule),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/src/profile/tests.rs::ghost_test",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+];
+
+mod unrelated {
+    mod tests;
+}
+""",
+                encoding="utf-8",
+            )
+            test_path = repository / "crates/kmipkit-protocol/src/profile/tests.rs"
+            test_path.parent.mkdir(parents=True)
+            test_path.write_text("#[test]\nfn ghost_test() {}\n", encoding="utf-8")
+            self._write_profile_module_tree(repository, include_test_file=False)
 
             with self.assertRaisesRegex(ValueError, "unresolvable typed profile rule test evidence"):
                 load_typed_rule_mappings(repository)

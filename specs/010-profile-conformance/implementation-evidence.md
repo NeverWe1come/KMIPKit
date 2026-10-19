@@ -3968,3 +3968,5 @@ The 77 catalogued cases without local fixture paths remain `unavailable`; they w
 | Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_test_evidence_found_only_in_rust_text` | FAIL as intended: the resolver accepted `ghost_test` found only inside a Rust raw string and did not raise `unresolvable typed profile rule test evidence`. This exposes a false-positive test-reference check. |
 
 | Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_test_in_unincluded_rust_file` | FAIL as intended: the resolver accepted an active-looking `#[test]` in an orphan `.rs` file not included by any Rust module declaration. This exposes a second false-positive test-reference check. |
+
+| Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_test_at_wrong_inline_module_path` | FAIL as intended: a module declared inside an inline Rust module was resolved as though it were at the file's top-level module path, making an uncompiled test file appear reachable. |
