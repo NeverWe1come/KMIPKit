@@ -3752,4 +3752,4 @@ The final pinned-source review disposition assigns §4.11 to `server_only` and t
 |---|---|---|---|
 | Red | This DCO-signed commit | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability` | Expected Red: 3 tests failed by assertion (no test errors). The crosswalk/catalog still had unresolved scope, source-obligation reviews retained unresolved dispositions, and actor/§4.18 rationale was not yet recorded. |
 
-The Red commit changes only the focused regression and this evidence. The catalog and independent oracle remain unchanged for these 20 rows until Green. T002 remains open.
+An additional assertion requires the oracle to record a separate project actor interpretation while preserving each source actor annotation unchanged. The focused test was rerun and still fails by the three intended assertions, with no test errors. The Red commits change only the focused regression and this evidence. The catalog and independent oracle remain unchanged for these 20 rows until Green. T002 remains open.

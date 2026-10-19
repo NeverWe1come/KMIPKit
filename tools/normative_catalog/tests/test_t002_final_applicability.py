@@ -94,6 +94,24 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         ]
         self.assertEqual(mismatches, [])
 
+        actor_mismatches = []
+        for requirement_id, expected_scope in FINAL_DISPOSITIONS.items():
+            expected_interpretation = "server" if expected_scope == "server_only" else "client"
+            obligation = obligations[requirement_id]
+            crosswalk = self.crosswalk[requirement_id]
+            if (
+                obligation.get("project_actor_interpretation") != expected_interpretation
+                or obligation["actor"] != crosswalk["source_actor"]
+            ):
+                actor_mismatches.append((
+                    requirement_id,
+                    expected_interpretation,
+                    obligation.get("project_actor_interpretation"),
+                    crosswalk["source_actor"],
+                    obligation["actor"],
+                ))
+        self.assertEqual(actor_mismatches, [])
+
     def test_actor_interpretation_and_specific_source_resolutions_are_recorded(self) -> None:
         missing_project_rationale = [
             requirement_id
@@ -119,7 +137,10 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         modify_attribute = self.crosswalk["KMIPKIT-REQ-SPEC-6.1.34-001-003"]
         self.assertEqual(modify_attribute["source_section"], "6.1.34")
         self.assertEqual(modify_attribute["source_obligation_order"], 4)
-        self.assertEqual(modify_attribute["source_direction"], "client_to_server")
+        self.assertEqual(
+            self.requirements["KMIPKIT-REQ-SPEC-6.1.34-001-003"]["direction"],
+            "client_to_server",
+        )
         self.assertEqual(
             modify_attribute["scope_state"], "profile_conditional"
         )
