@@ -6684,6 +6684,126 @@
       "exportName": "kmipkit.client.LogResponse.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This exact member is generated dataclass layout metadata, not an independent facade capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this redacted presentation formatter is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ObtainLeaseResponse formatter is a redacted Python presentation detail, not an independent cross-language KMIP capability. It redacts the Unique Identifier and omits retained TTLV."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 for T056. The typed Obtain Lease response, retained full TTLV, and close lifecycle are mapped and tested across Rust, C, Java, and Python; this generated member is not an independent cross-language capability.",
+      "exportName": "kmipkit.client.ObtainLeaseResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ObtainLeaseResponse value record and has no independent cross-language product capability."
     }
   ],
   "capabilities": [
@@ -27194,8 +27314,8 @@
           "invalid_input",
           "internal"
         ],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseObtainLease",
-        "method": "obtainLeaseResponse",
+        "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseObtainLease",
+        "method": "responseTtlv",
         "package": "org.kmipkit.extensions",
         "parameters": [],
         "returnType": "TtlvStructure"

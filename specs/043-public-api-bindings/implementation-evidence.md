@@ -4375,7 +4375,7 @@ additional C exports, the Obtain Lease TTLV Java facade duplicated its parent
 JNI owner, and ten dataclass-generated Python exports had no exact exclusion.
 The JNI mapping needs to point to the response aggregate's existing native
 entrypoint, while the Python exclusions must describe only generated
-interpreter mechanics and the explicit constant redacted representation.
+interpreter mechanics and the response's redacted representation.
 
 | Stage | Commit | Command | Result |
 |---|---|---|---|
@@ -4386,3 +4386,12 @@ Green will correct the export inventory count, use the response aggregate JNI
 mapping for the TTLV accessor, and add only the ten reviewed Python-generated
 exports to the manifest. PR #104 remains draft until the full required checks
 pass.
+
+| Green | This DCO-signed implementation commit | `cargo test -p kmipkit-ffi --lib extension_registry::metadata_tests::every_exported_c_function_starts_inside_the_shared_panic_boundary --all-features --locked`; `py -3 -B -m unittest -v tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_obtain_lease_parity_manifest`; `py -3 -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: Rust ABI boundary count 220; 67 focused API, T076, bilingual documentation, and Obtain Lease manifest tests; all 12 generated outputs verified; no whitespace errors. The guides now report 15 verified operation mappings and document Obtain Lease ownership in English and Spanish. |
+
+This correction fixes the three failures from workflow `39249942391` and the
+stale bilingual operation-count assertion found during broader local discovery.
+The broad discovery invocation could not import five test modules because
+`jsonschema` is absent from this Windows Python environment; those modules are
+installed in the repository CI environment and were not skipped silently. The
+PR remains draft until its required GitHub jobs pass on the pushed head.

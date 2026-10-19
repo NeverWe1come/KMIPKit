@@ -172,6 +172,8 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Join Split Key",
                 "Locate",
                 "Log",
+                "Login",
+                "Obtain Lease",
             ],
         )
         self.assertEqual(

@@ -75,15 +75,15 @@ tabla.
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **33 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **32 / 56** siguen en
 estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
 Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
 Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Catorce mapeos de operación están `verified`: Certify,
+parte del repositorio. Quince mapeos de operación están `verified`: Certify,
 Check, Delegated Login, Derive Key, Export, Get, Get Constraints, Get Usage
-Allocation, Import, Interop, Join Split Key, Locate, Log y Login. El mapeo de Derive
+Allocation, Import, Interop, Join Split Key, Locate, Log, Login y Obtain Lease. El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. El mapeo de Get Constraints envía la petición
@@ -121,6 +121,12 @@ devueltas. Java y Python redactan el Ticket Value en la salida formateada. En C,
 el span del Ticket Value es prestado y no debe registrarse. Esta instantánea no
 afirma paridad completa de operaciones, compatibilidad con un perfil ni
 certificación formal de KMIPKit.
+
+Obtain Lease mapea los campos de su respuesta correcta y conserva el TTLV
+completo y ordenado en los cuatro lenguajes. C devuelve una estructura TTLV
+propia; Java expone `ObtainLeaseResponse.responseTtlv()` y Python,
+`ObtainLeaseResponse.response_ttlv`; el llamador cierra el resultado cuando
+termina. KMIPKit no controla la expiración del lease ni inicia temporizadores.
 
 El [manifiesto](../../../specification/api/public-api.json) y el [diseño de
 la API pública](../../architecture/public-api.md) contienen los propietarios

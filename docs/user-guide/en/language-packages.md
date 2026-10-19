@@ -71,15 +71,15 @@ changes to this table.
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **33 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **32 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Fourteen operation mappings
+or implementation code elsewhere in the repository. Fifteen operation mappings
 are `verified`: Certify, Check, Delegated Login, Derive Key, Export, Get,
 Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-Log, and Login. The Derive Key mapping rejects a successful result without its
+Log, Login, and Obtain Lease. The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
 complete ordered response TTLV in all four languages. The Get Constraints mapping
 sends the empty §6.1.22 request and exposes its required ordered Constraints
@@ -114,7 +114,11 @@ copy. Python callers and runtimes cannot deterministically erase returned
 immutable copies. Java and Python redact the Ticket Value in formatted output.
 The C Ticket Value span is borrowed and must not be logged. KMIPKit does not
 claim full operation parity, a supported profile, or formal certification
-from this snapshot.
+from this snapshot. Obtain Lease maps its successful response fields and
+retains the complete ordered response TTLV in all four languages. C returns an
+owned TTLV structure; Java exposes `ObtainLeaseResponse.responseTtlv()` and
+Python exposes `ObtainLeaseResponse.response_ttlv`. Callers close the owned
+result when done. KMIPKit does not track lease expiration or start a timer.
 
 For the authoritative operation owners and per-capability mappings, see the
 [manifest](../../../specification/api/public-api.json) and the [public API
