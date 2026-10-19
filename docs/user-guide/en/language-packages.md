@@ -111,9 +111,10 @@ copy. Python uses `extensions.client_batch_item_login(...)` and
 `client.LoginResponse`; `ticket_value` returns caller-owned immutable `bytes`,
 while `close()` wipes KMIPKit-owned mutable storage and closes its Ticket TTLV
 copy. Python callers and runtimes cannot deterministically erase returned
-immutable copies. All three bindings redact the Ticket Value in formatted
-output. KMIPKit does not claim full operation parity, a supported profile, or
-formal certification from this snapshot.
+immutable copies. Java and Python redact the Ticket Value in formatted output.
+The C Ticket Value span is borrowed and must not be logged. KMIPKit does not
+claim full operation parity, a supported profile, or formal certification
+from this snapshot.
 
 For the authoritative operation owners and per-capability mappings, see the
 [manifest](../../../specification/api/public-api.json) and the [public API

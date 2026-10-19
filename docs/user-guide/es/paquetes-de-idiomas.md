@@ -117,9 +117,10 @@ TTLV del Ticket. Python usa `extensions.client_batch_item_login(...)` y
 del llamador, mientras que `close()` pone a cero el almacenamiento mutable
 propiedad de KMIPKit y cierra su copia TTLV del Ticket. Los llamadores y
 runtimes de Python no pueden borrar determinísticamente las copias inmutables
-devueltas. Los tres bindings redactan el Ticket Value en la salida formateada.
-Esta instantánea no afirma paridad completa de operaciones, compatibilidad con
-un perfil ni certificación formal de KMIPKit.
+devueltas. Java y Python redactan el Ticket Value en la salida formateada. En C,
+el span del Ticket Value es prestado y no debe registrarse. Esta instantánea no
+afirma paridad completa de operaciones, compatibilidad con un perfil ni
+certificación formal de KMIPKit.
 
 El [manifiesto](../../../specification/api/public-api.json) y el [diseño de
 la API pública](../../architecture/public-api.md) contienen los propietarios
