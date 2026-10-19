@@ -223,3 +223,9 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 - T003/T004 are complete as the signed Red checkpoint in `ea6669ed`. Independent task review approved the diff with no findings. The new assertion fails only for the six selected Baseline MAY/OPTIONAL requirements lacking usable positive evidence: `KMIPKIT-REQ-SPEC-4.1-001-001`, `KMIPKIT-REQ-SPEC-4.17-001-001`, `KMIPKIT-REQ-SPEC-9.11-001`, `KMIPKIT-REQ-SPEC-9.11-004-003`, `KMIPKIT-REQ-SPEC-9.20-001-002`, and `KMIPKIT-REQ-SPEC-4.31-002`.
 - Fixture replay evidence: 13/16 Baseline mandatory cases replay; `BL-M-4-21`, `BL-M-7-21`, and `BL-M-10-21` remain typed preflight blockers and are not counted as executed or passed.
 - Next task: T005 catalog inclusion/closure schema, Baseline target input, and offline profile metadata generator. T006/T007 provide generated records and the separate Green checkpoint. Do not claim Baseline readiness while optional-evidence or fixture gates remain open.
+
+
+## T005-T007 Green checkpoint (2026-10-19)
+- Current branch now has a reviewed complete source-derived oracle for all client-profile clause and requirement closures. Existing signed Red/Green implementation commits provide normative inclusion validation, safe bounded target parsing, deterministic generated Rust metadata, and selected-target reporting.
+- Fresh verification: generator suite 65 passed / 1 Windows symlink-privilege skip; catalog validation 4 sources / 1,411 clauses / 4,123 records; generated profile `--check` passed; coverage report `--check` passed; Rust `profile_validation` 7/7 passed. The adversarial generated-source compile/round-trip regression is included in the passing generator module.
+- T005-T007 are closed in the feature task ledger. T008 remains open for its distinct Refactor evidence commit. The new T003 Red test still identifies six selected Baseline MAY/OPTIONAL evidence gaps; no readiness or conformance claim.
