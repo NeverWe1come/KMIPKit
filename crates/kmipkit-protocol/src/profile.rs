@@ -666,6 +666,8 @@ const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const IMPORT_OPERATION: u32 = 0x0000_002A;
 const IMPORT_OBJECT_TYPE: u32 = 0x0042_0057;
+const DERIVE_KEY_OBJECT_TYPE: u32 = 0x0042_0057;
+const SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const PGP_KEY_OBJECT_TYPE: u32 = 9;
 const SECRET_DATA_OBJECT_TYPE: u32 = 7;
 const SECRET_DATA: u32 = 0x0042_0085;
@@ -947,6 +949,61 @@ fn derive_key_specifies_cryptographic_length(
                             return false;
                         };
                         length.with_value(|value| matches!(value, ValueView::Integer(_)))
+                    }
+                    _ => false,
+                })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn derive_key_specifies_cryptographic_algorithm_for_key_output(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, DERIVE_KEY_OBJECT_TYPE)
+                else {
+                    return false;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return false;
+                };
+                if object_type == SECRET_DATA_OBJECT_TYPE {
+                    return true;
+                }
+                if object_type != SYMMETRIC_KEY_OBJECT_TYPE {
+                    return false;
+                }
+
+                let FieldPresence::Unique(attributes) = field_presence(&payload, ATTRIBUTES) else {
+                    return false;
+                };
+                attributes.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        let FieldPresence::Unique(algorithm) =
+                            field_presence(&attributes, CRYPTOGRAPHIC_ALGORITHM)
+                        else {
+                            return false;
+                        };
+                        algorithm.with_value(|value| matches!(value, ValueView::Enumeration(_)))
                     }
                     _ => false,
                 })
@@ -1865,6 +1922,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(derive_key_specifies_cryptographic_length),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_length",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_specifies_cryptographic_algorithm_for_key_output),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_algorithm_for_key_results",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],

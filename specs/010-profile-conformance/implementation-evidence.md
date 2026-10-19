@@ -4045,3 +4045,15 @@ GitHub Actions has not yet rerun against the correction commit. T030/T040 and th
 | Refactor | This DCO-signed refactor commit; focused profile test and `cargo fmt --all --check` | The test fixture now uses one ordered-length helper for valid, missing, mistyped, and duplicate attribute cases; behavior and assertions are unchanged. |
 
 This closes one inherited requirement only. T040 remains open for the rest of the Baseline closure, official fixture blockers, and its end-to-end completeness audit. No profile conformance claim is made.
+
+### KMIPKIT-0010 T040 slice — Derive Key Cryptographic Algorithm (2026-10-19)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | Commit `f4b67ec4`; `cargo test -p kmipkit-protocol --lib profile_maps_required_derive_key_cryptographic_algorithm_for_key_results -- --nocapture` | FAIL as intended: the test could not find an executable typed profile mapping for `KMIPKIT-REQ-SPEC-6.1.14-001-003`. |
+| Green | This DCO-signed implementation commit; focused profile test above | PASS: a Derive Key request producing a Symmetric Key requires one Enumeration Cryptographic Algorithm; missing, mistyped, and duplicate values are rejected with the exact requirement and clause IDs. Secret Data remains valid without Cryptographic Algorithm. |
+| Green validation | `cargo test -p kmipkit-protocol --all-features --lib` | PASS: all 793 protocol unit tests. |
+| Green validation | `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings` | PASS: no warnings. |
+| Green validation | `python -B tools/normative_catalog/validate.py --repo-root .`; `python -B tools/normative_catalog/generate_profiles.py --check --repo-root .`; `python -B tools/normative_catalog/report.py --check --repo-root .`; `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability` | PASS: catalog valid (4 sources, 1,411 clauses, 4,123 records); generated metadata and coverage report current; 18 traceability tests pass with 1 expected skip. |
+
+The pinned Specification v2.1 §6.1.14 text limits Derive Key results to Symmetric Key or Secret Data, requires both Cryptographic Length and Cryptographic Algorithm when a key is created, and explicitly permits the Secret Data case without a key algorithm. This mapping adds no server acceptance or conformance claim. T040 remains open for the rest of the inherited profile closure and unavailable official fixtures.

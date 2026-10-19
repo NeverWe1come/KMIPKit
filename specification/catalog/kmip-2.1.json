@@ -92341,10 +92341,12 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes"
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_algorithm_for_key_results"
       ],
       "negative_verification_required": false,
       "decision_id": null,
