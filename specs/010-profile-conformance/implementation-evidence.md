@@ -3951,3 +3951,18 @@ This Red commit records tests and failure evidence only. Green must validate reg
 | Refactor/evidence | This DCO-signed evidence commit | `git diff --check`; `git diff --quiet HEAD -- specification/oasis/kmip-2.1/upstream/` | PASS: no whitespace errors and pinned OASIS source copies are unchanged. No additional production refactor was warranted after the bounded registry resolver passed the traceability and report suites. |
 
 T030 closes the catalog-reference regression only. It does not close T040 or the global optional-capability gate: the five previously listed MAY/OPTIONAL capability gaps remain, and runtime profile selection stays fail-closed. The profile closure comparison uses the checked-in source-audited oracle; it does not accept the reviewer-owned checklist.
+
+### KMIPKIT-0010 T036 — exact rerun and disposition status (2026-10-19)
+
+| Exact command | Result |
+|---|---|
+| `cargo test -p kmipkit-client --lib profile_fixture_replay_tests::every_available_profile_fixture_records_replay_or_typed_blocker --all-features --locked` | PASS: 1 replay-matrix test, 0 failures; it attempted each of the 16 pinned official case IDs and preserved 13 full replay results plus 3 typed preflight blockers. |
+| `cargo test -p kmipkit-test-support --test oasis_profile_fixture_parser --all-features --locked` | PASS: 4 parser tests, including exact source-order parsing for all 16 pinned fixtures and malformed-input rejection. |
+
+The 77 catalogued cases without local fixture paths remain `unavailable`; they were not fetched or reconstructed. This completes T036's requested case-by-case execution/disposition inventory. `BL-M-4-21` and `BL-M-10-21` still conflict with typed requirements in KMIP Specification v2.1 §6.1.43 Table 293, while `BL-M-7-21` cannot be sent through the current typed-only API under §4.57. They remain explicit conformance blockers for T040; this task completion does not count them as executed or passing.
+
+### KMIPKIT-0010 T030 QA follow-up — textual fake-test evidence (2026-10-19)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_test_evidence_found_only_in_rust_text` | FAIL as intended: the resolver accepted `ghost_test` found only inside a Rust raw string and did not raise `unresolvable typed profile rule test evidence`. This exposes a false-positive test-reference check. |
