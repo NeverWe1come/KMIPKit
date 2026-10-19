@@ -368,6 +368,77 @@ impl ProfileExchangeValidator for TestProfileValidator {
     }
 }
 
+struct AllowingProfileValidator {
+    request_checks: Rc<Cell<usize>>,
+    response_checks: Rc<Cell<usize>>,
+}
+
+impl ProfileExchangeValidator for AllowingProfileValidator {
+    fn validate_transport(
+        &self,
+        transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        assert_eq!(transport, ProfileTransport::RawTtlvTls);
+        Ok(())
+    }
+
+    fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        assert_eq!(
+            request
+                .batch_items()
+                .next()
+                .and_then(kmipkit_protocol::RequestBatchItemView::operation),
+            Some(0x0000_001e)
+        );
+        self.request_checks.set(self.request_checks.get() + 1);
+        Ok(())
+    }
+
+    fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        assert_eq!(
+            request
+                .batch_items()
+                .next()
+                .and_then(kmipkit_protocol::RequestBatchItemView::operation),
+            response
+                .batch_items()
+                .next()
+                .and_then(kmipkit_protocol::ResponseBatchItemView::operation)
+        );
+        self.response_checks.set(self.response_checks.get() + 1);
+        Ok(())
+    }
+}
+
+#[test]
+fn profiled_exchange_allows_extra_base_protocol_operation_when_rules_allow_it() {
+    let exchanges = Rc::new(Cell::new(0));
+    let request_checks = Rc::new(Cell::new(0));
+    let response_checks = Rc::new(Cell::new(0));
+    let validator = AllowingProfileValidator {
+        request_checks: Rc::clone(&request_checks),
+        response_checks: Rc::clone(&response_checks),
+    };
+    let mut client = Client::for_test(CountingTransport::new(Rc::clone(&exchanges)));
+
+    client
+        .execute_inner(
+            discover_versions_batch(),
+            &CodecLimits::defaults(),
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
+        )
+        .expect("an otherwise valid base-protocol operation passes an allowing profile rule set");
+
+    assert_eq!(request_checks.get(), 1);
+    assert_eq!(response_checks.get(), 1);
+    assert_eq!(exchanges.get(), 1);
+}
+
 #[test]
 fn response_profile_rejection_after_exchange_preserves_response_started_delivery() {
     let validator = TestProfileValidator {

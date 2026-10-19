@@ -3911,3 +3911,13 @@ The test at `crates/kmipkit-protocol/tests/profile_validation.rs` checks source-
 | Existing private registry coverage | `cargo test -p kmipkit-protocol --lib profile::tests:: --locked` | PASS: 50 profile tests. This includes successful complete synthetic selection, all five category-matched test forms, missing and incomplete mappings, cycle rejection, conflicting constraint rejection, and minimum-capability allowance. |
 
 This checkpoint changes only the integration tests and this evidence/task ledger; it does not change production code or generated/OASIS sources. The test gap exposed by the Red run is source-applicability resolution for `KMIPKIT-REQ-PROF-4.1.2-005`; runtime selection remains unavailable until the complete applicable closure and typed rule/test evidence are resolved. No profile conformance claim is made.
+
+### KMIPKIT-0010 T010 QA correction — profiled exchange pass-through
+
+Independent QA requested client-seam evidence that an additional base-protocol operation can pass through profile preflight when the applicable rule evaluator allows it. The new fake-validator case drives `Discover Versions` through transport, request, and response validation and requires exactly one validation at each stage and one exchange. This is a client-seam regression only: it does not select a production profile, add a mapping, or claim that a real profile permits the operation.
+
+| Stage | Exact command | Exact result |
+|---|---|---|
+| Refactor - cover allowed base-operation pass-through in the profiled client seam | `cargo test -p kmipkit-client --lib profile_preflight_tests --all-features --locked` | PASS: all 9 profile preflight tests, including the new profiled `Discover Versions` pass-through case. Existing AWS-LC stdalign/NASM messages are non-fatal; the command exited successfully. No production behavior changed. |
+
+The existing request-rule and transport-restriction rejection tests cover `NotSent` and zero exchanges, but their historical commits do not record a distinct observed Red result. This evidence gap remains open; no Red failure is inferred or fabricated here. The test-only QA correction does not close T010 or imply profile readiness.
