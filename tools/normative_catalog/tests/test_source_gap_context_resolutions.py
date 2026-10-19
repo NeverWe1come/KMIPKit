@@ -217,12 +217,14 @@ def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
 
 
 class SourceGapContextResolutionTests(unittest.TestCase):
-    def test_result_message_research_limits_scope_aggregation_evidence(self) -> None:
+    def test_result_message_research_states_validator_scope_boundary(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
 
         self.assertIn("focused regression", research)
-        self.assertIn("does not load the independent source-review oracle", research)
-        self.assertIn("does not derive clause scope from source atoms", research)
+        self.assertIn(
+            "The production catalog validator does not load the independent source-review oracle or aggregate source-atom scopes.",
+            research,
+        )
         self.assertIn("checks the stored clause scope against linked requirement scopes", research)
         self.assertNotIn(
             "The validator derives §9.17 aggregate scope from both source atoms.",
