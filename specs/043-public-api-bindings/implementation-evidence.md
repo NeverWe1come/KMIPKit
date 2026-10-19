@@ -4280,3 +4280,42 @@ The T054 coverage blocker is resolved. PR #104 remains a draft because its other
 #### T054 exact-head completion (2026-10-19)
 
 GitHub Actions run `39230441731` passed on exact feature head `b99902a8b1dcbb806b008aa6095d42048114107c`, including cross-platform Rust, C, Java/JNI, and Python checks and the selected changed-code coverage gate. This satisfies T054's remaining CI/coverage acceptance criterion; the task is marked complete. PR #104 remains a draft while other KMIPKIT-0043 tasks are unfinished.
+
+#### T056 Obtain Lease mapping (2026-10-19)
+
+T056 maps the existing canonical Rust contract through the stable C ABI,
+Java/JNI, and Python/CFFI. Normative source: OASIS KMIP Specification v2.1
+§6.1.35, Tables 268–270. The mapping records optional request Unique
+Identifier and ID Placeholder behavior; successful response Unique Identifier,
+Lease Time Interval (including zero), and signed Last Change Date; common
+Failure/Pending metadata without typed success fields; unknown-value/order
+preservation; owned TTLV results; and diagnostic redaction. Stable normative
+traces are `KMIPKIT-REQ-SPEC-6.1.35-001-001`,
+`KMIPKIT-REQ-SPEC-6.1.35-001-002`, `KMIPKIT-REQ-SPEC-6.1.35-002`, and
+`KMIPKIT-REQ-SPEC-6.1.35-005`. Owner requirements are
+`KMIPKIT-0036-FR-001` through `KMIPKIT-0036-FR-008`; the API mapping links
+`KMIPKIT-0043-FR-004`, `-005`, `-007` through `-013`, `-017`, `-018`, `-021`,
+and `-022`. See `traceability.md` for the full per-language mapping and
+evidence. The pinned generator owns all generated output; no generated file
+was edited by hand.
+
+| Stage | Commit | Command | Result |
+|---|---|---|---|
+| Red | `3137f1c2` | `python -m unittest tools.api_manifest.tests.test_obtain_lease_parity_manifest -v` | EXPECTED FAIL: the operation is not verified and the generated parity row is not verified. |
+| Red | `3137f1c2` | From `bindings/python`: `$env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path '..\..\target\debug\kmipkit_ffi.dll').Path; .\.venv-t038-fix\Scripts\python.exe -m pytest tests/test_obtain_lease_operation.py -q` | EXPECTED FAIL: 7 tests identify missing Python request/result mapping and CFFI declarations. |
+| Red | `3137f1c2` | From `bindings/java`: `.\gradlew.bat test --tests org.kmipkit.extensions.ObtainLeaseMappingTest` | EXPECTED FAIL: Java/JNI mapping symbols and methods are absent. |
+| Green | `601b0fb9` | `cargo test -p kmipkit-protocol -p kmipkit-client -p kmipkit-ffi --features kmipkit-ffi/coverage-c-consumer obtain_lease` | PASS: 7 protocol, 5 client, and 3 FFI tests. |
+| Green | `601b0fb9` | `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs` | PASS: compiled C consumer and public ABI declarations (1 test). |
+| Green | `601b0fb9` | From `bindings/python`: `$env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path '..\..\target\debug\kmipkit_ffi.dll').Path; .\.venv-t038-fix\Scripts\python.exe -m pytest tests/test_obtain_lease_operation.py -q` | PASS: 7 Python/CFFI tests, including absent/present request ID, zero interval, signed date, redaction, owned TTLV, unknown field, and order. |
+| Green | `601b0fb9` | From `bindings/java`: `.\gradlew.bat test --tests org.kmipkit.extensions.ObtainLeaseMappingTest --rerun-tasks` | PASS: 5 Java/JNI tests; native library rebuilt. |
+| Green | `601b0fb9` | `python -m unittest tools.api_manifest.tests.test_obtain_lease_parity_manifest -v` | PASS: 2 manifest and generated parity tests. |
+| Green | `601b0fb9` | `python tools/api_manifest/generate.py --write`; `python tools/api_manifest/generate.py --check` | PASS: generator writes 12 outputs; check confirms all 12 are current. |
+| Green | `601b0fb9` | `cargo fmt --all --check`; `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`; `git diff --cached --check` | PASS: formatting, scoped FFI Clippy, and whitespace checks. |
+| Refactor | See T056 evidence commit | `git diff --check`; focused manifest and Java/Python mapping tests after citation/task-record updates | PASS: evidence and requirement citations are recorded; no behavior changed in Refactor. |
+
+The local Windows run emits existing AWS-LC `stdalign_check`/missing-NASM and
+MSVC linker `LNK4217` warnings; the listed commands exit successfully. This
+task's focused mapping evidence is complete. Full workspace coverage and
+cross-platform CI remain feature/release gates; these local results do not
+claim complete OASIS conformance, interoperability, profile support, or
+certification.

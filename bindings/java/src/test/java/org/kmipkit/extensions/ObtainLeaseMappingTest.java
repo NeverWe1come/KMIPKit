@@ -18,6 +18,11 @@ import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Obtain Lease parity for OASIS KMIP 2.1 §6.1.35, Tables 268–270.
+ * Traces KMIPKIT-REQ-SPEC-6.1.35-001-001/-001-002/-002/-005 and
+ * owner requirements KMIPKIT-0036-FR-001 through KMIPKIT-0036-FR-008.
+ */
 final class ObtainLeaseMappingTest {
     @Test
     void requestBuilderSupportsPlaceholderAndExplicitIdentifier() {
