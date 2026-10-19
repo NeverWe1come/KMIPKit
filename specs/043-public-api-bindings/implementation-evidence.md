@@ -4339,3 +4339,27 @@ The existing Python environment does not include Ruff: `python -m ruff check
 src/kmipkit/client.py tests/test_obtain_lease_operation.py` exits with
 `No module named ruff`. The focused tests and syntax compilation pass; no
 Ruff-specific check is claimed for this follow-up.
+
+##### T056 Java JNI success-path and retained-response follow-up (2026-10-19)
+
+Independent QA found that the Java mapping test built an `Object[]` directly
+and the C consumer only queried a null response handle. The added integration
+test uses the public Java `Client` over local TLS 1.3/mTLS, receives an actual
+successful Obtain Lease `ResponseBatchItem` through the native FFI/JNI bridge,
+and calls the public `obtainLeaseResponse()` accessor. After closing the
+source response and batch item, it verifies the owned typed response retains
+ordered full response TTLV and an unknown byte-string field. The test source
+cites OASIS KMIP Specification v2.1 §6.1.35, Tables 268–270. No production
+behavior change was needed: the baseline bridge already passed the success
+path; this follow-up closes the missing ownership and bridge-coverage gap.
+
+| Stage | Commit | Command | Result |
+|---|---|---|---|
+| Red | `4b819060` | From `bindings/java`: ` .\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest.obtainLeaseResponseTraversesNativeJniBridgeOverTls --rerun-tasks` | PASS: new TLS/mTLS native response bridge path reaches the public typed response accessor (1 test); confirmed the existing bridge behavior before adding the retained-TTLV assertions. |
+| Green | `22d37ab5` | From `bindings/java`: ` .\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest.obtainLeaseResponseUsesNativeJniBridgeAndRetainsOwnedTtlvOverTls --rerun-tasks` | PASS: 1 end-to-end test, including retained owned TTLV order and unknown-field bytes after source closure. |
+| Green | `22d37ab5` | From `bindings/java`: ` .\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest --tests org.kmipkit.extensions.ObtainLeaseMappingTest --rerun-tasks` | PASS: 17 tests (12 TLS integration and 5 mapping), 0 failures/errors/skips. |
+| Refactor | Follow-up evidence commit | Repository root: `git diff --check`; from `bindings/java`: ` .\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest --tests org.kmipkit.extensions.ObtainLeaseMappingTest --rerun-tasks` | PASS: traceability and evidence updated; 17 Java tests pass and no production behavior changed. |
+
+The Windows native build reports existing AWS-LC `stdalign_check` and missing
+NASM warnings; Gradle still completes successfully. This test is an API bridge
+and ownership regression, not an OASIS conformance or interoperability test.
