@@ -26,6 +26,7 @@ typedef struct kmipkit_client_t kmipkit_client_t;
 typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
 typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
 typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
+typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
 
 extern "C" int32_t kmipkit_client_batch_set_request_time_stamp(
         kmipkit_client_batch_t* batch, int64_t timestamp);
@@ -117,6 +118,28 @@ int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(
         kmipkit_client_t*, kmipkit_client_batch_t**, kmipkit_codec_limits_t*,
         const kmipkit_request_options_v1_t*, kmipkit_client_batch_response_t**,
         kmipkit_ttlv_structure_t**);
+int32_t kmipkit_usage_allocation_context_create(
+        kmipkit_client_batch_item_response_t*, int64_t, uint32_t,
+        kmipkit_usage_allocation_context_t**);
+void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t*);
+int32_t kmipkit_usage_allocation_context_usage_limits_unit(
+        kmipkit_usage_allocation_context_t*, uint32_t*);
+int32_t kmipkit_usage_allocation_context_allocated_units(
+        kmipkit_usage_allocation_context_t*, int64_t*);
+int32_t kmipkit_usage_allocation_context_available_units(
+        kmipkit_usage_allocation_context_t*, int64_t*);
+int32_t kmipkit_usage_allocation_context_reserved_units(
+        kmipkit_usage_allocation_context_t*, int64_t*);
+int32_t kmipkit_usage_allocation_context_unique_identifier(
+        kmipkit_usage_allocation_context_t*, kmipkit_unique_identifier_v1_t*);
+int32_t kmipkit_client_execute_guarded_protection_item(
+        kmipkit_client_t*, kmipkit_usage_allocation_context_t*,
+        kmipkit_client_batch_item_t**, int64_t, kmipkit_codec_limits_t*,
+        kmipkit_client_batch_response_t**);
+int32_t kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(
+        kmipkit_client_t*, kmipkit_usage_allocation_context_t*,
+        kmipkit_client_batch_item_t**, int64_t, uint32_t, kmipkit_codec_limits_t*,
+        kmipkit_client_batch_response_t**);
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t*);
 void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t*);
 int32_t kmipkit_client_batch_response_item_count(kmipkit_client_batch_response_t*, uint64_t*);
@@ -2546,6 +2569,7 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
         case 31: kmipkit_client_batch_item_response_release(from_java_handle<kmipkit_client_batch_item_response_t>(raw_handle)); break;
         case 32: kmipkit_register_request_release(from_java_handle<kmipkit_register_request_t>(raw_handle)); break;
         case 33: kmipkit_split_key_reference_release(from_java_handle<kmipkit_split_key_reference_t>(raw_handle)); break;
+        case 34: kmipkit_usage_allocation_context_release(from_java_handle<kmipkit_usage_allocation_context_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -3891,6 +3915,66 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteWi
     });
 }
 
+jlong execute_guarded_protection_item(JNIEnv* env, jlong raw_client, jlong raw_context,
+        jlong raw_item, jlong raw_cost, jlong raw_asynchronous_indicator,
+        bool has_asynchronous_indicator, jlongArray raw_limits) {
+    auto* client = from_java_handle<kmipkit_client_t>(raw_client);
+    auto* context = from_java_handle<kmipkit_usage_allocation_context_t>(raw_context);
+    auto* item = from_java_handle<kmipkit_client_batch_item_t>(raw_item);
+    if (client == nullptr || context == nullptr || item == nullptr || raw_cost <= 0
+            || (has_asynchronous_indicator
+                && (raw_asynchronous_indicator < 0
+                    || static_cast<uint64_t>(raw_asynchronous_indicator) > 0xffff'ffffULL))) {
+        throw_invalid_input(env);
+        return 0;
+    }
+
+    kmipkit::jni::ClientBatchItemTransferGuard<
+            kmipkit_client_batch_item_t*,
+            decltype(&kmipkit_client_batch_item_release)> item_guard(
+                    item, kmipkit_client_batch_item_release);
+    CodecLimits limits;
+    if (!limits.initialize(env, raw_limits)) return 0;
+
+    kmipkit_client_batch_response_t* response = nullptr;
+    const int32_t status = has_asynchronous_indicator
+            ? kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(
+                    client, context, &item, raw_cost,
+                    static_cast<uint32_t>(raw_asynchronous_indicator), limits.get(), &response)
+            : kmipkit_client_execute_guarded_protection_item(
+                    client, context, &item, raw_cost, limits.get(), &response);
+    if (item == nullptr) (void)item_guard.transfer_to_consumer();
+    if (status != 0) {
+        if (response != nullptr) kmipkit_client_batch_response_release(response);
+        throw_status(env, status);
+        return 0;
+    }
+    if (item != nullptr || response == nullptr) {
+        if (response != nullptr) kmipkit_client_batch_response_release(response);
+        throw_invalid_input(env);
+        return 0;
+    }
+    return to_java_handle(response);
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteGuardedProtectionItem(
+        JNIEnv* env, jclass, jlong raw_client, jlong raw_context, jlong raw_item,
+        jlong raw_cost, jlongArray raw_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        return execute_guarded_protection_item(
+                env, raw_client, raw_context, raw_item, raw_cost, 0, false, raw_limits);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientExecuteGuardedProtectionItemWithAsynchronousIndicator(
+        JNIEnv* env, jclass, jlong raw_client, jlong raw_context, jlong raw_item,
+        jlong raw_cost, jlong raw_asynchronous_indicator, jlongArray raw_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        return execute_guarded_protection_item(env, raw_client, raw_context, raw_item,
+                raw_cost, raw_asynchronous_indicator, true, raw_limits);
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchResponseItemCount(
         JNIEnv* env, jclass, jlong raw_response) {
     return guarded<jlong>(env, 0, [&] {
@@ -4297,6 +4381,95 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                 &validate_usage_allocation_response);
         return static_cast<jobjectArray>(
                 kmipkit::jni::marshal_client_batch_item_response(operations));
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextCreate(
+        JNIEnv* env, jclass, jlong raw_item, jlong raw_requested_units,
+        jlong raw_usage_limits_unit) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* item = from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
+        if (item == nullptr || raw_requested_units <= 0 || raw_usage_limits_unit < 0
+                || static_cast<uint64_t>(raw_usage_limits_unit) > 0xffff'ffffULL) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_usage_allocation_context_t>(env, [&](auto output) {
+            return kmipkit_usage_allocation_context_create(item, raw_requested_units,
+                    static_cast<uint32_t>(raw_usage_limits_unit), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextUsageLimitsUnit(
+        JNIEnv* env, jclass, jlong raw_context) {
+    return guarded<jlong>(env, 0, [&] {
+        uint32_t value = 0;
+        const int32_t status = kmipkit_usage_allocation_context_usage_limits_unit(
+                from_java_handle<kmipkit_usage_allocation_context_t>(raw_context), &value);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(value);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextAllocatedUnits(
+        JNIEnv* env, jclass, jlong raw_context) {
+    return guarded<jlong>(env, 0, [&] {
+        int64_t value = 0;
+        const int32_t status = kmipkit_usage_allocation_context_allocated_units(
+                from_java_handle<kmipkit_usage_allocation_context_t>(raw_context), &value);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(value);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextAvailableUnits(
+        JNIEnv* env, jclass, jlong raw_context) {
+    return guarded<jlong>(env, 0, [&] {
+        int64_t value = 0;
+        const int32_t status = kmipkit_usage_allocation_context_available_units(
+                from_java_handle<kmipkit_usage_allocation_context_t>(raw_context), &value);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(value);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextReservedUnits(
+        JNIEnv* env, jclass, jlong raw_context) {
+    return guarded<jlong>(env, 0, [&] {
+        int64_t value = 0;
+        const int32_t status = kmipkit_usage_allocation_context_reserved_units(
+                from_java_handle<kmipkit_usage_allocation_context_t>(raw_context), &value);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(value);
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextUniqueIdentifier(
+        JNIEnv* env, jclass, jlong raw_context) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        const int32_t status = kmipkit_usage_allocation_context_unique_identifier(
+                from_java_handle<kmipkit_usage_allocation_context_t>(raw_context), &identifier);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        return identifier_to_java(env, identifier, 1);
     });
 }
 

@@ -46,6 +46,7 @@ public final class NativeExtensionRegistry {
     public static final int CLIENT_BATCH_ITEM_RESPONSE = 31;
     public static final int REGISTER_REQUEST = 32;
     public static final int SPLIT_KEY_REFERENCE = 33;
+    public static final int USAGE_ALLOCATION_CONTEXT = 34;
 
     private static volatile boolean loaded;
 
@@ -227,6 +228,18 @@ public final class NativeExtensionRegistry {
     public static native long clientExecute(long client, long batch, long[] codecLimits);
     public static native long clientExecuteWithOptions(
             long client, long batch, long[] codecLimits, long[] requestTimeouts);
+    public static native long usageAllocationContextCreate(
+            long itemResponse, long requestedUnits, long usageLimitsUnit);
+    public static native long usageAllocationContextUsageLimitsUnit(long context);
+    public static native long usageAllocationContextAllocatedUnits(long context);
+    public static native long usageAllocationContextAvailableUnits(long context);
+    public static native long usageAllocationContextReservedUnits(long context);
+    public static native Object[] usageAllocationContextUniqueIdentifier(long context);
+    public static native long clientExecuteGuardedProtectionItem(
+            long client, long context, long item, long cost, long[] codecLimits);
+    public static native long clientExecuteGuardedProtectionItemWithAsynchronousIndicator(
+            long client, long context, long item, long cost, long asynchronousIndicator,
+            long[] codecLimits);
     public static native long clientBatchResponseItemCount(long response);
     public static native long clientBatchResponseItemAt(long response, long index);
     public static native long[] clientBatchItemResponseMetadata(long itemResponse);

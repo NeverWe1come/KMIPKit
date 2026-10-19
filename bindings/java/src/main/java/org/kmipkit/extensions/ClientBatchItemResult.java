@@ -137,6 +137,23 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetUsageAllocationResponse(values);
     }
 
+    /**
+     * Creates caller-owned local accounting from this live successful Get Usage Allocation
+     * response. The exact positive request count and the caller-known Usage Limits Unit must be
+     * supplied because the response does not echo either value. Accounting remains local and
+     * does not establish that the server consumed reserved units.
+     */
+    public UsageAllocationContext createUsageAllocationContext(long requestedUnits,
+            long usageLimitsUnit) {
+        if (requestedUnits <= 0 || usageLimitsUnit < 0 || usageLimitsUnit > 0xffff_ffffL) {
+            throw new InvalidInputException("usage allocation context inputs are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long context = handle.withValue(value -> NativeExtensionRegistry.usageAllocationContextCreate(
+                value, requestedUnits, usageLimitsUnit));
+        return new UsageAllocationContext(context);
+    }
+
     /** Returns the successful Obtain Lease fields and an independently owned ordered TTLV copy. */
     public Optional<ObtainLeaseResponse> obtainLeaseResponse() {
         if (resultStatus() != 0) return Optional.empty();

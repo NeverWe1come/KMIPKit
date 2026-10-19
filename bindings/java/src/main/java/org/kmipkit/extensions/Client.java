@@ -62,6 +62,44 @@ public final class Client implements AutoCloseable {
         return new ClientBatchResponse(response);
     }
 
+    /** Executes one caller-owned Encrypt, MAC, or Sign item under local Usage Allocation accounting. */
+    public ClientBatchResponse executeGuardedProtectionItem(UsageAllocationContext context,
+            ClientBatchItem item, long cost, CodecLimits limits) throws ClientOperationException {
+        return executeGuardedProtectionItemInternal(context, item, cost, null, limits);
+    }
+
+    /** Executes one guarded protection item with the exact caller-selected KMIP Asynchronous Indicator. */
+    public ClientBatchResponse executeGuardedProtectionItemWithAsynchronousIndicator(
+            UsageAllocationContext context, ClientBatchItem item, long cost,
+            long asynchronousIndicator, CodecLimits limits) throws ClientOperationException {
+        if (asynchronousIndicator < 0 || asynchronousIndicator > 0xffff_ffffL) {
+            throw new InvalidInputException("asynchronous indicator is outside uint32");
+        }
+        return executeGuardedProtectionItemInternal(
+                context, item, cost, asynchronousIndicator, limits);
+    }
+
+    private ClientBatchResponse executeGuardedProtectionItemInternal(UsageAllocationContext context,
+            ClientBatchItem item, long cost, Long asynchronousIndicator, CodecLimits limits)
+            throws ClientOperationException {
+        if (context == null || item == null || limits == null || cost <= 0) {
+            throw new InvalidInputException("guarded protection inputs are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long response = NativeHandle.withNativeHandles(() -> {
+            long client = handle.get();
+            long allocation = context.nativeHandleOwner().get();
+            long consumedItem = item.nativeHandleOwner().transfer();
+            long[] codecLimits = NativeExtensionRegistry.codecLimitValues(limits);
+            return asynchronousIndicator == null
+                    ? NativeExtensionRegistry.clientExecuteGuardedProtectionItem(
+                            client, allocation, consumedItem, cost, codecLimits)
+                    : NativeExtensionRegistry.clientExecuteGuardedProtectionItemWithAsynchronousIndicator(
+                            client, allocation, consumedItem, cost, asynchronousIndicator, codecLimits);
+        });
+        return new ClientBatchResponse(response);
+    }
+
     private static long[] timeoutValues(RequestOptions options) {
         TransportConfiguration.Timeout[] values = {
             options.connectTimeout(), options.writeTimeout(), options.readTimeout(), options.totalTimeout()
