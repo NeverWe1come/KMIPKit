@@ -276,6 +276,82 @@ cleanup:
     return result;
 }
 
+static int append_logout_ticket_field(
+    kmipkit_codec_limits_t *limits,
+    kmipkit_ttlv_structure_t **ticket,
+    uint32_t raw_tag_value,
+    kmipkit_ttlv_value_t **value) {
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_item_t *item = 0;
+    kmipkit_ttlv_structure_t *updated = 0;
+    int result = 0;
+
+    if (limits == 0 || ticket == 0 || *ticket == 0 || value == 0 || *value == 0) {
+        return 0;
+    }
+    if (kmipkit_ttlv_raw_tag_create(raw_tag_value, &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_item_create(tag, *value, limits, &item) != 0) {
+        goto cleanup;
+    }
+    *value = 0;
+    if (kmipkit_ttlv_structure_with_item(*ticket, item, limits, &updated) != 0) {
+        goto cleanup;
+    }
+    *ticket = 0;
+    item = 0;
+    *ticket = updated;
+    updated = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(updated);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    return result;
+}
+
+static int logout_constructor_is_callable_from_c(void) {
+    static const uint8_t ticket_value[] = {0x01, 0x02, 0x03};
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_ttlv_structure_t *ticket = 0;
+    kmipkit_ttlv_value_t *ticket_type = 0;
+    kmipkit_ttlv_value_t *secret_value = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_structure_create(&ticket) != 0 ||
+        kmipkit_ttlv_value_enumeration(1, &ticket_type) != 0 ||
+        !append_logout_ticket_field(limits, &ticket, UINT32_C(0x42014a), &ticket_type) ||
+        kmipkit_ttlv_value_byte_string(
+            limits, ticket_value, (uint64_t)sizeof(ticket_value), &secret_value) != 0 ||
+        !append_logout_ticket_field(limits, &ticket, UINT32_C(0x42014b), &secret_value)) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_logout(0, &item) != T076_ERROR_INVALID_INPUT || item != 0 ||
+        kmipkit_client_batch_item_logout(ticket, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_value_release(secret_value);
+    kmipkit_ttlv_value_release(ticket_type);
+    kmipkit_ttlv_structure_release(ticket);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
+static int logout_response_accessor_clears_outputs_from_c(void) {
+    uint8_t present = 9;
+    const int32_t status = kmipkit_client_batch_item_response_logout(0, &present);
+    return status == T076_ERROR_INVALID_INPUT && present == 0;
+}
+
 static int login_response_accessors_clear_outputs_from_c(void) {
     uint8_t present = 9;
     uint8_t ticket_present = 9;
@@ -3364,11 +3440,13 @@ int main(int argc, char **argv) {
         !check_constructor_is_callable_from_c() ||
         !delegated_login_constructor_is_callable_from_c() ||
         !login_constructor_is_callable_from_c() ||
+        !logout_constructor_is_callable_from_c() ||
         !derive_key_constructor_is_callable_from_c() ||
         !export_constructor_is_callable_from_c() ||
         !export_constructor_rejects_invalid_presence_from_c() ||
         !delegated_login_response_accessors_clear_outputs_from_c() ||
         !login_response_accessors_clear_outputs_from_c() ||
+        !logout_response_accessor_clears_outputs_from_c() ||
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
