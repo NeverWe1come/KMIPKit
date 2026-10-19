@@ -1034,6 +1034,49 @@ fn profile_maps_client_optional_derive_key_secret_data_total_length() {
     );
 }
 
+#[test]
+fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
+    // KMIP Specification v2.1 §11.56: defined tags start with 0x42 and
+    // extension tags start with 0x54. Applicability is mapped by DEC-018.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-11.56-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-11.56-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the TTLV tag-prefix requirement has an executable profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the TTLV tag-prefix requirement resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the production rule has category-matched executable evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_operation_payload(
+        0x0000_0001,
+        structure([tagged(
+            0x0042_0173,
+            Value::structure(structure([tagged(
+                0x0054_1234,
+                Value::byte_string(vec![0xA5]),
+            )])),
+        )]),
+    );
+    result
+        .validate_request(&request)
+        .expect("nested standard and extension tags use their required prefixes");
+}
+
 fn derive_key_payload(object_type: u32, lengths: impl IntoIterator<Item = Value>) -> Structure {
     let attributes = structure(
         lengths

@@ -4113,3 +4113,11 @@ The catalog still records Baseline Client as the selected target with `claim_sta
 | `git diff --check` | PASS: no whitespace errors. |
 
 This is a documentary state correction only. T027 remains complete; its `evidence_incomplete` state and no-claim invariant remain unchanged. No Red/Green/Refactor sequence is fabricated because no executable behavior changed.
+
+### KMIPKIT-0010 T040 slice — KMIP tag prefixes (2026-10-19)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | `cargo test -p kmipkit-protocol --lib profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests -- --nocapture` | FAIL as intended: `KMIPKIT-REQ-SPEC-11.56-001` had no production typed-rule mapping. The test covers nested specification and extension tags. |
+
+The pinned KMIP Specification v2.1 §11.56 requires every tag to begin with `0x42` for specification tags or `0x54` for extensions. DEC-018 scopes its client profile mapping to outbound TTLV requests. No official Test Case ID is linked to this requirement. T040 remains open; this test failure records the unmapped rule only and makes no profile conformance claim.
