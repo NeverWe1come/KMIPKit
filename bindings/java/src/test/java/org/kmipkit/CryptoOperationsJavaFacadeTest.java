@@ -88,12 +88,10 @@ final class CryptoOperationsJavaFacadeTest {
             Method factory = operationFactory(operation);
             assertEquals(ClientBatchItem.class, factory.getReturnType(),
                     operation.name() + " must create a typed batch item");
-            assertEquals(Boolean.class,
-                    factory.getParameterTypes()[factory.getParameterCount() - 2],
-                    operation.name() + " Init Indicator must distinguish absent from false");
-            assertEquals(Boolean.class,
-                    factory.getParameterTypes()[factory.getParameterCount() - 1],
-                    operation.name() + " Final Indicator must distinguish absent from false");
+            long indicatorCount = java.util.Arrays.stream(factory.getParameterTypes())
+                    .filter(type -> type == Boolean.class).count();
+            assertEquals(2L, indicatorCount,
+                    operation.name() + " Init and Final Indicators must distinguish absent from false");
 
             try (ClientBatchItem omitted = newItem(operation, TtlvValueKind.NONE, false, false);
                     ClientBatchItem present = newItem(operation, TtlvValueKind.BYTE_STRING, true, false)) {
@@ -217,7 +215,9 @@ final class CryptoOperationsJavaFacadeTest {
             Class<?>[] parameterTypes = factory.getParameterTypes();
             for (int index = 0; index < parameterTypes.length; index++) {
                 Class<?> type = parameterTypes[index];
-                if (type == TtlvStructure.class && operation.name().equals("hash")) {
+                if (type == UniqueIdentifier.class && operation.name().matches("encrypt|decrypt")) {
+                    arguments[index] = UniqueIdentifier.textString(operation.name() + "-key");
+                } else if (type == TtlvStructure.class && operation.name().equals("hash")) {
                     parameters = hashParameters();
                     arguments[index] = parameters;
                 } else if (type == TtlvStructure.class) {
@@ -307,6 +307,9 @@ final class CryptoOperationsJavaFacadeTest {
             Operation operation, Object response, boolean validityIndicatorPresent) throws Exception {
         assertFalse(response.toString().contains(new String(SECRET_MARKER, StandardCharsets.UTF_8)),
                 operation.name() + " response display must redact output bytes");
+        if (operation.name().matches("encrypt|decrypt")) {
+            assertResponseCloseWipesOwnedBytes(response);
+        }
         if (!operation.name().equals("hash")) {
             Method accessor = publicMethod(response.getClass(), "uniqueIdentifier");
             assertEquals(UniqueIdentifier.class, accessor.getReturnType(),
@@ -357,6 +360,20 @@ final class CryptoOperationsJavaFacadeTest {
         Optional<?> second = (Optional<?>) accessor.invoke(response);
         assertArrayEquals(expected, (byte[]) second.orElseThrow(),
                 fieldName + " must be copied from the borrowed JNI span");
+    }
+
+    private static void assertResponseCloseWipesOwnedBytes(Object response) throws Exception {
+        Method close = publicMethod(response.getClass(), "close");
+        close.invoke(response);
+        for (String fieldName : response.getClass().getSimpleName().equals("EncryptResponse")
+                ? List.of("data", "ivCounterNonce", "correlationValue", "authenticatedEncryptionTag")
+                : List.of("data", "correlationValue")) {
+            var field = response.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            byte[] value = (byte[]) field.get(response);
+            if (value != null) assertArrayEquals(new byte[value.length], value,
+                    fieldName + " must be wiped when the typed response is closed");
+        }
     }
 
     private static void assertUnknownValidityIndicator(Object response) throws Exception {

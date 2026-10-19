@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import fields
 from types import SimpleNamespace
 from typing import Any
 
@@ -203,6 +204,9 @@ def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
 ) -> None:
     parser = getattr(client, f"_{operation}_response", None)
     assert callable(parser), f"missing Python typed response parser: {operation}"
+    assert {"encrypt_response", "decrypt_response"} <= {
+        item.name for item in fields(client.BatchItemResult)
+    }
     owners: list[object] = []
 
     def get_response(_item: object, *outputs: object) -> int:
@@ -211,16 +215,17 @@ def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
         identifier.struct_size = extensions.ffi.sizeof("kmipkit_unique_identifier_v1_t")
         identifier.abi_version = 1
         identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
-        identifier.text_data = extensions.ffi.new("uint8_t[]", b"response-key-secret")
+        identifier_text = extensions.ffi.new("unsigned char[]", b"response-key-secret")
+        identifier.text_data = identifier_text
         identifier.text_length = len(b"response-key-secret")
-        owners.append(identifier.text_data)
+        owners.append(identifier_text)
 
         spans = expected
         span_start = 2
         for index, raw in enumerate(spans):
             present = outputs[span_start + index * 2]
             span = outputs[span_start + index * 2 + 1]
-            storage = extensions.ffi.new("uint8_t[]", raw)
+            storage = extensions.ffi.new("unsigned char[]", raw)
             owners.append(storage)
             present[0] = 1  # type: ignore[index]
             span.data = storage
@@ -228,7 +233,13 @@ def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
         return 0
 
     monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
-    response = parser(SimpleNamespace(_pointer=lambda: object()))
+    operation_code = 0x1F if operation == "encrypt" else 0x20
+    mapped = client._cryptographic_responses(
+        SimpleNamespace(_pointer=lambda: object()), operation_code
+    )
+    selected = 0 if operation == "encrypt" else 1
+    assert all(value is None for index, value in enumerate(mapped) if index != selected)
+    response = mapped[selected]
 
     assert response is not None
     assert response.unique_identifier == extensions.UniqueIdentifier.text_string(
@@ -243,3 +254,17 @@ def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
     assert actual == expected
     assert "response-key-secret" not in repr(response)
     assert all(raw.decode() not in repr(response) for raw in expected)
+
+    owned_names = (
+        ("_data", "_iv_counter_nonce", "_correlation_value", "_authenticated_encryption_tag")
+        if operation == "encrypt"
+        else ("_data", "_correlation_value")
+    )
+    owned = [getattr(response, name) for name in owned_names]
+    assert all(value is None or isinstance(value, client._SecretBytes) for value in owned)
+    buffers = [value.buffer for value in owned if value is not None]
+    response.close()
+    assert all(not any(buffer) for buffer in buffers)
+    assert all(getattr(response, name) is None for name in (
+        "data", "iv_counter_nonce", "correlation_value", "authenticated_encryption_tag"
+    ) if hasattr(response, name))
