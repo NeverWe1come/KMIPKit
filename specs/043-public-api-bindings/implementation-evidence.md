@@ -4395,3 +4395,5 @@ The broad discovery invocation could not import five test modules because
 `jsonschema` is absent from this Windows Python environment; those modules are
 installed in the repository CI environment and were not skipped silently. The
 PR remains draft until its required GitHub jobs pass on the pushed head.
+
+| Refactor | This DCO-signed evidence follow-up | Review of the generated diff and `py -3 -B -m unittest -v tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_obtain_lease_parity_manifest` | PASS: the change reuses the existing aggregate JNI entrypoint, keeps the approved exclusions to the exact generated Python members, and regenerates parity artifacts from the pinned manifest tool. No additional production refactor was warranted. |
