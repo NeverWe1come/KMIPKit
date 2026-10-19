@@ -13,6 +13,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "production_transport",
     "server_generated_creation",
     "ttlv_wire_codec",
+    "usage_allocation_guard",
     "vendor_extension_registry",
 ];
 pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
@@ -1722,6 +1723,41 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::RequestOptions::with_write",
     ),
     (
+        "rust-observed-6b5c506371c76c806161",
+        "rust-kmipkit-client",
+        "kmipkit_client::UsageAllocationContext",
+    ),
+    (
+        "rust-observed-846c7e8e4d10b8dc94c6",
+        "rust-kmipkit-client",
+        "kmipkit_client::UsageAllocationContext::allocated_units",
+    ),
+    (
+        "rust-observed-70bea4859be837028cf6",
+        "rust-kmipkit-client",
+        "kmipkit_client::UsageAllocationContext::available_units",
+    ),
+    (
+        "rust-observed-59309e8335631f4adb64",
+        "rust-kmipkit-client",
+        "kmipkit_client::UsageAllocationContext::from_successful_allocation",
+    ),
+    (
+        "rust-observed-b26618f68d2859c5fb7d",
+        "rust-kmipkit-client",
+        "kmipkit_client::UsageAllocationContext::reserved_units",
+    ),
+    (
+        "rust-observed-509b7e0d293a9eb91417",
+        "rust-kmipkit-client",
+        "kmipkit_client::UsageAllocationContext::unique_identifier",
+    ),
+    (
+        "rust-observed-47cf1087bac177b3489f",
+        "rust-kmipkit-client",
+        "kmipkit_client::UsageAllocationContext::usage_limits_unit",
+    ),
+    (
         "rust-observed-78a9021054f86abbe4fb",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::CertifyResponse",
@@ -2361,5 +2397,15 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-118d3f5ae7dd70e84a17",
         "rust-kmipkit",
         "kmipkit::ClientBatchItem::query_with_limits",
+    ),
+    (
+        "T078:client_execute_guarded_protection_item:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_guarded_protection_item",
+    ),
+    (
+        "T078:client_execute_guarded_protection_item_with_asynchronous_indicator:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator",
     ),
 ];

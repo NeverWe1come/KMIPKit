@@ -781,6 +781,97 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
+    void usageAllocationContextGuardsJavaProtectionExecutionLocally() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("usage-guard-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("usage-guard-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+
+        byte[] allocationItemId = uniqueBatchItemId(0);
+        byte[] encryptionItemId = uniqueBatchItemId(1);
+        CodecLimits limits = CodecLimits.defaults();
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
+                usageAllocationResponseMessage(allocationItemId),
+                guardedEncryptResponseMessage(encryptionItemId)));
+        Thread peerThread = new Thread(peer, "kmipkit-java-usage-allocation-guard-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport)) {
+            try (ClientBatch allocationBatch = ClientBatch.create()) {
+                allocationBatch.add(ClientBatchItem.getUsageAllocation(
+                        UniqueIdentifier.textString("allocation-object"), 5L)
+                        .withUniqueBatchItemId(allocationItemId));
+                try (ClientBatchResponse allocationResponse = client.execute(allocationBatch, limits);
+                        ClientBatchItemResult allocation = allocationResponse.itemAt(0);
+                        UsageAllocationContext context =
+                                allocation.createUsageAllocationContext(5L, 0xfedc_ba98L)) {
+                    assertEquals("allocation-object", context.uniqueIdentifier().text());
+                    assertEquals(0xfedc_ba98L, context.usageLimitsUnit());
+                    assertEquals(5L, context.allocatedUnits());
+                    assertEquals(5L, context.availableUnits());
+                    assertEquals(0L, context.reservedUnits());
+
+                    try (TtlvStructure parameters = TtlvStructure.create();
+                            TtlvValue data = TtlvValue.ByteString(new byte[] {1, 2, 3}, limits);
+                            ClientBatchItem encryption = ClientBatchItem.encrypt(
+                                            UniqueIdentifier.textString("allocation-object"),
+                                            parameters, data, null, null, null, null, null)
+                                    .withUniqueBatchItemId(encryptionItemId);
+                            ClientBatchResponse guarded = client.executeGuardedProtectionItemWithAsynchronousIndicator(
+                                    context, encryption, 2L, 2L, limits);
+                            ClientBatchItemResult guardedItem = guarded.itemAt(0);
+                            ClientBatchItemResult.EncryptResponse encrypted =
+                                    guardedItem.encryptResponse().orElseThrow()) {
+                        assertEquals(0L, guardedItem.resultStatus());
+                        assertEquals("allocation-object", encrypted.uniqueIdentifier().text());
+                        assertEquals(2L, context.reservedUnits());
+                        assertEquals(3L, context.availableUnits());
+                    }
+
+                    try (TtlvStructure parameters = TtlvStructure.create();
+                            TtlvValue data = TtlvValue.ByteString(new byte[] {1}, limits);
+                            ClientBatchItem mismatched = ClientBatchItem.encrypt(
+                                    UniqueIdentifier.textString("another-object"),
+                                    parameters, data, null, null, null, null, null)) {
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItem(
+                                        context, mismatched, 1L, limits));
+                    }
+                    assertEquals(2L, context.reservedUnits());
+                    assertEquals(3L, context.availableUnits());
+                }
+            }
+        } finally {
+            listener.close();
+        }
+        assertEquals(2, peer.get(10, TimeUnit.SECONDS).size());
+    }
+
+    @Test
     void deriveKeyWireAssertionRequiresTheExactOrderedIdentifierList() throws Exception {
         byte[] textIdentifier = item(0x420094, 7,
                 "source-key".getBytes(StandardCharsets.UTF_8));
@@ -1753,6 +1844,42 @@ final class ClientFacadeTlsIntegrationTest {
             output.flush();
             return request;
         }
+    }
+
+    private static List<byte[]> serveResponses(SSLServerSocket listener, byte[]... responses)
+            throws Exception {
+        List<byte[]> requests = new ArrayList<>(responses.length);
+        for (byte[] response : responses) {
+            requests.add(serveOneResponse(listener, response));
+        }
+        return List.copyOf(requests);
+    }
+
+    private static byte[] usageAllocationResponseMessage(byte[] itemId) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "allocation-object".getBytes(StandardCharsets.UTF_8)));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 17), item(0x420093, 8, itemId),
+                enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] guardedEncryptResponseMessage(byte[] itemId) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "allocation-object".getBytes(StandardCharsets.UTF_8)),
+                item(0x4200c2, 8, "guarded-encrypt-result".getBytes(StandardCharsets.US_ASCII)));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x1f), item(0x420093, 8, itemId),
+                enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
     }
 
     private static FutureTask<byte[]> peerThatClosesAfterOneRequest(SSLServerSocket listener) {

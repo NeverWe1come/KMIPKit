@@ -155,6 +155,7 @@
     "KMIPKIT-0039-FR-005",
     "KMIPKIT-0039-FR-006",
     "KMIPKIT-0039-FR-008",
+    "KMIPKIT-0039-FR-009",
     "KMIPKIT-0042-FR-001",
     "KMIPKIT-0042-FR-002",
     "KMIPKIT-0042-FR-003",
@@ -218,7 +219,10 @@
     "KMIPKIT-REQ-SPEC-6.1.17-006",
     "KMIPKIT-REQ-SPEC-6.1.19-001",
     "KMIPKIT-REQ-SPEC-6.1.19-002",
+    "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+    "KMIPKIT-REQ-SPEC-6.1.23-001-002",
     "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.23-002-002",
     "KMIPKIT-REQ-SPEC-6.1.25-001",
     "KMIPKIT-REQ-SPEC-6.1.25-004",
     "KMIPKIT-REQ-SPEC-6.1.25-006",
@@ -1741,6 +1745,44 @@
       "python": {
         "module": "kmipkit.extensions",
         "name": "SplitKeyReference"
+      }
+    },
+    {
+      "id": "UsageAllocationContext",
+      "kind": "opaque-handle",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client",
+        "name": "UsageAllocationContext",
+        "owner": "client"
+      },
+      "c": {
+        "name": "kmipkit_usage_allocation_context_t",
+        "kind": "opaque-handle",
+        "handleKind": "usage_allocation_context",
+        "ownership": "library-owned",
+        "releaseFunction": "kmipkit_usage_allocation_context_release"
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "name": "UsageAllocationContext"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "name": "UsageAllocationContext"
       }
     }
   ],
@@ -21905,6 +21947,838 @@
           "internal"
         ],
         "returnType": "ttlv.Structure | None"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "usage_allocation_context_create",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::UsageAllocationContext",
+        "name": "from_successful_allocation",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "response",
+            "type": "&GetUsageAllocationResponse"
+          },
+          {
+            "name": "requested_units",
+            "type": "i64"
+          },
+          {
+            "name": "usage_limits_unit",
+            "type": "u32"
+          }
+        ],
+        "returnType": "Result<UsageAllocationContext, UsageAllocationContextError>"
+      },
+      "c": {
+        "symbol": "kmipkit_usage_allocation_context_create",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "requested_units",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "usage_limits_unit",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "out_context",
+            "kind": "output",
+            "type": "kmipkit_usage_allocation_context_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Creates local accounting only from a live successful Get Usage Allocation result and the caller supplied exact count and raw unit."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "createUsageAllocationContext",
+        "parameters": [
+          {
+            "name": "requestedUnits",
+            "type": "long"
+          },
+          {
+            "name": "usageLimitsUnit",
+            "type": "int"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseCreateUsageAllocationContext",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "UsageAllocationContext"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "BatchItemResult.create_usage_allocation_context",
+        "parameters": [
+          {
+            "name": "requested_units",
+            "type": "int"
+          },
+          {
+            "name": "usage_limits_unit",
+            "type": "int"
+          }
+        ],
+        "cffiSymbol": "kmipkit_usage_allocation_context_create",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "UsageAllocationContext"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "usage_allocation_context_usage_limits_unit",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::UsageAllocationContext",
+        "name": "usage_limits_unit",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "u32"
+      },
+      "c": {
+        "symbol": "kmipkit_usage_allocation_context_usage_limits_unit",
+        "parameters": [
+          {
+            "name": "context",
+            "kind": "handle",
+            "type": "kmipkit_usage_allocation_context_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_unit",
+            "kind": "output-scalar-pointer",
+            "type": "uint32_t *",
+            "valueType": "uint32_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Returns the caller supplied open Usage Limits Unit enumeration.",
+          "Local accounting is not evidence of remote consumption."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "UsageAllocationContext",
+        "method": "usageLimitsUnit",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextUsageLimitsUnit",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "int"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "UsageAllocationContext.usage_limits_unit",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_usage_allocation_context_usage_limits_unit",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "usage_allocation_context_allocated_units",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::UsageAllocationContext",
+        "name": "allocated_units",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "i64"
+      },
+      "c": {
+        "symbol": "kmipkit_usage_allocation_context_allocated_units",
+        "parameters": [
+          {
+            "name": "context",
+            "kind": "handle",
+            "type": "kmipkit_usage_allocation_context_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_units",
+            "kind": "output-scalar-pointer",
+            "type": "int64_t *",
+            "valueType": "int64_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Returns the exact positive caller supplied allocation count.",
+          "Local accounting is not evidence of remote consumption."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "UsageAllocationContext",
+        "method": "allocatedUnits",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextAllocatedUnits",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "long"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "UsageAllocationContext.allocated_units",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_usage_allocation_context_allocated_units",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "usage_allocation_context_available_units",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::UsageAllocationContext",
+        "name": "available_units",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "i64"
+      },
+      "c": {
+        "symbol": "kmipkit_usage_allocation_context_available_units",
+        "parameters": [
+          {
+            "name": "context",
+            "kind": "handle",
+            "type": "kmipkit_usage_allocation_context_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_units",
+            "kind": "output-scalar-pointer",
+            "type": "int64_t *",
+            "valueType": "int64_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Returns units not currently reserved through this context.",
+          "Local accounting is not evidence of remote consumption."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "UsageAllocationContext",
+        "method": "availableUnits",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextAvailableUnits",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "long"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "UsageAllocationContext.available_units",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_usage_allocation_context_available_units",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "usage_allocation_context_reserved_units",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::UsageAllocationContext",
+        "name": "reserved_units",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "i64"
+      },
+      "c": {
+        "symbol": "kmipkit_usage_allocation_context_reserved_units",
+        "parameters": [
+          {
+            "name": "context",
+            "kind": "handle",
+            "type": "kmipkit_usage_allocation_context_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_units",
+            "kind": "output-scalar-pointer",
+            "type": "int64_t *",
+            "valueType": "int64_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Returns units reserved through guarded calls in this context.",
+          "Local accounting is not evidence of remote consumption."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "UsageAllocationContext",
+        "method": "reservedUnits",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextReservedUnits",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "long"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "UsageAllocationContext.reserved_units",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_usage_allocation_context_reserved_units",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "int"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "usage_allocation_context_unique_identifier",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::UsageAllocationContext",
+        "name": "unique_identifier",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "&UniqueIdentifier"
+      },
+      "c": {
+        "symbol": "kmipkit_usage_allocation_context_unique_identifier",
+        "parameters": [
+          {
+            "name": "context",
+            "kind": "handle",
+            "type": "kmipkit_usage_allocation_context_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_identifier",
+            "kind": "output-value-pointer",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t",
+            "ownership": "none"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "documentation": [
+          "Returns the immutable server resolved identifier. Text bytes are borrowed from the context and remain valid until it is released."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "UsageAllocationContext",
+        "method": "uniqueIdentifier",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_usageAllocationContextUniqueIdentifier",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "UniqueIdentifierV1"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "UsageAllocationContext.unique_identifier",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_usage_allocation_context_unique_identifier",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "UniqueIdentifierV1"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_guarded_protection_item",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_guarded_protection_item",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "&mut UsageAllocationContext"
+          },
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "cost",
+            "type": "i64"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_guarded_protection_item",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "context",
+            "kind": "handle",
+            "type": "kmipkit_usage_allocation_context_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "item",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_item_t **",
+            "handleType": "kmipkit_client_batch_item_t",
+            "ownership": "consumed"
+          },
+          {
+            "name": "cost",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "documentation": [
+          "Executes one typed Encrypt, MAC, or Sign item after reserving the caller supplied cost.",
+          "Returns the standard one item batch result and preserves the original item metadata.",
+          "A reservation is released only when transport proves the request was not sent. Possibly sent, response started, and completed outcomes retain it; asynchronous Pending is returned without automatic Poll or retry."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeGuardedProtectionItem",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "UsageAllocationContext"
+          },
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "cost",
+            "type": "long"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecuteGuardedProtectionItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute_guarded_protection_item",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "UsageAllocationContext"
+          },
+          {
+            "name": "item",
+            "type": "BatchItem"
+          },
+          {
+            "name": "cost",
+            "type": "int"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_guarded_protection_item",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_execute_guarded_protection_item_with_asynchronous_indicator",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::Client",
+        "name": "execute_guarded_protection_item_with_asynchronous_indicator",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "&mut UsageAllocationContext"
+          },
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "cost",
+            "type": "i64"
+          },
+          {
+            "name": "asynchronous_indicator",
+            "type": "u32"
+          }
+        ],
+        "returnType": "Result<ClientBatchResponse, ClientError>"
+      },
+      "c": {
+        "symbol": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "context",
+            "kind": "handle",
+            "type": "kmipkit_usage_allocation_context_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "item",
+            "kind": "consumed-handle-slot",
+            "type": "kmipkit_client_batch_item_t **",
+            "handleType": "kmipkit_client_batch_item_t",
+            "ownership": "consumed"
+          },
+          {
+            "name": "cost",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "asynchronous_indicator",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "documentation": [
+          "Executes one typed Encrypt, MAC, or Sign item after reserving the caller supplied cost.",
+          "Returns the standard one item batch result and preserves the original item metadata.",
+          "A reservation is released only when transport proves the request was not sent. Possibly sent, response started, and completed outcomes retain it; asynchronous Pending is returned without automatic Poll or retry."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "Client",
+        "method": "executeGuardedProtectionItemWithAsynchronousIndicator",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "UsageAllocationContext"
+          },
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "cost",
+            "type": "long"
+          },
+          {
+            "name": "asynchronousIndicator",
+            "type": "int"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientExecuteGuardedProtectionItemWithAsynchronousIndicator",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "Client.execute_guarded_protection_item_with_asynchronous_indicator",
+        "parameters": [
+          {
+            "name": "context",
+            "type": "UsageAllocationContext"
+          },
+          {
+            "name": "item",
+            "type": "BatchItem"
+          },
+          {
+            "name": "cost",
+            "type": "int"
+          },
+          {
+            "name": "asynchronous_indicator",
+            "type": "int"
+          },
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport",
+          "server_result"
+        ],
+        "returnType": "BatchResult"
       },
       "ordering": "not-applicable"
     }
@@ -122393,98 +123267,329 @@
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::UsageAllocationContext",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-846c7e8e4d10b8dc94c6",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::UsageAllocationContext::allocated_units",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::allocated_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_allocated_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.allocatedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.allocated_units"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-70bea4859be837028cf6",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::UsageAllocationContext::available_units",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::available_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_available_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.availableUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.available_units"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-59309e8335631f4adb64",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::UsageAllocationContext::from_successful_allocation",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::from_successful_allocation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.createUsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.create_usage_allocation_context"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-b26618f68d2859c5fb7d",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::UsageAllocationContext::reserved_units",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::reserved_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_reserved_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.reservedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.reserved_units"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-509b7e0d293a9eb91417",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::UsageAllocationContext::unique_identifier",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.unique_identifier"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-47cf1087bac177b3489f",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::UsageAllocationContext::usage_limits_unit",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::usage_limits_unit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_usage_limits_unit"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.usageLimitsUnit"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.usage_limits_unit"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-abe45df4d674ac11b773",
@@ -271138,6 +272243,1510 @@
         "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs",
         "tools/api_manifest/tests/test_ping_query_parity_manifest.py"
       ]
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_type:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_usage_allocation_context_t",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_type:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.UsageAllocationContext",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_create:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_usage_allocation_context_create",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::from_successful_allocation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.createUsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.create_usage_allocation_context"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_create:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.createUsageAllocationContext",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::from_successful_allocation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.createUsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.create_usage_allocation_context"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_create:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchItemResult.create_usage_allocation_context",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::from_successful_allocation"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_create"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.createUsageAllocationContext"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.create_usage_allocation_context"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_usage_limits_unit:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_usage_allocation_context_usage_limits_unit",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::usage_limits_unit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_usage_limits_unit"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.usageLimitsUnit"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.usage_limits_unit"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_usage_limits_unit:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext.usageLimitsUnit",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::usage_limits_unit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_usage_limits_unit"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.usageLimitsUnit"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.usage_limits_unit"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_usage_limits_unit:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.UsageAllocationContext.usage_limits_unit",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::usage_limits_unit"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_usage_limits_unit"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.usageLimitsUnit"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.usage_limits_unit"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_allocated_units:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_usage_allocation_context_allocated_units",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::allocated_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_allocated_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.allocatedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.allocated_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_allocated_units:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext.allocatedUnits",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::allocated_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_allocated_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.allocatedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.allocated_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_allocated_units:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.UsageAllocationContext.allocated_units",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::allocated_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_allocated_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.allocatedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.allocated_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_available_units:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_usage_allocation_context_available_units",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::available_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_available_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.availableUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.available_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_available_units:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext.availableUnits",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::available_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_available_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.availableUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.available_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_available_units:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.UsageAllocationContext.available_units",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::available_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_available_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.availableUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.available_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_reserved_units:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_usage_allocation_context_reserved_units",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::reserved_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_reserved_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.reservedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.reserved_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_reserved_units:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext.reservedUnits",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::reserved_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_reserved_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.reservedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.reserved_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_reserved_units:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.UsageAllocationContext.reserved_units",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::reserved_units"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_reserved_units"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.reservedUnits"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.reserved_units"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_unique_identifier:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_usage_allocation_context_unique_identifier",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_unique_identifier:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext.uniqueIdentifier",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_unique_identifier:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.UsageAllocationContext.unique_identifier",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext::unique_identifier"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_unique_identifier"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.uniqueIdentifier"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.unique_identifier"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item:rust",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::Client::execute_guarded_protection_item",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_guarded_protection_item",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Client.executeGuardedProtectionItem",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.execute_guarded_protection_item",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item_with_asynchronous_indicator:rust",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item_with_asynchronous_indicator:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item_with_asynchronous_indicator:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:client_execute_guarded_protection_item_with_asynchronous_indicator:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_release:foreign",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_usage_allocation_context_release",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.close"
+        },
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_close:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext.close",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.close"
+        }
+      }
+    },
+    {
+      "declarationId": "T078:usage_allocation_context_close:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.UsageAllocationContext.close",
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::UsageAllocationContext"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_usage_allocation_context_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.UsageAllocationContext.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.UsageAllocationContext.close"
+        }
+      }
     }
   ],
   "approvedExclusions": [
@@ -281808,6 +284417,81 @@
         ],
         "python": [
           "kmipkit.errors.ClientExecutionError.response_ttlv"
+        ]
+      }
+    },
+    {
+      "capabilityId": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0043",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::Client::execute_guarded_protection_item",
+          "kmipkit_client::Client::execute_guarded_protection_item_with_asynchronous_indicator",
+          "kmipkit_client::UsageAllocationContext",
+          "kmipkit_client::UsageAllocationContext::allocated_units",
+          "kmipkit_client::UsageAllocationContext::available_units",
+          "kmipkit_client::UsageAllocationContext::from_successful_allocation",
+          "kmipkit_client::UsageAllocationContext::reserved_units",
+          "kmipkit_client::UsageAllocationContext::unique_identifier",
+          "kmipkit_client::UsageAllocationContext::usage_limits_unit"
+        ],
+        "c": [
+          "kmipkit_client_execute_guarded_protection_item",
+          "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator",
+          "kmipkit_usage_allocation_context_allocated_units",
+          "kmipkit_usage_allocation_context_available_units",
+          "kmipkit_usage_allocation_context_create",
+          "kmipkit_usage_allocation_context_release",
+          "kmipkit_usage_allocation_context_reserved_units",
+          "kmipkit_usage_allocation_context_t",
+          "kmipkit_usage_allocation_context_unique_identifier",
+          "kmipkit_usage_allocation_context_usage_limits_unit"
+        ],
+        "java": [
+          "org.kmipkit.extensions.Client.executeGuardedProtectionItem",
+          "org.kmipkit.extensions.Client.executeGuardedProtectionItemWithAsynchronousIndicator",
+          "org.kmipkit.extensions.ClientBatchItemResult.createUsageAllocationContext",
+          "org.kmipkit.extensions.UsageAllocationContext",
+          "org.kmipkit.extensions.UsageAllocationContext.allocatedUnits",
+          "org.kmipkit.extensions.UsageAllocationContext.availableUnits",
+          "org.kmipkit.extensions.UsageAllocationContext.close",
+          "org.kmipkit.extensions.UsageAllocationContext.reservedUnits",
+          "org.kmipkit.extensions.UsageAllocationContext.uniqueIdentifier",
+          "org.kmipkit.extensions.UsageAllocationContext.usageLimitsUnit"
+        ],
+        "python": [
+          "kmipkit.client.BatchItemResult.create_usage_allocation_context",
+          "kmipkit.client.Client.execute_guarded_protection_item",
+          "kmipkit.client.Client.execute_guarded_protection_item_with_asynchronous_indicator",
+          "kmipkit.client.UsageAllocationContext",
+          "kmipkit.client.UsageAllocationContext.allocated_units",
+          "kmipkit.client.UsageAllocationContext.available_units",
+          "kmipkit.client.UsageAllocationContext.close",
+          "kmipkit.client.UsageAllocationContext.reserved_units",
+          "kmipkit.client.UsageAllocationContext.unique_identifier",
+          "kmipkit.client.UsageAllocationContext.usage_limits_unit"
         ]
       }
     }

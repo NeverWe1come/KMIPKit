@@ -103,6 +103,74 @@ def test_usage_allocation_context_cannot_be_created_from_a_copied_response_dto()
     response.close()
 
 
+def test_usage_allocation_context_uses_live_native_result_and_owns_its_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 22)
+    context_pointer = ffi.cast("kmipkit_usage_allocation_context_t *", 23)
+    result = client.BatchItemResult(
+        client.BatchOutcome.COMPLETED, 0, None, None, None, operation=0x11
+    )
+    native_response = client._wrap_owned_handle(
+        client._ClientBatchItemResponse, response_pointer
+    )
+    object.__setattr__(result, "_native_usage_allocation_response", native_response)
+    batch_response_pointer = ffi.cast("kmipkit_client_batch_response_t *", 24)
+    batch_result = client._wrap_owned_handle(
+        client.BatchResult, batch_response_pointer, (result,)
+    )
+    storage = ffi.new("uint8_t[]", b"allocation-object")
+    calls: list[tuple[object, int, int]] = []
+    released: list[object] = []
+
+    def create(item: object, requested: int, unit: int, output: object) -> int:
+        calls.append((item, requested, unit))
+        output[0] = context_pointer  # type: ignore[index]
+        return 0
+
+    def identifier(_context: object, output: object) -> int:
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        output.text_data = storage  # type: ignore[attr-defined]
+        output.text_length = len(b"allocation-object")  # type: ignore[attr-defined]
+        return 0
+
+    def scalar(value: int):
+        def read(_context: object, output: object) -> int:
+            output[0] = value  # type: ignore[index]
+            return 0
+
+        return read
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_usage_allocation_context_create=create,
+            kmipkit_usage_allocation_context_usage_limits_unit=scalar(0xFEDC_BA98),
+            kmipkit_usage_allocation_context_allocated_units=scalar(9),
+            kmipkit_usage_allocation_context_available_units=scalar(9),
+            kmipkit_usage_allocation_context_reserved_units=scalar(0),
+            kmipkit_usage_allocation_context_unique_identifier=identifier,
+            kmipkit_usage_allocation_context_release=lambda value: released.append(value),
+            kmipkit_client_batch_item_response_release=lambda value: released.append(value),
+            kmipkit_client_batch_response_release=lambda value: released.append(value),
+        ),
+    )
+
+    context = result.create_usage_allocation_context(9, 0xFEDC_BA98)
+    assert calls == [(response_pointer, 9, 0xFEDC_BA98)]
+    assert context.usage_limits_unit == 0xFEDC_BA98
+    assert context.allocated_units == 9
+    assert context.available_units == 9
+    assert context.reserved_units == 0
+    assert context.unique_identifier == extensions.UniqueIdentifier.text_string("allocation-object")
+    batch_result.close()
+    assert released == [response_pointer, batch_response_pointer]
+    assert context.allocated_units == 9
+    context.close()
+    assert released == [response_pointer, batch_response_pointer, context_pointer]
+
+
 def test_get_usage_allocation_response_allows_absent_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

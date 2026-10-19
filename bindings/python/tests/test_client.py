@@ -2684,6 +2684,116 @@ def test_client_execute_consumes_batch_and_returns_owned_empty_response(
         handle.close()
 
 
+@pytest.mark.parametrize(
+    ("indicator", "expected_symbol"),
+    (
+        (None, "kmipkit_client_execute_guarded_protection_item"),
+        (
+            0xFEDC_BA98,
+            "kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator",
+        ),
+    ),
+)
+def test_guarded_protection_facade_consumes_item_and_preserves_cost_and_indicator(
+    monkeypatch: pytest.MonkeyPatch,
+    indicator: int | None,
+    expected_symbol: str,
+) -> None:
+    native_client_pointer = client.ffi.cast("kmipkit_client_t *", 31)
+    native_context_pointer = client.ffi.cast(
+        "kmipkit_usage_allocation_context_t *", 32
+    )
+    native_response_pointer = client.ffi.cast(
+        "kmipkit_client_batch_response_t *", 33
+    )
+    handle = _wrap_owned_handle(client.Client, native_client_pointer)
+    context = _wrap_owned_handle(client.UsageAllocationContext, native_context_pointer)
+    item = extensions.client_batch_item_get_usage_allocation(None, 3)
+    limits = ttlv.codec_limits_defaults()
+    observed: list[tuple[object, ...]] = []
+    released: list[object] = []
+
+    def execute(*arguments: object) -> int:
+        if indicator is None:
+            raw_client, raw_context, item_slot, cost, _limits, response_out = arguments
+            raw_indicator = None
+        else:
+            raw_client, raw_context, item_slot, cost, raw_indicator, _limits, response_out = arguments
+        native_item = item_slot[0]  # type: ignore[index]
+        observed.append((raw_client, raw_context, native_item, cost, raw_indicator))
+        extensions._client_lib.kmipkit_client_batch_item_release(native_item)
+        item_slot[0] = client.ffi.NULL  # type: ignore[index]
+        response_out[0] = native_response_pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            **{
+                expected_symbol: execute,
+                "kmipkit_client_release": lambda value: released.append(value),
+                "kmipkit_usage_allocation_context_release": lambda value: released.append(value),
+            }
+        ),
+    )
+    monkeypatch.setattr(client, "_batch_result", lambda value: value)
+
+    result = (
+        handle.execute_guarded_protection_item(context, item, 9, limits)
+        if indicator is None
+        else handle.execute_guarded_protection_item_with_asynchronous_indicator(
+            context, item, 9, indicator, limits
+        )
+    )
+
+    assert result == native_response_pointer
+    assert len(observed) == 1
+    assert observed[0][:2] == (native_client_pointer, native_context_pointer)
+    assert observed[0][3:] == (9, indicator)
+    assert item.closed
+    context.close()
+    handle.close()
+    limits.close()
+    assert released == [native_context_pointer, native_client_pointer]
+
+
+@pytest.mark.parametrize("cost", (0, -1))
+def test_guarded_protection_rejects_nonpositive_cost_before_consuming_item(
+    monkeypatch: pytest.MonkeyPatch, cost: int
+) -> None:
+    native_client_pointer = client.ffi.cast("kmipkit_client_t *", 41)
+    native_context_pointer = client.ffi.cast(
+        "kmipkit_usage_allocation_context_t *", 42
+    )
+    handle = _wrap_owned_handle(client.Client, native_client_pointer)
+    context = _wrap_owned_handle(client.UsageAllocationContext, native_context_pointer)
+    item = extensions.client_batch_item_get_usage_allocation(None, 3)
+    limits = ttlv.codec_limits_defaults()
+    released: list[object] = []
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_release=lambda value: released.append(value),
+            kmipkit_usage_allocation_context_release=lambda value: released.append(value),
+            kmipkit_client_execute_guarded_protection_item=lambda *_args: pytest.fail(
+                "invalid local cost must be rejected before native execution"
+            ),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        handle.execute_guarded_protection_item(context, item, cost, limits)
+
+    assert not item.closed
+    item.close()
+    context.close()
+    handle.close()
+    limits.close()
+    assert released == [native_context_pointer, native_client_pointer]
+
+
 def test_response_span_rejects_inconsistent_absence_and_null_nonempty_data(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

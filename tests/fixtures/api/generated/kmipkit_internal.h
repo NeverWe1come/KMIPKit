@@ -65,6 +65,7 @@ typedef struct kmipkit_protocol_version_v1_t kmipkit_protocol_version_v1_t;
 typedef struct kmipkit_unique_identifier_v1_t kmipkit_unique_identifier_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v2_t kmipkit_client_batch_item_metadata_v2_t;
 typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
+typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -228,6 +229,7 @@ void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *hand
 void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t *handle);
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
+void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -840,6 +842,46 @@ int32_t kmipkit_client_batch_item_query_with_limits(kmipkit_codec_limits_t * lim
  */
 /* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
 int32_t kmipkit_client_batch_item_response_query_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* Creates local accounting only from a live successful Get Usage Allocation result and the caller supplied exact count and raw unit.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_create(kmipkit_client_batch_item_response_t * item, int64_t requested_units, uint32_t usage_limits_unit, kmipkit_usage_allocation_context_t ** out_context);
+/* Returns the caller supplied open Usage Limits Unit enumeration.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_usage_limits_unit(kmipkit_usage_allocation_context_t * context, uint32_t * out_unit);
+/* Returns the exact positive caller supplied allocation count.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_allocated_units(kmipkit_usage_allocation_context_t * context, int64_t * out_units);
+/* Returns units not currently reserved through this context.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_available_units(kmipkit_usage_allocation_context_t * context, int64_t * out_units);
+/* Returns units reserved through guarded calls in this context.
+ * Local accounting is not evidence of remote consumption.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_reserved_units(kmipkit_usage_allocation_context_t * context, int64_t * out_units);
+/* Returns the immutable server resolved identifier. Text bytes are borrowed from the context and remain valid until it is released.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_usage_allocation_context_unique_identifier(kmipkit_usage_allocation_context_t * context, kmipkit_unique_identifier_v1_t * out_identifier);
+/* Executes one typed Encrypt, MAC, or Sign item after reserving the caller supplied cost.
+ * Returns the standard one item batch result and preserves the original item metadata.
+ * A reservation is released only when transport proves the request was not sent. Possibly sent, response started, and completed outcomes retain it; asynchronous Pending is returned without automatic Poll or retry.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_client_execute_guarded_protection_item(kmipkit_client_t * client, kmipkit_usage_allocation_context_t * context, kmipkit_client_batch_item_t ** item, int64_t cost, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* Executes one typed Encrypt, MAC, or Sign item after reserving the caller supplied cost.
+ * Returns the standard one item batch result and preserves the original item metadata.
+ * A reservation is released only when transport proves the request was not sent. Possibly sent, response started, and completed outcomes retain it; asynchronous Pending is returned without automatic Poll or retry.
+ */
+/* KMIPKIT-0039-FR-002, KMIPKIT-0039-FR-004, KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-REQ-SPEC-6.1.23-001-001, KMIPKIT-REQ-SPEC-6.1.23-001-002, KMIPKIT-REQ-SPEC-6.1.23-002-001, KMIPKIT-REQ-SPEC-6.1.23-002-002 */
+int32_t kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(kmipkit_client_t * client, kmipkit_usage_allocation_context_t * context, kmipkit_client_batch_item_t ** item, int64_t cost, uint32_t asynchronous_indicator, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

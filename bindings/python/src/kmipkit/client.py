@@ -21,6 +21,7 @@ from urllib.parse import urlsplit
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
+from ._ffi import ffi as _base_ffi
 from ._handles import (
     NativeHandle,
     _NATIVE_CALL_LOCK,
@@ -821,9 +822,13 @@ class Batch(_ClientHandle):
         return self
 
 
+class _BatchItemResultNativeState:
+    __slots__ = ("_native_usage_allocation_response",)
+
+
 @dataclass(frozen=True, slots=True)
-class BatchItemResult:
-    """Owned, payload-free common metadata for one ordered batch response item."""
+class BatchItemResult(_BatchItemResultNativeState):
+    """Copied metadata plus any live native result handle required by an approved capability."""
 
     outcome: BatchOutcome | int
     result_status: int
@@ -871,6 +876,9 @@ class BatchItemResult:
     ping_response: bool | None = None
     query_response: ttlv.Structure | None = field(default=None, repr=False)
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "_native_usage_allocation_response", None)
+
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
         """Return the versioned common metadata while preserving exact message presence."""
@@ -881,6 +889,31 @@ class BatchItemResult:
             self.result_reason,
             self.result_message,
         )
+
+    def create_usage_allocation_context(
+        self, requested_units: int, usage_limits_unit: int
+    ) -> UsageAllocationContext:
+        """Create local accounting only from this live successful native allocation result."""
+        native_response = self._native_usage_allocation_response
+        if (
+            self.operation != 0x11
+            or self.result_status != 0
+            or self.outcome != BatchOutcome.COMPLETED
+            or native_response is None
+        ):
+            errors.raise_for_status(4)
+        requested = _integer_range(requested_units, 1, _MAX_I64)
+        unit = _unsigned(usage_limits_unit, 32)
+        output = ffi.new("kmipkit_usage_allocation_context_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_usage_allocation_context_create(
+                    native_response._pointer(), requested, unit, output
+                )
+            )
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        return _wrap_owned_handle(UsageAllocationContext, output[0])
 
     def get_response(self) -> GetResponse | None:
         """Return Get's typed result and its owned opaque Any Object, when available."""
@@ -1339,6 +1372,77 @@ class BatchResult(_ClientHandle):
         super().__init__(handle, _token=_token)
         self.items = items
 
+    def close(self) -> None:
+        with _NATIVE_CALL_LOCK:
+            for item in self.items:
+                native_response = item._native_usage_allocation_response
+                if native_response is not None:
+                    native_response.close()
+            super().close()
+
+
+class UsageAllocationContext(_ClientHandle):
+    """Single-owner local usage accounting; reservation does not prove remote consumption."""
+
+    _release_name = "kmipkit_usage_allocation_context_release"
+
+    @property
+    def usage_limits_unit(self) -> int:
+        return _client_scalar(
+            "uint32_t", lib.kmipkit_usage_allocation_context_usage_limits_unit, self
+        )
+
+    @property
+    def allocated_units(self) -> int:
+        return _client_scalar(
+            "int64_t", lib.kmipkit_usage_allocation_context_allocated_units, self
+        )
+
+    @property
+    def available_units(self) -> int:
+        return _client_scalar(
+            "int64_t", lib.kmipkit_usage_allocation_context_available_units, self
+        )
+
+    @property
+    def reserved_units(self) -> int:
+        return _client_scalar(
+            "int64_t", lib.kmipkit_usage_allocation_context_reserved_units, self
+        )
+
+    @property
+    def unique_identifier(self) -> extensions.UniqueIdentifier:
+        identifier = ffi.new("kmipkit_unique_identifier_v1_t *")
+        identifier.struct_size = ffi.sizeof("kmipkit_unique_identifier_v1_t")
+        identifier.abi_version = 1
+        with _NATIVE_CALL_LOCK:
+            _raise_abi_status(
+                lib.kmipkit_usage_allocation_context_unique_identifier(
+                    self._pointer(), identifier
+                )
+            )
+            kind = int(identifier.kind)
+            if kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
+                if identifier.text_length > _MAX_INPUT_BYTES or (
+                    identifier.text_length and identifier.text_data == ffi.NULL
+                ):
+                    errors.raise_for_status(4)
+                encoded = (
+                    bytes(ffi.buffer(identifier.text_data, int(identifier.text_length)))
+                    if identifier.text_length
+                    else b""
+                )
+                try:
+                    text = encoded.decode("utf-8", errors="strict")
+                except UnicodeDecodeError:
+                    errors.raise_for_status(4)
+                return extensions.UniqueIdentifier.text_string(text)
+            if kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
+                return extensions.UniqueIdentifier.enumeration(int(identifier.enumeration_value))
+            if kind == int(extensions.UniqueIdentifierKind.INTEGER):
+                return extensions.UniqueIdentifier.integer(int(identifier.integer_value))
+            errors.raise_for_status(4)
+
 
 class Client(_ClientHandle):
     """Production client constructed only from validated configuration records."""
@@ -1481,6 +1585,97 @@ class Client(_ClientHandle):
                 errors.raise_for_status(7)
             return _batch_result(response_output[0])
 
+    def execute_guarded_protection_item(
+        self,
+        context: UsageAllocationContext,
+        item: extensions.ClientBatchItem,
+        cost: int,
+        limits: ttlv.CodecLimits,
+    ) -> BatchResult:
+        """Execute one typed Encrypt, MAC, or Sign item under local usage accounting."""
+        return self._execute_guarded_protection_item(
+            context, item, cost, None, limits
+        )
+
+    def execute_guarded_protection_item_with_asynchronous_indicator(
+        self,
+        context: UsageAllocationContext,
+        item: extensions.ClientBatchItem,
+        cost: int,
+        asynchronous_indicator: int,
+        limits: ttlv.CodecLimits,
+    ) -> BatchResult:
+        """Execute one guarded protection item with an explicit raw KMIP indicator."""
+        indicator = _unsigned(asynchronous_indicator, 32)
+        return self._execute_guarded_protection_item(
+            context, item, cost, indicator, limits
+        )
+
+    def _execute_guarded_protection_item(
+        self,
+        context: UsageAllocationContext,
+        item: extensions.ClientBatchItem,
+        cost: int,
+        asynchronous_indicator: int | None,
+        limits: ttlv.CodecLimits,
+    ) -> BatchResult:
+        if (
+            not isinstance(context, UsageAllocationContext)
+            or not isinstance(item, extensions.ClientBatchItem)
+            or not isinstance(limits, ttlv.CodecLimits)
+        ):
+            errors.raise_for_status(4)
+        raw_cost = _integer_range(cost, 1, _MAX_I64)
+        response_output = ffi.new("kmipkit_client_batch_response_t **")
+        with _NATIVE_CALL_LOCK:
+            item._acquire_ownership_lock()
+            try:
+                client_pointer = self._pointer()
+                context_pointer = context._pointer()
+                limits_pointer = ffi.cast(
+                    "kmipkit_codec_limits_t *", limits._pointer()
+                )
+                original = item._pointer()
+                item_slot = ffi.new("kmipkit_client_batch_item_t **")
+                item_slot[0] = ffi.cast(
+                    "kmipkit_client_batch_item_t *",
+                    int(_base_ffi.cast("uintptr_t", original)),
+                )
+                original, owner = item._take()
+                try:
+                    if asynchronous_indicator is None:
+                        status = lib.kmipkit_client_execute_guarded_protection_item(
+                            client_pointer,
+                            context_pointer,
+                            item_slot,
+                            raw_cost,
+                            limits_pointer,
+                            response_output,
+                        )
+                    else:
+                        status = lib.kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(
+                            client_pointer,
+                            context_pointer,
+                            item_slot,
+                            raw_cost,
+                            asynchronous_indicator,
+                            limits_pointer,
+                            response_output,
+                        )
+                except (OverflowError, TypeError, ValueError):
+                    item._restore(original, owner)
+                    raise errors.InvalidInputError() from None
+                if item_slot[0] != ffi.NULL:
+                    item._restore(original, owner)
+                if status == 0 and item_slot[0] != ffi.NULL:
+                    errors.raise_for_status(7)
+                _raise_client_status(status)
+            finally:
+                item._release_ownership_lock()
+        if response_output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        return _batch_result(response_output[0])
+
 
 def _batch_result(handle: Any) -> BatchResult:
     response = _wrap_owned_handle(BatchResult, handle, ())
@@ -1502,6 +1697,7 @@ def _batch_result(handle: Any) -> BatchResult:
             if item_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
             item = _wrap_owned_handle(_ClientBatchItemResponse, item_output[0])
+            keep_item_handle = False
             try:
                 metadata = ffi.new("kmipkit_client_batch_item_metadata_v2_t *")
                 metadata.struct_size = ffi.sizeof(
@@ -1640,8 +1836,7 @@ def _batch_result(handle: Any) -> BatchResult:
                     sign_response,
                     signature_verify_response,
                 ) = cryptographic_responses
-                items.append(
-                    BatchItemResult(
+                result = BatchItemResult(
                         outcome,
                         int(metadata.result_status),
                         result_reason,
@@ -1680,18 +1875,37 @@ def _batch_result(handle: Any) -> BatchResult:
                         ping_response=ping_response,
                         query_response=query_response,
                     )
-                )
+                items.append(result)
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x11
+                ):
+                    object.__setattr__(result, "_native_usage_allocation_response", item)
+                    keep_item_handle = True
             finally:
-                item.close()
+                if not keep_item_handle:
+                    item.close()
         response.items = tuple(items)
         return response
     except Exception:
+        for item in items:
+            native_response = item._native_usage_allocation_response
+            if native_response is not None:
+                native_response.close()
         response.close()
         raise
 
 
 class _ClientBatchItemResponse(_ClientHandle):
     _release_name = "kmipkit_client_batch_item_response_release"
+
+
+def _client_scalar(c_type: str, function: Any, handle: _ClientHandle) -> int:
+    output = ffi.new(f"{c_type} *")
+    with _NATIVE_CALL_LOCK:
+        _raise_abi_status(function(handle._pointer(), output))
+    return int(output[0])
 
 
 def _metadata_result_message(metadata: Any) -> bytes | None:
@@ -3213,4 +3427,5 @@ __all__ = [
     "TransportInput",
     "TrustKind",
     "TrustSource",
+    "UsageAllocationContext",
 ]

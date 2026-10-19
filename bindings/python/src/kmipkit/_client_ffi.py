@@ -32,6 +32,7 @@ ffi.cdef(
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
     typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
+    typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
     typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
     typedef struct kmipkit_register_request_t kmipkit_register_request_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
@@ -181,6 +182,40 @@ ffi.cdef(
         const kmipkit_request_options_v1_t *options,
         kmipkit_client_batch_response_t **out_response,
         kmipkit_ttlv_structure_t **out_error_response_ttlv);
+
+    int32_t kmipkit_usage_allocation_context_create(
+        kmipkit_client_batch_item_response_t *item,
+        int64_t requested_units,
+        uint32_t usage_limits_unit,
+        kmipkit_usage_allocation_context_t **out_context);
+    void kmipkit_usage_allocation_context_release(
+        kmipkit_usage_allocation_context_t *handle);
+    int32_t kmipkit_usage_allocation_context_usage_limits_unit(
+        kmipkit_usage_allocation_context_t *context, uint32_t *out_unit);
+    int32_t kmipkit_usage_allocation_context_allocated_units(
+        kmipkit_usage_allocation_context_t *context, int64_t *out_units);
+    int32_t kmipkit_usage_allocation_context_available_units(
+        kmipkit_usage_allocation_context_t *context, int64_t *out_units);
+    int32_t kmipkit_usage_allocation_context_reserved_units(
+        kmipkit_usage_allocation_context_t *context, int64_t *out_units);
+    int32_t kmipkit_usage_allocation_context_unique_identifier(
+        kmipkit_usage_allocation_context_t *context,
+        kmipkit_unique_identifier_v1_t *out_identifier);
+    int32_t kmipkit_client_execute_guarded_protection_item(
+        kmipkit_client_t *client,
+        kmipkit_usage_allocation_context_t *context,
+        kmipkit_client_batch_item_t **item,
+        int64_t cost,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_client_batch_response_t **out_response);
+    int32_t kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(
+        kmipkit_client_t *client,
+        kmipkit_usage_allocation_context_t *context,
+        kmipkit_client_batch_item_t **item,
+        int64_t cost,
+        uint32_t asynchronous_indicator,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_client_batch_response_t **out_response);
     void kmipkit_ttlv_structure_release(kmipkit_ttlv_structure_t *handle);
     void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
     int32_t kmipkit_client_batch_response_item_count(
