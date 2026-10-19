@@ -4610,6 +4610,9 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_usage_allocation_context(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -4689,6 +4692,24 @@ fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
     assert_eq!(
         result, 1,
         "the copied generic response must outlive its source item"
+    );
+}
+
+#[test]
+fn ffi_usage_allocation_context_survives_source_item_release_in_c() {
+    let item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        0x11,
+        b"usage-context-c-consumer",
+        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
+    );
+
+    // SAFETY: the compiled C consumer takes ownership of this live response-item handle.
+    let result = unsafe { kmipkit_client_abi_c_consumer_validate_usage_allocation_context(item) };
+
+    assert_eq!(
+        result, 1,
+        "C creates a context, releases its source item, then reads the copied metadata"
     );
 }
 
