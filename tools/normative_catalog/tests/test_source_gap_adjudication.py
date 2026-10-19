@@ -204,7 +204,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertIn("Table 76", gap["review_note"])
         self.assertIn("initial", gap["review_note"].lower())
 
-    def test_section_4_31_absent_link_may_is_a_client_capability_without_implementation_evidence(self) -> None:
+    def test_section_4_31_absent_link_may_has_scoped_register_evidence(self) -> None:
         catalog = _load_json(CATALOG_PATH)
         oracle = _load_json(ORACLE_PATH)
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
@@ -261,12 +261,22 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         )
         self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.31-002"])
         self.assertEqual(requirement["test_case_ids"], [])
-        self.assertEqual(requirement["implementation_refs"], [])
-        self.assertEqual(requirement["verification_refs"], [])
-        self.assertEqual(requirement["status"], "unassigned")
-        self.assertIn("inbound or outbound", requirement["review_note"])
+        self.assertEqual(
+            requirement["implementation_refs"],
+            ["crates/kmipkit-protocol/src/register.rs", "crates/kmipkit-client/src/execute.rs"],
+        )
+        self.assertEqual(
+            requirement["verification_refs"],
+            [
+                "crates/kmipkit-client/tests/unit/register_execution_tests.rs::"
+                "register_client_omits_signature_algorithm_when_x509_certificate_encodes_it"
+            ],
+        )
+        self.assertEqual(requirement["feature_spec"], "KMIPKIT-0036")
+        self.assertEqual(requirement["status"], "verified")
+        self.assertIn("Link remains absent", requirement["review_note"])
         self.assertIn("does not assign a message direction", requirement["review_note"])
-        self.assertIn("operation-specific Link requirements", requirement["review_note"])
+        self.assertIn("every operation", requirement["review_note"])
 
         clause = clauses["KMIPKIT-CLAUSE-SPEC-4.31-002"]
         self.assertEqual(clause["disposition"], "requirement")

@@ -27,6 +27,7 @@ OPERATIONS = {
 CHECK_ATTRIBUTE_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
 UNASSIGNED_RECERTIFY_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
 SCOPED_WRAPPED_ATTRIBUTES_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.43-005"
+ABSENT_LINK_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-4.31-002"
 CHECK_ATTRIBUTE_ELEMENT_IDS = [
     "KMIPKIT-ELEM-TAG-42002C",
     "KMIPKIT-ELEM-TAG-420049",
@@ -69,8 +70,9 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if record.get("feature_spec") == FEATURE_SPEC
         }
 
-        self.assertEqual(len(spec_requirement_ids), 41)
+        self.assertEqual(len(spec_requirement_ids), 42)
         self.assertIn("KMIPKIT-REQ-SPEC-3.2-001", spec_requirement_ids)
+        self.assertIn(ABSENT_LINK_REQUIREMENT_ID, spec_requirement_ids)
         self.assertEqual(len(rows), len(trace_requirement_ids))
         self.assertEqual(trace_requirement_ids, spec_requirement_ids)
         self.assertEqual(catalog_requirement_ids, spec_requirement_ids)
@@ -99,12 +101,21 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                 self.assertTrue(requirement["verification_refs"], row[0])
                 self.assertIn("wire preservation only", requirement["review_note"], row[0])
                 self.assertIn("server acceptance", requirement["review_note"], row[0])
+            elif row[0] == ABSENT_LINK_REQUIREMENT_ID:
+                self.assertEqual(row[3], "Register (US8)", row[0])
+                self.assertEqual(requirement["status"], "verified", row[0])
+                self.assertEqual(requirement["element_ids"], ["KMIPKIT-ELEM-ATTRIBUTE-LINK"], row[0])
+                self.assertTrue(requirement["implementation_refs"], row[0])
+                self.assertTrue(requirement["verification_refs"], row[0])
+                self.assertIn("Register", requirement["review_note"], row[0])
+                self.assertIn("server acceptance", requirement["review_note"], row[0])
             else:
                 self.assertIn(requirement["status"], {"verified", "scoped_verified"}, row[0])
             expected_operation_element_id = (
                 f"KMIPKIT-ELEM-OP-C2S-{row[3].split('(')[0].strip().upper().replace(' ', '-')}"
             )
-            self.assertIn(expected_operation_element_id, operation_element_ids, row[0])
+            if row[0] != ABSENT_LINK_REQUIREMENT_ID:
+                self.assertIn(expected_operation_element_id, operation_element_ids, row[0])
             if row[0] == CHECK_ATTRIBUTE_REQUIREMENT_ID:
                 self.assertEqual(row[3].split("(")[0].strip(), "Check", row[0])
                 self.assertEqual(requirement["element_ids"], CHECK_ATTRIBUTE_ELEMENT_IDS, row[0])
@@ -140,7 +151,7 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                     ],
                     row[0],
                 )
-            else:
+            elif row[0] != ABSENT_LINK_REQUIREMENT_ID:
                 self.assertEqual(len(requirement["element_ids"]), 1, row[0])
                 self.assertEqual(
                     requirement["element_ids"][0],

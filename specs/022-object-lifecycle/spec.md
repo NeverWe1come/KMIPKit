@@ -341,6 +341,7 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | Requirement ID | OASIS Specification section | Keyword | Client obligation or capability |
 | --- | --- | --- | --- |
 | KMIPKIT-REQ-SPEC-3.2-001 | §3.2 | OPTIONAL | A client may include the optional Attributes Structure associated with key material in Key Value. |
+| KMIPKIT-REQ-SPEC-4.31-002 | §4.31 | MAY | A client may represent a Managed Object without Link values when its associated cryptographic material is unavailable; current evidence covers Register serialization of an X.509 Certificate only. |
 | KMIPKIT-REQ-SPEC-6.1.35-001-001 | §6.1.35 | MAY | When Lease Time is zero, the client may use the object without a lease time limit. |
 | KMIPKIT-REQ-SPEC-6.1.35-001-002 | §6.1.35 | SHALL NOT | After a lease expires, do not use the cryptographic object until a new lease is obtained. |
 | KMIPKIT-REQ-SPEC-6.1.35-002 | §6.1.35 | MAY | A client may compare Last Change Date with its prior value to decide whether cached attributes need refreshing. |
