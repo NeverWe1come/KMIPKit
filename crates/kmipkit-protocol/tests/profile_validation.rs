@@ -107,11 +107,11 @@ fn profile_readiness_exposes_unresolved_applicability_blockers() {
         .find(|blocker| blocker.requirement_id().is_some() && blocker.source_clause_id().is_some())
         .expect("an unresolved blocker retains its stable requirement ID");
     assert_eq!(
-        Some("KMIPKIT-REQ-PROF-4.1.2-001"),
+        Some("KMIPKIT-REQ-PROF-4.1.2-005"),
         unresolved.requirement_id()
     );
     assert_eq!(
-        Some("KMIPKIT-CLAUSE-PROF-4.1.2-001"),
+        Some("KMIPKIT-CLAUSE-PROF-4.1.2-005"),
         unresolved.source_clause_id()
     );
     assert!(!readiness.runtime_validation_available());

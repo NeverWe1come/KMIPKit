@@ -3228,6 +3228,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "item": "TTLV",
                 "element_id": None,
                 "requirement_ids": [
+                    "KMIPKIT-REQ-SPEC-10.1.2-001",
+                    "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+                    "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+                    "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+                    "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+                    "KMIPKIT-REQ-SPEC-11.56-001",
                     "KMIPKIT-REQ-PROF-5.3.1-005",
                     "KMIPKIT-REQ-PROF-5.3.1-010",
                 ],
@@ -3236,6 +3242,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
                     "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
                     "KMIPKIT-CLAUSE-SPEC-10.2-001",
+                    "KMIPKIT-CLAUSE-SPEC-11.56-001",
                     "KMIPKIT-CLAUSE-PROF-5.3.1-005",
                     "KMIPKIT-CLAUSE-PROF-5.3.1-010",
                 ],
@@ -3294,9 +3301,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             if item["requirement_id"] == "KMIPKIT-REQ-PROF-3.2.3-001"
         )
         self.assertEqual(https_authenticity_requirement["scope_state"], "profile_conditional")
-        self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-001", requirement_ids)
-        self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.2-002-001", requirement_ids)
-        self.assertNotIn("KMIPKIT-REQ-SPEC-10.1.5-001-001", requirement_ids)
+        self.assertTrue(
+            {
+                "KMIPKIT-REQ-SPEC-10.1.2-001",
+                "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+                "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+                "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+                "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+                "KMIPKIT-REQ-SPEC-11.56-001",
+            }.issubset(requirement_ids)
+        )
         self.assertNotIn("KMIPKIT-REQ-PROF-5.3.1-011", requirement_ids)
 
         profiles_lines = (
@@ -3327,8 +3341,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
             "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
             "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+            "KMIPKIT-CLAUSE-SPEC-11.56-001",
         ):
-            self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [])
+            self.assertTrue(reviews[clause_id]["expected_client_requirement_ids"])
         informative_ttlv_context = next(
             item
             for item in catalog["source_clauses"]

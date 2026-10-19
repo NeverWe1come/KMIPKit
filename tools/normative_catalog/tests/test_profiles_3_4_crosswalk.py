@@ -51,6 +51,7 @@ CLIENT_IDS = {
     "KMIPKIT-REQ-PROF-3.2.3-001",
     "KMIPKIT-REQ-PROF-3.2.4-002",
     "KMIPKIT-REQ-PROF-3.2-001",
+    "KMIPKIT-REQ-PROF-4.1.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-007",
 }
 UNRESOLVED_IDS = {
@@ -58,7 +59,6 @@ UNRESOLVED_IDS = {
     "KMIPKIT-REQ-PROF-3-003",
     "KMIPKIT-REQ-PROF-3-004",
     "KMIPKIT-REQ-PROF-3-006",
-    "KMIPKIT-REQ-PROF-4.1.2-001",
     "KMIPKIT-REQ-PROF-4.1.2-005",
 }
 OUT_OF_SCOPE_IDS = {
@@ -134,7 +134,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         )
 
     def test_unresolved_and_out_of_scope_rows_are_not_client_obligations(self) -> None:
-        self.assertEqual(len(UNRESOLVED_IDS), 6)
+        self.assertEqual(len(UNRESOLVED_IDS), 5)
         self.assertEqual(len(OUT_OF_SCOPE_IDS), 5)
         self.assertFalse((UNRESOLVED_IDS | OUT_OF_SCOPE_IDS) & self.crosswalk.keys())
         reviewed_clause_ids = {
@@ -184,6 +184,9 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             )
             self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
             expected_actor = (
+                "unresolved"
+                if requirement_id == "KMIPKIT-REQ-PROF-4.1.2-001"
+                else
                 "client and server"
                 if requirement_id
                 in {
@@ -337,12 +340,12 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertNotIn(requirement_id, baseline["requirement_ids"])
         self.assertNotIn(requirement_id, self.crosswalk)
 
-    def test_profile_test_variations_do_not_create_client_runtime_scope(self) -> None:
-        """§§4.1 and 4.1.2 separate conformance-test variation from client obligations."""
+    def test_profile_test_variations_are_a_claimed_profile_evidence_gate(self) -> None:
+        """§4.1.2 is conditional conformance evidence, not unconditional runtime behavior."""
         expected_scope = {
             "KMIPKIT-REQ-PROF-4.1-001": ("unclear", "unclear", "out_of_scope"),
             "KMIPKIT-REQ-PROF-4.1-003": ("unclear", "unclear", "out_of_scope"),
-            "KMIPKIT-REQ-PROF-4.1.2-001": ("unclear", "unclear", "unclear"),
+            "KMIPKIT-REQ-PROF-4.1.2-001": ("client", "not_applicable", "profile_conditional"),
             "KMIPKIT-REQ-PROF-4.1.2-005": ("unclear", "unclear", "unclear"),
             "KMIPKIT-REQ-PROF-4.1.2-008": (
                 "not_applicable",
@@ -367,10 +370,26 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
             review = self.reviews[clause_id]
 
             self.assertEqual((requirement["role"], requirement["direction"], requirement["scope_state"]), (role, direction, scope))
-            self.assertEqual((clause["role"], clause["direction"], clause["scope_state"]), (role, direction, scope))
-            self.assertEqual(review["expected_client_requirement_ids"], [])
-            self.assertNotIn(requirement_id, self.crosswalk)
-            self.assertNotIn(requirement_id, baseline["requirement_ids"])
+            expected_clause_scope = (
+                ("unclear", "unclear", scope)
+                if requirement_id == "KMIPKIT-REQ-PROF-4.1.2-001"
+                else (role, direction, scope)
+            )
+            self.assertEqual(
+                (clause["role"], clause["direction"], clause["scope_state"]),
+                expected_clause_scope,
+            )
+            if requirement_id == "KMIPKIT-REQ-PROF-4.1.2-001":
+                self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+                self.assertIn(requirement_id, self.crosswalk)
+                self.assertIn(requirement_id, baseline["requirement_ids"])
+                self.assertEqual(requirement["status"], "unassigned")
+                self.assertEqual(requirement["implementation_refs"], [])
+                self.assertEqual(requirement["verification_refs"], [])
+            else:
+                self.assertEqual(review["expected_client_requirement_ids"], [])
+                self.assertNotIn(requirement_id, self.crosswalk)
+                self.assertNotIn(requirement_id, baseline["requirement_ids"])
             if clause["section"] == "4.1.2":
                 self.assertIn(clause_id, baseline["source_clause_ids"])
             else:
