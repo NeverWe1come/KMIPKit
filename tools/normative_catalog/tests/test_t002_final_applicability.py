@@ -44,6 +44,15 @@ FINAL_DISPOSITIONS = {
     **{requirement_id: "profile_conditional" for requirement_id in CONDITIONAL_REQUIREMENTS},
     SERVER_ONLY_REQUIREMENT: "server_only",
 }
+TTLV_CLIENT_REQUIREMENTS = {
+    "KMIPKIT-REQ-SPEC-10.1.2-001",
+    "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+    "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+    "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+    "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+    "KMIPKIT-REQ-SPEC-11.56-001",
+}
+PROFILE_VARIATION_REQUIREMENT = "KMIPKIT-REQ-PROF-4.1.2-001"
 
 
 def _load_json(path: Path) -> dict:
@@ -198,6 +207,73 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(
             modify_attribute["scope_state"], "profile_conditional"
         )
+
+    def test_normative_ttlv_rules_map_to_each_in_scope_client_profile(self) -> None:
+        """KMIP v2.1 TTLV encoding rules apply to every in-scope TTLV client profile."""
+        applicable_profile_ids = sorted(
+            profile["profile_id"]
+            for profile in self.oracle["profiles"]
+            if profile["role"] == "client"
+            and profile["applicability"] in {"client_1_0", "conditional"}
+        )
+        self.assertEqual(len(applicable_profile_ids), 15)
+
+        reviews = {
+            review["source_clause_id"]: review
+            for review in self.oracle["source_requirement_reviews"]
+        }
+        for requirement_id in TTLV_CLIENT_REQUIREMENTS:
+            requirement = self.requirements[requirement_id]
+            clause_id = requirement["source_clause_ids"][0]
+            review = reviews[clause_id]
+            obligation = next(
+                item
+                for item in review["source_obligations"]
+                if item["candidate_requirement_id"] == requirement_id
+            )
+            crosswalk = self.crosswalk[requirement_id]
+
+            self.assertEqual(requirement["scope_state"], "profile_conditional")
+            self.assertEqual(requirement["role"], "client")
+            self.assertEqual(requirement["direction"], "client_to_server")
+            self.assertEqual(requirement["profile_ids"], applicable_profile_ids)
+            self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-018")
+            self.assertEqual(review["expected_client_requirement_ids"], [requirement_id])
+            self.assertEqual(review["applies_to"], "all_client_profiles")
+            self.assertEqual(obligation["scope_disposition"], "profile_conditional")
+            self.assertEqual(obligation["project_actor_interpretation"], "client")
+            self.assertEqual(crosswalk["scope_state"], "client_1_0")
+            self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
+
+    def test_profile_section_4_1_2_is_a_shared_claimed_profile_evidence_gate(self) -> None:
+        """The Profile SHALL is conditional on a profile claim, not a new runtime rule."""
+        all_client_profile_ids = sorted(
+            profile["profile_id"]
+            for profile in self.oracle["profiles"]
+            if profile["role"] == "client"
+        )
+        requirement = self.requirements[PROFILE_VARIATION_REQUIREMENT]
+        crosswalk = self.crosswalk[PROFILE_VARIATION_REQUIREMENT]
+        review = next(
+            item
+            for item in self.oracle["source_requirement_reviews"]
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-PROF-4.1.2-001"
+        )
+        obligation = review["source_obligations"][0]
+
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "not_applicable")
+        self.assertEqual(requirement["profile_ids"], all_client_profile_ids)
+        self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-018")
+        self.assertEqual(review["expected_client_requirement_ids"], [PROFILE_VARIATION_REQUIREMENT])
+        self.assertEqual(review["applies_to"], "all_client_profiles")
+        self.assertEqual(obligation["scope_disposition"], "profile_conditional")
+        self.assertEqual(obligation["project_actor_interpretation"], "client")
+        self.assertEqual(crosswalk["scope_state"], "profile_conditional")
+        self.assertEqual(crosswalk["applies_to"], "all_client_profiles")
+        self.assertIn("shared", crosswalk["review_note"].casefold())
+        self.assertIn("evidence", crosswalk["review_note"].casefold())
 
 
 if __name__ == "__main__":
