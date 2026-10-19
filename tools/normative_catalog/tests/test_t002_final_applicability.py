@@ -112,7 +112,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                 ))
         self.assertEqual(actor_mismatches, [])
 
-    def test_actor_interpretation_and_specific_source_resolutions_are_recorded(self) -> None:
+    def test_client_actor_interpretation_is_explicit_for_conditional_rows(self) -> None:
         missing_project_rationale = [
             requirement_id
             for requirement_id in CONDITIONAL_REQUIREMENTS
@@ -121,6 +121,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         ]
         self.assertEqual(missing_project_rationale, [])
 
+    def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         deactivation_rows = [
             self.crosswalk[requirement_id]
             for requirement_id in (
@@ -130,16 +131,34 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         ]
         self.assertTrue(all("deletable by client: no" in row["review_note"].casefold()
                             for row in deactivation_rows))
+        self.assertTrue(all("table 64" in row["review_note"].casefold()
+                            and "table 63" not in row["review_note"].casefold()
+                            for row in deactivation_rows))
         self.assertTrue(all("pre-active" in row["review_note"].casefold()
                             and "active" in row["review_note"].casefold()
                             for row in deactivation_rows))
 
+    def test_modify_attribute_keeps_existing_id_and_client_request_context(self) -> None:
         modify_attribute = self.crosswalk["KMIPKIT-REQ-SPEC-6.1.34-001-003"]
         self.assertEqual(modify_attribute["source_section"], "6.1.34")
         self.assertEqual(modify_attribute["source_obligation_order"], 4)
         self.assertEqual(
             self.requirements["KMIPKIT-REQ-SPEC-6.1.34-001-003"]["direction"],
             "client_to_server",
+        )
+        modify_review = next(
+            review for review in self.oracle["source_requirement_reviews"]
+            if review["source_section"] == "6.1.34"
+        )
+        modify_candidate_ids = {
+            obligation["candidate_requirement_id"]
+            for obligation in modify_review["source_obligations"]
+            if obligation["candidate_requirement_id"] is not None
+        }
+        self.assertIn("KMIPKIT-REQ-SPEC-6.1.34-001-003", modify_candidate_ids)
+        self.assertFalse(
+            any("6.1.34" in requirement_id and requirement_id.endswith("001-005")
+                for requirement_id in self.requirements)
         )
         self.assertEqual(
             modify_attribute["scope_state"], "profile_conditional"
