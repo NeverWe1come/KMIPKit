@@ -14,7 +14,7 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, ObjectGroupMember, ObjectType, OperationData,
-    SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    ObtainLeaseRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
     UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
@@ -398,6 +398,75 @@ fn successful_check_response() -> Vec<u8> {
                     ttlv_item(0x0042_0093, 0x08, b"check-success"),
                     ttlv_enumeration(0x0042_007f, 0),
                     payload,
+                ],
+            ),
+        ],
+    )
+}
+
+fn successful_obtain_lease_response() -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let payload = ttlv_structure(
+        0x0042_007c,
+        [
+            ttlv_item(0x0042_0094, 0x07, b"leased-object"),
+            ttlv_item(0x0042_0049, 0x0a, &0_u32.to_be_bytes()),
+            ttlv_datetime(0x0042_0048, -7),
+            ttlv_item(0x0054_1234, 0x02, &(-7_i32).to_be_bytes()),
+        ],
+    );
+    ttlv_structure(
+        0x0042_007b,
+        [
+            header,
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x10),
+                    ttlv_item(0x0042_0093, 0x08, b"obtain-lease-success"),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    payload,
+                ],
+            ),
+        ],
+    )
+}
+
+fn failed_obtain_lease_response() -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    ttlv_structure(
+        0x0042_007b,
+        [
+            header,
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x10),
+                    ttlv_item(0x0042_0093, 0x08, b"obtain-lease-failure"),
+                    ttlv_enumeration(0x0042_007f, 1),
+                    ttlv_enumeration(0x0042_007e, 0x37),
                 ],
             ),
         ],
@@ -1598,6 +1667,167 @@ fn successful_check_response_item(
     );
     kmipkit_client_batch_response_release(response_handle);
     item
+}
+
+fn ffi_obtain_lease_response_item(
+    response: &Arc<ClientBatchResponse>,
+) -> *mut kmipkit_client_batch_item_response_t {
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+    item
+}
+
+#[test]
+fn ffi_obtain_lease_constructor_preserves_optional_identifier() {
+    // OASIS KMIP Specification v2.1 §6.1.35, Table 268 makes Unique Identifier optional.
+    let mut omitted_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_obtain_lease(ptr::null(), &raw mut omitted_item),
+        SUCCESS
+    );
+    assert!(!omitted_item.is_null());
+    let omitted_handle = reference_handle(omitted_item, Kind::BatchItem)
+        .expect("the omitted-identifier builder returns an item handle");
+    let HandleValue::BatchItem(omitted_batch_item) = &omitted_handle.value else {
+        panic!("Obtain Lease creates a typed batch item");
+    };
+    let ClientRequest::ObtainLease(omitted_request) = omitted_batch_item.request() else {
+        panic!("the batch item contains an Obtain Lease request");
+    };
+    assert_eq!(omitted_request.unique_identifier(), None);
+    kmipkit_client_batch_item_release(omitted_item);
+
+    let mut text = b"lease-object".to_vec();
+    let identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier size fits ABI field"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: text.as_ptr(),
+        text_length: u64::try_from(text.len()).expect("identifier length fits ABI"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    let mut explicit_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_obtain_lease(&raw const identifier, &raw mut explicit_item),
+        SUCCESS
+    );
+    text.fill(b'X');
+    let explicit_handle = reference_handle(explicit_item, Kind::BatchItem)
+        .expect("the explicit-identifier builder returns an item handle");
+    let HandleValue::BatchItem(explicit_batch_item) = &explicit_handle.value else {
+        panic!("Obtain Lease creates a typed batch item");
+    };
+    let ClientRequest::ObtainLease(explicit_request) = explicit_batch_item.request() else {
+        panic!("the batch item contains an Obtain Lease request");
+    };
+    assert_eq!(
+        explicit_request.unique_identifier(),
+        Some(&UniqueIdentifier::TextString("lease-object".to_owned()))
+    );
+    kmipkit_client_batch_item_release(explicit_item);
+}
+
+#[test]
+fn ffi_obtain_lease_response_preserves_required_values_and_ordered_success_ttlv() {
+    // OASIS KMIP Specification v2.1 §6.1.35, Table 269 requires all three success fields.
+    let response = Arc::new(
+        execute_single_abi_response(
+            ClientRequest::ObtainLease(
+                ObtainLeaseRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+                    "leased-object".to_owned(),
+                )),
+            ),
+            b"obtain-lease-success",
+            successful_obtain_lease_response(),
+        )
+        .expect("the Table 269 success maps through the C ABI client"),
+    );
+    let item = ffi_obtain_lease_response_item(&response);
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut lease_time = u32::MAX;
+    let mut last_change_date = i64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_obtain_lease(
+            item,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut lease_time,
+            &raw mut last_change_date,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, lease_time, last_change_date), (1, 0, -7));
+    assert_response_identifier(&identifier, b"leased-object");
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_obtain_lease_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_obtain_lease_failure_has_no_typed_values_or_raw_response_ttlv() {
+    // Table 270 failures retain common result metadata without success payload access.
+    let response = Arc::new(
+        execute_single_abi_response(
+            ClientRequest::ObtainLease(ObtainLeaseRequest::new()),
+            b"obtain-lease-failure",
+            failed_obtain_lease_response(),
+        )
+        .expect("the Table 270 result remains a KMIP outcome"),
+    );
+    let item = ffi_obtain_lease_response_item(&response);
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut lease_time = u32::MAX;
+    let mut last_change_date = i64::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_obtain_lease(
+            item,
+            &raw mut present,
+            &raw mut identifier,
+            &raw mut lease_time,
+            &raw mut last_change_date,
+        ),
+        SUCCESS
+    );
+    assert_eq!((present, lease_time, last_change_date), (0, 0, 0));
+    assert_eq!(identifier.kind, 0);
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut::<kmipkit_ttlv_structure_t>();
+    assert_eq!(
+        kmipkit_client_batch_item_response_obtain_lease_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(item);
 }
 
 fn assert_check_response_getter_status(

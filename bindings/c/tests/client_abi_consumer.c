@@ -1569,6 +1569,43 @@ static int get_locate_abi_is_callable_from_c(void) {
         output_identifier.kind == 0;
 }
 
+static int obtain_lease_abi_is_callable_from_c(void) {
+    /* OASIS KMIP Specification v2.1 §6.1.35, Tables 268–270. */
+    static const uint8_t identifier_bytes[] = "lease-object";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1);
+
+    kmipkit_client_batch_item_t *omitted_identifier = 0;
+    kmipkit_client_batch_item_t *explicit_identifier = 0;
+    if (kmipkit_client_batch_item_obtain_lease(0, &omitted_identifier) != 0 ||
+        omitted_identifier == 0 ||
+        kmipkit_client_batch_item_obtain_lease(&identifier, &explicit_identifier) != 0 ||
+        explicit_identifier == 0) {
+        kmipkit_client_batch_item_release(explicit_identifier);
+        kmipkit_client_batch_item_release(omitted_identifier);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(explicit_identifier);
+    kmipkit_client_batch_item_release(omitted_identifier);
+
+    uint8_t present = 0xff;
+    uint32_t lease_time = UINT32_MAX;
+    int64_t last_change_date = INT64_MAX;
+    kmipkit_unique_identifier_v1_t output_identifier = {0};
+    output_identifier.struct_size = (uint32_t)sizeof(output_identifier);
+    output_identifier.abi_version = 1;
+    return kmipkit_client_batch_item_response_obtain_lease(
+               0, &present, &output_identifier, &lease_time, &last_change_date) ==
+            T076_ERROR_INVALID_INPUT &&
+        present == 0 && lease_time == 0 && last_change_date == 0 &&
+        output_identifier.kind == 0 && output_identifier.text_data == 0 &&
+        output_identifier.text_length == 0;
+}
+
 static int successful_crypto_response_is_readable(
     uint64_t index, kmipkit_client_batch_item_response_t *response_item) {
     static const uint8_t correlation_bytes[] = {0x41, 0x00, 0x42};
@@ -2936,6 +2973,7 @@ int main(int argc, char **argv) {
         !interop_response_accessor_clears_invalid_outputs_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
+        !obtain_lease_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||
         !get_usage_allocation_response_accessor_clears_outputs() ||
