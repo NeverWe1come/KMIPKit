@@ -6,7 +6,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::ptr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
-use std::{collections::HashMap, collections::hash_map::Entry};
+use std::{collections::HashMap, collections::hash_map::Entry, mem::size_of};
 use std::{fs, io::Read};
 
 use crate::{
@@ -133,7 +133,6 @@ const MAX_TRANSPORT_TEXT_BYTES: u64 = 4_096;
 const MAX_FFI_INPUT_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_DERIVE_KEY_SOURCE_IDENTIFIERS: u64 = 100_000;
 const MAX_TRANSPORT_MATERIAL_BYTES: u64 = MAX_FFI_INPUT_BYTES;
-const MAX_QUERY_VALUES: u64 = 100_000;
 const TRANSPORT_ENDPOINT_RAW_TLS: u32 = 1;
 const TRANSPORT_ENDPOINT_HTTPS: u32 = 2;
 const TRANSPORT_TRUST_PLATFORM: u32 = 1;
@@ -894,14 +893,20 @@ fn input_array<'a, T: Copy>(array: *const T, count: u64, maximum: u64) -> FfiRes
         return Err(ERROR_RESOURCE_LIMIT);
     }
     let count = usize::try_from(count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    let byte_length = count
+        .checked_mul(size_of::<T>())
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+    if isize::try_from(count).is_err() || isize::try_from(byte_length).is_err() {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
     if count == 0 {
         return Ok(&[]);
     }
     if array.is_null() {
         return Err(ERROR_INVALID_INPUT);
     }
-    // SAFETY: the C caller must provide `count` readable elements; count is
-    // bounded and converted to usize before constructing the borrowed slice.
+    // SAFETY: the C caller must provide `count` readable elements; count and
+    // byte length fit Rust slice limits before constructing the borrowed slice.
     Ok(unsafe { std::slice::from_raw_parts(array, count) })
 }
 
@@ -3751,7 +3756,7 @@ pub extern "C" fn kmipkit_client_batch_item_query(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let raw_functions = try_ffi!(input_array(functions, function_count, MAX_QUERY_VALUES));
+        let raw_functions = try_ffi!(input_array(functions, function_count, u64::MAX));
         let mut query_functions = Vec::new();
         if query_functions
             .try_reserve_exact(raw_functions.len())
@@ -3764,11 +3769,7 @@ pub extern "C" fn kmipkit_client_batch_item_query(
         let groups = match has_object_groups {
             0 if object_group_count == 0 => None,
             1 => {
-                let spans = try_ffi!(input_array(
-                    object_groups,
-                    object_group_count,
-                    MAX_QUERY_VALUES
-                ));
+                let spans = try_ffi!(input_array(object_groups, object_group_count, u64::MAX));
                 let mut values = Vec::new();
                 if values.try_reserve_exact(spans.len()).is_err() {
                     return record_ffi_error(ERROR_RESOURCE_LIMIT);
@@ -3776,19 +3777,24 @@ pub extern "C" fn kmipkit_client_batch_item_query(
                 let mut total_bytes = 0_u64;
                 for span in spans {
                     let remaining = try_ffi!(
-                        MAX_FFI_INPUT_BYTES
+                        (isize::MAX as u64)
                             .checked_sub(total_bytes)
                             .ok_or(ERROR_RESOURCE_LIMIT)
                     );
                     let bytes = try_ffi!(input_span(span.data, span.length, remaining));
                     total_bytes = match total_bytes.checked_add(span.length) {
-                        Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
+                        Some(total) if isize::try_from(total).is_ok() => total,
                         _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
                     };
                     let Ok(text) = std::str::from_utf8(bytes) else {
                         return record_ffi_error(ERROR_INVALID_INPUT);
                     };
-                    values.push(text.to_owned());
+                    let mut value = String::new();
+                    if value.try_reserve_exact(text.len()).is_err() {
+                        return record_ffi_error(ERROR_RESOURCE_LIMIT);
+                    }
+                    value.push_str(text);
+                    values.push(value);
                 }
                 Some(values)
             }

@@ -136,16 +136,6 @@ fn ffi_query_constructor_rejects_invalid_flags_pointers_and_limits() {
         query_status(functions.as_ptr(), 1, 1, invalid_utf8_group.as_ptr(), 1,),
         ERROR_INVALID_INPUT
     );
-
-    let one_byte = [b'x'];
-    let oversized_group = [kmipkit_byte_span_v1_t {
-        data: one_byte.as_ptr(),
-        length: MAX_FFI_INPUT_BYTES + 1,
-    }];
-    assert_eq!(
-        query_status(functions.as_ptr(), 1, 1, oversized_group.as_ptr(), 1),
-        ERROR_RESOURCE_LIMIT
-    );
 }
 
 #[test]
@@ -182,6 +172,7 @@ fn ffi_query_constructor_accepts_object_group_larger_than_default_message_limit(
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn ffi_ping_response_presence_and_query_ttlv_copy_are_typed_and_lossless() {
     let ping = successful_response_item(
         ClientRequest::ping(),
