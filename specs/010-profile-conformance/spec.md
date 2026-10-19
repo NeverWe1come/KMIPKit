@@ -19,7 +19,7 @@ The feature uses the checked-in catalog as the canonical crosswalk to the pinned
 | Other client profiles in `specification/catalog/kmip-2.1.json` | Preserve profile-specific clauses, requirements, dependencies, transport/encoding conditions, test IDs, and applicability without inferring support from catalog presence. |
 | `docs/compliance/conformance.md`, ADR-0009, and `docs/compliance/document-hierarchy.md` | Keep applicability, selected target, evidence state, and release claim separate; require traceable evidence and do not claim certification. |
 
-At specification time the pinned catalog lists 18 client profiles, of which 15 are marked `client_1_0` or `conditional`. All 16 mandatory test cases linked to the Baseline Client currently have unavailable fixtures in the pinned Git tree. That is an explicit evidence gap: this feature must report it and keep the Baseline claim ineligible until the gap is resolved through an approved source process. It must not reconstruct missing official fixtures or silently mark them as passed.
+The pinned catalog lists 18 client profiles, of which 15 are marked `client_1_0` or `conditional`. The initial inventory found no local fixtures for the 16 mandatory Baseline Client cases; all 16 are now pinned and catalogued as available. T036 records 13 full replays and 3 typed preflight blockers. Fixture availability does not count as execution evidence: the three blocked cases, along with the remaining profile evidence gaps, keep the Baseline claim ineligible. Missing official fixtures must not be reconstructed or silently marked as passed.
 
 ## Clarifications
 
@@ -132,7 +132,7 @@ A release maintainer can determine whether a named profile is eligible for a lat
 - **SC-001**: All 18 client profiles in the reviewed catalog are represented; every one of the 15 `client_1_0` or `conditional` profiles has a traceable applicability disposition and every other client profile is visibly excluded with its catalog reason.
 - **SC-002**: 100% of the selected Baseline Client profile's source clauses, requirement IDs, dependencies, and official test IDs resolve to catalog records and exact pinned OASIS sections.
 - **SC-003**: For every selected profile, a single missing or failing applicable normative requirement or required test makes claim eligibility false and identifies the blocker.
-- **SC-004**: Baseline Client is recorded as the initial 1.0 target, but no public claim is emitted by this feature; the 16 currently unavailable Baseline mandatory fixtures remain visible and block eligibility.
+- **SC-004**: Baseline Client is recorded as the initial 1.0 target, but no public claim is emitted by this feature. Its 16 mandatory fixtures are available; T036 records 13 full replays and 3 typed preflight blockers. Fixture availability alone does not satisfy execution evidence or make the profile eligible.
 - **SC-005**: A rejected profile-invalid request produces zero transport writes; a valid request preserves explicit values and follows only profile-authorized defaults.
 - **SC-006**: The committed profile coverage report is deterministic for identical checked-in inputs and contains no environment-specific paths, run identifiers, or unsupported claims; an ephemeral readiness evaluation is deterministic for an identical manifest and catalog state.
 - **SC-007**: Every profile's mandatory and optional official test IDs and fixture status are visible, with unavailable fixtures never counted as passed.

@@ -4078,3 +4078,19 @@ This correction updates test expectations only. The profile readiness behavior r
 | Refactor | This DCO-signed refactor commit; `cargo test -p kmipkit-protocol --all-features --lib`; `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: the two Derive Key profile evaluators now share one Object Type parser. Regression cases cover missing, mistyped, and duplicate Object Type fields and confirm the stable requirement/clause rejection; all 794 protocol unit tests and Clippy pass. |
 
 The test is based on KMIP Specification v2.1 §6.1.14, which permits a client to request Secret Data with Cryptographic Length equal to the total derived output length when deriving multiple keys and IVs. It also asserts that registering this optional capability does not restrict ordinary Symmetric Key derivation. T040 remains open.
+
+### KMIPKIT-0010 T041 follow-up — documentary QA corrections (2026-10-19)
+
+The T041 checkpoint above is a historical snapshot and is superseded only for its closure-oracle and T003 status: it described the oracle as partial and T003/T041 as unchecked. The current task record marks T003 complete after the source-reviewed closure work; this follow-up does not rewrite that history or mark T041 complete. T041 remains open for independent QA of the full feature and its remaining blockers.
+
+The two scoped P2 documentary findings from PR #90 are resolved. `spec.md` and `tasks.md` now state that the catalogued 16 mandatory Baseline fixtures are available and preserve T036's separate outcomes: 13 full replays, 3 typed preflight blockers, and 77 other linked cases without local fixtures. The blockers and other profile evidence gaps continue to prevent a Baseline conformance claim.
+
+| Check | Result |
+|---|---|
+| Baseline fixture catalog/file audit | PASS: 16 mandatory case records; all 16 are marked available and their fixture files exist. |
+| `py -3 -B tools/normative_catalog/validate.py --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,123 records. |
+| `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check` | PASS: generated profile metadata is current. |
+| `py -3 -B tools/normative_catalog/report.py --check` | PASS: generated coverage report is current. Default root resolution and a resolved absolute worktree path both pass; the same check with relative `--repo-root .` returned the generic unsafe-input error. |
+| `git diff --check` | PASS: no whitespace errors. |
+
+These changes correct documentation only and introduce no executable behavior. No Red/Green test or commits are fabricated; this follow-up is recorded in a documentation commit, as no executable regression test is justified for the two textual status corrections.
