@@ -4358,7 +4358,10 @@ stages. The implementation TDD evidence remains Red `3137f1c2`, Green
 
 | Follow-up | Commit | Command | Result |
 |---|---|---|---|
-| Characterization/coverage | `4b819060` | From `bindings/java`: ` .\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest.obtainLeaseResponseTraversesNativeJniBridgeOverTls --rerun-tasks` | PASS: new TLS/mTLS native response bridge path reaches the public typed response accessor (1 test); confirms existing bridge behavior before the retained-TTLV assertions. |
+| Characterization/coverage | `4b819060` | From `bindings/java`: `.\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest.obtainLeaseResponseTraversesNativeJniBridgeOverTls --rerun-tasks` | PASS: new TLS/mTLS native response bridge path reaches the public typed response accessor (1 test); confirms existing bridge behavior before the retained-TTLV assertions. |
+| Retained-TTLV assertions | `22d37ab5` | From `bindings/java`: `.\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest.obtainLeaseResponseUsesNativeJniBridgeAndRetainsOwnedTtlvOverTls --rerun-tasks` | PASS: 1 end-to-end test; typed fields and retained ordered full TTLV, including unknown-field bytes, remain available after source closure. |
+| Combined focused coverage | `22d37ab5` | From `bindings/java`: `.\gradlew.bat test --tests org.kmipkit.ClientFacadeTlsIntegrationTest --tests org.kmipkit.extensions.ObtainLeaseMappingTest --rerun-tasks` | PASS: 17 tests total (12 TLS integration, 5 mapping), 0 failures, errors, or skips. |
+| Evidence commit check | `988cf838` | Repository root: `git diff --check` | PASS: corrected the characterization/coverage classification while preserving the original implementation TDD history; DCO-signed documentation commit. |
 
 The Windows native build reports existing AWS-LC `stdalign_check` and missing
 NASM warnings; Gradle still completes successfully. This test is an API bridge
