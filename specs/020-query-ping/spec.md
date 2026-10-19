@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-09
 
-**Status**: Authorized for autonomous implementation under the maintainer's standing direct instruction (2026-10-09); implementation PR [#73](https://github.com/NeverWe1come/KMIPKit/pull/73) was merged on 2026-10-09. This records scope authorization and merge, not a claim of separate line-by-line review of this revision.
+**Status**: Approved for autonomous implementation under the maintainer's standing direct instruction (reaffirmed 2026-10-19); implementation PR [#73](https://github.com/NeverWe1come/KMIPKit/pull/73) was merged on 2026-10-09. This records scope authorization, not formal acceptance or a claim of separate line-by-line review of this revision.
 
 **Input**: KMIPKit roadmap Phase D: specify bounded client-initiated Query and Ping operations for KMIP 2.1 over TTLV.
 

@@ -40,9 +40,9 @@ use kmipkit_protocol::{
     GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
     LoginRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
-    SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, UniqueIdentifier,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
+    QueryRequest, RegisterRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -133,6 +133,7 @@ const MAX_TRANSPORT_TEXT_BYTES: u64 = 4_096;
 const MAX_FFI_INPUT_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_DERIVE_KEY_SOURCE_IDENTIFIERS: u64 = 100_000;
 const MAX_TRANSPORT_MATERIAL_BYTES: u64 = MAX_FFI_INPUT_BYTES;
+const MAX_QUERY_VALUES: u64 = 100_000;
 const TRANSPORT_ENDPOINT_RAW_TLS: u32 = 1;
 const TRANSPORT_ENDPOINT_HTTPS: u32 = 2;
 const TRANSPORT_TRUST_PLATFORM: u32 = 1;
@@ -886,6 +887,22 @@ fn input_span<'a>(data: *const u8, length: u64, maximum: u64) -> FfiResult<&'a [
     // SAFETY: for a non-zero span, the C caller must provide `length` readable bytes; the length
     // has already been checked against the operation's bound and converted to usize.
     Ok(unsafe { std::slice::from_raw_parts(data, length) })
+}
+
+fn input_array<'a, T: Copy>(array: *const T, count: u64, maximum: u64) -> FfiResult<&'a [T]> {
+    if count > maximum {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    let count = usize::try_from(count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    if count == 0 {
+        return Ok(&[]);
+    }
+    if array.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the C caller must provide `count` readable elements; count is
+    // bounded and converted to usize before constructing the borrowed slice.
+    Ok(unsafe { std::slice::from_raw_parts(array, count) })
 }
 
 fn input_handle_pointers<'a, T>(
@@ -3706,6 +3723,83 @@ pub extern "C" fn kmipkit_client_batch_item_locate(
             request = request.with_object_group_member(value);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::Locate(request)));
+        SUCCESS
+    })
+}
+
+/// Creates an empty client-initiated Ping item from KMIP v2.1 §6.1.36.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_ping(
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        *out = try_ffi!(batch_item_handle(ClientRequest::ping()));
+        SUCCESS
+    })
+}
+
+/// Creates a typed client-initiated Query item from KMIP v2.1 §6.1.40.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_query(
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const crate::kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let raw_functions = try_ffi!(input_array(functions, function_count, MAX_QUERY_VALUES));
+        let mut query_functions = Vec::new();
+        if query_functions
+            .try_reserve_exact(raw_functions.len())
+            .is_err()
+        {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        query_functions.extend(raw_functions.iter().copied().map(QueryFunction::from_raw));
+
+        let groups = match has_object_groups {
+            0 if object_group_count == 0 => None,
+            1 => {
+                let spans = try_ffi!(input_array(
+                    object_groups,
+                    object_group_count,
+                    MAX_QUERY_VALUES
+                ));
+                let mut values = Vec::new();
+                if values.try_reserve_exact(spans.len()).is_err() {
+                    return record_ffi_error(ERROR_RESOURCE_LIMIT);
+                }
+                let mut total_bytes = 0_u64;
+                for span in spans {
+                    let remaining = try_ffi!(
+                        MAX_FFI_INPUT_BYTES
+                            .checked_sub(total_bytes)
+                            .ok_or(ERROR_RESOURCE_LIMIT)
+                    );
+                    let bytes = try_ffi!(input_span(span.data, span.length, remaining));
+                    total_bytes = match total_bytes.checked_add(span.length) {
+                        Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
+                        _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+                    };
+                    let Ok(text) = std::str::from_utf8(bytes) else {
+                        return record_ffi_error(ERROR_INVALID_INPUT);
+                    };
+                    values.push(text.to_owned());
+                }
+                Some(values)
+            }
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+
+        let mut request = QueryRequest::new(query_functions);
+        if let Some(groups) = groups {
+            request = request.with_object_groups(groups);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::query(request)));
         SUCCESS
     })
 }

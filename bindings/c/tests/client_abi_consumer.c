@@ -3126,6 +3126,37 @@ cleanup:
     return result;
 }
 
+static int ping_query_abi_is_callable(void) {
+    static const uint32_t functions[] = {5, 1, UINT32_C(0x80000001), 5};
+    static const uint8_t first_group[] = "group-a";
+    static const uint8_t second_group[] = "group-a";
+    const kmipkit_byte_span_v1_t groups[] = {
+        {first_group, sizeof(first_group) - 1},
+        {second_group, sizeof(second_group) - 1},
+    };
+    kmipkit_client_batch_item_t *ping = 0;
+    kmipkit_client_batch_item_t *query = 0;
+    kmipkit_client_batch_item_t *invalid = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_ping(&ping) != 0 || ping == 0 ||
+        kmipkit_client_batch_item_query(
+            functions, sizeof(functions) / sizeof(functions[0]), 1, groups,
+            sizeof(groups) / sizeof(groups[0]), &query) != 0 || query == 0) {
+        goto failure;
+    }
+    if (kmipkit_client_batch_item_query(
+            0, 1, 0, 0, 0, &invalid) != T076_ERROR_INVALID_INPUT || invalid != 0) {
+        goto failure;
+    }
+    kmipkit_client_batch_item_release(query);
+    kmipkit_client_batch_item_release(ping);
+    return 1;
+
+failure:
+    kmipkit_client_batch_item_release(query);
+    kmipkit_client_batch_item_release(ping);
+    return 0;
+}
+
 int kmipkit_client_abi_c_consumer_execute_tls(
     int argc, char **argv, kmipkit_codec_limits_t *limits) {
     if (argc != 6 || limits == 0) {
@@ -3170,6 +3201,7 @@ int main(int argc, char **argv) {
         !interop_response_accessor_clears_invalid_outputs_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
+        !ping_query_abi_is_callable() ||
         !obtain_lease_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||

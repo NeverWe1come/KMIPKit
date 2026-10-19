@@ -212,7 +212,6 @@ void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);
 void kmipkit_client_release(kmipkit_client_t *handle);
 void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
-void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t *handle);
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
@@ -241,7 +240,7 @@ int32_t kmipkit_extension_definition_validate(kmipkit_extension_definition_t * d
 int32_t kmipkit_client_configuration_create(kmipkit_client_extension_registry_t * extension_registry, kmipkit_client_configuration_t ** out_configuration);
 /* KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_client_configuration_extension_registry(kmipkit_client_configuration_t * configuration, kmipkit_client_extension_registry_t ** out_registry);
-/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+/* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-003, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
@@ -276,7 +275,7 @@ int32_t kmipkit_ttlv_path_with_child_tag(kmipkit_ttlv_path_t * path, uint32_t ta
 int32_t kmipkit_extension_discriminator_create(kmipkit_ttlv_path_t * path, kmipkit_ttlv_value_t * scalar_value, kmipkit_extension_discriminator_t ** out_discriminator);
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
 int32_t kmipkit_extension_schema_scalar(uint32_t item_type, kmipkit_extension_schema_t ** out_schema);
-/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+/* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0012-FR-004, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-012 */
@@ -445,7 +444,7 @@ int32_t kmipkit_capability_is_available(const uint8_t * capability_id_data, uint
 int32_t kmipkit_last_error_get(int32_t * out_status, uint32_t * out_category, uint32_t * out_cause, uint32_t * out_delivery);
 /* KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-013 */
 int32_t kmipkit_last_error_clear(void);
-/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+/* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0043-FR-007 */
@@ -744,7 +743,7 @@ int32_t kmipkit_client_batch_item_response_interop_ttlv(kmipkit_client_batch_ite
 int32_t kmipkit_split_key_reference_create(const kmipkit_unique_identifier_v1_t * unique_identifier, uint32_t split_key_threshold, kmipkit_split_key_reference_t ** out_reference);
 /* Creates a typed KMIP v2.1 Join Split Key request from §6.1.27, Table 244. Every ordered reference pairs one Unique Identifier occurrence with its own caller-known threshold. Repetitions and order are preserved; reference handles and optional Structures are borrowed and copied. Thresholds are validation-only and never serialized.
  */
-/* For nullable handle arrays, NULL is valid only when the linked count is zero.
+/* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.27-001, KMIPKIT-REQ-SPEC-6.1.27-002-001, KMIPKIT-REQ-SPEC-6.1.27-002-002, KMIPKIT-REQ-SPEC-6.1.27-005 */
@@ -794,6 +793,25 @@ int32_t kmipkit_client_batch_item_response_decrypt(kmipkit_client_batch_item_res
  */
 /* KMIPKIT-0019-FR-001, KMIPKIT-0019-FR-005, KMIPKIT-0019-FR-007, KMIPKIT-0019-FR-009, KMIPKIT-0019-FR-011, KMIPKIT-0019-FR-012, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_encrypt(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data, uint8_t * out_iv_counter_nonce_present, kmipkit_byte_span_v1_t * out_iv_counter_nonce, uint8_t * out_correlation_value_present, kmipkit_byte_span_v1_t * out_correlation_value, uint8_t * out_authenticated_encryption_tag_present, kmipkit_byte_span_v1_t * out_authenticated_encryption_tag);
+/* Creates an empty client-initiated Ping request batch item from KMIP 2.1 §6.1.36.
+ */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_ping(kmipkit_client_batch_item_t ** out_item);
+/* Reports whether the batch item has a typed Ping response, including Pending.
+ */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_ping(kmipkit_client_batch_item_response_t * item, uint8_t * out_present);
+/* Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
+int32_t kmipkit_client_batch_item_query(const uint32_t * functions, uint64_t function_count, uint8_t has_object_groups, const kmipkit_byte_span_v1_t * object_groups, uint64_t object_group_count, kmipkit_client_batch_item_t ** out_item);
+/* Copies the complete generic TTLV Query response payload, retaining ordered and unknown Items.
+ */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
+int32_t kmipkit_client_batch_item_response_query_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
