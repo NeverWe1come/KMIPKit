@@ -913,6 +913,42 @@ trait Example { fn declaration(&self); }
 
         self.assertTrue(is_executable)
 
+    def test_changed_coverage_ignores_only_cffi_cdef_literal_lines(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/python/src/kmipkit/_client_ffi.py"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "ffi.cdef(\n"
+                "    \"\"\"\n"
+                "    typedef unsigned char uint8_t;\n"
+                "    typedef struct kmipkit_client_t kmipkit_client_t;\n"
+                "    \"\"\"\n"
+                ")\n"
+                "client = ffi.dlopen(\"kmipkit\")\n",
+                encoding="utf-8",
+            )
+
+            changed_lines = {
+                line: GATE._is_executable_changed_line(root, relative, line, {})
+                for line in range(1, 8)
+            }
+
+        self.assertEqual(
+            {
+                1: True,
+                2: False,
+                3: False,
+                4: False,
+                5: False,
+                6: True,
+                7: True,
+            },
+            changed_lines,
+        )
+
     def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:
