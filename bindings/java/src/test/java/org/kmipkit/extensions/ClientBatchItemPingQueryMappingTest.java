@@ -34,6 +34,10 @@ final class ClientBatchItemPingQueryMappingTest {
         assertThrows(InvalidInputException.class, () -> ClientBatchItem.query(null, null));
         assertThrows(InvalidInputException.class,
                 () -> ClientBatchItem.query(new int[0], null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.query(new int[] {14}, new String[] {null}));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.query(new int[] {14}, new String[] {new String(new char[] {'\ud800'})}));
     }
 
     @Test
@@ -56,6 +60,17 @@ final class ClientBatchItemPingQueryMappingTest {
 
         assertTrue(ClientBatchItemResult.parseQueryResponse(
                 new Object[] {new long[] {0}, new long[] {0}}).isEmpty());
+        ResponseTtlvTestSupport.assertReleased(payloadHandle);
+    }
+
+    @Test
+    void queryResponseReleasesOwnedPayloadWhenPresenceMappingIsMalformed() {
+        TtlvStructure malformed = TtlvStructure.create();
+        long payloadHandle = malformed.nativeHandleOwner().transfer();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseQueryResponse(
+                new Object[] {new long[] {0}, new long[] {payloadHandle}}));
+
         ResponseTtlvTestSupport.assertReleased(payloadHandle);
     }
 }
