@@ -7612,3 +7612,7 @@ mod provenance_order_tests;
 #[cfg(test)]
 #[path = "../tests/unit/single_response_tests.rs"]
 mod single_response_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/query_payload_limits_tests.rs"]
+mod query_payload_limits_tests;

@@ -18,7 +18,7 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
-const MAX_TEST_TTLV_VALUE_BYTES: usize = 1_048_576;
+const MAX_TEST_TTLV_VALUE_BYTES: usize = 8_388_608;
 static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[link(name = "kmipkit_extension_registry_c_consumer", kind = "static")]
@@ -292,6 +292,10 @@ fn spawn_public_client_batch_peer(
         let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
         assert!(request.starts_with(&[0x42, 0x00, 0x78]));
         assert!(
+            c_request_contains_large_query(&request),
+            "C ABI consumer must transmit 100,001 Query Functions and Object Groups over mTLS"
+        );
+        assert!(
             c_request_contains_exact_derivation_parameters(&request),
             "C ABI consumer must transmit the exact ordered Derive Key parameter values"
         );
@@ -323,6 +327,78 @@ fn spawn_public_client_batch_peer(
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
+    })
+}
+
+fn c_request_contains_large_query(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const QUERY: u32 = 24;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const QUERY_FUNCTION: u32 = 0x0042_0074;
+    const OBJECT_GROUPS: u32 = 0x0042_0166;
+    const OBJECT_GROUP: u32 = 0x0042_0056;
+    const EXPECTED_COUNT: usize = 100_001;
+
+    let Ok(limits) = kmipkit_ttlv::codec::CodecLimits::new(8_388_608, 64, 400_000) else {
+        return false;
+    };
+    let Ok(root) = kmipkit_ttlv::codec::decode_with_limits(encoded, &limits) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        message.children().iter().any(|batch_item| {
+            if batch_item.tag().raw() != BATCH_ITEM {
+                return false;
+            }
+            batch_item.with_value(|value| {
+                let ValueView::Structure(batch_item) = value else {
+                    return false;
+                };
+                let children = batch_item.children();
+                let is_query = children.iter().any(|item| {
+                    item.tag().raw() == OPERATION
+                        && item.with_value(
+                            |value| matches!(value, ValueView::Enumeration(value) if *value == QUERY),
+                        )
+                });
+                let payload = children.iter().find(|item| item.tag().raw() == REQUEST_PAYLOAD);
+                is_query
+                    && payload.is_some_and(|payload| {
+                        payload.with_value(|value| {
+                            let ValueView::Structure(payload) = value else {
+                                return false;
+                            };
+                            let functions = payload
+                                .children()
+                                .iter()
+                                .filter(|item| item.tag().raw() == QUERY_FUNCTION)
+                                .count();
+                            let groups = payload
+                                .children()
+                                .iter()
+                                .find(|item| item.tag().raw() == OBJECT_GROUPS);
+                            functions == EXPECTED_COUNT
+                                && groups.is_some_and(|groups| {
+                                    groups.with_value(|value| {
+                                        let ValueView::Structure(groups) = value else {
+                                            return false;
+                                        };
+                                        groups
+                                            .children()
+                                            .iter()
+                                            .filter(|item| item.tag().raw() == OBJECT_GROUP)
+                                            .count()
+                                            == EXPECTED_COUNT
+                                    })
+                                })
+                        })
+                    })
+            })
+        })
     })
 }
 

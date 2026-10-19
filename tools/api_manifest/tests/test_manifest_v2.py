@@ -1122,6 +1122,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
         }
+        response_release = declarations.get("kmipkit_client_batch_item_response_release")
+        self.assertIsNotNone(response_release)
+        self.assertEqual(
+            response_release["languageMappings"]["c"]["name"],
+            "kmipkit_client_batch_item_response_release",
+        )
         self.assertTrue(expected_symbols <= set(declarations))
         for symbol in expected_symbols:
             self.assertEqual(declarations[symbol]["capabilityId"], "ffi_runtime_metadata")
