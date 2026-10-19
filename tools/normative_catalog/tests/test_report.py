@@ -378,6 +378,42 @@ mod unrelated {
             with self.assertRaisesRegex(ValueError, "unresolvable typed profile rule test evidence"):
                 load_typed_rule_mappings(repository)
 
+    def test_typed_rule_registry_rejects_tests_from_a_virtual_workspace_root(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(validate_discover_versions_rule),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::ghost_test",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+];
+""",
+                encoding="utf-8",
+            )
+            test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
+            test_path.parent.mkdir(parents=True)
+            test_path.write_text("#[test]\nfn ghost_test() {}\n", encoding="utf-8")
+            self._write_profile_module_tree(repository, include_test_file=True)
+            (repository / "crates/kmipkit-protocol/Cargo.toml").write_text(
+                "[workspace]\nmembers = []\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "unresolvable typed profile rule test evidence"):
+                load_typed_rule_mappings(repository)
+
     def test_typed_rule_registry_fails_closed_on_invalid_cargo_manifest(self) -> None:
         from tools.normative_catalog.report import load_typed_rule_mappings
 
