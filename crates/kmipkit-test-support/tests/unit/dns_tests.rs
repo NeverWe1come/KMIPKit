@@ -257,6 +257,18 @@ fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
     assert_eq!(udp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
     assert_eq!(tcp_attempts, 0);
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+    assert_eq!(
+        error.to_string(),
+        format!(
+            "DNS fixture UDP bind to 127.0.0.1:0 failed on attempt {0}/{0}: simulated reserved UDP port",
+            super::MAX_SOCKET_PAIR_BIND_ATTEMPTS
+        )
+    );
+    let source = error
+        .get_ref()
+        .and_then(std::error::Error::source)
+        .map(ToString::to_string);
+    assert_eq!(source.as_deref(), Some("simulated reserved UDP port"));
 }
 
 #[test]
@@ -309,6 +321,18 @@ fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
     assert_eq!(udp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
     assert_eq!(tcp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+    assert_eq!(
+        error.to_string(),
+        format!(
+            "DNS fixture TCP bind to 127.0.0.1:55000 failed on attempt {0}/{0}: simulated reserved TCP port",
+            super::MAX_SOCKET_PAIR_BIND_ATTEMPTS
+        )
+    );
+    let source = error
+        .get_ref()
+        .and_then(std::error::Error::source)
+        .map(ToString::to_string);
+    assert_eq!(source.as_deref(), Some("simulated reserved TCP port"));
 }
 
 #[test]
