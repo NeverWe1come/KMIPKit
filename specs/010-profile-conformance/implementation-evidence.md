@@ -3753,3 +3753,10 @@ The final pinned-source review disposition assigns §4.11 to `server_only` and t
 | Red | This DCO-signed commit | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability` | Expected Red: 5 tests failed by assertion (no test errors). The crosswalk/catalog still had unresolved scope, source-obligation reviews retained unresolved dispositions, and actor/§4.18/§6.1.34 rationale was not yet recorded. |
 
 Additional assertions require the oracle to record a separate project actor interpretation while preserving each source actor annotation unchanged, cite the pinned §4.18 Table 64 row (rather than the adjacent Table 63 encoding table), and retain the existing §6.1.34 requirement ID. The focused test was rerun and still fails by the five intended assertions, with no test errors. The Red commits change only the focused regression and this evidence. The catalog and independent oracle remain unchanged for these 20 rows until Green. T002 remains open.
+
+
+An additional validator regression exposed that the selected-profile optional-capability gate did not honor the separately recorded project actor recommendation. The source actor remains `unresolved`; only `project_actor_interpretation: client` authorizes the project's recommended client capability context.
+
+| Stage | DCO-signed commit | Command | Result |
+|---|---|---|---|
+| Red | This DCO-signed commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_project_actor_interpretation` | Expected Red: 1 test failed by assertion because the gate reported no reviewed client actor despite the explicit project interpretation; no test error. |
