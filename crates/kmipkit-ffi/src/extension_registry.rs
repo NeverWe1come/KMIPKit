@@ -25,8 +25,10 @@ use crate::{
     kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
     kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
-    kmipkit_unique_identifier_v1_t, kmipkit_validated_extension_value_t,
+    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
+    kmipkit_validated_extension_value_t,
 };
+use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
@@ -314,6 +316,7 @@ enum Kind {
     ClientBatch,
     ClientBatchResponse,
     ClientBatchItemResponse,
+    UsageAllocationContext,
     SplitKeyReference,
 }
 
@@ -357,6 +360,7 @@ enum HandleValue {
         response: Arc<ClientBatchResponse>,
         index: usize,
     },
+    UsageAllocationContext(Mutex<UsageAllocationContext>),
     SplitKeyReference(SplitKeyReference),
 }
 

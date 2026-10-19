@@ -837,6 +837,271 @@ pub extern "C" fn kmipkit_client_execute(
     })
 }
 
+/// Creates local accounting from a live successful Get Usage Allocation item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_usage_allocation_context_create(
+    item: *mut kmipkit_client_batch_item_response_t,
+    requested_units: i64,
+    usage_limits_unit: u32,
+    out_context: *mut *mut kmipkit_usage_allocation_context_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_context);
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let kmipkit_client::ClientBatchOutcome::GetUsageAllocation(allocation) = item.outcome()
+        else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let context = match UsageAllocationContext::from_successful_allocation(
+            allocation,
+            requested_units,
+            usage_limits_unit,
+        ) {
+            Ok(context) => context,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::UsageAllocationContext,
+            HandleValue::UsageAllocationContext(Mutex::new(context)),
+        ));
+        SUCCESS
+    })
+}
+
+/// Releases a caller-owned local Usage Allocation context.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_usage_allocation_context_release(
+    handle: *mut kmipkit_usage_allocation_context_t,
+) {
+    ffi_entrypoint(|| release(handle, Kind::UsageAllocationContext));
+}
+
+/// Returns the caller-supplied open Usage Limits Unit enumeration.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_usage_allocation_context_usage_limits_unit(
+    context: *mut kmipkit_usage_allocation_context_t,
+    out_unit: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_unit);
+        *out = 0;
+        let context = read_handle!(context, UsageAllocationContext);
+        let HandleValue::UsageAllocationContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = context.usage_limits_unit();
+        SUCCESS
+    })
+}
+
+/// Returns the exact positive allocation count supplied by the caller.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_usage_allocation_context_allocated_units(
+    context: *mut kmipkit_usage_allocation_context_t,
+    out_units: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_units);
+        *out = 0;
+        let context = read_handle!(context, UsageAllocationContext);
+        let HandleValue::UsageAllocationContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = context.allocated_units();
+        SUCCESS
+    })
+}
+
+/// Returns units that have not been reserved through this context.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_usage_allocation_context_available_units(
+    context: *mut kmipkit_usage_allocation_context_t,
+    out_units: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_units);
+        *out = 0;
+        let context = read_handle!(context, UsageAllocationContext);
+        let HandleValue::UsageAllocationContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = context.available_units();
+        SUCCESS
+    })
+}
+
+/// Returns units reserved by guarded calls through this context.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_usage_allocation_context_reserved_units(
+    context: *mut kmipkit_usage_allocation_context_t,
+    out_units: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = scalar_out!(out_units);
+        *out = 0;
+        let context = read_handle!(context, UsageAllocationContext);
+        let HandleValue::UsageAllocationContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        *out = context.reserved_units();
+        SUCCESS
+    })
+}
+
+/// Borrows the immutable server-resolved identifier until the context is released.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_usage_allocation_context_unique_identifier(
+    context: *mut kmipkit_usage_allocation_context_t,
+    out_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if let Err(status) = write_unique_identifier_v1(out_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let context = read_handle!(context, UsageAllocationContext);
+        let HandleValue::UsageAllocationContext(context) = &context.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Err(status) =
+            write_unique_identifier_v1(out_identifier, Some(context.unique_identifier()))
+        {
+            return record_ffi_error(status);
+        }
+        SUCCESS
+    })
+}
+
+/// Executes one typed guarded protection item and returns the standard batch response.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_guarded_protection_item(
+    client: *mut kmipkit_client_t,
+    context: *mut kmipkit_usage_allocation_context_t,
+    item: *mut *mut kmipkit_client_batch_item_t,
+    cost: i64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_guarded_client_item(client, context, item, cost, limits, None, out_response)
+    })
+}
+
+/// Executes one guarded item with an explicit Asynchronous Indicator.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(
+    client: *mut kmipkit_client_t,
+    context: *mut kmipkit_usage_allocation_context_t,
+    item: *mut *mut kmipkit_client_batch_item_t,
+    cost: i64,
+    asynchronous_indicator: u32,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_guarded_client_item(
+            client,
+            context,
+            item,
+            cost,
+            limits,
+            Some(asynchronous_indicator),
+            out_response,
+        )
+    })
+}
+
+fn execute_guarded_client_item(
+    client: *mut kmipkit_client_t,
+    context: *mut kmipkit_usage_allocation_context_t,
+    item: *mut *mut kmipkit_client_batch_item_t,
+    cost: i64,
+    limits: *mut kmipkit_codec_limits_t,
+    asynchronous_indicator: Option<u32>,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    let out = out_slot!(out_response);
+    if item.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: the caller provides a writable in/out slot holding the one-shot item handle.
+    let item_slot = unsafe { &mut *item };
+    if item_slot.is_null() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let client = read_handle!(client, Client);
+    let HandleValue::Client(client) = &client.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let context = read_handle!(context, UsageAllocationContext);
+    let HandleValue::UsageAllocationContext(context) = &context.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let limits_handle = read_handle!(limits, CodecLimits);
+    let HandleValue::CodecLimits(limits) = &limits_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    if let Err(status) = reference_handle(*item_slot, Kind::BatchItem) {
+        return record_ffi_error(status);
+    }
+    let Ok(mut client) = client.lock() else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    let Ok(mut context) = context.lock() else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    let item_pointer = *item_slot;
+    *item_slot = ptr::null_mut();
+    let item = match owned_payload(item_pointer, Kind::BatchItem) {
+        Ok(HandleValue::BatchItem(item)) => *item,
+        Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        Err(status) => return record_ffi_error(status),
+    };
+    let result = match asynchronous_indicator {
+        Some(indicator) => client.execute_guarded_protection_item_with_asynchronous_indicator(
+            &mut context,
+            item,
+            cost,
+            indicator,
+            limits,
+        ),
+        None => client.execute_guarded_protection_item(&mut context, item, cost, limits),
+    };
+    match result {
+        Ok(response) => {
+            *out = try_ffi!(try_make_handle(
+                Kind::ClientBatchResponse,
+                HandleValue::ClientBatchResponse(Arc::new(response)),
+            ));
+            SUCCESS
+        }
+        Err(error) => record_client_error(&error),
+    }
+}
+
 /// Executes one typed batch with per-exchange timeout overrides.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_execute_with_options_v1(

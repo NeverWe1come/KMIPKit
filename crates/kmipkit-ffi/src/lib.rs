@@ -62,6 +62,10 @@ pub struct kmipkit_client_batch_item_response_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_usage_allocation_context_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_split_key_reference_t {
     _private: [u8; 0],
 }
