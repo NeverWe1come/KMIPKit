@@ -1397,6 +1397,30 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         native_handle = by_name["org.kmipkit.internal.NativeHandle"]
         self.assertEqual(native_handle["declarationState"], "blocked")
 
+    def test_crypto_response_java_types_and_accessors_are_inventoried(self) -> None:
+        by_name = {
+            declaration["exportName"]: declaration
+            for declaration in self.declarations_for_package("java-kmipkit")
+        }
+        expected = {
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse": "type",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.uniqueIdentifier": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.data": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.ivCounterNonce": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.correlationValue": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.authenticatedEncryptionTag": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse": "type",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.uniqueIdentifier": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.data": "java-member",
+            "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.correlationValue": "java-member",
+        }
+
+        for export_name, expected_kind in expected.items():
+            with self.subTest(export_name=export_name):
+                declaration = by_name[export_name]
+                self.assertEqual("verified", declaration["declarationState"])
+                self.assertEqual(expected_kind, declaration["kind"])
+
     def test_only_unmapped_internal_java_close_remains_blocked(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
         close_declarations = [
