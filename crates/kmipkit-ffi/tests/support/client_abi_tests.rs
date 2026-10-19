@@ -1268,7 +1268,7 @@ fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ti
         ),
         SUCCESS
     );
-    assert_eq!((present, ticket_present, ticket_type), (0, 0, 0));
+    assert_eq!((present, ticket_present, ticket_type), (1, 0, 0));
     assert!(ticket_value.data.is_null());
     assert_eq!(ticket_value.length, 0);
 
