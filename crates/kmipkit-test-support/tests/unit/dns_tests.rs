@@ -130,6 +130,8 @@ fn fake_dns_socket(local_addr: std::net::SocketAddr) -> FakeDnsSocket {
     FakeDnsSocket { local_addr }
 }
 
+// Keep the injected callback's fallible signature aligned with `UdpSocket::local_addr`.
+#[allow(clippy::unnecessary_wraps)]
 fn fake_dns_local_addr(socket: &FakeDnsSocket) -> io::Result<std::net::SocketAddr> {
     Ok(socket.local_addr)
 }

@@ -234,7 +234,6 @@ fn bind_local_dns_sockets_with<Udp, Tcp>(
             Ok(listener) => return Ok((udp_socket, listener)),
             Err(source) => {
                 retry_dns_socket_pair_bind("TCP", local_addr, attempt, source)?;
-                continue;
             }
         }
     }
