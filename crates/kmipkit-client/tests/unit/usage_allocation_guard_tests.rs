@@ -642,3 +642,35 @@ fn decrypt_verify_hash_and_ordinary_calls_do_not_consume_guard_allowance() {
         assert_eq!(context.available_units(), ALLOCATION);
     }
 }
+
+#[test]
+fn guarded_batch_item_returns_standard_batch_and_preserves_request_metadata() {
+    let mut context = allocate_context();
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(0x1F, 1, Some(0x05), None, None),
+        request_write_chunks: Vec::new(),
+    });
+    let batch_id = vec![0xA5, 0x5A];
+    let item = ClientBatchItem::new(protection_request(
+        0x1F,
+        Some(UniqueIdentifier::TextString(OBJECT_ID.to_owned())),
+    ))
+    .with_unique_batch_item_id(batch_id.clone());
+
+    let response = client
+        .execute_guarded_protection_item(
+            &mut context,
+            item,
+            3,
+            &CodecLimits::defaults(),
+        )
+        .expect("the guarded item uses the standard one-item batch result");
+
+    assert_eq!(response.len(), 1);
+    assert_eq!(response.get(0).map(|item| item.outcome().response().result().status().raw()), Some(1));
+    assert_eq!(context.reserved_units(), 3);
+    assert!(fake
+        .borrow()
+        .retained_request_bytes()
+        .is_some_and(|request| request.windows(batch_id.len()).any(|window| window == batch_id)));
+}
