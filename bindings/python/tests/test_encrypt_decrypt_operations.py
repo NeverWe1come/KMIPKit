@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
-from kmipkit import extensions, ttlv
+from kmipkit import client, extensions, ttlv
 
 
 def _capture_constructor(
@@ -177,3 +178,68 @@ def test_encrypt_decrypt_builders_preserve_absent_and_present_empty_octets(
         assert decrypt_args[8] == extensions.ffi.NULL
     finally:
         parameters.close()
+
+
+@pytest.mark.parametrize(
+    ("operation", "symbol", "expected"),
+    (
+        (
+            "encrypt",
+            "kmipkit_client_batch_item_response_encrypt",
+            (b"ciphertext-marker", b"iv-marker", b"correlation-marker", b"tag-marker"),
+        ),
+        (
+            "decrypt",
+            "kmipkit_client_batch_item_response_decrypt",
+            (b"plaintext-marker", b"correlation-marker"),
+        ),
+    ),
+)
+def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
+    monkeypatch: pytest.MonkeyPatch,
+    operation: str,
+    symbol: str,
+    expected: tuple[bytes, ...],
+) -> None:
+    parser = getattr(client, f"_{operation}_response", None)
+    assert callable(parser), f"missing Python typed response parser: {operation}"
+    owners: list[object] = []
+
+    def get_response(_item: object, *outputs: object) -> int:
+        outputs[0][0] = 1  # type: ignore[index]
+        identifier = outputs[1]
+        identifier.struct_size = extensions.ffi.sizeof("kmipkit_unique_identifier_v1_t")
+        identifier.abi_version = 1
+        identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        identifier.text_data = extensions.ffi.new("uint8_t[]", b"response-key-secret")
+        identifier.text_length = len(b"response-key-secret")
+        owners.append(identifier.text_data)
+
+        spans = expected
+        span_start = 2
+        for index, raw in enumerate(spans):
+            present = outputs[span_start + index * 2]
+            span = outputs[span_start + index * 2 + 1]
+            storage = extensions.ffi.new("uint8_t[]", raw)
+            owners.append(storage)
+            present[0] = 1  # type: ignore[index]
+            span.data = storage
+            span.length = len(raw)
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
+    response = parser(SimpleNamespace(_pointer=lambda: object()))
+
+    assert response is not None
+    assert response.unique_identifier == extensions.UniqueIdentifier.text_string(
+        "response-key-secret"
+    )
+    actual = (
+        (response.data, response.iv_counter_nonce, response.correlation_value,
+         response.authenticated_encryption_tag)
+        if operation == "encrypt"
+        else (response.data, response.correlation_value)
+    )
+    assert actual == expected
+    assert "response-key-secret" not in repr(response)
+    assert all(raw.decode() not in repr(response) for raw in expected)
