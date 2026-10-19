@@ -554,29 +554,46 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertIn("Tables 196, 214, 235, 259, and 334", conflict_text)
         self.assertIn("Digested Data", conflict_text)
 
-    def test_section_6_1_procedure_clauses_preserve_unresolved_scope_and_conflict(self) -> None:
+    def test_section_6_1_procedure_clause_context_matches_reviewed_oracle(self) -> None:
         catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
 
         for ordinal in (6, 7, 8):
             clause = clauses[f"KMIPKIT-CLAUSE-SPEC-6.1-{ordinal:03d}"]
+            gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{ordinal:03d}"]
             with self.subTest(clause=clause["clause_id"]):
+                self.assertEqual(gap["actor"], "client")
+                self.assertIn("request parameters", gap["direction"])
+                self.assertEqual(gap["scope_disposition"], "client_1_0")
                 self.assertEqual(clause["source_keywords"], ["REQUIRED"])
                 self.assertEqual(clause["disposition"], "informative_context")
                 self.assertEqual(clause["requirement_ids"], [])
-                self.assertEqual(clause["role"], "unclear")
-                self.assertEqual(clause["direction"], "unclear")
-                self.assertEqual(clause["scope_state"], "unclear")
+                self.assertEqual(clause["role"], gap["actor"])
+                self.assertEqual(clause["direction"], "client_to_server")
+                self.assertEqual(clause["scope_state"], gap["scope_disposition"])
+                self.assertIn("client-to-server request context", clause["exclusion_rationale"].lower())
                 self.assertIn("procedure", clause["exclusion_rationale"].lower())
                 self.assertIn("lowercase", clause["exclusion_rationale"].lower())
+                self.assertIn("standalone requirement id", clause["exclusion_rationale"].lower())
 
         data_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1-009"]
+        data_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"]
+        self.assertEqual(data_gap["actor"], "client")
+        self.assertIn("request parameters", data_gap["direction"])
+        self.assertEqual(data_gap["scope_disposition"], "unresolved")
+        self.assertIsNone(data_gap["candidate_requirement_id"])
+        self.assertIsNone(data_gap["proposed_requirement_id"])
         self.assertEqual(data_clause["source_keywords"], ["REQUIRED"])
         self.assertEqual(data_clause["disposition"], "source_discrepancy")
         self.assertEqual(data_clause["requirement_ids"], [])
-        self.assertEqual(data_clause["role"], "unclear")
-        self.assertEqual(data_clause["direction"], "unclear")
+        self.assertEqual(data_clause["role"], data_gap["actor"])
+        self.assertEqual(data_clause["direction"], "client_to_server")
         self.assertEqual(data_clause["scope_state"], "unclear")
+        self.assertIn("client-to-server request context", data_clause["exclusion_rationale"].lower())
+        self.assertIn("operation-level scope remains unclear", data_clause["exclusion_rationale"].lower())
+        self.assertIn("source interpretation is unresolved", data_clause["exclusion_rationale"].lower())
         self.assertIn("lowercase", data_clause["exclusion_rationale"].lower())
         self.assertIn("table", data_clause["exclusion_rationale"].lower())
 
