@@ -687,6 +687,7 @@ const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const ENCODING_OPTION: u32 = 0x0042_00A3;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
+const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const CREATE_KEY_PAIR_ATTRIBUTE_GROUPS: [u32; 3] = [0x0042_0126, 0x0042_0127, 0x0042_0128];
 const CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const QLENGTH_DOMAIN_PARAMETER: u32 = 0x0042_0073;
@@ -912,6 +913,43 @@ fn client_create_key_pair_domain_parameters_have_valid_wire_types(
                             _ => false,
                         })
                     })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn derive_key_specifies_cryptographic_length(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(attributes) = field_presence(&payload, ATTRIBUTES) else {
+                    return false;
+                };
+                attributes.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        let FieldPresence::Unique(length) =
+                            field_presence(&attributes, CRYPTOGRAPHIC_LENGTH)
+                        else {
+                            return false;
+                        };
+                        length.with_value(|value| matches!(value, ValueView::Integer(_)))
+                    }
+                    _ => false,
+                })
             })
             .unwrap_or(false)
     })
@@ -1817,6 +1855,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_specifies_cryptographic_length),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_length",
+            kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
     },

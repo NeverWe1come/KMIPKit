@@ -823,6 +823,60 @@ fn profile_maps_required_derive_key_cryptographic_length() {
     );
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the production rule has category-matched conformance evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for object_type in [2, 7] {
+        let request = request_message_with_operation_payload(
+            0x0000_0005,
+            derive_key_payload(object_type, Some(Value::integer(256))),
+        );
+        result
+            .validate_request(&request)
+            .expect("symmetric-key and Secret Data requests include an Integer length");
+    }
+
+    for malformed in [
+        derive_key_payload(2, None),
+        derive_key_payload(2, Some(Value::enumeration(256))),
+        derive_key_payload_with_lengths(2, [Value::integer(128), Value::integer(256)]),
+    ] {
+        let request = request_message_with_operation_payload(0x0000_0005, malformed);
+        let error = result
+            .validate_request(&request)
+            .expect_err("Derive Key cannot omit, mistype, or duplicate Cryptographic Length");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    }
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Derive Key rule does not constrain other operations");
+}
+
+fn derive_key_payload(object_type: u32, length: Option<Value>) -> Structure {
+    let attributes = length
+        .map(|length| structure([tagged(CRYPTOGRAPHIC_LENGTH_TAG, length)]))
+        .unwrap_or_default();
+    structure([
+        tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
+        tagged(ATTRIBUTES_TAG, Value::structure(attributes)),
+    ])
+}
+
+fn derive_key_payload_with_lengths(object_type: u32, lengths: [Value; 2]) -> Structure {
+    let attributes = structure(lengths.map(|length| tagged(CRYPTOGRAPHIC_LENGTH_TAG, length)));
+    structure([
+        tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
+        tagged(ATTRIBUTES_TAG, Value::structure(attributes)),
+    ])
 }
 
 #[test]
