@@ -816,7 +816,11 @@ fn result_message_client_access_has_an_optional_typed_rule() {
         GeneratedVerificationCategory::OptionalCapability
     );
     assert!(mapping.constraints.is_empty());
-    assert!(mapping.evaluator.is_some_and(|evaluate| evaluate(None, None)));
+    assert!(
+        mapping
+            .evaluator
+            .is_some_and(|evaluate| evaluate(None, None))
+    );
     assert!(mapping.test_evidence.iter().any(|evidence| {
         evidence.test_id
             == "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text"

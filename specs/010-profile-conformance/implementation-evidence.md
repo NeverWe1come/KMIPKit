@@ -3805,3 +3805,12 @@ Independent QA found that the first documentation regression rejected the exact 
 | Red | This DCO-signed Red commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` against a temporary mutation replacing the explicit validator boundary with a source-atom derivation claim | Expected Red: required production-boundary assertion failed. |
 | Green | This DCO-signed Green commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` | PASS: research explicitly says the production validator does not derive scope from source atoms and only checks stored scope against linked requirements. |
 | Refactor | This DCO-signed Refactor commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions` | PASS: the regression name now identifies the validator-boundary contract; the complete module passes with one Windows symlink-permission skip. |
+
+### CI correction — format Result Message mapping assertion (2026-10-19)
+
+CI run `39217747158` found a rustfmt-only failure in the Result Message optional-capability regression. Local `cargo fmt --all --check` reproduced the same single diff in `crates/kmipkit-protocol/tests/support/profile_unit.rs`; the correction changes only layout and does not alter behavior.
+
+| Stage | DCO-signed commit | Command or artifact | Result |
+|---|---|---|---|
+| Red | This DCO-signed corrective commit | `cargo fmt --all --check` | Expected Red: rustfmt requested multiline formatting for the `mapping.evaluator.is_some_and(...)` assertion. |
+| Green/Refactor | This DCO-signed formatting correction | `cargo fmt --all`; `cargo fmt --all --check`; `git diff --check` | PASS: all Rust formatting and whitespace checks pass; only assertion layout changed. |
