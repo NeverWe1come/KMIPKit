@@ -3725,3 +3725,13 @@ The independent source-gap oracle already records client request context for par
 | Refactor/evidence | This DCO-signed commit | `git diff --check` | PASS: no whitespace errors. |
 
 The regression and catalog update do not resolve source force or the Data/operation-table conflict in paragraph 009. They classify only its client request context. T002 remains unchecked and T003 remains gated by the outstanding normative crosswalk.
+
+### KMIPKIT-0010 T002 — conditional table-row and literal profile-inclusion Red (2026-10-19)
+
+The read-only pinned-source audit mapped all 30 Specification table-body requirements without assigning profile IDs. The rows state `Required=Yes` for a member in a selected structure or representation; that does not make every representation universal to every client profile. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) permits optional support for Specification clauses not listed in the preceding Baseline conditions. For §5.5, Table 161's name and tag forms remain alternatives (`OR`), and §6.1.20 Table 223 allows Attribute Reference omission in Get Attributes. Profiles §§6.13 and 6.14 literally include §5.7.1; the possibility that the authors intended §§5.7.2 or 5.7.3 does not change that source text.
+
+| Stage | DCO-signed commit | Command | Result |
+|---|---|---|---|
+| Red | `1097fc2d` | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_profile_conditional_structural_rows_are_not_client_profile_requirements tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_disc_011_and_012_preserve_literal_normative_inclusions` | Expected Red: 2 tests ran; 32 assertions failed because the 30 table-row records lacked the common profile-applicability rationale and §5.5 form/operation citations, and no accepted literal-inclusion disposition existed for DISC-011/012. No test errors occurred. |
+
+The Red commit changes tests only; catalog and independent oracle data have not yet been modified in this tranche. The earlier three §6.1/§9.17 gaps are adjudicated in the prior Green commit. T002 remains open pending the Green data update, full oracle/profile consistency checks, evidence refresh, and generated-report checks.
