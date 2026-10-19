@@ -550,7 +550,7 @@ def _rust_package_test_module_paths(repository_text: str, package_text: str) -> 
         manifest = tomllib.loads(safe_read_bytes(repository, (package_root / "Cargo.toml").relative_to(repository).as_posix(), max_bytes=1_048_576).decode("utf-8"))
     except (PathSecurityError, UnicodeDecodeError, tomllib.TOMLDecodeError, ValueError):
         return frozenset()
-    package_options = manifest.get("package", {})
+    package_options = manifest.get("package")
     if not isinstance(package_options, dict):
         return frozenset()
     autolib = package_options.get("autolib", True)
