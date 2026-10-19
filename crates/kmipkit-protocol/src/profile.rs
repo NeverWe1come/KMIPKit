@@ -802,6 +802,16 @@ fn client_may_include_or_omit_unique_batch_item_id(
     request.is_some()
 }
 
+fn client_can_inspect_optional_result_message(
+    _request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §9.17's client-use MAY adds no request or response validation rule.
+    // Exact text access and redacted Debug output are covered by result tests;
+    // caller-controlled logging stays outside this protocol profile validator.
+    true
+}
+
 fn client_response_preserves_x509_optional_values(
     _request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1737,6 +1747,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.17-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.17-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_inspect_optional_result_message),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::result_message_client_access_has_an_optional_typed_rule",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/result_contract.rs::operation_result_display_and_debug_redact_message",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],

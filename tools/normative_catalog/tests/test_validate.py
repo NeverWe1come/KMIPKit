@@ -396,8 +396,8 @@ def _rust_test_body(test_reference: str) -> str | None:
 
 def _selected_profile_source_scope(
     catalog: dict[str, Any], target_manifest: dict[str, Any]
-) -> tuple[set[str], set[tuple[str, str]]]:
-    """Resolve the selected profile clause IDs and their pinned source sections."""
+) -> tuple[set[str], set[tuple[str, str]], set[str] | None]:
+    """Resolve selected profile clauses, source sections, and explicit requirement IDs."""
     profiles = {profile["profile_id"]: profile for profile in catalog["profiles"]}
     selected_profiles = [profiles[profile_id] for profile_id in target_manifest["profile_ids"]]
     selected_clause_ids = {
@@ -410,11 +410,20 @@ def _selected_profile_source_scope(
         (clauses_by_id[clause_id]["source_id"], clauses_by_id[clause_id]["section"])
         for clause_id in selected_clause_ids
     }
-    return selected_clause_ids, selected_source_sections
+    selected_requirement_ids = None
+    if all("requirement_ids" in profile for profile in selected_profiles):
+        selected_requirement_ids = {
+            requirement_id
+            for profile in selected_profiles
+            for requirement_id in profile["requirement_ids"]
+        }
+    return selected_clause_ids, selected_source_sections, selected_requirement_ids
 
 
 def _has_reviewed_client_actor(record: dict[str, Any]) -> bool:
-    """Return whether a source review explicitly assigns an obligation to the client."""
+    """Return whether the source or an explicit project interpretation assigns client scope."""
+    if record.get("project_actor_interpretation") == "client":
+        return True
     actor = record.get("actor")
     if not isinstance(actor, str):
         return False
@@ -427,6 +436,7 @@ def _reviewed_profile_optional_capabilities(
     oracle: dict[str, Any],
     selected_clause_ids: set[str],
     selected_source_sections: set[tuple[str, str]],
+    selected_requirement_ids: set[str] | None = None,
 ) -> tuple[set[str], list[str]]:
     """Collect source-reviewed MAY/OPTIONAL candidates in the selected profile closure."""
     capabilities: set[str] = set()
@@ -444,6 +454,12 @@ def _reviewed_profile_optional_capabilities(
             ):
                 continue
             candidate_id = obligation["candidate_requirement_id"]
+            if (
+                obligation["scope_disposition"] == "profile_conditional"
+                and selected_requirement_ids is not None
+                and candidate_id not in selected_requirement_ids
+            ):
+                continue
             if candidate_id is None:
                 gap_ref = obligation.get("source_gap_id")
                 if gap_ref not in explicit_source_gaps:
@@ -493,6 +509,12 @@ def _reviewed_profile_optional_capabilities(
             and gap["scope_disposition"] in {"client_1_0", "profile_conditional"}
         ):
             candidate_id = gap["candidate_requirement_id"]
+            if (
+                gap["scope_disposition"] == "profile_conditional"
+                and selected_requirement_ids is not None
+                and candidate_id not in selected_requirement_ids
+            ):
+                continue
             if candidate_id is None:
                 gaps.append(
                     f"{gap['gap_id']}: in-scope optional capability has no stable candidate ID "
@@ -517,6 +539,7 @@ def _reviewed_profile_conditional_capability_sources(
     oracle: dict[str, Any],
     selected_clause_ids: set[str],
     selected_source_sections: set[tuple[str, str]],
+    selected_requirement_ids: set[str] | None = None,
 ) -> dict[str, set[str]]:
     """Return selected source clauses that conditionally authorize optional capabilities."""
     conditional_sources: dict[str, set[str]] = {}
@@ -530,6 +553,10 @@ def _reviewed_profile_conditional_capability_sources(
                 obligation.get("source_keyword") in {"MAY", "OPTIONAL"}
                 and obligation.get("scope_disposition") == "profile_conditional"
                 and isinstance(candidate_id, str)
+                and (
+                    selected_requirement_ids is None
+                    or candidate_id in selected_requirement_ids
+                )
             ):
                 conditional_sources.setdefault(candidate_id, set()).add(source_clause_id)
 
@@ -560,6 +587,10 @@ def _reviewed_profile_conditional_capability_sources(
             and _has_reviewed_client_actor(gap)
             and isinstance(source_clause_id, str)
             and isinstance(candidate_id, str)
+            and (
+                selected_requirement_ids is None
+                or candidate_id in selected_requirement_ids
+            )
         ):
             conditional_sources.setdefault(candidate_id, set()).add(source_clause_id)
     return conditional_sources
@@ -4390,7 +4421,7 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         expected_clause_directions = {
-            "KMIPKIT-CLAUSE-SPEC-9.17-001": "unclear",
+            "KMIPKIT-CLAUSE-SPEC-9.17-001": "server_to_client",
             "KMIPKIT-CLAUSE-SPEC-9.18-001": "server_to_client",
             "KMIPKIT-CLAUSE-SPEC-9.19-001": "server_to_client",
         }
@@ -4411,10 +4442,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNotNone(discrepancy, f"mixed §9.17 source scope requires {discrepancy_id}")
         self.assertEqual(discrepancy["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.17"}])
         self.assertEqual(discrepancy["normative_status"], "evidence_gap")
-        self.assertEqual(discrepancy["affected_requirement_ids"], [])
+        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
         self.assertEqual(discrepancy["affected_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"])
-        self.assertEqual(discrepancy["state"], "open")
-        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
+        self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-016")
 
     def test_rejects_source_checksum_mismatch(self) -> None:
         document = minimal_catalog()
@@ -5386,11 +5417,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reviewed_rejections, expected_rejected)
 
         expected_source_scopes = {
-            "KMIPKIT-REQ-SPEC-4.1-001-001": "unresolved",
-            "KMIPKIT-REQ-SPEC-4.1-001-002": "unresolved",
-            "KMIPKIT-REQ-SPEC-4.1-001-003": "unresolved",
+            "KMIPKIT-REQ-SPEC-4.1-001-001": "profile_conditional",
+            "KMIPKIT-REQ-SPEC-4.1-001-002": "profile_conditional",
+            "KMIPKIT-REQ-SPEC-4.1-001-003": "profile_conditional",
             "KMIPKIT-REQ-SPEC-4.4-001": "client_1_0",
-            "KMIPKIT-REQ-SPEC-4.11-001": "unresolved",
+            "KMIPKIT-REQ-SPEC-4.11-001": "server_only",
             "KMIPKIT-REQ-SPEC-4.14-001-001": "profile_conditional",
             "KMIPKIT-REQ-SPEC-4.14-001-002": "profile_conditional",
             "KMIPKIT-REQ-SPEC-4.16-001-001": "client_1_0",
@@ -5399,8 +5430,8 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-4.16-003": "profile_conditional",
             "KMIPKIT-REQ-SPEC-4.17-001-001": "client_1_0",
             "KMIPKIT-REQ-SPEC-4.17-001-002": "client_1_0",
-            "KMIPKIT-REQ-SPEC-4.18-001-001": "unresolved",
-            "KMIPKIT-REQ-SPEC-4.18-001-002": "unresolved",
+            "KMIPKIT-REQ-SPEC-4.18-001-001": "profile_conditional",
+            "KMIPKIT-REQ-SPEC-4.18-001-002": "profile_conditional",
         }
         self.assertEqual(
             {row["requirement_id"]: row["scope_state"] for row in crosswalk},
@@ -6124,14 +6155,14 @@ class CatalogValidationTests(unittest.TestCase):
                 (1, "the OPTIONAL Current Attribute existing value", "OPTIONAL", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.34-001-001"),
                 (2, "it SHALL be selected as the attribute instance to be modified to the New Attribute value", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.34-001-002"),
                 (3, "an error SHALL be returned", "SHALL", "server", "server_only", None),
-                (4, "Only existing attributes MAY be changed via this operation.", "MAY", "unspecified", "unresolved", "KMIPKIT-REQ-SPEC-6.1.34-001-003"),
+                (4, "Only existing attributes MAY be changed via this operation.", "MAY", "unspecified", "profile_conditional", "KMIPKIT-REQ-SPEC-6.1.34-001-003"),
                 (5, "Only the specified instance of the attribute SHALL be modified.", "SHALL", "server", "server_only", None),
                 (6, "Specifying a Current Attribute for which there exists no Attribute associated with the object SHALL result in an error.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.34-001-004"),
             ],
         )
-        self.assertEqual(modify_attribute["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.34-001-001"])
+        self.assertEqual(modify_attribute["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.34-001-001", "KMIPKIT-REQ-SPEC-6.1.34-001-003"])
         self.assertIn("omission does not require exactly one instance as a client precondition", modify_attribute["review_note"])
-        self.assertIn("actor of the MAY is unresolved", modify_attribute["review_note"])
+        self.assertIn("project recommends client attribution", modify_attribute["review_note"])
         self.assertEqual(
             [
                 (row["requirement_id"], row["source_keyword"], row["source_obligation_order"], row["role"], row["scope_state"])
@@ -6141,7 +6172,7 @@ class CatalogValidationTests(unittest.TestCase):
             [
                 ("KMIPKIT-REQ-SPEC-6.1.34-001-001", "OPTIONAL", 1, "client", "client_1_0"),
                 ("KMIPKIT-REQ-SPEC-6.1.34-001-002", "SHALL", 2, "server", "server_only"),
-                ("KMIPKIT-REQ-SPEC-6.1.34-001-003", "MAY", 4, "unspecified", "unresolved"),
+                ("KMIPKIT-REQ-SPEC-6.1.34-001-003", "MAY", 4, "client", "profile_conditional"),
                 ("KMIPKIT-REQ-SPEC-6.1.34-001-004", "SHALL", 6, "server", "server_only"),
             ],
         )
@@ -11083,7 +11114,7 @@ class CatalogValidationTests(unittest.TestCase):
             [
                 (1, "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-4.34-001-001"),
                 (2, "MAY", "client and server", "unresolved", None),
-                (3, "SHOULD", "unresolved", "unresolved", "KMIPKIT-REQ-SPEC-4.34-001-002"),
+                (3, "SHOULD", "unresolved", "profile_conditional", "KMIPKIT-REQ-SPEC-4.34-001-002"),
             ],
             "§4.34's undefined compound MAY NOT must remain ambiguous rather than becoming SHALL NOT",
         )
@@ -11097,16 +11128,16 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             reviews["KMIPKIT-CLAUSE-SPEC-4.38-003"]["source_obligations"][0]["scope_disposition"],
-            "unresolved",
-            "passive immutability language does not name which endpoint must enforce it",
+            "profile_conditional",
+            "preserve the best client recommendation while leaving the pinned atom's actor unspecified",
         )
         self.assertEqual(
             [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.40-001"]["source_obligations"]],
-            ["unresolved"] * 5,
+            ["profile_conditional"] * 5,
         )
         self.assertEqual(
             [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.41-001"]["source_obligations"]],
-            ["unresolved"] * 4,
+            ["profile_conditional"] * 4,
         )
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-4.42-001"]["source_obligations"], [])
         self.assertIn("lowercase", reviews["KMIPKIT-CLAUSE-SPEC-4.42-001"]["review_note"])
@@ -11432,7 +11463,7 @@ class CatalogValidationTests(unittest.TestCase):
                 (atom["source_order"], atom["source_keyword"], atom["scope_disposition"])
                 for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.59-003"]["source_obligations"]
             ],
-            [(1, "SHALL", "server_only"), (2, "SHALL NOT", "unresolved"), (3, "SHALL NOT", "client_1_0")],
+            [(1, "SHALL", "server_only"), (2, "SHALL NOT", "profile_conditional"), (3, "SHALL NOT", "client_1_0")],
         )
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-4.59-004"]["source_obligations"], [])
         self.assertIn("value No", reviews["KMIPKIT-CLAUSE-SPEC-4.59-004"]["source_excerpt"])
@@ -15374,12 +15405,13 @@ class CatalogValidationTests(unittest.TestCase):
             )
             self.assertEqual(requirements[requirement_id]["scope_state"], "mixed")
 
-        unresolved_requirement_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
+        conditional_requirement_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
         self.assertEqual(
-            [row["scope_state"] for row in mappings[unresolved_requirement_id]],
-            ["unresolved"],
+            [row["scope_state"] for row in mappings[conditional_requirement_id]],
+            ["profile_conditional"],
         )
-        self.assertEqual(requirements[unresolved_requirement_id]["scope_state"], "unclear")
+        self.assertEqual(requirements[conditional_requirement_id]["scope_state"], "profile_conditional")
+        self.assertEqual(requirements[conditional_requirement_id]["profile_ids"], [])
 
         verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
         verify_keywords = {row["source_keyword"] for row in verify_rows}
@@ -15948,11 +15980,12 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-REQ-PROF-5.18.3-004": "out_of_scope",
             },
         )
-        unresolved_preface = next(
+        optional_preface = next(
             gap for gap in gaps if gap["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE"
         )
-        self.assertEqual(unresolved_preface["scope_disposition"], "unresolved")
-        self.assertEqual(unresolved_preface["proposed_requirement_id"], None)
+        self.assertEqual(optional_preface["scope_disposition"], "client_1_0")
+        self.assertIsNone(optional_preface["proposed_requirement_id"])
+        self.assertEqual(optional_preface["source_resolution"]["kind"], "optional_client_capability_context")
 
     def test_source_rejected_client_candidates_are_out_of_scope(self) -> None:
         """Rejected source atoms cannot remain in any computed client closure."""
@@ -16248,8 +16281,12 @@ class CatalogValidationTests(unittest.TestCase):
                             )
                     continue
                 reviewed_scope = obligation["scope_disposition"]
-                if (
+                actor_is_client_attributed = (
                     obligation["actor"] != "unresolved"
+                    or obligation.get("project_actor_interpretation") == "client"
+                )
+                if (
+                    actor_is_client_attributed
                     and (
                         reviewed_scope in {"client_1_0", "profile_conditional"}
                         or reviewed_scope == "client_1_0 + server_only (split/shared)"
@@ -16430,6 +16467,8 @@ class CatalogValidationTests(unittest.TestCase):
                         "generic_parameter_context",
                         "attribute_policy_mapping",
                         "normative_inclusion",
+                        "optional_client_capability_context",
+                        "operation_table_precedence",
                     }:
                         violations.append(
                             f"{gap['gap_id']} is in-scope without a requirement ID or reviewed source disposition "
@@ -16466,6 +16505,28 @@ class CatalogValidationTests(unittest.TestCase):
                         ):
                             violations.append(
                                 f"{gap['gap_id']} does not resolve to its exact client profile inclusion edge"
+                            )
+                    elif resolution_kind == "optional_client_capability_context":
+                        if (
+                            gap["gap_id"] != "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE"
+                            or resolution.get("related_requirement_ids") != []
+                            or gap.get("proposed_requirement_id") is not None
+                            or "optionally" not in gap["source_excerpt"].casefold()
+                            or "OPTIONAL" in gap["source_excerpt"]
+                        ):
+                            violations.append(
+                                f"{gap['gap_id']} does not preserve the optional preface as context without a formal requirement ID"
+                            )
+                    elif resolution_kind == "operation_table_precedence":
+                        if (
+                            gap["gap_id"] != "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"
+                            or resolution.get("decision_id") != "KMIPKIT-DEC-015"
+                            or resolution.get("related_requirement_ids") != []
+                            or gap.get("proposed_requirement_id") is not None
+                            or "no standalone paragraph-009 requirement ID" not in resolution.get("review_note", "")
+                        ):
+                            violations.append(
+                                f"{gap['gap_id']} does not preserve the approved operation-table reconciliation without a new requirement ID"
                             )
 
         self.assertEqual(violations, [], "pinned-source requirement review mismatches: " + "; ".join(violations))
@@ -17400,7 +17461,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertTrue(_is_discoverable_positive_test(path, test_name, source), named_test)
 
     def test_unselected_profile_may_remains_catalogued_without_blocking_baseline_scope(self) -> None:
-        """Only selected-profile closure requirements gate Baseline optional evidence."""
+        """Only explicitly selected profile requirements gate Baseline optional evidence."""
         oracle = json.loads(
             (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -17410,13 +17471,14 @@ class CatalogValidationTests(unittest.TestCase):
         targets = json.loads(
             (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
         )
-        selected_clause_ids, selected_source_sections = _selected_profile_source_scope(
+        selected_clause_ids, selected_source_sections, selected_requirement_ids = _selected_profile_source_scope(
             catalog, targets
         )
         optional_capabilities, _ = _reviewed_profile_optional_capabilities(
             oracle,
             selected_clause_ids,
             selected_source_sections,
+            selected_requirement_ids,
         )
         unselected_capability = "KMIPKIT-REQ-PROF-5.12.6.1-001"
 
@@ -17432,6 +17494,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(
             unselected_capability in optional_capabilities,
             f"{unselected_capability} is catalogued for another profile, not the selected Baseline closure",
+        )
+        profile_conditional_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-4.1-001", selected_clause_ids)
+        self.assertNotIn(
+            profile_conditional_id,
+            optional_capabilities,
+            "a source clause in the whole-Spec closure is not a profile requirement without explicit membership",
         )
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.43-009-001", optional_capabilities)
 
@@ -18054,7 +18123,7 @@ class CatalogValidationTests(unittest.TestCase):
         targets = json.loads(
             (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
         )
-        selected_clause_ids, selected_source_sections = _selected_profile_source_scope(
+        selected_clause_ids, selected_source_sections, selected_requirement_ids = _selected_profile_source_scope(
             catalog, targets
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
@@ -18062,11 +18131,13 @@ class CatalogValidationTests(unittest.TestCase):
             oracle,
             selected_clause_ids,
             selected_source_sections,
+            selected_requirement_ids,
         )
         conditional_sources = _reviewed_profile_conditional_capability_sources(
             oracle,
             selected_clause_ids,
             selected_source_sections,
+            selected_requirement_ids,
         )
         typed_rule_mappings = load_typed_rule_mappings(ROOT)
 
@@ -18129,7 +18200,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             observed_blocked_requirement_ids,
             expected_blocked_requirement_ids,
-            "each unresolved selected client MAY/OPTIONAL must remain an explicit gap; "
+            "each selected client MAY/OPTIONAL without evidence must remain an explicit gap; "
             "profile target membership and descriptive text do not satisfy this gate",
         )
         implementation_mapping_gap_ids = {
@@ -18137,10 +18208,11 @@ class CatalogValidationTests(unittest.TestCase):
             for gap in gaps
             if gap.endswith(": no usable implementation mapping")
         }
+        missing_implementation_ids = expected_blocked_requirement_ids
         self.assertEqual(
             implementation_mapping_gap_ids,
-            expected_blocked_requirement_ids,
-            "every blocked capability must report its missing implementation mapping",
+            missing_implementation_ids,
+            "blocked capabilities without implementation mappings must report that gap",
         )
         positive_evidence_gap_ids = {
             gap.partition(":")[0]
@@ -18150,7 +18222,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             positive_evidence_gap_ids,
             expected_blocked_requirement_ids,
-            "every unresolved capability must remain blocked until eligible typed positive evidence exists",
+            "every unsupported capability must remain blocked until eligible typed positive evidence exists",
         )
         self.assertEqual(
             len(gaps),

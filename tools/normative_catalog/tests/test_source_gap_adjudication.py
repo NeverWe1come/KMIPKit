@@ -629,9 +629,19 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertIn("does not require every client profile", gap["review_note"])
                 table_locator = gap["source_locator"]
                 row_range = table_locator["html_line_range"]
+                table_by_section = {
+                    "3.1": 12, "3.2": 13, "3.4": 18, "3.5": 19, "3.6": 20,
+                    "3.7": 21, "3.8": 22, "3.9": 23, "3.10": 24, "3.11": 25,
+                    "3.12": 26, "5.5": 161, "5.6": 162, "5.7": 163,
+                }
+                table_number = (
+                    15 if gap["source_section"] == "3.3" and table_locator["row_label"] == "Wrapping Method"
+                    else 16 if gap["source_section"] == "3.3"
+                    else table_by_section[gap["source_section"]]
+                )
                 expected_row_citation = (
                     f"Specification v2.1 §{gap['source_section']}, "
-                    f"HTML lines {row_range[0]}–{row_range[1]}"
+                    f"Table {table_number}, pinned HTML lines {row_range[0]}–{row_range[1]}"
                 )
                 self.assertIn(expected_row_citation, gap["review_note"])
                 self.assertIn("Profiles v2.1 §5.1.1 item 7", mapping["review_note"])
@@ -652,7 +662,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertIn("Table 161", get_attributes_gap["review_note"])
         self.assertIn("OR", get_attributes_gap["review_note"])
         self.assertIn("Table 223", get_attributes_gap["review_note"])
-        self.assertIn("Attribute Reference is not required by Get Attributes", get_attributes_gap["review_note"])
+        self.assertIn("that operation permits omitting it", get_attributes_gap["review_note"])
         self.assertIn("§6.1.20", get_attributes_gap["review_note"])
 
     def test_disc_011_and_012_preserve_literal_normative_inclusions(self) -> None:

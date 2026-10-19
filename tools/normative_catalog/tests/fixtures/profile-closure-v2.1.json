@@ -21461,9 +21461,9 @@
       },
       "source_keyword": "MAY",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.1; source atom 1 was reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.1, source atom 1: At or after Activation Date, the managed object may be used. KMIP 2.1 describes the object consumer but does not identify which endpoint enforces use; client-consumer attribution is the project interpretation when a selected profile supports and uses this attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 1,
       "source_actor": "object consumer; source does not name the enforcing actor"
     },
@@ -21478,9 +21478,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.1; source atom 2 was reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.1, source atom 2: Before Activation Date, the managed object must not be used. KMIP 2.1 describes the object consumer but does not identify which endpoint enforces use; client-consumer attribution is the project interpretation when a selected profile supports and uses this attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 2,
       "source_actor": "object consumer; source does not name the enforcing actor"
     },
@@ -21495,9 +21495,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.1; source atom 3 was reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.1, source atom 3: The source prohibits changing or deleting Activation Date after the transition, with the stated lifecycle condition. The source does not assign the restriction to client requests or server lifecycle enforcement; client attribution is the project interpretation for profiles using this attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 3,
       "source_actor": "source does not identify whether client requests or server lifecycle enforcement is constrained"
     },
@@ -21511,10 +21511,10 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "SHOULD",
-      "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.11; source atom 1 was reviewed independently from catalog scope and profile closure arrays.",
+      "role": "server",
+      "scope_state": "server_only",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.11, lines 11842–11845: when compromise time cannot be estimated, Compromise Occurrence Date SHOULD be set to Initial Date. The setter is not identified; server-only scope and server actor are the project recommendation for server-owned object metadata, not an actor stated by the source. No client profile membership is claimed.",
       "source_obligation_order": 1,
       "source_actor": "setter not identified by the source"
     },
@@ -21666,9 +21666,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.18; source atom 1 was reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.18, source atom 1: After Deactivation Date, use is prohibited except for decryption, signature verification, or unwrapping, only under extraordinary circumstances and only when special permission is granted. KMIP 2.1 describes an object consumer but does not identify the enforcer; client-consumer attribution is the project interpretation when a selected profile uses this attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 1,
       "source_actor": "object consumer; source does not identify enforcer"
     },
@@ -21683,9 +21683,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.18; source atom 2 was reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.18, lines 13418–13424 and Table 64, lines 13463–13574: the prose exception to changing/deleting applies only in Pre-Active or Active; Table 64 says the client may modify only in those states and separately says `Deletable by client: No`. The project reading is that the client may modify only in Pre-Active/Active and may never delete. Client attribution and conditional profile scope are project interpretations because this clause does not name the enforcement actor.",
       "source_obligation_order": 2,
       "source_actor": "source does not identify whether client request or server lifecycle enforcement is constrained"
     },
@@ -21895,9 +21895,9 @@
       },
       "source_keyword": "SHOULD",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.34; source atom 3 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.34, source atom 3: The source recommends one usage per object and states that the server does not enforce that restriction. Client attribution and profile-conditional scope are the project interpretation for profiles and operations that use this attribute; this is not universal profile membership. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 3,
       "source_actor": "unresolved"
     },
@@ -22014,9 +22014,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.38; source atom 1 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.38, source atom 1: The source says Original Creation Date must not be deleted or updated once set but does not name the enforcing endpoint. Client attribution is the project interpretation for a selected profile that supports and uses the attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 1,
       "source_actor": "unresolved"
     },
@@ -22048,9 +22048,9 @@
       },
       "source_keyword": "MAY",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40; source atom 1 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40, source atom 1: The source permits protected-information processing from Process Start Date, subject to the Cryptographic Usage Mask. Client-consumer attribution is the project interpretation when a selected profile supports this attribute and the corresponding usage. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 1,
       "source_actor": "unresolved"
     },
@@ -22065,9 +22065,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40; source atom 2 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40, source atom 2: The source prohibits use for protected-information processing before Process Start Date, subject to the Cryptographic Usage Mask. Client-consumer attribution is the project interpretation when a selected profile supports this attribute and the corresponding usage. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 2,
       "source_actor": "unresolved"
     },
@@ -22082,9 +22082,9 @@
       },
       "source_keyword": "MAY",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40; source atom 3 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40, source atom 3: The source permits Process Start Date at or after Activation Date but not before it. The setter is not named; client attribution is the project interpretation for profiles using both date attributes. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 3,
       "source_actor": "unresolved"
     },
@@ -22099,9 +22099,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40; source atom 4 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40, source atom 4: The source prohibits a Process Start Date earlier than Activation Date. The setter is not named; client attribution is the project interpretation for profiles using both date attributes. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 4,
       "source_actor": "unresolved"
     },
@@ -22116,9 +22116,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40; source atom 5 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.40, source atom 5: Once Process Start Date occurs, the source prohibits deletion or modification until destruction. The enforcement endpoint is not named; client attribution is the project interpretation for profiles supporting and using this attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 5,
       "source_actor": "unresolved"
     },
@@ -22133,9 +22133,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41; source atom 1 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41, source atom 1: After Protect Stop Date, the source prohibits use of the object to apply cryptographic protection, subject to the Cryptographic Usage Mask. Client-consumer attribution is the project interpretation for profiles supporting this attribute and usage. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 1,
       "source_actor": "unresolved"
     },
@@ -22150,9 +22150,9 @@
       },
       "source_keyword": "MAY",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41; source atom 2 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41, source atom 2: The source permits Protect Stop Date at or before Deactivation Date. The setter is not named; client attribution is the project interpretation for profiles using these date attributes. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 2,
       "source_actor": "unresolved"
     },
@@ -22167,9 +22167,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41; source atom 3 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41, source atom 3: The source prohibits Protect Stop Date later than Deactivation Date. The setter is not named; client attribution is the project interpretation for profiles using these date attributes. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 3,
       "source_actor": "unresolved"
     },
@@ -22184,9 +22184,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "unresolved_source_scope",
-      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41; source atom 4 reviewed independently from catalog scope and profile closure arrays.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.41, source atom 4: Once Protect Stop Date occurs, the source prohibits deletion or modification until destruction. The enforcement endpoint is not named; client attribution is the project interpretation for profiles supporting and using this attribute. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 4,
       "source_actor": "unresolved"
     },
@@ -22269,9 +22269,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Specification v2.1 §4.59 Usage Limits Total; the source does not identify a unique enforcing actor after protection use begins.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.59, source atom 1: After cryptographic protection use begins, the source prohibits changing Usage Limits Total. Because the source permits protection use on either client or server, client scope is a project interpretation limited to client-side use of this attribute in a selected profile. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 1,
       "source_actor": "source does not name an enforcing actor; protection use may occur on the client or server"
     },
@@ -22286,9 +22286,9 @@
       },
       "source_keyword": "SHALL NOT",
       "role": "client",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Specification v2.1 §4.59 paragraph 3; Total correction after a Get Usage Allocation count change has no explicit actor.",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §4.59, source atom 2: After Get Usage Allocation changes Usage Limits Count, the source prohibits changing Usage Limits Total. It does not identify whether client or server enforces that restriction; client attribution is the project interpretation for profiles using this allocation flow. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 2,
       "source_actor": "source does not state whether the prohibited Total correction is enforced by client or server"
     },
@@ -23780,10 +23780,10 @@
         "block_kind": "paragraph"
       },
       "source_keyword": "MAY",
-      "role": "unspecified",
-      "scope_state": "unresolved",
-      "applies_to": "all_client_profiles",
-      "review_note": "Specification v2.1 §6.1.34; the source sentence does not identify the actor of MAY, so no client role is inferred.",
+      "role": "client",
+      "scope_state": "profile_conditional",
+      "applies_to": [],
+      "review_note": "Pinned OASIS KMIP Specification v2.1 §6.1.34, source atom 4: Modify Attribute is a client-to-server operation (§6.1.34, lines 30605–30616). The existing MAY requirement ID describes that only existing attributes may be changed through the operation; the adjacent SHALL about modifying only the specified instance remains separately mapped to its existing ID. Client scope is conditional on a selected profile supporting the operation; no new ID is introduced. The client/consumer attribution and profile_conditional scope are project interpretations, not actor/applicability language supplied by KMIP 2.1. This row has no profile IDs and does not claim a universal client-profile obligation.",
       "source_obligation_order": 4,
       "source_actor": "unspecified"
     },
@@ -26134,7 +26134,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.1, Table 12, pinned HTML lines 7698–7716. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.10-002",
@@ -26154,7 +26154,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.10, Table 24, pinned HTML lines 9283–9301. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.10-003",
@@ -26174,7 +26174,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.10, Table 24, pinned HTML lines 9321–9339. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.10-004",
@@ -26194,7 +26194,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.10, Table 24, pinned HTML lines 9359–9377. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.11-002",
@@ -26214,7 +26214,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.11, Table 25, pinned HTML lines 9438–9457. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.11-003",
@@ -26234,7 +26234,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.11, Table 25, pinned HTML lines 9458–9476. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.12-002",
@@ -26254,7 +26254,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.12, Table 26, pinned HTML lines 9533–9552. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.12-003",
@@ -26274,7 +26274,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.12, Table 26, pinned HTML lines 9553–9571. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.2-003",
@@ -26294,7 +26294,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.2, Table 13, pinned HTML lines 7893–7914. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.3-010",
@@ -26314,7 +26314,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.3, Table 15, pinned HTML lines 8114–8132. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.3-011",
@@ -26334,7 +26334,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.3, Table 16, pinned HTML lines 8284–8302. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.4-002",
@@ -26354,7 +26354,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.4, Table 18, pinned HTML lines 8468–8486. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.5-002",
@@ -26374,7 +26374,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.5, Table 19, pinned HTML lines 8544–8562. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.5-003",
@@ -26394,7 +26394,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.5, Table 19, pinned HTML lines 8563–8581. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.5-004",
@@ -26414,7 +26414,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.5, Table 19, pinned HTML lines 8582–8600. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.5-005",
@@ -26434,7 +26434,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.5, Table 19, pinned HTML lines 8601–8619. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.6-002",
@@ -26454,7 +26454,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.6, Table 20, pinned HTML lines 8677–8695. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.6-004",
@@ -26474,7 +26474,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.6, Table 20, pinned HTML lines 8715–8733. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.6-005",
@@ -26494,7 +26494,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.6, Table 20, pinned HTML lines 8734–8752. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.7-003",
@@ -26514,7 +26514,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.7, Table 21, pinned HTML lines 8810–8828. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.8-002",
@@ -26534,7 +26534,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.8, Table 22, pinned HTML lines 9035–9053. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.8-003",
@@ -26554,7 +26554,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.8, Table 22, pinned HTML lines 9054–9072. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.9-002",
@@ -26574,7 +26574,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.9, Table 23, pinned HTML lines 9130–9148. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.9-003",
@@ -26594,7 +26594,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.9, Table 23, pinned HTML lines 9168–9186. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.9-004",
@@ -26614,7 +26614,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §3.9, Table 23, pinned HTML lines 9206–9224. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.39-002-001",
@@ -26651,7 +26651,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §5.5, Table 161, pinned HTML lines 22117–22137. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Table 161 alternatives and Get Attributes omission are preserved."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
@@ -26671,7 +26671,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §5.5, Table 161, pinned HTML lines 22138–22156. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Table 161 alternatives and Get Attributes omission are preserved."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
@@ -26691,7 +26691,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §5.5, Table 161, pinned HTML lines 22184–22202. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Table 161 alternatives and Get Attributes omission are preserved."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
@@ -26711,7 +26711,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §5.6, Table 162, pinned HTML lines 22260–22279. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
@@ -26731,7 +26731,7 @@
       "role": "client",
       "scope_state": "profile_conditional",
       "applies_to": [],
-      "review_note": "Exact pinned table body row; Required=Yes applies only when its enclosing structure or representation is used, and is not a formal RFC keyword. No client profile currently selects or mandates that structure; profile applicability remains unresolved."
+      "review_note": "Specification v2.1 §5.7, Table 163, pinned HTML lines 22337–22356. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
@@ -67001,8 +67001,9 @@
           "actor": "object consumer; source does not name the enforcing actor",
           "direction": "object may begin use at Activation Date",
           "condition": "client-side material use is not inferred; attribute is descriptive",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-001",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 2,
@@ -67011,8 +67012,9 @@
           "actor": "object consumer; source does not name the enforcing actor",
           "direction": "prevent use before Activation Date",
           "condition": "Activation Date has not been reached",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-002",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 3,
@@ -67021,14 +67023,19 @@
           "actor": "source does not identify whether client requests or server lifecycle enforcement is constrained",
           "direction": "attribute remains immutable after transition",
           "condition": "state transition from Pre-Active has occurred and object is not destroyed",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-003"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.1-001-003",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.1-001-001",
+        "KMIPKIT-REQ-SPEC-4.1-001-002",
+        "KMIPKIT-REQ-SPEC-4.1-001-003"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "Three source predicates are separate. The source names no endpoint responsible for object use or passive attribute immutability; preserve unresolved scope rather than assuming client enforcement."
+      "review_note": "Three source predicates are separate. The source names no endpoint responsible for object use or passive attribute immutability; preserve unresolved scope rather than assuming client enforcement.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -67052,14 +67059,15 @@
           "actor": "setter not identified by the source",
           "direction": "set Compromise Occurrence Date to Initial Date",
           "condition": "compromise time cannot be estimated",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.11-001"
+          "scope_disposition": "server_only",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.11-001",
+          "project_actor_interpretation": "server"
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [],
       "applies_to": "all_client_profiles",
-      "review_note": "The SHOULD value-setting actor is not identified; preserve unresolved scope rather than assigning the recommendation to the client."
+      "review_note": "The SHOULD value-setting actor is not identified; preserve unresolved scope rather than assigning the recommendation to the client.\n\nFinal T002 applicability: §4.11 has a SHOULD setting recommendation but does not identify its setter. The project recommends server_only treatment for server-owned compromise metadata; this server attribution is not explicit in the pinned source."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -67332,8 +67340,9 @@
           "actor": "object consumer; source does not identify enforcer",
           "direction": "restrict object use after Deactivation Date except for stated extraordinary uses",
           "condition": "Deactivation Date has occurred; listed exceptional use has special permission",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.18-001-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.18-001-001",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 2,
@@ -67342,14 +67351,18 @@
           "actor": "source does not identify whether client request or server lifecycle enforcement is constrained",
           "direction": "preserve Deactivation Date except in the named states",
           "condition": "object is not destroyed and is not Pre-Active or Active",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.18-001-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.18-001-002",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.18-001-001",
+        "KMIPKIT-REQ-SPEC-4.18-001-002"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The source does not identify the actor enforcing cryptographic-use restrictions or attribute immutability; do not infer a client-only obligation for the library boundary."
+      "review_note": "The source does not identify the actor enforcing cryptographic-use restrictions or attribute immutability; do not infer a client-only obligation for the library boundary.\n\nFinal T002 applicability: client attribution and profile_conditional scope are project interpretations. For §4.18-001-002, the prose and Table 64 agree that modification is limited to Pre-Active/Active and client deletion is prohibited; no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -68693,16 +68706,18 @@
           "actor": "unresolved",
           "direction": "retain one usage per object; the server does not enforce it",
           "condition": "source names the object usage but not the enforcing endpoint",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.34-001-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.34-001-002",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [
-        "KMIPKIT-REQ-SPEC-4.34-001-001"
+        "KMIPKIT-REQ-SPEC-4.34-001-001",
+        "KMIPKIT-REQ-SPEC-4.34-001-002"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The compound MAY NOT in the source is undefined in §1.2; preserve its unresolved force and actor instead of treating it as SHALL NOT. The SHOULD sentence also does not identify an enforcing endpoint."
+      "review_note": "The compound MAY NOT in the source is undefined in §1.2; preserve its unresolved force and actor instead of treating it as SHALL NOT. The SHOULD sentence also does not identify an enforcing endpoint.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -69049,14 +69064,17 @@
           "actor": "unresolved",
           "direction": "preserve Original Creation Date after set",
           "condition": "Original Creation Date has been set",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.38-003"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.38-003",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.38-003"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The passive SHALL NOT does not identify which endpoint enforces immutability; preserve the existing candidate label but mark source actor and scope unresolved."
+      "review_note": "The passive SHALL NOT does not identify which endpoint enforces immutability; preserve the existing candidate label but mark source actor and scope unresolved.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -69300,8 +69318,9 @@
           "actor": "unresolved",
           "direction": "begin using a valid object for protected-information processing",
           "condition": "Cryptographic Usage Mask permits the operation",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-001",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 2,
@@ -69310,8 +69329,9 @@
           "actor": "unresolved",
           "direction": "do not use for the protected-information operation",
           "condition": "Process Start Date has not been reached",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-002",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 3,
@@ -69320,8 +69340,9 @@
           "actor": "unresolved",
           "direction": "set Process Start Date equal to or after Activation Date",
           "condition": "date relationship",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-003"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-003",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 4,
@@ -69330,8 +69351,9 @@
           "actor": "unresolved",
           "direction": "do not set Process Start Date before Activation Date",
           "condition": "date relationship",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-004"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-004",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 5,
@@ -69340,14 +69362,21 @@
           "actor": "unresolved",
           "direction": "preserve Process Start Date after occurrence",
           "condition": "date has occurred and object is not destroyed",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-005"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.40-001-005",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.40-001-001",
+        "KMIPKIT-REQ-SPEC-4.40-001-002",
+        "KMIPKIT-REQ-SPEC-4.40-001-003",
+        "KMIPKIT-REQ-SPEC-4.40-001-004",
+        "KMIPKIT-REQ-SPEC-4.40-001-005"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The source restricts object use and attribute lifecycle but does not name the KMIP endpoint responsible; preserve all five source-ordered predicates as unresolved."
+      "review_note": "The source restricts object use and attribute lifecycle but does not name the KMIP endpoint responsible; preserve all five source-ordered predicates as unresolved.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -69393,8 +69422,9 @@
           "actor": "unresolved",
           "direction": "do not use object to apply cryptographic protection",
           "condition": "Cryptographic Usage Mask permits the operation and Protect Stop Date is reached",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-001",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 2,
@@ -69403,8 +69433,9 @@
           "actor": "unresolved",
           "direction": "set Protect Stop Date equal to or before Deactivation Date",
           "condition": "date relationship",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-002",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 3,
@@ -69413,8 +69444,9 @@
           "actor": "unresolved",
           "direction": "do not set Protect Stop Date after Deactivation Date",
           "condition": "date relationship",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-003"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-003",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 4,
@@ -69423,14 +69455,20 @@
           "actor": "unresolved",
           "direction": "preserve Protect Stop Date after occurrence",
           "condition": "date has occurred and object is not destroyed",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-004"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.41-001-004",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.41-001-001",
+        "KMIPKIT-REQ-SPEC-4.41-001-002",
+        "KMIPKIT-REQ-SPEC-4.41-001-003",
+        "KMIPKIT-REQ-SPEC-4.41-001-004"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The source restricts object use and attribute lifecycle but does not name the KMIP endpoint responsible; preserve all four source-ordered predicates as unresolved."
+      "review_note": "The source restricts object use and attribute lifecycle but does not name the KMIP endpoint responsible; preserve all four source-ordered predicates as unresolved.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -70796,14 +70834,17 @@
           "actor": "source does not name an enforcing actor; protection use may occur on the client or server",
           "direction": "preserve Usage Limits Total after protection use begins",
           "condition": "object begins applying cryptographic protection",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.59-002"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.59-002",
+          "project_actor_interpretation": "client"
         }
       ],
       "rejected_candidate_mappings": [],
-      "expected_client_requirement_ids": [],
+      "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.59-002"
+      ],
       "applies_to": "all_client_profiles",
-      "review_note": "The source prohibits changing Total after protection use begins but does not identify the enforcing actor."
+      "review_note": "The source prohibits changing Total after protection use begins but does not identify the enforcing actor.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -70838,8 +70879,9 @@
           "actor": "source does not state whether the prohibited Total correction is enforced by client or server",
           "direction": "preserve Usage Limits Total after a Get Usage Allocation changes Count",
           "condition": "Usage Limits Count has changed through Get Usage Allocation",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-001"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.59-003-001",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 3,
@@ -70854,10 +70896,11 @@
       ],
       "rejected_candidate_mappings": [],
       "expected_client_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.59-003-001",
         "KMIPKIT-REQ-SPEC-4.59-003-002"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "The paragraph mixes a server ignore rule, actor-ambiguous Total immutability, and an explicit client Count restriction."
+      "review_note": "The paragraph mixes a server ignore rule, actor-ambiguous Total immutability, and an explicit client Count restriction.\n\nFinal T002 applicability: this candidate is profile_conditional for the relevant attribute or operation context. Client attribution is a project interpretation where KMIP 2.1 does not name the actor; the direct source actor remains recorded on each atom, and no profile IDs are claimed."
     },
     {
       "source_id": "KMIPKIT-SRC-spec",
@@ -78659,8 +78702,9 @@
           "actor": "unspecified",
           "direction": "Modify Attribute operation semantics",
           "condition": "The operation changes an attribute.",
-          "scope_disposition": "unresolved",
-          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-003"
+          "scope_disposition": "profile_conditional",
+          "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+          "project_actor_interpretation": "client"
         },
         {
           "source_order": 5,
@@ -78691,12 +78735,6 @@
           "expected_disposition": "reject_catalog_client_actor_server_obligation"
         },
         {
-          "requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-003",
-          "claimed_keyword": "MAY",
-          "source_review": "Reject the catalog client assignment: the sentence does not identify the actor of MAY. The stable label is retained only as unresolved.",
-          "expected_disposition": "reject_catalog_client_actor_unresolved_source_actor"
-        },
-        {
           "requirement_id": "KMIPKIT-REQ-SPEC-6.1.34-001-004",
           "claimed_keyword": "SHALL",
           "source_review": "Reject the catalog client assignment: this source atom assigns the error response to the server. The stable label is retained only with server_only disposition.",
@@ -78704,10 +78742,11 @@
         }
       ],
       "expected_client_requirement_ids": [
-        "KMIPKIT-REQ-SPEC-6.1.34-001-001"
+        "KMIPKIT-REQ-SPEC-6.1.34-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.34-001-003"
       ],
       "applies_to": "all_client_profiles",
-      "review_note": "OPTIONAL describes the request field; omission does not require exactly one instance as a client precondition. With omission, the server selects the sole instance or returns an error for multiple instances. Candidate 6.1.34-001-002 and 6.1.34-001-004 are retained only as server_only; their catalog client assignments are rejected. The actor of the MAY is unresolved for candidate 6.1.34-001-003; its catalog client assignment is rejected and no client requirement is inferred.",
+      "review_note": "OPTIONAL describes the request field; omission does not require exactly one instance as a client precondition. With omission, the server selects the sole instance or returns an error for multiple instances. Candidate 6.1.34-001-002 and 6.1.34-001-004 remain server_only. KMIP 2.1 leaves the actor of the MAY unstated; this project recommends client attribution in the client-to-server Modify Attribute request context, preserving source actor unspecified.",
       "source_request_rows": [],
       "source_payload_rows": []
     },
@@ -85426,7 +85465,7 @@
           "source_element_id": "KMIPKIT-ELEM-TAG-4200C2",
           "source_requirement_ids": [],
           "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
-          "source_note": "Table 334 requires Data for single-part Sign unless Digested Data is supplied and says it is not required for multipart Sign. The general §6.1 paragraph 009 conflict remains unresolved; omission when both Init Indicator and Final Indicator are false has no conformance claim."
+          "source_note": "Table 334 requires Data for single-part Sign unless Digested Data is supplied and says it is not required for multipart Sign. Under KMIPKIT-DEC-015, the operation table controls single-part requests, including framed Init=true and Final=true. For multipart, table Data=No means it is not universally required; paragraph 009 requires Data when neither indicator is true and permits omission when either is true. This project interpretation creates no standalone paragraph-009 requirement ID."
         },
         {
           "row_label": "Digested Data",
@@ -91699,13 +91738,22 @@
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
       "status": "reviewed_procedure_context",
-      "review_note": "The pinned Specification v2.1 section 6.1 procedure at HTML lines 22485-22488 describes the single-part client request indicators and Correlation Value. Classify this as client_1_0 procedure context for a single-part cryptographic operation, without a standalone requirement ID. The apparent Data-rule conflict remains isolated in the unresolved paragraph 009 source gap; this mapping does not settle that source question or claim implementation/test coverage.",
+      "review_note": "The pinned Specification v2.1 §6.1 procedure at HTML lines 22485-22488 describes the single-part client request indicators and Correlation Value. Classify this as client_1_0 procedure context for a single-part cryptographic operation, without a standalone requirement ID. KMIPKIT-DEC-015 resolves the Data-rule tension with the operation-table single-part rule; this procedure mapping does not create a separate paragraph-009 requirement ID or make a profile-conformance claim.",
       "source_resolution": {
         "kind": "procedure_context",
         "context_id": "KMIPKIT-PROC-SPEC-6.1-019",
         "related_requirement_ids": [],
-        "review_note": "The single-part indicator/correlation instruction remains blocked pending source review of its interaction with unresolved §6.1 paragraph 009; no conformance claim is made. Keep this imperative source gap unresolved; do not infer a formal requirement.",
-        "related_source_table_contract_ids": []
+        "review_note": "The single-part indicator/correlation instruction remains client procedure context without a standalone requirement ID. Existing protocol tests verify single-part requiredness and omission of multipart framing fields across the cryptographic request builders. KMIPKIT-DEC-015 resolves the Data interaction using the operation-table single-part rule; no profile-conformance claim is made.",
+        "related_source_table_contract_ids": [],
+        "verification_refs": [
+          "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+          "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+          "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_single_part_data_and_omits_it_for_multipart",
+          "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+          "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
+          "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+          "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted"
+        ]
       }
     },
     {
@@ -92303,7 +92351,7 @@
       ],
       "audited_statement": "SHALL support “Basic Symmetric Key Foundry Client” conditions (§5.7.1).",
       "actor": "client",
-      "actor_scope_review": "Client; `profile_conditional` only when claiming the Intermediate Symmetric Key Foundry Client profile. Preserve the literal §5.7.1 reference; KMIPKIT-DISC-011 remains open for authorial intent, so do not substitute §5.7.2 or infer a correction.",
+      "actor_scope_review": "Client; profile_conditional only when claiming the associated Foundry profile. Preserve the literal Profiles §5.7.1 reference. KMIPKIT-DISC-011 is resolved by KMIPKIT-DEC-017: a possible authorial intention to reference the profile-specific conditions is noted, but the pinned text does not support changing this inclusion.",
       "scope_disposition": "profile_conditional",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
@@ -92315,7 +92363,7 @@
         "included_source_id": "KMIPKIT-SRC-profiles",
         "included_section": "5.7.1",
         "profile_id": "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
-        "review_note": "Profiles §6.13 item 3 is represented by the literal §5.7.1 normative-inclusion edge. It is a profile inclusion instruction, not a standalone requirement; no standalone requirement ID is assigned. KMIPKIT-DISC-011 remains open for authorial intent."
+        "review_note": "Profiles §6.13 is represented by the literal §5.7.1 normative-inclusion edge. This is a profile inclusion instruction, not a standalone requirement; no standalone requirement ID is assigned. KMIPKIT-DISC-011 is resolved by KMIPKIT-DEC-017; possible authorial intent is recorded without changing the normative inclusion."
       }
     },
     {
@@ -92336,7 +92384,7 @@
       ],
       "audited_statement": "SHALL support “Basic Symmetric Key Foundry Client” conditions (§5.7.1).",
       "actor": "client",
-      "actor_scope_review": "Client; `profile_conditional` only when claiming the Advanced Symmetric Key Foundry Client profile. Preserve the literal §5.7.1 reference; KMIPKIT-DISC-012 remains open for authorial intent, so do not substitute §5.7.3 or infer a correction.",
+      "actor_scope_review": "Client; profile_conditional only when claiming the associated Foundry profile. Preserve the literal Profiles §5.7.1 reference. KMIPKIT-DISC-012 is resolved by KMIPKIT-DEC-017: a possible authorial intention to reference the profile-specific conditions is noted, but the pinned text does not support changing this inclusion.",
       "scope_disposition": "profile_conditional",
       "candidate_requirement_id": null,
       "proposed_requirement_id": null,
@@ -92348,7 +92396,7 @@
         "included_source_id": "KMIPKIT-SRC-profiles",
         "included_section": "5.7.1",
         "profile_id": "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
-        "review_note": "Profiles §6.14 item 3 is represented by the literal §5.7.1 normative-inclusion edge. It is a profile inclusion instruction, not a standalone requirement; no standalone requirement ID is assigned. KMIPKIT-DISC-012 remains open for authorial intent."
+        "review_note": "Profiles §6.14 is represented by the literal §5.7.1 normative-inclusion edge. This is a profile inclusion instruction, not a standalone requirement; no standalone requirement ID is assigned. KMIPKIT-DISC-012 is resolved by KMIPKIT-DEC-017; possible authorial intent is recorded without changing the normative inclusion."
       }
     },
     {
@@ -92798,7 +92846,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.1-007",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.1-007; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.1-007; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.1, Table 12, pinned HTML lines 7698–7716. Table 12 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.2-KEY-MATERIAL",
@@ -92831,7 +92879,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.2-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.2-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.2-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.2, Table 13, pinned HTML lines 7893–7914. Table 13 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-WRAPPING-METHOD",
@@ -92864,7 +92912,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.3-010",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.3-010; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.3-010; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.3, Table 15, pinned HTML lines 8114–8132. Table 15 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.3-UNIQUE-IDENTIFIER",
@@ -92897,7 +92945,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.3-011",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.3-011; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.3-011; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.3, Table 16, pinned HTML lines 8284–8302. Table 16 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.4-KEY",
@@ -92930,7 +92978,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.4-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.4-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.4-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.4, Table 18, pinned HTML lines 8468–8486. Table 18 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-P",
@@ -92963,7 +93011,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.5, Table 19, pinned HTML lines 8544–8562. Table 19 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-Q",
@@ -92996,7 +93044,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.5, Table 19, pinned HTML lines 8563–8581. Table 19 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-G",
@@ -93029,7 +93077,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-004",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.5, Table 19, pinned HTML lines 8582–8600. Table 19 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.5-X",
@@ -93062,7 +93110,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.5-005",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.5-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.5, Table 19, pinned HTML lines 8601–8619. Table 19 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-P",
@@ -93095,7 +93143,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.6-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.6, Table 20, pinned HTML lines 8677–8695. Table 20 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-G",
@@ -93128,7 +93176,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.6-004",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.6, Table 20, pinned HTML lines 8715–8733. Table 20 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.6-Y",
@@ -93161,7 +93209,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.6-005",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.6-005; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.6, Table 20, pinned HTML lines 8734–8752. Table 20 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.7-MODULUS",
@@ -93194,7 +93242,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.7-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.7-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.7-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.7, Table 21, pinned HTML lines 8810–8828. Table 21 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-MODULUS",
@@ -93227,7 +93275,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.8-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.8-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.8-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.8, Table 22, pinned HTML lines 9035–9053. Table 22 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.8-PUBLIC-EXPONENT",
@@ -93260,7 +93308,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.8-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.8-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.8-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.8, Table 22, pinned HTML lines 9054–9072. Table 22 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-P",
@@ -93293,7 +93341,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.9-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.9, Table 23, pinned HTML lines 9130–9148. Table 23 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-G",
@@ -93326,7 +93374,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.9-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.9, Table 23, pinned HTML lines 9168–9186. Table 23 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.9-X",
@@ -93359,7 +93407,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.9-004",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.9-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.9, Table 23, pinned HTML lines 9206–9224. Table 23 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-P",
@@ -93392,7 +93440,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.10-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.10, Table 24, pinned HTML lines 9283–9301. Table 24 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-G",
@@ -93425,7 +93473,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.10-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.10, Table 24, pinned HTML lines 9321–9339. Table 24 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.10-Y",
@@ -93458,7 +93506,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.10-004",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.10-004; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.10, Table 24, pinned HTML lines 9359–9377. Table 24 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-RECOMMENDED-CURVE",
@@ -93491,7 +93539,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.11-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.11-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.11-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.11, Table 25, pinned HTML lines 9438–9457. Table 25 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.11-D",
@@ -93524,7 +93572,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.11-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.11-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.11-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.11, Table 25, pinned HTML lines 9458–9476. Table 25 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-RECOMMENDED-CURVE",
@@ -93557,7 +93605,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.12-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.12-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.12-002; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.12, Table 26, pinned HTML lines 9533–9552. Table 26 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-3.12-Q-STRING",
@@ -93590,7 +93638,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-3.12-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.12-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned."
+      "review_note": "Pinned KMIP Specification v2.1 table body row records Required=Yes for this member. The catalog maps it to KMIPKIT-REQ-SPEC-3.12-003; applicability is conditional on the enclosing structure. Implementation and positive verification remain unassigned. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §3.12, Table 26, pinned HTML lines 9553–9571. Table 26 applies the member requirement within the named key representation."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION",
@@ -93623,7 +93671,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-003",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §5.5, Table 161, pinned HTML lines 22117–22137. Table 161 gives the vendor-name form (Vendor Identification and Attribute Name) OR the tag form (Attribute Reference); the forms are alternatives and are not both required. For Get Attributes, §6.1.20 Table 223, pinned HTML lines 27506–27511, marks Attribute Reference “No, MAY be repeated”, so that operation permits omitting it."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME",
@@ -93656,7 +93704,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-004",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §5.5, Table 161, pinned HTML lines 22138–22156. Table 161 gives the vendor-name form (Vendor Identification and Attribute Name) OR the tag form (Attribute Reference); the forms are alternatives and are not both required. For Get Attributes, §6.1.20 Table 223, pinned HTML lines 27506–27511, marks Attribute Reference “No, MAY be repeated”, so that operation permits omitting it."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG",
@@ -93689,7 +93737,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.5-005",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §5.5, Table 161, pinned HTML lines 22184–22202. Table 161 gives the vendor-name form (Vendor Identification and Attribute Name) OR the tag form (Attribute Reference); the forms are alternatives and are not both required. For Get Attributes, §6.1.20 Table 223, pinned HTML lines 27506–27511, marks Attribute Reference “No, MAY be repeated”, so that operation permits omitting it."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE",
@@ -93722,7 +93770,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.6-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §5.6, Table 162, pinned HTML lines 22260–22279. Table 162 requires the selected Current Attribute wrapper contents; applicability remains conditional on using that wrapper."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE",
@@ -93755,7 +93803,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-5.7-002",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted."
+      "review_note": "KMIPKIT-0016 covers the shared Attribute Reference and Current/New Attribute wrapper models and their operation shapes. The corresponding typed encoder and local protocol-test references are recorded on the stable catalog requirement. Applicability remains conditional on the named form or wrapper being present; this does not require every client profile to use it. No linked official OASIS Test Case is asserted. Required=Yes applies only when its enclosing structure or representation is used. It does not require every client profile to support every representation. Profiles v2.1 §5.1.1 item 7 (pinned HTML lines 4628–4631) says Baseline optionally supports Specification clauses not listed above. No profile IDs are assigned absent a separate profile clause selecting the representation. Source row: Specification v2.1 §5.7, Table 163, pinned HTML lines 22337–22356. Table 163 requires the selected New Attribute wrapper contents; applicability remains conditional on using that wrapper."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY",

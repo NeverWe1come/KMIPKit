@@ -128,7 +128,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
         use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
-        self.assertIn("extraordinary circumstances", use_after_deactivation["review_note"].casefold())
+        self.assertIn("extraordinary", use_after_deactivation["review_note"].casefold())
         self.assertIn("special permission", use_after_deactivation["review_note"].casefold())
 
         deactivation_date_mutation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-002"]

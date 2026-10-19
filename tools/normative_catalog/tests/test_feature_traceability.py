@@ -708,7 +708,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
     def test_result_response_clause_directions_preserve_source_scope(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         expected_clause_directions = {
-            "KMIPKIT-CLAUSE-SPEC-9.17-001": "unclear",
+            "KMIPKIT-CLAUSE-SPEC-9.17-001": "server_to_client",
             "KMIPKIT-CLAUSE-SPEC-9.18-001": "server_to_client",
             "KMIPKIT-CLAUSE-SPEC-9.19-001": "server_to_client",
         }
@@ -1019,6 +1019,15 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         self.assertIn(
             "one_response_batch_can_mix_completed_and_pending_results",
             by_id["KMIPKIT-REQ-SPEC-8-003-002"]["test_ids"],
+        )
+        result_message_requirement = by_id["KMIPKIT-REQ-SPEC-9.17-001-002"]
+        self.assertEqual(result_message_requirement["status"], "scoped_verified")
+        self.assertEqual(result_message_requirement["scope"], "client_1_0; owner=KMIPKIT-0006")
+        self.assertIn("caller-controlled", result_message_requirement["statement"])
+        self.assertIn("does not automatically log", result_message_requirement["statement"])
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text",
+            result_message_requirement["test_ids"],
         )
         for requirement_id in (
             "KMIPKIT-REQ-SPEC-9.8-001-002",

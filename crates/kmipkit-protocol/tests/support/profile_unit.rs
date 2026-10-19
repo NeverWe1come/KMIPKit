@@ -803,13 +803,25 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
 #[test]
 fn result_message_client_access_has_an_optional_typed_rule() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.17-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.17-001";
 
-    assert!(
-        TYPED_RULE_MAPPINGS
-            .iter()
-            .any(|mapping| mapping.requirement_id == REQUIREMENT_ID),
-        "the client-accessible Result Message MAY needs a typed optional-capability rule"
+    // OASIS KMIP Specification v2.1 §9.17; KMIPKIT-DEC-016.
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the client-accessible Result Message MAY has a typed optional-capability rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
     );
+    assert!(mapping.constraints.is_empty());
+    assert!(mapping.evaluator.is_some_and(|evaluate| evaluate(None, None)));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/result_contract.rs::result_message_preserves_presence_and_text"
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
 }
 
 #[test]
