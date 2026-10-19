@@ -155,7 +155,7 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
             self.assertEqual("verified", operation["apiState"], operation_id)
             self.assertEqual(LANGUAGES, set(operation["declarations"]), operation_id)
 
-    def test_typed_response_close_is_traced_as_secret_buffer_release(self) -> None:
+    def test_typed_response_close_is_traced_as_secret_buffer_wipe(self) -> None:
         declarations = {
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
@@ -166,12 +166,28 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                     declaration_id = f"T040:{operation.lower()}:response-close:{language}"
                     declaration = declarations[declaration_id]
                     self.assertEqual("verified", declaration["declarationState"])
-                    self.assertEqual("native-handle-release", declaration["mappingSemantics"])
+                    self.assertEqual("secret-buffer-wipe", declaration["mappingSemantics"])
                     self.assertEqual(operation_id, declaration["capabilityId"])
                     self.assertIn("KMIPKIT-0019-FR-009", declaration["requirementIds"])
                     self.assertIn("KMIPKIT-0043-FR-013", declaration["requirementIds"])
                     self.assertEqual(section, self.operations[operation_id]["section"])
                     self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
+                    expected_names = {
+                        "rust": "kmipkit_client::ClientBatchItemResponse",
+                        "c": "kmipkit_client_batch_item_response_release",
+                        "java": (
+                            "org.kmipkit.extensions.ClientBatchItemResult."
+                            f"{operation}Response.close"
+                        ),
+                        "python": f"kmipkit.client.{operation}Response.close",
+                    }
+                    self.assertEqual(
+                        expected_names,
+                        {
+                            language: mapping["name"]
+                            for language, mapping in declaration["languageMappings"].items()
+                        },
+                    )
                 self.assertIn(
                     f"org.kmipkit.extensions.ClientBatchItemResult.{operation}Response.close",
                     declarations[f"T040:{operation.lower()}:response-close:java"]["exportName"],
