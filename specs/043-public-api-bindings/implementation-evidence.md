@@ -4155,6 +4155,33 @@ protocol behavior or make a conformance/certification claim.
 | Green — Login API mapping and generated manifest | `249e6d6e` | Added the C ABI, Java/JNI and Python/CFFI facades, corresponding API inventory, and 12 generated outputs via the pinned generator. The T054 traceability row links the approved owner requirements, stable OASIS IDs, and borrowed/owned lifetimes. |
 | Refactor — verification and task evidence | this commit | Recorded the secret-lifecycle review, coverage results, environment warning, and exact verification evidence. T054 remains open until current-head cross-platform CI and the selected changed-code coverage gate pass. |
 
+#### QA follow-up: native successful-response coverage
+
+The original Red commits above and their checked-in evidence do not retain the
+focused Red command output. The commit metadata and diffs identify the test
+changes, but the original command lines and failure output were not captured in
+the available session records. They are not reconstructed here. The QA
+follow-up adds success-path characterization against the already implemented
+T054 mapping. These tests pass before any additional production-code change;
+they do not indicate that Login response access was missing.
+
+To recover Red evidence without rewriting commits, the focused tests were
+re-run now in a temporary detached worktree at `faf6376b`, the last T054 Red
+commit before Green. These are reproduced results on that SHA, not captured
+outputs from the original commit session.
+
+| Red reproduction command on detached `faf6376b` | Result |
+|---|---|
+| `python.exe -B -m unittest tools.api_manifest.tests.test_login_parity_manifest -v` | EXPECTED RED: 2 tests, 2 failures. One reported `apiState` `blocked` instead of `verified`; the other found zero Login operations in the generated parity inventory. |
+| `$env:CARGO_TARGET_DIR = Join-Path $env:TEMP 'kmipkit-t054-red-target'; cargo test --locked -p kmipkit-ffi --features coverage-c-consumer ffi_login_ -- --nocapture` | EXPECTED RED: Rust test compilation failed with E0425 because `kmipkit_client_batch_item_login`, `kmipkit_client_batch_item_response_login`, and `kmipkit_client_batch_item_response_login_ttlv` did not exist before Green. |
+
+| Command or evidence | Result |
+|---|---|
+| `$env:CARGO_TARGET_DIR = Join-Path $env:TEMP 'kmipkit-t054-native-red'; cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact --nocapture` | PASS: 1 test. The compiled C consumer sends Login to the TLS peer, reads Ticket Type `0xfeedbeef` and the Ticket Value while the response item is live, obtains an independent Ticket TTLV copy, releases the response item, and verifies the copy retains the ordered Ticket child tags. |
+| In a temporary clean snapshot created with `git archive HEAD` and the edited `ClientFacadeTlsIntegrationTest.java` copied into it: `mvn.cmd -B -f (Join-Path $tempRoot 'bindings/java/pom.xml') '-Dtest=ClientFacadeTlsIntegrationTest#executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange' test` (with `CARGO_TARGET_DIR` unset) | PASS: 1 test, 0 failures, 0 errors. The Java client completes the existing mutual-TLS peer exchange and checks Ticket Type/Value, redaction, ordered Ticket TTLV, and `close()` behavior. |
+| In a temporary clean snapshot, `uv run --project $project --with-requirements $requirements pytest -p no:cacheprovider -q $test`, after copying the Login test and `fixtures/login-mtls` into the snapshot | PASS: 1 test. `uv` builds and installs the Python package with maturin; the Python 3.12 client uses the generated CFFI declarations and a stdlib TLS 1.3 mutual-TLS peer. The test checks the transmitted Login request, Ticket Type/Value, redacted `repr`, ordered Ticket TTLV, response cleanup, and exactly one native structure release. |
+| Python source-tree diagnostic with `PYTHONPATH=bindings/python/src` and `KMIPKIT_NATIVE_LIBRARY` set to a freshly built DLL, before the clean maturin install | Not a product failure: the pre-existing ignored `bindings/python/src/kmipkit/_native_ffi/ffi.py` did not declare the Login symbols, although `dumpbin /exports` confirmed that the DLL exported them. `pyproject.toml` configures maturin/CFFI to generate these wrappers during package installation. The required native integration test passes against a clean maturin build; the existing ignored artifact was left untouched. |
+
 The Ticket Value review confirms: C exposes only a response-item-borrowed
 span and documents that it must not be logged; JNI wipes its temporary Java
 array and releases a copied Ticket TTLV handle on every error path; Java
@@ -4170,8 +4197,8 @@ structure, including the sensitive Ticket Value.
 |---|---|
 | `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_login_ -- --nocapture` | PASS: 2 focused Rust FFI Login tests. |
 | `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture` | PASS: compiled C consumer exercises the Login request entry point and fail-closed response outputs. Successful response span and owned-TTLV values are covered by the Rust FFI tests. |
-| `mvn.cmd -B -f <temporary-copy>/bindings/java/pom.xml verify -Dexec.skip=true` | PASS: 307 Java tests, 0 failures/errors, 3 existing platform skips; JaCoCo line coverage 2,655/2,741 (96.86%). The JNI DLL was compiled from the current source into the external temporary test tree. |
-| `python.exe -m pytest -p no:cacheprovider -q --cov=src/kmipkit --cov-config=pyproject.toml --cov-report xml:<temporary-report> tests` from `bindings/python` with the isolated Python 3.12 environment, `KMIPKIT_NATIVE_LIBRARY`, `PYTHONPATH`, and `COVERAGE_FILE` all directed to the workspace source or external temporary paths | PASS: 516 Python tests; 97.98% coverage, above the configured 85% adapter threshold. |
+| `mvn.cmd -B -f <temporary-copy>/bindings/java/pom.xml '-Dexec.skip=true' verify` in the temporary snapshot after the focused mTLS run built its JNI DLL | PASS: 307 Java tests, 0 failures/errors, 3 existing platform skips; JaCoCo line coverage 2,667/2,741 (97.30%). All configured Java coverage checks passed. |
+| In the clean temporary Python snapshot, `uv run --project $project --with-requirements $requirements pytest -p no:cacheprovider --cov=kmipkit --cov-config=pyproject.toml --cov-report=term-missing --cov-report=xml:$report -q tests`, with `UV_PROJECT_ENVIRONMENT`, `COVERAGE_FILE`, and `$report` directed to temporary paths | PASS: 517 Python tests; 98.17% coverage, above the configured 85% adapter threshold. Maturin generated the CFFI declarations during package installation. |
 | `cargo test --workspace --all-features --quiet` with `CARGO_TARGET_DIR` outside the worktree | PASS on the final rerun; all workspace suites and doctests passed. Three Cosmian interoperability tests are intentionally ignored because they require a local KMS 5.28.0. One earlier run failed only `kmipkit-test-support::dns::tests::retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved` (`left: 3`, `right: 2` at `dns_tests.rs:169`). The isolated test passed six consecutive runs; the 32-test support suite passed three parallel and one serial run; the subsequent full workspace rerun passed. No DNS support source or test was changed. |
 | `cargo llvm-cov --workspace --all-features --summary-only` with an external `CARGO_TARGET_DIR` | PASS: 45,083 lines, 3,363 missed, 92.54% workspace line coverage; 93.15% functions and 95.41% regions. |
 | `cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked --summary-only` | PASS: 94.36% FFI line coverage (6,776 lines), above the 85% FFI threshold. |

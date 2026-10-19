@@ -71,15 +71,15 @@ changes to this table.
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **34 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **33 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Thirteen operation mappings
+or implementation code elsewhere in the repository. Fourteen operation mappings
 are `verified`: Certify, Check, Delegated Login, Derive Key, Export, Get,
 Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-and Log. The Derive Key mapping rejects a successful result without its
+Log, and Login. The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
 complete ordered response TTLV in all four languages. The Get Constraints mapping
 sends the empty §6.1.22 request and exposes its required ordered Constraints
@@ -97,9 +97,23 @@ Located Items. The Get Usage Allocation mapping includes its optional identifier
 and signed count request, resolved identifier response, and common batch outcomes
 in Rust, C, Java, and Python. This mapping evidence does not claim full operation
 conformance. Log preserves its request message and exposes the complete response
-TTLV through its typed result in all four languages. KMIPKit does not claim full
-operation parity, a supported profile, or formal certification from this
-snapshot.
+TTLV through its typed result in all four languages. Login maps the optional
+Table 253 fields and exposes the raw Ticket Type, Ticket Value, and ordered
+generic Ticket TTLV from a successful response. C's
+`kmipkit_client_batch_item_response_login` returns a Ticket Value span borrowed
+until the response item is released. Its
+`kmipkit_client_batch_item_response_login_ttlv` returns an independent
+structure, released with `kmipkit_ttlv_structure_release`. Java uses
+`ClientBatchItem.login(...)` and `ClientBatchItemResult.LoginResponse`;
+`ticketValue()` returns a caller-owned `byte[]` that must be protected and
+cleared, and `close()` clears the KMIPKit-owned value and closes the Ticket TTLV
+copy. Python uses `extensions.client_batch_item_login(...)` and
+`client.LoginResponse`; `ticket_value` returns caller-owned immutable `bytes`,
+while `close()` wipes KMIPKit-owned mutable storage and closes its Ticket TTLV
+copy. Python callers and runtimes cannot deterministically erase returned
+immutable copies. All three bindings redact the Ticket Value in formatted
+output. KMIPKit does not claim full operation parity, a supported profile, or
+formal certification from this snapshot.
 
 For the authoritative operation owners and per-capability mappings, see the
 [manifest](../../../specification/api/public-api.json) and the [public API

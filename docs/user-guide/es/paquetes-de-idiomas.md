@@ -75,15 +75,15 @@ tabla.
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **34 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **33 / 56** siguen en
 estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
 Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
 Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Trece mapeos de operación están `verified`: Certify,
+parte del repositorio. Catorce mapeos de operación están `verified`: Certify,
 Check, Delegated Login, Derive Key, Export, Get, Get Constraints, Get Usage
-Allocation, Import, Interop, Join Split Key, Locate y Log. El mapeo de Derive
+Allocation, Import, Interop, Join Split Key, Locate, Log y Login. El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. El mapeo de Get Constraints envía la petición
@@ -103,8 +103,23 @@ opcional y contador con signo, la respuesta con identificador resuelto y los
 resultados comunes del lote en Rust, C, Java y Python. Esta evidencia de mapeo
 no afirma la conformidad completa de las operaciones. Log conserva el mensaje
 de solicitud y expone el TTLV completo de respuesta mediante el resultado tipado
-en los cuatro lenguajes. Esta instantánea no afirma paridad completa de
-operaciones, compatibilidad con un perfil ni certificación formal de KMIPKit.
+en los cuatro lenguajes. Login mapea los campos opcionales de la Tabla 253 y
+expone el Ticket Type raw, el Ticket Value y el TTLV genérico ordenado de una
+respuesta correcta. En C, `kmipkit_client_batch_item_response_login` devuelve
+un span del Ticket Value prestado hasta liberar el elemento de respuesta;
+`kmipkit_client_batch_item_response_login_ttlv` devuelve una estructura
+independiente que se libera con `kmipkit_ttlv_structure_release`. Java usa
+`ClientBatchItem.login(...)` y `ClientBatchItemResult.LoginResponse`;
+`ticketValue()` devuelve un `byte[]` propiedad del llamador que debe protegerse
+y limpiarse, y `close()` limpia el valor propiedad de KMIPKit y cierra la copia
+TTLV del Ticket. Python usa `extensions.client_batch_item_login(...)` y
+`client.LoginResponse`; `ticket_value` devuelve `bytes` inmutables propiedad
+del llamador, mientras que `close()` pone a cero el almacenamiento mutable
+propiedad de KMIPKit y cierra su copia TTLV del Ticket. Los llamadores y
+runtimes de Python no pueden borrar determinísticamente las copias inmutables
+devueltas. Los tres bindings redactan el Ticket Value en la salida formateada.
+Esta instantánea no afirma paridad completa de operaciones, compatibilidad con
+un perfil ni certificación formal de KMIPKit.
 
 El [manifiesto](../../../specification/api/public-api.json) y el [diseño de
 la API pública](../../architecture/public-api.md) contienen los propietarios
