@@ -861,6 +861,88 @@ fn profile_maps_required_derive_key_cryptographic_length() {
         .expect("the Derive Key rule does not constrain other operations");
 }
 
+#[test]
+fn profile_maps_required_derive_key_cryptographic_algorithm_for_key_results() {
+    // KMIP Specification v2.1 §6.1.14 requires Cryptographic Algorithm when
+    // Derive Key creates a key; this condition does not apply to Secret Data.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key algorithm requirement has an executable profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Derive Key algorithm requirement resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the production rule has category-matched conformance evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let key_with_algorithm = derive_key_payload_with_attributes(
+        2,
+        [
+            tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+            tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+        ],
+    );
+    let valid_key = request_message_with_operation_payload(0x0000_0005, key_with_algorithm);
+    result
+        .validate_request(&valid_key)
+        .expect("key derivation includes the required algorithm enumeration");
+
+    for malformed in [
+        derive_key_payload(2, [Value::integer(256)]),
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+                tagged(
+                    CRYPTOGRAPHIC_ALGORITHM_TAG,
+                    Value::text_string("AES".to_owned()),
+                ),
+            ],
+        ),
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(4)),
+            ],
+        ),
+    ] {
+        let request = request_message_with_operation_payload(0x0000_0005, malformed);
+        let error = result
+            .validate_request(&request)
+            .expect_err("key derivation rejects a missing, mistyped, or duplicate algorithm");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    }
+
+    let secret_data = request_message_with_operation_payload(
+        0x0000_0005,
+        derive_key_payload(7, [Value::integer(512)]),
+    );
+    result
+        .validate_request(&secret_data)
+        .expect("the key-only algorithm requirement does not apply to Secret Data");
+}
+
 fn derive_key_payload(object_type: u32, lengths: impl IntoIterator<Item = Value>) -> Structure {
     let attributes = structure(
         lengths
@@ -870,6 +952,16 @@ fn derive_key_payload(object_type: u32, lengths: impl IntoIterator<Item = Value>
     structure([
         tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
         tagged(ATTRIBUTES_TAG, Value::structure(attributes)),
+    ])
+}
+
+fn derive_key_payload_with_attributes(
+    object_type: u32,
+    attributes: impl IntoIterator<Item = Item>,
+) -> Structure {
+    structure([
+        tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
+        tagged(ATTRIBUTES_TAG, Value::structure(structure(attributes))),
     ])
 }
 
