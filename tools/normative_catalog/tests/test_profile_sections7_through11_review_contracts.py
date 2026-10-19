@@ -118,13 +118,13 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(response_atom["actor"], "response producer (endpoint not named)")
         self.assertEqual(response_atom["scope_disposition"], "unclear")
 
-    def test_response_and_error_message_gaps_do_not_invent_client_actors_or_labels(self) -> None:
+    def test_result_message_source_atoms_keep_response_output_and_client_use_separate(self) -> None:
         response_gap = self.gaps["KMIPKIT-SOURCE-GAP-SPEC-8.4-002"]
         error_gap = self.gaps["KMIPKIT-SOURCE-GAP-SPEC-9.17-001"]
 
         self.assertEqual(error_gap["actor"], "unspecified")
-        self.assertEqual(error_gap["direction"], "unspecified")
-        self.assertEqual(error_gap["scope_disposition"], "unresolved")
+        self.assertEqual(error_gap["direction"], "server_to_client")
+        self.assertEqual(error_gap["scope_disposition"], "mixed")
         self.assertIsNone(error_gap["candidate_requirement_id"])
         self.assertIsNone(error_gap["proposed_requirement_id"])
         response_clause = self.clauses["KMIPKIT-CLAUSE-SPEC-8.4-002"]
@@ -134,9 +134,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(error_clause["disposition"], "source_discrepancy")
         self.assertEqual(error_clause["scope_state"], "mixed")
         self.assertEqual(error_clause["role"], "unclear")
-        self.assertEqual(error_clause["direction"], "unclear")
-        self.assertEqual(error_clause["requirement_ids"], [])
-        self.assertIn("without choosing an actor", error_clause["exclusion_rationale"])
+        self.assertEqual(error_clause["direction"], "server_to_client")
+        self.assertEqual(error_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
+        self.assertIn("client MAY use", error_clause["exclusion_rationale"])
 
         response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-8.4-002"]
         self.assert_server_response_classification(
@@ -150,10 +150,12 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         error_review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.17-001"]
         error_atoms = error_review["source_obligations"]
         self.assertEqual([atom["source_keyword"] for atom in error_atoms], ["MAY", "MAY"])
-        self.assertTrue(all(atom["actor"] == "unspecified" for atom in error_atoms))
-        self.assertEqual([atom["direction"] for atom in error_atoms], ["server_to_client", "unspecified"])
-        self.assertEqual([atom["scope_disposition"] for atom in error_atoms], ["server_only", "unresolved"])
-        self.assertTrue(all(atom["candidate_requirement_id"] is None for atom in error_atoms))
+        self.assertEqual([atom["actor"] for atom in error_atoms], ["unspecified", "client"])
+        self.assertEqual([atom["direction"] for atom in error_atoms], ["server_to_client", "server_to_client"])
+        self.assertEqual([atom["scope_disposition"] for atom in error_atoms], ["server_only", "client_1_0"])
+        self.assertIsNone(error_atoms[0]["candidate_requirement_id"])
+        self.assertEqual(error_atoms[1]["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-9.17-001-002")
+        self.assertEqual(error_review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
 
     def test_response_header_and_batch_rows_are_server_output_only(self) -> None:
         rows = {

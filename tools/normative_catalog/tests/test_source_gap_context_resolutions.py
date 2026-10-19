@@ -625,16 +625,46 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 self.assertEqual(gap["source_resolution"]["kind"], "generic_parameter_context")
                 self.assertEqual(gap["source_resolution"]["related_requirement_ids"], [])
 
-    def test_paragraph_data_rule_remains_unresolved_and_lease_policy_maps_to_attribute(self) -> None:
+    def test_paragraph_data_rule_uses_table_precedence_and_lease_policy_maps_to_attribute(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
 
         data_rule = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"]
-        self.assertEqual(data_rule["source_resolution"]["kind"], "unresolved_source_interpretation")
-        self.assertEqual(data_rule["scope_disposition"], "unresolved")
+        resolution = data_rule.get("source_resolution")
+        self.assertIsInstance(resolution, dict)
+        if not isinstance(resolution, dict):
+            return
+        self.assertEqual(resolution["kind"], "operation_table_precedence")
+        self.assertEqual(resolution["decision_id"], "KMIPKIT-DEC-015")
+        self.assertEqual(data_rule["scope_disposition"], "client_1_0")
+        self.assertEqual(data_rule["status"], "reviewed_table_precedence")
         self.assertIsNone(data_rule["candidate_requirement_id"])
         self.assertIsNone(data_rule["proposed_requirement_id"])
+        self.assertIn("Table 334", resolution["review_note"])
+        self.assertIn("Digested Data", resolution["review_note"])
+        self.assertIn("framed single-part", resolution["review_note"])
+
+        table_contracts = {
+            row["gap_id"]: row for row in oracle["source_table_contracts"]
+        }
+        for gap_id in (
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED",
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
+        ):
+            with self.subTest(gap_id=gap_id):
+                disposition = table_contracts[gap_id]["evidence_disposition"]
+                self.assertEqual(disposition["status"], "resolved_by_project_interpretation")
+                self.assertEqual(disposition["decision_id"], "KMIPKIT-DEC-015")
+                self.assertIn("No standalone requirement ID", disposition["claim"])
+
+        sign_row = table_contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"]
+        self.assertIn("unless Digested Data is supplied", sign_row["requiredness"])
+        self.assertIn(
+            "request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only",
+            sign_row["verification_refs"],
+        )
 
         lease_policy = gaps["KMIPKIT-SOURCE-GAP-SPEC-4.30-CLIENT-LEASE-READ-ONLY"]
         resolution = lease_policy["source_resolution"]
@@ -645,6 +675,77 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         lease_time = next(row for row in catalog["elements"] if row["element_id"] == resolution["element_id"])
         self.assertEqual(lease_time["source_modifiable_by_client"], "No")
         self.assertTrue(any("read-only for clients" in row["source_text"] for row in lease_time["source_operation_restrictions"]))
+
+    def test_multipart_optional_preface_is_a_client_capability_context(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE"]
+
+        self.assertEqual(gap["html_line_range"], [22417, 22420])
+        self.assertIn("optionally supported", gap["source_excerpt"])
+        self.assertEqual(gap["source_keywords"], [])
+        self.assertEqual(gap["actor"], "client")
+        self.assertEqual(gap["direction"], "client_to_server")
+        self.assertEqual(gap["scope_disposition"], "client_1_0")
+        self.assertEqual(gap["status"], "reviewed_optional_client_capability_context")
+        self.assertIsNone(gap["candidate_requirement_id"])
+        self.assertIsNone(gap["proposed_requirement_id"])
+        resolution = gap.get("source_resolution")
+        self.assertIsInstance(resolution, dict)
+        if not isinstance(resolution, dict):
+            return
+        self.assertEqual(resolution["kind"], "optional_client_capability_context")
+        self.assertEqual(resolution["related_requirement_ids"], [])
+        self.assertIn("Correlation Value", resolution["review_note"])
+        self.assertIn("Init Indicator", resolution["review_note"])
+        self.assertIn("Final Indicator", resolution["review_note"])
+        self.assertIn("lowercase", resolution["review_note"])
+
+    def test_result_message_may_atoms_split_server_output_from_client_use(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+        reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+
+        gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-9.17-001"]
+        resolution = gap.get("source_resolution")
+        self.assertIsInstance(resolution, dict)
+        if not isinstance(resolution, dict):
+            return
+        self.assertEqual(resolution["kind"], "mixed_response_and_client_access")
+        self.assertEqual(resolution["related_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
+        self.assertEqual(gap["scope_disposition"], "mixed")
+
+        review = reviews["KMIPKIT-CLAUSE-SPEC-9.17-001"]
+        atoms = review["source_obligations"]
+        self.assertEqual([atom["source_keyword"] for atom in atoms], ["MAY", "MAY"])
+        self.assertEqual([atom["scope_disposition"] for atom in atoms], ["server_only", "client_1_0"])
+        self.assertEqual(atoms[0]["direction"], "server_to_client")
+        self.assertEqual(atoms[0]["actor"], "unspecified")
+        self.assertEqual(atoms[1]["actor"], "client")
+        self.assertEqual(atoms[1]["direction"], "server_to_client")
+        self.assertEqual(atoms[1]["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-9.17-001-002")
+        self.assertEqual(review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
+
+        clause = clauses["KMIPKIT-CLAUSE-SPEC-9.17-001"]
+        self.assertEqual(clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
+        requirement = requirements.get("KMIPKIT-REQ-SPEC-9.17-001-002")
+        self.assertIsInstance(requirement, dict)
+        if not isinstance(requirement, dict):
+            return
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "server_to_client")
+        self.assertEqual(requirement["scope_state"], "client_1_0")
+        self.assertIn("crates/kmipkit-protocol/src/result.rs", requirement["implementation_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/unit/common_operation_result_tests.rs::shared_helper_and_encrypt_decrypt_preserve_unknown_reason_and_result_message",
+            requirement["verification_refs"],
+        )
+        self.assertIn("result_contract.rs::result_message_debug_is_redacted", " ".join(requirement["verification_refs"]))
+        self.assertIn("does not automatically log", requirement["review_note"].lower())
 
     def test_t002_research_describes_current_paragraph_009_source_force_and_context(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
@@ -657,10 +758,13 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         data_rule = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"]
         self.assertEqual(data_rule["source_force"], "structural_requirement_statement_lowercase_required")
         self.assertEqual(data_rule["source_keywords"], [])
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1-009"]["source_keywords"], ["REQUIRED"])
         self.assertIn("lowercase `required`", summary)
         self.assertIn("not a formal `REQUIRED` keyword", summary)
         self.assertIn("independent source-gap oracle records `source_keywords: []`", summary)
-        self.assertNotIn("its normalized `REQUIRED` hit", summary)
+        self.assertIn("catalog's case-insensitive lexical `REQUIRED` hit", summary)
 
         for number in range(6, 9):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{number:03d}"]

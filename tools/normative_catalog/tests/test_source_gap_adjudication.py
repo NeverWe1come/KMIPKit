@@ -60,10 +60,10 @@ PROCEDURE_GAP_CONTEXT = {
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-019": ([22485, 22488], "single-part"),
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-020": ([22494, 22496], "single-part"),
 }
-AMBIGUOUS_SOURCE_GAPS = {
-    "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE": ([22417, 22420], "force_and_actor_unresolved"),
-    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009": ([22498, 22499], "unresolved_source_interpretation"),
-    "KMIPKIT-SOURCE-GAP-SPEC-9.17-001": ([45156, 45158], "scope_unresolved"),
+ADJUDICATED_SOURCE_GAPS = {
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-MULTIPART-OPTIONAL-PREFACE": ([22417, 22420], "reviewed_optional_client_capability_context"),
+    "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009": ([22498, 22499], "reviewed_table_precedence"),
+    "KMIPKIT-SOURCE-GAP-SPEC-9.17-001": ([45156, 45158], "reviewed_mixed_response_and_client_access"),
 }
 OUTSIDE_CLIENT_1_0_SOURCE_GAPS = frozenset(
     {
@@ -549,7 +549,16 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertNotIn("KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY", affected_elements)
         self.assertEqual([], discrepancy["affected_requirement_ids"])
         self.assertEqual("normative_conflict", discrepancy["normative_status"])
-        self.assertEqual("open", discrepancy["state"])
+        self.assertEqual("resolved", discrepancy["state"])
+        self.assertEqual("KMIPKIT-DEC-015", discrepancy["decision_id"])
+        decision = next(row for row in catalog["decisions"] if row["decision_id"] == discrepancy["decision_id"])
+        self.assertEqual(decision["status"], "accepted")
+        self.assertIn("Tables 196, 214, 235, 259, and 334", decision["interpretation"])
+        self.assertIn("framed single-part", decision["interpretation"])
+        self.assertIn("both indicators are absent or false", decision["interpretation"])
+        self.assertIn("omission is permitted when either indicator is true", decision["interpretation"])
+        self.assertIn("table value of No does not make Data universally required", decision["interpretation"])
+        self.assertIn("Digested Data", decision["interpretation"])
         conflict_text = " ".join(discrepancy["alternatives"] + [discrepancy["downstream_impact"]])
         self.assertIn("Tables 196, 214, 235, 259, and 334", conflict_text)
         self.assertIn("Digested Data", conflict_text)
@@ -582,7 +591,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         data_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"]
         self.assertEqual(data_gap["actor"], "client")
         self.assertIn("request parameters", data_gap["direction"])
-        self.assertEqual(data_gap["scope_disposition"], "unresolved")
+        self.assertEqual(data_gap["scope_disposition"], "client_1_0")
         self.assertIsNone(data_gap["candidate_requirement_id"])
         self.assertIsNone(data_gap["proposed_requirement_id"])
         self.assertEqual(data_clause["source_keywords"], ["REQUIRED"])
@@ -590,12 +599,10 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(data_clause["requirement_ids"], [])
         self.assertEqual(data_clause["role"], data_gap["actor"])
         self.assertEqual(data_clause["direction"], "client_to_server")
-        self.assertEqual(data_clause["scope_state"], "unclear")
+        self.assertEqual(data_clause["scope_state"], "client_1_0")
         self.assertIn("client-to-server request context", data_clause["exclusion_rationale"].lower())
-        self.assertIn("operation-level scope remains unclear", data_clause["exclusion_rationale"].lower())
-        self.assertIn("source interpretation is unresolved", data_clause["exclusion_rationale"].lower())
         self.assertIn("lowercase", data_clause["exclusion_rationale"].lower())
-        self.assertIn("table", data_clause["exclusion_rationale"].lower())
+        self.assertIn("decision KMIPKIT-DEC-015", data_clause["exclusion_rationale"].lower())
 
     def test_profile_conditional_structural_rows_are_not_client_profile_requirements(self) -> None:
         catalog = _load_json(CATALOG_PATH)
@@ -705,7 +712,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         }
         self.assertEqual(actual_edges, expected_edges)
 
-    def test_t002_resolves_procedure_context_and_preserves_only_three_ambiguous_gaps(self) -> None:
+    def test_t002_resolves_procedure_context_and_adjudicates_three_remaining_source_gaps(self) -> None:
         oracle = _load_json(ORACLE_PATH)
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         spec_lines = SPEC_SOURCE_PATH.read_text(encoding="cp1252").splitlines()
@@ -734,12 +741,10 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertIn("standalone requirement ID", gap["review_note"])
 
         unresolved_ids = {
-            gap_id
-            for gap_id, gap in gaps.items()
-            if gap["scope_disposition"] == "unresolved"
+            gap_id for gap_id, gap in gaps.items() if gap["scope_disposition"] == "unresolved"
         }
-        self.assertEqual(unresolved_ids, set(AMBIGUOUS_SOURCE_GAPS))
-        for gap_id, (line_range, status) in AMBIGUOUS_SOURCE_GAPS.items():
+        self.assertFalse(set(ADJUDICATED_SOURCE_GAPS) & unresolved_ids)
+        for gap_id, (line_range, status) in ADJUDICATED_SOURCE_GAPS.items():
             gap = gaps[gap_id]
             with self.subTest(gap_id=gap_id):
                 self.assertEqual(gap["html_line_range"], line_range)
@@ -747,7 +752,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                     gap["source_excerpt"],
                     _normalized_html_source_span(spec_lines, line_range),
                 )
-                self.assertEqual(gap["scope_disposition"], "unresolved")
+                self.assertNotEqual(gap["scope_disposition"], "unresolved")
                 self.assertEqual(gap["status"], status)
                 self.assertIsNone(gap["candidate_requirement_id"])
                 self.assertIsNone(gap["proposed_requirement_id"])

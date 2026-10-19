@@ -93,6 +93,7 @@ fn request_allows_optional_identifier_and_parameters_to_be_omitted() {
 }
 
 #[test]
+// OASIS KMIP v2.1 §6.1.55 Table 334: single-part Sign requires Data unless Digested Data is supplied.
 fn request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only() {
     assert!(
         SignRequest::new().to_ttlv_payload().is_err(),
@@ -102,9 +103,14 @@ fn request_requires_data_or_digested_data_for_single_part_and_accepts_digest_onl
     let digest = [0x00, 0x81, 0xFF];
     let actual = SignRequest::new()
         .with_digested_data(SecretBytes::new(digest.to_vec()))
+        .with_init_indicator(true)
+        .with_final_indicator(true)
         .to_ttlv_payload()
-        .expect("single-part Sign may supply Digested Data without Data");
-    assert_eq!(field_tags(&actual), [DIGESTED_DATA]);
+        .expect("framed single-part Sign may supply Digested Data without Data");
+    assert_eq!(
+        field_tags(&actual),
+        [DIGESTED_DATA, INIT_INDICATOR, FINAL_INDICATOR]
+    );
     assert_eq!(
         snapshot(&actual.view().children()[0]),
         (DIGESTED_DATA, digest.to_vec())
