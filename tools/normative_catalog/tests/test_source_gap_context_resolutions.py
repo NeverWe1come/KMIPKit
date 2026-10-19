@@ -204,6 +204,16 @@ def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
 
 
 class SourceGapContextResolutionTests(unittest.TestCase):
+    def test_result_message_research_limits_scope_aggregation_evidence(self) -> None:
+        research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("focused regression", research)
+        self.assertIn("production catalog validator", research)
+        self.assertNotIn(
+            "The validator derives §9.17 aggregate scope from both source atoms.",
+            research,
+        )
+
     def test_encrypt_decrypt_correlation_request_rows_have_optional_feature_contracts(self) -> None:
         """Tables 196 and 214 map only their optional Correlation Value request rows."""
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
