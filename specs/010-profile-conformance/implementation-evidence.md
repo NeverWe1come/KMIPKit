@@ -3803,3 +3803,4 @@ Independent QA found that the first documentation regression rejected the exact 
 | Stage | DCO-signed commit | Command or artifact | Result |
 |---|---|---|---|
 | Red | This DCO-signed Red commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` against a temporary mutation replacing the explicit validator boundary with a source-atom derivation claim | Expected Red: required production-boundary assertion failed. |
+| Green | This DCO-signed Green commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` | PASS: research explicitly says the production validator does not derive scope from source atoms and only checks stored scope against linked requirements. |
