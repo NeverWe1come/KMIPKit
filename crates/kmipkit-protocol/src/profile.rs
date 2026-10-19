@@ -660,6 +660,8 @@ struct TypedRuleMapping {
 }
 
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const SPECIFICATION_TAG_PREFIX: u32 = 0x42;
+const EXTENSION_TAG_PREFIX: u32 = 0x54;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
@@ -1678,18 +1680,22 @@ fn client_request_tags_use_kmip_prefixes(
         return false;
     };
 
-    request.with_ttlv(|message| structure_tags_use_kmip_prefixes(message))
+    request.with_ttlv(|message| structure_tags_use_kmip_prefixes(&message))
 }
 
-fn structure_tags_use_kmip_prefixes(structure: StructureView<'_>) -> bool {
+fn structure_tags_use_kmip_prefixes(structure: &StructureView<'_>) -> bool {
     structure.children().iter().all(|item| {
-        let first_byte = (item.tag().raw() >> 16) & 0xFF;
-        matches!(first_byte, 0x42 | 0x54)
+        tag_has_kmip_21_prefix(item.tag().raw())
             && item.with_value(|value| match value {
-                ValueView::Structure(nested) => structure_tags_use_kmip_prefixes(nested),
+                ValueView::Structure(nested) => structure_tags_use_kmip_prefixes(&nested),
                 _ => true,
             })
     })
+}
+
+fn tag_has_kmip_21_prefix(raw_tag: u32) -> bool {
+    let first_byte = (raw_tag >> 16) & 0xFF;
+    matches!(first_byte, SPECIFICATION_TAG_PREFIX | EXTENSION_TAG_PREFIX)
 }
 
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
