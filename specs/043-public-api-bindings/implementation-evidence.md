@@ -4137,3 +4137,48 @@ missing-NASM warnings. Maven also emitted existing MSVC linker duplicate-symbol
 warnings; the focused test builds and results passed. The selected changed-code
 coverage gate and Linux/macOS/Windows CI passed for head `0b8d1b5a` in run
 `39179496879`.
+
+### T054 Login four-language mapping (2026-10-19)
+
+T054 implements the already approved Login contract from KMIPKIT-0038 and
+OASIS KMIP Specification v2.1 §6.1.30, Tables 253–255. It maps the optional
+Table 253 request fields and the existing raw-preserving Ticket response to
+Rust, C, Java, and Python. Unknown Ticket Type values and ordered generic
+Ticket TTLV children remain available. The implementation does not add Login
+protocol behavior or make a conformance/certification claim.
+
+| Phase | Commit | Evidence |
+|---|---|---|
+| Red — approved four-language Login inventory | `cc77eb3d` | Added manifest tests for the owner, OASIS trace IDs, exact C/Java/Python facade declarations, and generated parity. Before Green, the Login mapping was not verified in the manifest. |
+| Red — declaration inventory | `cd22ac9e` | Tightened parity expectations to account for the complete existing Rust Login contract declaration inventory before adding the new binding declarations. |
+| Red — shared Ticket API inventory | `faf6376b` | Adjusted parity checks to reuse the shared Rust Ticket declarations already mapped by T045 instead of duplicating them under Login. |
+| Green — Login API mapping and generated manifest | `249e6d6e` | Added the C ABI, Java/JNI and Python/CFFI facades, corresponding API inventory, and 12 generated outputs via the pinned generator. The T054 traceability row links the approved owner requirements, stable OASIS IDs, and borrowed/owned lifetimes. |
+| Refactor — verification and task evidence | this commit | Recorded the secret-lifecycle review, coverage results, environment warning, and exact verification evidence. T054 remains open until current-head cross-platform CI and the selected changed-code coverage gate pass. |
+
+The Ticket Value review confirms: C exposes only a response-item-borrowed
+span and documents that it must not be logged; JNI wipes its temporary Java
+array and releases a copied Ticket TTLV handle on every error path; Java
+redacts `toString()`, wipes its owned internal array in `close()`, and asks
+callers to protect and clear returned `byte[]` copies; Python redacts `repr()`,
+wipes its owned mutable buffer and closes the TTLV copy, and documents that
+returned immutable `bytes` and runtime-held copies cannot be deterministically
+zeroized. Java's parser also wipes JNI-produced arrays after transfer or parse
+failure. The caller-owned generic Ticket TTLV intentionally preserves the full
+structure, including the sensitive Ticket Value.
+
+| Command or evidence | Result |
+|---|---|
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_login_ -- --nocapture` | PASS: 2 focused Rust FFI Login tests. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture` | PASS: compiled C consumer exercises the Login request entry point and fail-closed response outputs. Successful response span and owned-TTLV values are covered by the Rust FFI tests. |
+| `mvn.cmd -B -f <temporary-copy>/bindings/java/pom.xml verify -Dexec.skip=true` | PASS: 307 Java tests, 0 failures/errors, 3 existing platform skips; JaCoCo line coverage 2,655/2,741 (96.86%). The JNI DLL was compiled from the current source into the external temporary test tree. |
+| `python.exe -m pytest -p no:cacheprovider -q --cov=src/kmipkit --cov-config=pyproject.toml --cov-report xml:<temporary-report> tests` from `bindings/python` with the isolated Python 3.12 environment, `KMIPKIT_NATIVE_LIBRARY`, `PYTHONPATH`, and `COVERAGE_FILE` all directed to the workspace source or external temporary paths | PASS: 516 Python tests; 97.98% coverage, above the configured 85% adapter threshold. |
+| `cargo test --workspace --all-features --quiet` with `CARGO_TARGET_DIR` outside the worktree | PASS on the final rerun; all workspace suites and doctests passed. Three Cosmian interoperability tests are intentionally ignored because they require a local KMS 5.28.0. One earlier run failed only `kmipkit-test-support::dns::tests::retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved` (`left: 3`, `right: 2` at `dns_tests.rs:169`). The isolated test passed six consecutive runs; the 32-test support suite passed three parallel and one serial run; the subsequent full workspace rerun passed. No DNS support source or test was changed. |
+| `cargo llvm-cov --workspace --all-features --summary-only` with an external `CARGO_TARGET_DIR` | PASS: 45,083 lines, 3,363 missed, 92.54% workspace line coverage; 93.15% functions and 95.41% regions. |
+| `cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked --summary-only` | PASS: 94.36% FFI line coverage (6,776 lines), above the 85% FFI threshold. |
+| `python -B -m unittest tools.api_manifest.tests.test_login_parity_manifest -v` | PASS: 2 Login manifest/parity tests. |
+| `python -B tools/api_manifest/generate.py --check` | PASS: all 12 generated outputs verified. |
+| `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `git diff --check` | PASS. Clippy emitted only the existing nonfatal AWS-LC `stdalign_check.c` and missing-NASM fallback warnings; `git diff --check` emitted CRLF normalization notices for two existing files. |
+| CI `Coverage gate / selected scopes` (`.github/workflows/ci.yml` runs `python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base <pull-request-base-sha> --merge <pull-request-merge-sha> --summary-file <step-summary> --scopes-json <coverage-scopes-json>`) | This configured gate enforces ≥85% for Rust FFI, Java, Python, and JNI, plus ≥95% changed executable-line coverage. A new cross-platform result for the pushed T054 head is pending. |
+
+Full-workspace tests and coverage used an external Cargo target directory.
+Existing untracked worktree artifacts were not staged or cleaned.
