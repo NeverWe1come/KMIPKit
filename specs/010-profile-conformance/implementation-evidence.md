@@ -4058,3 +4058,12 @@ This closes one inherited requirement only. T040 remains open for the rest of th
 | Refactor | This DCO-signed test refactor; `cargo fmt --all --check`; both focused Derive Key profile tests; `git diff --check` | PASS: shared assertions now verify the stable failure code, requirement ID, and source clause for both length and algorithm negative cases; behavior is unchanged. |
 
 The pinned Specification v2.1 §6.1.14 text limits Derive Key results to Symmetric Key or Secret Data, requires both Cryptographic Length and Cryptographic Algorithm when a key is created, and explicitly permits the Secret Data case without a key algorithm. This mapping adds no server acceptance or conformance claim. T040 remains open for the rest of the inherited profile closure and unavailable official fixtures.
+
+### KMIPKIT-0010 CI correction — typed-rule registry expectation (2026-10-19)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | GitHub Actions run `39264007536`, jobs `Script contracts / ubuntu-latest`, `macos-latest`, and `windows-latest` | FAIL: the same catalog test had a stale fixed expected list and omitted the newly registered Derive Key mappings `KMIPKIT-REQ-SPEC-6.1.14-001-002` and `KMIPKIT-REQ-SPEC-6.1.14-001-003`. Other script-contract tests passed. |
+| Green | `python -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures`; `python -B -m unittest tools.normative_catalog.tests.test_report` | PASS: the fixed registry expectation includes both mappings; all 45 report tests pass with 1 expected skip. |
+
+This correction updates test expectations only. The profile readiness behavior remains fail-closed and no conformance claim is made.
