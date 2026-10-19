@@ -119,6 +119,25 @@ def test_interop_response_rejects_absent_indicator_with_owned_ttlv(
     assert released == [handle]
 
 
+def test_interop_response_returns_none_when_payload_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = client_ffi.NULL  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_interop_ttlv=response_ttlv,
+        ),
+    )
+
+    assert client._interop_response(SimpleNamespace(_pointer=lambda: object())) is None
+
+
 def test_interop_response_releases_output_handle_when_abi_status_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

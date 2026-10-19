@@ -3989,6 +3989,51 @@ fn ffi_interop_ttlv_getter_copies_success_failure_and_pending_responses() {
 }
 
 #[test]
+fn ffi_interop_and_log_ttlv_getters_reject_inconsistent_response_item_handles() {
+    let response = successful_check_client_response();
+    let mismatched_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(&response)),
+    );
+    for getter in [
+        client_abi::kmipkit_client_batch_item_response_interop_ttlv,
+        client_abi::kmipkit_client_batch_item_response_log_ttlv,
+    ] {
+        let mut present = 9;
+        let mut response_ttlv = ptr::dangling_mut();
+        assert_eq!(
+            getter(mismatched_item, &raw mut present, &raw mut response_ttlv),
+            ERROR_INVALID_INPUT
+        );
+        assert_eq!(present, 0);
+        assert!(response_ttlv.is_null());
+    }
+    kmipkit_client_batch_item_response_release(mismatched_item);
+
+    let invalid_index_item = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response,
+            index: usize::MAX,
+        },
+    );
+    for getter in [
+        client_abi::kmipkit_client_batch_item_response_interop_ttlv,
+        client_abi::kmipkit_client_batch_item_response_log_ttlv,
+    ] {
+        let mut present = 9;
+        let mut response_ttlv = ptr::dangling_mut();
+        assert_eq!(
+            getter(invalid_index_item, &raw mut present, &raw mut response_ttlv),
+            ERROR_INTERNAL
+        );
+        assert_eq!(present, 0);
+        assert!(response_ttlv.is_null());
+    }
+    kmipkit_client_batch_item_response_release(invalid_index_item);
+}
+
+#[test]
 fn ffi_log_ttlv_getter_copies_success_failure_and_pending_responses() {
     let request = || {
         ClientRequest::log(LogRequest::new(SecretText::new(
@@ -4365,6 +4410,36 @@ fn ffi_join_split_key_request_preserves_enumeration_and_integer_identifiers() {
 
     assert_eq!(status, SUCCESS);
     assert!(!item.is_null());
+}
+
+#[test]
+fn ffi_join_split_key_request_rejects_non_boolean_secret_data_presence() {
+    let mut identifier = empty_unique_identifier_output_v1();
+    identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+    identifier.integer_value = 42;
+    let mut reference = ptr::null_mut();
+    assert_eq!(
+        kmipkit_split_key_reference_create(&raw const identifier, 1, &raw mut reference),
+        SUCCESS
+    );
+
+    let mut references = [reference];
+    let mut item = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_join_split_key(
+            7,
+            references.as_mut_ptr(),
+            1,
+            2,
+            0,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    kmipkit_split_key_reference_release(reference);
 }
 
 #[test]

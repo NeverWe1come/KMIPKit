@@ -108,6 +108,48 @@ def test_join_split_key_builder_rejects_missing_and_insufficient_threshold_conte
     assert calls == []
 
 
+def test_split_key_reference_rejects_non_identifier_and_redacts_identifier() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        extensions.SplitKeyReference(object(), 1)  # type: ignore[arg-type]
+
+    reference = _split_reference("private-split-key-sentinel", 2)
+    try:
+        representation = repr(reference)
+        assert "private-split-key-sentinel" not in representation
+        assert "split_key_threshold=2" in representation
+    finally:
+        reference.close()
+
+
+@pytest.mark.parametrize(
+    ("keyword", "value"),
+    [
+        ("attributes", object()),
+        ("protection_storage_masks", object()),
+    ],
+)
+def test_join_split_key_rejects_non_structure_context_before_native_call(
+    monkeypatch: pytest.MonkeyPatch,
+    keyword: str,
+    value: object,
+) -> None:
+    reference = _split_reference("context-validation-id", 1)
+
+    def unexpected_native_call(*_arguments: object, **_keywords: object) -> object:
+        raise AssertionError("invalid context must be rejected before the native call")
+
+    monkeypatch.setattr(extensions, "_make_handle", unexpected_native_call)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            extensions.client_batch_item_join_split_key(
+                1,
+                [reference],
+                **{keyword: value},
+            )
+    finally:
+        reference.close()
+
+
 def test_join_split_key_rejects_aggregate_repeated_identifier_bytes_at_native_boundary() -> None:
     reference = _split_reference("x" * ((16 * 1024 * 1024) // 2 + 1), 1)
     try:
