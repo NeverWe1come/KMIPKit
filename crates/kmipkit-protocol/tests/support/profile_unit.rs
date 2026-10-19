@@ -989,6 +989,40 @@ fn profile_maps_client_optional_derive_key_secret_data_total_length() {
         .validate_request(&symmetric_key)
         .expect("the optional Secret Data capability does not restrict key derivation");
 
+    let attributes_with_length = || {
+        tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                CRYPTOGRAPHIC_LENGTH_TAG,
+                Value::integer(512),
+            )])),
+        )
+    };
+    for malformed in [
+        structure([attributes_with_length()]),
+        structure([
+            tagged(
+                OBJECT_TYPE_TAG,
+                Value::text_string("Secret Data".to_owned()),
+            ),
+            attributes_with_length(),
+        ]),
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(7)),
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(7)),
+            attributes_with_length(),
+        ]),
+    ] {
+        let request = request_message_with_operation_payload(0x0000_0005, malformed);
+        assert_request_rejected_for_requirement(
+            &result,
+            &request,
+            REQUIREMENT_ID,
+            SOURCE_CLAUSE_ID,
+            "Secret Data derivation needs one well-typed Object Type",
+        );
+    }
+
     let secret_data_without_length =
         request_message_with_operation_payload(0x0000_0005, derive_key_payload(7, []));
     assert_request_rejected_for_requirement(

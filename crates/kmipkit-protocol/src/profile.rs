@@ -957,6 +957,16 @@ fn derive_key_specifies_cryptographic_length(
     })
 }
 
+fn derive_key_output_object_type(payload: &StructureView<'_>) -> Option<u32> {
+    let FieldPresence::Unique(object_type) = field_presence(payload, DERIVE_KEY_OBJECT_TYPE) else {
+        return None;
+    };
+    object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    })
+}
+
 fn derive_key_specifies_cryptographic_algorithm_for_key_output(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -975,15 +985,7 @@ fn derive_key_specifies_cryptographic_algorithm_for_key_output(
 
         batch_item
             .with_request_payload(|payload| {
-                let FieldPresence::Unique(object_type) =
-                    field_presence(&payload, DERIVE_KEY_OBJECT_TYPE)
-                else {
-                    return false;
-                };
-                let Some(object_type) = object_type.with_value(|value| match value {
-                    ValueView::Enumeration(value) => Some(*value),
-                    _ => None,
-                }) else {
+                let Some(object_type) = derive_key_output_object_type(&payload) else {
                     return false;
                 };
                 if object_type == SECRET_DATA_OBJECT_TYPE {
@@ -1030,15 +1032,7 @@ fn derive_key_secret_data_uses_total_cryptographic_length(
 
         batch_item
             .with_request_payload(|payload| {
-                let FieldPresence::Unique(object_type) =
-                    field_presence(&payload, DERIVE_KEY_OBJECT_TYPE)
-                else {
-                    return false;
-                };
-                let Some(object_type) = object_type.with_value(|value| match value {
-                    ValueView::Enumeration(value) => Some(*value),
-                    _ => None,
-                }) else {
+                let Some(object_type) = derive_key_output_object_type(&payload) else {
                     return false;
                 };
                 if object_type != SECRET_DATA_OBJECT_TYPE {
