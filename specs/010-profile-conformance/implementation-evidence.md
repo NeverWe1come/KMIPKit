@@ -4024,3 +4024,11 @@ only accept a real test item from a Cargo target whose test harness is enabled.
 | Green validation | `git diff --check` | PASS: no whitespace errors. The follow-up changes do not modify the pinned OASIS source copies or generated outputs. |
 
 GitHub Actions has not yet rerun against the correction commit. T030/T040 and the global profile-readiness blockers remain open; this evidence records only the contract-test correction and does not claim profile readiness.
+
+### KMIPKIT-0010 CI correction — cross-platform repository aliases (2026-10-19)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | GitHub Actions run `39259048726`, commit `5cbe78611cec358e4955568cd411180537a6b7da`, `Script contracts / windows-latest` and `Script contracts / macos-latest` | FAIL: both platforms rejected valid typed-rule test references as unresolvable. The common path resolver compared a lexically normalized candidate against `repository.resolve()`, which canonicalizes junction/symlink aliases on Windows and macOS. |
+| Red | `uv run --no-project python -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_confined_rust_path_accepts_a_resolved_repository_alias -v` | FAIL as intended on Windows: a candidate through a directory junction was rejected (`None`) even though it referred to an in-repository file. |
+| Green | `uv run --no-project python -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_confined_rust_path_accepts_a_resolved_repository_alias tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_reader_parses_a_complete_static_mapping tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_evidence_gate_accepts_only_scoped_client_exchange_evidence -v` | PASS: all 3 focused tests. Both paths are now normalized lexically against the same root spelling before `confined_path` resolves and enforces the repository boundary and rejects links. |

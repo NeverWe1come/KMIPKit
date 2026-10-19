@@ -472,8 +472,9 @@ def _rust_item_is_top_level(source: str, item_start: int) -> bool:
 def _confined_rust_path(repository: Path, candidate: Path) -> Path | None:
     """Normalize a module path lexically, then reject links and escapes."""
     try:
+        repository_absolute = Path(os.path.abspath(repository))
         normalized = Path(os.path.abspath(candidate))
-        relative = normalized.relative_to(repository.resolve()).as_posix()
+        relative = normalized.relative_to(repository_absolute).as_posix()
         return confined_path(repository, relative)
     except (OSError, PathSecurityError, ValueError):
         return None
