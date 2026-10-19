@@ -4397,3 +4397,24 @@ installed in the repository CI environment and were not skipped silently. The
 PR remains draft until its required GitHub jobs pass on the pushed head.
 
 | Refactor | This DCO-signed evidence follow-up | Review of the generated diff and `py -3 -B -m unittest -v tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_obtain_lease_parity_manifest` | PASS: the change reuses the existing aggregate JNI entrypoint, keeps the approved exclusions to the exact generated Python members, and regenerates parity artifacts from the pinned manifest tool. No additional production refactor was warranted. |
+
+### KMIPKIT-0043 JNI response bridge coverage seam (2026-10-19)
+
+The selected-scope coverage run reported changed JNI response marshaling lines
+below the 95 percent requirement. The private `response_bridge.hpp` helper
+provides per-call fakeable operations so native tests exercise the same
+non-templated helper called by the JNI DSO. The public Java and C APIs remain
+unchanged. Focused cases cover getter status failures, invalid presence and
+payloads, missing or mismatched TTLV ownership, JNI allocation failures, and
+release versus transfer of native/local references.
+
+| Stage | Commit | Command | Result |
+|---|---|---|---|
+| Red | `f7038dfc` | `clang++-20 -std=c++17 -Wall -Wextra -Werror -Itests/fixtures/api/generated bindings/java/native/tests/response_bridge_test.cpp -o /tmp/response_bridge_test` | Expected Red: compilation failed because the shared private helper `response_bridge.hpp` was not yet present. |
+| Green | `272e2817` | `CXX=clang++-20 KMIPKIT_JNI_COVERAGE=llvm LLVM_PROFILE_FILE=... bash bindings/java/native/build.sh`; `bash scripts/collect_jni_coverage.sh target/coverage-jni-response-bridge` | PASS: native/JNI build completed; 318 Java tests, 0 failures, 0 errors, 1 skipped; JaCoCo coverage check passed. The helper report contains 74/74 executable lines (100%). |
+| Green | `272e2817` | `clang++-20 -std=c++17 -Wall -Wextra -Werror -fprofile-instr-generate -fcoverage-mapping -Itests/fixtures/api/generated bindings/java/native/tests/response_bridge_test.cpp -o /tmp/response_bridge_test`; run with `LLVM_PROFILE_FILE=...` | PASS: native response bridge branch and ownership tests. |
+| Refactor | This DCO-signed follow-up | Rebuild and run the instrumented `response_bridge_test.cpp`; `git diff --check` | PASS: fixture metadata assertions and the missing-TTLV control are clearer; all native bridge cases still pass and whitespace checks are clean. |
+
+The combined selected-scope aggregate was still running during this evidence
+update. Its pass/fail result must be recorded from the completed gate before
+claiming the changed-code coverage threshold is satisfied.

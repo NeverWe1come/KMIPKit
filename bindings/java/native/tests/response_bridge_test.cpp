@@ -13,7 +13,6 @@ enum class Failure {
     excessive_fields,
     ttlv_getter,
     ttlv_presence_mismatch,
-    ttlv_handle_mismatch,
     invalid_payload,
     fields_array,
     identifier_record,
@@ -28,6 +27,7 @@ struct State {
     int32_t last_status = 0;
     uint8_t present = 1;
     uint8_t ttlv_present = 1;
+    bool return_null_ttlv = false;
     int64_t field_values[2] = {17, 29};
     size_t field_count = 2;
     int32_t response_get_calls = 0;
@@ -54,7 +54,13 @@ int32_t get_response(
     ++state.response_get_calls;
     if (state.failure == Failure::response_getter) return state.response_status;
     *present = state.failure == Failure::invalid_presence ? 2 : state.present;
-    *identifier = state.identifier;
+    assert(identifier->struct_size == sizeof(*identifier));
+    assert(identifier->abi_version == 1);
+    identifier->kind = state.identifier.kind;
+    identifier->enumeration_value = state.identifier.enumeration_value;
+    identifier->integer_value = state.identifier.integer_value;
+    identifier->text_data = state.identifier.text_data;
+    identifier->text_length = state.identifier.text_length;
     const size_t reported_count = state.failure == Failure::excessive_fields
             ? std::numeric_limits<size_t>::max() : state.field_count;
     for (size_t index = 0; index < state.field_count && index < 2 && index < field_capacity; ++index) {
@@ -70,8 +76,7 @@ int32_t get_response_ttlv(void* context, uint8_t* present, void** ttlv) {
     *present = state.failure == Failure::ttlv_presence_mismatch
             ? static_cast<uint8_t>(state.present == 1 ? 0 : 1)
             : state.ttlv_present;
-    *ttlv = state.failure == Failure::ttlv_handle_mismatch
-            ? nullptr : static_cast<void*>(&state.ttlv_native);
+    *ttlv = state.return_null_ttlv ? nullptr : static_cast<void*>(&state.ttlv_native);
     return state.failure == Failure::ttlv_getter ? state.ttlv_status : 0;
 }
 
@@ -189,7 +194,7 @@ void mismatched_ttlv_presence_releases_native_ttlv() {
 
 void missing_ttlv_for_present_response_is_rejected() {
     State state{};
-    state.failure = Failure::ttlv_handle_mismatch;
+    state.return_null_ttlv = true;
     const auto ops = operations(state);
 
     assert(kmipkit::jni::marshal_client_batch_item_response(ops) == nullptr);
@@ -262,7 +267,7 @@ void absent_response_skips_identifier_creation_and_transfers_null_ttlv() {
     State state{};
     state.present = 0;
     state.ttlv_present = 0;
-    state.failure = Failure::ttlv_handle_mismatch;
+    state.return_null_ttlv = true;
     const auto ops = operations(state);
 
     assert(kmipkit::jni::marshal_client_batch_item_response(ops) == &state.result_ref);
