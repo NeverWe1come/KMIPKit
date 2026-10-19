@@ -118,6 +118,30 @@ fn parser_rejects_unsupported_types_and_truncated_labels() {
 }
 
 #[test]
+fn binds_udp_ephemeral_port_before_tcp_pairing() {
+    let bind_calls = std::cell::RefCell::new(Vec::new());
+    let result = super::bind_local_dns_sockets_with(
+        || {
+            bind_calls.borrow_mut().push("TCP");
+            Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "TCP bind should follow UDP port selection",
+            ))
+        },
+        |_address| {
+            bind_calls.borrow_mut().push("UDP");
+            Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "test should not bind sockets",
+            ))
+        },
+    );
+
+    assert!(result.is_err());
+    assert_eq!(*bind_calls.borrow(), ["UDP", "TCP"]);
+}
+
+#[test]
 fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
     let mut attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
