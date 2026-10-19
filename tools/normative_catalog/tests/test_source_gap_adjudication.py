@@ -623,6 +623,18 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(mapping["applies_to"], [])
                 self.assertEqual(requirement["scope_state"], "profile_conditional")
                 self.assertEqual(requirement["profile_ids"], [])
+                self.assertIn("Profiles v2.1 §5.1.1 item 7", gap["review_note"])
+                self.assertIn("HTML lines 4628–4631", gap["review_note"])
+                self.assertIn("Required=Yes applies only when its enclosing structure or representation is used", gap["review_note"])
+                self.assertIn("does not require every client profile", gap["review_note"])
+                table_locator = gap["source_locator"]
+                row_range = table_locator["html_line_range"]
+                expected_row_citation = (
+                    f"Specification v2.1 §{gap['source_section']}, "
+                    f"HTML lines {row_range[0]}–{row_range[1]}"
+                )
+                self.assertIn(expected_row_citation, gap["review_note"])
+                self.assertIn("Profiles v2.1 §5.1.1 item 7", mapping["review_note"])
                 self.assertFalse(
                     any(requirement_id in profile["requirement_ids"] for profile in client_profiles),
                     f"{requirement_id} must not be asserted for every client profile",
@@ -635,6 +647,64 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                     ),
                     f"{requirement_id} must not appear in the independent client-profile oracle",
                 )
+
+        get_attributes_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG"]
+        self.assertIn("Table 161", get_attributes_gap["review_note"])
+        self.assertIn("OR", get_attributes_gap["review_note"])
+        self.assertIn("Table 223", get_attributes_gap["review_note"])
+        self.assertIn("Attribute Reference is not required by Get Attributes", get_attributes_gap["review_note"])
+        self.assertIn("§6.1.20", get_attributes_gap["review_note"])
+
+    def test_disc_011_and_012_preserve_literal_normative_inclusions(self) -> None:
+        catalog = _load_json(CATALOG_PATH)
+        oracle = _load_json(ORACLE_PATH)
+        decisions = {row["decision_id"]: row for row in catalog["decisions"]}
+        discrepancies = {row["discrepancy_id"]: row for row in catalog["discrepancies"]}
+        gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
+
+        decision = decisions.get("KMIPKIT-DEC-017")
+        self.assertIsNotNone(decision, "literal cross-reference adjudication decision is missing")
+        if decision is None:
+            return
+        self.assertEqual(decision["status"], "accepted")
+        self.assertEqual(
+            set(decision["discrepancy_ids"]),
+            {"KMIPKIT-DISC-011", "KMIPKIT-DISC-012"},
+        )
+        self.assertIn("literal §5.7.1", decision["interpretation"])
+        self.assertIn("possible authorial intent", decision["interpretation"])
+        self.assertIn("does not change the normative inclusion", decision["interpretation"])
+
+        for discrepancy_id in ("KMIPKIT-DISC-011", "KMIPKIT-DISC-012"):
+            discrepancy = discrepancies.get(discrepancy_id)
+            self.assertIsNotNone(discrepancy, f"{discrepancy_id} is missing")
+            if discrepancy is None:
+                continue
+            self.assertEqual(discrepancy["normative_status"], "normative")
+            self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
+            self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-017")
+
+        for gap_id, inclusion_id, expected_profile_id in (
+            (
+                "KMIPKIT-SOURCE-GAP-PROF-6.13-10848",
+                "KMIPKIT-INCLUSION-PROF-613-BASIC-SYMMETRIC-CLIENT",
+                "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-INTERMEDIATE-CLIENT",
+            ),
+            (
+                "KMIPKIT-SOURCE-GAP-PROF-6.14-10867",
+                "KMIPKIT-INCLUSION-PROF-614-BASIC-SYMMETRIC-CLIENT",
+                "KMIPKIT-PROFILE-SYMMETRIC-KEY-FOUNDRY-ADVANCED-CLIENT",
+            ),
+        ):
+            gap = gaps.get(gap_id)
+            self.assertIsNotNone(gap, f"{gap_id} is missing")
+            if gap is None:
+                continue
+            self.assertEqual(gap["source_resolution"]["inclusion_id"], inclusion_id)
+            self.assertEqual(gap["source_resolution"]["included_section"], "5.7.1")
+            self.assertEqual(gap["source_resolution"]["profile_id"], expected_profile_id)
+            self.assertIn("possible authorial intent", gap["source_resolution"]["review_note"])
+            self.assertNotIn("remains open", gap["source_resolution"]["review_note"])
 
     def test_t002_source_clause_crosswalk_and_baseline_inclusions_are_exact(self) -> None:
         catalog = _load_json(CATALOG_PATH)
