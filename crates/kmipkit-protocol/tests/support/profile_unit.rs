@@ -844,15 +844,13 @@ fn profile_maps_required_derive_key_cryptographic_length() {
         derive_key_payload(2, [Value::integer(128), Value::integer(256)]),
     ] {
         let request = request_message_with_operation_payload(0x0000_0005, malformed);
-        let error = result
-            .validate_request(&request)
-            .expect_err("Derive Key cannot omit, mistype, or duplicate Cryptographic Length");
-        assert_eq!(
-            error.code(),
-            ProfileValidationErrorCode::RequestRuleRejected
+        assert_request_rejected_for_requirement(
+            &result,
+            &request,
+            REQUIREMENT_ID,
+            SOURCE_CLAUSE_ID,
+            "Derive Key cannot omit, mistype, or duplicate Cryptographic Length",
         );
-        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
     }
 
     let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
@@ -923,15 +921,13 @@ fn profile_maps_required_derive_key_cryptographic_algorithm_for_key_results() {
         ),
     ] {
         let request = request_message_with_operation_payload(0x0000_0005, malformed);
-        let error = result
-            .validate_request(&request)
-            .expect_err("key derivation rejects a missing, mistyped, or duplicate algorithm");
-        assert_eq!(
-            error.code(),
-            ProfileValidationErrorCode::RequestRuleRejected
+        assert_request_rejected_for_requirement(
+            &result,
+            &request,
+            REQUIREMENT_ID,
+            SOURCE_CLAUSE_ID,
+            "key derivation rejects a missing, mistyped, or duplicate algorithm",
         );
-        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
     }
 
     let secret_data = request_message_with_operation_payload(
@@ -963,6 +959,22 @@ fn derive_key_payload_with_attributes(
         tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
         tagged(ATTRIBUTES_TAG, Value::structure(structure(attributes))),
     ])
+}
+
+fn assert_request_rejected_for_requirement(
+    result: &ProfileValidationResult,
+    request: &crate::RequestMessage,
+    requirement_id: &str,
+    source_clause_id: &str,
+    reason: &str,
+) {
+    let error = result.validate_request(request).expect_err(reason);
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(requirement_id));
+    assert_eq!(error.source_clause_id(), Some(source_clause_id));
 }
 
 #[test]
