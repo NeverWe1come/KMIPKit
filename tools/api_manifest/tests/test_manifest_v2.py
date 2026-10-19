@@ -29,7 +29,7 @@ REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" /
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_PATH = (
     ROOT / "specs" / "043-public-api-bindings" / "reports"
-    / "rust-export-report-2026-10-16.json"
+    / "rust-export-report-2026-10-17.json"
 )
 
 EXPECTED_PACKAGES = {
@@ -953,7 +953,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9510)
+        self.assertEqual(len(declarations), 9511)
         self.assertEqual(len(exclusions), 24)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
@@ -1384,7 +1384,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 602)
+        self.assertEqual(len(declarations), 637)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1493,6 +1493,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             and "cType" not in exclusion
             and re.fullmatch(r"kmipkit_[A-Za-z0-9_]+", exclusion["exportName"])
         }
+        self.assertIn("kmipkit_client_batch_item_response_release", header_functions)
+        self.assertIn(
+            "kmipkit_client_batch_item_response_release", excluded_c_functions
+        )
         published_header_symbols = {
             name for name in ready_by_kind["c-symbol"] if name.startswith("kmipkit_")
         }
@@ -1722,7 +1726,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 574)
+        self.assertEqual(len(declarations), 609)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
