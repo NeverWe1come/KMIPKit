@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import unittest
 from pathlib import Path
@@ -206,6 +207,26 @@ class PingQueryParityManifestTests(unittest.TestCase):
             },
             batch_result_fields,
         )
+
+    def test_default_query_constructors_document_payload_and_message_limits(self) -> None:
+        function = self.functions["client_batch_item_query"]
+        c_documentation = " ".join(function["c"]["documentation"])
+        self.assertIn("payload against the default codec limits", c_documentation)
+        self.assertIn("complete Request Message", c_documentation)
+
+        python_source = (ROOT / "bindings/python/src/kmipkit/extensions.py").read_text(
+            encoding="utf-8"
+        )
+        python_tree = ast.parse(python_source)
+        python_constructor = next(
+            node
+            for node in ast.walk(python_tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name == "client_batch_item_query"
+        )
+        python_documentation = ast.get_docstring(python_constructor) or ""
+        self.assertIn("payload against the default codec limits", python_documentation)
+        self.assertIn("complete Request Message", python_documentation)
 
     def test_generated_parity_inventory_contains_verified_ping_and_query(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
