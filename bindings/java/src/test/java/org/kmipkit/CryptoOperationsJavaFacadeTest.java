@@ -51,6 +51,14 @@ final class CryptoOperationsJavaFacadeTest {
     private static final byte[] PENDING_CORRELATION = {0x31, 0x00, (byte) 0xe2};
 
     private static final List<Operation> OPERATIONS = List.of(
+            new Operation("encrypt", 0x1f, new Class<?>[] {
+                    UniqueIdentifier.class, TtlvStructure.class, TtlvValue.class,
+                    byte[].class, byte[].class, Boolean.class, Boolean.class, byte[].class
+            }),
+            new Operation("decrypt", 0x20, new Class<?>[] {
+                    UniqueIdentifier.class, TtlvStructure.class, TtlvValue.class,
+                    byte[].class, byte[].class, byte[].class, Boolean.class, Boolean.class, byte[].class
+            }),
             new Operation("hash", 0x27, new Class<?>[] {
                     TtlvStructure.class, TtlvValue.class, byte[].class, Boolean.class, Boolean.class
             }),
@@ -212,6 +220,9 @@ final class CryptoOperationsJavaFacadeTest {
                 if (type == TtlvStructure.class && operation.name().equals("hash")) {
                     parameters = hashParameters();
                     arguments[index] = parameters;
+                } else if (type == TtlvStructure.class) {
+                    parameters = TtlvStructure.create();
+                    arguments[index] = parameters;
                 } else if (type == TtlvValue.class) {
                     if (dataKind != TtlvValueKind.NONE) {
                         data = dataValue(dataKind);
@@ -263,6 +274,8 @@ final class CryptoOperationsJavaFacadeTest {
 
     private static String responseGetter(String operationName) {
         return switch (operationName) {
+            case "encrypt" -> "encryptResponse";
+            case "decrypt" -> "decryptResponse";
             case "hash" -> "hashResponse";
             case "mac" -> "macResponse";
             case "macVerify" -> "macVerifyResponse";
@@ -307,6 +320,17 @@ final class CryptoOperationsJavaFacadeTest {
         }
 
         switch (operation.name()) {
+            case "encrypt" -> {
+                assertCopiedResponseBytes(response, "data", SECRET_MARKER);
+                assertCopiedResponseBytes(response, "ivCounterNonce", "response-iv".getBytes(StandardCharsets.UTF_8));
+                assertCopiedResponseBytes(response, "correlationValue", new byte[] {0x01, 0x00, (byte) 0xfd});
+                assertCopiedResponseBytes(response, "authenticatedEncryptionTag",
+                        "response-tag".getBytes(StandardCharsets.UTF_8));
+            }
+            case "decrypt" -> {
+                assertCopiedResponseBytes(response, "data", SECRET_MARKER);
+                assertCopiedResponseBytes(response, "correlationValue", new byte[] {0x01, 0x00, (byte) 0xfd});
+            }
             case "hash" -> {
                 assertCopiedResponseBytes(response, "data", SECRET_MARKER);
                 assertCopiedResponseBytes(response, "correlationValue", new byte[] {0x01, 0x00, (byte) 0xfd});
@@ -405,6 +429,16 @@ final class CryptoOperationsJavaFacadeTest {
             fields.add(ttlvItem(0x420094, 7, "response-id-secret".getBytes(StandardCharsets.UTF_8)));
         }
         switch (operation.name()) {
+            case "encrypt" -> {
+                fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
+                fields.add(ttlvItem(0x42003d, 8, "response-iv".getBytes(StandardCharsets.UTF_8)));
+                fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
+                fields.add(ttlvItem(0x4200ff, 8, "response-tag".getBytes(StandardCharsets.UTF_8)));
+            }
+            case "decrypt" -> {
+                fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
+                fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
+            }
             case "hash" -> {
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
                 fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
