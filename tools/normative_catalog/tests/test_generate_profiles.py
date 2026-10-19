@@ -3588,6 +3588,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     requirement["requirement_id"]
                 )
 
+        baseline_attribute_requirement_ids = {
+            "KMIPKIT-REQ-SPEC-4.1-001-001",
+            "KMIPKIT-REQ-SPEC-4.1-001-002",
+            "KMIPKIT-REQ-SPEC-4.1-001-003",
+            "KMIPKIT-REQ-SPEC-4.18-001-001",
+            "KMIPKIT-REQ-SPEC-4.18-001-002",
+        }
+        mappings_by_requirement_id: dict[str, list[dict[str, object]]] = {}
+        for mapping in oracle["requirement_crosswalk"]:
+            mappings_by_requirement_id.setdefault(mapping["requirement_id"], []).append(mapping)
+
         for profile in oracle["profiles"]:
             profile_id = profile["profile_id"]
             source_clause_ids = set(profile["source_clause_ids"])
@@ -3682,6 +3693,36 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 for requirement_id in requirement_ids_by_source_gap.get(contract["gap_id"], set())
             }
             expected_requirement_ids.update(source_table_requirement_ids)
+
+            if (
+                profile_id == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+                or "KMIPKIT-PROFILE-BASELINE-CLIENT" in profile.get("dependency_profile_ids", [])
+            ):
+                for requirement_id in baseline_attribute_requirement_ids:
+                    with self.subTest(profile_id=profile_id, requirement_id=requirement_id):
+                        self.assertTrue(
+                            any(
+                                mapping.get("applies_to") == "all_client_profiles"
+                                for mapping in mappings_by_requirement_id.get(requirement_id, [])
+                            ),
+                            "Baseline Client's explicitly selected Activation/Deactivation Date attributes apply through its profile dependency",
+                        )
+                        self.assertIn(requirement_id, expected_requirement_ids)
+
+            explicitly_unassigned_conditional_ids = {
+                requirement_id
+                for requirement_id, mappings in mappings_by_requirement_id.items()
+                if requirement_id not in baseline_attribute_requirement_ids
+                and any(
+                    mapping.get("scope_state") == "profile_conditional"
+                    and mapping.get("applies_to") == []
+                    for mapping in mappings
+                )
+            }
+            self.assertFalse(
+                expected_requirement_ids & explicitly_unassigned_conditional_ids,
+                "source-clause membership must not override an empty requirement-level profile assignment",
+            )
 
             expected = sorted(expected_requirement_ids)
             with self.subTest(profile_id=profile_id):

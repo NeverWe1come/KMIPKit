@@ -3816,3 +3816,11 @@ CI run `39217747158` found a rustfmt failure in the Result Message optional-capa
 | Green/Refactor | This DCO-signed formatting correction | `cargo fmt --all`; `cargo fmt --all --check`; `git diff --check` | PASS: all Rust formatting and whitespace checks pass; only assertion layout changed. |
 | Red | This DCO-signed Clippy correction | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | Expected Red: `clippy::assert_is_empty` rejected `assert!(mapping.constraints.is_empty())` in the same test module. |
 | Green/Refactor | This DCO-signed Clippy correction | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `cargo test -p kmipkit-protocol --test profile_validation --all-features --locked`; `cargo fmt --all --check`; `git diff --check` | PASS: workspace Clippy, all seven profile validation tests, formatting, and whitespace checks pass after expressing the empty constraint expectation with `assert_eq!`. |
+
+### CI correction — requirement-level profile applicability (2026-10-19)
+
+CI run `39218412176` showed that the independent profile-array test promoted 19 profile-conditional requirement IDs solely because their source clause was in the broad profile source closure. Pinned Profiles v2.1 §5.1.1 item 3 explicitly selects Activation Date and Deactivation Date for Baseline Client (HTML lines 4541–4561), and every derived client profile in the oracle depends on Baseline; these five requirements need explicit all-profile assignment. The other 14 candidates are not selected by the reviewed client profile clauses. The regression therefore checks both the five inherited attribute requirements and the invariant that an empty requirement-level assignment is not overridden by clause membership.
+
+| Stage | DCO-signed commit | Command or artifact | Result |
+|---|---|---|---|
+| Red | This DCO-signed Red commit | `python -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_profile_oracle_requirement_arrays_match_independent_source_reviews` | Expected Red: five Activation/Deactivation Date rows lack the explicit profile assignment required by Baseline Client §5.1.1 item 3; the clause-level fallback also promotes the remaining 14 unassigned conditional IDs. |
