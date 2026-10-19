@@ -15,6 +15,7 @@ from tools.normative_catalog.validate import (
     validate_catalog,
     validate_source_table_contracts,
 )
+from tools.normative_catalog.tests.test_feature_traceability import FeatureTraceabilityTests
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -27,6 +28,15 @@ ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH = ROOT / "specs/019-cryptographic-operatio
 PROFILE_RESEARCH_PATH = ROOT / "specs/010-profile-conformance/research.md"
 DECRYPT_CORRELATION_CONTRACT_ID = "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
 ENCRYPT_CORRELATION_CONTRACT_ID = "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
+SINGLE_PART_PROCEDURE_TEST_REFS = {
+    "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
+    "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
+    "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::request_requires_single_part_data_and_omits_it_for_multipart",
+    "crates/kmipkit-protocol/tests/unit/mac_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+    "crates/kmipkit-protocol/tests/unit/mac_verify_operation_tests.rs::request_allows_optional_key_parameters_and_original_data_to_be_omitted",
+    "crates/kmipkit-protocol/tests/unit/sign_operation_tests.rs::request_allows_optional_identifier_and_parameters_to_be_omitted",
+    "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
+}
 
 # These are the request rows relevant to the five KMIPKIT-0021 operations
 # assigned by the approved traceability. The first two §6.1 contexts cover
@@ -361,6 +371,18 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 contracts[identifier]["implementation_refs"] and contracts[identifier]["verification_refs"]
                 for identifier in known_linked_contract_ids
             )
+            raw_verification_refs = resolution.get("verification_refs", [])
+            with self.subTest(gap_id=gap_id, link_field="verification_refs"):
+                self.assertIsInstance(raw_verification_refs, list)
+            if not isinstance(raw_verification_refs, list):
+                raw_verification_refs = []
+            if number == 19:
+                self.assertEqual(set(raw_verification_refs), SINGLE_PART_PROCEDURE_TEST_REFS)
+            verification_evidence = bool(raw_verification_refs) and all(
+                isinstance(test_ref, str)
+                and FeatureTraceabilityTests._is_executable_test_ref(test_ref)
+                for test_ref in raw_verification_refs
+            )
             review_note = resolution.get("review_note", "")
             explicit_blocker = (
                 gap["scope_disposition"] == "unresolved"
@@ -371,7 +393,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 if number in (12, 14, 16):
                     self.assertEqual(linked_requirement_ids, ["KMIPKIT-REQ-SPEC-7.8-001"])
                 self.assertTrue(
-                    requirement_evidence or contract_evidence or explicit_blocker,
+                    requirement_evidence or contract_evidence or verification_evidence or explicit_blocker,
                     f"{gap_id} is treated as closed by procedure_context without linked executable evidence or an explicit blocker",
                 )
 
