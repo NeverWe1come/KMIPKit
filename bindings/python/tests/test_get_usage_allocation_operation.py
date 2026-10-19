@@ -87,6 +87,22 @@ def test_get_usage_allocation_response_maps_identifier_and_redacts_repr(
     result.close()
 
 
+def test_usage_allocation_context_cannot_be_created_from_a_copied_response_dto() -> None:
+    response = client.GetUsageAllocationResponse(
+        extensions.UniqueIdentifier.text_string("allocation-object"),
+        _usage_allocation_response_ttlv(),
+    )
+    result = client.BatchItemResult(
+        client.BatchOutcome.COMPLETED, 0, None, None, None,
+        operation=0x11, get_usage_allocation_response=response,
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        result.create_usage_allocation_context(5, 1)
+
+    response.close()
+
+
 def test_get_usage_allocation_response_allows_absent_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
