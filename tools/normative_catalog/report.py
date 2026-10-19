@@ -341,6 +341,52 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
     return mappings
 
 
+def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> bool:
+    """Require typed rule evidence to name an in-repository, active Rust test."""
+    test_path, separator, test_name = reference.partition("::")
+    if (
+        not separator
+        or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", test_name)
+        or not test_path.endswith(".rs")
+    ):
+        return False
+    try:
+        source = safe_read_bytes(repository, test_path, max_bytes=1_048_576).decode("utf-8")
+    except (PathSecurityError, UnicodeDecodeError):
+        return False
+    if re.search(r"#\s*!?\s*\[\s*cfg_attr\s*\(", source):
+        return False
+
+    declaration = re.compile(rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE)
+    test_attribute = re.compile(r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$")
+    cfg_test_attribute = re.compile(r"^\s*#\[cfg\(\s*test\s*\)\]\s*$")
+    ignorable_attribute = re.compile(r"^\s*#\[(?:allow|expect|doc|must_use|inline)(?:\s*\([^]]*\))?\]\s*$")
+    lines = source.splitlines()
+    for index, line in enumerate(lines):
+        if not declaration.match(line):
+            continue
+        cursor = index - 1
+        is_test = False
+        while cursor >= 0:
+            preceding_line = lines[cursor].strip()
+            if not preceding_line or preceding_line.startswith("//"):
+                cursor -= 1
+                continue
+            if test_attribute.fullmatch(preceding_line):
+                is_test = True
+                cursor -= 1
+                continue
+            if cfg_test_attribute.fullmatch(preceding_line) or ignorable_attribute.fullmatch(preceding_line):
+                cursor -= 1
+                continue
+            if preceding_line.startswith("#["):
+                return False
+            break
+        if is_test:
+            return True
+    return False
+
+
 def load_typed_rule_mappings(repository: Path) -> list[dict[str, Any]]:
     """Read only the explicit, static Rust profile-rule registry grammar."""
     source = safe_read_bytes(repository, PROFILE_RULE_SOURCE, max_bytes=4 * 1024 * 1024)
@@ -350,7 +396,14 @@ def load_typed_rule_mappings(repository: Path) -> list[dict[str, Any]]:
         raise ValueError("typed profile rule registry is not valid UTF-8") from error
     if _EMPTY_TYPED_RULE_REGISTRY.search(text):
         return []
-    return _parse_typed_rule_registry(text)
+    mappings = _parse_typed_rule_registry(text)
+    if any(
+        mapping["test_id"]
+        and not _typed_rule_test_reference_resolves(repository, mapping["test_id"])
+        for mapping in mappings
+    ):
+        raise ValueError("unresolvable typed profile rule test evidence")
+    return mappings
 
 
 def _clause_section_rows(clauses: list[dict[str, Any]]) -> list[tuple[str, str, int, str]]:

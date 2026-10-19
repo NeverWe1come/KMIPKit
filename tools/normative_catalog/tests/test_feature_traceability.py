@@ -924,6 +924,9 @@ class FeatureTraceabilityTests(unittest.TestCase):
             row["requirement_id"]: row for row in catalog["requirements"]
         }
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
+        oracle_path = ROOT / "tools/normative_catalog/tests/fixtures/profile-closure-v2.1.json"
+        oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
+        oracle_profiles = {row["profile_id"]: row for row in oracle["profiles"]}
         in_scope_client_requirement_ids = {
             requirement_id
             for profile in catalog["profiles"]
@@ -941,6 +944,14 @@ class FeatureTraceabilityTests(unittest.TestCase):
             with self.subTest(profile_id=profile["profile_id"]):
                 self.assertTrue(profile.get("source_clause_ids"))
                 self.assertTrue(profile.get("requirement_ids"))
+                self.assertIn(profile["profile_id"], oracle_profiles)
+                expected = oracle_profiles[profile["profile_id"]]
+                self.assertEqual(
+                    set(profile["source_clause_ids"]), set(expected["source_clause_ids"])
+                )
+                self.assertEqual(
+                    set(profile["requirement_ids"]), set(expected["requirement_ids"])
+                )
                 self.assertTrue(set(profile["source_clause_ids"]).issubset(source_clause_ids))
                 self.assertTrue(
                     set(profile["requirement_ids"]).issubset(requirements),

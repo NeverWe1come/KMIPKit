@@ -120,6 +120,9 @@ class CoverageReportTests(unittest.TestCase):
             repository = Path(directory)
             source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
             source_path.parent.mkdir(parents=True)
+            test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
+            test_path.parent.mkdir(parents=True)
+            test_path.write_text("#[test]\nfn existing_test() {}\n", encoding="utf-8")
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {

@@ -86943,7 +86943,7 @@
       "implementation_refs": [
         "crates/kmipkit-protocol/src/export.rs::ExportRequest::into_ttlv_payload",
         "crates/kmipkit-protocol/src/export.rs::ExportRequest::with_key_compression_type",
-        "crates/kmipkit-protocol/src/get.rs::GetRequest::into_ttlv_payload",
+        "crates/kmipkit-protocol/src/get.rs::GetRequest::to_ttlv_payload",
         "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type",
         "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_key_compression_type_is_enumeration"
       ],
