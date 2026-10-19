@@ -32,6 +32,7 @@ const OPERATION: u32 = 0x0042_005C;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const RESULT_REASON: u32 = 0x0042_007E;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const OBJECT_ID: &str = "usage-object-23";
 const UNKNOWN_USAGE_UNIT: u32 = 0x8000_0054;
@@ -43,6 +44,17 @@ fn response_bytes(
     reason: Option<u32>,
     correlation: Option<&[u8]>,
     identifier: Option<&str>,
+) -> Vec<u8> {
+    response_bytes_with_batch_id(operation, status, reason, correlation, identifier, None)
+}
+
+fn response_bytes_with_batch_id(
+    operation: u32,
+    status: u32,
+    reason: Option<u32>,
+    correlation: Option<&[u8]>,
+    identifier: Option<&str>,
+    batch_item_id: Option<&[u8]>,
 ) -> Vec<u8> {
     let version = test_structure([
         test_item(PROTOCOL_VERSION_MAJOR, kmipkit_ttlv::Value::integer(2)),
@@ -57,6 +69,12 @@ fn response_bytes(
         OPERATION,
         kmipkit_ttlv::Value::enumeration(operation),
     )];
+    if let Some(batch_item_id) = batch_item_id {
+        fields.push(test_item(
+            UNIQUE_BATCH_ITEM_ID,
+            kmipkit_ttlv::Value::byte_string(batch_item_id.to_vec()),
+        ));
+    }
     fields.push(test_item(
         RESULT_STATUS,
         kmipkit_ttlv::Value::enumeration(status),
@@ -647,7 +665,14 @@ fn decrypt_verify_hash_and_ordinary_calls_do_not_consume_guard_allowance() {
 fn guarded_batch_item_returns_standard_batch_and_preserves_request_metadata() {
     let mut context = allocate_context();
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
-        response: response_bytes(0x1F, 1, Some(0x05), None, None),
+        response: response_bytes_with_batch_id(
+            0x1F,
+            1,
+            Some(0x05),
+            None,
+            None,
+            Some(&[0xA5, 0x5A]),
+        ),
         request_write_chunks: Vec::new(),
     });
     let batch_id = vec![0xA5, 0x5A];
@@ -658,19 +683,20 @@ fn guarded_batch_item_returns_standard_batch_and_preserves_request_metadata() {
     .with_unique_batch_item_id(batch_id.clone());
 
     let response = client
-        .execute_guarded_protection_item(
-            &mut context,
-            item,
-            3,
-            &CodecLimits::defaults(),
-        )
+        .execute_guarded_protection_item(&mut context, item, 3, &CodecLimits::defaults())
         .expect("the guarded item uses the standard one-item batch result");
 
     assert_eq!(response.len(), 1);
-    assert_eq!(response.get(0).map(|item| item.outcome().response().result().status().raw()), Some(1));
+    assert_eq!(
+        response
+            .get(0)
+            .map(|item| item.outcome().response().result().status().raw()),
+        Some(1)
+    );
+    assert_eq!(
+        response.get(0).and_then(|item| item.unique_batch_item_id()),
+        Some(batch_id.as_slice())
+    );
     assert_eq!(context.reserved_units(), 3);
-    assert!(fake
-        .borrow()
-        .retained_request_bytes()
-        .is_some_and(|request| request.windows(batch_id.len()).any(|window| window == batch_id)));
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }

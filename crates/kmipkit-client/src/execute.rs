@@ -4030,6 +4030,98 @@ impl Client {
         }
     }
 
+    /// Executes one typed protection batch item through the local Usage
+    /// Allocation guard and returns the standard one-item batch response.
+    ///
+    /// The original item is consumed intact, so its Unique Batch Item ID and
+    /// Message Extensions are preserved. Only typed Encrypt, MAC, and Sign
+    /// requests are accepted.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with delivery evidence.
+    pub fn execute_guarded_protection_item(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        item: ClientBatchItem,
+        cost: i64,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_guarded_protection_item_inner(context, item, cost, None, limits)
+    }
+
+    /// Executes one guarded typed protection batch item with an explicit
+    /// Asynchronous Indicator, preserving its item metadata.
+    ///
+    /// Pending retains the reservation and never triggers Poll automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized `NotSent` validation error for an unsupported
+    /// operation, missing or mismatched identifier, invalid cost, or cost
+    /// above the locally available allocation. Otherwise returns the standard
+    /// execution error with delivery evidence.
+    pub fn execute_guarded_protection_item_with_asynchronous_indicator(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        item: ClientBatchItem,
+        cost: i64,
+        asynchronous_indicator: u32,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        self.execute_guarded_protection_item_inner(
+            context,
+            item,
+            cost,
+            Some(asynchronous_indicator),
+            limits,
+        )
+    }
+
+    fn execute_guarded_protection_item_inner(
+        &mut self,
+        context: &mut UsageAllocationContext,
+        item: ClientBatchItem,
+        cost: i64,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        let identifier = match item.request() {
+            ClientRequest::Encrypt(request) => request.unique_identifier(),
+            ClientRequest::Mac(request) => request.unique_identifier(),
+            ClientRequest::Sign(request) => request.unique_identifier(),
+            _ => {
+                return Err(guard_validation_error(
+                    UsageAllocationContextError::UnsupportedOperation,
+                ));
+            }
+        }
+        .ok_or_else(|| {
+            guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
+        })?;
+        if identifier != context.unique_identifier() {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
+        context.reserve(cost).map_err(guard_validation_error)?;
+
+        let mut batch = ClientBatch::new(item);
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        match self.execute_with_options(batch, limits, &RequestOptions::default()) {
+            Ok(response) => Ok(response),
+            Err(error) => {
+                context.settle_after_error(cost, error.delivery_state());
+                Err(error)
+            }
+        }
+    }
+
     /// Executes one typed Certify request through the shared batch writer.
     ///
     /// Use the execute method with a one-item batch and an explicit
