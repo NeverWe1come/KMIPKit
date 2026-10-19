@@ -713,15 +713,15 @@ fn encrypt_and_decrypt_batch_item_constructors_preserve_operation_and_redact_inp
             &raw mut encrypt_item,
         )
     );
-    assert_operation(encrypt_item, |request| matches!(request, ClientRequest::Encrypt(_)));
+    assert_operation(encrypt_item, |request| {
+        matches!(request, ClientRequest::Encrypt(_))
+    });
     let stored = reference_handle(encrypt_item, Kind::BatchItem).expect("Encrypt item is live");
     let HandleValue::BatchItem(stored) = &stored.value else {
         panic!("Encrypt item contains a request");
     };
     let formatted = format!("{:?}", stored.request());
-    assert!(formatted.contains("has_iv_counter_nonce: true"));
-    assert!(formatted.contains("has_correlation_value: true"));
-    assert!(formatted.contains("has_authenticated_encryption_additional_data: true"));
+    assert_eq!(formatted, "Encrypt([REDACTED])");
     assert!(!formatted.contains("operation-data-secret"));
     assert!(!formatted.contains("iv-secret"));
     assert!(!formatted.contains("correlation-secret"));
@@ -744,14 +744,15 @@ fn encrypt_and_decrypt_batch_item_constructors_preserve_operation_and_redact_inp
             &raw mut decrypt_item,
         )
     );
-    assert_operation(decrypt_item, |request| matches!(request, ClientRequest::Decrypt(_)));
+    assert_operation(decrypt_item, |request| {
+        matches!(request, ClientRequest::Decrypt(_))
+    });
     let stored = reference_handle(decrypt_item, Kind::BatchItem).expect("Decrypt item is live");
     let HandleValue::BatchItem(stored) = &stored.value else {
         panic!("Decrypt item contains a request");
     };
     let formatted = format!("{:?}", stored.request());
-    assert!(formatted.contains("has_authenticated_encryption_tag: true"));
-    assert!(formatted.contains("has_authenticated_encryption_additional_data: true"));
+    assert_eq!(formatted, "Decrypt([REDACTED])");
     assert!(!formatted.contains("operation-data-secret"));
     assert!(!formatted.contains("tag-secret"));
     assert!(!formatted.contains("aad-secret"));

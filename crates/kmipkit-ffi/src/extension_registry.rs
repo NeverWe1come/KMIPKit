@@ -35,14 +35,14 @@ use kmipkit_client::{
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod, DerivationParameters,
-    DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
-    KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest, MacRequest,
-    MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest, OpaqueObjectContext,
-    OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SecretText,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    UniqueIdentifier,
+    CreateSplitKeyRequest, DecryptRequest, DelegatedLoginRequest, DerivationMethod,
+    DerivationParameters, DeriveKeyRequest, EncryptRequest, ExportRequest, GetConstraintsRequest,
+    GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
+    JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
+    LoginRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest,
+    SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3735,6 +3735,112 @@ pub extern "C" fn kmipkit_client_batch_item_hash(
         }
         request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
         *out = try_ffi!(batch_item_handle(ClientRequest::Hash(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Encrypt request and copies caller-provided secret spans.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_encrypt(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    iv_counter_nonce: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    authenticated_encryption_additional_data: *const crate::kmipkit_byte_span_v1_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let iv_counter_nonce = try_ffi!(copy_optional_secret_span(iv_counter_nonce));
+        let correlation_value = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let additional_data = try_ffi!(copy_optional_secret_span(
+            authenticated_encryption_additional_data
+        ));
+
+        let mut request = EncryptRequest::new(identifier, data);
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(value) = iv_counter_nonce {
+            request = request.with_iv_counter_nonce(value);
+        }
+        if let Some(value) = correlation_value {
+            request = request.with_correlation_value(value);
+        }
+        if let Some(value) = init_indicator {
+            request = request.with_init_indicator(value);
+        }
+        if let Some(value) = final_indicator {
+            request = request.with_final_indicator(value);
+        }
+        if let Some(value) = additional_data {
+            request = request.with_authenticated_encryption_additional_data(value);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Encrypt(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Decrypt request and copies caller-provided secret spans.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_decrypt(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    parameters: *mut kmipkit_ttlv_structure_t,
+    data: *mut kmipkit_ttlv_value_t,
+    iv_counter_nonce: *const crate::kmipkit_byte_span_v1_t,
+    authenticated_encryption_tag: *const crate::kmipkit_byte_span_v1_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    init_indicator: u8,
+    final_indicator: u8,
+    authenticated_encryption_additional_data: *const crate::kmipkit_byte_span_v1_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let parameters = try_ffi!(copy_structure_handle(parameters, false));
+        let data = try_ffi!(copy_operation_data(data));
+        let iv_counter_nonce = try_ffi!(copy_optional_secret_span(iv_counter_nonce));
+        let authenticated_encryption_tag =
+            try_ffi!(copy_optional_secret_span(authenticated_encryption_tag));
+        let correlation_value = try_ffi!(copy_optional_secret_span(correlation_value));
+        let init_indicator = try_ffi!(optional_indicator(init_indicator));
+        let final_indicator = try_ffi!(optional_indicator(final_indicator));
+        let additional_data = try_ffi!(copy_optional_secret_span(
+            authenticated_encryption_additional_data
+        ));
+
+        let mut request = DecryptRequest::new(identifier, data);
+        if let Some(parameters) = parameters {
+            request = request.with_cryptographic_parameters(parameters);
+        }
+        if let Some(value) = iv_counter_nonce {
+            request = request.with_iv_counter_nonce(value);
+        }
+        if let Some(value) = authenticated_encryption_tag {
+            request = request.with_authenticated_encryption_tag(value);
+        }
+        if let Some(value) = correlation_value {
+            request = request.with_correlation_value(value);
+        }
+        if let Some(value) = init_indicator {
+            request = request.with_init_indicator(value);
+        }
+        if let Some(value) = final_indicator {
+            request = request.with_final_indicator(value);
+        }
+        if let Some(value) = additional_data {
+            request = request.with_authenticated_encryption_additional_data(value);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Decrypt(request)));
         SUCCESS
     })
 }
