@@ -684,18 +684,6 @@ def _linked_clause_scope(clause: dict[str, Any], requirements: dict[str, dict[st
     return next(iter(scopes)) if len(scopes) == 1 else "mixed"
 
 
-def _aggregate_source_obligation_scope(source_obligations: list[dict[str, Any]]) -> str | None:
-    """Aggregate reviewed source-atom scopes without hiding server-only atoms."""
-    scopes = list(dict.fromkeys(atom["scope_disposition"] for atom in source_obligations))
-    if not scopes:
-        return None
-    if "unresolved" in scopes:
-        return "unclear"
-    if "(split/shared)" in " ".join(scopes) or len(scopes) > 1:
-        return "mixed"
-    return scopes[0]
-
-
 def _strongest_source_authority(
     references: list[dict[str, Any]],
     authority_by_source: dict[str, str],

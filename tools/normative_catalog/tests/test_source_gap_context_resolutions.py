@@ -9,7 +9,6 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from tools.normative_catalog.validate import (
-    _aggregate_source_obligation_scope,
     _profile_oracle_reference_issue,
     _linked_clause_scope,
     validate_catalog,
@@ -26,6 +25,20 @@ HASH_MAC_SIGNATURE_SPEC_PATH = ROOT / "specs/021-hash-mac-signature-operations/s
 ENCRYPT_DECRYPT_SPEC_PATH = ROOT / "specs/019-cryptographic-operations/spec.md"
 ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH = ROOT / "specs/019-cryptographic-operations/contracts/operation-payloads.md"
 PROFILE_RESEARCH_PATH = ROOT / "specs/010-profile-conformance/research.md"
+
+
+def _aggregate_source_obligation_scope_for_test(source_obligations: list[dict[str, object]]) -> str | None:
+    """Aggregate independently reviewed atom scopes for this focused regression only."""
+    scopes = list(dict.fromkeys(str(atom["scope_disposition"]) for atom in source_obligations))
+    if not scopes:
+        return None
+    if "unresolved" in scopes:
+        return "unclear"
+    if "(split/shared)" in " ".join(scopes) or len(scopes) > 1:
+        return "mixed"
+    return str(scopes[0])
+
+
 DECRYPT_CORRELATION_CONTRACT_ID = "KMIPKIT-SOURCE-GAP-SPEC-6.1.11-CORRELATION-VALUE-OPTIONAL"
 ENCRYPT_CORRELATION_CONTRACT_ID = "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-CORRELATION-VALUE-OPTIONAL"
 SINGLE_PART_PROCEDURE_TEST_REFS = {
@@ -786,7 +799,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIn("result_contract.rs::result_message_debug_is_redacted", " ".join(requirement["verification_refs"]))
         self.assertIn("does not automatically log", requirement["review_note"].lower())
 
-    def test_result_message_clause_scope_aggregates_both_may_atoms(self) -> None:
+    def test_result_message_source_atoms_and_catalog_record_mixed_scope(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         review = next(
@@ -800,7 +813,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
         self.assertEqual(
-            _aggregate_source_obligation_scope(review["source_obligations"]),
+            _aggregate_source_obligation_scope_for_test(review["source_obligations"]),
             "mixed",
         )
         self.assertEqual(clause["scope_state"], "mixed")
