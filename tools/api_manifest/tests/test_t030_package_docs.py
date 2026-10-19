@@ -176,6 +176,8 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Log",
                 "Login",
                 "Obtain Lease",
+                "Ping",
+                "Query",
             ],
         )
         self.assertEqual(

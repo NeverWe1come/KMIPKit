@@ -71,15 +71,15 @@ changes to this table.
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 
-Of the **56** KMIP `client_1_0` operation rows, **30 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **28 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Seventeen operation mappings
+or implementation code elsewhere in the repository. Nineteen operation mappings
 are `verified`: Certify, Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get,
 Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-Log, Login, and Obtain Lease. The Derive Key mapping rejects a successful result without its
+Log, Login, Obtain Lease, Ping, and Query. The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
 complete ordered response TTLV in all four languages. The Get Constraints mapping
 sends the empty §6.1.22 request and exposes its required ordered Constraints
@@ -91,7 +91,11 @@ Export mapping preserves its optional identifier, raw Table 217 selectors,
 wrapping specification, and owned result handles across Rust, C, Java, and
 Python. The Get mapping preserves the optional Unique Identifier and Table 220
 selectors and exposes its successful Any Object as an owned response in all
-four languages. Locate preserves optional request filters, server order,
+four languages. Ping maps the empty request and successful response payloads and
+does not imply general server health. Query preserves caller-supplied function
+and Object Group order and unknown response items; it tolerates both response
+shapes described in §6.1.40 while `KMIPKIT-DISC-047` remains unresolved. These
+are API mappings, not server-conformance claims. Locate preserves optional request filters, server order,
 repeated Unique Identifiers, and the distinction between omitted and empty
 Located Items. The Get Usage Allocation mapping includes its optional identifier
 and signed count request, resolved identifier response, and common batch outcomes
