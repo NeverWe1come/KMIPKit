@@ -1,4 +1,5 @@
 #include "../response_identifier_validation.hpp"
+#include "../response_byte_span_validation.hpp"
 
 #include <cassert>
 #include <cstdint>
@@ -34,6 +35,16 @@ bool rejects(uint8_t response_present, const kmipkit_unique_identifier_v1_t& val
 int main() {
     using kmipkit::jni::ResponseIdentifierFields;
     using kmipkit::jni::normalize_response_identifier;
+    using kmipkit::jni::is_valid_response_byte_span;
+
+    const uint8_t response_bytes[] = {0x41, 0x42};
+    assert(is_valid_response_byte_span(0, {nullptr, 0}));
+    assert(!is_valid_response_byte_span(0, {response_bytes, sizeof(response_bytes)}));
+    assert(!is_valid_response_byte_span(0, {nullptr, 1}));
+    assert(is_valid_response_byte_span(1, {nullptr, 0}));
+    assert(is_valid_response_byte_span(1, {response_bytes, sizeof(response_bytes)}));
+    assert(!is_valid_response_byte_span(1, {nullptr, sizeof(response_bytes)}));
+    assert(!is_valid_response_byte_span(2, {nullptr, 0}));
 
     const uint8_t text[] = {0x41, 0x00, 0x42};
     ResponseIdentifierFields output{};
