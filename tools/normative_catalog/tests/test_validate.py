@@ -18258,6 +18258,14 @@ class CatalogValidationTests(unittest.TestCase):
                 readiness["blockers"],
             )
 
+        self.assertEqual(
+            set(),
+            observed_blocked_requirement_ids,
+            "every selected in-scope client MAY/OPTIONAL capability needs usable "
+            "implementation and positive-test evidence under KMIP Spec v2.1 Section 14.1 "
+            "(KMIPKIT-SRC-spec); candidates come from the independent pinned-source oracle",
+        )
+
     def test_profile_omissions_report_the_oracle_stable_identifier(self) -> None:
         """A closure omission should identify the exact source or requirement ID."""
         catalog = json.loads(
