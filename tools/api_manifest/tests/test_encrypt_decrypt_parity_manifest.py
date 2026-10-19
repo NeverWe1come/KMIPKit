@@ -228,6 +228,34 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                     f"org.kmipkit.extensions.ClientBatchItemResult.{operation}Response.close",
                     declarations[f"T040:{operation.lower()}:response-close:java"]["exportName"],
                 )
+
+    def test_python_typed_response_types_and_fields_are_declared(self) -> None:
+        declarations = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        for operation, fields in (
+            (
+                "Encrypt",
+                (
+                    "unique_identifier",
+                    "data",
+                    "iv_counter_nonce",
+                    "correlation_value",
+                    "authenticated_encryption_tag",
+                ),
+            ),
+            ("Decrypt", ("unique_identifier", "data", "correlation_value")),
+        ):
+            type_name = f"kmipkit.client.{operation}Response"
+            with self.subTest(response=operation):
+                self.assertEqual("type", declarations[type_name]["kind"])
+                self.assertEqual("declared", declarations[type_name]["declarationState"])
+                for field_name in fields:
+                    declaration_name = f"{type_name}.{field_name}"
+                    self.assertEqual("field", declarations[declaration_name]["kind"])
+                    self.assertEqual(
+                        "declared", declarations[declaration_name]["declarationState"]
+                    )
                 self.assertEqual(
                     f"kmipkit.client.{operation}Response.close",
                     declarations[f"T040:{operation.lower()}:response-close:python"]["exportName"],
