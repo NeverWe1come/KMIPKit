@@ -868,6 +868,8 @@ class BatchItemResult:
     obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
     encrypt_response: EncryptResponse | None = field(default=None, repr=False)
     decrypt_response: DecryptResponse | None = field(default=None, repr=False)
+    ping_response: bool | None = None
+    query_response: ttlv.Structure | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -1618,11 +1620,26 @@ def _batch_result(handle: Any) -> BatchResult:
                 log_response = None
                 if int(metadata.operation) == 0x2C:
                     log_response = _log_response(item)
+                ping_response = None
+                if int(metadata.operation) == 0x3B:
+                    ping_response = _ping_response(item)
+                query_response = None
+                if int(metadata.operation) == 0x18:
+                    query_response = _query_response(item)
                 cryptographic_responses = (None, None, None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
                         item, int(metadata.operation)
                     )
+                (
+                    encrypt_response,
+                    decrypt_response,
+                    hash_response,
+                    mac_response,
+                    mac_verify_response,
+                    sign_response,
+                    signature_verify_response,
+                ) = cryptographic_responses
                 items.append(
                     BatchItemResult(
                         outcome,
@@ -1638,7 +1655,11 @@ def _batch_result(handle: Any) -> BatchResult:
                         private_identifier,
                         public_identifier,
                         split_identifiers,
-                        *cryptographic_responses,
+                        hash_response,
+                        mac_response,
+                        mac_verify_response,
+                        sign_response,
+                        signature_verify_response,
                         certify_response,
                         allocation_response,
                         check_response,
@@ -1654,6 +1675,10 @@ def _batch_result(handle: Any) -> BatchResult:
                         log_response=log_response,
                         login_response=login_response,
                         obtain_lease_response=obtain_lease_response,
+                        encrypt_response=encrypt_response,
+                        decrypt_response=decrypt_response,
+                        ping_response=ping_response,
+                        query_response=query_response,
                     )
                 )
             finally:
@@ -2509,6 +2534,44 @@ def _get_constraints_response(
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return GetConstraintsResponse(response_ttlv)
+
+
+def _ping_response(item: _ClientBatchItemResponse) -> bool | None:
+    present = ffi.new("uint8_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_ping(item._pointer(), present)
+    )
+    if present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    return bool(present[0]) if present[0] == 1 else None
+
+
+def _query_response(item: _ClientBatchItemResponse) -> ttlv.Structure | None:
+    present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    status = lib.kmipkit_client_batch_item_response_query_ttlv(
+        item._pointer(), present, response_ttlv_output
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if status != 0:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        _raise_abi_status(status)
+    if present[0] not in (0, 1) or (present[0] == 1) != (
+        response_ttlv_handle != ffi.NULL
+    ):
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        return None
+    try:
+        return ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
 
 
 def _interop_response(item: _ClientBatchItemResponse) -> InteropResponse | None:

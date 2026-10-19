@@ -149,7 +149,9 @@ def test_batch_result_dispatches_ping_and_query_payload_mappers(
     monkeypatch.setattr(client, "_create_response", lambda _item: (None, None))
     monkeypatch.setattr(client, "_create_key_pair_response", lambda _item: (None, None))
     monkeypatch.setattr(client, "_create_split_key_response", lambda _item: None)
-    monkeypatch.setattr(client, "_join_split_key_response_for_result", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        client, "_join_split_key_response_for_result", lambda *_args, **_kwargs: None
+    )
     monkeypatch.setattr(client, "_cryptographic_responses", lambda *_args: (None,) * 7)
 
     def mapper(item: object) -> object:
@@ -165,6 +167,114 @@ def test_batch_result_dispatches_ping_and_query_payload_mappers(
         assert dispatched == [item_pointer]
     finally:
         result.close()
+
+
+def test_ping_response_maps_presence_and_rejects_invalid_native_values(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    present = [1]
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_ping=lambda _item, output: output.__setitem__(
+                0, present[0]
+            )
+            or 0
+        ),
+    )
+    item = SimpleNamespace(_pointer=lambda: object())
+
+    assert client._ping_response(item) is True
+    present[0] = 0
+    assert client._ping_response(item) is None
+    present[0] = 2
+    with pytest.raises(errors.InvalidInputError):
+        client._ping_response(item)
+
+
+def test_query_response_adopts_and_releases_owned_ttlv_handles(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    handle = ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    present = [1]
+    released: list[object] = []
+    payload = object()
+
+    def response_ttlv(_item: object, out_present: object, output: object) -> int:
+        out_present[0] = present[0]  # type: ignore[index]
+        output[0] = handle if present[0] == 1 else ffi.NULL  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_query_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(
+        client.ttlv, "_structure_from_native_address", lambda _address: payload
+    )
+    item = SimpleNamespace(_pointer=lambda: object())
+
+    assert client._query_response(item) is payload
+    assert released == []
+    present[0] = 0
+    assert client._query_response(item) is None
+
+    def absent_with_handle(_item: object, out_present: object, output: object) -> int:
+        out_present[0] = 0  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_query_ttlv=absent_with_handle,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._query_response(item)
+    assert released == [handle]
+
+    monkeypatch.setattr(
+        client.ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("test wrapper failure")),
+    )
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_query_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    present[0] = 1
+    with pytest.raises(RuntimeError, match="test wrapper failure"):
+        client._query_response(item)
+    assert released == [handle, handle]
+
+    def failed_response(_item: object, out_present: object, output: object) -> int:
+        out_present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 4
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_query_ttlv=failed_response,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._query_response(item)
+    assert released == [handle, handle, handle]
 
 
 def _opaque(type_name: str) -> tuple[object, object]:
