@@ -4257,3 +4257,7 @@ production code.
 |---|---|---|---|
 | Red | PR head `5cc450ad` | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | Expected failure: `clippy::too_many_lines` at 108/100 lines. |
 | Green/Refactor | This DCO-signed correction | `cargo test -p kmipkit-ffi --all-features ffi_login_response_getters --locked`; `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 3 focused FFI tests; workspace Clippy, formatting, and whitespace checks pass. No production code changed. |
+
+#### T054 changed-code coverage — Red baseline (2026-10-19)
+
+PR CI run `39224595043` on head `60722babd8b0a7afe4f3ed1b0074d90760db2199` completed all platform and language checks except the changed-code coverage gate. The exact gate result was `7,293/7,688` executable lines (94.86%), below the required 95%; no scope or threshold was changed. The failed run is the Red evidence for this coverage-only follow-up.
