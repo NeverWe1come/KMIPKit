@@ -844,8 +844,6 @@ class BatchItemResult:
     split_key_unique_identifiers: tuple[extensions.UniqueIdentifier, ...] | None = field(
         default=None, repr=False
     )
-    encrypt_response: EncryptResponse | None = field(default=None, repr=False)
-    decrypt_response: DecryptResponse | None = field(default=None, repr=False)
     hash_response: HashResponse | None = field(default=None, repr=False)
     mac_response: MacResponse | None = field(default=None, repr=False)
     mac_verify_response: MacVerifyResponse | None = field(default=None, repr=False)
@@ -868,6 +866,8 @@ class BatchItemResult:
     log_response: LogResponse | None = field(default=None, repr=False)
     login_response: LoginResponse | None = field(default=None, repr=False)
     obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
+    encrypt_response: EncryptResponse | None = field(default=None, repr=False)
+    decrypt_response: DecryptResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
