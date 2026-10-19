@@ -94,7 +94,7 @@ def test_logout_uses_native_cffi_and_exposes_success_response_presence() -> None
     listener.listen(1)
     listener.settimeout(3)
     port = listener.getsockname()[1]
-    peer_failures: queue.Queue[BaseException] = queue.Queue()
+    peer_failures: queue.Queue[Exception] = queue.Queue()
     received_requests: list[bytes] = []
 
     def serve_logout_response() -> None:
@@ -113,7 +113,7 @@ def test_logout_uses_native_cffi_and_exposes_success_response_presence() -> None
                 assert stream.getpeercert(binary_form=True)
                 received_requests.append(_read_ttlv_frame(stream))
                 stream.sendall(_logout_response_message())
-        except BaseException as failure:
+        except (AssertionError, OSError, ssl.SSLError) as failure:
             peer_failures.put(failure)
         finally:
             listener.close()
