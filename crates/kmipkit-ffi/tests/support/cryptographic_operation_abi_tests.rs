@@ -659,6 +659,111 @@ fn cryptographic_batch_item_constructors_preserve_operation_kind_and_redact_inpu
 }
 
 #[test]
+fn encrypt_and_decrypt_batch_item_constructors_preserve_operation_and_redact_inputs() {
+    let parameters = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let data = make_handle(
+        Kind::Value,
+        HandleValue::Value(Value::byte_string(b"operation-data-secret".to_vec())),
+    );
+    let identifier_bytes = b"key-id-secret";
+    let identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("test ABI record size fits u32"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: identifier_bytes.as_ptr(),
+        text_length: u64::try_from(identifier_bytes.len()).expect("identifier length fits u64"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    let iv_bytes = b"iv-secret";
+    let iv = kmipkit_byte_span_v1_t {
+        data: iv_bytes.as_ptr(),
+        length: u64::try_from(iv_bytes.len()).expect("IV length fits u64"),
+    };
+    let correlation_bytes = b"correlation-secret";
+    let correlation = kmipkit_byte_span_v1_t {
+        data: correlation_bytes.as_ptr(),
+        length: u64::try_from(correlation_bytes.len()).expect("correlation length fits u64"),
+    };
+    let additional_data_bytes = b"aad-secret";
+    let additional_data = kmipkit_byte_span_v1_t {
+        data: additional_data_bytes.as_ptr(),
+        length: u64::try_from(additional_data_bytes.len()).expect("AAD length fits u64"),
+    };
+    let tag_bytes = b"tag-secret";
+    let tag = kmipkit_byte_span_v1_t {
+        data: tag_bytes.as_ptr(),
+        length: u64::try_from(tag_bytes.len()).expect("tag length fits u64"),
+    };
+
+    let mut encrypt_item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_encrypt(
+            &raw const identifier,
+            parameters,
+            data,
+            &raw const iv,
+            &raw const correlation,
+            1,
+            2,
+            &raw const additional_data,
+            &raw mut encrypt_item,
+        )
+    );
+    assert_operation(encrypt_item, |request| matches!(request, ClientRequest::Encrypt(_)));
+    let stored = reference_handle(encrypt_item, Kind::BatchItem).expect("Encrypt item is live");
+    let HandleValue::BatchItem(stored) = &stored.value else {
+        panic!("Encrypt item contains a request");
+    };
+    let formatted = format!("{:?}", stored.request());
+    assert!(formatted.contains("has_iv_counter_nonce: true"));
+    assert!(formatted.contains("has_correlation_value: true"));
+    assert!(formatted.contains("has_authenticated_encryption_additional_data: true"));
+    assert!(!formatted.contains("operation-data-secret"));
+    assert!(!formatted.contains("iv-secret"));
+    assert!(!formatted.contains("correlation-secret"));
+    assert!(!formatted.contains("aad-secret"));
+    assert!(!formatted.contains("key-id-secret"));
+
+    let mut decrypt_item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_decrypt(
+            &raw const identifier,
+            parameters,
+            data,
+            &raw const iv,
+            &raw const tag,
+            &raw const correlation,
+            1,
+            2,
+            &raw const additional_data,
+            &raw mut decrypt_item,
+        )
+    );
+    assert_operation(decrypt_item, |request| matches!(request, ClientRequest::Decrypt(_)));
+    let stored = reference_handle(decrypt_item, Kind::BatchItem).expect("Decrypt item is live");
+    let HandleValue::BatchItem(stored) = &stored.value else {
+        panic!("Decrypt item contains a request");
+    };
+    let formatted = format!("{:?}", stored.request());
+    assert!(formatted.contains("has_authenticated_encryption_tag: true"));
+    assert!(formatted.contains("has_authenticated_encryption_additional_data: true"));
+    assert!(!formatted.contains("operation-data-secret"));
+    assert!(!formatted.contains("tag-secret"));
+    assert!(!formatted.contains("aad-secret"));
+    assert!(!formatted.contains("key-id-secret"));
+
+    release(decrypt_item, Kind::BatchItem);
+    release(encrypt_item, Kind::BatchItem);
+    release(data, Kind::Value);
+    release(parameters, Kind::Structure);
+}
+
+#[test]
 fn copied_byte_string_operation_data_survives_source_value_handle_release() {
     let source_bytes = b"operation-data-copy";
     let source = make_handle(
