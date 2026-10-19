@@ -113,6 +113,8 @@ public final class NativeExtensionRegistry {
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
+    public static native long clientBatchItemPing();
+    public static native long clientBatchItemQuery(int[] functions, @Nullable byte[][] objectGroups);
     public static native long clientBatchItemCreate(long objectType, long attributes, long protectionStorageMasks);
     public static native long clientBatchItemCreateKeyPair(long commonAttributes, long privateKeyAttributes,
             long publicKeyAttributes, long commonProtectionStorageMasks,
@@ -243,6 +245,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseGet(long itemResponse);
     public static native Object[] clientBatchItemResponseLocate(long itemResponse);
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
+    public static native long[] clientBatchItemResponsePing(long itemResponse);
+    public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);
     public static native Object[] clientBatchItemResponseLog(long itemResponse);
     public static native Object[] clientBatchItemResponseExport(long itemResponse);

@@ -3,6 +3,11 @@ package org.kmipkit.extensions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -19,6 +24,7 @@ public final class ClientBatchItem implements AutoCloseable {
     private static final int MAX_OPERATION_INPUT_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
     private static final int MAX_DERIVE_KEY_SOURCE_IDENTIFIERS = 100_000;
     private static final int MAX_SPLIT_KEY_REFERENCES = 100_000;
+    private static final int MAX_QUERY_VALUES = 100_000;
 
     private final NativeHandle handle;
     private final List<ClientRequestMessageExtension> extensions;
@@ -32,6 +38,73 @@ public final class ClientBatchItem implements AutoCloseable {
     public static ClientBatchItem discoverVersions() {
         NativeExtensionRegistry.ensureLoaded();
         return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemDiscoverVersions(), List.of());
+    }
+
+    /** Creates an empty client-initiated KMIP Ping request batch item. */
+    public static ClientBatchItem ping() {
+        NativeExtensionRegistry.ensureLoaded();
+        return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemPing(), List.of());
+    }
+
+    /**
+     * Creates a KMIP Query request, preserving raw function values and their order. A null
+     * {@code objectGroups} omits Object Groups, while an empty array includes it as present-empty.
+     */
+    public static ClientBatchItem query(int[] functions, String[] objectGroups) {
+        if (functions == null || functions.length == 0) {
+            throw new InvalidInputException("Query requires at least one function");
+        }
+        if (functions.length > MAX_QUERY_VALUES) {
+            throw new ResourceLimitException("Query function count exceeds the configured limit");
+        }
+        if (objectGroups != null && objectGroups.length > MAX_QUERY_VALUES) {
+            throw new ResourceLimitException("Query Object Group count exceeds the configured limit");
+        }
+
+        byte[][] encodedGroups = null;
+        try {
+            if (objectGroups != null) {
+                encodedGroups = new byte[objectGroups.length][];
+                long totalBytes = 0;
+                for (int index = 0; index < objectGroups.length; index++) {
+                    String objectGroup = objectGroups[index];
+                    if (objectGroup == null) {
+                        throw new InvalidInputException("Query Object Group must not be null");
+                    }
+                    byte[] encoded = encodeQueryObjectGroup(objectGroup);
+                    totalBytes += encoded.length;
+                    if (totalBytes > MAX_OPERATION_INPUT_BYTES) {
+                        throw new ResourceLimitException(
+                                "Query Object Groups exceed the configured input limit");
+                    }
+                    encodedGroups[index] = encoded;
+                }
+            }
+            NativeExtensionRegistry.ensureLoaded();
+            return new ClientBatchItem(
+                    NativeExtensionRegistry.clientBatchItemQuery(functions.clone(), encodedGroups),
+                    List.of());
+        } finally {
+            if (encodedGroups != null) {
+                for (byte[] group : encodedGroups) {
+                    if (group != null) Arrays.fill(group, (byte) 0);
+                }
+            }
+        }
+    }
+
+    private static byte[] encodeQueryObjectGroup(String value) {
+        try {
+            ByteBuffer encoded = StandardCharsets.UTF_8.newEncoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .encode(CharBuffer.wrap(value));
+            byte[] bytes = new byte[encoded.remaining()];
+            encoded.get(bytes);
+            return bytes;
+        } catch (CharacterCodingException exception) {
+            throw new InvalidInputException("Query Object Group is not valid Unicode");
+        }
     }
 
     /** Creates a Register request batch item and consumes the request handle. */

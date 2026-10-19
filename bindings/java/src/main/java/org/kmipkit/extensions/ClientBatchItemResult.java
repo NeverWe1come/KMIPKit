@@ -106,6 +106,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
     }
 
+    /** Returns whether this batch item has a typed Ping response, including Pending. */
+    public Optional<Boolean> pingResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        long[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponsePing);
+        return parsePingResponse(values);
+    }
+
+    /**
+     * Returns the complete generic TTLV payload from a Query response. The returned structure
+     * owns its native handle independently; callers must close it when finished.
+     */
+    public Optional<TtlvStructure> queryResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseQueryTtlv);
+        return parseQueryResponse(values);
+    }
+
     /**
      * Returns the resolved identifier and complete generic TTLV from a successful Get Usage
      * Allocation response. The returned response owns an independent TTLV copy; callers must
@@ -1586,6 +1604,42 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Get Constraints response is invalid");
         }
         return Optional.of(new GetConstraintsResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<Boolean> parsePingResponse(long[] values) {
+        long[] fields = requireLongArray(values, 1, "native Ping response is invalid");
+        return responsePresent(fields) ? Optional.of(Boolean.TRUE) : Optional.empty();
+    }
+
+    static Optional<TtlvStructure> parseQueryResponse(Object[] values) {
+        long responseTtlvHandle = 0;
+        if (values != null && values.length > 1 && values[1] instanceof long[] handles
+                && handles.length == 1 && handles[0] > 0) {
+            responseTtlvHandle = handles[0];
+        }
+        boolean transferred = false;
+        try {
+            Object[] tuple = requireTuple(values, 2, "native Query response is invalid");
+            long[] fields = requireLongArray(tuple[0], 1, "native Query response is invalid");
+            long[] handles = requireLongArray(tuple[1], 1, "native Query response is invalid");
+            responseTtlvHandle = handles[0] > 0 ? handles[0] : responseTtlvHandle;
+            if (!responsePresent(fields)) {
+                if (handles[0] != 0) {
+                    throw new InvalidInputException("native absent Query response contains fields");
+                }
+                return Optional.empty();
+            }
+            if (handles[0] <= 0) {
+                throw new InvalidInputException("native Query response is invalid");
+            }
+            TtlvStructure response = TtlvStructure.fromNative(handles[0], null);
+            transferred = true;
+            return Optional.of(response);
+        } finally {
+            if (!transferred && responseTtlvHandle > 0) {
+                TtlvStructure.fromNative(responseTtlvHandle, null).close();
+            }
+        }
     }
 
     static Optional<InteropResponse> parseInteropResponse(Object[] values) {
