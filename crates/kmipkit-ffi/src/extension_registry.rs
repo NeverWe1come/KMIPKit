@@ -3218,11 +3218,12 @@ pub extern "C" fn kmipkit_client_batch_item_logout(
         }) else {
             return record_ffi_error(ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: Required handles return Err when null and Some when valid.
         };
-        let ticket = match Ticket::try_from_ttlv(ticket_structure) {
-            Ok(ticket) => ticket,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(ticket) = Ticket::try_from_ttlv(ticket_structure) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = try_ffi!(batch_item_handle(ClientRequest::logout(LogoutRequest::new(ticket))));
+        *out = try_ffi!(batch_item_handle(ClientRequest::logout(
+            LogoutRequest::new(ticket)
+        )));
         SUCCESS
     })
 }

@@ -1360,10 +1360,7 @@ fn ffi_logout_constructor_requires_and_validates_ticket_table_391() {
     );
     assert!(item.is_null());
 
-    let invalid_ticket = make_handle(
-        Kind::Structure,
-        HandleValue::Structure(Structure::new()),
-    );
+    let invalid_ticket = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
     assert_eq!(
         kmipkit_client_batch_item_logout(invalid_ticket, &mut item),
         ERROR_INVALID_INPUT
@@ -1398,10 +1395,7 @@ fn ffi_logout_constructor_requires_and_validates_ticket_table_391() {
         .expect("Ticket Value item fits within the test structure limit");
     let ticket = make_handle(Kind::Structure, HandleValue::Structure(ticket));
 
-    assert_eq!(
-        kmipkit_client_batch_item_logout(ticket, &mut item),
-        SUCCESS
-    );
+    assert_eq!(kmipkit_client_batch_item_logout(ticket, &mut item), SUCCESS);
     assert!(!item.is_null());
     kmipkit_client_batch_item_release(item);
     release(ticket, Kind::Structure);
@@ -1411,8 +1405,11 @@ fn ffi_logout_constructor_requires_and_validates_ticket_table_391() {
 fn ffi_logout_response_presence_maps_success_and_failure() {
     let success = successful_cryptographic_item(
         ClientRequest::logout(LogoutRequest::new(
-            Ticket::new(TicketType::LOGIN, SecretBytes::new(b"logout-success-ticket".to_vec()))
-                .expect("valid Logout request Ticket builds"),
+            Ticket::new(
+                TicketType::LOGIN,
+                SecretBytes::new(b"logout-success-ticket".to_vec()),
+            )
+            .expect("valid Logout request Ticket builds"),
         )),
         0x2e,
         b"logout-success",
@@ -1420,8 +1417,11 @@ fn ffi_logout_response_presence_maps_success_and_failure() {
     );
     let failure = failed_cryptographic_item(
         ClientRequest::logout(LogoutRequest::new(
-            Ticket::new(TicketType::LOGIN, SecretBytes::new(b"logout-failure-ticket".to_vec()))
-                .expect("valid Logout request Ticket builds"),
+            Ticket::new(
+                TicketType::LOGIN,
+                SecretBytes::new(b"logout-failure-ticket".to_vec()),
+            )
+            .expect("valid Logout request Ticket builds"),
         )),
         0x2e,
         b"logout-failure",

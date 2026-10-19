@@ -4533,3 +4533,29 @@ isolated rerun. No source change was made for this host restriction. Current
 head cross-platform CI remains required. T078's task checkbox remains open
 until its explicit T040 dependency passes current-head CI and selected-scope
 coverage; the T078 code and language-specific tests are implemented.
+
+### T055 Logout four-language mapping (2026-10-20)
+
+T055 maps the existing approved Logout contract to the shared Rust/C/Java/Python
+API inventory. Logout requires the caller-supplied §7.39 Table 391 Ticket
+under §6.1.31 Table 256. A successful Table 257 response has an empty
+operation payload; Table 258 retains the approved Failure behavior. The C
+constructor copies Ticket data into KMIPKit-owned zeroizing storage and does
+not include it in diagnostics. The response accessor exposes typed-response
+presence, including Pending, without adding polling or retry behavior. No
+protocol semantics or OASIS conformance claim changed.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `f63da193` | Focused manifest parity test; Python Logout pytest module; Java `compileTestJava`; strict MSVC C11 consumer compile (`/W4 /WX`) | Expected failures: Logout was blocked/unmapped in the manifest, Python API names were absent, Java/JNI Logout members were missing, and the C header did not declare the Logout symbols. |
+| Green | `8e0fa608` | `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_logout_ -- --nocapture`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact --nocapture`; `cargo test -p kmipkit-protocol logout`; `cargo test -p kmipkit-client logout` | PASS: FFI 2/2; compiled public C consumer 1/1 (calls Logout constructor and checks invalid response output clearing); protocol 8/8; client 6/6. The existing Cosmian KMS integration test remains ignored because the local server is not configured. |
+| Green | `8e0fa608` | Python focused Logout pytest with `KMIPKIT_NATIVE_LIBRARY` set to the isolated Cargo DLL; Java `LogoutMappingTest` with the JNI bridge built into `%TEMP%` and `buildNativeLibrary` skipped; `python -B tools/api_manifest/tests/test_logout_parity_manifest.py`; `python -B tools/api_manifest/generate.py --check` | PASS: Python 4/4; Java Gradle test task successful; manifest parity 2/2; all 12 generated outputs current. The C consumer was compiled and executed without writing into pre-existing `target` directories. |
+| Refactor | This DCO-signed evidence commit | `cargo fmt --all --check`; `cargo clippy -p kmipkit-ffi --all-targets --features coverage-c-consumer -- -D warnings`; `python -B tools/api_manifest/tests/test_logout_parity_manifest.py`; `python -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: formatting, scoped Clippy, both manifest/parity tests, all 12 generated outputs, and whitespace checks. AWS-LC reports Windows compiler-probe and missing NASM warnings; these commands still exit successfully. |
+
+Red, Green, and Refactor are separate DCO-signed commits. The traceability row
+links `KMIPKIT-024-T256-REQUEST`, `KMIPKIT-024-T257-RESPONSE`, and
+`KMIPKIT-024-T258-ERROR` to the approved owner requirements and API mapping
+requirements. Current-head CI and the selected-scope changed-code coverage gate
+have not been run for this worktree, so T055 remains unchecked pending those
+gates. No OASIS conformance, profile-support, interoperability, or certification
+claim is made.
