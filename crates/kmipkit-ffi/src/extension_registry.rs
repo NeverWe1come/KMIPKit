@@ -39,9 +39,10 @@ use kmipkit_protocol::{
     DeriveKeyRequest, ExportRequest, GetConstraintsRequest, GetRequest, GetUsageAllocationRequest,
     HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, KeyCompressionType,
     KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest, MacRequest,
-    MacVerifyRequest, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
-    ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SecretText, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
+    MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest, OpaqueObjectContext,
+    OperationData, ProtocolError, ProtocolErrorKind, RegisterRequest, SecretBytes, SecretText,
+    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3327,6 +3328,25 @@ pub extern "C" fn kmipkit_client_batch_item_get_usage_allocation(
         *out = try_ffi!(batch_item_handle(ClientRequest::get_usage_allocation(
             request
         )));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Obtain Lease request from KMIP 2.1 §6.1.35, Table 268.
+/// A null identifier leaves the optional Table 268 field absent.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_obtain_lease(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let mut request = ObtainLeaseRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::obtain_lease(request)));
         SUCCESS
     })
 }

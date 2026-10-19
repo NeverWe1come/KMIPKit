@@ -224,6 +224,21 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates an Obtain Lease request; a null identifier uses the KMIP batch placeholder. */
+    public static ClientBatchItem obtainLease(@Nullable UniqueIdentifier uniqueIdentifier) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemObtainLease(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates an Import request from caller-supplied Attributes and opaque Any Object data. */
     public static ClientBatchItem importObject(
             UniqueIdentifier uniqueIdentifier,

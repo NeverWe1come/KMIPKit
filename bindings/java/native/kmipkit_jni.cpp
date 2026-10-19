@@ -1251,6 +1251,26 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemObtainLease(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_unique_identifier_v1_t* identifier_pointer =
+                identifier_present ? &identifier : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_obtain_lease(identifier_pointer, output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemImport(
         JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
         jlong raw_identifier_number, jlong raw_object_type,
@@ -3819,6 +3839,75 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             return static_cast<jobjectArray>(nullptr);
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        if (fields == nullptr) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray identifier_record = present == 1 ? identifier_to_java(env, identifier, 1) : nullptr;
+        if (present == 1 && identifier_record == nullptr) {
+            env->DeleteLocalRef(fields);
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray response_ttlv_handle = make_long_array(
+                env, {to_java_handle(response_ttlv)});
+        if (response_ttlv_handle == nullptr) {
+            env->DeleteLocalRef(fields);
+            if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(
+                env, {fields, identifier_record, response_ttlv_handle});
+        if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        env->DeleteLocalRef(fields);
+        if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
+        env->DeleteLocalRef(response_ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseObtainLease(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        uint32_t lease_time = 0;
+        int64_t last_change_date = 0;
+        const int32_t status = kmipkit_client_batch_item_response_obtain_lease(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier, &lease_time, &last_change_date);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        uint8_t response_ttlv_present = 0;
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        const int32_t ttlv_status = kmipkit_client_batch_item_response_obtain_lease_ttlv(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &response_ttlv_present, &response_ttlv);
+        if (ttlv_status != 0) {
+            throw_status(env, ttlv_status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (response_ttlv_present > 1 || response_ttlv_present != present ||
+                (response_ttlv_present == 1 && response_ttlv == nullptr) ||
+                (response_ttlv_present == 0 && response_ttlv != nullptr) ||
+                (present == 1 && identifier.kind == 0) ||
+                (present == 0 && (identifier.kind != 0 || lease_time != 0 || last_change_date != 0))) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), static_cast<jlong>(lease_time),
+                static_cast<jlong>(last_change_date)});
         if (fields == nullptr) {
             kmipkit_ttlv_structure_release(response_ttlv);
             return static_cast<jobjectArray>(nullptr);

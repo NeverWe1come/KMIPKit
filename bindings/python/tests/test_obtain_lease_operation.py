@@ -45,7 +45,7 @@ def test_obtain_lease_builder_omits_identifier_for_batch_placeholder(
 def test_obtain_lease_response_preserves_zero_and_raw_datetime_and_redacts_identifier(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    native_copy = ttlv.ttlv_structure_create()
+    native_copy = _obtain_lease_response_ttlv()
     native_handle, owner = native_copy._take()
     assert owner is None
     storage_refs: list[object] = []
@@ -87,6 +87,12 @@ def test_obtain_lease_response_preserves_zero_and_raw_datetime_and_redacts_ident
     assert result.lease_time == 0
     assert result.last_change_date == -7
     assert "leased-object" not in repr(result)
+    with ttlv.ttlv_structure_view(result.response_ttlv) as view:
+        assert ttlv.ttlv_structure_view_item_count(view) == 4
+        assert _response_tag_at(view, 0) == 0x0042_0094
+        assert _response_tag_at(view, 1) == 0x0042_0049
+        assert _response_tag_at(view, 2) == 0x0042_0048
+        assert _response_tag_at(view, 3) == 0x0054_1234
     result.close()
 
 
@@ -135,3 +141,39 @@ def test_obtain_lease_rejects_inconsistent_success_fields(
 
     with pytest.raises(errors.InvalidInputError):
         client._obtain_lease_response(SimpleNamespace(_pointer=lambda: object()))
+
+
+def _response_tag_at(view: ttlv.TtlvStructureView, index: int) -> int:
+    item_view = ttlv.ttlv_structure_view_item_at(view, index)
+    tag = ttlv.ttlv_item_view_tag(item_view)
+    try:
+        return ttlv.tag_value(tag)
+    finally:
+        tag.close()
+        item_view.close()
+
+
+def _obtain_lease_response_ttlv() -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+
+    def item(tag_value: int, value: ttlv.Value) -> ttlv.TtlvItem:
+        raw_tag = ttlv.raw_tag_from_raw(tag_value)
+        tag = ttlv.raw_tag_try_checked(raw_tag)
+        try:
+            return ttlv.ttlv_item_create(tag, value, limits)
+        finally:
+            tag.close()
+            raw_tag.close()
+
+    try:
+        response = ttlv.ttlv_structure_create()
+        for child in (
+            item(0x0042_0094, ttlv.ttlv_value_text_string(b"leased-object", limits)),
+            item(0x0042_0049, ttlv.ttlv_value_interval(0)),
+            item(0x0042_0048, ttlv.ttlv_value_date_time(-7)),
+            item(0x0054_1234, ttlv.ttlv_value_integer(-7)),
+        ):
+            response = ttlv.ttlv_structure_with_item(response, child, limits)
+        return response
+    finally:
+        limits.close()

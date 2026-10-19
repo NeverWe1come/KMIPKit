@@ -1666,6 +1666,92 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
     })
 }
 
+/// Reads the successful Obtain Lease result from KMIP 2.1 §6.1.35, Table 269.
+/// The identifier storage is borrowed from the response item and remains valid
+/// while that response handle is alive. Outputs are cleared for non-success items.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_obtain_lease(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+    out_lease_time: *mut u32,
+    out_last_change_date: *mut i64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let lease_time = scalar_out!(out_lease_time);
+        let last_change_date = scalar_out!(out_last_change_date);
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        *lease_time = 0;
+        *last_change_date = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::ObtainLease(lease) = outcome {
+            let (Some(identifier), Some(interval), Some(last_change)) = (
+                lease.unique_identifier(),
+                lease.lease_time(),
+                lease.last_change_date(),
+            ) else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+            {
+                return record_ffi_error(status);
+            }
+            *lease_time = interval;
+            *last_change_date = last_change;
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic response only from a successful Obtain Lease result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_obtain_lease_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::ObtainLease(lease) = outcome {
+            let structure = try_ffi!(lease.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Borrows the resulting identifier from a successful Import response item.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_import(

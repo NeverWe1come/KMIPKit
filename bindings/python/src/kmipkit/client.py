@@ -853,6 +853,7 @@ class BatchItemResult:
     get_usage_allocation_response: GetUsageAllocationResponse | None = field(
         default=None, repr=False
     )
+    obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
     check_response: CheckResponse | None = field(default=None, repr=False)
     delegated_login_response: DelegatedLoginResponse | None = field(default=None, repr=False)
     derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
@@ -999,6 +1000,27 @@ class GetUsageAllocationResponse:
     def close(self) -> None:
         """Release the caller-owned complete generic response structure."""
         self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ObtainLeaseResponse:
+    """Successful §6.1.35 fields with an owned ordered generic TTLV copy."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    lease_time: int
+    last_change_date: int
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return (
+            "ObtainLeaseResponse(unique_identifier=redacted, "
+            f"lease_time={self.lease_time!r}, last_change_date={self.last_change_date!r}, "
+            "response_ttlv=preserved)"
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1412,6 +1434,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x11
                 ):
                     allocation_response = _get_usage_allocation_response(item)
+                obtain_lease_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x10
+                ):
+                    obtain_lease_response = _obtain_lease_response(item)
                 constraints_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -1477,6 +1506,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         *cryptographic_responses,
                         certify_response,
                         allocation_response,
+                        obtain_lease_response,
                         check_response,
                         delegated_login_response,
                         derive_key_response,
@@ -1970,6 +2000,52 @@ def _get_usage_allocation_response(
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return GetUsageAllocationResponse(unique_identifier, response_ttlv)
+
+
+def _obtain_lease_response(
+    item: _ClientBatchItemResponse,
+) -> ObtainLeaseResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    lease_time = ffi.new("uint32_t *")
+    last_change_date = ffi.new("int64_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_obtain_lease(
+            item._pointer(), present, identifier, lease_time, last_change_date
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0 or lease_time[0] != 0 or last_change_date[0] != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_obtain_lease_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return ObtainLeaseResponse(
+        unique_identifier, int(lease_time[0]), int(last_change_date[0]), response_ttlv
+    )
 
 
 def _import_response(item: _ClientBatchItemResponse) -> ImportResponse | None:
@@ -2818,6 +2894,7 @@ __all__ = [
     "EndpointKind",
     "HashResponse",
     "GetUsageAllocationResponse",
+    "ObtainLeaseResponse",
     "ImportResponse",
     "JoinSplitKeyResponse",
     "InteropResponse",

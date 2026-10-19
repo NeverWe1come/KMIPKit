@@ -262,6 +262,16 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_obtain_lease(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint32_t *out_lease_time,
+        int64_t *out_last_change_date);
+    int32_t kmipkit_client_batch_item_response_obtain_lease_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_import(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -476,6 +486,9 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_get_usage_allocation(
         const kmipkit_unique_identifier_v1_t *unique_identifier,
         int64_t usage_limits_count,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_obtain_lease(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_import(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

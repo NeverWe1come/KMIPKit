@@ -1822,6 +1822,20 @@ def client_batch_item_get_usage_allocation(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_obtain_lease(
+    unique_identifier: UniqueIdentifier | None,
+) -> ClientBatchItem:
+    """Create an Obtain Lease item with an optional §6.1.35 object identifier."""
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_obtain_lease",
+            (identifier,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_import(
     unique_identifier: UniqueIdentifier,
     object_type: int,
@@ -2272,6 +2286,7 @@ __all__ = [
     "client_batch_item_delegated_login",
     "client_batch_item_login",
     "client_batch_item_get_usage_allocation",
+    "client_batch_item_obtain_lease",
     "client_batch_item_import",
     "client_batch_item_join_split_key",
     "client_batch_item_get",

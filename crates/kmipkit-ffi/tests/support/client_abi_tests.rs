@@ -13,8 +13,8 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LogRequest, LoginRequest, ObjectGroupMember, ObjectType, OperationData,
-    ObtainLeaseRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    LocateRequest, LogRequest, LoginRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OperationData, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
     UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
@@ -1741,18 +1741,17 @@ fn ffi_obtain_lease_constructor_preserves_optional_identifier() {
 #[test]
 fn ffi_obtain_lease_response_preserves_required_values_and_ordered_success_ttlv() {
     // OASIS KMIP Specification v2.1 §6.1.35, Table 269 requires all three success fields.
-    let response = Arc::new(
-        execute_single_abi_response(
-            ClientRequest::ObtainLease(
-                ObtainLeaseRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
-                    "leased-object".to_owned(),
+    let response =
+        Arc::new(
+            execute_single_abi_response(
+                ClientRequest::ObtainLease(ObtainLeaseRequest::new().with_unique_identifier(
+                    UniqueIdentifier::TextString("leased-object".to_owned()),
                 )),
-            ),
-            b"obtain-lease-success",
-            successful_obtain_lease_response(),
-        )
-        .expect("the Table 269 success maps through the C ABI client"),
-    );
+                b"obtain-lease-success",
+                successful_obtain_lease_response(),
+            )
+            .expect("the Table 269 success maps through the C ABI client"),
+        );
     let item = ffi_obtain_lease_response_item(&response);
     let mut present = 0;
     let mut identifier = empty_unique_identifier_output_v1();
@@ -1790,14 +1789,17 @@ fn ffi_obtain_lease_response_preserves_required_values_and_ordered_success_ttlv(
 #[test]
 fn ffi_obtain_lease_failure_has_no_typed_values_or_raw_response_ttlv() {
     // Table 270 failures retain common result metadata without success payload access.
-    let response = Arc::new(
-        execute_single_abi_response(
-            ClientRequest::ObtainLease(ObtainLeaseRequest::new()),
-            b"obtain-lease-failure",
-            failed_obtain_lease_response(),
-        )
-        .expect("the Table 270 result remains a KMIP outcome"),
-    );
+    let response =
+        Arc::new(
+            execute_single_abi_response(
+                ClientRequest::ObtainLease(ObtainLeaseRequest::new().with_unique_identifier(
+                    UniqueIdentifier::TextString("leased-object".to_owned()),
+                )),
+                b"obtain-lease-failure",
+                failed_obtain_lease_response(),
+            )
+            .expect("the Table 270 result remains a KMIP outcome"),
+        );
     let item = ffi_obtain_lease_response_item(&response);
     let mut present = 9;
     let mut identifier = empty_unique_identifier_output_v1();

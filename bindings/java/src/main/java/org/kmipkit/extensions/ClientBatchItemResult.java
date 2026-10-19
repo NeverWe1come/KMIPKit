@@ -119,6 +119,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetUsageAllocationResponse(values);
     }
 
+    /** Returns the successful Obtain Lease fields and an independently owned ordered TTLV copy. */
+    public Optional<ObtainLeaseResponse> obtainLeaseResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseObtainLease);
+        return parseObtainLeaseResponse(values);
+    }
+
     /**
      * Returns the generated identifier and complete generic TTLV from a successful Import.
      * The returned response owns an independent TTLV copy; callers must close it when finished.
@@ -500,6 +509,35 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
         @Override public String toString() {
             return "GetUsageAllocationResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful Obtain Lease response with exact Table 269 values and its ordered TTLV copy. */
+    public static final class ObtainLeaseResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final long leaseTime;
+        private final long lastChangeDate;
+        private final TtlvStructure responseTtlv;
+
+        private ObtainLeaseResponse(UniqueIdentifier uniqueIdentifier, long leaseTime,
+                long lastChangeDate, TtlvStructure responseTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.leaseTime = leaseTime;
+            this.lastChangeDate = lastChangeDate;
+            this.responseTtlv = responseTtlv;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+        /** Returns the exact unsigned Lease Time Interval, including zero. */
+        public long leaseTime() { return leaseTime; }
+        /** Returns Last Change Date as signed KMIP Date-Time seconds since the epoch. */
+        public long lastChangeDate() { return lastChangeDate; }
+        /** Returns the complete ordered response structure owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+        @Override public void close() { responseTtlv.close(); }
+        @Override public String toString() {
+            return "ObtainLeaseResponse[uniqueIdentifier=redacted, leaseTime=" + leaseTime
+                    + ", lastChangeDate=" + lastChangeDate + ", responseTtlv=preserved]";
         }
     }
 
@@ -1196,6 +1234,39 @@ public final class ClientBatchItemResult implements AutoCloseable {
         try {
             return Optional.of(new GetUsageAllocationResponse(
                     identifierRecord(tuple[1]), responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<ObtainLeaseResponse> parseObtainLeaseResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Obtain Lease response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 3, "native Obtain Lease response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Obtain Lease response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null || fields[1] != 0 || fields[2] != 0
+                    || responseTtlvHandle[0] != 0) {
+                if (responseTtlvHandle[0] > 0) {
+                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+                }
+                throw new InvalidInputException("native absent Obtain Lease response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (tuple[1] == null || responseTtlvHandle[0] <= 0
+                || fields[1] < 0 || fields[1] > 0xFFFF_FFFFL) {
+            if (responseTtlvHandle[0] > 0) {
+                TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+            }
+            throw new InvalidInputException("native successful Obtain Lease response is incomplete");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            return Optional.of(new ObtainLeaseResponse(
+                    identifierRecord(tuple[1]), fields[1], fields[2], responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
             throw exception;
