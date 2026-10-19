@@ -218,6 +218,62 @@ final class ClientBatchNativeBoundaryTest {
     }
 
     @Test
+    void responseAccessorsRejectLiveHandlesOfTheWrongNativeKind() {
+        long structureHandle = NativeExtensionRegistry.ttlvStructureCreate();
+        try {
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchResponseItemCount(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchResponseItemAt(structureHandle, 0));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseMetadata(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseUniqueBatchItemId(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponsePendingCorrelationValue(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions(
+                            structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseCreate(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseCertify(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseHash(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseMac(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseMacVerify(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseSign(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseExport(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseDeriveKey(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseCheck(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseGet(structureHandle));
+            assertThrows(InvalidInputException.class,
+                    () -> NativeExtensionRegistry.clientBatchItemResponseLocate(structureHandle));
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, structureHandle);
+        }
+    }
+
+    @Test
     void getAndLocateFactoriesRejectMalformedOptionalValues() {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemGet(99, null, 0,
