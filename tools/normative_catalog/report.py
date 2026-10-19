@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+from functools import lru_cache
 import json
 import os
 import re
 import subprocess
 import sys
+import tomllib
 import unicodedata
 from collections.abc import Mapping
 from pathlib import Path
@@ -341,6 +343,306 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
     return mappings
 
 
+def _blank_rust_region(source: str, start: int, end: int) -> str:
+    """Blank a Rust comment or literal without changing line positions."""
+    return "".join("\n" if char == "\n" else "\r" if char == "\r" else " " for char in source[start:end])
+
+
+def _strip_rust_comments_and_literals(source: str) -> str | None:
+    """Remove Rust comments and literals so their text cannot imitate test items."""
+    characters = list(source)
+    index = 0
+    while index < len(source):
+        if source.startswith("//", index):
+            end = source.find("\n", index)
+            if end < 0:
+                end = len(source)
+            characters[index:end] = _blank_rust_region(source, index, end)
+            index = end
+            continue
+
+        if source.startswith("/*", index):
+            depth = 1
+            end = index + 2
+            while end < len(source) and depth:
+                if source.startswith("/*", end):
+                    depth += 1
+                    end += 2
+                elif source.startswith("*/", end):
+                    depth -= 1
+                    end += 2
+                else:
+                    end += 1
+            if depth:
+                return None
+            characters[index:end] = _blank_rust_region(source, index, end)
+            index = end
+            continue
+
+        raw_prefix = index + 1 if source.startswith(("br", "cr"), index) else index
+        if raw_prefix < len(source) and source[raw_prefix] == "r":
+            quote_index = raw_prefix + 1
+            while quote_index < len(source) and source[quote_index] == "#":
+                quote_index += 1
+            if quote_index < len(source) and source[quote_index] == '"':
+                terminator = '"' + ("#" * (quote_index - raw_prefix - 1))
+                end_quote = source.find(terminator, quote_index + 1)
+                if end_quote < 0:
+                    return None
+                end = end_quote + len(terminator)
+                characters[index:end] = _blank_rust_region(source, index, end)
+                index = end
+                continue
+
+        quote_index = index + 1 if source.startswith(("b\"", "c\""), index) else index
+        if quote_index < len(source) and source[quote_index] == '"':
+            end = quote_index + 1
+            while end < len(source):
+                if source[end] == "\\":
+                    end += 2
+                elif source[end] == '"':
+                    end += 1
+                    break
+                else:
+                    end += 1
+            else:
+                return None
+            characters[index:end] = _blank_rust_region(source, index, end)
+            index = end
+            continue
+
+        index += 1
+    return "".join(characters)
+
+
+def _rust_test_cfgs_are_active(source: str) -> bool:
+    """Accept only the known test cfg; reject conditional/unknown test items."""
+    if re.search(r"#\s*!?\s*\[\s*cfg_attr\s*\(", source):
+        return False
+    marker = re.compile(r"#\s*!?\s*\[\s*cfg\s*\(")
+    cursor = 0
+    while match := marker.search(source, cursor):
+        depth = 1
+        end = match.end()
+        while end < len(source) and depth:
+            if source[end] == "(":
+                depth += 1
+            elif source[end] == ")":
+                depth -= 1
+            end += 1
+        if depth or source[match.end():end - 1].strip() != "test":
+            return False
+        cursor = end
+    return True
+
+
+def _rust_module_item_is_active(source: str, item_start: int) -> bool:
+    """Fail closed when a module declaration is guarded by an unknown cfg."""
+    line_start = source.rfind("\n", 0, item_start) + 1
+    lines = source[:line_start].splitlines()
+    for line in reversed(lines):
+        attribute = line.strip()
+        if not attribute:
+            continue
+        if not attribute.startswith("#"):
+            break
+        if re.match(r"#\s*!?\s*\[\s*cfg_attr\s*\(", attribute):
+            return False
+        cfg = re.fullmatch(r"#\s*!?\s*\[\s*cfg\(\s*([^()]*)\s*\)\s*\]", attribute)
+        if re.match(r"#\s*!?\s*\[\s*cfg\s*\(", attribute) and cfg is None:
+            return False
+        if cfg and cfg.group(1).strip() != "test":
+            return False
+    return True
+
+
+def _rust_item_is_top_level(source: str, item_start: int) -> bool:
+    """Reject module declarations nested in inline modules or function bodies."""
+    depth = 0
+    for character in source[:item_start]:
+        if character == "{":
+            depth += 1
+        elif character == "}":
+            depth -= 1
+            if depth < 0:
+                return False
+    return depth == 0
+
+
+def _confined_rust_path(repository: Path, candidate: Path) -> Path | None:
+    """Normalize a module path lexically, then reject links and escapes."""
+    try:
+        normalized = Path(os.path.abspath(candidate))
+        relative = normalized.relative_to(repository.resolve()).as_posix()
+        return confined_path(repository, relative)
+    except (OSError, PathSecurityError, ValueError):
+        return None
+
+
+def _rust_child_modules(repository: Path, package_root: Path, source_path: Path) -> set[Path]:
+    """Resolve simple Rust module declarations from a package source file."""
+    try:
+        source = safe_read_bytes(repository, source_path.relative_to(repository).as_posix(), max_bytes=1_048_576).decode("utf-8")
+    except (PathSecurityError, UnicodeDecodeError, ValueError):
+        return set()
+    code = _strip_rust_comments_and_literals(source)
+    if code is None:
+        return set()
+
+    children: set[Path] = set()
+    path_module = re.compile(
+        r'#\s*\[\s*path\s*=\s*"(?P<path>[^"\\]+)"\s*\]\s*'
+        r'(?:pub(?:\s*\([^]]+\))?\s+)?mod\s+[A-Za-z_][A-Za-z0-9_]*\s*;'
+    )
+    path_spans: list[tuple[int, int]] = []
+    for match in path_module.finditer(source):
+        if code[match.start()] != "#":
+            continue
+        path_spans.append(match.span())
+        if not _rust_item_is_top_level(code, match.start()) or not _rust_module_item_is_active(code, match.start()):
+            continue
+        candidate = _confined_rust_path(repository, source_path.parent / match.group("path"))
+        if candidate is None:
+            continue
+        try:
+            candidate.relative_to(package_root.resolve())
+        except ValueError:
+            continue
+        if candidate.is_file():
+            children.add(candidate)
+
+    ordinary_module = re.compile(
+        r"(?m)^\s*(?:pub(?:\s*\([^)]*\))?\s+)?mod\s+"
+        r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*;"
+    )
+    for match in ordinary_module.finditer(code):
+        if any(start <= match.start() < end for start, end in path_spans):
+            continue
+        if (
+            not _rust_item_is_top_level(code, match.start())
+            or not _rust_module_item_is_active(code, match.start())
+        ):
+            continue
+        base = source_path.parent if source_path.stem in {"lib", "main", "mod"} else source_path.parent / source_path.stem
+        candidates = [base / f"{match.group('name')}.rs", base / match.group("name") / "mod.rs"]
+        existing = [
+            confined
+            for candidate in candidates
+            if (confined := _confined_rust_path(repository, candidate)) is not None and confined.is_file()
+        ]
+        if len(existing) != 1:
+            continue
+        candidate = existing[0]
+        try:
+            candidate.relative_to(package_root.resolve())
+        except ValueError:
+            continue
+        children.add(candidate)
+    return children
+
+
+@lru_cache(maxsize=32)
+def _rust_package_test_module_paths(repository_text: str, package_text: str) -> frozenset[Path]:
+    """Cache Cargo test-root reachability for all evidence rows in one package."""
+    repository = Path(repository_text)
+    package_root = Path(package_text)
+    try:
+        manifest = tomllib.loads(safe_read_bytes(repository, (package_root / "Cargo.toml").relative_to(repository).as_posix(), max_bytes=1_048_576).decode("utf-8"))
+    except (PathSecurityError, UnicodeDecodeError, tomllib.TOMLDecodeError, ValueError):
+        return frozenset()
+    package_options = manifest.get("package", {})
+    if not isinstance(package_options, dict):
+        return frozenset()
+    autolib = package_options.get("autolib", True)
+    autotests = package_options.get("autotests", True)
+    if not isinstance(autolib, bool) or not isinstance(autotests, bool):
+        return frozenset()
+
+    library = manifest.get("lib")
+    roots: list[Path] = []
+    if library is not None and not isinstance(library, dict):
+        return frozenset()
+    library_options = library if isinstance(library, dict) else {}
+    library_test = library_options.get("test", True)
+    library_harness = library_options.get("harness", True)
+    if not isinstance(library_test, bool) or not isinstance(library_harness, bool):
+        return frozenset()
+    if (library is not None or autolib) and library_test and library_harness:
+        root_relative = library_options.get("path", "src/lib.rs")
+        if not isinstance(root_relative, str):
+            return frozenset()
+        root = _confined_rust_path(repository, package_root / root_relative)
+        if root is None:
+            return frozenset()
+        try:
+            root.relative_to(package_root.resolve())
+        except ValueError:
+            return frozenset()
+        if root.is_file():
+            roots.append(root)
+
+    if autotests:
+        tests_directory = package_root / "tests"
+        if tests_directory.is_dir():
+            roots.extend(tests_directory.glob("*.rs"))
+    explicit_tests = manifest.get("test", [])
+    if isinstance(explicit_tests, dict):
+        explicit_tests = [explicit_tests]
+    if isinstance(explicit_tests, list):
+        for target in explicit_tests:
+            if not isinstance(target, dict):
+                continue
+            target_test = target.get("test", True)
+            target_harness = target.get("harness", True)
+            if not isinstance(target_test, bool) or not isinstance(target_harness, bool):
+                continue
+            if not target_test or not target_harness:
+                continue
+            target_path = target.get("path")
+            target_name = target.get("name")
+            if isinstance(target_path, str):
+                roots.append(package_root / target_path)
+            elif isinstance(target_name, str):
+                roots.append(package_root / "tests" / f"{target_name}.rs")
+
+    package_root_resolved = package_root.resolve()
+    pending: list[Path] = []
+    for candidate in roots:
+        candidate = _confined_rust_path(repository, candidate)
+        if candidate is None:
+            continue
+        try:
+            candidate.relative_to(package_root_resolved)
+        except ValueError:
+            continue
+        if candidate.is_file():
+            pending.append(candidate)
+    visited: set[Path] = set()
+    while pending and len(visited) < 2_000:
+        current = pending.pop()
+        if current in visited:
+            continue
+        visited.add(current)
+        pending.extend(_rust_child_modules(repository, package_root, current) - visited)
+    return frozenset(visited)
+
+
+def _rust_test_file_is_in_package_module_tree(repository: Path, test_path: Path) -> bool:
+    """Require test evidence to be reachable from a Cargo test target root."""
+    package_root = next((parent for parent in test_path.parents if (parent / "Cargo.toml").is_file()), None)
+    if package_root is None:
+        return False
+    try:
+        test_path_resolved = _confined_rust_path(repository, test_path)
+        if test_path_resolved is None:
+            return False
+        test_path_resolved.relative_to(package_root.resolve())
+        reachable = _rust_package_test_module_paths(str(repository.resolve()), str(package_root.resolve()))
+    except (OSError, ValueError):
+        return False
+    return test_path_resolved in reachable
+
+
 def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> bool:
     """Require typed rule evidence to name an in-repository, active Rust test."""
     test_path, separator, test_name = reference.partition("::")
@@ -354,7 +656,10 @@ def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> boo
         source = safe_read_bytes(repository, test_path, max_bytes=1_048_576).decode("utf-8")
     except (PathSecurityError, UnicodeDecodeError):
         return False
-    if re.search(r"#\s*!?\s*\[\s*cfg_attr\s*\(", source):
+    source = _strip_rust_comments_and_literals(source)
+    if source is None or not _rust_test_cfgs_are_active(source):
+        return False
+    if not _rust_test_file_is_in_package_module_tree(repository, repository / test_path):
         return False
 
     declaration = re.compile(rf"^\s*(?:async\s+)?fn\s+{re.escape(test_name)}\s*\(", re.MULTILINE)
@@ -362,8 +667,16 @@ def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> boo
     cfg_test_attribute = re.compile(r"^\s*#\[cfg\(\s*test\s*\)\]\s*$")
     ignorable_attribute = re.compile(r"^\s*#\[(?:allow|expect|doc|must_use|inline)(?:\s*\([^]]*\))?\]\s*$")
     lines = source.splitlines()
+    line_offsets: list[int] = []
+    offset = 0
+    for raw_line in source.splitlines(keepends=True):
+        line_offsets.append(offset)
+        offset += len(raw_line)
     for index, line in enumerate(lines):
-        if not declaration.match(line):
+        if (
+            not declaration.match(line)
+            or not _rust_item_is_top_level(source, line_offsets[index])
+        ):
             continue
         cursor = index - 1
         is_test = False
