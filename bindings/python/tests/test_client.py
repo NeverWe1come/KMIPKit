@@ -2708,7 +2708,9 @@ def test_guarded_protection_facade_consumes_item_and_preserves_cost_and_indicato
     )
     handle = _wrap_owned_handle(client.Client, native_client_pointer)
     context = _wrap_owned_handle(client.UsageAllocationContext, native_context_pointer)
-    item = extensions.client_batch_item_get_usage_allocation(None, 3)
+    item = extensions.client_batch_item_encrypt(
+        extensions.UniqueIdentifier.text_string("allocation-object")
+    )
     limits = ttlv.codec_limits_defaults()
     observed: list[tuple[object, ...]] = []
     released: list[object] = []
@@ -2768,7 +2770,9 @@ def test_guarded_protection_rejects_nonpositive_cost_before_consuming_item(
     )
     handle = _wrap_owned_handle(client.Client, native_client_pointer)
     context = _wrap_owned_handle(client.UsageAllocationContext, native_context_pointer)
-    item = extensions.client_batch_item_get_usage_allocation(None, 3)
+    item = extensions.client_batch_item_encrypt(
+        extensions.UniqueIdentifier.text_string("allocation-object")
+    )
     limits = ttlv.codec_limits_defaults()
     released: list[object] = []
     monkeypatch.setattr(

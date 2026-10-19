@@ -4010,6 +4010,11 @@ impl Client {
         .ok_or_else(|| {
             guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
         })?;
+        if crate::usage_allocation::is_id_placeholder(identifier) {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
         if identifier != context.unique_identifier() {
             return Err(guard_validation_error(
                 UsageAllocationContextError::MismatchedUniqueIdentifier,
@@ -4102,6 +4107,11 @@ impl Client {
         .ok_or_else(|| {
             guard_validation_error(UsageAllocationContextError::MissingUniqueIdentifier)
         })?;
+        if crate::usage_allocation::is_id_placeholder(identifier) {
+            return Err(guard_validation_error(
+                UsageAllocationContextError::MismatchedUniqueIdentifier,
+            ));
+        }
         if identifier != context.unique_identifier() {
             return Err(guard_validation_error(
                 UsageAllocationContextError::MismatchedUniqueIdentifier,

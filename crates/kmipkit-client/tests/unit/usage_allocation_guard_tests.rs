@@ -262,12 +262,14 @@ fn usage_allocation_cannot_bind_the_id_placeholder_as_an_object_identifier() {
         .get_usage_allocation()
         .expect("the successful allocation response has its typed payload");
 
-    assert!(UsageAllocationContext::from_successful_allocation(
-        response,
-        ALLOCATION,
-        UNKNOWN_USAGE_UNIT,
-    )
-    .is_err());
+    assert!(
+        UsageAllocationContext::from_successful_allocation(
+            response,
+            ALLOCATION,
+            UNKNOWN_USAGE_UNIT,
+        )
+        .is_err()
+    );
 }
 
 #[test]

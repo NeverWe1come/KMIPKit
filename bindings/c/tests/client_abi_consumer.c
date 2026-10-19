@@ -3015,6 +3015,74 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_execute_guarded_protection_item(
+    kmipkit_client_t *client, kmipkit_usage_allocation_context_t *context,
+    kmipkit_client_batch_item_t **item, int64_t cost, kmipkit_codec_limits_t *limits) {
+    kmipkit_client_batch_response_t *response = 0;
+    kmipkit_client_batch_item_response_t *response_item = 0;
+    kmipkit_client_batch_item_metadata_v2_t metadata = {0};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_client_batch_item_t *excess_item = 0;
+    kmipkit_client_batch_response_t *excess_response = 0;
+    uint64_t response_count = 0;
+    int64_t available_units = 0;
+    int64_t reserved_units = 0;
+    int result = 0;
+
+    if (client == 0 || context == 0 || item == 0 || *item == 0 || limits == 0 || cost <= 0) {
+        goto cleanup;
+    }
+    const int32_t execute_status = kmipkit_client_execute_guarded_protection_item(
+        client, context, item, cost, limits, &response);
+    if (execute_status != 0 || *item != 0 || response == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != 1 ||
+        kmipkit_client_batch_response_item_at(response, 0, &response_item) != 0 ||
+        response_item == 0) {
+        goto cleanup;
+    }
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = 2;
+    if (kmipkit_client_batch_item_response_metadata_v2(response_item, &metadata) != 0 ||
+        metadata.operation != UINT32_C(0x1f) || metadata.result_status != 0 ||
+        kmipkit_usage_allocation_context_available_units(context, &available_units) != 0 ||
+        kmipkit_usage_allocation_context_reserved_units(context, &reserved_units) != 0 ||
+        available_units != 3 || reserved_units != 2) {
+        goto cleanup;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = (const uint8_t *)"allocation-object";
+    identifier.text_length = UINT64_C(17);
+    if (kmipkit_client_batch_item_encrypt(
+            &identifier, 0, 0, 0, 0, 0, 0, 0, &excess_item) != 0 ||
+        excess_item == 0 ||
+        kmipkit_client_execute_guarded_protection_item(
+            client, context, &excess_item, 4, limits, &excess_response) !=
+            T076_ERROR_INVALID_INPUT ||
+        excess_item != 0 || excess_response != 0 ||
+        kmipkit_usage_allocation_context_available_units(context, &available_units) != 0 ||
+        kmipkit_usage_allocation_context_reserved_units(context, &reserved_units) != 0 ||
+        available_units != 3 || reserved_units != 2) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(excess_item);
+    kmipkit_client_batch_response_release(excess_response);
+    kmipkit_client_batch_item_response_release(response_item);
+    kmipkit_client_batch_response_release(response);
+    if (item != 0) {
+        kmipkit_client_batch_item_release(*item);
+        *item = 0;
+    }
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
     kmipkit_client_batch_item_response_t *item) {
     static const uint32_t expected_tags[] = {

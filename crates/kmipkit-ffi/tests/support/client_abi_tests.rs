@@ -4730,19 +4730,14 @@ fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
     );
     let mut context = ptr::null_mut();
     assert_eq!(
-        kmipkit_usage_allocation_context_create(
-            allocation_item,
-            5,
-            u32::MAX,
-            &raw mut context,
-        ),
+        kmipkit_usage_allocation_context_create(allocation_item, 5, u32::MAX, &raw mut context,),
         SUCCESS
     );
     kmipkit_client_batch_item_response_release(allocation_item);
 
     let response = successful_cryptographic_response(
         0x1f,
-        b"encrypt-result",
+        b"allocation-object",
         vec![
             ttlv_item(0x0042_0094, 0x07, b"allocation-object"),
             ttlv_item(0x0042_00c2, 0x08, b"ciphertext"),
@@ -4755,11 +4750,15 @@ fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
     );
     let request = ClientRequest::Encrypt(EncryptRequest::new(
         Some(UniqueIdentifier::TextString("allocation-object".to_owned())),
-        Some(OperationData::ByteString(SecretBytes::new(b"plaintext".to_vec()))),
+        Some(OperationData::ByteString(SecretBytes::new(
+            b"plaintext".to_vec(),
+        ))),
     ));
     let mut item = make_handle(
         Kind::BatchItem,
-        HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
+        HandleValue::BatchItem(Box::new(
+            ClientBatchItem::new(request).with_unique_batch_item_id(b"allocation-object".to_vec()),
+        )),
     );
     let limits = default_codec_limits_handle();
 
@@ -4774,7 +4773,8 @@ fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
             limits,
         )
     };
-    peer.join().expect("the mTLS peer completes the guarded exchange");
+    peer.join()
+        .expect("the mTLS peer completes the guarded exchange");
 
     assert_eq!(result, 1, "C executes Encrypt and observes its reservation");
     assert!(item.is_null(), "guarded execution consumes the item handle");

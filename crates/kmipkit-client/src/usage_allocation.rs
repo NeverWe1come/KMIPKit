@@ -11,6 +11,11 @@ use kmipkit_protocol::{GetUsageAllocationResponse, UniqueIdentifier};
 use kmipkit_transport::RequestDeliveryState;
 
 const SUCCESS: u32 = 0;
+const ID_PLACEHOLDER: u32 = 1;
+
+pub(crate) const fn is_id_placeholder(identifier: &UniqueIdentifier) -> bool {
+    matches!(identifier, UniqueIdentifier::Enumeration(ID_PLACEHOLDER))
+}
 
 /// Caller-owned local accounting for one successful Get Usage Allocation.
 ///
@@ -57,6 +62,9 @@ impl UsageAllocationContext {
             .unique_identifier()
             .cloned()
             .ok_or(UsageAllocationContextError::MissingResolvedIdentifier)?;
+        if is_id_placeholder(&unique_identifier) {
+            return Err(UsageAllocationContextError::MissingResolvedIdentifier);
+        }
 
         Ok(Self {
             unique_identifier,
