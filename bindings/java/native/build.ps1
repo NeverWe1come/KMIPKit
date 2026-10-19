@@ -123,6 +123,24 @@ if ($LASTEXITCODE -ne 0) {
     throw "JNI response secret-array scope test failed with exit code $LASTEXITCODE."
 }
 
+$responseArrayConversionTestSource = Join-Path $PSScriptRoot 'tests\response_array_conversion_test.cpp'
+$responseArrayConversionTestObject = Join-Path $nativeOutput 'response_array_conversion_test.obj'
+$responseArrayConversionTestExecutable = Join-Path $nativeOutput 'response_array_conversion_test.exe'
+$responseArrayConversionTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$responseArrayConversionTestCompiler += ' /Fo' + '"' + $responseArrayConversionTestObject + '"'
+$responseArrayConversionTestCompiler += ' ' + '"' + $responseArrayConversionTestSource + '"'
+$responseArrayConversionTestCompiler += ' /Fe:' + '"' + $responseArrayConversionTestExecutable + '"'
+$responseArrayConversionTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$responseArrayConversionTestCommand += $responseArrayConversionTestCompiler
+& $env:ComSpec /d /s /c $responseArrayConversionTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response array conversion test compile failed with exit code $LASTEXITCODE."
+}
+& $responseArrayConversionTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI response array conversion test failed with exit code $LASTEXITCODE."
+}
+
 $jniInclude = Join-Path $javaHome 'include'
 $jniPlatformInclude = Join-Path $jniInclude 'win32'
 $objectPath = Join-Path $nativeOutput 'kmipkit_jni.obj'
