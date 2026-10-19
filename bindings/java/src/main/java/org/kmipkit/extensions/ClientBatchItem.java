@@ -178,6 +178,36 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates a §6.1.30 Login request with optional Lease Time, Request Count, and Usage Limits. */
+    public static ClientBatchItem login(
+            @Nullable Long leaseTimeInterval,
+            @Nullable Long leaseTimeDateTime,
+            @Nullable Integer requestCount,
+            @Nullable TtlvStructure usageLimits) {
+        if (leaseTimeInterval != null && leaseTimeDateTime != null) {
+            throw new InvalidInputException("Login Lease Time forms are mutually exclusive");
+        }
+        final int leaseTimeKind;
+        final long leaseTimeValue;
+        if (leaseTimeInterval != null) {
+            leaseTimeKind = 1;
+            requireU32(leaseTimeInterval, "Login Lease Time Interval");
+            leaseTimeValue = leaseTimeInterval;
+        } else if (leaseTimeDateTime != null) {
+            leaseTimeKind = 2;
+            leaseTimeValue = leaseTimeDateTime;
+        } else {
+            leaseTimeKind = 0;
+            leaseTimeValue = 0;
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientBatchItemLogin(
+                        leaseTimeKind, leaseTimeValue, requestCount != null,
+                        requestCount == null ? 0 : requestCount, handleOrNull(usageLimits)));
+        return new ClientBatchItem(value, List.of());
+    }
+
     /** Creates a Get Usage Allocation request with an optional object identifier and exact count. */
     public static ClientBatchItem getUsageAllocation(
             @Nullable UniqueIdentifier uniqueIdentifier, long usageLimitsCount) {

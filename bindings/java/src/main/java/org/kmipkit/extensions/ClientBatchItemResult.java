@@ -94,6 +94,18 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
     }
 
+    /** Returns the typed Login result and its raw-preserving Ticket when present. */
+    public Optional<LoginResponse> loginResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseLogin);
+        try {
+            return parseLoginResponseAfterNativeReturn(
+                    values, () -> ClientBatchItemResult::parseLoginResponse);
+        } finally {
+            cleanupLoginResponseValues(values);
+        }
+    }
+
     /**
      * Returns the resolved identifier and complete generic TTLV from a successful Get Usage
      * Allocation response. The returned response owns an independent TTLV copy; callers must
@@ -429,6 +441,41 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
         @Override public String toString() {
             return "DelegatedLoginResponse[ticketTypeRaw=" + ticketTypeRaw
+                    + ", ticketValue=redacted, ticketTtlv=preserved]";
+        }
+    }
+
+    /** Login Ticket fields and the independently owned generic Ticket TTLV copy. */
+    public static final class LoginResponse implements AutoCloseable {
+        private final OptionalLong ticketTypeRaw;
+        private @Nullable byte[] ticketValue;
+        private @Nullable TtlvStructure ticketTtlv;
+
+        private LoginResponse(OptionalLong ticketTypeRaw,
+                @Nullable byte[] ticketValue, @Nullable TtlvStructure ticketTtlv) {
+            this.ticketTypeRaw = ticketTypeRaw;
+            this.ticketValue = copyBytes(ticketValue);
+            this.ticketTtlv = ticketTtlv;
+        }
+
+        /** Returns the raw unsigned Ticket Type, preserving unknown values. */
+        public OptionalLong ticketTypeRaw() { return ticketTypeRaw; }
+
+        /** Returns a caller-owned Ticket Value copy; callers must protect and clear it. */
+        public Optional<byte[]> ticketValue() { return copiedBytes(ticketValue); }
+
+        /** Returns the complete ordered Ticket structure, including unknown children. */
+        public Optional<TtlvStructure> ticketTtlv() { return Optional.ofNullable(ticketTtlv); }
+
+        @Override public void close() {
+            if (ticketValue != null) Arrays.fill(ticketValue, (byte) 0);
+            ticketValue = null;
+            if (ticketTtlv != null) ticketTtlv.close();
+            ticketTtlv = null;
+        }
+
+        @Override public String toString() {
+            return "LoginResponse[ticketTypeRaw=" + ticketTypeRaw
                     + ", ticketValue=redacted, ticketTtlv=preserved]";
         }
     }
@@ -1021,6 +1068,102 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 clearDelegatedLoginTtlvHandle(tuple, rawHandle);
                 NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
             }
+        }
+    }
+
+    static Optional<LoginResponse> parseLoginResponse(Object[] values) {
+        return parseLoginResponse(values, Optional::of);
+    }
+
+    static Optional<LoginResponse> parseLoginResponseAfterNativeReturn(
+            Object[] values,
+            Supplier<Function<Object[], Optional<LoginResponse>>> parserFactory) {
+        try {
+            return parserFactory.get().apply(values);
+        } finally {
+            cleanupLoginResponseValues(values);
+        }
+    }
+
+    private static void cleanupLoginResponseValues(Object[] values) {
+        if (values == null) return;
+        if (values.length > 1 && values[1] instanceof byte[] ticketValue) {
+            Arrays.fill(ticketValue, (byte) 0);
+        }
+        if (values.length > 2 && values[2] instanceof long[] ticketHandle
+                && ticketHandle.length == 1 && ticketHandle[0] > 0) {
+            long rawHandle = ticketHandle[0];
+            ticketHandle[0] = 0;
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
+        }
+    }
+
+    static Optional<LoginResponse> parseLoginResponse(
+            Object[] values,
+            Function<LoginResponse, Optional<LoginResponse>> resultTransfer) {
+        Object[] tuple = values;
+        long rawHandle = 0;
+        TtlvStructure ownedTtlv = null;
+        LoginResponse response = null;
+        byte[] ownedValue = null;
+        boolean transferred = false;
+        try {
+            tuple = requireTuple(values, 3, "native Login response is invalid");
+            if (tuple[2] instanceof long[] handleValues && handleValues.length == 1) {
+                rawHandle = handleValues[0];
+            }
+            long[] fields = requireLongArray(tuple[0], 3, "native Login response is invalid");
+            long[] ticketTtlvHandle = requireLongArray(
+                    tuple[2], 1, "native Login response is invalid");
+            rawHandle = ticketTtlvHandle[0];
+            boolean responsePresent = responseFlag(fields[0]);
+            boolean ticketPresent = responseFlag(fields[1]);
+            if (!ticketPresent) {
+                if (fields[2] != 0 || tuple[1] != null || rawHandle != 0) {
+                    throw new InvalidInputException("native absent Login Ticket contains fields");
+                }
+                if (!responsePresent) return Optional.empty();
+                response = new LoginResponse(OptionalLong.empty(), null, null);
+                Optional<LoginResponse> result = resultTransfer.apply(response);
+                transferred = true;
+                response = null;
+                return result;
+            }
+            if (!responsePresent || fields[2] < 0 || fields[2] > 0xffff_ffffL
+                    || rawHandle <= 0) {
+                throw new InvalidInputException("native Login Ticket is invalid");
+            }
+            ownedValue = requireBytes(tuple[1]);
+            ownedTtlv = TtlvStructure.fromNative(rawHandle, null);
+            clearLoginTtlvHandle(tuple, rawHandle);
+            rawHandle = 0;
+            response = new LoginResponse(OptionalLong.of(fields[2]), ownedValue, ownedTtlv);
+            Arrays.fill(ownedValue, (byte) 0);
+            ownedTtlv = null;
+            Optional<LoginResponse> result = resultTransfer.apply(response);
+            transferred = true;
+            response = null;
+            return result;
+        } finally {
+            if (response != null) response.close();
+            if (ownedValue != null) Arrays.fill(ownedValue, (byte) 0);
+            if (!transferred && tuple != null && tuple.length > 1 && tuple[1] instanceof byte[] value
+                    && value != ownedValue) {
+                Arrays.fill(value, (byte) 0);
+            }
+            if (ownedTtlv != null) {
+                ownedTtlv.close();
+            } else if (rawHandle > 0) {
+                clearLoginTtlvHandle(tuple, rawHandle);
+                NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
+            }
+        }
+    }
+
+    private static void clearLoginTtlvHandle(Object[] tuple, long rawHandle) {
+        if (tuple != null && tuple.length > 2 && tuple[2] instanceof long[] handles
+                && handles.length == 1 && handles[0] == rawHandle) {
+            handles[0] = 0;
         }
     }
 

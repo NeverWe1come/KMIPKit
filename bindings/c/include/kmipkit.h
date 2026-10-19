@@ -656,6 +656,18 @@ int32_t kmipkit_client_batch_item_response_delegated_login(kmipkit_client_batch_
  */
 /* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_delegated_login_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_ticket_ttlv);
+/* Creates a typed KMIP 2.1 §6.1.30, Table 253 Login request. Lease Time kind 0 omits it, 1 selects Interval, and 2 selects Date Time. Pass NULL for optional Usage Limits. Generic Usage Limits child order and unknown tags are preserved.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_login(uint32_t lease_time_kind, int64_t lease_time_value, uint8_t has_request_count, int32_t request_count, kmipkit_ttlv_structure_t * usage_limits, kmipkit_client_batch_item_t ** out_item);
+/* Returns the typed Login Ticket from §6.1.30, Table 254. Ticket Type remains raw and forward-compatible. Ticket Value is borrowed from the response item and must not be logged.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_login(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_ticket_present, uint32_t * out_ticket_type, kmipkit_byte_span_v1_t * out_ticket_value);
+/* Returns an owned generic copy of the §6.1.30 Table 254 Ticket Structure, preserving child order, unknown tags, and extension data. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ */
+/* KMIPKIT-0038-FR-001, KMIPKIT-0038-FR-002, KMIPKIT-0038-FR-003, KMIPKIT-0038-FR-004, KMIPKIT-0038-FR-005, KMIPKIT-0038-FR-006, KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_client_batch_item_response_login_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_ticket_ttlv);
 /* Creates a typed KMIP v2.1 Export request, preserving the optional Table 217 selectors as raw unsigned values and borrowing the optional Key Wrapping Specification structure.
  */
 /* KMIPKIT-0037-FR-001, KMIPKIT-0037-FR-002, KMIPKIT-0037-FR-003, KMIPKIT-0037-FR-004, KMIPKIT-0037-FR-005, KMIPKIT-0037-FR-006, KMIPKIT-0037-FR-007, KMIPKIT-0037-FR-008 */

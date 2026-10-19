@@ -244,6 +244,16 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_ticket_ttlv);
+    int32_t kmipkit_client_batch_item_response_login(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_ticket_present,
+        uint32_t *out_ticket_type,
+        kmipkit_byte_span_v1_t *out_ticket_value);
+    int32_t kmipkit_client_batch_item_response_login_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_ticket_ttlv);
     int32_t kmipkit_client_batch_item_response_get_usage_allocation(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -411,6 +421,13 @@ ffi.cdef(
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_delegated_login(
         kmipkit_ttlv_structure_t *rights,
+        uint32_t lease_time_kind,
+        int64_t lease_time_value,
+        uint8_t has_request_count,
+        int32_t request_count,
+        kmipkit_ttlv_structure_t *usage_limits,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_login(
         uint32_t lease_time_kind,
         int64_t lease_time_value,
         uint8_t has_request_count,

@@ -13,8 +13,9 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LoginRequest, LogRequest, ObjectGroupMember, ObjectType, OperationData, SecretBytes,
-    SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
+    LocateRequest, LogRequest, LoginRequest, ObjectGroupMember, ObjectType, OperationData,
+    SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -1097,7 +1098,6 @@ fn ffi_delegated_login_constructor_validates_typed_fields_and_requires_rights() 
 
 #[test]
 fn ffi_login_constructor_validates_optional_table_253_fields() {
-    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
     for (lease_kind, lease_value, count_present, count) in [
         (3, 0, 0, 0),
         (0, 1, 0, 0),
@@ -1106,7 +1106,7 @@ fn ffi_login_constructor_validates_optional_table_253_fields() {
         (0, 0, 2, 0),
         (0, 0, 0, 1),
     ] {
-        item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+        let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
         assert_eq!(
             kmipkit_client_batch_item_login(
                 lease_kind,
@@ -1121,7 +1121,7 @@ fn ffi_login_constructor_validates_optional_table_253_fields() {
         assert!(item.is_null());
     }
 
-    item = ptr::null_mut();
+    let mut item = ptr::null_mut();
     assert_eq!(
         kmipkit_client_batch_item_login(2, i64::MIN, 1, i32::MIN, ptr::null_mut(), &mut item),
         SUCCESS

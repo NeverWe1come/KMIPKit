@@ -1726,6 +1726,45 @@ def client_batch_item_delegated_login(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_login(
+    *,
+    lease_time_interval: int | None = None,
+    lease_time_date_time: int | None = None,
+    request_count: int | None = None,
+    usage_limits: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.30 Login item from optional Table 253 fields."""
+    if lease_time_interval is not None and lease_time_date_time is not None:
+        errors.raise_for_status(4)
+    if lease_time_interval is not None:
+        lease_time_kind = 1
+        lease_time = _integer_range(lease_time_interval, 0, 0xFFFF_FFFF)
+    elif lease_time_date_time is not None:
+        lease_time_kind = 2
+        lease_time = _integer_range(lease_time_date_time, -(1 << 63), (1 << 63) - 1)
+    else:
+        lease_time_kind = 0
+        lease_time = 0
+    if request_count is None:
+        has_request_count = 0
+        count = 0
+    else:
+        has_request_count = 1
+        count = _integer_range(request_count, -(1 << 31), (1 << 31) - 1)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_login",
+        (
+            lease_time_kind,
+            lease_time,
+            has_request_count,
+            count,
+            _native_structure(usage_limits),
+        ),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_derive_key(
     object_type: int,
     unique_identifiers: list[UniqueIdentifier] | tuple[UniqueIdentifier, ...],
@@ -2231,6 +2270,7 @@ __all__ = [
     "client_batch_item_interop",
     "client_batch_item_log",
     "client_batch_item_delegated_login",
+    "client_batch_item_login",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_import",
     "client_batch_item_join_split_key",

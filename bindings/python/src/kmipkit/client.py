@@ -864,6 +864,7 @@ class BatchItemResult:
     join_split_key_response: JoinSplitKeyResponse | None = field(default=None, repr=False)
     interop_response: InteropResponse | None = field(default=None, repr=False)
     log_response: LogResponse | None = field(default=None, repr=False)
+    login_response: LoginResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -950,6 +951,40 @@ class DelegatedLoginResponse:
     def __repr__(self) -> str:
         return (
             "DelegatedLoginResponse(ticket_type_raw="
+            f"{self.ticket_type_raw!r}, ticket_value=redacted, ticket_ttlv=preserved)"
+        )
+
+
+@dataclass(slots=True, repr=False)
+class LoginResponse:
+    """Raw-preserving Login Ticket fields and the owned generic Ticket TTLV copy.
+
+    Python-owned Ticket bytes are kept in a mutable buffer and wiped by
+    ``close``. Bytes returned to the caller and copies retained by the Python
+    runtime cannot be deterministically zeroized.
+    """
+
+    ticket_type_raw: int | None
+    _ticket_value: _SecretBytes | None = field(repr=False)
+    ticket_ttlv: ttlv.Structure | None = field(repr=False)
+
+    @property
+    def ticket_value(self) -> bytes | None:
+        """Return a caller-owned Ticket Value copy when a Ticket was present."""
+        return None if self._ticket_value is None else self._ticket_value.to_bytes()
+
+    def close(self) -> None:
+        """Wipe owned Ticket Value bytes and release the generic Ticket TTLV copy."""
+        if self._ticket_value is not None:
+            self._ticket_value.wipe()
+            self._ticket_value = None
+        if self.ticket_ttlv is not None:
+            self.ticket_ttlv.close()
+            self.ticket_ttlv = None
+
+    def __repr__(self) -> str:
+        return (
+            "LoginResponse(ticket_type_raw="
             f"{self.ticket_type_raw!r}, ticket_value=redacted, ticket_ttlv=preserved)"
         )
 
@@ -1367,6 +1402,9 @@ def _batch_result(handle: Any) -> BatchResult:
                 delegated_login_response = None
                 if int(metadata.operation) == 0x2F:
                     delegated_login_response = _delegated_login_response(item)
+                login_response = None
+                if int(metadata.operation) == 0x2D:
+                    login_response = _login_response(item)
                 allocation_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -1450,6 +1488,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         join_split_key_response=join_split_key_response,
                         interop_response=interop_response,
                         log_response=log_response,
+                        login_response=login_response,
                     )
                 )
             finally:
@@ -1800,6 +1839,77 @@ def _delegated_login_response(
                 errors.raise_for_status(4)
             return None
         return DelegatedLoginResponse(
+            int(ticket_type[0]) if ticket_present[0] == 1 else None,
+            secret,
+            ticket_structure,
+        )
+    except Exception:
+        if secret is not None:
+            secret.wipe()
+        raise
+
+
+def _login_response(item: _ClientBatchItemResponse) -> LoginResponse | None:
+    present = ffi.new("uint8_t *")
+    ticket_present = ffi.new("uint8_t *")
+    ticket_type = ffi.new("uint32_t *")
+    ticket_value = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_login(
+            item._pointer(), present, ticket_present, ticket_type, ticket_value
+        )
+    )
+    if present[0] not in (0, 1) or ticket_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    secret: _SecretBytes | None = None
+    if ticket_present[0] == 0:
+        if ticket_type[0] != 0:
+            errors.raise_for_status(4)
+        _optional_output_span(ffi.new("uint8_t *"), ticket_value)
+    else:
+        if ticket_value.length > _MAX_INPUT_BYTES or (
+            ticket_value.length and ticket_value.data == ffi.NULL
+        ):
+            errors.raise_for_status(4)
+        secret = _SecretBytes(
+            ffi.buffer(ticket_value.data, int(ticket_value.length))
+            if ticket_value.length
+            else b""
+        )
+    ttlv_present = ffi.new("uint8_t *")
+    ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    try:
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_login_ttlv(
+                item._pointer(), ttlv_present, ttlv_output
+            )
+        )
+        structure_handle = ttlv_output[0]
+        expected_ttlv_presence = ticket_present[0]
+        if (
+            ttlv_present[0] != expected_ttlv_presence
+            or (expected_ttlv_presence == 1 and structure_handle == ffi.NULL)
+            or (expected_ttlv_presence == 0 and structure_handle != ffi.NULL)
+        ):
+            if structure_handle != ffi.NULL:
+                lib.kmipkit_ttlv_structure_release(structure_handle)
+            errors.raise_for_status(4)
+        ticket_structure = None
+        if structure_handle != ffi.NULL:
+            try:
+                ticket_structure = ttlv._structure_from_native_address(
+                    int(ffi.cast("uintptr_t", structure_handle))
+                )
+            except Exception:
+                lib.kmipkit_ttlv_structure_release(structure_handle)
+                raise
+        if present[0] == 0:
+            if ticket_present[0] != 0:
+                if ticket_structure is not None:
+                    ticket_structure.close()
+                errors.raise_for_status(4)
+            return None
+        return LoginResponse(
             int(ticket_type[0]) if ticket_present[0] == 1 else None,
             secret,
             ticket_structure,
@@ -2699,6 +2809,7 @@ __all__ = [
     "CertifyResponse",
     "CheckResponse",
     "DelegatedLoginResponse",
+    "LoginResponse",
     "DeriveKeyResponse",
     "ExportResponse",
     "Client",

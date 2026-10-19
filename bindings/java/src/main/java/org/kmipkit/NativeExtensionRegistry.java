@@ -129,6 +129,8 @@ public final class NativeExtensionRegistry {
             boolean hasLeaseTime, long leaseTime);
     public static native long clientBatchItemDelegatedLogin(long rights, int leaseTimeKind,
             long leaseTimeValue, boolean hasRequestCount, int requestCount, long usageLimits);
+    public static native long clientBatchItemLogin(int leaseTimeKind, long leaseTimeValue,
+            boolean hasRequestCount, int requestCount, long usageLimits);
     public static native long clientBatchItemGetUsageAllocation(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber, long usageLimitsCount);
     public static native long clientBatchItemImport(int identifierKind, byte[] identifierText,
@@ -220,6 +222,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseCertify(long itemResponse);
     public static native Object[] clientBatchItemResponseCheck(long itemResponse);
     public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
+    public static native Object[] clientBatchItemResponseLogin(long itemResponse);
     public static native Object[] clientBatchItemResponseGetUsageAllocation(long itemResponse);
     public static native Object[] clientBatchItemResponseImport(long itemResponse);
     public static native Object[] clientBatchItemResponseJoinSplitKey(long itemResponse);

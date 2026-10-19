@@ -1517,6 +1517,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::join_split_key_response",
     ),
     (
+        "rust-observed-fe9326145c36393c5733",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::login_response",
+    ),
+    (
         "rust-observed-ebae376c3db55930fe72",
         "rust-kmipkit-client",
         "kmipkit_client::ClientError::ProtocolResponse::response_ttlv",
@@ -1580,6 +1585,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-a2cbba1f79c2557a10e3",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::delegated_login",
+    ),
+    (
+        "rust-observed-1ff86025ebef596ee4e8",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::login",
     ),
     (
         "rust-observed-08ebb047e2dc8a7d19bc",
@@ -1950,6 +1960,46 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-1e535b0717d721bce748",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::LogResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-cb8359e748af60c7de7d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginRequest",
+    ),
+    (
+        "rust-observed-64c5f614a1c0e059f7f1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginRequest::new",
+    ),
+    (
+        "rust-observed-4e380987c2dc0f7e89f5",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginRequest::with_lease_time_date_time",
+    ),
+    (
+        "rust-observed-6a832a29930998fc4ac1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginRequest::with_lease_time_interval",
+    ),
+    (
+        "rust-observed-1470e5305e2b45c803b3",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginRequest::with_request_count",
+    ),
+    (
+        "rust-observed-5c6a10001cc8b0694d51",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginRequest::with_usage_limits",
+    ),
+    (
+        "rust-observed-45d6fdbf3526d0888d91",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginResponse",
+    ),
+    (
+        "rust-observed-78f27182d5ab599fd71a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::LoginResponse::ticket",
     ),
     (
         "rust-observed-d8e26ff8ff859475a2cd",

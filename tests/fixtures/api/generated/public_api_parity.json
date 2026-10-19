@@ -23619,6 +23619,363 @@
     {
       "c": {
         "documentation": [
+          "Creates a typed KMIP 2.1 §6.1.30, Table 253 Login request. Lease Time kind 0 omits it, 1 selects Interval, and 2 selects Date Time. Pass NULL for optional Usage Limits. Generic Usage Limits child order and unknown tags are preserved."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "scalar",
+            "name": "lease_time_kind",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "lease_time_value",
+            "type": "int64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_request_count",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "request_count",
+            "type": "int32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "usage_limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_login"
+      },
+      "id": "client_batch_item_login",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemLogin",
+        "method": "login",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "leaseTimeInterval",
+            "type": "Long"
+          },
+          {
+            "name": "leaseTimeDateTime",
+            "type": "Long"
+          },
+          {
+            "name": "requestCount",
+            "type": "Integer"
+          },
+          {
+            "name": "usageLimits",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_login",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_login",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "lease_time_interval",
+            "type": "int | None"
+          },
+          {
+            "name": "lease_time_date_time",
+            "type": "int | None"
+          },
+          {
+            "name": "request_count",
+            "type": "int | None"
+          },
+          {
+            "name": "usage_limits",
+            "type": "ttlv.Structure | None"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientRequest",
+        "name": "login",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "LoginRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientRequest"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the typed Login Ticket from §6.1.30, Table 254. Ticket Type remains raw and forward-compatible. Ticket Value is borrowed from the response item and must not be logged."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_ticket_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_ticket_type",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_ticket_value",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_login"
+      },
+      "id": "client_batch_item_response_login",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLogin",
+        "method": "loginResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<LoginResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_login",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.BatchItemResult.login_response",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "LoginResponse | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchOutcome",
+        "name": "login_response",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<&LoginResponse>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns an owned generic copy of the §6.1.30 Table 254 Ticket Structure, preserving child order, unknown tags, and extension data. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_ticket_ttlv",
+            "nullable": true,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_login_ttlv"
+      },
+      "id": "client_batch_item_response_login_ttlv",
+      "java": {
+        "class": "ClientBatchItemResult.LoginResponse",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "method": "ticketTtlv",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<TtlvStructure>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_login_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.LoginResponse.ticket_ttlv",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "ttlv.Structure | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_login_ttlv",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_ticket_ttlv",
+            "type": "*mut *mut kmipkit_ttlv_structure_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
           "Creates a typed KMIP v2.1 Export request, preserving the optional Table 217 selectors as raw unsigned values and borrowing the optional Key Wrapping Specification structure."
         ],
         "errorCategories": [
@@ -27696,6 +28053,70 @@
       ],
       "scope": "client_1_0",
       "section": "6.1.29"
+    },
+    {
+      "apiState": "verified",
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T054:login:constructor:c",
+          "T054:login:response:c",
+          "T054:login:response-ttlv:c"
+        ],
+        "java": [
+          "T054:login:constructor:java",
+          "T054:login:outcome:java",
+          "T054:login:response-type:java",
+          "T054:login:ticket-type:java",
+          "T054:login:ticket-value:java",
+          "T054:login:ticket-ttlv:java",
+          "T054:login:response-close:java"
+        ],
+        "python": [
+          "T054:login:constructor:python",
+          "T054:login:outcome:python",
+          "T054:login:response-type:python",
+          "T054:login:ticket-type:python",
+          "T054:login:ticket-value:python",
+          "T054:login:ticket-ttlv:python",
+          "T054:login:response-close:python"
+        ],
+        "rust": [
+          "rust-observed-1470e5305e2b45c803b3",
+          "rust-observed-1ff86025ebef596ee4e8",
+          "rust-observed-45d6fdbf3526d0888d91",
+          "rust-observed-4e380987c2dc0f7e89f5",
+          "rust-observed-5c6a10001cc8b0694d51",
+          "rust-observed-64c5f614a1c0e059f7f1",
+          "rust-observed-6a832a29930998fc4ac1",
+          "rust-observed-78f27182d5ab599fd71a",
+          "rust-observed-cb8359e748af60c7de7d",
+          "rust-observed-fe9326145c36393c5733"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0038",
+      "name": "Login",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0038",
+        "state": "approved"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "scope": "client_1_0",
+      "section": "6.1.30"
     },
     {
       "apiState": "declared",
@@ -60778,6 +61199,70 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-fe9326145c36393c5733",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatchOutcome::login_response",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.loginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
         "path": "specs/021-hash-mac-signature-operations/spec.md",
@@ -61580,6 +62065,70 @@
         "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-1ff86025ebef596ee4e8",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::login",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [
@@ -66275,6 +66824,518 @@
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-cb8359e748af60c7de7d",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginRequest",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-64c5f614a1c0e059f7f1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginRequest::new",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-4e380987c2dc0f7e89f5",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginRequest::with_lease_time_date_time",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginRequest::with_lease_time_date_time",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-6a832a29930998fc4ac1",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginRequest::with_lease_time_interval",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginRequest::with_lease_time_interval",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-1470e5305e2b45c803b3",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginRequest::with_request_count",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginRequest::with_request_count",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-5c6a10001cc8b0694d51",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginRequest::with_usage_limits",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginRequest::with_usage_limits",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-45d6fdbf3526d0888d91",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "rust-observed-78f27182d5ab599fd71a",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::LoginResponse::ticket",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.loginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginResponse::ticket",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
@@ -94339,6 +95400,1094 @@
         "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:constructor:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_login",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:response:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_login",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.loginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:response-ttlv:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_login_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.ticket_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:constructor:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.login",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:outcome:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.loginResponse",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.loginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:response-type:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:ticket-type:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketTypeRaw",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.ticket_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::ticket_type",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:ticket-value:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketValue",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.ticket_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ticket_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:ticket-ttlv:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.ticket_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:response-close:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:constructor:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.client_batch_item_login",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.login",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_login",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::login",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:outcome:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.BatchItemResult.login_response",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.loginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.login_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::login_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:response-type:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.LoginResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LoginResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:ticket-type:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.LoginResponse.ticket_type_raw",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketTypeRaw",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.ticket_type_raw",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::ticket_type",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:ticket-value:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.LoginResponse.ticket_value",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketValue",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.ticket_value",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ticket_value",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:ticket-ttlv:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.LoginResponse.ticket_ttlv",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.ticketTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.ticket_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0038-FR-001",
+        "KMIPKIT-0038-FR-002",
+        "KMIPKIT-0038-FR-003",
+        "KMIPKIT-0038-FR-004",
+        "KMIPKIT-0038-FR-005",
+        "KMIPKIT-0038-FR-006",
+        "KMIPKIT-0038-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/024-credential-sessions/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-LOGIN",
+      "declarationId": "T054:login:response-close:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.LoginResponse.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_login_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.LoginResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.LoginResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::Ticket::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/LoginMappingTest.java",
+        "bindings/python/tests/test_login.py",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
+        "tools/api_manifest/tests/test_login_parity_manifest.py"
       ],
       "parityScope": "four-language",
       "requirementIds": [

@@ -1476,6 +1476,84 @@ pub extern "C" fn kmipkit_client_batch_item_response_delegated_login_ttlv(
     })
 }
 
+/// Reads the raw-preserving Ticket fields for §6.1.30 Login.
+///
+/// The returned Ticket Value span is borrowed from `item` and remains valid
+/// until that response item is released. The span must not be logged.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_login(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_ticket_present: *mut u8,
+    out_ticket_type: *mut u32,
+    out_ticket_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let ticket_present = scalar_out!(out_ticket_present);
+        let ticket_type = scalar_out!(out_ticket_type);
+        let ticket_value = scalar_out!(out_ticket_value);
+        *present = 0;
+        *ticket_type = 0;
+        try_ffi!(set_borrowed_span(ticket_present, ticket_value, None));
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(login) = item.outcome().login_response() {
+            *present = 1;
+            if let Some(ticket) = login.ticket() {
+                *ticket_type = ticket.ticket_type().raw();
+                if let Err(status) = ticket.with_ticket_value(|bytes| {
+                    set_borrowed_span(ticket_present, ticket_value, Some(bytes))
+                }) {
+                    return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on all supported 64-bit targets.
+                }
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Returns an owned generic copy of the complete Login Ticket TTLV Structure.
+///
+/// Child order, unknown tags, and extension fields are retained exactly.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_login_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_ticket_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let ticket_ttlv = out_slot!(out_ticket_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if let Some(ticket) = item
+            .outcome()
+            .login_response()
+            .and_then(kmipkit_protocol::LoginResponse::ticket)
+        {
+            let structure = try_ffi!(ticket.with_ttlv(|view| super::clone_structure_view(&view)));
+            *ticket_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Copies the complete generic response only from a successful Certify result.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_certify_ttlv(
