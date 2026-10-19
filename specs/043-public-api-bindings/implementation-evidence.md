@@ -4103,10 +4103,11 @@ interoperability, profile, or certification claim is made.
 | Refactor — initial evidence record | `f6c95049` | Added T053's approved owner, OASIS tables, stable IDs, API requirement links, security/ownership boundaries, C response ownership evidence, and initial command evidence. |
 | Red — observed Log client variants | `d07d28b` | Added a regression check for `ClientRequest::Log` and `ClientBatchOutcome::Log`; before correction it failed because both pointed to Interop facade symbols. |
 | Green — corrected mappings and owner traceability | `f31480bb` | Corrected all Log declaration mappings, restored the unrelated Interop mappings, linked `KMIPKIT-0042-FR-007` on each Log declaration and the manifest root, and regenerated the checked-in outputs. The expanded all-declaration test was also run against the pre-fix manifest and failed on an Interop response symbol; it passes against the corrected manifest. |
-| Refactor — preserve T052 exclusions and verification evidence | this commit | Restored strict T052 JoinSplitKey exclusion assertions, tested Log exclusions separately, updated the operation dependency gate, and recorded current verification results. Current-head CI remains pending. |
+| Refactor — preserve T052 exclusions and verification evidence | this commit | Restored strict T052 JoinSplitKey exclusion assertions, tested Log exclusions separately, updated the operation dependency gate, and recorded verification results. At this commit, current-head CI was pending. |
 | Red — changed-code coverage gate | `4267e856` (CI run `39177440832`) | The CI aggregate coverage gate failed at 7,385/7,782 changed production lines (94.90%, below the required 95%). The uncovered changed lines included Python Log response cleanup and batch-result dispatch branches. |
 | Green — Python Log cleanup and dispatch coverage | `dd831dbc` | Added focused tests for ABI-error cleanup, absent native responses, wrapper-failure cleanup, and Log batch dispatch. The complete Python suite passed with 514 tests; its coverage report is 98.87%. No production behavior changed. |
-| Refactor — coverage remediation evidence | this commit | Recorded the failing CI result and remediation. Re-running the repository aggregate gate with the refreshed Python report and the other scope reports from CI run `39177440832` passed: changed production code 7,393/7,782 (95.00%), workspace 96.63%, TTLV 99.19%, protocol 96.98%, transport 95.16%, FFI 95.97%, Java 98.07%, Python 98.87%, and JNI 85.36%. This is a local gate reproduction; CI for the updated head is still required. |
+| Refactor — coverage remediation evidence | this commit | Recorded the failing CI result and remediation. Re-running the repository aggregate gate with the refreshed Python report and the other scope reports from CI run `39177440832` passed: changed production code 7,393/7,782 (95.00%), workspace 96.63%, TTLV 99.19%, protocol 96.98%, transport 95.16%, FFI 95.97%, Java 98.07%, Python 98.87%, and JNI 85.36%. This was a local gate reproduction, subsequently confirmed by the remote CI run recorded below. |
+| CI confirmation | run `39179496879`, head `0b8d1b5a` | PASS: 34 jobs succeeded and 2 informational jobs were skipped. The remote selected-scope coverage gate confirmed changed production coverage at 7,393/7,782 (95.00%, 95% minimum). |
 
 Focused verification after the Green commit:
 
@@ -4134,5 +4135,5 @@ Focused verification after the Green commit:
 The Windows builds emitted existing nonfatal AWS-LC `stdalign_check.c` and
 missing-NASM warnings. Maven also emitted existing MSVC linker duplicate-symbol
 warnings; the focused test builds and results passed. The selected changed-code
-coverage gate now passes with the refreshed Python report. Linux/macOS/Windows
-CI for the updated head remains the final T053 verification gate.
+coverage gate and Linux/macOS/Windows CI passed for head `0b8d1b5a` in run
+`39179496879`.
