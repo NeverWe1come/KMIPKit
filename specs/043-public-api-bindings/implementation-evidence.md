@@ -4503,3 +4503,33 @@ documented according to their actual behavior.
 |---|---|---|---|
 | Red | `0e17945d` | `py -3 -B -m unittest tools.api_manifest.tests.test_ping_query_parity_manifest.PingQueryParityManifestTests.test_default_query_constructors_document_payload_and_message_limits` | Expected failure: C documentation omitted default payload preflight. |
 | Green | `d784e783` | Same focused test; full `tools.api_manifest.tests.test_ping_query_parity_manifest`; `py -3 -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: focused regression and all 4 Query/Ping mapping tests; all 12 generated outputs current; no whitespace errors. |
+
+### T078 — Usage Allocation guard mappings and native binding checks (2026-10-20)
+
+T078 exposes the approved local-only guard through Rust, C, Java, and Python.
+The caller supplies the exact requested count, raw unit, and per-operation
+cost. The context binds to the concrete Unique Identifier in a successful Get
+Usage Allocation response; the literal ID Placeholder Enumeration value is
+not accepted as a concrete object ID. Only typed Encrypt, MAC, and Sign calls
+are guarded. Reservations remain local accounting and do not claim that a
+server consumed usage. This does not validate Activation Date or Protect Stop
+Date, which remain caller-known inputs under the approved §6.1.23 interpretation.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `9bc198f3` | `cargo test --locked -p kmipkit-ffi --all-features ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost -- --nocapture` | Expected Red: linker reported the compiled C consumer function for guarded execution was not yet implemented. |
+| Red | `39af7aa1` | `cargo test --locked -p kmipkit-client --lib usage_allocation_cannot_bind_the_id_placeholder_as_an_object_identifier` | Expected Red: a successful response containing the literal ID Placeholder Enumeration value incorrectly created a context. |
+| Green | `7e216677` | `cargo test --locked -p kmipkit-client --lib usage_allocation_`; `cargo test --locked -p kmipkit-ffi --all-features` | PASS: 21 focused allocation/guard tests; all 185 FFI unit tests and 5 compiled C consumer/integration tests. The C consumer executes mTLS Encrypt, observes the standard result and local balance, then proves an over-budget call is rejected without another exchange. |
+| Green | `7e216677` | `uv run --offline --no-project --with pytest --with cffi python -m pytest -q tests/test_usage_allocation_guard_native_integration.py`; complete Python suite from the project environment | PASS: native Python mTLS flow creates a context from the successful native allocation result, executes Encrypt, rejects an over-budget follow-up before transport, and retains the prior local balance; 571 Python tests and 100 subtests pass. |
+| Green | `7e216677` | `mvn -f bindings/java/pom.xml test` | PASS: 335 Java tests, 0 failures, 0 errors, 3 skipped; Java TLS coverage exercises guarded Encrypt and mismatched-ID rejection. |
+| Refactor | This DCO-signed evidence commit | `cargo fmt --all --check`; `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings`; `py -3 -B tools/api_manifest/generate.py --check`; Ruff check/format for the new Python native integration test; `git diff --check` | PASS: formatting, workspace Clippy, all 12 generated manifest outputs, focused Python lint/format, and whitespace checks. |
+
+The complete local `cargo test --workspace --all-features --locked` run was
+blocked by the Windows host's excluded TCP port ranges: the unrelated
+`kmipkit-test-support::dns::tests::loopback_udp_fixture_answers_tracks_nxdomain_and_drops_selected_questions`
+test received `PermissionDenied` for TCP ports within ranges reported by
+`netsh interface ipv4 show excludedportrange protocol=tcp`, including on an
+isolated rerun. No source change was made for this host restriction. Current
+head cross-platform CI remains required. T078's task checkbox remains open
+until its explicit T040 dependency passes current-head CI and selected-scope
+coverage; the T078 code and language-specific tests are implemented.
