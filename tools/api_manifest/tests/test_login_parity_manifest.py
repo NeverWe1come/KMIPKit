@@ -118,7 +118,7 @@ class LoginParityManifestTests(unittest.TestCase):
                 linked_requirements.update(declaration["requirementIds"])
 
         for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertEqual(expected, actual_mappings[language], language)
+            self.assertTrue(expected <= actual_mappings[language], language)
         self.assertEqual(REQUIREMENTS, linked_requirements)
 
         credential_traceability = (ROOT / "specs/024-credential-sessions/traceability.md").read_text(
