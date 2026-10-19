@@ -33,6 +33,31 @@ def test_login_builder_maps_table_253_fields(monkeypatch) -> None:
     )]
 
 
+def test_login_builder_maps_lease_time_date_time(monkeypatch) -> None:
+    calls: list[tuple[str, tuple[object, ...]]] = []
+    monkeypatch.setattr(
+        extensions,
+        "_make_handle",
+        lambda _kind, symbol, arguments: calls.append((symbol, arguments)) or 23,
+    )
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    item = extensions.client_batch_item_login(lease_time_date_time=-(1 << 63))
+
+    assert item == 23
+    assert calls == [
+        ("kmipkit_client_batch_item_login", (2, -(1 << 63), 0, 0, ffi.NULL))
+    ]
+
+
+def test_login_builder_rejects_two_lease_time_fields() -> None:
+    with pytest.raises(InvalidInputError):
+        extensions.client_batch_item_login(
+            lease_time_interval=1,
+            lease_time_date_time=1,
+        )
+
+
 def test_login_response_preserves_unknown_ticket_and_redacts_secret(monkeypatch) -> None:
     secret = b"login-ticket-secret"
     native_secret = ffi.new("uint8_t[]", secret)
