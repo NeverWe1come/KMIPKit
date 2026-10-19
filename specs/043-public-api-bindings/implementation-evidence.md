@@ -4490,3 +4490,16 @@ cross-platform aggregate cannot be completed locally because the report set
 does not include the required macOS artifact; the current-head GitHub coverage
 gate remains authoritative. T041 remains unchecked until current-head CI and
 selected-scope coverage pass.
+
+#### T041 default Query documentation correction
+
+QA found that the C and Python default Query constructors also preflight the
+payload with default codec limits. Their public documentation now describes
+that check separately from the complete Request Message check performed at
+execution. The Rust infallible constructor and Java constructor were already
+documented according to their actual behavior.
+
+| Stage | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `0e17945d` | `py -3 -B -m unittest tools.api_manifest.tests.test_ping_query_parity_manifest.PingQueryParityManifestTests.test_default_query_constructors_document_payload_and_message_limits` | Expected failure: C documentation omitted default payload preflight. |
+| Green | `d784e783` | Same focused test; full `tools.api_manifest.tests.test_ping_query_parity_manifest`; `py -3 -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: focused regression and all 4 Query/Ping mapping tests; all 12 generated outputs current; no whitespace errors. |
