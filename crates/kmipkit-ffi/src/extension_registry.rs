@@ -41,10 +41,11 @@ use kmipkit_protocol::{
     DerivationParameters, DeriveKeyRequest, EncryptRequest, ExportRequest, GetConstraintsRequest,
     GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
-    LoginRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
-    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
-    QueryRequest, RegisterRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, SplitKeyReference, StorageStatusMask, UniqueIdentifier,
+    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
+    ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
+    QueryFunction, QueryRequest, RegisterRequest, SecretBytes, SecretText, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3195,6 +3196,33 @@ pub extern "C" fn kmipkit_client_batch_item_login(
             request = request.with_usage_limits(usage_limits);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::login(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 2.1 §6.1.31, Table 256 Logout request.
+///
+/// The caller supplies the required §7.39, Table 391 Ticket TTLV Structure.
+/// Ticket bytes are copied into KMIPKit-owned zeroizing storage and never
+/// included in diagnostics.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_logout(
+    ticket: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let Some(ticket_structure) = (match copy_structure_handle(ticket, true) {
+            Ok(ticket) => ticket,
+            Err(status) => return record_ffi_error(status),
+        }) else {
+            return record_ffi_error(ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: Required handles return Err when null and Some when valid.
+        };
+        let ticket = match Ticket::try_from_ttlv(ticket_structure) {
+            Ok(ticket) => ticket,
+            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::logout(LogoutRequest::new(ticket))));
         SUCCESS
     })
 }

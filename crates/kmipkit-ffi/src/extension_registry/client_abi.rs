@@ -1685,6 +1685,29 @@ pub extern "C" fn kmipkit_client_batch_item_response_ping(
     })
 }
 
+/// Reports whether the batch item has a typed Logout response, including Pending.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_logout(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().logout_response().is_some() {
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Copies the typed Query response payload, retaining ordered and unknown Items.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_query_ttlv(

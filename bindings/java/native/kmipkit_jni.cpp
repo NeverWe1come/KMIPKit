@@ -1374,6 +1374,16 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemLogout(
+        JNIEnv* env, jclass, jlong raw_ticket) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_logout(
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_ticket), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemQuery(
         JNIEnv* env, jclass, jintArray raw_functions, jobjectArray raw_object_groups) {
     return guarded<jlong>(env, 0, [&] {
@@ -4798,6 +4808,24 @@ JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatc
     return guarded<jlongArray>(env, nullptr, [&] {
         uint8_t present = 0;
         const int32_t status = kmipkit_client_batch_item_response_ping(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item), &present);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (present > 1) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jlongArray>(nullptr);
+        }
+        return make_long_array(env, {static_cast<jlong>(present)});
+    });
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLogout(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        const int32_t status = kmipkit_client_batch_item_response_logout(
                 from_java_handle<kmipkit_client_batch_item_response_t>(raw_item), &present);
         if (status != 0) {
             throw_status(env, status);

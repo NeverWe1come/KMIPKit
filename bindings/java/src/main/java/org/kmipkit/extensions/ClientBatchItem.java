@@ -47,6 +47,15 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemPing(), List.of());
     }
 
+    /** Creates a KMIP 2.1 §6.1.31 Logout request with the required caller-supplied Ticket. */
+    public static ClientBatchItem logout(TtlvStructure ticket) {
+        requireStructure(ticket, "Logout Ticket");
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientBatchItemLogout(ticket.handle()));
+        return new ClientBatchItem(value, List.of());
+    }
+
     /**
      * Creates a KMIP Query request after checking its payload against the default codec limits.
      * The complete Request Message is checked again before transmission. Raw function values and

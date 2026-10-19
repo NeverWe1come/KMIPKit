@@ -665,6 +665,9 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_response_ping(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present);
+    int32_t kmipkit_client_batch_item_response_logout(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present);
     int32_t kmipkit_client_batch_item_response_query_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,

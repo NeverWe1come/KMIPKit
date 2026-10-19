@@ -870,6 +870,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     interop_response: InteropResponse | None = field(default=None, repr=False)
     log_response: LogResponse | None = field(default=None, repr=False)
     login_response: LoginResponse | None = field(default=None, repr=False)
+    logout_response: bool | None = None
     obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
     encrypt_response: EncryptResponse | None = field(default=None, repr=False)
     decrypt_response: DecryptResponse | None = field(default=None, repr=False)
@@ -1760,6 +1761,9 @@ def _batch_result(handle: Any) -> BatchResult:
                 login_response = None
                 if int(metadata.operation) == 0x2D:
                     login_response = _login_response(item)
+                logout_response = None
+                if int(metadata.operation) == 0x2E:
+                    logout_response = _logout_response(item)
                 allocation_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -1869,6 +1873,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         interop_response=interop_response,
                         log_response=log_response,
                         login_response=login_response,
+                        logout_response=logout_response,
                         obtain_lease_response=obtain_lease_response,
                         encrypt_response=encrypt_response,
                         decrypt_response=decrypt_response,
@@ -2758,6 +2763,16 @@ def _ping_response(item: _ClientBatchItemResponse) -> bool | None:
     present = ffi.new("uint8_t *")
     _raise_abi_status(
         lib.kmipkit_client_batch_item_response_ping(item._pointer(), present)
+    )
+    if present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    return bool(present[0]) if present[0] == 1 else None
+
+
+def _logout_response(item: _ClientBatchItemResponse) -> bool | None:
+    present = ffi.new("uint8_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_logout(item._pointer(), present)
     )
     if present[0] not in (0, 1):
         errors.raise_for_status(4)

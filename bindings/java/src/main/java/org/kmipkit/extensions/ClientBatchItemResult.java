@@ -113,6 +113,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parsePingResponse(values);
     }
 
+    /** Returns whether this batch item has a typed Logout response, including Pending. */
+    public Optional<Boolean> logoutResponse() {
+        NativeExtensionRegistry.ensureLoaded();
+        long[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseLogout);
+        return parseLogoutResponse(values);
+    }
+
     /**
      * Returns the complete generic TTLV payload from a Query response. The returned structure
      * owns its native handle independently; callers must close it when finished.
@@ -1625,6 +1632,11 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
     static Optional<Boolean> parsePingResponse(long[] values) {
         long[] fields = requireLongArray(values, 1, "native Ping response is invalid");
+        return responsePresent(fields) ? Optional.of(Boolean.TRUE) : Optional.empty();
+    }
+
+    static Optional<Boolean> parseLogoutResponse(long[] values) {
+        long[] fields = requireLongArray(values, 1, "native Logout response is invalid");
         return responsePresent(fields) ? Optional.of(Boolean.TRUE) : Optional.empty();
     }
 

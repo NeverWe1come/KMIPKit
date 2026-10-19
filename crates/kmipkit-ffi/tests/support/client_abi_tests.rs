@@ -13,9 +13,9 @@ use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LogRequest, LoginRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
-    OperationData, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    UniqueIdentifier,
+    LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
+    ObtainLeaseRequest, OperationData, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference,
+    StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -1349,6 +1349,100 @@ fn ffi_login_constructor_validates_optional_table_253_fields() {
     );
     assert!(invalid_usage_limits_item.is_null());
     release(wrong_usage_limits, Kind::Structure);
+}
+
+#[test]
+fn ffi_logout_constructor_requires_and_validates_ticket_table_391() {
+    let mut item = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+    assert_eq!(
+        kmipkit_client_batch_item_logout(ptr::null_mut(), &mut item),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+
+    let invalid_ticket = make_handle(
+        Kind::Structure,
+        HandleValue::Structure(Structure::new()),
+    );
+    assert_eq!(
+        kmipkit_client_batch_item_logout(invalid_ticket, &mut item),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    release(invalid_ticket, Kind::Structure);
+
+    let mut ticket = Structure::new();
+    ticket
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_014a)
+                    .expect("Ticket Type tag fits the KMIP tag field")
+                    .try_checked()
+                    .expect("Ticket Type is allocated in KMIP 2.1"),
+                Value::enumeration(TicketType::LOGIN.raw()),
+            )
+            .expect("valid Ticket Type test item builds"),
+        )
+        .expect("Ticket Type item fits within the test structure limit");
+    ticket
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_014b)
+                    .expect("Ticket Value tag fits the KMIP tag field")
+                    .try_checked()
+                    .expect("Ticket Value is allocated in KMIP 2.1"),
+                Value::byte_string(b"logout-abi-ticket".to_vec()),
+            )
+            .expect("valid Ticket Value test item builds"),
+        )
+        .expect("Ticket Value item fits within the test structure limit");
+    let ticket = make_handle(Kind::Structure, HandleValue::Structure(ticket));
+
+    assert_eq!(
+        kmipkit_client_batch_item_logout(ticket, &mut item),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    kmipkit_client_batch_item_release(item);
+    release(ticket, Kind::Structure);
+}
+
+#[test]
+fn ffi_logout_response_presence_maps_success_and_failure() {
+    let success = successful_cryptographic_item(
+        ClientRequest::logout(LogoutRequest::new(
+            Ticket::new(TicketType::LOGIN, SecretBytes::new(b"logout-success-ticket".to_vec()))
+                .expect("valid Logout request Ticket builds"),
+        )),
+        0x2e,
+        b"logout-success",
+        Vec::new(),
+    );
+    let failure = failed_cryptographic_item(
+        ClientRequest::logout(LogoutRequest::new(
+            Ticket::new(TicketType::LOGIN, SecretBytes::new(b"logout-failure-ticket".to_vec()))
+                .expect("valid Logout request Ticket builds"),
+        )),
+        0x2e,
+        b"logout-failure",
+    );
+
+    let mut present = u8::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_logout(success, &mut present),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+
+    present = u8::MAX;
+    assert_eq!(
+        kmipkit_client_batch_item_response_logout(failure, &mut present),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+
+    kmipkit_client_batch_item_response_release(failure);
+    kmipkit_client_batch_item_response_release(success);
 }
 
 #[test]

@@ -1421,6 +1421,16 @@ def client_batch_item_ping() -> ClientBatchItem:
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_logout(ticket: ttlv.Structure) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.31 Logout item from its required Ticket Structure."""
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_logout",
+        (_native_structure(ticket, required=True),),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def _validate_query_ttlv_text_length(length: int) -> int:
     if length < 0 or length > 0xFFFF_FFFF:
         errors.raise_for_status(6)
@@ -2604,6 +2614,7 @@ __all__ = [
     "client_batch_item_log",
     "client_batch_item_delegated_login",
     "client_batch_item_login",
+    "client_batch_item_logout",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_obtain_lease",
     "client_batch_item_import",

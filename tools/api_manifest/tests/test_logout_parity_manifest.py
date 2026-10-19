@@ -28,7 +28,7 @@ PARITY_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/extensions/LogoutMappingTest.java",
     "bindings/python/tests/test_logout_operation.py",
     "crates/kmipkit-client/tests/unit/logout_execution_tests.rs",
-    "crates/kmipkit-ffi/tests/support/logout_abi_tests.rs",
+    "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
     "tools/api_manifest/tests/test_logout_parity_manifest.py",
 }
