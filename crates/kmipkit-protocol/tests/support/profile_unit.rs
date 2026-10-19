@@ -831,7 +831,7 @@ fn profile_maps_required_derive_key_cryptographic_length() {
     for object_type in [2, 7] {
         let request = request_message_with_operation_payload(
             0x0000_0005,
-            derive_key_payload(object_type, Some(Value::integer(256))),
+            derive_key_payload(object_type, [Value::integer(256)]),
         );
         result
             .validate_request(&request)
@@ -839,9 +839,9 @@ fn profile_maps_required_derive_key_cryptographic_length() {
     }
 
     for malformed in [
-        derive_key_payload(2, None),
-        derive_key_payload(2, Some(Value::enumeration(256))),
-        derive_key_payload_with_lengths(2, [Value::integer(128), Value::integer(256)]),
+        derive_key_payload(2, []),
+        derive_key_payload(2, [Value::enumeration(256)]),
+        derive_key_payload(2, [Value::integer(128), Value::integer(256)]),
     ] {
         let request = request_message_with_operation_payload(0x0000_0005, malformed);
         let error = result
@@ -861,18 +861,12 @@ fn profile_maps_required_derive_key_cryptographic_length() {
         .expect("the Derive Key rule does not constrain other operations");
 }
 
-fn derive_key_payload(object_type: u32, length: Option<Value>) -> Structure {
-    let attributes = length
-        .map(|length| structure([tagged(CRYPTOGRAPHIC_LENGTH_TAG, length)]))
-        .unwrap_or_default();
-    structure([
-        tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
-        tagged(ATTRIBUTES_TAG, Value::structure(attributes)),
-    ])
-}
-
-fn derive_key_payload_with_lengths(object_type: u32, lengths: [Value; 2]) -> Structure {
-    let attributes = structure(lengths.map(|length| tagged(CRYPTOGRAPHIC_LENGTH_TAG, length)));
+fn derive_key_payload(object_type: u32, lengths: impl IntoIterator<Item = Value>) -> Structure {
+    let attributes = structure(
+        lengths
+            .into_iter()
+            .map(|length| tagged(CRYPTOGRAPHIC_LENGTH_TAG, length)),
+    );
     structure([
         tagged(OBJECT_TYPE_TAG, Value::enumeration(object_type)),
         tagged(ATTRIBUTES_TAG, Value::structure(attributes)),
