@@ -57,6 +57,7 @@ import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.SplitKeyReference;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.extensions.UsageAllocationContext;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -572,6 +573,21 @@ final class ClientFacadeTlsIntegrationTest {
                             "KMIPKit-allocation-sentinel".getBytes(StandardCharsets.US_ASCII)));
                     assertFalse(allocationResponse.toString().contains("allocation-object"));
                 }
+
+                try (UsageAllocationContext allocationContext =
+                                allocated.createUsageAllocationContext(5, 0xfedc_ba98L)) {
+                    assertEquals(0xfedc_ba98L, allocationContext.usageLimitsUnit());
+                    assertEquals(5, allocationContext.allocatedUnits());
+                    assertEquals(5, allocationContext.availableUnits());
+                    assertEquals(0, allocationContext.reservedUnits());
+                    assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
+                            allocationContext.uniqueIdentifier().kind());
+                    assertEquals("allocation-object", allocationContext.uniqueIdentifier().text());
+                }
+                assertThrows(InvalidInputException.class,
+                        () -> allocated.createUsageAllocationContext(0, 1));
+                assertThrows(InvalidInputException.class,
+                        () -> creationFailed.createUsageAllocationContext(5, 1));
 
                 try (ClientBatchItemResult.CheckResponse checkResponse =
                                 checked.checkResponse().orElseThrow();
