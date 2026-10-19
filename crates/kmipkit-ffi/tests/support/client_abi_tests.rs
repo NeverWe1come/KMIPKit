@@ -4065,6 +4065,84 @@ fn ffi_get_usage_allocation_ttlv_copies_success_and_excludes_failure_responses()
     kmipkit_client_batch_item_response_release(failed_item);
 }
 
+#[test]
+fn ffi_usage_allocation_context_copies_successful_response_metadata() {
+    let response_item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        0x11,
+        b"usage-context",
+        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
+    );
+    let mut context = ptr::null_mut();
+    assert_eq!(
+        kmipkit_usage_allocation_context_create(response_item, 12, u32::MAX, &raw mut context,),
+        SUCCESS
+    );
+    assert!(!context.is_null());
+    kmipkit_client_batch_item_response_release(response_item);
+
+    let mut unit = 0;
+    let mut allocated = 0;
+    let mut available = 0;
+    let mut reserved = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_usage_allocation_context_usage_limits_unit(context, &raw mut unit),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_allocated_units(context, &raw mut allocated),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_available_units(context, &raw mut available),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_reserved_units(context, &raw mut reserved),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_unique_identifier(context, &raw mut identifier),
+        SUCCESS
+    );
+    assert_eq!(unit, u32::MAX);
+    assert_eq!(allocated, 12);
+    assert_eq!(available, 12);
+    assert_eq!(reserved, 0);
+    assert_response_identifier(&identifier, b"allocation-object");
+    kmipkit_usage_allocation_context_release(context);
+}
+
+#[test]
+fn ffi_usage_allocation_context_rejects_non_success_and_nonpositive_counts() {
+    let failed_item = failed_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        0x11,
+        b"usage-context-failure",
+    );
+    let mut context = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_usage_allocation_context_create(failed_item, 12, u32::MAX, &raw mut context,),
+        ERROR_INVALID_INPUT
+    );
+    assert!(context.is_null());
+    kmipkit_client_batch_item_response_release(failed_item);
+
+    let successful_item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(12)),
+        0x11,
+        b"usage-context-nonpositive",
+        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_create(successful_item, 0, u32::MAX, &raw mut context,),
+        ERROR_INVALID_INPUT
+    );
+    assert!(context.is_null());
+    kmipkit_client_batch_item_response_release(successful_item);
+}
+
 fn import_test_request() -> ClientRequest {
     let object = Item::new(
         RawTag::new(0x0042_008f)
