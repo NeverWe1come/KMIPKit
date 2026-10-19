@@ -81,7 +81,7 @@ A release maintainer can determine whether a named profile is eligible for a lat
 
 1. **Given** a selected profile with any applicable normative clause or mandatory test unresolved, **When** readiness is evaluated, **Then** it is ineligible and lists each unresolved record.
 2. **Given** all applicable clauses, linked implementation requirements, and required official tests have passing evidence, **When** readiness is evaluated, **Then** the profile may become `evidence_complete`, while its public claim remains a separate release decision.
-3. **Given** the current Baseline Client evidence, **When** readiness is evaluated, **Then** its 16 mandatory cases without passing execution evidence keep the profile ineligible, even when their XML fixtures are pinned locally.
+3. **Given** the current Baseline Client evidence, **When** readiness is evaluated, **Then** its three typed preflight blockers and remaining rule/test evidence gaps keep the profile ineligible, even though all 16 mandatory XML fixtures are pinned and 13 have completed local replays.
 
 ### Edge Cases
 

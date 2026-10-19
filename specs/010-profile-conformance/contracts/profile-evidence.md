@@ -26,7 +26,7 @@ The source-clause and requirement lists MUST include the complete normative clos
 
 ## Current Baseline state
 
-The pinned inventory links 16 mandatory test cases to Baseline Client. Their XML fixtures are now available in the repository, but none has been executed as a complete official profile case. The readiness report must not treat fixture availability as a pass, and must not state or imply Baseline Client conformance until all 16 tests and every other evidence gate pass.
+The pinned inventory links 16 mandatory test cases to Baseline Client, and all 16 XML fixtures are available in the repository. T036 records 13 full deterministic client replays and 3 typed preflight blockers. Replay evidence does not establish server interoperability or profile conformance. The readiness report must keep those three blockers and all other evidence gaps visible, and must not state or imply Baseline Client conformance until every required test and evidence gate passes.
 
 ## Stable output
 

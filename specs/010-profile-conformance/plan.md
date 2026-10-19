@@ -28,7 +28,7 @@ Implement explicit client profile validation and a deterministic profile evidenc
 
 Profile target input is fixed to `specification/catalog/profile-targets.json`, read through safe repository I/O with a 64 KiB bound and strict JSON/schema validation for generation/reporting only. Runtime selection uses explicit caller-selected profiles, independent of target membership. The source catalog is loaded through safe repository I/O and `load_validated_catalog`. Generated Rust literals use a dedicated Rust-compatible encoder. Readiness recomputes current evidence and fails closed on stale or contradictory catalog lifecycle state.
 
-**Scale/Scope**: 18 catalogued client profiles, 15 currently `client_1_0` or `conditional`; Baseline Client is the initial target, but a profile is runtime-selectable only when every applicable requirement has a typed rule mapping and executable test. Other profiles without complete mappings remain visible candidates. The 16 Baseline mandatory fixtures are now pinned, but none is treated as passed until the official case is executed and its result recorded.
+**Scale/Scope**: 18 catalogued client profiles, 15 currently `client_1_0` or `conditional`; Baseline Client is the initial target, but a profile is runtime-selectable only when every applicable requirement has a typed rule mapping and executable test. Other profiles without complete mappings remain visible candidates. All 16 Baseline mandatory fixtures are pinned; T036 records 13 full deterministic client replays and 3 typed preflight blockers. Replay evidence alone does not establish profile conformance.
 
 ## Constitution Check
 
@@ -37,7 +37,7 @@ Profile target input is fixed to `specification/catalog/profile-targets.json`, r
 - One Rust core and explicit language boundaries: PASS. Profile semantics live in Rust protocol/client core; bindings consume parity contracts later.
 - Secure, lossless defaults: PASS. No secret data in errors/reports, no hidden requests/retries, and cryptographic choices remain explicit.
 - Human-governed changes: PASS. This draft is not approved by being authored; the feature branch must receive review before implementation/merge as required by the repository workflow.
-- Release claims: PASS. This feature never publishes a claim; the missing Baseline fixtures keep release eligibility blocked.
+- Release claims: PASS. This feature never publishes a claim; the three typed preflight blockers and remaining evidence gates keep Baseline release eligibility blocked.
 
 ## Project Structure
 

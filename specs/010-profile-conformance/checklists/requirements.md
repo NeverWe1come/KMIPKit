@@ -37,4 +37,4 @@
 
 ## Notes
 
-- The specification defines the feature and its evidence gate; the 16 missing Baseline mandatory fixtures remain a separately reviewed source-acquisition prerequisite for any claim.
+- The specification defines the feature and its evidence gate. All 16 Baseline mandatory fixtures are pinned; T036 records 13 full local replays and 3 typed preflight blockers, so execution evidence remains incomplete and no claim is eligible.

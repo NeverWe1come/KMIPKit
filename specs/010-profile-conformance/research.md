@@ -57,7 +57,7 @@ The selected target is stored in the project-owned `specification/catalog/profil
 
 ## Decision: Separate readiness calculation from release claim publication
 
-**Decision**: The feature reports target selection and runtime-validation availability as separate booleans and exposes one effective evidence/readiness lifecycle value with blockers. It recomputes current evidence before comparing the result with catalog `claim_state`. The Baseline profile remains `evidence_incomplete` because execution results for its 16 mandatory fixtures are absent; this lifecycle value is not a published claim. This feature never emits a public support claim. A separate reviewed release process may publish only after all applicable normative requirements, mandatory tests, and project release gates pass.
+**Decision**: The feature reports target selection and runtime-validation availability as separate booleans and exposes one effective evidence/readiness lifecycle value with blockers. It recomputes current evidence before comparing the result with catalog `claim_state`. The Baseline profile remains `evidence_incomplete`: T036 records 13 full deterministic client replays and 3 typed preflight blockers, while normative, typed-rule, and protected-release evidence gates also remain incomplete. This lifecycle value is not a published claim. This feature never emits a public support claim. A separate reviewed release process may publish only after all applicable normative requirements, mandatory tests, and project release gates pass.
 
 **Rationale**: The accepted catalog data model and ADR-0009 separate implementation, profile conformance, interoperability, and certification. Human review and release governance remain authoritative.
 

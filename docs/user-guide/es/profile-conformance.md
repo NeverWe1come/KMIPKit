@@ -48,11 +48,14 @@ trabajo futuro de evidencia. Esa selección es una decisión de planificación;
 no demuestra que el perfil esté implementado ni satisface el requisito del
 estándar.
 
-El estado de Baseline Client en el catálogo es `evidence_incomplete`. Sus 16
-registros de fixtures oficiales obligatorios no están disponibles en el
-repositorio fijado. Siguen siendo brechas de evidencia y no cuentan como
-pruebas superadas. KMIPKit no reconstruye ni deduce el contenido de esos
-fixtures ausentes.
+El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
+fixtures oficiales obligatorios están fijados en el repositorio. T036 registra
+13 reproducciones deterministas completas del cliente y 3 bloqueos previos al
+envío causados por la validación tipada. Las reproducciones no demuestran
+interoperabilidad con servidores ni conformidad del perfil; esos bloqueos y
+las demás brechas de evidencia siguen abiertos. Otros 77 casos vinculados a
+perfiles no tienen fixture local. KMIPKit no reconstruye ni deduce el contenido
+de fixtures ausentes.
 
 ## Cómo leer el estado de un perfil
 

@@ -45,10 +45,12 @@ client profiles. KMIPKit records Baseline Client as the initial 1.0 target for
 future evidence work. Target membership is a project planning choice; it does
 not establish profile support or satisfy the specification requirement.
 
-The Baseline Client catalog state is `evidence_incomplete`. Its 16 mandatory
-official fixture records are unavailable in the pinned repository. They remain
-evidence gaps and are not counted as passing tests. KMIPKit does not recreate
-or infer the missing fixture contents.
+The Baseline Client catalog state is `evidence_incomplete`. All 16 mandatory
+official fixtures are pinned. T036 records 13 full deterministic client
+replays and 3 typed preflight blockers. The replays do not establish server
+interoperability or profile conformance; the blocked cases and other evidence
+gaps remain open. Seventy-seven other linked profile cases have no local
+fixture. KMIPKit does not recreate or infer absent fixture contents.
 
 ## Reading profile status
 
