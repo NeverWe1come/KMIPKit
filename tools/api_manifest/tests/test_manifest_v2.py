@@ -225,6 +225,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertTrue(validator.is_valid("*mut *mut kmipkit_ttlv_structure_t"))
 
+    def test_c_parameter_schema_accepts_counted_fixed_width_input_arrays(self) -> None:
+        validator = Draft202012Validator(
+            {"$defs": self.schema["$defs"], "$ref": "#/$defs/cParameter"}
+        )
+        parameter = {
+            "name": "functions",
+            "kind": "input-array",
+            "type": "const uint32_t *",
+            "elementType": "uint32_t",
+            "ownership": "borrowed",
+            "countParameter": "function_count",
+            "nullable": True,
+        }
+
+        self.assertTrue(validator.is_valid(parameter))
+
     def test_requirement_ids_accept_referenced_kmip_7_12_sections(self) -> None:
         for definition in ("requirementId", "v2RequirementId"):
             validator = Draft202012Validator(self.schema["$defs"][definition])
