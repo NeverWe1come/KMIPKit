@@ -2977,6 +2977,44 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_validate_usage_allocation_context(
+    kmipkit_client_batch_item_response_t *item) {
+    static const uint8_t expected_identifier[] = "allocation-object";
+    kmipkit_usage_allocation_context_t *context = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint32_t unit = 0;
+    int64_t allocated = 0;
+    int64_t available = 0;
+    int64_t reserved = 0;
+    int result = 0;
+
+    if (item == 0 || kmipkit_usage_allocation_context_create(
+            item, 12, UINT32_MAX, &context) != 0 || context == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    if (kmipkit_usage_allocation_context_usage_limits_unit(context, &unit) != 0 ||
+        kmipkit_usage_allocation_context_allocated_units(context, &allocated) != 0 ||
+        kmipkit_usage_allocation_context_available_units(context, &available) != 0 ||
+        kmipkit_usage_allocation_context_reserved_units(context, &reserved) != 0 ||
+        kmipkit_usage_allocation_context_unique_identifier(context, &identifier) != 0 ||
+        unit != UINT32_MAX || allocated != 12 || available != 12 || reserved != 0 ||
+        !response_identifier_matches(
+            &identifier, expected_identifier, (uint64_t)(sizeof(expected_identifier) - 1))) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_usage_allocation_context_release(context);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
     kmipkit_client_batch_item_response_t *item) {
     static const uint32_t expected_tags[] = {
