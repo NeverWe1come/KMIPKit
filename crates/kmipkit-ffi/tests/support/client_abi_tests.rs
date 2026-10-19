@@ -652,6 +652,117 @@ fn ffi_successful_hash_response_getter_returns_typed_fields() {
 }
 
 #[test]
+fn ffi_successful_encrypt_response_getter_returns_typed_fields() {
+    let correlation = [0x51, 0x00, 0x52];
+    let identifier = b"encrypt-response-id";
+    let encrypt = successful_cryptographic_item(
+        ClientRequest::Encrypt(EncryptRequest::new(
+            None,
+            Some(OperationData::ByteString(SecretBytes::new(
+                b"request-plaintext".to_vec(),
+            ))),
+        )),
+        0x1f,
+        b"encrypt-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, identifier),
+            ttlv_item(0x0042_00c2, 0x08, b"ciphertext"),
+            ttlv_item(0x0042_003d, 0x08, b"response-iv"),
+            ttlv_item(0x0042_00d6, 0x08, &correlation),
+            ttlv_item(0x0042_00ff, 0x08, b"authentication-tag"),
+        ],
+    );
+    let mut present = 0;
+    let mut output_identifier = empty_unique_identifier_output_v1();
+    let mut data_present = 0;
+    let mut data = byte_span(&[]);
+    let mut iv_present = 0;
+    let mut iv = byte_span(&[]);
+    let mut correlation_present = 0;
+    let mut correlation_value = byte_span(&[]);
+    let mut tag_present = 0;
+    let mut tag = byte_span(&[]);
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_encrypt(
+            encrypt,
+            &raw mut present,
+            &raw mut output_identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut iv_present,
+            &raw mut iv,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+            &raw mut tag_present,
+            &raw mut tag,
+        )
+    );
+    assert_eq!(
+        (
+            present,
+            data_present,
+            iv_present,
+            correlation_present,
+            tag_present
+        ),
+        (1, 1, 1, 1, 1)
+    );
+    assert_response_identifier(&output_identifier, identifier);
+    assert_response_span(data, b"ciphertext");
+    assert_response_span(iv, b"response-iv");
+    assert_response_span(correlation_value, &correlation);
+    assert_response_span(tag, b"authentication-tag");
+    kmipkit_client_batch_item_response_release(encrypt);
+}
+
+#[test]
+fn ffi_successful_decrypt_response_getter_returns_typed_fields() {
+    let correlation = [0x61, 0x00, 0x62];
+    let identifier = b"decrypt-response-id";
+    let decrypt = successful_cryptographic_item(
+        ClientRequest::Decrypt(DecryptRequest::new(
+            None,
+            Some(OperationData::ByteString(SecretBytes::new(
+                b"ciphertext".to_vec(),
+            ))),
+        )),
+        0x20,
+        b"decrypt-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, identifier),
+            ttlv_item(0x0042_00c2, 0x08, b"plaintext"),
+            ttlv_item(0x0042_00d6, 0x08, &correlation),
+        ],
+    );
+    let mut present = 0;
+    let mut output_identifier = empty_unique_identifier_output_v1();
+    let mut data_present = 0;
+    let mut data = byte_span(&[]);
+    let mut correlation_present = 0;
+    let mut correlation_value = byte_span(&[]);
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_decrypt(
+            decrypt,
+            &raw mut present,
+            &raw mut output_identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+        )
+    );
+    assert_eq!((present, data_present, correlation_present), (1, 1, 1));
+    assert_response_identifier(&output_identifier, identifier);
+    assert_response_span(data, b"plaintext");
+    assert_response_span(correlation_value, &correlation);
+    kmipkit_client_batch_item_response_release(decrypt);
+}
+
+#[test]
 fn ffi_successful_mac_response_getter_returns_typed_fields() {
     let correlation = [0x41, 0x00, 0x42];
     let response_identifier = b"response-id";
