@@ -1210,7 +1210,7 @@ fn ffi_login_response_getters_return_raw_ticket_fields_and_owned_ttlv() {
 }
 
 #[test]
-fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ticket() {
+fn ffi_login_response_getters_clear_outputs_for_inconsistent_handle() {
     let wrong_variant: *mut kmipkit_client_batch_item_response_t = make_handle(
         Kind::ClientBatchItemResponse,
         HandleValue::Structure(Structure::new()),
@@ -1246,7 +1246,10 @@ fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ti
     assert_eq!(present, 0);
     assert!(ticket_ttlv.is_null());
     release(wrong_variant, Kind::ClientBatchItemResponse);
+}
 
+#[test]
+fn ffi_login_response_getters_fail_closed_for_absent_ticket_and_invalid_index() {
     // KMIP 2.1 §6.1.30, Table 255 defines Login failure responses; the empty
     // successful payload is invalid because Table 254 requires a Ticket.
     let item = failed_cryptographic_item(
@@ -1254,10 +1257,11 @@ fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ti
         0x2d,
         b"login-no-ticket",
     );
-    present = 9;
-    ticket_present = 9;
-    ticket_type = u32::MAX;
-    ticket_value = byte_span(b"secret sentinel");
+    let mut present = 9;
+    let mut ticket_present = 9;
+    let mut ticket_type = u32::MAX;
+    let mut ticket_value = byte_span(b"secret sentinel");
+    let mut ticket_ttlv = ptr::dangling_mut();
     assert_eq!(
         kmipkit_client_batch_item_response_login(
             item,
@@ -1273,7 +1277,6 @@ fn ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ti
     assert_eq!(ticket_value.length, 0);
 
     present = 9;
-    ticket_ttlv = ptr::dangling_mut();
     assert_eq!(
         kmipkit_client_batch_item_response_login_ttlv(item, &mut present, &mut ticket_ttlv),
         SUCCESS

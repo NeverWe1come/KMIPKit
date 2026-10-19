@@ -4243,3 +4243,17 @@ remains for selected-scope CI; T054 is not complete until that gate passes.
 
 Full-workspace tests and coverage used an external Cargo target directory.
 Existing untracked worktree artifacts were not staged or cleaned.
+
+#### T054 CI correction — split overlong FFI regression (2026-10-19)
+
+The updated PR CI reported `clippy::too_many_lines` for the 108-line
+`ffi_login_response_getters_fail_closed_for_inconsistent_handles_and_absent_ticket`
+test in `crates/kmipkit-ffi/tests/support/client_abi_tests.rs`. The behavior was
+already covered; the corrective change separates inconsistent-handle checks
+from absent-Ticket and invalid-index checks without changing assertions or
+production code.
+
+| Stage | Commit | Command | Result |
+|---|---|---|---|
+| Red | PR head `5cc450ad` | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | Expected failure: `clippy::too_many_lines` at 108/100 lines. |
+| Green/Refactor | This DCO-signed correction | `cargo test -p kmipkit-ffi --all-features ffi_login_response_getters --locked`; `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 3 focused FFI tests; workspace Clippy, formatting, and whitespace checks pass. No production code changed. |
