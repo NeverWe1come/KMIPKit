@@ -4104,6 +4104,9 @@ interoperability, profile, or certification claim is made.
 | Red — observed Log client variants | `d07d28b` | Added a regression check for `ClientRequest::Log` and `ClientBatchOutcome::Log`; before correction it failed because both pointed to Interop facade symbols. |
 | Green — corrected mappings and owner traceability | `f31480bb` | Corrected all Log declaration mappings, restored the unrelated Interop mappings, linked `KMIPKIT-0042-FR-007` on each Log declaration and the manifest root, and regenerated the checked-in outputs. The expanded all-declaration test was also run against the pre-fix manifest and failed on an Interop response symbol; it passes against the corrected manifest. |
 | Refactor — preserve T052 exclusions and verification evidence | this commit | Restored strict T052 JoinSplitKey exclusion assertions, tested Log exclusions separately, updated the operation dependency gate, and recorded current verification results. Current-head CI remains pending. |
+| Red — changed-code coverage gate | `4267e856` (CI run `39177440832`) | The CI aggregate coverage gate failed at 7,385/7,782 changed production lines (94.90%, below the required 95%). The uncovered changed lines included Python Log response cleanup and batch-result dispatch branches. |
+| Green — Python Log cleanup and dispatch coverage | `dd831dbc` | Added focused tests for ABI-error cleanup, absent native responses, wrapper-failure cleanup, and Log batch dispatch. The complete Python suite passed with 514 tests; its coverage report is 98.87%. No production behavior changed. |
+| Refactor — coverage remediation evidence | this commit | Recorded the failing CI result and remediation. Re-running the repository aggregate gate with the refreshed Python report and the other scope reports from CI run `39177440832` passed: changed production code 7,393/7,782 (95.00%), workspace 96.63%, TTLV 99.19%, protocol 96.98%, transport 95.16%, FFI 95.97%, Java 98.07%, Python 98.87%, and JNI 85.36%. This is a local gate reproduction; CI for the updated head is still required. |
 
 Focused verification after the Green commit:
 
@@ -4119,6 +4122,8 @@ Focused verification after the Green commit:
 | `mvn --batch-mode --file bindings/java/pom.xml test` | PASS: 303 tests, 0 failures/errors, 3 existing skips; parity fixture compiles and the TLS integration tests pass. |
 | `uv run --project . --with-requirements requirements-coverage.txt pytest tests/test_log_operation.py -q` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` outside the repository and `KMIPKIT_NATIVE_LIBRARY` set to the just-built local library | PASS: 3 Python tests. |
 | `uv run --project . --with-requirements requirements-coverage.txt pytest -q` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` and a copy of the built native library outside the repository | PASS: 510 Python tests. |
+| `uv run --project . --with-requirements requirements-coverage.txt pytest tests/test_log_operation.py tests/test_client.py -q` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` and `KMIPKIT_NATIVE_LIBRARY` set outside the repository | PASS: 9 focused tests, including Log ABI-error cleanup, absent responses, wrapper-failure cleanup, and batch mapper dispatch. |
+| `uv run --project . --with-requirements requirements-coverage.txt pytest -q tests --cov=kmipkit --cov-config=pyproject.toml --cov-report=xml:coverage-python/coverage.xml` from `bindings/python`, with `UV_PROJECT_ENVIRONMENT` and a copy of the built native library outside the repository | PASS: 514 Python tests; 98.87% Python coverage. |
 | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests -p test_log_parity_manifest.py` | PASS: 3 Log manifest/parity tests; the new all-declaration check previously failed against the incorrect mappings. |
 | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests -p test_t076_client_mapping.py` | PASS: 46 T076 mapping tests, including strict T052 JoinSplitKey exclusion checks and separate T053 Log exclusion checks. |
 | `uv run --no-project --with-requirements tools/api_manifest/requirements-test.txt --python 3.12 python -B -m unittest discover -s tools/api_manifest/tests` | PASS: 396 tests, 0 failures, 3 skipped. |
@@ -4128,6 +4133,6 @@ Focused verification after the Green commit:
 
 The Windows builds emitted existing nonfatal AWS-LC `stdalign_check.c` and
 missing-NASM warnings. Maven also emitted existing MSVC linker duplicate-symbol
-warnings; the focused test builds and results passed. Linux/macOS/Windows current
-head CI and the selected changed-code coverage gate remain the final T053
-verification gates.
+warnings; the focused test builds and results passed. The selected changed-code
+coverage gate now passes with the refreshed Python report. Linux/macOS/Windows
+CI for the updated head remains the final T053 verification gate.
