@@ -168,6 +168,17 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemDeriveKey(long objectType, int[] identifierKinds,
             byte[][] identifierTexts, long[] identifierNumbers, long derivationMethod,
             long derivationParameters, long attributes);
+    public static native long clientBatchItemEncrypt(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] ivCounterNonce,
+            @Nullable byte[] correlationValue, int initIndicator, int finalIndicator,
+            @Nullable byte[] authenticatedEncryptionAdditionalData);
+    public static native long clientBatchItemDecrypt(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long parameters, long data, @Nullable byte[] ivCounterNonce,
+            @Nullable byte[] authenticatedEncryptionTag, @Nullable byte[] correlationValue,
+            int initIndicator, int finalIndicator,
+            @Nullable byte[] authenticatedEncryptionAdditionalData);
     public static native long clientBatchItemHash(
             long parameters, long data, @Nullable byte[] correlationValue,
             int initIndicator, int finalIndicator);
@@ -243,6 +254,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseMacVerify(long itemResponse);
     public static native Object[] clientBatchItemResponseSign(long itemResponse);
     public static native Object[] clientBatchItemResponseSignatureVerify(long itemResponse);
+    public static native Object[] clientBatchItemResponseDecrypt(long itemResponse);
+    public static native Object[] clientBatchItemResponseEncrypt(long itemResponse);
     public static native long extensionInformationCreate(String extensionName);
     public static native long extensionInformationWithTag(long information, int tag);
     public static native long extensionInformationWithType(long information, int type);

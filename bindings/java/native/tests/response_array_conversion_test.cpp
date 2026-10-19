@@ -13,27 +13,33 @@ struct Array final {};
 int main() {
     std::array<Array*, 3> output{};
     std::array<Array, 3> input{};
-    std::array<Array*, 3> registered{};
-    std::size_t registered_count = 0;
+    std::size_t cleaned_count = 0;
     std::size_t conversion_count = 0;
     bool pending_exception = false;
+    bool cleaned_value = false;
 
-    const bool converted = kmipkit::jni::convert_response_arrays(
-            output,
-            [&](std::size_t index) {
-                ++conversion_count;
-                if (index == 0) pending_exception = true;
-                return &input[index];
-            },
-            [&] { return pending_exception; },
-            [&](Array* value) {
-                registered[registered_count++] = value;
-                return true;
-            });
+    auto cleanup = [&](Array*, bool wipe) noexcept {
+        ++cleaned_count;
+        cleaned_value = wipe;
+    };
+    using Scope = kmipkit::jni::ResponseSecretArrayScope<Array*, 3, decltype(cleanup)>;
+    {
+        Scope sensitive_arrays(cleanup);
+        const bool converted = kmipkit::jni::convert_response_arrays(
+                output,
+                [&](std::size_t index) {
+                    ++conversion_count;
+                    if (index == 0) pending_exception = true;
+                    return &input[index];
+                },
+                [&] { return pending_exception; },
+                sensitive_arrays);
 
-    assert(!converted);
-    assert(conversion_count == 1);
-    assert(registered_count == 1);
-    assert(output[0] == &input[0]);
-    assert(registered[0] == &input[0]);
+        assert(!converted);
+        assert(conversion_count == 1);
+        assert(output[0] == &input[0]);
+        assert(cleaned_count == 0);
+    }
+    assert(cleaned_count == 1);
+    assert(cleaned_value);
 }

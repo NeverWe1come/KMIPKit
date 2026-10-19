@@ -1792,6 +1792,73 @@ static int successful_crypto_response_is_readable(
     return 0;
 }
 
+static int encrypt_decrypt_response_fields_match(
+    uint64_t index, kmipkit_client_batch_item_response_t *response_item) {
+    static const uint8_t identifier_bytes[] = "c-response-key";
+    static const uint8_t ciphertext[] = "ciphertext-c";
+    static const uint8_t plaintext[] = "plaintext-c";
+    static const uint8_t iv_bytes[] = {0x71, 0x72};
+    static const uint8_t correlation_bytes[] = {0x81, 0x82};
+    static const uint8_t tag_bytes[] = {0x91, 0x92};
+    uint8_t present = 0;
+    uint8_t data_present = 0;
+    uint8_t iv_present = 0;
+    uint8_t correlation_present = 0;
+    uint8_t tag_present = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_byte_span_v1_t data = {0};
+    kmipkit_byte_span_v1_t iv = {0};
+    kmipkit_byte_span_v1_t correlation = {0};
+    kmipkit_byte_span_v1_t tag = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+
+    if (index == 24) {
+        if (kmipkit_client_batch_item_response_encrypt(
+                response_item, &present, &identifier, &data_present, &data,
+                &iv_present, &iv, &correlation_present, &correlation,
+                &tag_present, &tag) != 0 || present != 1 || data_present != 1 ||
+            iv_present != 1 || correlation_present != 1 || tag_present != 1) {
+            return 0;
+        }
+        return response_identifier_matches(
+                    &identifier, identifier_bytes, sizeof(identifier_bytes) - 1) &&
+            response_span_matches(data, ciphertext, sizeof(ciphertext) - 1) &&
+            response_span_matches(iv, iv_bytes, sizeof(iv_bytes)) &&
+            response_span_matches(correlation, correlation_bytes, sizeof(correlation_bytes)) &&
+            response_span_matches(tag, tag_bytes, sizeof(tag_bytes));
+    }
+    if (index == 25) {
+        if (kmipkit_client_batch_item_response_decrypt(
+                response_item, &present, &identifier, &data_present, &data,
+                &correlation_present, &correlation) != 0 || present != 1 ||
+            data_present != 1 || correlation_present != 1) {
+            return 0;
+        }
+        return response_identifier_matches(
+                    &identifier, identifier_bytes, sizeof(identifier_bytes) - 1) &&
+            response_span_matches(data, plaintext, sizeof(plaintext) - 1) &&
+            response_span_matches(correlation, correlation_bytes, sizeof(correlation_bytes));
+    }
+    return 0;
+}
+
+static int encrypt_decrypt_response_is_readable_from_c(
+    kmipkit_client_batch_response_t *response, uint64_t index,
+    kmipkit_client_batch_item_response_t **response_item) {
+    if (response == 0 || response_item == 0 || *response_item == 0 ||
+        !encrypt_decrypt_response_fields_match(index, *response_item)) {
+        return 0;
+    }
+    kmipkit_client_batch_item_response_release(*response_item);
+    *response_item = 0;
+    if (kmipkit_client_batch_response_item_at(response, index, response_item) != 0 ||
+        *response_item == 0) {
+        return 0;
+    }
+    return encrypt_decrypt_response_fields_match(index, *response_item);
+}
+
 static int public_ttlv_contains_response_sentinel(kmipkit_ttlv_structure_t *structure);
 static int import_response_is_readable_from_c(
     kmipkit_client_batch_item_response_t *item);
@@ -1800,9 +1867,9 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
     static const uint32_t expected_statuses[] = {
-        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0};
+        0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0};
     static const uint8_t expected_correlation[] = {0x00, 0xa1, 0x7f};
-    static const uint8_t expected_ids[24][6] = {
+    static const uint8_t expected_ids[26][6] = {
         {'i', 't', 'e', 'm', '-', '0'},
         {'i', 't', 'e', 'm', '-', '1'},
         {'i', 't', 'e', 'm', '-', '2'},
@@ -1827,6 +1894,8 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         {'i', 'm', 'p', 'o', 'r', 't'},
         {'l', 'o', 'g', '-', '0', '0'},
         {'l', 'o', 'g', 'i', 'n', '0'},
+        {'e', 'n', 'c', '-', '0', '0'},
+        {'d', 'e', 'c', '-', '0', '0'},
     };
     static const uint8_t expected_failure_message[] = {
         'c', 'r', 0xc3, 0xa9, 'a', 't', 'i', 'o', 'n', ' ', 'r', 'e', 'f', 'u', 's', 0xc3,
@@ -1841,7 +1910,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
     kmipkit_transport_config_t *transport = 0;
     kmipkit_client_t *client = 0;
     kmipkit_client_batch_t *batch = 0;
-    kmipkit_client_batch_item_t *items[24] = {0};
+    kmipkit_client_batch_item_t *items[26] = {0};
     kmipkit_client_batch_response_t *response = 0;
     kmipkit_client_batch_item_response_t *response_item = 0;
     kmipkit_ttlv_structure_t *get_constraints_ttlv = 0;
@@ -1912,7 +1981,7 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         result = 31;
         goto cleanup;
     }
-    for (uint64_t index = 0; index < 24; ++index) {
+    for (uint64_t index = 0; index < 26; ++index) {
         kmipkit_client_batch_item_t *identified_item = 0;
         if (index == 4 || index == 5) {
             kmipkit_ttlv_structure_t *attributes = 0;
@@ -2113,6 +2182,37 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         } else if (index == 23) {
             if (kmipkit_client_batch_item_login(0, 0, 0, 0, 0, &items[index]) != 0 ||
                 items[index] == 0) {
+                result = 40 + (int)index;
+                goto cleanup;
+            }
+        } else if (index == 24 || index == 25) {
+            static const uint8_t request_bytes[] = {0x41, 0x00, 0x42, 0xff};
+            static const uint8_t iv_bytes[] = {0x11, 0x12};
+            static const uint8_t tag_bytes[] = {0x31, 0x32};
+            static const uint8_t aad_bytes[] = {0x51, 0x52};
+            static const uint8_t request_identifier[] = "cryptographic-key";
+            kmipkit_unique_identifier_v1_t identifier = {0};
+            kmipkit_byte_span_v1_t iv = {iv_bytes, sizeof(iv_bytes)};
+            kmipkit_byte_span_v1_t tag = {tag_bytes, sizeof(tag_bytes)};
+            kmipkit_byte_span_v1_t aad = {aad_bytes, sizeof(aad_bytes)};
+            kmipkit_ttlv_value_t *data = 0;
+            identifier.struct_size = (uint32_t)sizeof(identifier);
+            identifier.abi_version = 1;
+            identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+            identifier.text_data = request_identifier;
+            identifier.text_length = (uint64_t)(sizeof(request_identifier) - 1);
+            if (kmipkit_ttlv_value_byte_string(
+                    limits, request_bytes, sizeof(request_bytes), &data) != 0) {
+                result = 40 + (int)index;
+                goto cleanup;
+            }
+            const int32_t constructor_status = index == 24
+                ? kmipkit_client_batch_item_encrypt(
+                    &identifier, 0, data, &iv, 0, 2, 2, &aad, &items[index])
+                : kmipkit_client_batch_item_decrypt(
+                    &identifier, 0, data, &iv, &tag, 0, 2, 2, &aad, &items[index]);
+            kmipkit_ttlv_value_release(data);
+            if (constructor_status != 0 || items[index] == 0) {
                 result = 40 + (int)index;
                 goto cleanup;
             }
@@ -2385,6 +2485,10 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         }
         if (index >= 8 && index <= 13 &&
             !successful_crypto_response_is_readable(index, response_item)) {
+            goto cleanup;
+        }
+        if ((index == 24 || index == 25) &&
+            !encrypt_decrypt_response_is_readable_from_c(response, index, &response_item)) {
             goto cleanup;
         }
         if (index == 14 && !derive_key_response_is_readable_from_c(response_item)) {

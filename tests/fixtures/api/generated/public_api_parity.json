@@ -27381,6 +27381,677 @@
         "requestBoundary": "not-applicable",
         "returnType": "i32"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed Decrypt request while copying caller-supplied secret spans at the ABI boundary."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "direction": "input",
+            "kind": "versioned-value-pointer",
+            "name": "unique_identifier",
+            "ownership": "borrowed",
+            "type": "const kmipkit_unique_identifier_v1_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "parameters",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "data",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_value_t *"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "iv_counter_nonce",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "authenticated_encryption_tag",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "correlation_value",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "init_indicator",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "final_indicator",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "authenticated_encryption_additional_data",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_decrypt"
+      },
+      "id": "client_batch_item_decrypt",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDecrypt",
+        "method": "decrypt",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "parameters",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "data",
+            "type": "TtlvValue"
+          },
+          {
+            "name": "ivCounterNonce",
+            "type": "byte[]"
+          },
+          {
+            "name": "authenticatedEncryptionTag",
+            "type": "byte[]"
+          },
+          {
+            "name": "correlationValue",
+            "type": "byte[]"
+          },
+          {
+            "name": "initIndicator",
+            "type": "Boolean"
+          },
+          {
+            "name": "finalIndicator",
+            "type": "Boolean"
+          },
+          {
+            "name": "authenticatedEncryptionAdditionalData",
+            "type": "byte[]"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_decrypt",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_decrypt",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier | None"
+          },
+          {
+            "name": "parameters",
+            "type": "ttlv.Structure | None"
+          },
+          {
+            "name": "data",
+            "type": "ttlv.Value | None"
+          },
+          {
+            "name": "iv_counter_nonce",
+            "type": "bytes | bytearray | memoryview | None"
+          },
+          {
+            "name": "authenticated_encryption_tag",
+            "type": "bytes | bytearray | memoryview | None"
+          },
+          {
+            "name": "correlation_value",
+            "type": "bytes | bytearray | memoryview | None"
+          },
+          {
+            "name": "init_indicator",
+            "type": "bool | None"
+          },
+          {
+            "name": "final_indicator",
+            "type": "bool | None"
+          },
+          {
+            "name": "authenticated_encryption_additional_data",
+            "type": "bytes | bytearray | memoryview | None"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientRequest",
+        "name": "Decrypt",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "DecryptRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientRequest"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed Encrypt request while copying caller-supplied secret spans at the ABI boundary."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "direction": "input",
+            "kind": "versioned-value-pointer",
+            "name": "unique_identifier",
+            "ownership": "borrowed",
+            "type": "const kmipkit_unique_identifier_v1_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "parameters",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "data",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_value_t *"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "iv_counter_nonce",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "correlation_value",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "init_indicator",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "final_indicator",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "input-value-pointer",
+            "name": "authenticated_encryption_additional_data",
+            "ownership": "borrowed",
+            "type": "const kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_encrypt"
+      },
+      "id": "client_batch_item_encrypt",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemEncrypt",
+        "method": "encrypt",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "parameters",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "data",
+            "type": "TtlvValue"
+          },
+          {
+            "name": "ivCounterNonce",
+            "type": "byte[]"
+          },
+          {
+            "name": "correlationValue",
+            "type": "byte[]"
+          },
+          {
+            "name": "initIndicator",
+            "type": "Boolean"
+          },
+          {
+            "name": "finalIndicator",
+            "type": "Boolean"
+          },
+          {
+            "name": "authenticatedEncryptionAdditionalData",
+            "type": "byte[]"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_encrypt",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_encrypt",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier | None"
+          },
+          {
+            "name": "parameters",
+            "type": "ttlv.Structure | None"
+          },
+          {
+            "name": "data",
+            "type": "ttlv.Value | None"
+          },
+          {
+            "name": "iv_counter_nonce",
+            "type": "bytes | bytearray | memoryview | None"
+          },
+          {
+            "name": "correlation_value",
+            "type": "bytes | bytearray | memoryview | None"
+          },
+          {
+            "name": "init_indicator",
+            "type": "bool | None"
+          },
+          {
+            "name": "final_indicator",
+            "type": "bool | None"
+          },
+          {
+            "name": "authenticated_encryption_additional_data",
+            "type": "bytes | bytearray | memoryview | None"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientRequest",
+        "name": "Encrypt",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "EncryptRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientRequest"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns typed response fields only when the KMIP result is Success; returned byte spans are borrowed from the response-item handle."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_unique_identifier",
+            "ownership": "none",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_data_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_data",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_correlation_value_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_correlation_value",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_decrypt"
+      },
+      "id": "client_batch_item_response_decrypt",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseDecrypt",
+        "method": "decryptResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<DecryptResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_decrypt",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.BatchItemResult.decrypt_response",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "DecryptResponse | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchOutcome",
+        "name": "decrypt_response",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<&DecryptResponse>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns typed response fields only when the KMIP result is Success; returned byte spans are borrowed from the response-item handle."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_unique_identifier",
+            "ownership": "none",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_data_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_data",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_iv_counter_nonce_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_iv_counter_nonce",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_correlation_value_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_correlation_value",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_authenticated_encryption_tag_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_authenticated_encryption_tag",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_encrypt"
+      },
+      "id": "client_batch_item_response_encrypt",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseEncrypt",
+        "method": "encryptResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<EncryptResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_encrypt",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.BatchItemResult.encrypt_response",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "EncryptResponse | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchOutcome",
+        "name": "encrypt_response",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<&EncryptResponse>"
+      }
     }
   ],
   "languages": [
@@ -27846,6 +28517,54 @@
     {
       "apiState": "verified",
       "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T040:decrypt:request:c",
+          "T040:decrypt:response:c"
+        ],
+        "java": [
+          "T040:decrypt:request:java",
+          "T040:decrypt:response:java"
+        ],
+        "python": [
+          "T040:decrypt:request:python",
+          "T040:decrypt:response:python"
+        ],
+        "rust": [
+          "rust-observed-f7f350f8cf41db432853",
+          "rust-observed-b061731ea9cbb62d75dc"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0019",
+      "name": "Decrypt",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0019",
+        "state": "approved"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "scope": "client_1_0",
+      "section": "6.1.11"
+    },
+    {
+      "apiState": "verified",
+      "approvalEvidence": {
         "evidence": "**Status**: Approved for implementation — 2026-10-11",
         "kind": "feature-specification",
         "path": "specs/024-credential-sessions/spec.md",
@@ -28000,6 +28719,54 @@
       },
       "scope": "client_1_0",
       "section": "6.1.16"
+    },
+    {
+      "apiState": "verified",
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T040:encrypt:request:c",
+          "T040:encrypt:response:c"
+        ],
+        "java": [
+          "T040:encrypt:request:java",
+          "T040:encrypt:response:java"
+        ],
+        "python": [
+          "T040:encrypt:request:python",
+          "T040:encrypt:response:python"
+        ],
+        "rust": [
+          "rust-observed-c0fb7e57876bc3a8ecf8",
+          "rust-observed-3f5dd98cdcb182a82c1f"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0019",
+      "name": "Encrypt",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0019",
+        "state": "approved"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "scope": "client_1_0",
+      "section": "6.1.17"
     },
     {
       "apiState": "verified",
@@ -33186,11 +33953,11 @@
       "packageId": "c-kmipkit",
       "parityScope": "four-language",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0004-FR-012",
-        "KMIPKIT-0043-FR-004"
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -51523,11 +52290,11 @@
       "packageId": "python-kmipkit",
       "parityScope": "four-language",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0004-FR-012",
-        "KMIPKIT-0043-FR-004"
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -54802,10 +55569,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -54846,10 +55613,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -58184,10 +58951,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -58268,6 +59035,137 @@
         "KMIPKIT-0014-FR-008",
         "KMIPKIT-0014-FR-009",
         "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "rust-observed-3f5dd98cdcb182a82c1f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatchOutcome::encrypt_response",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.encrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::encrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "rust-observed-b061731ea9cbb62d75dc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatchOutcome::decrypt_response",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.decrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::decrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -58944,6 +59842,149 @@
         "KMIPKIT-0043-FR-011",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "rust-observed-c0fb7e57876bc3a8ecf8",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::Encrypt",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Encrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "rust-observed-f7f350f8cf41db432853",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::Decrypt",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Decrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     },
     {
@@ -71475,11 +72516,11 @@
       "packageId": "java-kmipkit",
       "parityScope": "four-language",
       "requirementIds": [
+        "KMIPKIT-0004-FR-012",
         "KMIPKIT-0012-FR-007",
         "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0004-FR-012",
-        "KMIPKIT-0043-FR-004"
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -77614,10 +78655,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -77658,10 +78699,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -77702,10 +78743,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -77746,10 +78787,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -77790,10 +78831,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -77834,10 +78875,10 @@
         "KMIPKIT-0007-FR-008",
         "KMIPKIT-0043-FR-003",
         "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
         "KMIPKIT-0043-FR-012",
         "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-007"
+        "KMIPKIT-0043-FR-021"
       ]
     },
     {
@@ -108179,6 +109220,1122 @@
         "KMIPKIT-REQ-SPEC-6.1.35-001-002",
         "KMIPKIT-REQ-SPEC-6.1.35-002",
         "KMIPKIT-REQ-SPEC-6.1.35-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:request:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_encrypt",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Encrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:request:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Encrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:request:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.client_batch_item_encrypt",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.encrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_encrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Encrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:response:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_encrypt",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.encrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::encrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:response:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.encrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::encrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:response:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.BatchItemResult.encrypt_response",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_encrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.encryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.encrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::encrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:request:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_decrypt",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Decrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:request:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Decrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:request:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.client_batch_item_decrypt",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.decrypt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_decrypt",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Decrypt",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-002",
+        "KMIPKIT-0019-FR-003",
+        "KMIPKIT-0019-FR-004",
+        "KMIPKIT-0019-FR-006",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:response:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_decrypt",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.decrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::decrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:response:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.decrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::decrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:response:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.BatchItemResult.decrypt_response",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_decrypt",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.decryptResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.decrypt_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::decrypt_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:response-close:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.EncryptResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "lifecycleSemanticsByLanguage": {
+        "c": "release-shared-reference-wipe-on-final-owner-drop",
+        "java": "wipe-owned-copy-on-close",
+        "python": "wipe-owned-copy-on-close",
+        "rust": "wipe-on-final-owner-drop"
+      },
+      "mappingSemantics": "secret-buffer-wipe",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+      "declarationId": "T040:encrypt:response-close:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.EncryptResponse.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.EncryptResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.EncryptResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "lifecycleSemanticsByLanguage": {
+        "c": "release-shared-reference-wipe-on-final-owner-drop",
+        "java": "wipe-owned-copy-on-close",
+        "python": "wipe-owned-copy-on-close",
+        "rust": "wipe-on-final-owner-drop"
+      },
+      "mappingSemantics": "secret-buffer-wipe",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:response-close:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DecryptResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "lifecycleSemanticsByLanguage": {
+        "c": "release-shared-reference-wipe-on-final-owner-drop",
+        "java": "wipe-owned-copy-on-close",
+        "python": "wipe-owned-copy-on-close",
+        "rust": "wipe-on-final-owner-drop"
+      },
+      "mappingSemantics": "secret-buffer-wipe",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19).",
+        "kind": "feature-specification",
+        "path": "specs/019-cryptographic-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+      "declarationId": "T040:decrypt:response-close:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.DecryptResponse.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.DecryptResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.DecryptResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItemResponse",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "lifecycleSemanticsByLanguage": {
+        "c": "release-shared-reference-wipe-on-final-owner-drop",
+        "java": "wipe-owned-copy-on-close",
+        "python": "wipe-owned-copy-on-close",
+        "rust": "wipe-on-final-owner-drop"
+      },
+      "mappingSemantics": "secret-buffer-wipe",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/CryptoOperationsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ClientCryptoResponseMappingCoverageTest.java",
+        "bindings/python/tests/test_encrypt_decrypt_operations.py",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/cryptographic_operation_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/encrypt_response_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/decrypt_response_tests.rs",
+        "tools/api_manifest/tests/test_encrypt_decrypt_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0019-FR-001",
+        "KMIPKIT-0019-FR-005",
+        "KMIPKIT-0019-FR-007",
+        "KMIPKIT-0019-FR-009",
+        "KMIPKIT-0019-FR-011",
+        "KMIPKIT-0019-FR-012",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006"
       ]
     }
   ],

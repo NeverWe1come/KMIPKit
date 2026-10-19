@@ -844,6 +844,8 @@ class BatchItemResult:
     split_key_unique_identifiers: tuple[extensions.UniqueIdentifier, ...] | None = field(
         default=None, repr=False
     )
+    encrypt_response: EncryptResponse | None = field(default=None, repr=False)
+    decrypt_response: DecryptResponse | None = field(default=None, repr=False)
     hash_response: HashResponse | None = field(default=None, repr=False)
     mac_response: MacResponse | None = field(default=None, repr=False)
     mac_verify_response: MacVerifyResponse | None = field(default=None, repr=False)
@@ -885,6 +887,139 @@ class BatchItemResult:
     def locate_response(self) -> LocateResponse | None:
         """Return Locate's optional count and identifiers in server order, when available."""
         return self._locate_response
+
+
+@dataclass(slots=True, init=False, eq=False, repr=False)
+class EncryptResponse:
+    """Successful Encrypt fields in wipeable KMIPKit-owned buffers."""
+
+    _unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    _data: _SecretBytes | None = field(repr=False)
+    _iv_counter_nonce: _SecretBytes | None = field(repr=False)
+    _correlation_value: _SecretBytes | None = field(repr=False)
+    _authenticated_encryption_tag: _SecretBytes | None = field(repr=False)
+    _closed: bool = field(default=False, init=False, repr=False)
+
+    def __init__(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        data: bytes | _SecretBytes | None,
+        iv_counter_nonce: bytes | _SecretBytes | None,
+        correlation_value: bytes | _SecretBytes | None,
+        authenticated_encryption_tag: bytes | _SecretBytes | None,
+    ) -> None:
+        self._unique_identifier = unique_identifier
+        self._data = _owned_secret_bytes(data)
+        self._iv_counter_nonce = _owned_secret_bytes(iv_counter_nonce)
+        self._correlation_value = _owned_secret_bytes(correlation_value)
+        self._authenticated_encryption_tag = (
+            _owned_secret_bytes(authenticated_encryption_tag)
+        )
+        self._closed = False
+
+    @property
+    def unique_identifier(self) -> extensions.UniqueIdentifier:
+        """Return the response identifier while this response remains open."""
+        self._ensure_open()
+        return self._unique_identifier
+
+    @property
+    def data(self) -> bytes | None:
+        self._ensure_open()
+        return None if self._data is None else self._data.to_bytes()
+
+    @property
+    def iv_counter_nonce(self) -> bytes | None:
+        self._ensure_open()
+        return None if self._iv_counter_nonce is None else self._iv_counter_nonce.to_bytes()
+
+    @property
+    def correlation_value(self) -> bytes | None:
+        self._ensure_open()
+        return None if self._correlation_value is None else self._correlation_value.to_bytes()
+
+    @property
+    def authenticated_encryption_tag(self) -> bytes | None:
+        self._ensure_open()
+        return (
+            None if self._authenticated_encryption_tag is None
+            else self._authenticated_encryption_tag.to_bytes()
+        )
+
+    def close(self) -> None:
+        """Wipe KMIPKit-owned response bytes; caller copies remain caller-owned."""
+        if self._closed:
+            return
+        for name in (
+            "_data", "_iv_counter_nonce", "_correlation_value", "_authenticated_encryption_tag"
+        ):
+            value = getattr(self, name)
+            if value is not None:
+                value.wipe()
+                setattr(self, name, None)
+        self._closed = True
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("Encrypt response is closed")
+
+    def __repr__(self) -> str:
+        return "EncryptResponse(fields=redacted)"
+
+
+@dataclass(slots=True, init=False, eq=False, repr=False)
+class DecryptResponse:
+    """Successful Decrypt fields in wipeable KMIPKit-owned buffers."""
+
+    _unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    _data: _SecretBytes | None = field(repr=False)
+    _correlation_value: _SecretBytes | None = field(repr=False)
+    _closed: bool = field(default=False, init=False, repr=False)
+
+    def __init__(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        data: bytes | _SecretBytes | None,
+        correlation_value: bytes | _SecretBytes | None,
+    ) -> None:
+        self._unique_identifier = unique_identifier
+        self._data = _owned_secret_bytes(data)
+        self._correlation_value = _owned_secret_bytes(correlation_value)
+        self._closed = False
+
+    @property
+    def unique_identifier(self) -> extensions.UniqueIdentifier:
+        """Return the response identifier while this response remains open."""
+        self._ensure_open()
+        return self._unique_identifier
+
+    @property
+    def data(self) -> bytes | None:
+        self._ensure_open()
+        return None if self._data is None else self._data.to_bytes()
+
+    @property
+    def correlation_value(self) -> bytes | None:
+        self._ensure_open()
+        return None if self._correlation_value is None else self._correlation_value.to_bytes()
+
+    def close(self) -> None:
+        """Wipe KMIPKit-owned response bytes; caller copies remain caller-owned."""
+        if self._closed:
+            return
+        for name in ("_data", "_correlation_value"):
+            value = getattr(self, name)
+            if value is not None:
+                value.wipe()
+                setattr(self, name, None)
+        self._closed = True
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("Decrypt response is closed")
+
+    def __repr__(self) -> str:
+        return "DecryptResponse(fields=redacted)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1483,7 +1618,7 @@ def _batch_result(handle: Any) -> BatchResult:
                 log_response = None
                 if int(metadata.operation) == 0x2C:
                     log_response = _log_response(item)
-                cryptographic_responses = (None, None, None, None, None)
+                cryptographic_responses = (None, None, None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
                         item, int(metadata.operation)
@@ -1670,6 +1805,25 @@ def _optional_output_span(present: Any, value: Any) -> bytes | None:
     return bytes(ffi.buffer(value.data, int(value.length))) if value.length else b""
 
 
+def _optional_output_secret_span(present: Any, value: Any) -> _SecretBytes | None:
+    if present[0] == 0:
+        if value.data != ffi.NULL or value.length != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1 or value.length > _MAX_INPUT_BYTES:
+        errors.raise_for_status(4)
+    if value.length and value.data == ffi.NULL:
+        errors.raise_for_status(4)
+    view = ffi.buffer(value.data, int(value.length)) if value.length else memoryview(b"")
+    return _SecretBytes(view)
+
+
+def _owned_secret_bytes(value: bytes | _SecretBytes | None) -> _SecretBytes | None:
+    if value is None or isinstance(value, _SecretBytes):
+        return value
+    return _SecretBytes(value)
+
+
 def _optional_output_identifier(value: Any) -> extensions.UniqueIdentifier | None:
     if value.kind == 0:
         if value.text_data != ffi.NULL or value.text_length != 0:
@@ -1700,6 +1854,79 @@ def _hash_response(item: _ClientBatchItemResponse) -> HashResponse | None:
     return HashResponse(
         _optional_output_span(data_present, data),
         _optional_output_span(correlation_present, correlation),
+    )
+
+
+def _encrypt_response(item: _ClientBatchItemResponse) -> EncryptResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    data_present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    iv_present = ffi.new("uint8_t *")
+    iv = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    tag_present = ffi.new("uint8_t *")
+    tag = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_encrypt(
+            item._pointer(), present, identifier, data_present, data,
+            iv_present, iv, correlation_present, correlation, tag_present, tag
+        )
+    )
+    if present[0] == 0:
+        if any(flag[0] != 0 for flag in (data_present, iv_present, correlation_present, tag_present)):
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        for flag, span in (
+            (data_present, data), (iv_present, iv),
+            (correlation_present, correlation), (tag_present, tag),
+        ):
+            _optional_output_span(flag, span)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    return EncryptResponse(
+        unique_identifier,
+        _optional_output_secret_span(data_present, data),
+        _optional_output_secret_span(iv_present, iv),
+        _optional_output_secret_span(correlation_present, correlation),
+        _optional_output_secret_span(tag_present, tag),
+    )
+
+
+def _decrypt_response(item: _ClientBatchItemResponse) -> DecryptResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    data_present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    correlation_present = ffi.new("uint8_t *")
+    correlation = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_decrypt(
+            item._pointer(), present, identifier, data_present, data,
+            correlation_present, correlation
+        )
+    )
+    if present[0] == 0:
+        if data_present[0] != 0 or correlation_present[0] != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        _optional_output_span(data_present, data)
+        _optional_output_span(correlation_present, correlation)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    return DecryptResponse(
+        unique_identifier,
+        _optional_output_secret_span(data_present, data),
+        _optional_output_secret_span(correlation_present, correlation),
     )
 
 
@@ -2605,23 +2832,29 @@ def _signature_verify_response(
 def _cryptographic_responses(
     item: _ClientBatchItemResponse, operation: int
 ) -> tuple[
+    EncryptResponse | None,
+    DecryptResponse | None,
     HashResponse | None,
     MacResponse | None,
     MacVerifyResponse | None,
     SignResponse | None,
     SignatureVerifyResponse | None,
 ]:
+    if operation == 0x1F:
+        return _encrypt_response(item), None, None, None, None, None, None
+    if operation == 0x20:
+        return None, _decrypt_response(item), None, None, None, None, None
     if operation == 0x27:
-        return _hash_response(item), None, None, None, None
+        return None, None, _hash_response(item), None, None, None, None
     if operation == 0x23:
-        return None, _mac_response(item), None, None, None
+        return None, None, None, _mac_response(item), None, None, None
     if operation == 0x24:
-        return None, None, _mac_verify_response(item), None, None
+        return None, None, None, None, _mac_verify_response(item), None, None
     if operation == 0x21:
-        return None, None, None, _sign_response(item), None
+        return None, None, None, None, None, _sign_response(item), None
     if operation == 0x22:
-        return None, None, None, None, _signature_verify_response(item)
-    return None, None, None, None, None
+        return None, None, None, None, None, None, _signature_verify_response(item)
+    return None, None, None, None, None, None, None
 
 
 def _discover_versions_supported_versions(

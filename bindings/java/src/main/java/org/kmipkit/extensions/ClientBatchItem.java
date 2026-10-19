@@ -504,6 +504,60 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates an Encrypt request without performing local cryptography. */
+    public static ClientBatchItem encrypt(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure parameters,
+            @Nullable TtlvValue data,
+            @Nullable byte[] ivCounterNonce,
+            @Nullable byte[] correlationValue,
+            @Nullable Boolean initIndicator,
+            @Nullable Boolean finalIndicator,
+            @Nullable byte[] authenticatedEncryptionAdditionalData) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] ivCopy = copyForNative(ivCounterNonce);
+        byte[] correlationCopy = copyForNative(correlationValue);
+        byte[] additionalDataCopy = copyForNative(authenticatedEncryptionAdditionalData);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemEncrypt(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    handleOrNull(parameters), handleOrNull(data), ivCopy, correlationCopy,
+                    optionalIndicator(initIndicator), optionalIndicator(finalIndicator), additionalDataCopy));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, ivCopy, correlationCopy, additionalDataCopy);
+        }
+    }
+
+    /** Creates a Decrypt request without performing local cryptography. */
+    public static ClientBatchItem decrypt(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure parameters,
+            @Nullable TtlvValue data,
+            @Nullable byte[] ivCounterNonce,
+            @Nullable byte[] authenticatedEncryptionTag,
+            @Nullable byte[] correlationValue,
+            @Nullable Boolean initIndicator,
+            @Nullable Boolean finalIndicator,
+            @Nullable byte[] authenticatedEncryptionAdditionalData) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] ivCopy = copyForNative(ivCounterNonce);
+        byte[] tagCopy = copyForNative(authenticatedEncryptionTag);
+        byte[] correlationCopy = copyForNative(correlationValue);
+        byte[] additionalDataCopy = copyForNative(authenticatedEncryptionAdditionalData);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemDecrypt(
+                    identifierKind(uniqueIdentifier), identifierText, identifierNumber(uniqueIdentifier),
+                    handleOrNull(parameters), handleOrNull(data), ivCopy, tagCopy, correlationCopy,
+                    optionalIndicator(initIndicator), optionalIndicator(finalIndicator), additionalDataCopy));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, ivCopy, tagCopy, correlationCopy, additionalDataCopy);
+        }
+    }
+
     /** Creates a Hash request with required Cryptographic Parameters and optional Data/framing fields. */
     public static ClientBatchItem hash(
             TtlvStructure parameters,

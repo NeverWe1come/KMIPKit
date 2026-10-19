@@ -186,10 +186,10 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
         expected_lifecycle = {
-            "rust": "secret-buffer-wiped-on-final-owner-drop",
-            "c": "release-shared-response-handle;wipe-on-final-owner-drop",
-            "java": "close-wipes-owned-payload-copy",
-            "python": "close-wipes-owned-payload-copy",
+            "rust": "wipe-on-final-owner-drop",
+            "c": "release-shared-reference-wipe-on-final-owner-drop",
+            "java": "wipe-owned-copy-on-close",
+            "python": "wipe-owned-copy-on-close",
         }
         for operation, section in (("Encrypt", "6.1.17"), ("Decrypt", "6.1.11")):
             operation_id = f"KMIPKIT-ELEM-OP-C2S-{operation.upper()}"

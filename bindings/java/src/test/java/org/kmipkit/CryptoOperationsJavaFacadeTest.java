@@ -307,9 +307,6 @@ final class CryptoOperationsJavaFacadeTest {
             Operation operation, Object response, boolean validityIndicatorPresent) throws Exception {
         assertFalse(response.toString().contains(new String(SECRET_MARKER, StandardCharsets.UTF_8)),
                 operation.name() + " response display must redact output bytes");
-        if (operation.name().matches("encrypt|decrypt")) {
-            assertResponseCloseWipesOwnedBytes(response);
-        }
         if (!operation.name().equals("hash")) {
             Method accessor = publicMethod(response.getClass(), "uniqueIdentifier");
             assertEquals(UniqueIdentifier.class, accessor.getReturnType(),
@@ -346,6 +343,9 @@ final class CryptoOperationsJavaFacadeTest {
                 assertCopiedResponseBytes(response, "recoveredData", SECRET_MARKER);
             }
             default -> throw new AssertionError("unknown crypto response");
+        }
+        if (operation.name().matches("encrypt|decrypt")) {
+            assertResponseCloseWipesOwnedBytes(response);
         }
     }
 

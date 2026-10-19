@@ -1215,7 +1215,7 @@ fn discover_versions_response() -> Vec<u8> {
     structure(0x0042_007B, [header, failed_item, successful_item])
 }
 
-// This TLS batch returns 24 ordered items, including the successful Login Ticket.
+// This TLS batch returns 26 ordered items, including the successful Login Ticket, Encrypt, and Decrypt results.
 fn mixed_discover_versions_response() -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
@@ -1226,7 +1226,7 @@ fn mixed_discover_versions_response() -> Vec<u8> {
         [
             protocol_version.clone(),
             date_time(0x0042_0092, 1),
-            integer(0x0042_000D, 24),
+            integer(0x0042_000D, 26),
         ],
     );
     let response_payload = structure(
@@ -1250,8 +1250,48 @@ fn mixed_discover_versions_response() -> Vec<u8> {
                 import_response_item(),
                 log_response_item(),
                 login_response_item(),
-            ]),
+            ])
+            .chain(encrypt_decrypt_response_items()),
     )
+}
+
+fn encrypt_decrypt_response_items() -> [Vec<u8>; 2] {
+    [
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 31),
+                ttlv_item(0x0042_0093, 0x08, b"enc-00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, b"c-response-key"),
+                        ttlv_item(0x0042_00C2, 0x08, b"ciphertext-c"),
+                        ttlv_item(0x0042_003D, 0x08, &[0x71, 0x72]),
+                        ttlv_item(0x0042_00D6, 0x08, &[0x81, 0x82]),
+                        ttlv_item(0x0042_00FF, 0x08, &[0x91, 0x92]),
+                    ],
+                ),
+            ],
+        ),
+        structure(
+            0x0042_000F,
+            [
+                enumeration(0x0042_005C, 32),
+                ttlv_item(0x0042_0093, 0x08, b"dec-00"),
+                enumeration(0x0042_007F, 0),
+                structure(
+                    0x0042_007C,
+                    [
+                        ttlv_item(0x0042_0094, 0x07, b"c-response-key"),
+                        ttlv_item(0x0042_00C2, 0x08, b"plaintext-c"),
+                        ttlv_item(0x0042_00D6, 0x08, &[0x81, 0x82]),
+                    ],
+                ),
+            ],
+        ),
+    ]
 }
 
 fn log_response_item() -> Vec<u8> {

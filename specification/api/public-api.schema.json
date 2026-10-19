@@ -14,7 +14,7 @@
   "$defs": {
     "requirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:6\\.1\\.[0-9]+|7\\.12)-[0-9]{3}(?:-[0-9]{3})?)$",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12)-[0-9]{3}(?:-[0-9]{3})?)$",
       "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
     },
     "requirementIds": {
@@ -1959,7 +1959,7 @@
     },
     "v2RequirementId": {
       "type": "string",
-    "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:6\\.1\\.[0-9]+|7\\.12)-[0-9]{3}(?:-[0-9]{3})?)$"
+    "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12)-[0-9]{3}(?:-[0-9]{3})?)$"
     },
     "v2RequirementIds": {
       "type": "array",
@@ -2151,9 +2151,22 @@
         "mappingSemantics": {
           "enum": [
             "native-handle-release",
-            "native-handle-release-managed-java-value"
+            "native-handle-release-managed-java-value",
+            "secret-buffer-wipe"
           ],
-          "description": "Declares cross-language ownership semantics. Native handle release maps to Rust drop, C release, Java close, and Python close; native-handle-release-managed-java-value maps Java to an immutable managed value with no native handle while retaining Rust drop, C release, and Python close."
+          "description": "Declares the lifecycle semantics of the public declaration identified by packageId. Cross-language mapping names identify equivalent capability entry points and may have different ownership and cleanup behavior. Secret-buffer-wipe means this declaration wipes KMIPKit-owned secret-bearing storage at its own cleanup boundary."
+        },
+        "lifecycleSemanticsByLanguage": {
+          "type": "object",
+          "properties": {
+            "rust": {"const": "wipe-on-final-owner-drop"},
+            "c": {"const": "release-shared-reference-wipe-on-final-owner-drop"},
+            "java": {"const": "wipe-owned-copy-on-close"},
+            "python": {"const": "wipe-owned-copy-on-close"}
+          },
+          "required": ["rust", "c", "java", "python"],
+          "additionalProperties": false,
+          "description": "Optional per-language cleanup behavior for cross-language lifecycle mappings where equivalent operations have different ownership boundaries."
         },
         "parityEvidenceIds": {
           "$ref": "#/$defs/parityEvidenceIds"

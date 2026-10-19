@@ -1211,6 +1211,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::operation",
     ),
     (
+        "rust-observed-3f5dd98cdcb182a82c1f",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::encrypt_response",
+    ),
+    (
+        "rust-observed-b061731ea9cbb62d75dc",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::decrypt_response",
+    ),
+    (
         "rust-observed-b11253d3bfaaba35e069",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::hash_response",
@@ -1284,6 +1294,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-c77961a9fef418de9790",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::CreateSplitKey",
+    ),
+    (
+        "rust-observed-c0fb7e57876bc3a8ecf8",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Encrypt",
+    ),
+    (
+        "rust-observed-f7f350f8cf41db432853",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Decrypt",
     ),
     (
         "rust-observed-1f74185ea31a6ad0dab4",

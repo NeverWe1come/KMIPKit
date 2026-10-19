@@ -951,7 +951,14 @@ def _validate_v2_readiness(
         requirements,
         root,
     )
-    _validate_ready_mapping_targets(declarations, package_languages)
+    c_release_functions = {
+        ("c-kmipkit", c_api["releaseFunction"])
+        for type_record in manifest.get("types", [])
+        if isinstance(type_record, dict)
+        and isinstance((c_api := type_record.get("c")), dict)
+        and isinstance(c_api.get("releaseFunction"), str)
+    }
+    _validate_ready_mapping_targets(declarations, package_languages, c_release_functions)
     _validate_capability_mapping_inventories(
         capabilities, declarations, package_languages
     )
@@ -963,7 +970,9 @@ def _validate_v2_readiness(
 
 
 def _validate_ready_mapping_targets(
-    declarations: list[dict[str, Any]], package_languages: dict[Any, Any]
+    declarations: list[dict[str, Any]],
+    package_languages: dict[Any, Any],
+    c_release_functions: set[tuple[str, str]],
 ) -> None:
     """Require every ready cross-language mapping to resolve to a ready export."""
     declarations_by_path = {
@@ -977,8 +986,23 @@ def _validate_ready_mapping_targets(
             None,
             "native-handle-release",
             "native-handle-release-managed-java-value",
+            "secret-buffer-wipe",
         }:
             raise ManifestError("public declaration uses unknown mapping semantics")
+        lifecycle_by_language = declaration.get("lifecycleSemanticsByLanguage")
+        if lifecycle_by_language is not None and (
+            mapping_semantics != "secret-buffer-wipe"
+            or lifecycle_by_language
+            != {
+                "rust": "wipe-on-final-owner-drop",
+                "c": "release-shared-reference-wipe-on-final-owner-drop",
+                "java": "wipe-owned-copy-on-close",
+                "python": "wipe-owned-copy-on-close",
+            }
+        ):
+            raise ManifestError(
+                "secret response lifecycle mapping must describe each language's ownership boundary"
+            )
         mappings = declaration.get("languageMappings", {})
         required_languages = (
             ("rust",)
@@ -990,6 +1014,17 @@ def _validate_ready_mapping_targets(
             target = declarations_by_path.get(
                 (mapping.get("packageId"), mapping.get("name"))
             )
+            if (
+                target is None
+                and language == "c"
+                and mapping_semantics in {"native-handle-release", "secret-buffer-wipe"}
+                and (mapping.get("packageId"), mapping.get("name")) in c_release_functions
+            ):
+                target = {
+                    "packageId": mapping["packageId"],
+                    "kind": "c-symbol",
+                    "declarationState": "verified",
+                }
             if target is None:
                 raise ManifestError("ready public declaration mapping target is not an exact listed export")
             if package_languages.get(target.get("packageId")) != language:
@@ -999,6 +1034,7 @@ def _validate_ready_mapping_targets(
             if mapping_semantics in {
                 "native-handle-release",
                 "native-handle-release-managed-java-value",
+                "secret-buffer-wipe",
             }:
                 managed_java_value = (
                     mapping_semantics == "native-handle-release-managed-java-value"
@@ -1011,7 +1047,7 @@ def _validate_ready_mapping_targets(
                 }[language]
                 if target.get("kind") != expected_kind:
                     raise ManifestError(
-                        "native handle release mapping targets the wrong declaration kind"
+                        "lifecycle mapping targets the wrong declaration kind"
                     )
                 target_name = mapping.get("name", "")
                 expected_suffix = {
@@ -1023,7 +1059,7 @@ def _validate_ready_mapping_targets(
                     expected_suffix
                 ):
                     raise ManifestError(
-                        "native handle release mapping targets the wrong lifecycle operation"
+                        "lifecycle mapping targets the wrong cleanup operation"
                     )
 
 

@@ -161,8 +161,10 @@ class PackageDocumentationContractTests(unittest.TestCase):
             [
                 "Certify",
                 "Check",
+                "Decrypt",
                 "Delegated Login",
                 "Derive Key",
+                "Encrypt",
                 "Export",
                 "Get",
                 "Get Constraints",

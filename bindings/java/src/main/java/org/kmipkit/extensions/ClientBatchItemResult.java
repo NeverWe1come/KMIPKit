@@ -209,6 +209,30 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseCreateKeyPairResponse(values);
     }
 
+    /** Returns the typed Encrypt response only for a successful Encrypt operation. */
+    public Optional<EncryptResponse> encryptResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseEncrypt);
+        try {
+            return parseEncryptResponse(values);
+        } finally {
+            cleanupResponseByteArrays(values);
+        }
+    }
+
+    /** Returns the typed Decrypt response only for a successful Decrypt operation. */
+    public Optional<DecryptResponse> decryptResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseDecrypt);
+        try {
+            return parseDecryptResponse(values);
+        } finally {
+            cleanupResponseByteArrays(values);
+        }
+    }
+
     /** Returns the typed Hash response only for a successful Hash operation. */
     public Optional<HashResponse> hashResponse() {
         if (resultStatus() != 0) return Optional.empty();
@@ -668,6 +692,107 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() { return "CreateKeyPairResponse[identifiers=redacted]"; }
     }
 
+    /**
+     * Successful Encrypt response fields copied from native borrowed spans.
+     * Callers must close this value when finished; returned byte arrays are independent copies.
+     */
+    public static final class EncryptResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private @Nullable byte[] data;
+        private @Nullable byte[] ivCounterNonce;
+        private @Nullable byte[] correlationValue;
+        private @Nullable byte[] authenticatedEncryptionTag;
+        private boolean closed;
+
+        private EncryptResponse(UniqueIdentifier uniqueIdentifier, @Nullable byte[] data,
+                @Nullable byte[] ivCounterNonce, @Nullable byte[] correlationValue,
+                @Nullable byte[] authenticatedEncryptionTag) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.data = copyBytes(data);
+            this.ivCounterNonce = copyBytes(ivCounterNonce);
+            this.correlationValue = copyBytes(correlationValue);
+            this.authenticatedEncryptionTag = copyBytes(authenticatedEncryptionTag);
+        }
+
+        public synchronized UniqueIdentifier uniqueIdentifier() {
+            ensureOpen();
+            return uniqueIdentifier;
+        }
+
+        public synchronized Optional<byte[]> data() { ensureOpen(); return copiedBytes(data); }
+        public synchronized Optional<byte[]> ivCounterNonce() {
+            ensureOpen();
+            return copiedBytes(ivCounterNonce);
+        }
+        public synchronized Optional<byte[]> correlationValue() {
+            ensureOpen();
+            return copiedBytes(correlationValue);
+        }
+        public synchronized Optional<byte[]> authenticatedEncryptionTag() {
+            ensureOpen();
+            return copiedBytes(authenticatedEncryptionTag);
+        }
+
+        @Override
+        public synchronized void close() {
+            if (closed) return;
+            wipe(data);
+            wipe(ivCounterNonce);
+            wipe(correlationValue);
+            wipe(authenticatedEncryptionTag);
+            closed = true;
+        }
+
+        private void ensureOpen() {
+            if (closed) throw new IllegalStateException("Encrypt response is closed");
+        }
+
+        @Override public String toString() { return "EncryptResponse[fields=redacted]"; }
+    }
+
+    /**
+     * Successful Decrypt response fields copied from native borrowed spans.
+     * Callers must close this value when finished; returned byte arrays are independent copies.
+     */
+    public static final class DecryptResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private @Nullable byte[] data;
+        private @Nullable byte[] correlationValue;
+        private boolean closed;
+
+        private DecryptResponse(UniqueIdentifier uniqueIdentifier,
+                @Nullable byte[] data, @Nullable byte[] correlationValue) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.data = copyBytes(data);
+            this.correlationValue = copyBytes(correlationValue);
+        }
+
+        public synchronized UniqueIdentifier uniqueIdentifier() {
+            ensureOpen();
+            return uniqueIdentifier;
+        }
+
+        public synchronized Optional<byte[]> data() { ensureOpen(); return copiedBytes(data); }
+        public synchronized Optional<byte[]> correlationValue() {
+            ensureOpen();
+            return copiedBytes(correlationValue);
+        }
+
+        @Override
+        public synchronized void close() {
+            if (closed) return;
+            wipe(data);
+            wipe(correlationValue);
+            closed = true;
+        }
+
+        private void ensureOpen() {
+            if (closed) throw new IllegalStateException("Decrypt response is closed");
+        }
+
+        @Override public String toString() { return "DecryptResponse[fields=redacted]"; }
+    }
+
     /** Successful Hash response fields, copied from the native result. */
     public static final class HashResponse {
         private final @Nullable byte[] data;
@@ -768,6 +893,31 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() { return "SignatureVerifyResponse[fields=redacted]"; }
     }
 
+    static Optional<EncryptResponse> parseEncryptResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 6, "native Encrypt response is invalid");
+        long[] fields = requireLongArray(tuple[0], 9, "native Encrypt response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new EncryptResponse(
+                requiredResponseIdentifier(fields, 1, tuple[1]),
+                responseBytes(fields[5], tuple[2]), responseBytes(fields[6], tuple[3]),
+                responseBytes(fields[7], tuple[4]), responseBytes(fields[8], tuple[5])));
+    }
+
+    static Optional<DecryptResponse> parseDecryptResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 4, "native Decrypt response is invalid");
+        long[] fields = requireLongArray(tuple[0], 7, "native Decrypt response is invalid");
+        if (!responsePresent(fields)) {
+            requireNoResponseFields(fields, tuple);
+            return Optional.empty();
+        }
+        return Optional.of(new DecryptResponse(
+                requiredResponseIdentifier(fields, 1, tuple[1]),
+                responseBytes(fields[5], tuple[2]), responseBytes(fields[6], tuple[3])));
+    }
+
     static Optional<HashResponse> parseHashResponse(Object[] values) {
         Object[] tuple = requireTuple(values, 3, "native Hash response is invalid");
         long[] fields = requireLongArray(tuple[0], 3, "native Hash response is invalid");
@@ -841,12 +991,12 @@ public final class ClientBatchItemResult implements AutoCloseable {
     private static void requireNoResponseFields(long[] fields, Object[] tuple) {
         for (int index = 1; index < fields.length; index++) {
             if (fields[index] != 0) {
-                throw new InvalidInputException("native absent response contains fields");
+                throw new InvalidInputException("native absent response contains scalar field " + index);
             }
         }
         for (int index = 1; index < tuple.length; index++) {
             if (tuple[index] != null) {
-                throw new InvalidInputException("native absent response contains fields");
+                throw new InvalidInputException("native absent response contains object field " + index);
             }
         }
     }
@@ -928,6 +1078,17 @@ public final class ClientBatchItemResult implements AutoCloseable {
 
     private static Optional<byte[]> copiedBytes(@Nullable byte[] value) {
         return value == null ? Optional.empty() : Optional.of(value.clone());
+    }
+
+    private static void wipe(@Nullable byte[] value) {
+        if (value != null) Arrays.fill(value, (byte) 0);
+    }
+
+    private static void cleanupResponseByteArrays(@Nullable Object[] values) {
+        if (values == null) return;
+        for (Object value : values) {
+            if (value instanceof byte[] bytes) wipe(bytes);
+        }
     }
 
     static ClientBatchItemMetadataV2 parseMetadataV2(Object[] values) {

@@ -346,6 +346,26 @@ ffi.cdef(
         kmipkit_byte_span_v1_t *out_data,
         uint8_t *out_correlation_present,
         kmipkit_byte_span_v1_t *out_correlation_value);
+    int32_t kmipkit_client_batch_item_response_encrypt(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint8_t *out_data_present,
+        kmipkit_byte_span_v1_t *out_data,
+        uint8_t *out_iv_counter_nonce_present,
+        kmipkit_byte_span_v1_t *out_iv_counter_nonce,
+        uint8_t *out_correlation_present,
+        kmipkit_byte_span_v1_t *out_correlation_value,
+        uint8_t *out_authenticated_encryption_tag_present,
+        kmipkit_byte_span_v1_t *out_authenticated_encryption_tag);
+    int32_t kmipkit_client_batch_item_response_decrypt(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier,
+        uint8_t *out_data_present,
+        kmipkit_byte_span_v1_t *out_data,
+        uint8_t *out_correlation_present,
+        kmipkit_byte_span_v1_t *out_correlation_value);
     int32_t kmipkit_client_batch_item_response_mac(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -411,6 +431,27 @@ ffi.cdef(
         const kmipkit_byte_span_v1_t *correlation_value,
         uint8_t init_indicator,
         uint8_t final_indicator,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_encrypt(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *parameters,
+        kmipkit_ttlv_value_t *data,
+        const kmipkit_byte_span_v1_t *iv_counter_nonce,
+        const kmipkit_byte_span_v1_t *correlation_value,
+        uint8_t init_indicator,
+        uint8_t final_indicator,
+        const kmipkit_byte_span_v1_t *authenticated_encryption_additional_data,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_decrypt(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *parameters,
+        kmipkit_ttlv_value_t *data,
+        const kmipkit_byte_span_v1_t *iv_counter_nonce,
+        const kmipkit_byte_span_v1_t *authenticated_encryption_tag,
+        const kmipkit_byte_span_v1_t *correlation_value,
+        uint8_t init_indicator,
+        uint8_t final_indicator,
+        const kmipkit_byte_span_v1_t *authenticated_encryption_additional_data,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_certify(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

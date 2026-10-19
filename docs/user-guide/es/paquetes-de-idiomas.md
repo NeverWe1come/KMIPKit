@@ -75,14 +75,14 @@ tabla.
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **32 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **30 / 56** siguen en
 estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
 Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
 Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Quince mapeos de operación están `verified`: Certify,
-Check, Delegated Login, Derive Key, Export, Get, Get Constraints, Get Usage
+parte del repositorio. Diecisiete mapeos de operación están `verified`: Certify,
+Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get, Get Constraints, Get Usage
 Allocation, Import, Interop, Join Split Key, Locate, Log, Login y Obtain Lease. El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
@@ -127,6 +127,25 @@ completo y ordenado en los cuatro lenguajes. C devuelve una estructura TTLV
 propia; Java expone `ObtainLeaseResponse.responseTtlv()` y Python,
 `ObtainLeaseResponse.response_ttlv`; el llamador cierra el resultado cuando
 termina. KMIPKit no controla la expiración del lease ni inicia temporizadores.
+
+Encrypt y Decrypt también están mapeados en los cuatro lenguajes. En Java se
+crean elementos con `ClientBatchItem.encrypt(...)` y
+`ClientBatchItem.decrypt(...)`; en Python se usan
+`extensions.client_batch_item_encrypt(...)` y
+`extensions.client_batch_item_decrypt(...)`. Para un resultado correcto, Java
+expone `encryptResponse()` o `decryptResponse()`, y Python los campos
+`encrypt_response` o `decrypt_response`. Encrypt conserva el Unique Identifier
+obligatorio y cada valor presente de Data, IV/Counter/Nonce, Correlation Value
+y Authenticated Encryption Tag. Decrypt conserva el identificador obligatorio
+y los valores presentes de Data y Correlation Value. Estas operaciones envían
+el trabajo criptográfico al servidor KMIP; KMIPKit no cifra ni descifra
+localmente. Los accesores Java devuelven copias `byte[]` propiedad del llamador,
+que debe protegerlas y limpiarlas. Python devuelve `bytes` inmutables; ni el
+llamador ni el runtime de Python pueden borrarlas de forma determinista. KMIPKit
+redacta estos valores en `toString()` de Java y `repr()` de Python. Tras usarlos,
+cierra cada `EncryptResponse` o `DecryptResponse` de Java y llama a `close()` en
+cada respuesta Python para poner a cero los bytes mutables que conserva KMIPKit;
+cerrar el elemento del lote no cierra la respuesta tipada devuelta por separado.
 
 El [manifiesto](../../../specification/api/public-api.json) y el [diseño de
 la API pública](../../architecture/public-api.md) contienen los propietarios
