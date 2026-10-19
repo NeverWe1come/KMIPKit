@@ -85968,16 +85968,18 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0005",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-client/src/wire_encoder.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests",
         "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_integer_golden_vector_with_signed_big_endian_value",
         "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_extension_tag_with_oasis_0x54_prefix"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-018",
-      "status": "unassigned",
-      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 specifies this mandatory TTLV encoding/tag rule but does not identify its endpoint actor or direction. KMIPKit maps it to outbound client request encoding for the 14 client_1_0 profiles and conditional HTTPS Client, all of which use TTLV in 1.0. JSON, XML, and PKCS#11 remain out of scope. Existing implementation and verification references are not upgraded to profile-readiness evidence; no requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
+      "status": "verified",
+      "review_note": "T002 applicability decision KMIPKIT-DEC-018 maps this mandatory TTLV rule to outbound requests for the 14 client_1_0 profiles and conditional HTTPS Client; JSON, XML, and PKCS#11 remain outside KMIPKit 1.0 scope. The production typed rule recursively checks every request tag prefix, and its profile test exercises nested specification and extension tags. Encoder tests verify 0x42 and 0x54 wire prefixes. No requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources; this local evidence does not establish profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-12-001-001",

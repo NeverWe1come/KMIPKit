@@ -1670,6 +1670,28 @@ fn protocol_version_is_kmip_2_1(version: &StructureView<'_>) -> bool {
     major_seen && minor_seen && major == Some(2) && minor == Some(1)
 }
 
+fn client_request_tags_use_kmip_prefixes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.with_ttlv(|message| structure_tags_use_kmip_prefixes(message))
+}
+
+fn structure_tags_use_kmip_prefixes(structure: StructureView<'_>) -> bool {
+    structure.children().iter().all(|item| {
+        let first_byte = (item.tag().raw() >> 16) & 0xFF;
+        matches!(first_byte, 0x42 | 0x54)
+            && item.with_value(|value| match value {
+                ValueView::Structure(nested) => structure_tags_use_kmip_prefixes(nested),
+                _ => true,
+            })
+    })
+}
+
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
@@ -1991,6 +2013,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_derive_key_secret_data_total_length",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-11.56-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-11.56-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_request_tags_use_kmip_prefixes),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests",
+            kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
     },
