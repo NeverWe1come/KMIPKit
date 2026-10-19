@@ -3769,7 +3769,8 @@ pub extern "C" fn kmipkit_client_batch_item_query(
     })
 }
 
-/// Creates a typed client-initiated Query item after checking its complete TTLV budget.
+/// Creates a typed client-initiated Query item after checking its payload budget.
+/// The complete Request Message is checked again before transmission.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_query_with_limits(
     limits: *mut kmipkit_codec_limits_t,
@@ -3808,6 +3809,9 @@ fn query_batch_item_with_limits(
     }
 
     let function_count_usize = usize::try_from(function_count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    if function_count_usize == 0 {
+        return Err(ERROR_INVALID_INPUT);
+    }
     let group_count_usize =
         usize::try_from(object_group_count).map_err(|_| ERROR_RESOURCE_LIMIT)?;
     let mut estimated_elements = function_count_usize
@@ -3844,6 +3848,7 @@ fn query_batch_item_with_limits(
 
     if let Some(spans) = spans {
         estimated_bytes = estimated_bytes.checked_add(8).ok_or(ERROR_RESOURCE_LIMIT)?;
+        let mut object_groups_value_length = 0_usize;
         for span in spans {
             u32::try_from(span.length).map_err(|_| ERROR_RESOURCE_LIMIT)?;
             let length = usize::try_from(span.length).map_err(|_| ERROR_RESOURCE_LIMIT)?;
@@ -3851,12 +3856,21 @@ fn query_batch_item_with_limits(
                 .checked_add(7)
                 .map(|value| value & !7)
                 .ok_or(ERROR_RESOURCE_LIMIT)?;
+            let item_bytes = 8_usize
+                .checked_add(padded_length)
+                .ok_or(ERROR_RESOURCE_LIMIT)?;
+            object_groups_value_length = object_groups_value_length
+                .checked_add(item_bytes)
+                .ok_or(ERROR_RESOURCE_LIMIT)?;
+            u32::try_from(object_groups_value_length).map_err(|_| ERROR_RESOURCE_LIMIT)?;
             estimated_bytes = estimated_bytes
-                .checked_add(8)
-                .and_then(|bytes| bytes.checked_add(padded_length))
+                .checked_add(item_bytes)
                 .ok_or(ERROR_RESOURCE_LIMIT)?;
         }
     }
+
+    u32::try_from(estimated_bytes.checked_sub(8).ok_or(ERROR_RESOURCE_LIMIT)?)
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
 
     if estimated_elements > limits.max_elements() || estimated_bytes > limits.max_message_bytes() {
         return Err(ERROR_RESOURCE_LIMIT);

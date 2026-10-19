@@ -572,6 +572,7 @@ bool preflight_query_inputs(JNIEnv* env, jintArray raw_functions, jobjectArray r
 
     uint64_t estimated_elements = static_cast<uint64_t>(function_count) + 1;
     uint64_t estimated_bytes = 8 + static_cast<uint64_t>(function_count) * 16;
+    uint64_t object_groups_value_length = 0;
     if (raw_object_groups != nullptr) {
         if (estimated_elements > std::numeric_limits<uint64_t>::max() -
                 static_cast<uint64_t>(group_count) - 1) {
@@ -610,10 +611,20 @@ bool preflight_query_inputs(JNIEnv* env, jintArray raw_functions, jobjectArray r
             return false;
         }
         estimated_bytes += 8 + padded_length;
+        if (padded_length > kMaximumTtlvItemLength - 8 ||
+                object_groups_value_length > kMaximumTtlvItemLength - 8 - padded_length) {
+            throw_status(env, 6);
+            return false;
+        }
+        object_groups_value_length += 8 + padded_length;
         if (estimated_bytes > max_message_bytes) {
             throw_status(env, 6);
             return false;
         }
+    }
+    if (estimated_bytes < 8 || estimated_bytes - 8 > kMaximumTtlvItemLength) {
+        throw_status(env, 6);
+        return false;
     }
     return true;
 }

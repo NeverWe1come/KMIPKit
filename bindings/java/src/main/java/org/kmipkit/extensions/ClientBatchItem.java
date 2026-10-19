@@ -55,7 +55,10 @@ public final class ClientBatchItem implements AutoCloseable {
         return queryWithLimits(functions, objectGroups, CodecLimits.defaults());
     }
 
-    /** Creates a KMIP Query request after checking it against caller-selected codec limits. */
+    /**
+     * Creates a KMIP Query request after checking the Query payload against caller-selected
+     * codec limits. The complete Request Message is checked again before transmission.
+     */
     public static ClientBatchItem queryWithLimits(
             int[] functions, String[] objectGroups, CodecLimits limits) {
         if (functions == null || functions.length == 0) {
@@ -95,6 +98,7 @@ public final class ClientBatchItem implements AutoCloseable {
     private static void preflightQuery(int[] functions, String[] objectGroups, CodecLimits limits) {
         long elements = functions.length + 1L;
         long encodedBytes = 8L + 16L * functions.length;
+        long objectGroupsValueLength = 0L;
         if (objectGroups != null) {
             elements = checkedQueryAdd(elements, objectGroups.length + 1L);
             encodedBytes = checkedQueryAdd(encodedBytes, 8L);
@@ -104,12 +108,16 @@ public final class ClientBatchItem implements AutoCloseable {
                 }
                 long utf8Length = requireTtlvItemLength(strictUtf8Length(group));
                 long paddedLength = checkedQueryAdd(utf8Length, 7L) & ~7L;
-                encodedBytes = checkedQueryAdd(encodedBytes, checkedQueryAdd(8L, paddedLength));
+                long itemBytes = checkedQueryAdd(8L, paddedLength);
+                objectGroupsValueLength = checkedQueryAdd(objectGroupsValueLength, itemBytes);
+                requireTtlvItemLength(objectGroupsValueLength);
+                encodedBytes = checkedQueryAdd(encodedBytes, itemBytes);
                 if (encodedBytes > limits.maxMessageBytes()) {
                     throw new ResourceLimitException("Query exceeds the configured message limit");
                 }
             }
         }
+        requireTtlvItemLength(encodedBytes - 8L);
         if (elements > limits.maxElements() || encodedBytes > limits.maxMessageBytes()) {
             throw new ResourceLimitException("Query exceeds the configured codec limits");
         }

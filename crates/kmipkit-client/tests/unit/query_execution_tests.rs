@@ -215,6 +215,29 @@ fn query_payload_budget_does_not_replace_complete_request_message_limit() {
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
+
+    let element_limits = CodecLimits::new(1024, 64, 3)
+        .expect("the three-Item Query payload fits the configured element limit");
+    assert!(
+        ClientBatchItem::query_with_limits(
+            QueryRequest::new([QueryFunction::OPERATIONS])
+                .with_object_groups(std::iter::empty::<&str>()),
+            &element_limits,
+        )
+        .is_ok()
+    );
+    let (mut client, transport, _) =
+        client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 1 });
+    let error = client
+        .query(
+            QueryRequest::new([QueryFunction::OPERATIONS])
+                .with_object_groups(std::iter::empty::<&str>()),
+            &element_limits,
+        )
+        .expect_err("the complete Request Message contains wrappers beyond the Query payload");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }
 
 #[test]

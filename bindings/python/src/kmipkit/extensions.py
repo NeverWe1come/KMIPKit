@@ -1427,6 +1427,12 @@ def _validate_query_ttlv_text_length(length: int) -> int:
     return length
 
 
+def _validate_query_ttlv_structure_length(length: int) -> int:
+    if length < 0 or length > 0xFFFF_FFFF:
+        errors.raise_for_status(6)
+    return length
+
+
 def _client_batch_item_query(
     functions: list[int] | tuple[int, ...],
     object_groups: list[str] | tuple[str, ...] | None = None,
@@ -1483,6 +1489,7 @@ def _client_batch_item_query(
     group_count = 0 if group_values is None else len(group_values)
     required_elements = function_count + 1
     estimated_bytes = 8 + function_count * 16
+    object_groups_value_length = 0
     if group_values is not None:
         required_elements += 1 + group_count
         estimated_bytes += 8
@@ -1507,9 +1514,13 @@ def _client_batch_item_query(
                     3 if codepoint <= 0xFFFF else 4
                 )
             _validate_query_ttlv_text_length(utf8_length)
-            estimated_bytes += 8 + ((utf8_length + 7) & ~7)
+            item_bytes = 8 + ((utf8_length + 7) & ~7)
+            object_groups_value_length += item_bytes
+            _validate_query_ttlv_structure_length(object_groups_value_length)
+            estimated_bytes += item_bytes
             if estimated_bytes > max_message_bytes:
                 errors.raise_for_status(6)
+    _validate_query_ttlv_structure_length(estimated_bytes - 8)
     if required_elements > max_elements or estimated_bytes > max_message_bytes:
         errors.raise_for_status(6)
 
@@ -1601,7 +1612,7 @@ def client_batch_item_query_with_limits(
     object_groups: list[str] | tuple[str, ...] | None,
     limits: ttlv.CodecLimits,
 ) -> ClientBatchItem:
-    """Create a Query batch item under explicit, configurable codec limits."""
+    """Create Query within payload budgets; execution checks the complete Request Message."""
     return _client_batch_item_query(functions, object_groups, limits=limits)
 
 

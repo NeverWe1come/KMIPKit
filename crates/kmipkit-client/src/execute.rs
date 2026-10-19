@@ -910,7 +910,7 @@ impl ClientBatchItem {
 
     /// Creates a Query batch item only when its payload fits the supplied codec limits.
     ///
-    /// The client validates the complete batch again before encoding or sending it.
+    /// The client validates the complete Request Message before encoding or sending it.
     ///
     /// # Errors
     ///
@@ -921,6 +921,9 @@ impl ClientBatchItem {
         request: QueryRequest,
         limits: &CodecLimits,
     ) -> Result<Self, ProtocolError> {
+        if request.functions().is_empty() {
+            return Err(protocol_error(ProtocolErrorKind::InvalidInput));
+        }
         let (elements, encoded_bytes) = estimate_query_request_limits(&request)?;
         let required_depth = if request.object_groups().is_some() {
             QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH
@@ -7626,9 +7629,7 @@ fn estimate_query_request_limits(request: &QueryRequest) -> Result<(usize, usize
         .len()
         .checked_mul(16)
         .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
-    let mut encoded_bytes = 8_usize
-        .checked_add(function_bytes)
-        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
+    let mut payload_value_bytes = function_bytes;
 
     if let Some(groups) = request.object_groups() {
         elements = elements
@@ -7650,11 +7651,16 @@ fn estimate_query_request_limits(request: &QueryRequest) -> Result<(usize, usize
                 .checked_add(group_item_bytes)
                 .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
         }
-        encoded_bytes = encoded_bytes
+        ensure_query_ttlv_structure_length_is_representable(group_structure_bytes)?;
+        payload_value_bytes = payload_value_bytes
             .checked_add(8)
             .and_then(|value| value.checked_add(group_structure_bytes))
             .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
     }
+    ensure_query_ttlv_structure_length_is_representable(payload_value_bytes)?;
+    let encoded_bytes = payload_value_bytes
+        .checked_add(8)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::ResourceLimit))?;
     Ok((elements, encoded_bytes))
 }
 
@@ -7662,6 +7668,14 @@ fn ensure_query_text_length_is_ttlv_representable(length: usize) -> Result<(), P
     u32::try_from(length)
         .map(|_| ())
         .map_err(|_| protocol_error(ProtocolErrorKind::ResourceLimit))
+}
+
+fn ensure_query_ttlv_structure_length_is_representable(length: usize) -> Result<(), ProtocolError> {
+    if u32::try_from(length).is_ok() {
+        Ok(())
+    } else {
+        Err(protocol_error(ProtocolErrorKind::ResourceLimit))
+    }
 }
 
 fn copy_value(view: ValueView<'_>) -> Result<Value, ProtocolError> {
