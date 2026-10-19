@@ -4067,3 +4067,11 @@ The pinned Specification v2.1 §6.1.14 text limits Derive Key results to Symmetr
 | Green | `python -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures`; `python -B -m unittest tools.normative_catalog.tests.test_report` | PASS: the fixed registry expectation includes both mappings; all 45 report tests pass with 1 expected skip. |
 
 This correction updates test expectations only. The profile readiness behavior remains fail-closed and no conformance claim is made.
+
+### KMIPKIT-0010 T040 slice — Derive Key Secret Data total output capability (2026-10-19)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | This DCO-signed test commit; `cargo test -p kmipkit-protocol --lib profile_maps_client_optional_derive_key_secret_data_total_length` | FAIL as intended: the optional Secret Data derivation capability had no executable typed profile mapping. |
+
+The test is based on KMIP Specification v2.1 §6.1.14, which permits a client to request Secret Data with Cryptographic Length equal to the total derived output length when deriving multiple keys and IVs. It also asserts that registering this optional capability does not restrict ordinary Symmetric Key derivation. T040 remains open.

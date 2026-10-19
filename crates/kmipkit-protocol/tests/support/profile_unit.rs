@@ -939,6 +939,57 @@ fn profile_maps_required_derive_key_cryptographic_algorithm_for_key_results() {
         .expect("the key-only algorithm requirement does not apply to Secret Data");
 }
 
+#[test]
+fn profile_maps_client_optional_derive_key_secret_data_total_length() {
+    // KMIP Specification v2.1 §6.1.14 permits deriving multiple keys and IVs
+    // through a Secret Data result whose Cryptographic Length is the total.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-001-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Secret Data derivation capability has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Secret Data derivation capability resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the production rule has category-matched optional-capability evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let secret_data = request_message_with_operation_payload(
+        0x0000_0005,
+        derive_key_payload(7, [Value::integer(512)]),
+    );
+    result
+        .validate_request(&secret_data)
+        .expect("the client may request a Secret Data result with the total output length");
+
+    let symmetric_key = request_message_with_operation_payload(
+        0x0000_0005,
+        derive_key_payload_with_attributes(
+            2,
+            [
+                tagged(CRYPTOGRAPHIC_LENGTH_TAG, Value::integer(256)),
+                tagged(CRYPTOGRAPHIC_ALGORITHM_TAG, Value::enumeration(3)),
+            ],
+        ),
+    );
+    result
+        .validate_request(&symmetric_key)
+        .expect("the optional Secret Data capability does not restrict key derivation");
+}
+
 fn derive_key_payload(object_type: u32, lengths: impl IntoIterator<Item = Value>) -> Structure {
     let attributes = structure(
         lengths
