@@ -446,6 +446,7 @@ class PublicApiParityTests(unittest.TestCase):
                     "client_batch_item_response_delegated_login_ttlv",
                     "client_batch_item_response_login_ttlv",
                     "client_batch_item_response_locate_unique_identifier_at",
+                    "client_batch_item_response_obtain_lease_ttlv",
                 }:
                     self.assertNotIn("jniSymbol", java)
                 else:
@@ -502,6 +503,18 @@ class PublicApiParityTests(unittest.TestCase):
         self.assertEqual(
             login_response["java"]["jniSymbol"],
             ticket_ttlv["java"]["jniAggregateSymbol"],
+        )
+
+    def test_obtain_lease_ttlv_names_its_aggregate_jni_owner(self) -> None:
+        functions = {function["id"]: function for function in self.manifest["functions"]}
+        response = functions["client_batch_item_response_obtain_lease"]
+        response_ttlv = functions["client_batch_item_response_obtain_lease_ttlv"]
+
+        self.assertNotIn("jniSymbol", response_ttlv["java"])
+        self.assertEqual("responseTtlv", response_ttlv["java"]["method"])
+        self.assertEqual(
+            response["java"]["jniSymbol"],
+            response_ttlv["java"].get("jniAggregateSymbol"),
         )
 
     def test_java_method_names_are_legal_java_identifiers(self) -> None:

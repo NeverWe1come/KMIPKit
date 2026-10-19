@@ -4366,3 +4366,23 @@ stages. The implementation TDD evidence remains Red `3137f1c2`, Green
 The Windows native build reports existing AWS-LC `stdalign_check` and missing
 NASM warnings; Gradle still completes successfully. This test is an API bridge
 and ownership regression, not an OASIS conformance or interoperability test.
+
+### KMIPKIT-0043 CI correction — Obtain Lease facade mappings (2026-10-19)
+
+The failed PR #104 workflow `39249942391` exposed three T056-specific
+regressions: the panic-boundary export count was still 217 after three
+additional C exports, the Obtain Lease TTLV Java facade duplicated its parent
+JNI owner, and ten dataclass-generated Python exports had no exact exclusion.
+The JNI mapping needs to point to the response aggregate's existing native
+entrypoint, while the Python exclusions must describe only generated
+interpreter mechanics and the explicit constant redacted representation.
+
+| Stage | Commit | Command | Result |
+|---|---|---|---|
+| Red | This DCO-signed test-only commit | `py -3 -B -m unittest -v tools.api_manifest.tests.test_parity.PublicApiParityTests.test_obtain_lease_ttlv_names_its_aggregate_jni_owner`; `py -3 -B -m unittest -v tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_obtain_lease_response_dataclass_exports_have_exact_t056_exclusions` | Expected Red: both fail against the current manifest. The TTLV row claims the parent response JNI symbol directly; the exact ObtainLeaseResponse exclusion set is empty. CI run `39249942391` independently reports the 220-versus-217 export count mismatch and both contract failures. |
+
+The workflow result is a real contract failure, not an infrastructure failure.
+Green will correct the export inventory count, use the response aggregate JNI
+mapping for the TTLV accessor, and add only the ten reviewed Python-generated
+exports to the manifest. PR #104 remains draft until the full required checks
+pass.

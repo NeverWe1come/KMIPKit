@@ -24,6 +24,21 @@ LOGIN_RESPONSE_EXCLUDED_EXPORTS = frozenset(
         "__repr__",
     )
 )
+OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS = frozenset(
+    f"kmipkit.client.ObtainLeaseResponse.{member}"
+    for member in (
+        "__dataclass_fields__",
+        "__dataclass_params__",
+        "__delattr__",
+        "__eq__",
+        "__hash__",
+        "__init__",
+        "__match_args__",
+        "__repr__",
+        "__setattr__",
+        "__slots__",
+    )
+)
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 T076_SYMBOLS = {
     "kmipkit_client_batch_add_error_continuation_value",
@@ -1417,6 +1432,7 @@ class T076ClientMappingTests(unittest.TestCase):
             | split_key_reference_lifecycle_exclusions
             | split_key_reference_repr_exclusion
             | split_key_reference_storage_exclusion
+            | OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS
             | {"kmipkit.metadata.Version.__init__"}
         )
         for path in sorted(exact_exclusions):
@@ -1451,6 +1467,14 @@ class T076ClientMappingTests(unittest.TestCase):
                         self.assertIn("dataclass-generated", exclusion["reason"])
                         self.assertIn("interpreter mechanics", exclusion["reason"])
                     self.assertIn("T053", exclusion["evidence"])
+                elif path in OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS:
+                    if path.endswith(".__repr__"):
+                        self.assertIn("redacted", exclusion["reason"])
+                        self.assertIn("presentation", exclusion["reason"])
+                    else:
+                        self.assertIn("dataclass-generated", exclusion["reason"])
+                        self.assertIn("interpreter mechanics", exclusion["reason"])
+                    self.assertIn("T056", exclusion["evidence"])
                 elif path in log_response_repr_exclusion:
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])
@@ -1498,6 +1522,15 @@ class T076ClientMappingTests(unittest.TestCase):
             and row["exportName"].startswith("kmipkit.client.LoginResponse.")
         }
         self.assertEqual(expected, actual)
+
+    def test_obtain_lease_response_dataclass_exports_have_exact_t056_exclusions(self) -> None:
+        actual = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.ObtainLeaseResponse.")
+        }
+        self.assertEqual(OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS, actual)
 
     def test_python_export_inventory_and_facade_mappings_are_exactly_classified(self) -> None:
         semantic_exports = {
