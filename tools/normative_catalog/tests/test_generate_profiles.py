@@ -3614,6 +3614,20 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     obligation.get("actor") == "client"
                     for obligation in review.get("source_obligations", [])
                 )
+                review_requirement_ids = set(review["expected_client_requirement_ids"])
+                # Requirement-level scope is more specific than clause-level
+                # profile applicability. An explicit empty mapping must not
+                # be widened by an inherited source clause.
+                explicitly_unassigned_ids = {
+                    requirement_id
+                    for requirement_id in review_requirement_ids
+                    if any(
+                        mapping.get("scope_state") == "profile_conditional"
+                        and mapping.get("applies_to") == []
+                        for mapping in mappings_by_requirement_id.get(requirement_id, [])
+                    )
+                }
+                review_requirement_ids -= explicitly_unassigned_ids
                 if (
                     (
                         applies_to == "all_client_profiles"
@@ -3631,7 +3645,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                         )
                     )
                 ):
-                    expected_requirement_ids.update(review["expected_client_requirement_ids"])
+                    expected_requirement_ids.update(review_requirement_ids)
 
             for mapping in oracle["requirement_crosswalk"]:
                 applies_to_profile = _mapping_applies_to_profile(mapping, profile_id)
@@ -3640,18 +3654,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     and mapping.get("applies_to") == "all_client_profiles"
                     and mapping.get("role") == "client"
                 )
+                conditional_profile_scope = mapping.get("scope_state") == "profile_conditional"
+                source_clause_applies = (
+                    mapping.get("source_clause_id") in source_clause_ids
+                    or (mapping.get("source_id"), mapping.get("source_section")) in included_sections
+                )
                 if (
                     applies_to_profile
                     and mapping.get("role") in {"client", "both"}
                     and mapping.get("scope_state") in {"client_1_0", "profile_conditional"}
                     and (
-                        global_client_capability
-                        or (
-                            mapping.get("scope_state") == "profile_conditional"
-                            and mapping.get("applies_to") == profile_id
-                        )
-                        or mapping.get("source_clause_id") in source_clause_ids
-                        or (mapping.get("source_id"), mapping.get("source_section")) in included_sections
+                        # Conditional capability applicability comes from the
+                        # requirement-level mapping. Clause closure cannot
+                        # broaden an explicit empty or profile-specific scope.
+                        (conditional_profile_scope and (global_client_capability or applies_to_profile))
+                        or (not conditional_profile_scope and source_clause_applies)
                     )
                 ):
                     expected_requirement_ids.add(mapping["requirement_id"])
@@ -3770,6 +3787,27 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 with self.subTest(profile_id=profile_id, requirement_id=requirement_id):
                     self.assertIn(profile_id, requirement["profile_ids"])
                     self.assertIn(requirement_id, actual_profile["requirement_ids"])
+
+        client_profile_ids = sorted(
+            profile["profile_id"] for profile in oracle["profiles"]
+        )
+        explicitly_client_scoped_ids = {
+            "KMIPKIT-REQ-PROF-6-001",
+            "KMIPKIT-REQ-SPEC-4.1-001-001",
+            "KMIPKIT-REQ-SPEC-4.1-001-002",
+            "KMIPKIT-REQ-SPEC-4.1-001-003",
+            "KMIPKIT-REQ-SPEC-4.18-001-001",
+            "KMIPKIT-REQ-SPEC-4.18-001-002",
+        }
+        for requirement_id in explicitly_client_scoped_ids:
+            with self.subTest(requirement_id=requirement_id):
+                self.assertEqual(
+                    requirements[requirement_id]["profile_ids"],
+                    client_profile_ids,
+                )
+                for profile in catalog["profiles"]:
+                    if profile["role"] != "client":
+                        self.assertNotIn(requirement_id, profile["requirement_ids"])
 
     def test_client_profiles_audit_the_inherited_baseline_authentication_requirement(self) -> None:
         """Client profile dependencies inherit Baseline Client's §3.1 requirement mapping."""

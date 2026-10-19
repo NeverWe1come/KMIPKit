@@ -20,15 +20,22 @@ fn baseline_target_membership_does_not_make_runtime_selection_available() {
         .find(|profile| profile.profile_id == BASELINE)
         .expect("the generated catalog includes Baseline Client");
     assert!(target.selected_target);
-    assert!(
-        target
-            .unresolved_scope_obligations
-            .iter()
-            .any(|obligation| {
-                obligation.requirement_id == "KMIPKIT-REQ-SPEC-4.1-001-001"
-                    && obligation.source_clause_id == "KMIPKIT-CLAUSE-SPEC-4.1-001"
-            })
-    );
+    for attribute_requirement in [
+        "KMIPKIT-REQ-SPEC-4.1-001-001",
+        "KMIPKIT-REQ-SPEC-4.1-001-002",
+        "KMIPKIT-REQ-SPEC-4.1-001-003",
+        "KMIPKIT-REQ-SPEC-4.18-001-001",
+        "KMIPKIT-REQ-SPEC-4.18-001-002",
+        "KMIPKIT-REQ-PROF-6-001",
+    ] {
+        assert!(target.requirement_ids.contains(&attribute_requirement));
+        assert!(
+            !target
+                .unresolved_scope_obligations
+                .iter()
+                .any(|obligation| obligation.requirement_id == attribute_requirement)
+        );
+    }
     assert!(target.requirement_ids.contains(&"KMIPKIT-REQ-SPEC-2.3-001"));
     for inherited_requirement in [
         "KMIPKIT-REQ-PROF-3.1.1-002",
@@ -97,10 +104,14 @@ fn profile_readiness_exposes_unresolved_applicability_blockers() {
     let unresolved = readiness
         .blockers()
         .iter()
-        .find(|blocker| blocker.requirement_id() == Some("KMIPKIT-REQ-SPEC-4.1-001-001"))
-        .expect("the unresolved blocker retains its stable requirement ID");
+        .find(|blocker| blocker.requirement_id().is_some() && blocker.source_clause_id().is_some())
+        .expect("an unresolved blocker retains its stable requirement ID");
     assert_eq!(
-        Some("KMIPKIT-CLAUSE-SPEC-4.1-001"),
+        Some("KMIPKIT-REQ-PROF-4.1.2-001"),
+        unresolved.requirement_id()
+    );
+    assert_eq!(
+        Some("KMIPKIT-CLAUSE-PROF-4.1.2-001"),
         unresolved.source_clause_id()
     );
     assert!(!readiness.runtime_validation_available());

@@ -15411,7 +15411,10 @@ class CatalogValidationTests(unittest.TestCase):
             ["profile_conditional"],
         )
         self.assertEqual(requirements[conditional_requirement_id]["scope_state"], "profile_conditional")
-        self.assertEqual(requirements[conditional_requirement_id]["profile_ids"], [])
+        self.assertEqual(
+            requirements[conditional_requirement_id]["profile_ids"],
+            sorted(profile["profile_id"] for profile in oracle["profiles"]),
+        )
 
         verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
         verify_keywords = {row["source_keyword"] for row in verify_rows}
@@ -17497,10 +17500,10 @@ class CatalogValidationTests(unittest.TestCase):
         )
         profile_conditional_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
         self.assertIn("KMIPKIT-CLAUSE-SPEC-4.1-001", selected_clause_ids)
-        self.assertNotIn(
+        self.assertIn(
             profile_conditional_id,
             optional_capabilities,
-            "a source clause in the whole-Spec closure is not a profile requirement without explicit membership",
+            "Baseline Client explicitly selects Activation Date through Profiles §5.1.1 item 3",
         )
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.43-009-001", optional_capabilities)
 
@@ -18190,6 +18193,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         if expected_blocked_requirement_ids is None:
             expected_blocked_requirement_ids = {
+                "KMIPKIT-REQ-SPEC-4.1-001-001",
                 "KMIPKIT-REQ-SPEC-4.17-001-001",
                 "KMIPKIT-REQ-SPEC-9.11-001",
                 "KMIPKIT-REQ-SPEC-9.11-004-003",
