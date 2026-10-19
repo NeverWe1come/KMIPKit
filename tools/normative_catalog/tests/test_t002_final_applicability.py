@@ -60,6 +60,11 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(len(FINAL_DISPOSITIONS), 20)
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.crosswalk.keys())
         self.assertTrue(FINAL_DISPOSITIONS.keys() <= self.requirements.keys())
+        self.assertEqual(
+            [row["requirement_id"] for row in self.oracle["requirement_crosswalk"]
+             if row["scope_state"] == "unresolved"],
+            [],
+        )
 
         mismatches = []
         for requirement_id, expected_scope in FINAL_DISPOSITIONS.items():

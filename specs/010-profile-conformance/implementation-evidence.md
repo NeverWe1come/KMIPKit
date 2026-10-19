@@ -3746,7 +3746,7 @@ The Red commit changes tests only; catalog and independent oracle data have not 
 
 ### KMIPKIT-0010 T002 — final 20 source-applicability rows Red (2026-10-19)
 
-The final pinned-source review disposition assigns §4.11 to `server_only` and the other 19 rows to `profile_conditional`; the latter are conditional on the selected profile, attribute, or operation context and carry no profile membership IDs. Where KMIP 2.1 leaves the enforcement actor unnamed, client/consumer attribution is a project interpretation and is recorded separately from the source actor. The focused regression checks the crosswalk, catalog, and source-review obligation states, the absence of claimed profile membership, the §4.18 no-delete rule alongside its Pre-Active/Active modification exception, and the existing §6.1.34 requirement ID in client-to-server context.
+The final pinned-source review disposition assigns §4.11 to `server_only` and the other 19 rows to `profile_conditional`; the latter are conditional on the selected profile, attribute, or operation context and carry no profile membership IDs. Where KMIP 2.1 leaves the enforcement actor unnamed, client/consumer attribution is a project interpretation and is recorded separately from the source actor. The focused regression checks all 506 crosswalk rows for zero unresolved scope, the crosswalk, catalog, and source-review obligation states, the absence of claimed profile membership, the §4.18 no-delete rule alongside its Pre-Active/Active modification exception, and the existing §6.1.34 requirement ID in client-to-server context.
 
 | Stage | DCO-signed commit | Command | Result |
 |---|---|---|---|
