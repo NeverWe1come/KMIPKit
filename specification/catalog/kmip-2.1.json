@@ -16249,10 +16249,10 @@
       ],
       "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "Procedure context refers to other required parameters without mapping them to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; actor, direction, and operation-level scope remain unclear.",
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "unclear",
+      "exclusion_rationale": "Procedure context identifies a client-to-server request context without mapping parameters to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; this contextual scope does not establish a standalone requirement ID.",
+      "role": "client",
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
       "condition": null
     },
     {
@@ -16268,10 +16268,10 @@
       ],
       "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "Procedure context refers to other required parameters without mapping them to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; actor, direction, and operation-level scope remain unclear.",
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "unclear",
+      "exclusion_rationale": "Procedure context identifies a client-to-server request context without mapping parameters to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; this contextual scope does not establish a standalone requirement ID.",
+      "role": "client",
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
       "condition": null
     },
     {
@@ -16287,10 +16287,10 @@
       ],
       "disposition": "informative_context",
       "requirement_ids": [],
-      "exclusion_rationale": "Procedure context refers to other required parameters without mapping them to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; actor, direction, and operation-level scope remain unclear.",
-      "role": "unclear",
-      "direction": "unclear",
-      "scope_state": "unclear",
+      "exclusion_rationale": "Procedure context identifies a client-to-server request context without mapping parameters to a single client operation or independent RFC 2119 requirement. The normalized REQUIRED keyword hit comes from lowercase prose; this contextual scope does not establish a standalone requirement ID.",
+      "role": "client",
+      "direction": "client_to_server",
+      "scope_state": "client_1_0",
       "condition": null
     },
     {
@@ -16306,9 +16306,9 @@
       ],
       "disposition": "source_discrepancy",
       "requirement_ids": [],
-      "exclusion_rationale": "The normative Specification says Data is always required except when an indicator is true, while single-part request tables for Hash and MAC, and conditionally Sign, conflict with that statement. The normalized REQUIRED keyword hit comes from lowercase prose and is not evidence of the uppercase RFC keyword. Operation-level scope remains unclear; no standalone requirement ID is assigned while the source interpretation is unresolved.",
-      "role": "unclear",
-      "direction": "unclear",
+      "exclusion_rationale": "The source identifies Data in a client-to-server request context, but its lowercase required statement conflicts with the single-part request tables for Hash and MAC, and conditionally Sign. The normalized REQUIRED keyword hit comes from lowercase prose and is not evidence of the uppercase RFC keyword. Operation-level scope remains unclear; no standalone requirement ID is assigned while the source interpretation is unresolved.",
+      "role": "client",
+      "direction": "client_to_server",
       "scope_state": "unclear",
       "condition": null
     },
