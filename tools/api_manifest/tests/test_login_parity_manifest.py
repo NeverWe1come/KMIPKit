@@ -44,9 +44,6 @@ EXPECTED_MAPPINGS = {
         "kmipkit_protocol::LoginRequest::with_usage_limits",
         "kmipkit_protocol::LoginResponse",
         "kmipkit_protocol::LoginResponse::ticket",
-        "kmipkit_protocol::Ticket::ticket_type",
-        "kmipkit_protocol::Ticket::with_ticket_value",
-        "kmipkit_protocol::Ticket::with_ttlv",
     },
     "c": {
         "kmipkit_client_batch_item_login",
