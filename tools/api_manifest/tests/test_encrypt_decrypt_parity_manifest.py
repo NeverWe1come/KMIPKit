@@ -159,6 +159,12 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
         declarations = {
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
+        expected_lifecycle = {
+            "rust": "secret-buffer-wiped-on-final-owner-drop",
+            "c": "release-shared-response-handle;wipe-on-final-owner-drop",
+            "java": "close-wipes-owned-payload-copy",
+            "python": "close-wipes-owned-payload-copy",
+        }
         for operation, section in (("Encrypt", "6.1.17"), ("Decrypt", "6.1.11")):
             operation_id = f"KMIPKIT-ELEM-OP-C2S-{operation.upper()}"
             with self.subTest(operation=operation):
@@ -167,6 +173,10 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                     declaration = declarations[declaration_id]
                     self.assertEqual("verified", declaration["declarationState"])
                     self.assertEqual("secret-buffer-wipe", declaration["mappingSemantics"])
+                    self.assertEqual(
+                        expected_lifecycle,
+                        declaration["lifecycleSemanticsByLanguage"],
+                    )
                     self.assertEqual(operation_id, declaration["capabilityId"])
                     self.assertIn("KMIPKIT-0019-FR-009", declaration["requirementIds"])
                     self.assertIn("KMIPKIT-0043-FR-013", declaration["requirementIds"])
