@@ -373,6 +373,34 @@ struct AllowingProfileValidator {
     response_checks: Rc<Cell<usize>>,
 }
 
+struct BatchRejectingProfileValidator {
+    error: ProfileValidationError,
+}
+
+impl ProfileExchangeValidator for BatchRejectingProfileValidator {
+    fn validate_transport(
+        &self,
+        _transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        Ok(())
+    }
+
+    fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        assert_eq!(request.batch_items().len(), 2);
+        Ok(())
+    }
+
+    fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        assert_eq!(request.batch_items().len(), 2);
+        assert_eq!(response.batch_items().len(), 2);
+        Err(self.error.clone())
+    }
+}
+
 impl ProfileExchangeValidator for AllowingProfileValidator {
     fn validate_transport(
         &self,
@@ -489,6 +517,67 @@ fn response_profile_rejection_after_exchange_preserves_response_started_delivery
         profile_error.code(),
         ProfileValidationErrorCode::ResponseRuleRejected
     );
+    assert_eq!(profile_error.profile_id(), Some("KMIPKIT-TEST-PROFILE"));
+    assert_eq!(
+        profile_error.requirement_id(),
+        Some("KMIPKIT-TEST-REQUIREMENT")
+    );
+    assert_eq!(
+        profile_error.source_clause_id(),
+        Some("KMIPKIT-TEST-CLAUSE")
+    );
+}
+
+#[test]
+fn batch_response_profile_rejection_preserves_response_started_delivery() {
+    let validator = BatchRejectingProfileValidator {
+        error: ProfileValidationError::for_test(
+            ProfileValidationErrorCode::ResponseRuleRejected,
+            "KMIPKIT-TEST-PROFILE",
+            "KMIPKIT-TEST-REQUIREMENT",
+            "KMIPKIT-TEST-CLAUSE",
+        ),
+    };
+    let exchanges = Rc::new(Cell::new(0));
+    let transport = CountingTransport::with_responses(
+        Rc::clone(&exchanges),
+        [response_bytes(
+            (2, 1),
+            &[
+                ResponseItemFixture::success(Some(&[1])),
+                ResponseItemFixture::success(Some(&[2])),
+            ],
+        )],
+    );
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::discover_versions()).with_unique_batch_item_id(vec![1]),
+        ClientBatchItem::new(ClientRequest::discover_versions()).with_unique_batch_item_id(vec![2]),
+    ]);
+
+    let error = client
+        .execute_inner(
+            batch,
+            &CodecLimits::defaults(),
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
+        )
+        .expect_err("a profile response rule rejects the received multi-item batch");
+
+    assert_eq!(exchanges.get(), 1, "{error:?}");
+    assert_eq!(
+        error.delivery_state(),
+        Some(RequestDeliveryState::ResponseStarted)
+    );
+    assert_eq!(
+        error
+            .profile_validation_error()
+            .map(ProfileValidationError::code),
+        Some(ProfileValidationErrorCode::ResponseRuleRejected)
+    );
+    let profile_error = error
+        .profile_validation_error()
+        .expect("batch response rejection remains a structured profile error");
     assert_eq!(profile_error.profile_id(), Some("KMIPKIT-TEST-PROFILE"));
     assert_eq!(
         profile_error.requirement_id(),
