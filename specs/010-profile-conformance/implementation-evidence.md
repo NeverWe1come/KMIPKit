@@ -3740,7 +3740,7 @@ After adding `KMIPKIT-REQ-SPEC-9.17-001-002` to each whole-Spec client closure, 
 
 | Stage | DCO-signed commit | Command | Result |
 |---|---|---|---|
-| Red | pending | `cargo test -p kmipkit-protocol result_message_client_access_has_an_optional_typed_rule --lib` | Expected Red: 1 test failed at the mapping-presence assertion; compilation succeeded, with no test error. |
+| Red | `e6408ce0` | `cargo test -p kmipkit-protocol result_message_client_access_has_an_optional_typed_rule --lib` | Expected Red: 1 test failed at the mapping-presence assertion; compilation succeeded, with no test error. |
 
 The Red commit changes tests only; catalog and independent oracle data have not yet been modified in this tranche. The earlier three §6.1/§9.17 gaps are adjudicated in the prior Green commit. T002 remains open pending the Green data update, full oracle/profile consistency checks, evidence refresh, and generated-report checks.
 
@@ -3750,7 +3750,7 @@ The final pinned-source review disposition assigns §4.11 to `server_only` and t
 
 | Stage | DCO-signed commit | Command | Result |
 |---|---|---|---|
-| Red | This DCO-signed commit | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability` | Expected Red: 5 tests failed by assertion (no test errors). The crosswalk/catalog still had unresolved scope, source-obligation reviews retained unresolved dispositions, and actor/§4.18/§6.1.34 rationale was not yet recorded. |
+| Red | `15e6e494` (refined by test-only commits through `bb28925d`) | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability` | Expected Red: 5 tests failed by assertion (no test errors). The crosswalk/catalog still had unresolved scope, source-obligation reviews retained unresolved dispositions, and actor/§4.18/§6.1.34 rationale was not yet recorded. |
 
 Additional assertions require the oracle to record a separate project actor interpretation while preserving each source actor annotation unchanged, cite the pinned §4.18 Table 64 row (rather than the adjacent Table 63 encoding table), and retain the existing §6.1.34 requirement ID. The focused test was rerun and still fails by the five intended assertions, with no test errors. The Red commits change only the focused regression and this evidence. The catalog and independent oracle remain unchanged for these 20 rows until Green. T002 remains open.
 
@@ -3759,4 +3759,29 @@ An additional validator regression exposed that the selected-profile optional-ca
 
 | Stage | DCO-signed commit | Command | Result |
 |---|---|---|---|
-| Red | This DCO-signed commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_project_actor_interpretation` | Expected Red: 1 test failed by assertion because the gate reported no reviewed client actor despite the explicit project interpretation; no test error. |
+| Red | `bb28925d` | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_project_actor_interpretation` | Expected Red: 1 test failed by assertion because the gate reported no reviewed client actor despite the explicit project interpretation; no test error. |
+
+### KMIPKIT-0010 T002 — final source-disposition closure and Green/Refactor evidence (2026-10-19)
+
+The DCO-signed Red regression commits for the final T002 slice are `e6408ce0` (Result Message typed optional-capability mapping), `1097fc2d` (the 30 table-body rows and literal §§6.13/6.14 inclusion), and the final-20 applicability regression series `15e6e494`, `bd200a20`, `0d46ffac`, `9582a1fb`, `8c89476f`, and `bb28925d`. The catalog, independent oracle, generated outputs, and executable mapping changes are in Green commit `be39e24b`. No pinned upstream OASIS file was modified.
+
+| Stage | DCO-signed commit | Command or artifact | Result |
+|---|---|---|---|
+| Red | `e6408ce0` | `cargo test -p kmipkit-protocol result_message_client_access_has_an_optional_typed_rule --lib` | Expected Red: mapping-presence assertion failed; compilation succeeded. |
+| Red | `1097fc2d` | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_profile_conditional_structural_rows_are_not_client_profile_requirements tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_disc_011_and_012_preserve_literal_normative_inclusions` | Expected Red: 2 tests, 32 assertion failures, no test errors. |
+| Red | `15e6e494` through `bb28925d` | `py -3 -B -m unittest tools.normative_catalog.tests.test_t002_final_applicability` and `py -3 -B -m unittest -v tools.normative_catalog.tests.test_project_actor_interpretation` | Expected Red: final applicability assertions and explicit-project-actor capability gate failed by assertion before catalog/oracle Green; no test errors. |
+| Green | `be39e24b` | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_validate` | PASS: 279 tests, 1 platform-specific skip, 295.204 seconds. |
+| Green | `be39e24b` | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_adjudication tools.normative_catalog.tests.test_source_gap_context_resolutions tools.normative_catalog.tests.test_feature_traceability tools.normative_catalog.tests.test_t002_final_applicability tools.normative_catalog.tests.test_project_actor_interpretation` | PASS: 67 tests, 2 Windows symlink-privilege skips, 18.604 seconds. |
+| Green | `be39e24b` | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_evidence_gate_accepts_only_scoped_client_exchange_evidence tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_crosswalk_accounts_for_every_catalog_requirement_id tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_unselected_profile_may_remains_catalogued_without_blocking_baseline_scope` | PASS: 3 tests after final validator annotation refinement. |
+| Green | `be39e24b` | `cargo test -p kmipkit-protocol result_message_client_access_has_an_optional_typed_rule --lib` | PASS: 1 test. The typed mapping is an optional caller-access capability, not protocol validation; text preservation and Debug redaction tests are linked as evidence. |
+| Green | `be39e24b` | `py -3 -B -m tools.normative_catalog.validate --repo-root .` | PASS: 4 sources, 1,411 clauses, 4,122 records. |
+| Green | `be39e24b` | `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --write`, followed by `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check` | PASS: generated profile metadata current. |
+| Green | `be39e24b` | `py -3 -B tools/normative_catalog/report.py --repo-root . --write`, followed by `py -3 -B tools/normative_catalog/report.py --repo-root . --check` | PASS: deterministic coverage report current. |
+| Green | `be39e24b` | `py -3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff --check` | PASS: 1,411 normative source candidates audited. |
+| Green | `be39e24b` | `py -3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha 550a864840c727afa2bdf20b5a5e25aa3e2b9dff` | PASS: pinned upstream sources match the base. |
+| Refactor/evidence | This DCO-signed commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_t002_research_describes_current_paragraph_009_source_force_and_context tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_t002_research_index_matches_procedure_scope_dispositions tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_t002_research_records_already_verified_profile_inclusion_edges` | PASS: 3 research assertions after final closure text. |
+| Refactor/evidence | This DCO-signed commit | `git diff --check` | PASS: no whitespace errors. |
+
+The final oracle reports 18 client profiles (14 `client_1_0`, one `conditional`, three `out_of_scope`), 896 source-review entries, 112 source-only gap entries, 68 source-table contracts, and 506 direct crosswalk rows with 0 unresolved crosswalk scope. The 506 mappings contain 499 unique IDs. The crosswalk intentionally does not equal the 633 catalog requirement IDs, so `requirement_crosswalk_complete` remains `false`; the accounting test confirms all stable labels are represented through direct mappings, reviewed source candidates, explicit rejected candidates, gaps, or the one approved Table 232 contract. `source_closure_status: complete` means source applicability has a disposition; it does not mean all requirements have direct rows, implementation evidence, or profile conformance.
+
+The final research record distinguishes OASIS text from project recommendations, including the 20 applicability rows, all 30 conditional table-body rows, DISC-011/012's literal §5.7.1 inclusion, and the three §6.1/§9.17 source-gap rulings. T002 is closed for source-applicability mapping only. Profile readiness and implementation/test evidence remain separate; no certification or profile-conformance claim is made.
