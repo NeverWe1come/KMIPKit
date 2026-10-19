@@ -23,7 +23,7 @@ OPERATIONS = {
             "python": "kmipkit.extensions.client_batch_item_ping",
         },
         "response": {
-            "rust": "kmipkit_client::ClientBatchItemResponse::ping",
+            "rust": "kmipkit_client::ClientResponseView::ping",
             "c": "kmipkit_client_batch_item_response_ping",
             "java": "org.kmipkit.extensions.ClientBatchItemResult.pingResponse",
             "python": "kmipkit.client.BatchItemResult.ping_response",
@@ -40,7 +40,7 @@ OPERATIONS = {
             "python": "kmipkit.extensions.client_batch_item_query",
         },
         "response": {
-            "rust": "kmipkit_client::ClientBatchItemResponse::query",
+            "rust": "kmipkit_protocol::QueryResponse::to_ttlv_payload",
             "c": "kmipkit_client_batch_item_response_query_ttlv",
             "java": "org.kmipkit.extensions.ClientBatchItemResult.queryResponse",
             "python": "kmipkit.client.BatchItemResult.query_response",
@@ -58,8 +58,8 @@ API_REQUIREMENTS = {
 }
 EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
-    "bindings/java/src/test/java/org/kmipkit/PingQueryJavaFacadeTest.java",
-    "bindings/python/tests/test_ping_query_operations.py",
+    "bindings/java/src/test/java/org/kmipkit/extensions/ClientBatchItemPingQueryMappingTest.java",
+    "bindings/python/tests/test_query_ping_operation.py",
     "crates/kmipkit-client/tests/unit/ping_execution_tests.rs",
     "crates/kmipkit-client/tests/unit/query_execution_tests.rs",
 }
@@ -137,6 +137,76 @@ class PingQueryParityManifestTests(unittest.TestCase):
                 self.assertTrue(OWNER_REQUIREMENTS <= linked_requirements)
                 self.assertTrue(API_REQUIREMENTS <= linked_requirements)
 
+    def test_query_with_limits_has_a_separate_verified_four_language_mapping(self) -> None:
+        function = self.functions["client_batch_item_query_with_limits"]
+        expected = {
+            "rust": "kmipkit_client::ClientBatchItem::query_with_limits",
+            "c": "kmipkit_client_batch_item_query_with_limits",
+            "java": "org.kmipkit.extensions.ClientBatchItem.queryWithLimits",
+            "python": "kmipkit.extensions.client_batch_item_query_with_limits",
+        }
+        actual = {
+            "rust": f"{function['rust']['module']}::{function['rust']['name']}",
+            "c": function["c"]["symbol"],
+            "java": (
+                f"org.kmipkit.{function['java']['package'].split('.')[-1]}"
+                f".{function['java']['class']}.{function['java']['method']}"
+            ),
+            "python": function["python"]["function"],
+        }
+        self.assertEqual(expected, actual)
+        self.assertEqual("CodecLimits", function["java"]["parameters"][-1]["type"])
+        self.assertEqual("CodecLimits", function["python"]["parameters"][-1]["type"])
+        for language, export_name in expected.items():
+            declaration = self.declarations[
+                f"T041:query:request-with-limits:{language}"
+            ]
+            self.assertEqual("verified", declaration["declarationState"])
+            self.assertEqual("four-language", declaration["parityScope"])
+            self.assertEqual(export_name, declaration["exportName"])
+
+        root_alias = next(
+            row for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit::ClientBatchItem::query_with_limits"
+        )
+        self.assertEqual("verified", root_alias["declarationState"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-QUERY", root_alias["capabilityId"])
+        self.assertEqual("four-language", root_alias["parityScope"])
+        self.assertEqual(
+            {
+                **expected,
+                "rust": "kmipkit::ClientBatchItem::query_with_limits",
+            },
+            {
+                language: mapping["name"]
+                for language, mapping in root_alias["languageMappings"].items()
+            },
+        )
+        self.assertIn(
+            "bindings/python/tests/test_query_input_snapshot_security.py",
+            root_alias["parityEvidenceIds"],
+        )
+        batch_result_fields = {
+            row["exportName"]: row["kind"]
+            for row in self.manifest["publicDeclarations"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"] in {
+                "kmipkit.client.BatchItemResult.decrypt_response",
+                "kmipkit.client.BatchItemResult.encrypt_response",
+                "kmipkit.client.BatchItemResult.ping_response",
+                "kmipkit.client.BatchItemResult.query_response",
+            }
+        }
+        self.assertEqual(
+            {
+                "kmipkit.client.BatchItemResult.decrypt_response": "field",
+                "kmipkit.client.BatchItemResult.encrypt_response": "field",
+                "kmipkit.client.BatchItemResult.ping_response": "field",
+                "kmipkit.client.BatchItemResult.query_response": "field",
+            },
+            batch_result_fields,
+        )
+
     def test_generated_parity_inventory_contains_verified_ping_and_query(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
         operations = {
@@ -148,7 +218,10 @@ class PingQueryParityManifestTests(unittest.TestCase):
         for operation_id, expected in OPERATIONS.items():
             with self.subTest(operation=expected["name"]):
                 self.assertEqual("verified", operations[operation_id]["apiState"])
-                self.assertEqual(LANGUAGES, set(operations[operation_id]["languages"]))
+                self.assertEqual(
+                    LANGUAGES,
+                    set(operations[operation_id]["declarations"]),
+                )
 
 
 if __name__ == "__main__":

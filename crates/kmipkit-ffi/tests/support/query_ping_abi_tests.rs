@@ -233,8 +233,14 @@ fn ffi_ping_and_query_constructors_cover_empty_and_counted_inputs() {
     assert!(!ping.is_null());
     kmipkit_client_batch_item_release(ping);
 
-    assert_eq!(query_status(ptr::null(), 0, 0, ptr::null(), 0), ERROR_INVALID_INPUT);
-    assert_eq!(query_status(ptr::null(), 0, 1, ptr::null(), 0), ERROR_INVALID_INPUT);
+    assert_eq!(
+        query_status(ptr::null(), 0, 0, ptr::null(), 0),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        query_status(ptr::null(), 0, 1, ptr::null(), 0),
+        ERROR_INVALID_INPUT
+    );
 
     let functions = [1, 0x8000_0001, 1];
     let first_group = b"group-a";

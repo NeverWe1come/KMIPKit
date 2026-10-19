@@ -1,28 +1,28 @@
 {
   "formatVersion": 1,
   "scope": "approved-shared-rust-api",
-  "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-16.json",
-  "observedRustDeclarationCount": 9534,
-  "directRustDeclarationCount": 7646,
+  "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-17.json",
+  "observedRustDeclarationCount": 9537,
+  "directRustDeclarationCount": 7649,
   "conditionalRustDeclarationCount": 1888,
-  "mappedRustDeclarationCount": 264,
+  "mappedRustDeclarationCount": 270,
   "approvedExcludedRustDeclarationCount": 24,
   "crates": [
     {
       "packageId": "rust-kmipkit-ttlv",
       "crateName": "kmipkit-ttlv",
       "observedDeclarationCount": 331,
-      "mappedDeclarationCount": 51,
+      "mappedDeclarationCount": 57,
       "excludedDeclarationCount": 0,
-      "blockedDeclarationCount": 280
+      "blockedDeclarationCount": 274
     },
     {
       "packageId": "rust-kmipkit-protocol",
       "crateName": "kmipkit-protocol",
-      "observedDeclarationCount": 5872,
+      "observedDeclarationCount": 5873,
       "mappedDeclarationCount": 75,
       "excludedDeclarationCount": 23,
-      "blockedDeclarationCount": 5774
+      "blockedDeclarationCount": 5775
     },
     {
       "packageId": "rust-kmipkit-transport",
@@ -35,18 +35,18 @@
     {
       "packageId": "rust-kmipkit-client",
       "crateName": "kmipkit-client",
-      "observedDeclarationCount": 1035,
+      "observedDeclarationCount": 1036,
       "mappedDeclarationCount": 68,
       "excludedDeclarationCount": 0,
-      "blockedDeclarationCount": 967
+      "blockedDeclarationCount": 968
     },
     {
       "packageId": "rust-kmipkit",
       "crateName": "kmipkit",
-      "observedDeclarationCount": 1931,
+      "observedDeclarationCount": 1932,
       "mappedDeclarationCount": 24,
       "excludedDeclarationCount": 1,
-      "blockedDeclarationCount": 1906
+      "blockedDeclarationCount": 1907
     }
   ],
   "mappedDeclarations": [
@@ -4453,6 +4453,35 @@
       "parityScope": "four-language"
     },
     {
+      "declarationId": "rust-observed-8bae9a556506663ca964",
+      "packageId": "rust-kmipkit-ttlv",
+      "kind": "associated-item",
+      "exportName": "kmipkit_ttlv::Item::new",
+      "capabilityId": "generic_ttlv_model",
+      "ownerSpecId": "KMIPKIT-0004",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
       "declarationId": "rust-observed-391cc5166ed0366bc743",
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
@@ -4887,6 +4916,33 @@
       "parityScope": "four-language"
     },
     {
+      "declarationId": "rust-observed-55911821894cce2460d7",
+      "packageId": "rust-kmipkit-ttlv",
+      "kind": "associated-item",
+      "exportName": "kmipkit_ttlv::Structure::try_push",
+      "capabilityId": "generic_ttlv_model",
+      "ownerSpecId": "KMIPKIT-0004",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
       "declarationId": "rust-observed-b7b6373734f7fb6f4b07",
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
@@ -5037,6 +5093,35 @@
       "parityScope": "four-language"
     },
     {
+      "declarationId": "rust-observed-0a4fc4f9fd433bfb9ca5",
+      "packageId": "rust-kmipkit-ttlv",
+      "kind": "associated-item",
+      "exportName": "kmipkit_ttlv::Value::big_integer",
+      "capabilityId": "generic_ttlv_model",
+      "ownerSpecId": "KMIPKIT-0004",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
       "declarationId": "ttlv_value_boolean:rust",
       "packageId": "rust-kmipkit-ttlv",
       "kind": "associated-item",
@@ -5064,6 +5149,33 @@
         "KMIPKIT-0004-FR-010",
         "KMIPKIT-0004-FR-012",
         "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-95240f5d9bb662f09bbd",
+      "packageId": "rust-kmipkit-ttlv",
+      "kind": "associated-item",
+      "exportName": "kmipkit_ttlv::Value::byte_string",
+      "capabilityId": "generic_ttlv_model",
+      "ownerSpecId": "KMIPKIT-0004",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
       "parityScope": "four-language"
@@ -5256,6 +5368,64 @@
         "KMIPKIT-0004-FR-010",
         "KMIPKIT-0004-FR-012",
         "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-523bcc7727d3c0c84063",
+      "packageId": "rust-kmipkit-ttlv",
+      "kind": "associated-item",
+      "exportName": "kmipkit_ttlv::Value::structure",
+      "capabilityId": "generic_ttlv_model",
+      "ownerSpecId": "KMIPKIT-0004",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-003",
+        "KMIPKIT-0004-FR-006",
+        "KMIPKIT-0004-FR-008",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "parityScope": "four-language"
+    },
+    {
+      "declarationId": "rust-observed-d2ed421cedc410ddef9c",
+      "packageId": "rust-kmipkit-ttlv",
+      "kind": "associated-item",
+      "exportName": "kmipkit_ttlv::Value::text_string",
+      "capabilityId": "generic_ttlv_model",
+      "ownerSpecId": "KMIPKIT-0004",
+      "ownerAdrId": null,
+      "ownerRequirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012"
+      ],
+      "requirementIds": [
+        "KMIPKIT-0004-FR-001",
+        "KMIPKIT-0004-FR-005",
+        "KMIPKIT-0004-FR-009",
+        "KMIPKIT-0004-FR-010",
+        "KMIPKIT-0004-FR-012",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021"
       ],
       "parityScope": "four-language"
@@ -5693,153 +5863,6 @@
   ],
   "blockedUnreconciledDeclarations": [
     {
-      "declarationId": "ClientRequestMessageExtension:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_client_request_message_extension_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "CodecLimits:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_codec_limits_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ExtensionChildRule:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_child_rule_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "Compatibility:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_compatibility_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ExtensionDefinition:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_definition_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "Discriminator:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_discriminator_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ExtensionIdentity:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_identity_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ExtensionInformation:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_information_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ExtensionOrderConstraint:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_order_constraint_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ExtensionRecognition:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_recognition_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ExtensionSchema:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_extension_schema_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "RawTag:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_raw_tag_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "RegisteredExtensionValue:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_registered_extension_value_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ttlv_item_create:c",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_ttlv_item_create",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "TtlvItem:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_ttlv_item_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "TtlvPath:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_ttlv_path_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_big_integer:c",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_ttlv_value_big_integer",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_byte_string:c",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_ttlv_value_byte_string",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "TtlvValue:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_ttlv_value_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_text_string:c",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_ttlv_value_text_string",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ValidatedExtensionValue:c-release",
-      "packageId": "c-kmipkit",
-      "exportName": "kmipkit_validated_extension_value_release",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "The C release export represents destruction, but Rust Drop has no callable public declaration; parity remains blocked."
-    },
-    {
       "declarationId": "org.kmipkit.RuntimeMetadata:java",
       "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.RuntimeMetadata",
@@ -5847,67 +5870,11 @@
       "blockedReason": "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked."
     },
     {
-      "declarationId": "ttlv_item_create:java",
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.ttlv.TtlvItem.create",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_big_integer:java",
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.ttlv.TtlvValue.BigInteger",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_byte_string:java",
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.ttlv.TtlvValue.ByteString",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_text_string:java",
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.ttlv.TtlvValue.TextString",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
       "declarationId": "kmipkit.metadata:python",
       "packageId": "python-kmipkit",
       "exportName": "kmipkit.metadata",
       "candidateSpecId": "KMIPKIT-0043",
       "blockedReason": "The Rust crate root is not an exported declaration matching this binding namespace; parity remains blocked."
-    },
-    {
-      "declarationId": "ttlv_item_create:python",
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.ttlv.ttlv_item_create",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_big_integer:python",
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.ttlv.ttlv_value_big_integer",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_byte_string:python",
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.ttlv.ttlv_value_byte_string",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
-    },
-    {
-      "declarationId": "ttlv_value_text_string:python",
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.ttlv.ttlv_value_text_string",
-      "candidateSpecId": "KMIPKIT-0012",
-      "blockedReason": "No exact equivalent public Rust declaration exists in a published crate; the cross-language surface remains blocked."
     }
   ],
   "draftOwnerGates": {

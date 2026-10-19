@@ -4418,3 +4418,75 @@ release versus transfer of native/local references.
 The combined selected-scope aggregate was still running during this evidence
 update. Its pass/fail result must be recorded from the completed gate before
 claiming the changed-code coverage threshold is satisfied.
+
+### T040 — Encrypt and Decrypt cross-language client mappings (2026-10-19)
+
+T040 maps the already-implemented typed Encrypt and Decrypt operation contracts
+to Rust, the C ABI, Java/JNI, and Python/CFFI. It preserves caller-selected
+cryptographic parameters and request bytes, maps typed response fields and
+common outcomes, and documents the secret-copy lifecycle at each language
+boundary. Rust secret storage wipes on final-owner drop; C item release drops
+one shared response reference; Java and Python `close()` wipe KMIPKit-owned
+copies, while returned Java arrays and Python immutable bytes remain runtime
+copies. No formal conformance or certification claim is made here.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `23a9538e`, `3ae0229c`, `e65fd6ad`, `201dc74e`, `9c2beeae`, `9f06db93`, `0663bbb6`, `4fbbcc8a`, `51f71c4a`, `d7ed5061`, `04fdb59c`, `396de3c8`, `b6b02af1` | Focused Rust protocol/client/FFI tests; Java facade tests; Python Encrypt/Decrypt response tests; manifest parity and traceability tests; compiled C mTLS consumer; JNI native build | Expected Red evidence covered missing typed mappings, parity declarations, secret lifecycle and requirement traces, successful C response fields, and stopping JNI work after a pending exception. The last native Red failed to compile because `response_array_conversion.hpp` did not yet exist. |
+| Green | `8f37ac10` | `cargo fmt --all --check`; `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact`; `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings`; `py -3 -B tools/api_manifest/generate.py --check`; manifest unit tests; `uv run --offline --no-project --with pytest --with cffi python -m pytest -q bindings/python/tests/test_encrypt_decrypt_operations.py`; `bindings/java/native/build.ps1`; focused Maven tests; `git diff --cached --check` | PASS: C mTLS Encrypt/Decrypt response assertions, FFI Clippy, 12 generated outputs, 9 manifest/documentation tests, 5 Python tests, native JNI build and exception-path test, and 5 focused Java tests. The compiled C test passed 1/1. Windows AWS-LC compiler-probe and missing NASM warnings did not fail builds. |
+| Refactor | This DCO-signed evidence commit | `cargo fmt --all --check`; `cargo clippy -p kmipkit-ffi -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `py -3 -B tools/api_manifest/generate.py --check`; 10 focused manifest/parity tests; Rust export audit | PASS: formatting, Clippy, generated outputs, T040/T041 manifest reconciliation, and the 9,511-entry Rust export audit all pass with zero discrepancies. Final current-head CI and selected-scope coverage remain pending; T040 stays unchecked until they pass. |
+
+Independent QA confirmed Python access after `close()` now raises consistently,
+all four §4.16 requirement IDs are present in the API manifest and T040
+traceability, and the compiled C consumer observes successful Encrypt and
+Decrypt results over mTLS and verifies handle-release ownership. Independent
+security review confirmed the C shared-reference wipe timing is accurately
+stated and JNI RAII cleanup wipes already-created response arrays when a
+conversion raises an exception. A follow-up JNI fix registers each array for
+cleanup before checking for a pending exception and stops before converting
+the next span. The native regression test asserts that only the first
+conversion runs and that its array is wiped. Final selected-scope coverage and
+CI results are required before checking T040 complete.
+
+### T041 — Ping and Query four-language mappings (2026-10-19)
+
+T041 maps the approved-for-autonomous-implementation KMIP 2.1 Ping and Query
+contracts through Rust, C, Java/JNI, and Python/CFFI. Query preserves repeated
+and unknown function values, ordered object groups, every Table 283 response
+field, unknown nested Items, and the empty payload tolerated by
+`KMIPKIT-DISC-047`. The mapping covers successful and asynchronous Pending
+results without polling or follow-up requests. It does not claim server
+conformance.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `06c64df9`, `63790304`, `4f564675`, `0831b407` | Manifest parity, Java/Python mapping, counted-array schema, and Java typed-response inventory tests | Expected Red: Ping/Query mappings, public C input-array support, and the Encrypt/Decrypt Java response declarations were absent. |
+| Green | `8a817927`, `426263d3`, `e5f56908`, `6fb043a9`, `dda9b8a7`, `15dd7b9f` | `cargo test -p kmipkit-client ping --all-features --locked`; `cargo test -p kmipkit-client query --all-features --locked`; `cargo test -p kmipkit-protocol query_response_exposes_all_table_283_members_and_unknown_nested_items`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --nocapture`; Java Ping/Query Gradle test; Python Ping/Query pytest module | PASS: Rust Ping 9/9 and Query 15/15; Query TTLV reconstruction 1/1; compiled C consumer 1/1; Java test task successful; Python 9/9. |
+| Refactor | This DCO-signed evidence commit | `uv run --no-project --offline --with jsonschema python -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_java_public_access_paths tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_rust_public_access_paths tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_python_exports_and_lifecycle tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages tools.api_manifest.tests.test_ping_query_parity_manifest tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest -v`; `py -3 -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 10 manifest/parity tests; all 12 generated outputs current; the Rust export report matches 9,511 declarations with zero kind mismatches, missing paths, or issues. |
+
+The Windows AWS-LC compiler-probe and missing NASM messages are warnings; all
+listed commands completed successfully. Final cross-platform CI and the
+selected-scope changed-code coverage gate are still required before checking
+T041 complete.
+
+### T041 Query payload preflight bounds follow-up (2026-10-19)
+
+Independent review found that the Query constructor's configured byte budget
+needed to be described as a Query-payload preflight, while execution separately
+checks the complete Request Message before transmission. This follow-up also
+rejects Query payload or Object Groups structure lengths that cannot be
+represented in TTLV's `uint32` Item Length field, before C, JNI, or CFFI copies
+the group bytes. The existing empty-Query prohibition remains enforced before
+transport exchange. No OASIS scope or wire encoding changed.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `6e03e598` | `cargo test --locked -p kmipkit-client --lib query_payload_limits_tests`; focused Python Query-input tests | Expected Red: Rust tests could not compile because the aggregate Query structure-length preflight was missing; Python tests failed because the matching TTLV structure-length validator did not exist. The C ABI regression covers an aggregate structure overflow before dereferencing synthetic spans. |
+| Green | `9224e01f` | `cargo test --locked -p kmipkit-client --lib query_payload_limits_tests`; `cargo test --locked -p kmipkit-ffi --lib --all-features query_ping_abi_tests`; complete Java Gradle and Maven verification; complete Python suite and coverage run | PASS: current focused Rust tests 8/8 and C ABI tests 9/9. The prior complete Java Gradle/Maven verification and Python suite also passed (564 tests plus 100 subtests; Python coverage 97.76%). Rust execution independently checks the complete Request Message before transport. |
+| Refactor | This DCO-signed documentation and evidence commit | `cargo fmt --all --check`; `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings`; `uv run --no-project --offline --with jsonschema python -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_t011_observed_binding_exports_are_reconciled_without_invented_mappings tools.api_manifest.tests.test_ping_query_parity_manifest -v`; `py -3 -B tools/api_manifest/generate.py --check`; Python Query/Ping pytest module; Java Ping/Query Gradle test; `git diff --check` | PASS: formatting and workspace Clippy; 4 focused manifest/parity tests; all 12 generated outputs; 17 Python Query/Ping tests; Java Ping/Query mapping task; focused Rust 8/8 and C ABI 9/9 suites; no whitespace errors. |
+
+The full local Rust coverage report was regenerated on Windows. The selected
+cross-platform aggregate cannot be completed locally because the report set
+does not include the required macOS artifact; the current-head GitHub coverage
+gate remains authoritative. T041 remains unchecked until current-head CI and
+selected-scope coverage pass.

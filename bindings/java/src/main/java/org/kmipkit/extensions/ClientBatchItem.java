@@ -48,8 +48,10 @@ public final class ClientBatchItem implements AutoCloseable {
     }
 
     /**
-     * Creates a KMIP Query request, preserving raw function values and their order. A null
-     * {@code objectGroups} omits Object Groups, while an empty array includes it as present-empty.
+     * Creates a KMIP Query request after checking its payload against the default codec limits.
+     * The complete Request Message is checked again before transmission. Raw function values and
+     * their order are preserved. A null {@code objectGroups} omits Object Groups, while an empty
+     * array includes it as present-empty.
      */
     public static ClientBatchItem query(int[] functions, String[] objectGroups) {
         return queryWithLimits(functions, objectGroups, CodecLimits.defaults());

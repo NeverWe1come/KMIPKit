@@ -2352,4 +2352,14 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-protocol",
         "kmipkit_protocol::QueryResponse::to_ttlv_payload",
     ),
+    (
+        "T041:query:request-with-limits:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::query_with_limits",
+    ),
+    (
+        "rust-observed-118d3f5ae7dd70e84a17",
+        "rust-kmipkit",
+        "kmipkit::ClientBatchItem::query_with_limits",
+    ),
 ];

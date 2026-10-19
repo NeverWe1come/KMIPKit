@@ -1603,7 +1603,7 @@ def client_batch_item_query(
     functions: list[int] | tuple[int, ...],
     object_groups: list[str] | tuple[str, ...] | None = None,
 ) -> ClientBatchItem:
-    """Create a Query batch item under the default codec limits."""
+    """Create a Query batch item; execution checks the complete Request Message limits."""
     return _client_batch_item_query(functions, object_groups)
 
 

@@ -410,7 +410,7 @@ def build_inventory(
     return {
         "formatVersion": 1,
         "scope": "approved-shared-rust-api",
-        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-16.json",
+        "source": "specs/043-public-api-bindings/reports/rust-export-report-2026-10-17.json",
         "observedRustDeclarationCount": len(observed),
         "directRustDeclarationCount": direct_count,
         "conditionalRustDeclarationCount": conditional_count,
@@ -447,7 +447,7 @@ def main(argv: list[str] | None = None) -> int:
     root = args.repo_root.resolve()
     target = root / args.report
     manifest_path = root / "specification" / "api" / "public-api.json"
-    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-16.json"
+    audit_path = root / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-10-17.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rust_report = json.loads(audit_path.read_text(encoding="utf-8"))

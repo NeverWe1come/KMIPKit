@@ -230,8 +230,11 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
                 )
 
     def test_python_typed_response_types_and_fields_are_declared(self) -> None:
-        declarations = {
+        declarations_by_export = {
             row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        declarations_by_id = {
+            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
         for operation, fields in (
             (
@@ -248,17 +251,25 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
         ):
             type_name = f"kmipkit.client.{operation}Response"
             with self.subTest(response=operation):
-                self.assertEqual("type", declarations[type_name]["kind"])
-                self.assertEqual("declared", declarations[type_name]["declarationState"])
+                self.assertEqual("type", declarations_by_export[type_name]["kind"])
+                self.assertEqual(
+                    "verified",
+                    declarations_by_export[type_name]["declarationState"],
+                )
                 for field_name in fields:
                     declaration_name = f"{type_name}.{field_name}"
-                    self.assertEqual("field", declarations[declaration_name]["kind"])
                     self.assertEqual(
-                        "declared", declarations[declaration_name]["declarationState"]
+                        "python-export", declarations_by_export[declaration_name]["kind"]
+                    )
+                    self.assertEqual(
+                        "verified",
+                        declarations_by_export[declaration_name]["declarationState"],
                     )
                 self.assertEqual(
                     f"kmipkit.client.{operation}Response.close",
-                    declarations[f"T040:{operation.lower()}:response-close:python"]["exportName"],
+                    declarations_by_id[
+                        f"T040:{operation.lower()}:response-close:python"
+                    ]["exportName"],
                 )
 
 

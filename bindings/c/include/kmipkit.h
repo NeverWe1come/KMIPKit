@@ -212,6 +212,7 @@ void kmipkit_transport_config_release(kmipkit_transport_config_t *handle);
 void kmipkit_client_release(kmipkit_client_t *handle);
 void kmipkit_client_batch_release(kmipkit_client_batch_t *handle);
 void kmipkit_client_batch_response_release(kmipkit_client_batch_response_t *handle);
+void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_response_t *handle);
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
 #define KMIPKIT_ERROR_RESOURCE_LIMIT ((int32_t)6)
@@ -801,27 +802,34 @@ int32_t kmipkit_client_batch_item_ping(kmipkit_client_batch_item_t ** out_item);
  */
 /* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_ping(kmipkit_client_batch_item_response_t * item, uint8_t * out_present);
-/* Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40.
+/* Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40. The complete Request Message is checked against execution codec limits before transmission.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
 int32_t kmipkit_client_batch_item_query(const uint32_t * functions, uint64_t function_count, uint8_t has_object_groups, const kmipkit_byte_span_v1_t * object_groups, uint64_t object_group_count, kmipkit_client_batch_item_t ** out_item);
+/* Creates a typed client-initiated Query request batch item after checking its TTLV payload against the supplied codec limits. The complete Request Message is checked again before transmission.
+ */
+/* For nullable arrays, NULL is valid only when the linked count is zero.
+ * Implementations must check the count before reading elements and return
+ * invalid_input when a NULL array has a nonzero count. */
+/* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
+int32_t kmipkit_client_batch_item_query_with_limits(kmipkit_codec_limits_t * limits, const uint32_t * functions, uint64_t function_count, uint8_t has_object_groups, const kmipkit_byte_span_v1_t * object_groups, uint64_t object_group_count, kmipkit_client_batch_item_t ** out_item);
 /* Copies the complete generic TTLV Query response payload, retaining ordered and unknown Items.
  */
 /* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.40-014, KMIPKIT-REQ-SPEC-6.1.40-016 */
 int32_t kmipkit_client_batch_item_response_query_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
-/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
-int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.
  */
 /* Approved exact C-only exclusion: kmipkit_client_execute_with_options_and_error_ttlv_v1 */
 int32_t kmipkit_client_execute_with_options_and_error_ttlv_v1(kmipkit_client_t * client, kmipkit_client_batch_t ** batch, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response, kmipkit_ttlv_structure_t ** out_error_response_ttlv);
+/* Approved exact C-only exclusion: kmipkit_transport_config_create_v1 */
+int32_t kmipkit_transport_config_create_v1(const kmipkit_transport_config_v1_t * configuration, kmipkit_transport_config_t ** out_configuration);
 
 #ifdef __cplusplus
 }

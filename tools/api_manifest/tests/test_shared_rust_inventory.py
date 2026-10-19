@@ -26,7 +26,7 @@ class SharedRustInventoryTests(unittest.TestCase):
                 / "specs"
                 / "043-public-api-bindings"
                 / "reports"
-                / "rust-export-report-2026-10-16.json"
+                / "rust-export-report-2026-10-17.json"
             ).read_text(encoding="utf-8")
         )
 
@@ -62,7 +62,7 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_current_inventory_links_every_mapped_rust_declaration_to_approved_owner_requirements(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["observedRustDeclarationCount"], 9534)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 9537)
         self.assertEqual(inventory["mappedRustDeclarationCount"], 270)
         self.assertEqual(len(inventory["blockedUnreconciledDeclarations"]), 2)
         self.assertEqual(inventory["draftOwnerGates"]["KMIPKIT-0009"]["blockedOperations"], 4)
@@ -267,11 +267,40 @@ class SharedRustInventoryTests(unittest.TestCase):
             (row["packageId"], row["exportName"]): row
             for row in self.manifest["publicDeclarations"]
         }
+        approved_exclusions_by_export = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+        }
         for declaration in self.manifest["publicDeclarations"]:
             if declaration["declarationState"] not in {"declared", "verified"}:
                 continue
             for language, mapping in declaration["languageMappings"].items():
                 target = declarations_by_export.get((mapping["packageId"], mapping["name"]))
+                if target is None:
+                    exclusion = approved_exclusions_by_export.get(
+                        (mapping["packageId"], mapping["name"])
+                    )
+                    self.assertIsNotNone(
+                        exclusion,
+                        f"{declaration['declarationId']} maps {language} to an unlisted export",
+                    )
+                    self.assertEqual(
+                        (mapping["packageId"], mapping["name"]),
+                        ("c-kmipkit", "kmipkit_client_batch_item_response_release"),
+                    )
+                    self.assertIn("lifecycle counterpart", exclusion["reason"])
+                    self.assertIn("distinct four-language capability", exclusion["reason"])
+                    self.assertIn("Encrypt and Decrypt response lifecycle mappings", exclusion["evidence"])
+                    self.assertIn(
+                        declaration["declarationId"],
+                        {
+                            "T040:encrypt:response-close:java",
+                            "T040:encrypt:response-close:python",
+                            "T040:decrypt:response-close:java",
+                            "T040:decrypt:response-close:python",
+                        },
+                    )
+                    continue
                 self.assertIsNotNone(
                     target,
                     f"{declaration['declarationId']} maps {language} to an unlisted export",

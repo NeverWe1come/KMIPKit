@@ -903,6 +903,9 @@ impl ClientBatchItem {
     }
 
     /// Creates a batch item for one typed Query request.
+    ///
+    /// The complete Request Message is checked against the execution codec limits before it is
+    /// encoded or sent.
     #[must_use]
     pub fn query(request: QueryRequest) -> Self {
         Self::new(ClientRequest::query(request))

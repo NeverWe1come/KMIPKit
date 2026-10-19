@@ -670,6 +670,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (item["packageId"], item["exportName"])
             for item in self.checked_in_manifest["approvedExclusions"]
         }
+        java_query_bridge_exports = {
+            ("java-kmipkit", f"org.kmipkit.NativeExtensionRegistry.{name}")
+            for name in (
+                "clientBatchItemPing",
+                "clientBatchItemQuery",
+                "clientBatchItemQueryWithLimits",
+                "clientBatchItemResponsePing",
+                "clientBatchItemResponseQueryTtlv",
+            )
+        }
+        self.assertTrue(java_query_bridge_exports <= exclusions)
+        for key in java_query_bridge_exports:
+            exclusion = next(
+                item for item in self.checked_in_manifest["approvedExclusions"]
+                if (item["packageId"], item["exportName"]) == key
+            )
+            self.assertIn("no independent Java product capability", exclusion["reason"])
+            self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+            self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
         aws_lc_transitive_exports = {
             ("c-kmipkit", f"aws_lc_0_45_0_jent_{name}")
             for name in (
@@ -953,7 +972,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9511)
+        self.assertEqual(len(declarations), 9513)
         self.assertEqual(len(exclusions), 24)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
@@ -1117,21 +1136,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual(capability_span["maxBytes"], 128)
 
-        declarations = {
-            declaration.get("languageMappings", {}).get("c", {}).get("name"):
-            declaration
+        declarations_by_c_symbol: dict[str, list[dict[str, object]]] = {}
+        for declaration in self.checked_in_manifest["publicDeclarations"]:
+            symbol = declaration.get("languageMappings", {}).get("c", {}).get("name")
+            if symbol:
+                declarations_by_c_symbol.setdefault(symbol, []).append(declaration)
+        c_declarations_by_symbol = {
+            declaration["exportName"]: declaration
             for declaration in self.checked_in_manifest["publicDeclarations"]
+            if declaration["packageId"] == "c-kmipkit"
         }
-        response_release = declarations.get("kmipkit_client_batch_item_response_release")
-        self.assertIsNotNone(response_release)
-        self.assertEqual(
-            response_release["languageMappings"]["c"]["name"],
-            "kmipkit_client_batch_item_response_release",
-        )
-        self.assertTrue(expected_symbols <= set(declarations))
+        self.assertTrue(expected_symbols <= set(declarations_by_c_symbol))
         for symbol in expected_symbols:
-            self.assertEqual(declarations[symbol]["capabilityId"], "ffi_runtime_metadata")
-            self.assertEqual(declarations[symbol]["declarationState"], "declared")
+            declaration = c_declarations_by_symbol[symbol]
+            self.assertEqual(declaration["capabilityId"], "ffi_runtime_metadata")
+            self.assertEqual(declaration["declarationState"], "declared")
 
         rust_lookup = next(
             item for item in self.checked_in_manifest["publicDeclarations"]
@@ -1205,7 +1224,28 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         for symbol in c_exclusions:
             self.assertTrue(c_exclusions[symbol]["reason"])
             self.assertTrue(c_exclusions[symbol]["evidence"])
-            self.assertNotIn(symbol, declarations)
+            if symbol == "kmipkit_client_batch_item_response_release":
+                lifecycle_mappings = declarations_by_c_symbol[symbol]
+                self.assertEqual(
+                    {item["declarationId"] for item in lifecycle_mappings},
+                    {
+                        "T040:encrypt:response-close:java",
+                        "T040:encrypt:response-close:python",
+                        "T040:decrypt:response-close:java",
+                        "T040:decrypt:response-close:python",
+                    },
+                )
+                self.assertEqual(
+                    {item["capabilityId"] for item in lifecycle_mappings},
+                    {
+                        "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+                        "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+                    },
+                )
+                self.assertIn("lifecycle counterpart", c_exclusions[symbol]["reason"])
+                self.assertIn("distinct four-language capability", c_exclusions[symbol]["reason"])
+            else:
+                self.assertNotIn(symbol, declarations_by_c_symbol)
 
         rust_exclusions = [
             item
@@ -1390,7 +1430,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 637)
+        self.assertEqual(len(declarations), 638)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1732,7 +1772,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 609)
+        self.assertEqual(len(declarations), 610)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
