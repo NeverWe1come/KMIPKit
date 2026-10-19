@@ -50,6 +50,9 @@ LIMIT_IDS = (
     "maxLookupComparisons",
     "maxDepth",
 )
+LOGIN_TTLV_AGGREGATE_JNI_SYMBOL = (
+    "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLogin"
+)
 REQUIREMENT_IDS = tuple(f"KMIPKIT-0012-FR-{number:03}" for number in range(1, 15))
 SHARED_PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
 SHARED_PARITY_CASES = {
@@ -493,7 +496,7 @@ class PublicApiParityTests(unittest.TestCase):
 
         self.assertNotIn("jniSymbol", ticket_ttlv["java"])
         self.assertEqual(
-            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseLogin",
+            LOGIN_TTLV_AGGREGATE_JNI_SYMBOL,
             ticket_ttlv["java"].get("jniAggregateSymbol"),
         )
         self.assertEqual(

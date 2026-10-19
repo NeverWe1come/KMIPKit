@@ -11,6 +11,19 @@ from tools.api_manifest import audit_binding_exports, generate
 
 
 ROOT = Path(__file__).resolve().parents[3]
+LOGIN_RESPONSE_EXCLUDED_EXPORTS = frozenset(
+    f"kmipkit.client.LoginResponse.{member}"
+    for member in (
+        "__dataclass_fields__",
+        "__dataclass_params__",
+        "__slots__",
+        "__hash__",
+        "__init__",
+        "__match_args__",
+        "__eq__",
+        "__repr__",
+    )
+)
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 T076_SYMBOLS = {
     "kmipkit_client_batch_add_error_continuation_value",
@@ -1368,21 +1381,10 @@ class T076ClientMappingTests(unittest.TestCase):
         log_response_repr_exclusion = {
             "kmipkit.client.LogResponse.__repr__"
         }
-        login_response_dataclass_exclusions = {
-            f"kmipkit.client.LoginResponse.{member}"
-            for member in (
-                "__dataclass_fields__",
-                "__dataclass_params__",
-                "__slots__",
-                "__hash__",
-                "__init__",
-                "__match_args__",
-                "__eq__",
-            )
-        }
-        login_response_repr_exclusion = {
-            "kmipkit.client.LoginResponse.__repr__"
-        }
+        login_response_repr_exclusion = {"kmipkit.client.LoginResponse.__repr__"}
+        login_response_dataclass_exclusions = (
+            LOGIN_RESPONSE_EXCLUDED_EXPORTS - login_response_repr_exclusion
+        )
         split_key_reference_constructor_exclusion = {
             "kmipkit.extensions.SplitKeyReference.__init__"
         }
@@ -1488,19 +1490,7 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("local runtime metadata value", exclusion["reason"].lower())
 
     def test_login_response_dataclass_exports_have_exact_t054_exclusions(self) -> None:
-        expected = {
-            f"kmipkit.client.LoginResponse.{member}"
-            for member in (
-                "__dataclass_fields__",
-                "__dataclass_params__",
-                "__slots__",
-                "__hash__",
-                "__init__",
-                "__match_args__",
-                "__eq__",
-                "__repr__",
-            )
-        }
+        expected = LOGIN_RESPONSE_EXCLUDED_EXPORTS
         actual = {
             row["exportName"]
             for row in self.manifest["approvedExclusions"]
