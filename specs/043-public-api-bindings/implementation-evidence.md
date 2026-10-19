@@ -4261,3 +4261,18 @@ production code.
 #### T054 changed-code coverage — Red baseline (2026-10-19)
 
 PR CI run `39224595043` on head `60722babd8b0a7afe4f3ed1b0074d90760db2199` completed all platform and language checks except the changed-code coverage gate. The exact gate result was `7,293/7,688` executable lines (94.86%), below the required 95%; no scope or threshold was changed. The failed run is the Red evidence for this coverage-only follow-up.
+
+#### T054 changed-code coverage — Green verification (2026-10-19)
+
+The coverage-only follow-up adds focused regression coverage for Python response mapping/validation and Rust FFI handle validation. The Java allocation-failure cleanup line remains an explicitly documented exclusion because the only path that reaches it before ownership transfer is allocation failure. Independent QA found no behavior, ownership, or privacy blocker in the patch.
+
+| Stage | Commit or run | Command or artifact | Result |
+|---|---|---|---|
+| Green | `801df1ee` | Clean Python package environment; complete binding test suite | PASS: 528 tests; Python coverage 98.30%. The earlier source-tree run used a stale native DLL and was discarded after the clean package run passed. |
+| Green | `801df1ee` | `mvn --batch-mode --file bindings/java/pom.xml verify` | PASS: 311 tests, 0 failures/errors, 3 existing skips; JaCoCo checks pass. |
+| Green | `801df1ee` | Focused `kmipkit-ffi` invalid-handle and split-key validation tests; `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings` | PASS: both Rust FFI regressions and scoped Clippy check. |
+| Green | `801df1ee` | `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Hosted CI | Run `39227887394`, head `801df1ee488891d2e36122a87c3d2b1c947305e6` | GitHub Actions | PASS: run conclusion is success, including Windows/macOS Rust stable jobs and `Coverage gate / selected scopes`; the 95% selected-scope changed-code gate is green. |
+| Review | Independent QA | Read-only patch review | PASS: no behavioral, ownership, or privacy blocker. The Java exclusion is consistent with its allocation-only failure path. |
+
+The T054 coverage blocker is resolved. PR #104 remains a draft because its other KMIPKIT-0043 mapping tasks still require completion and review.
