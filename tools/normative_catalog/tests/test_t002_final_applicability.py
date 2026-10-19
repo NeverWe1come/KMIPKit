@@ -127,21 +127,17 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertEqual(missing_project_rationale, [])
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
-        deactivation_rows = [
-            self.crosswalk[requirement_id]
-            for requirement_id in (
-                "KMIPKIT-REQ-SPEC-4.18-001-001",
-                "KMIPKIT-REQ-SPEC-4.18-001-002",
-            )
-        ]
-        self.assertTrue(all("deletable by client: no" in row["review_note"].casefold()
-                            for row in deactivation_rows))
-        self.assertTrue(all("table 64" in row["review_note"].casefold()
-                            and "table 63" not in row["review_note"].casefold()
-                            for row in deactivation_rows))
-        self.assertTrue(all("pre-active" in row["review_note"].casefold()
-                            and "active" in row["review_note"].casefold()
-                            for row in deactivation_rows))
+        use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
+        self.assertIn("extraordinary circumstances", use_after_deactivation["review_note"].casefold())
+        self.assertIn("special permission", use_after_deactivation["review_note"].casefold())
+
+        deactivation_date_mutation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-002"]
+        mutation_note = deactivation_date_mutation["review_note"].casefold()
+        self.assertIn("deletable by client: no", mutation_note)
+        self.assertIn("table 64", mutation_note)
+        self.assertNotIn("table 63", mutation_note)
+        self.assertIn("pre-active", mutation_note)
+        self.assertIn("active", mutation_note)
 
     def test_modify_attribute_keeps_existing_id_and_client_request_context(self) -> None:
         modify_attribute = self.crosswalk["KMIPKIT-REQ-SPEC-6.1.34-001-003"]
