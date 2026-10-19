@@ -4613,6 +4613,13 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_context(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_guarded_protection_item(
+        client: *mut kmipkit_client_t,
+        context: *mut kmipkit_usage_allocation_context_t,
+        item: *mut *mut kmipkit_client_batch_item_t,
+        cost: i64,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -4711,6 +4718,69 @@ fn ffi_usage_allocation_context_survives_source_item_release_in_c() {
         result, 1,
         "C creates a context, releases its source item, then reads the copied metadata"
     );
+}
+
+#[test]
+fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
+    let allocation_item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"allocation-result",
+        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
+    );
+    let mut context = ptr::null_mut();
+    assert_eq!(
+        kmipkit_usage_allocation_context_create(
+            allocation_item,
+            5,
+            u32::MAX,
+            &raw mut context,
+        ),
+        SUCCESS
+    );
+    kmipkit_client_batch_item_response_release(allocation_item);
+
+    let response = successful_cryptographic_response(
+        0x1f,
+        b"encrypt-result",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"allocation-object"),
+            ttlv_item(0x0042_00c2, 0x08, b"ciphertext"),
+        ],
+    );
+    let (client, peer) = client_with_one_response(response);
+    let client: *mut kmipkit_client_t = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(std::sync::Mutex::new(client))),
+    );
+    let request = ClientRequest::Encrypt(EncryptRequest::new(
+        Some(UniqueIdentifier::TextString("allocation-object".to_owned())),
+        Some(OperationData::ByteString(SecretBytes::new(b"plaintext".to_vec()))),
+    ));
+    let mut item = make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
+    );
+    let limits = default_codec_limits_handle();
+
+    // SAFETY: the C consumer borrows the live client/context/limits and consumes the valid item
+    // slot exactly once, then releases the returned response and its item handle.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_guarded_protection_item(
+            client.cast(),
+            context,
+            &raw mut item,
+            2,
+            limits,
+        )
+    };
+    peer.join().expect("the mTLS peer completes the guarded exchange");
+
+    assert_eq!(result, 1, "C executes Encrypt and observes its reservation");
+    assert!(item.is_null(), "guarded execution consumes the item handle");
+    release(client, Kind::Client);
+    kmipkit_usage_allocation_context_release(context);
+    release(limits, Kind::CodecLimits);
 }
 
 // KMIP Specification v2.1 §6.1.27, Tables 244–246.
