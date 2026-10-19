@@ -209,40 +209,45 @@ impl LocalDnsFixture {
 }
 
 fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
-    bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
-        UdpSocket::bind,
-    )
+    bind_local_dns_sockets_with(UdpSocket::bind, UdpSocket::local_addr, TcpListener::bind)
 }
 
-fn bind_local_dns_sockets_with(
-    mut bind_tcp: impl FnMut() -> io::Result<TcpListener>,
-    mut bind_udp: impl FnMut(SocketAddr) -> io::Result<UdpSocket>,
-) -> io::Result<(UdpSocket, TcpListener)> {
-    let mut attempts_remaining = MAX_SOCKET_PAIR_BIND_ATTEMPTS;
-    loop {
-        let tcp_listener = match bind_tcp() {
-            Ok(listener) => listener,
+fn bind_local_dns_sockets_with<Udp, Tcp>(
+    mut bind_udp: impl FnMut(SocketAddr) -> io::Result<Udp>,
+    udp_local_addr: impl Fn(&Udp) -> io::Result<SocketAddr>,
+    mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<Tcp>,
+) -> io::Result<(Udp, Tcp)> {
+    let udp_bind_address = SocketAddr::from((Ipv4Addr::LOCALHOST, 0));
+
+    for attempt in 1..=MAX_SOCKET_PAIR_BIND_ATTEMPTS {
+        let udp_socket = match bind_udp(udp_bind_address) {
+            Ok(socket) => socket,
             Err(error) => {
-                retry_socket_pair_bind(&mut attempts_remaining, error)?;
-                continue;
+                if is_retryable_socket_pair_bind_error(error.kind())
+                    && attempt < MAX_SOCKET_PAIR_BIND_ATTEMPTS
+                {
+                    continue;
+                }
+                return Err(error);
             }
         };
-        let local_addr = tcp_listener.local_addr()?;
-        match bind_udp(local_addr) {
-            Ok(socket) => return Ok((socket, tcp_listener)),
-            Err(error) => retry_socket_pair_bind(&mut attempts_remaining, error)?,
+        let local_addr = udp_local_addr(&udp_socket)?;
+        match bind_tcp(local_addr) {
+            Ok(listener) => return Ok((udp_socket, listener)),
+            Err(error) => {
+                if is_retryable_socket_pair_bind_error(error.kind())
+                    && attempt < MAX_SOCKET_PAIR_BIND_ATTEMPTS
+                {
+                    continue;
+                }
+                return Err(error);
+            }
         }
     }
-}
 
-fn retry_socket_pair_bind(attempts_remaining: &mut usize, error: io::Error) -> io::Result<()> {
-    if !is_retryable_socket_pair_bind_error(error.kind()) || *attempts_remaining <= 1 {
-        return Err(error);
-    }
-
-    *attempts_remaining -= 1;
-    Ok(())
+    Err(io::Error::other(
+        "DNS fixture exhausted socket-pair bind attempts without a bind error",
+    ))
 }
 
 fn is_retryable_socket_pair_bind_error(kind: io::ErrorKind) -> bool {

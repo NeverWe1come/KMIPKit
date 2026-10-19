@@ -117,168 +117,223 @@ fn parser_rejects_unsupported_types_and_truncated_labels() {
     assert!(super::parse_question_name(&unsupported).is_none());
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct FakeDnsSocket {
+    local_addr: std::net::SocketAddr,
+}
+
+fn fake_dns_address(port: u16) -> std::net::SocketAddr {
+    std::net::SocketAddr::from((Ipv4Addr::LOCALHOST, port))
+}
+
+fn fake_dns_socket(local_addr: std::net::SocketAddr) -> FakeDnsSocket {
+    FakeDnsSocket { local_addr }
+}
+
+fn fake_dns_local_addr(socket: &FakeDnsSocket) -> io::Result<std::net::SocketAddr> {
+    Ok(socket.local_addr)
+}
+
 #[test]
 fn binds_udp_ephemeral_port_before_tcp_pairing() {
     let bind_calls = std::cell::RefCell::new(Vec::new());
     let result = super::bind_local_dns_sockets_with(
-        || {
-            bind_calls.borrow_mut().push("TCP");
-            Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "TCP bind should follow UDP port selection",
-            ))
-        },
-        |_address| {
+        |address| {
             bind_calls.borrow_mut().push("UDP");
-            Err(io::Error::new(
+            assert_eq!(address, fake_dns_address(0));
+            Ok(fake_dns_socket(fake_dns_address(53_001)))
+        },
+        fake_dns_local_addr,
+        |address| {
+            bind_calls.borrow_mut().push("TCP");
+            assert_eq!(address, fake_dns_address(53_001));
+            Err::<FakeDnsSocket, _>(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "test should not bind sockets",
+                "test stops after verifying bind order",
             ))
         },
     );
 
-    assert!(result.is_err());
+    assert_eq!(
+        result
+            .expect_err("the injected TCP failure is returned")
+            .kind(),
+        io::ErrorKind::InvalidInput
+    );
     assert_eq!(*bind_calls.borrow(), ["UDP", "TCP"]);
 }
 
 #[test]
-fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
-    let mut attempts = 0;
+fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
+    let mut udp_attempts = 0;
+    let mut tcp_attempts = 0;
     let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || {
-            attempts += 1;
-            if attempts == 1 {
+        |address| {
+            udp_attempts += 1;
+            assert_eq!(address, fake_dns_address(0));
+            if udp_attempts == 1 {
                 Err(io::Error::new(
                     io::ErrorKind::PermissionDenied,
-                    "simulated Windows excluded TCP port",
+                    "simulated excluded UDP port",
                 ))
             } else {
-                TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+                Ok(fake_dns_socket(fake_dns_address(54_000)))
             }
         },
-        UdpSocket::bind,
-    )
-    .expect("a reserved ephemeral port should be retried");
-
-    assert!((2..=super::MAX_SOCKET_PAIR_BIND_ATTEMPTS).contains(&attempts));
-    assert_eq!(
-        udp_socket
-            .local_addr()
-            .expect("UDP socket has a local address"),
-        tcp_listener
-            .local_addr()
-            .expect("TCP listener has the paired local address")
-    );
-}
-
-#[test]
-fn retries_dns_fixture_udp_bind_when_ephemeral_port_is_reserved() {
-    let mut attempts = 0;
-    let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
+        fake_dns_local_addr,
         |address| {
-            attempts += 1;
-            if attempts == 1 {
-                Err(io::Error::new(
-                    io::ErrorKind::PermissionDenied,
-                    "simulated Windows excluded UDP port",
-                ))
-            } else {
-                UdpSocket::bind(address)
-            }
+            tcp_attempts += 1;
+            Ok(fake_dns_socket(address))
         },
     )
     .expect("a reserved ephemeral UDP port should be retried");
 
-    assert_eq!(attempts, 2);
+    assert_eq!(udp_attempts, 2);
+    assert_eq!(tcp_attempts, 1);
+    assert_eq!(udp_socket.local_addr, fake_dns_address(54_000));
+    assert_eq!(tcp_listener.local_addr, udp_socket.local_addr);
+}
+
+#[test]
+fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
+    let mut udp_attempts = 0;
+    let mut tcp_attempts = 0;
+    let mut tcp_addresses = Vec::new();
+    let (udp_socket, tcp_listener) = super::bind_local_dns_sockets_with(
+        |address| {
+            udp_attempts += 1;
+            assert_eq!(address, fake_dns_address(0));
+            let port = 54_000_u16
+                + u16::try_from(udp_attempts).expect("the test bind count fits in a port");
+            Ok(fake_dns_socket(fake_dns_address(port)))
+        },
+        fake_dns_local_addr,
+        |address| {
+            tcp_attempts += 1;
+            tcp_addresses.push(address);
+            if tcp_attempts == 1 {
+                Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "simulated excluded TCP port",
+                ))
+            } else {
+                Ok(fake_dns_socket(address))
+            }
+        },
+    )
+    .expect("a reserved ephemeral TCP port should be retried");
+
+    assert_eq!(udp_attempts, 2);
+    assert_eq!(tcp_attempts, 2);
     assert_eq!(
-        udp_socket
-            .local_addr()
-            .expect("UDP socket has a local address"),
-        tcp_listener
-            .local_addr()
-            .expect("TCP listener has the paired local address")
+        tcp_addresses,
+        [fake_dns_address(54_001), fake_dns_address(54_002)]
     );
+    assert_eq!(udp_socket.local_addr, fake_dns_address(54_002));
+    assert_eq!(tcp_listener.local_addr, udp_socket.local_addr);
 }
 
 #[test]
 fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
-    let mut attempts = 0;
+    let mut udp_attempts = 0;
     let mut tcp_attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
-            tcp_attempts += 1;
-            TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
-        },
-        |_address| {
-            attempts += 1;
+        |address| {
+            udp_attempts += 1;
+            assert_eq!(address, fake_dns_address(0));
             Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
                 "simulated reserved UDP port",
             ))
         },
+        fake_dns_local_addr,
+        |address| {
+            tcp_attempts += 1;
+            Ok(fake_dns_socket(address))
+        },
     )
     .expect_err("UDP binding stops after its bounded retry limit");
 
-    assert_eq!(attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
-    assert_eq!(tcp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
+    assert_eq!(udp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
+    assert_eq!(tcp_attempts, 0);
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
 }
 
 #[test]
 fn does_not_retry_permanent_dns_fixture_udp_bind_errors() {
-    let mut attempts = 0;
+    let mut udp_attempts = 0;
+    let mut tcp_attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || TcpListener::bind((Ipv4Addr::LOCALHOST, 0)),
-        |_address| {
-            attempts += 1;
+        |address| {
+            udp_attempts += 1;
+            assert_eq!(address, fake_dns_address(0));
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "simulated invalid UDP bind request",
             ))
         },
+        fake_dns_local_addr,
+        |address| {
+            tcp_attempts += 1;
+            Ok(fake_dns_socket(address))
+        },
     )
     .expect_err("permanent UDP bind errors are returned immediately");
 
-    assert_eq!(attempts, 1);
+    assert_eq!(udp_attempts, 1);
+    assert_eq!(tcp_attempts, 0);
     assert_eq!(error.kind(), io::ErrorKind::InvalidInput);
 }
 
 #[test]
 fn stops_retrying_dns_fixture_tcp_bind_after_the_attempt_limit() {
-    let mut attempts = 0;
+    let mut udp_attempts = 0;
+    let mut tcp_attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
-            attempts += 1;
-            Err(io::Error::new(
+        |address| {
+            udp_attempts += 1;
+            assert_eq!(address, fake_dns_address(0));
+            Ok(fake_dns_socket(fake_dns_address(55_000)))
+        },
+        fake_dns_local_addr,
+        |_address| {
+            tcp_attempts += 1;
+            Err::<FakeDnsSocket, _>(io::Error::new(
                 io::ErrorKind::PermissionDenied,
                 "simulated reserved TCP port",
             ))
         },
-        UdpSocket::bind,
     )
     .expect_err("socket-pair binding stops after its bounded retry limit");
 
-    assert_eq!(attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
+    assert_eq!(udp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
+    assert_eq!(tcp_attempts, super::MAX_SOCKET_PAIR_BIND_ATTEMPTS);
     assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
 }
 
 #[test]
 fn does_not_retry_permanent_dns_fixture_tcp_bind_errors() {
-    let mut attempts = 0;
+    let mut udp_attempts = 0;
+    let mut tcp_attempts = 0;
     let error = super::bind_local_dns_sockets_with(
-        || {
-            attempts += 1;
-            Err(io::Error::new(
+        |address| {
+            udp_attempts += 1;
+            assert_eq!(address, fake_dns_address(0));
+            Ok(fake_dns_socket(fake_dns_address(55_000)))
+        },
+        fake_dns_local_addr,
+        |_address| {
+            tcp_attempts += 1;
+            Err::<FakeDnsSocket, _>(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "simulated invalid TCP bind request",
             ))
         },
-        UdpSocket::bind,
     )
-    .expect_err("permanent socket-pair errors are returned immediately");
+    .expect_err("permanent TCP bind errors are returned immediately");
 
-    assert_eq!(attempts, 1);
+    assert_eq!(udp_attempts, 1);
+    assert_eq!(tcp_attempts, 1);
     assert_eq!(error.kind(), io::ErrorKind::InvalidInput);
 }
 
