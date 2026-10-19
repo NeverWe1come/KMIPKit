@@ -3970,3 +3970,18 @@ The 77 catalogued cases without local fixture paths remain `unavailable`; they w
 | Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_test_in_unincluded_rust_file` | FAIL as intended: the resolver accepted an active-looking `#[test]` in an orphan `.rs` file not included by any Rust module declaration. This exposes a second false-positive test-reference check. |
 
 | Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_test_at_wrong_inline_module_path` | FAIL as intended: a module declared inside an inline Rust module was resolved as though it were at the file's top-level module path, making an uncompiled test file appear reachable. |
+
+| Green | `py -3 -B -m unittest tools.normative_catalog.tests.test_report tools.normative_catalog.tests.test_feature_traceability` | PASS: 57 tests, 2 expected Windows skips. The resolver now strips comments/literals, rejects unsupported cfg conditions and inline-module path guesses, and follows reachable top-level modules from Cargo's library root and integration-test targets. |
+| Green | `py -3 -B tools/normative_catalog/validate.py`; `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/report.py --check`; `git diff --check` | PASS: catalog 4 sources/1,411 clauses/4,123 records; generated profile metadata and coverage report are current; no whitespace errors. |
+
+### KMIPKIT-0010 T030 QA follow-up — Cargo target and macro boundaries (2026-10-19)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_test_declaration_inside_macro_tokens` | FAIL as intended: a multiline `macro_rules!` token body containing a textual `#[test] fn ghost_test` was accepted as an executable test. |
+| Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_library_tests_disabled_by_cargo tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_rejects_implicit_library_when_autolib_is_disabled` | FAIL as intended: evidence from a library target was accepted when Cargo excludes its test harness (`[lib] test = false`) or disables the implicit library target (`autolib = false`). |
+| Red | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_fails_closed_on_invalid_cargo_manifest` | ERROR: malformed Cargo TOML produced `TypeError: argument of type 'bool' is not iterable`; the target resolver returned `False` instead of its declared `frozenset[Path]` result, so evidence did not fail closed through the expected registry error. |
+
+These regressions were reproduced against the T030 follow-up implementation
+before the resolver changes. They are evidence-integrity bugs: the catalog must
+only accept a real test item from a Cargo target whose test harness is enabled.
