@@ -48,6 +48,18 @@ def test_obtain_lease_builder_omits_identifier_for_batch_placeholder(
     assert calls[0][1] == (ffi.NULL,)
 
 
+def test_batch_item_result_preserves_legacy_positional_field_order() -> None:
+    check_response = object()
+    legacy_arguments = [client.BatchOutcome.COMPLETED, 0, None, None, None]
+    legacy_arguments.extend((None, 0, None, *([None] * 12)))
+    legacy_arguments.append(check_response)
+
+    result = client.BatchItemResult(*legacy_arguments)  # type: ignore[arg-type]
+
+    assert result.check_response is check_response
+    assert result.obtain_lease_response is None
+
+
 def test_obtain_lease_response_preserves_zero_and_raw_datetime_and_redacts_identifier(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
