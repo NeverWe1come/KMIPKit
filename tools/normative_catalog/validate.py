@@ -673,7 +673,27 @@ def _linked_clause_scope(clause: dict[str, Any], requirements: dict[str, dict[st
     scopes = {requirements[item]["scope_state"] for item in clause["requirement_ids"]}
     if not scopes:
         return None
+    if (
+        scopes == {"client_1_0"}
+        and clause.get("scope_state") == "mixed"
+        and clause.get("disposition") == "source_discrepancy"
+    ):
+        # A source discrepancy can retain a mixed clause scope when only its
+        # client-facing atom has a normative client requirement record.
+        return "mixed"
     return next(iter(scopes)) if len(scopes) == 1 else "mixed"
+
+
+def _aggregate_source_obligation_scope(source_obligations: list[dict[str, Any]]) -> str | None:
+    """Aggregate reviewed source-atom scopes without hiding server-only atoms."""
+    scopes = list(dict.fromkeys(atom["scope_disposition"] for atom in source_obligations))
+    if not scopes:
+        return None
+    if "unresolved" in scopes:
+        return "unclear"
+    if "(split/shared)" in " ".join(scopes) or len(scopes) > 1:
+        return "mixed"
+    return scopes[0]
 
 
 def _strongest_source_authority(
@@ -2049,14 +2069,17 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
             diagnostics.append(f"{label}.evidence_disposition must record an explicit status")
         elif locator and locator.get("row_label") == "Data" and table_number in _SHARED_DATA_RULE_CONFLICT_TABLES:
             claim = disposition.get("claim")
+            normalized_claim = claim.casefold() if isinstance(claim, str) else ""
             if (
-                disposition.get("status") != "unresolved_source_conflict"
+                disposition.get("status") != "resolved_by_project_interpretation"
+                or disposition.get("decision_id") != "KMIPKIT-DEC-015"
                 or disposition.get("conflict_source_gap_id") != "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"
-                or not isinstance(claim, str)
-                or "no conformance claim" not in claim.lower()
-                or "both Init Indicator and Final Indicator are false" not in claim
+                or "operation-table data=yes controls single-part" not in normalized_claim
+                or "neither indicator is true" not in normalized_claim
+                or "permits omission when either is true" not in normalized_claim
+                or "no standalone paragraph-009 requirement id" not in normalized_claim
             ):
-                diagnostics.append(f"{label}.evidence_disposition must preserve the unresolved Data conflict without an omission claim")
+                diagnostics.append(f"{label}.evidence_disposition must cite DEC-015 and preserve its single-part and multipart Data matrix")
 
     return diagnostics
 

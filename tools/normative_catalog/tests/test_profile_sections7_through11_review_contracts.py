@@ -136,7 +136,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(error_clause["role"], "unclear")
         self.assertEqual(error_clause["direction"], "server_to_client")
         self.assertEqual(error_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
-        self.assertIn("client MAY use", error_clause["exclusion_rationale"])
+        self.assertIsNone(error_clause["exclusion_rationale"])
+        self.assertIn("second MAY is assigned", error_clause["condition"])
+        self.assertEqual(error_clause["direction"], "server_to_client")
 
         response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-8.4-002"]
         self.assert_server_response_classification(

@@ -92,8 +92,8 @@ fn request_allows_optional_identifier_and_parameters_to_be_omitted() {
     assert_eq!(field_tags(&actual), [DATA]);
 }
 
-#[test]
 // OASIS KMIP v2.1 §6.1.55 Table 334: single-part Sign requires Data unless Digested Data is supplied.
+#[test]
 fn request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only() {
     assert!(
         SignRequest::new().to_ttlv_payload().is_err(),

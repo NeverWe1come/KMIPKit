@@ -391,7 +391,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertIsNone(official_case["fixture_path"])
 
         self.assertEqual(len(oracle["source_table_contracts"]), 68)
-        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 505)
+        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 506)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
 
     def test_reviewed_structural_requirements_have_stable_catalog_mappings(self) -> None:
@@ -549,12 +549,12 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertNotIn("KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY", affected_elements)
         self.assertEqual([], discrepancy["affected_requirement_ids"])
         self.assertEqual("normative_conflict", discrepancy["normative_status"])
-        self.assertEqual("resolved", discrepancy["state"])
+        self.assertEqual("resolved_by_approved_decision", discrepancy["state"])
         self.assertEqual("KMIPKIT-DEC-015", discrepancy["decision_id"])
         decision = next(row for row in catalog["decisions"] if row["decision_id"] == discrepancy["decision_id"])
         self.assertEqual(decision["status"], "accepted")
         self.assertIn("Tables 196, 214, 235, 259, and 334", decision["interpretation"])
-        self.assertIn("framed single-part", decision["interpretation"])
+        self.assertIn("both true and Correlation Value is absent", decision["interpretation"])
         self.assertIn("both indicators are absent or false", decision["interpretation"])
         self.assertIn("omission is permitted when either indicator is true", decision["interpretation"])
         self.assertIn("table value of No does not make Data universally required", decision["interpretation"])
@@ -602,7 +602,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(data_clause["scope_state"], "client_1_0")
         self.assertIn("client-to-server request context", data_clause["exclusion_rationale"].lower())
         self.assertIn("lowercase", data_clause["exclusion_rationale"].lower())
-        self.assertIn("decision KMIPKIT-DEC-015", data_clause["exclusion_rationale"].lower())
+        self.assertIn("decision kmipkit-dec-015", data_clause["exclusion_rationale"].lower())
 
     def test_profile_conditional_structural_rows_are_not_client_profile_requirements(self) -> None:
         catalog = _load_json(CATALOG_PATH)

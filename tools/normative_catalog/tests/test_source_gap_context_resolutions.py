@@ -9,7 +9,10 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from tools.normative_catalog.validate import (
+    _aggregate_source_obligation_scope,
     _profile_oracle_reference_issue,
+    _linked_clause_scope,
+    validate_catalog,
     validate_source_table_contracts,
 )
 
@@ -643,7 +646,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIsNone(data_rule["proposed_requirement_id"])
         self.assertIn("Table 334", resolution["review_note"])
         self.assertIn("Digested Data", resolution["review_note"])
-        self.assertIn("framed single-part", resolution["review_note"])
+        self.assertIn("framed true/true", resolution["review_note"])
 
         table_contracts = {
             row["gap_id"]: row for row in oracle["source_table_contracts"]
@@ -657,13 +660,15 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 disposition = table_contracts[gap_id]["evidence_disposition"]
                 self.assertEqual(disposition["status"], "resolved_by_project_interpretation")
                 self.assertEqual(disposition["decision_id"], "KMIPKIT-DEC-015")
-                self.assertIn("No standalone requirement ID", disposition["claim"])
+                self.assertIn("no standalone paragraph-009 requirement id", disposition["claim"].casefold())
 
         sign_row = table_contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"]
         self.assertIn("unless Digested Data is supplied", sign_row["requiredness"])
-        self.assertIn(
-            "request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only",
-            sign_row["verification_refs"],
+        self.assertTrue(
+            any(
+                reference.endswith("::request_requires_data_or_digested_data_for_single_part_and_accepts_digest_only")
+                for reference in sign_row["verification_refs"]
+            )
         )
 
         lease_policy = gaps["KMIPKIT-SOURCE-GAP-SPEC-4.30-CLIENT-LEASE-READ-ONLY"]
@@ -739,13 +744,39 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "server_to_client")
         self.assertEqual(requirement["scope_state"], "client_1_0")
-        self.assertIn("crates/kmipkit-protocol/src/result.rs", requirement["implementation_refs"])
+        self.assertTrue(
+            any(reference.startswith("crates/kmipkit-protocol/src/result.rs::") for reference in requirement["implementation_refs"])
+        )
         self.assertIn(
             "crates/kmipkit-protocol/tests/unit/common_operation_result_tests.rs::shared_helper_and_encrypt_decrypt_preserve_unknown_reason_and_result_message",
             requirement["verification_refs"],
         )
         self.assertIn("result_contract.rs::result_message_debug_is_redacted", " ".join(requirement["verification_refs"]))
         self.assertIn("does not automatically log", requirement["review_note"].lower())
+
+    def test_result_message_clause_scope_aggregates_both_may_atoms(self) -> None:
+        oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        review = next(
+            row for row in oracle["source_requirement_reviews"]
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.17-001"
+        )
+        clause = next(
+            row for row in catalog["source_clauses"]
+            if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.17-001"
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+
+        self.assertEqual(
+            _aggregate_source_obligation_scope(review["source_obligations"]),
+            "mixed",
+        )
+        self.assertEqual(clause["scope_state"], "mixed")
+        self.assertEqual(_linked_clause_scope(clause, requirements), "mixed")
+        self.assertEqual(
+            validate_catalog(CATALOG_PATH.read_bytes(), ROOT)["clause_count"],
+            len(catalog["source_clauses"]),
+        )
 
     def test_t002_research_describes_current_paragraph_009_source_force_and_context(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))

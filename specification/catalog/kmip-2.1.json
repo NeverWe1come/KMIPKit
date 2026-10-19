@@ -16306,11 +16306,11 @@
       ],
       "disposition": "source_discrepancy",
       "requirement_ids": [],
-      "exclusion_rationale": "The source identifies Data in a client-to-server request context, but its lowercase required statement conflicts with the single-part request tables for Hash and MAC, and conditionally Sign. The normalized REQUIRED keyword hit comes from lowercase prose and is not evidence of the uppercase RFC keyword. Operation-level scope remains unclear; no standalone requirement ID is assigned while the source interpretation is unresolved.",
+      "exclusion_rationale": "The source identifies Data in a client-to-server request context and uses lowercase “required”. Approved decision KMIPKIT-DEC-015 reads the operation tables as controlling single-part requests, including framed true/true requests, and reads paragraph 009 as the conditional multipart rule: Data is required when neither indicator is true and may be omitted when either is true. The catalog’s case-insensitive REQUIRED token is a lexical hit, not a formal keyword. No standalone paragraph-009 requirement ID is assigned.",
       "role": "client",
       "direction": "client_to_server",
-      "scope_state": "unclear",
-      "condition": null
+      "scope_state": "client_1_0",
+      "condition": "Single-part Data requiredness follows the operation request table; in multi-part requests Data is required when neither Init Indicator nor Final Indicator is true and may be omitted when either is true."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1-010",
@@ -27631,12 +27631,14 @@
         "MAY"
       ],
       "disposition": "source_discrepancy",
-      "requirement_ids": [],
-      "exclusion_rationale": "The paragraph includes a server-to-client response-field MAY and a separate use MAY with no named endpoint; no client requirement can be represented without choosing an actor.",
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.17-001-002"
+      ],
+      "exclusion_rationale": null,
       "role": "unclear",
-      "direction": "unclear",
+      "direction": "server_to_client",
       "scope_state": "mixed",
-      "condition": "The Result Message MAY be returned in a server-to-client response; the separate MAY permitting end-user or logging/auditing use does not identify its endpoint."
+      "condition": "The first MAY concerns a response field whose actor is not named; the second MAY is assigned by KMIPKIT-DEC-016 to the consuming client application when the response contains Result Message."
     },
     {
       "clause_id": "KMIPKIT-CLAUSE-SPEC-9.18-001",
@@ -55401,7 +55403,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-MESSAGE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.17-001-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
@@ -102075,6 +102079,44 @@
       "decision_id": null,
       "status": "scoped_verified",
       "review_note": "Pinned OASIS KMIP Specification v2.1 §5.7 Table 163 requires one §4 Attribute Item when a New Attribute structure is present. KMIPKIT-0016 preserves that request wrapper in Add/Modify/Set and local tests verify the direct Item shape. This condition does not make every operation or profile use New Attribute. No linked official OASIS Test Case is asserted."
+    },
+    {
+      "requirement_id": "KMIPKIT-REQ-SPEC-9.17-001-002",
+      "source_clause_ids": [
+        "KMIPKIT-CLAUSE-SPEC-9.17-001"
+      ],
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.17"
+        }
+      ],
+      "source_keyword": "MAY",
+      "normative_strength": "permission_or_optional",
+      "subject": "Result Message use",
+      "summary": "When a response contains Result Message, a client may expose its exact text to the application for optional end-user display or caller-controlled logging or auditing.",
+      "role": "client",
+      "direction": "server_to_client",
+      "condition": "The server returns the optional Result Message in its response.",
+      "scope_state": "client_1_0",
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"
+      ],
+      "profile_ids": [],
+      "test_case_ids": [],
+      "feature_spec": "KMIPKIT-0006",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/result.rs::ResultMessage::as_str",
+        "crates/kmipkit-protocol/src/result.rs::KmipOperationResult::message"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/common_operation_result_tests.rs::shared_helper_and_encrypt_decrypt_preserve_unknown_reason_and_result_message",
+        "crates/kmipkit-protocol/tests/result_contract.rs::result_message_debug_is_redacted"
+      ],
+      "negative_verification_required": false,
+      "decision_id": "KMIPKIT-DEC-016",
+      "status": "scoped_verified",
+      "review_note": "The uppercase MAY and message direction are direct source text; assigning the second MAY to the consuming client application is the project interpretation in KMIPKIT-DEC-016. ResultMessage::as_str and KmipOperationResult::message expose the exact returned text to the caller. Tests verify message preservation and redacted Debug output. The caller chooses whether to display, log, or audit it; KMIPKit does not automatically log Result Message content. No requirement-specific official Test Case ID is linked and no formal profile-conformance claim is made."
     }
   ],
   "policies": [
@@ -103335,6 +103377,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -104727,6 +104770,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -106102,6 +106146,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -107807,6 +107852,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -109232,6 +109278,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -110660,6 +110707,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -112086,6 +112134,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -113496,6 +113545,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -114884,6 +114934,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -116281,6 +116332,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -117686,6 +117738,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -119099,6 +119152,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -120502,6 +120556,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -121758,6 +121813,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -123019,6 +123075,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -124435,6 +124492,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -125884,6 +125942,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -127298,6 +127357,7 @@
         "KMIPKIT-REQ-SPEC-9.12-001-003",
         "KMIPKIT-REQ-SPEC-9.13-001-004",
         "KMIPKIT-REQ-SPEC-9.13-001-005",
+        "KMIPKIT-REQ-SPEC-9.17-001-002",
         "KMIPKIT-REQ-SPEC-9.19-002",
         "KMIPKIT-REQ-SPEC-9.20-001-001",
         "KMIPKIT-REQ-SPEC-9.20-001-002",
@@ -133920,9 +133980,9 @@
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "The same §6.1 conflict applies to the single-part Data rows for Encrypt, Decrypt, Hash, MAC, and Sign. Current approved operation models use the table-side rule for the framed single-request form: Encrypt, Decrypt, Hash, and MAC require Data; Sign requires Data or its Table 334 Digested Data alternative. Keep this local validation behavior while the discrepancy remains open, and make no conformance claim for the disputed omission. MAC Verify and Signature Verify are outside this discrepancy because their payloads use MAC Data and Signature Data, not Data. No standalone requirement IDs are created by this source conflict.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "KMIPKIT-DEC-015 records the project reading: operation tables govern single-part Data requiredness, including framed true/true single-part requests; Sign retains its Digested Data alternative. For multi-part requests, table Data=No is not universal permission or universal requiredness: paragraph 009 requires Data when neither indicator is true and permits omission when either is true. No paragraph-009 requirement ID or external conformance claim is created.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-015",
       "erratum_source_refs": []
     },
     {
@@ -134142,15 +134202,17 @@
         "Classify only the response-field MAY as server-to-client and keep the end-user or logging/auditing MAY unresolved.",
         "Assign the entire paragraph a single server-to-client actor and direction."
       ],
-      "affected_requirement_ids": [],
+      "affected_requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.17-001-002"
+      ],
       "affected_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"
       ],
       "affected_profile_ids": [],
       "affected_policy_ids": [],
-      "downstream_impact": "Do not infer a KMIPKit client requirement to provide the Result Message to an end user or use it for logging/auditing until the second MAY's endpoint is established.",
-      "state": "open",
-      "decision_id": null,
+      "downstream_impact": "The two MAY atoms remain distinct. The first is an actor-unspecified server-to-client response-field capability. Under KMIPKIT-DEC-016, the second is represented as client-accessible use through the consuming application; KMIPKit leaves display, logging, and auditing choices to the caller and performs no automatic logging.",
+      "state": "resolved_by_approved_decision",
+      "decision_id": "KMIPKIT-DEC-016",
       "erratum_source_refs": []
     }
   ],
@@ -134515,6 +134577,68 @@
       "approval_evidence": "On 2026-10-11 the maintainer selected the Table 314 interpretation, keeping Unique Identifier optional in parsed Re-Provision responses, including CSR and certificate forms.",
       "approved_at": "2026-10-11",
       "consequence": "The current Re-Provision parser contract and optional-identifier tests remain unchanged. The specification and catalog now record the prose/table discrepancy and distinguish client parsing from the server-side SHALL. Pinned OASIS source files remain unchanged.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-015",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.11"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.17"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.24"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.32"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.55"
+        }
+      ],
+      "requirement_ids": [],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-045"
+      ],
+      "policy_ids": [],
+      "interpretation": "For single-part requests, Tables 196, 214, 235, 259, and 334 control Data requiredness even when Init Indicator and Final Indicator are both true and Correlation Value is absent; Table 334 keeps Digested Data as the Sign alternative to Data. For multi-part requests, a table value of No does not make Data universally required: §6.1 paragraph 009 requires Data when both indicators are absent or false, and omission is permitted when either indicator is true. This is our recommended reading of the source tension and preserves the distinction between single-part and multi-part shapes. The paragraph uses lowercase “required”, not the formal RFC keyword REQUIRED. No standalone paragraph-009 requirement ID or formal conformance claim is created.",
+      "approver": "KMIPKit maintainer, direct authorization in current task",
+      "approval_evidence": "The user directed this task to treat pinned OASIS KMIP 2.1 as the source of truth and use best judgment where it does not uniquely decide.",
+      "approved_at": "2026-10-19",
+      "consequence": "Existing request validation remains unchanged: Encrypt, Decrypt, Hash, and MAC require Data for single-part requests, including the framed true/true form; Sign permits Digested Data as its single-part alternative. In multi-part requests, Data is required when neither indicator is true and may be omitted when either is true. The operation-table rows and paragraph-009 clause receive no standalone REQ ID; the pinned OASIS source files remain immutable.",
+      "status": "accepted"
+    },
+    {
+      "decision_id": "KMIPKIT-DEC-016",
+      "source_refs": [
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "9.17"
+        }
+      ],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-9.17-001-002"
+      ],
+      "discrepancy_ids": [
+        "KMIPKIT-DISC-053"
+      ],
+      "policy_ids": [],
+      "interpretation": "Keep the first §9.17 MAY as an optional server-to-client response-field capability; the source does not name its actor. For the separate MAY to provide the returned text to an end user or use it for logging/auditing, assign the consuming client application as the actor because KMIPKit exposes the response value to its caller. This is a project interpretation of an unnamed endpoint. The client may inspect the exact text and decide whether to display, log, or audit it; KMIPKit does not automatically log Result Message content.",
+      "approver": "KMIPKit maintainer, direct authorization in current task",
+      "approval_evidence": "The user directed this task to treat pinned OASIS KMIP 2.1 as the source of truth and use best judgment where it does not uniquely decide.",
+      "approved_at": "2026-10-19",
+      "consequence": "The oracle keeps the two MAY atoms separate: the first remains actor-unspecified/server-only and the second is client/client_1_0. The client requirement links to the existing ResultMessage and KmipOperationResult accessors, whose tests verify preserved text and redacted Debug output. End-user display and logging remain caller-controlled; no logging behavior is added and no formal profile-conformance claim is made.",
       "status": "accepted"
     }
   ],

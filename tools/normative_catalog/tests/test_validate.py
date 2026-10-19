@@ -5712,12 +5712,13 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(audited_rows[row_label]["source_gap_id"], gap_id)
                 self.assertEqual(audited_rows[row_label]["source_requirement_ids"], [])
         data_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED"]
-        self.assertEqual(data_contract["evidence_disposition"]["status"], "unresolved_source_conflict")
+        self.assertEqual(data_contract["evidence_disposition"]["status"], "resolved_by_project_interpretation")
+        self.assertEqual(data_contract["evidence_disposition"]["decision_id"], "KMIPKIT-DEC-015")
         self.assertEqual(
             data_contract["evidence_disposition"]["conflict_source_gap_id"],
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         )
-        self.assertIn("no conformance claim", data_contract["evidence_disposition"]["claim"].lower())
+        self.assertIn("neither indicator is true", data_contract["evidence_disposition"]["claim"])
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_33_mac_verify_and_errors_have_source_review_rows(self) -> None:
@@ -9459,8 +9460,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_rows["Cryptographic Parameters"]["source_requirement_ids"],
                          ["KMIPKIT-REQ-SPEC-6.1.55-001"])
         self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", request_rows["Unique Identifier"]["source_note"])
-        self.assertIn("no conformance claim", request_rows["Data"]["source_note"].lower())
-        self.assertIn("both Init Indicator and Final Indicator are false", request_rows["Data"]["source_note"])
+        self.assertIn("DEC-015", request_rows["Data"]["source_note"])
+        self.assertIn("neither indicator is true", request_rows["Data"]["source_note"])
         self.assertIn("single-part", request_rows["Digested Data"]["source_note"])
 
         identifier_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-004"]
@@ -9843,7 +9844,8 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertTrue(contract["condition"])
                 self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
                 if label == "Data":
-                    self.assertEqual(contract["evidence_disposition"]["status"], "unresolved_source_conflict")
+                    self.assertEqual(contract["evidence_disposition"]["status"], "resolved_by_project_interpretation")
+                    self.assertEqual(contract["evidence_disposition"]["decision_id"], "KMIPKIT-DEC-015")
                 else:
                     self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
                     self.assertIn("does not create a standalone REQ record", contract["evidence_disposition"]["statement"])
@@ -9853,13 +9855,13 @@ class CatalogValidationTests(unittest.TestCase):
                 )
 
         data_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"]
-        self.assertEqual(data_contract["evidence_disposition"]["status"], "unresolved_source_conflict")
+        self.assertEqual(data_contract["evidence_disposition"]["status"], "resolved_by_project_interpretation")
+        self.assertEqual(data_contract["evidence_disposition"]["decision_id"], "KMIPKIT-DEC-015")
         self.assertEqual(
             data_contract["evidence_disposition"]["conflict_source_gap_id"],
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         )
-        self.assertIn("no conformance claim", data_contract["evidence_disposition"]["claim"].lower())
-        self.assertIn("both Init Indicator and Final Indicator are false", data_contract["evidence_disposition"]["claim"])
+        self.assertIn("neither indicator is true", data_contract["evidence_disposition"]["claim"])
         self.assertIn("single-part", contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL"]["condition"])
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
@@ -9881,7 +9883,7 @@ class CatalogValidationTests(unittest.TestCase):
         diagnostics = validate_source_table_contracts(broken, ROOT)
 
         self.assertTrue(
-            any("must preserve the unresolved Data conflict without an omission claim" in issue for issue in diagnostics),
+            any("must cite DEC-015" in issue for issue in diagnostics),
             diagnostics,
         )
 
@@ -18720,7 +18722,7 @@ class CatalogValidationTests(unittest.TestCase):
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED": (
                 "Data", "Yes for single-part. No for multi-part.", "conditional_required_table_body_value", [28273, 28284],
-                "Single-part Hash requests mark Data Required=Yes; the table marks Data No for multi-part.",
+                "Single-part requests require Data per the operation table, including framed Init=true and Final=true. For multipart requests, the table Data=No is not universal: paragraph 009 requires Data when neither indicator is true and permits omission when either is true.",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CORRELATION-VALUE-OPTIONAL": (
                 "Correlation Value", "No", "optional_table_body_value", [28290, 28302],
@@ -18784,16 +18786,13 @@ class CatalogValidationTests(unittest.TestCase):
 
         data_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED"]
         disposition = data_contract["evidence_disposition"]
-        self.assertEqual(disposition["status"], "unresolved_source_conflict")
+        self.assertEqual(disposition["status"], "resolved_by_project_interpretation")
+        self.assertEqual(disposition["decision_id"], "KMIPKIT-DEC-015")
         self.assertEqual(
             disposition["conflict_source_gap_id"],
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         )
-        self.assertIn(
-            "no conformance claim",
-            disposition["claim"].lower(),
-        )
-        self.assertIn("both Init Indicator and Final Indicator are false", disposition["claim"])
+        self.assertIn("neither indicator is true", disposition["claim"])
 
     def test_hash_table_contract_validator_requires_source_operation_and_test_symbols(self) -> None:
         """Missing source, operation, or executable-test links fail oracle validation."""
@@ -19008,13 +19007,13 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertTrue(contract["condition"])
 
         data_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED"]
-        self.assertEqual(data_contract["evidence_disposition"]["status"], "unresolved_source_conflict")
+        self.assertEqual(data_contract["evidence_disposition"]["status"], "resolved_by_project_interpretation")
+        self.assertEqual(data_contract["evidence_disposition"]["decision_id"], "KMIPKIT-DEC-015")
         self.assertEqual(
             data_contract["evidence_disposition"]["conflict_source_gap_id"],
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         )
-        self.assertIn("no conformance claim", data_contract["evidence_disposition"]["claim"].lower())
-        self.assertIn("both Init Indicator and Final Indicator are false", data_contract["evidence_disposition"]["claim"])
+        self.assertIn("neither indicator is true", data_contract["evidence_disposition"]["claim"])
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
     def test_mac_data_contract_validator_rejects_a_silenced_shared_source_conflict(self) -> None:
@@ -19035,7 +19034,7 @@ class CatalogValidationTests(unittest.TestCase):
         diagnostics = validate_source_table_contracts(broken, ROOT)
 
         self.assertTrue(
-            any("must preserve the unresolved Data conflict without an omission claim" in issue for issue in diagnostics),
+            any("must cite DEC-015" in issue for issue in diagnostics),
             diagnostics,
         )
 
@@ -19395,8 +19394,9 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(contract["source_excerpt"], pinned_source_excerpt(source_path, line_range))
         data_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED"]
         self.assertIn("single-part", data_contract["condition"].lower())
-        self.assertIn("multi-part", data_contract["condition"].lower())
-        self.assertEqual(data_contract["evidence_disposition"]["status"], "unresolved_source_conflict")
+        self.assertIn("multipart", data_contract["condition"].lower())
+        self.assertEqual(data_contract["evidence_disposition"]["status"], "resolved_by_project_interpretation")
+        self.assertEqual(data_contract["evidence_disposition"]["decision_id"], "KMIPKIT-DEC-015")
         self.assertIn("22498–22499", data_contract["evidence_disposition"]["conflicting_source"])
         general_data_gap = next(
             gap for gap in oracle["source_only_requirement_gaps"]
@@ -19415,8 +19415,9 @@ class CatalogValidationTests(unittest.TestCase):
             data_contract["evidence_disposition"]["conflict_source_gap_id"],
             "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009",
         )
-        self.assertIn("no conformance claim", data_contract["evidence_disposition"]["claim"].lower())
-        self.assertIn("no additional multipart Data obligation is inferred", data_contract["review_note"])
+        self.assertIn("neither indicator is true", data_contract["evidence_disposition"]["claim"])
+        self.assertIn("KMIPKIT-DEC-015", data_contract["review_note"])
+        self.assertIn("single-part/multipart matrix", data_contract["review_note"])
         self.assertIn("no unique identifier row", request_clause["review_note"].lower())
         self.assertIn("multi-part", response_clause["review_note"].lower())
 
@@ -20065,7 +20066,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_table_contracts"], 68)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
-        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 505)
+        self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 506)
         contract = contracts[0]
         source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [29529, 29544]
