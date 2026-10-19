@@ -221,7 +221,9 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
 
         self.assertIn("focused regression", research)
-        self.assertIn("production catalog validator", research)
+        self.assertIn("does not load the independent source-review oracle", research)
+        self.assertIn("does not derive clause scope from source atoms", research)
+        self.assertIn("checks the stored clause scope against linked requirement scopes", research)
         self.assertNotIn(
             "The validator derives §9.17 aggregate scope from both source atoms.",
             research,

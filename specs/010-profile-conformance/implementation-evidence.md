@@ -3795,3 +3795,11 @@ The security architecture review found that the §9.17 scope helper is called on
 | Red | This DCO-signed Red commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` | Expected Red: assertion failed because the research did not yet identify focused regression evidence or the production catalog validator and retained the inaccurate validator-derivation claim. |
 | Green | This DCO-signed Green commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` | PASS: the research accurately bounds the aggregation evidence and records the production validator's behavior. |
 | Refactor | This DCO-signed Refactor commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions` | PASS: the test-only aggregation helper moved out of production validation; the renamed regression explicitly checks source atoms and stored catalog scope. |
+
+### QA correction — assert the production validator boundary (2026-10-19)
+
+Independent QA found that the first documentation regression rejected the exact old sentence but did not require the corrected production-validator behavior. The strengthened test requires both the absence of source-atom derivation and the actual linked-requirement-scope check.
+
+| Stage | DCO-signed commit | Command or artifact | Result |
+|---|---|---|---|
+| Red | This DCO-signed Red commit | `py -3 -B -m unittest -v tools.normative_catalog.tests.test_source_gap_context_resolutions.SourceGapContextResolutionTests.test_result_message_research_limits_scope_aggregation_evidence` against a temporary mutation replacing the explicit validator boundary with a source-atom derivation claim | Expected Red: required production-boundary assertion failed. |
