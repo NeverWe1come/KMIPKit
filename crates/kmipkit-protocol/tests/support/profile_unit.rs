@@ -988,6 +988,16 @@ fn profile_maps_client_optional_derive_key_secret_data_total_length() {
     result
         .validate_request(&symmetric_key)
         .expect("the optional Secret Data capability does not restrict key derivation");
+
+    let secret_data_without_length =
+        request_message_with_operation_payload(0x0000_0005, derive_key_payload(7, []));
+    assert_request_rejected_for_requirement(
+        &result,
+        &secret_data_without_length,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "Secret Data derivation must carry its total Cryptographic Length",
+    );
 }
 
 fn derive_key_payload(object_type: u32, lengths: impl IntoIterator<Item = Value>) -> Structure {

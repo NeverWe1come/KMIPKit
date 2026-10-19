@@ -92382,10 +92382,12 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm"
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::secret_data_output_accepts_a_total_cryptographic_length_without_key_algorithm",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_derive_key_secret_data_total_length"
       ],
       "negative_verification_required": false,
       "decision_id": null,

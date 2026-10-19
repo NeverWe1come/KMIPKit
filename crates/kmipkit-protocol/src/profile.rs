@@ -1012,6 +1012,58 @@ fn derive_key_specifies_cryptographic_algorithm_for_key_output(
     })
 }
 
+fn derive_key_secret_data_uses_total_cryptographic_length(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, DERIVE_KEY_OBJECT_TYPE)
+                else {
+                    return false;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return false;
+                };
+                if object_type != SECRET_DATA_OBJECT_TYPE {
+                    return true;
+                }
+
+                let FieldPresence::Unique(attributes) = field_presence(&payload, ATTRIBUTES) else {
+                    return false;
+                };
+                attributes.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        let FieldPresence::Unique(length) =
+                            field_presence(&attributes, CRYPTOGRAPHIC_LENGTH)
+                        else {
+                            return false;
+                        };
+                        length.with_value(|value| matches!(value, ValueView::Integer(_)))
+                    }
+                    _ => false,
+                })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_opaque_object_context_custom_attributes(
     request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1934,6 +1986,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_algorithm_for_key_results",
             kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(derive_key_secret_data_uses_total_cryptographic_length),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_derive_key_secret_data_total_length",
+            kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
     },
