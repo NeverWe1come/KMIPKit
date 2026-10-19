@@ -861,13 +861,12 @@ pub extern "C" fn kmipkit_usage_allocation_context_create(
         else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let context = match UsageAllocationContext::from_successful_allocation(
+        let Ok(context) = UsageAllocationContext::from_successful_allocation(
             allocation,
             requested_units,
             usage_limits_unit,
-        ) {
-            Ok(context) => context,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        ) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = try_ffi!(try_make_handle(
             Kind::UsageAllocationContext,
