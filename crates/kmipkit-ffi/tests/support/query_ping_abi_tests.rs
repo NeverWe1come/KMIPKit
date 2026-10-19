@@ -27,6 +27,72 @@ fn query_status(
     status
 }
 
+fn query_status_with_limits(
+    limits: *mut kmipkit_codec_limits_t,
+    functions: *const u32,
+    function_count: u64,
+    has_object_groups: u8,
+    object_groups: *const kmipkit_byte_span_v1_t,
+    object_group_count: u64,
+) -> i32 {
+    let mut item = ptr::dangling_mut();
+    let status = kmipkit_client_batch_item_query_with_limits(
+        limits,
+        functions,
+        function_count,
+        has_object_groups,
+        object_groups,
+        object_group_count,
+        &raw mut item,
+    );
+    if status == SUCCESS {
+        assert!(!item.is_null());
+        kmipkit_client_batch_item_release(item);
+    } else {
+        assert!(item.is_null());
+    }
+    status
+}
+
+#[test]
+fn ffi_query_builder_applies_codec_limits_before_copying_and_accepts_custom_limits() {
+    let functions = vec![1_u32; 100_001];
+    let group = b"group";
+    let groups = vec![byte_span(group); 100_001];
+    let mut defaults = ptr::null_mut();
+    assert_eq!(kmipkit_codec_limits_defaults(&raw mut defaults), SUCCESS);
+    assert_eq!(
+        query_status_with_limits(
+            defaults,
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        ERROR_RESOURCE_LIMIT
+    );
+    kmipkit_codec_limits_release(defaults);
+
+    let mut custom = ptr::null_mut();
+    assert_eq!(
+        kmipkit_codec_limits_create(8 * 1024 * 1024, 64, 400_000, &raw mut custom),
+        SUCCESS
+    );
+    assert_eq!(
+        query_status_with_limits(
+            custom,
+            functions.as_ptr(),
+            functions.len() as u64,
+            1,
+            groups.as_ptr(),
+            groups.len() as u64,
+        ),
+        SUCCESS
+    );
+    kmipkit_codec_limits_release(custom);
+}
+
 fn successful_response_item(
     request: ClientRequest,
     operation: u32,
