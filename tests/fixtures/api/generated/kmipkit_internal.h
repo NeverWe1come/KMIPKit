@@ -822,7 +822,7 @@ int32_t kmipkit_client_batch_item_ping(kmipkit_client_batch_item_t ** out_item);
  */
 /* KMIPKIT-0020-FR-001, KMIPKIT-0020-FR-002, KMIPKIT-0020-FR-003, KMIPKIT-0020-FR-004, KMIPKIT-0020-FR-005, KMIPKIT-0020-FR-006, KMIPKIT-0020-FR-007, KMIPKIT-0020-FR-008, KMIPKIT-0020-FR-009, KMIPKIT-0020-FR-010, KMIPKIT-0020-FR-011, KMIPKIT-0020-FR-012, KMIPKIT-0043-FR-003, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-006, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_ping(kmipkit_client_batch_item_response_t * item, uint8_t * out_present);
-/* Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40. The complete Request Message is checked against execution codec limits before transmission.
+/* Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40 after checking its payload against the default codec limits. The complete Request Message is checked again before transmission.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return

@@ -28578,7 +28578,7 @@
     {
       "c": {
         "documentation": [
-          "Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40. The complete Request Message is checked against execution codec limits before transmission."
+          "Creates a typed client-initiated Query request batch item from KMIP 2.1 §6.1.40 after checking its payload against the default codec limits. The complete Request Message is checked again before transmission."
         ],
         "errorCategories": [
           "invalid_input",
