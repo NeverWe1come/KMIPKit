@@ -21,6 +21,7 @@ from typing import Any, overload
 
 from . import errors, ttlv
 from ._ffi import ffi, lib
+from ._client_ffi import ffi as _client_ffi, lib as _client_lib
 from ._handles import (
     NativeHandle,
     _NATIVE_CALL_LOCK,
@@ -84,6 +85,10 @@ _MAX_TEXT_BYTES_PER_FIELD = 4_096
 _MAX_UNIQUE_BATCH_ITEM_ID_BYTES = 16 * 1024 * 1024
 _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
 _MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024
+_MAX_QUERY_VALUES = 100_000
+_CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
+    {"kmipkit_client_batch_item_ping", "kmipkit_client_batch_item_query"}
+)
 
 
 class ExtensionIdentity(NativeHandle):
@@ -457,22 +462,34 @@ def _make_handle(
     out_index: int | None = None,
     consumed_indices: tuple[int, ...] = (),
 ) -> Any:
-    output = ffi.new(f"{c_type} **")
+    native_ffi = (
+        _client_ffi
+        if function_name in _CLIENT_ABI_HANDLE_FUNCTIONS
+        else ffi
+    )
+    native_lib = (
+        _client_lib
+        if function_name in _CLIENT_ABI_HANDLE_FUNCTIONS
+        else lib
+    )
+    output = native_ffi.new(f"{c_type} **")
     call_arguments = list(arguments)
     if out_index is None:
         call_arguments.append(output)
     else:
         call_arguments.insert(out_index, output)
-    function = getattr(lib, function_name)
+    function = getattr(native_lib, function_name)
     status = (
         _invoke_consuming(function, tuple(call_arguments), consumed_indices)
         if consumed_indices
         else _invoke(function, *call_arguments)
     )
     errors.raise_for_status(status)
-    if output[0] == ffi.NULL:
+    if output[0] == native_ffi.NULL:
         errors.raise_for_status(4)
-    return output[0]
+    if native_ffi is ffi:
+        return output[0]
+    return ffi.cast(c_type + " *", int(native_ffi.cast("uintptr_t", output[0])))
 
 
 @contextmanager
@@ -1374,6 +1391,96 @@ def client_batch_item_discover_versions() -> ClientBatchItem:
         "kmipkit_client_batch_item_discover_versions",
         (),
     )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_ping() -> ClientBatchItem:
+    """Create an empty client-initiated KMIP Ping request batch item."""
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_ping",
+        (),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_query(
+    functions: list[int] | tuple[int, ...],
+    object_groups: list[str] | tuple[str, ...] | None = None,
+) -> ClientBatchItem:
+    """Create Query while preserving raw function and Object Group order and duplicates."""
+    function_values = _bounded_snapshot(functions, _MAX_QUERY_VALUES)
+    if not function_values:
+        errors.raise_for_status(4)
+    raw_functions = [
+        _integer_range(value, 0, 0xFFFF_FFFF) for value in function_values
+    ]
+    group_values = (
+        None
+        if object_groups is None
+        else _bounded_snapshot(object_groups, _MAX_QUERY_VALUES)
+    )
+    staged_buffers: list[Any] = []
+    try:
+        function_array = _client_ffi.new("uint32_t[]", raw_functions)
+        if group_values is None:
+            has_groups = 0
+            group_array = _client_ffi.NULL
+            group_count = 0
+        else:
+            has_groups = 1
+            group_spans = _client_ffi.new(
+                "kmipkit_byte_span_v1_t[]", len(group_values)
+            ) if group_values else _client_ffi.NULL
+            total_bytes = 0
+            for index, group in enumerate(group_values):
+                if not isinstance(group, str):
+                    errors.raise_for_status(4)
+                encoded_length = 0
+                for character in str.__iter__(group):
+                    codepoint = ord(character)
+                    encoded_length += (
+                        1
+                        if codepoint <= 0x7F
+                        else 2
+                        if codepoint <= 0x7FF
+                        else 3
+                        if codepoint <= 0xFFFF
+                        else 4
+                    )
+                    if encoded_length > _MAX_OPERATION_INPUT_BYTES:
+                        errors.raise_for_status(6)
+                if total_bytes + encoded_length > _MAX_OPERATION_INPUT_BYTES:
+                    errors.raise_for_status(6)
+                try:
+                    encoded = str.encode(group, "utf-8")
+                except UnicodeEncodeError:
+                    errors.raise_for_status(4)
+                total_bytes += len(encoded)
+                data = _client_ffi.new("uint8_t[]", encoded) if encoded else _client_ffi.NULL
+                staged_buffers.append(data)
+                group_spans[index].data = data
+                group_spans[index].length = len(encoded)
+            group_array = group_spans
+            group_count = len(group_values)
+
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_query",
+            (
+                function_array,
+                len(raw_functions),
+                has_groups,
+                group_array,
+                group_count,
+            ),
+        )
+    finally:
+        for buffer in staged_buffers:
+            if buffer != _client_ffi.NULL:
+                length = _client_ffi.sizeof(buffer)
+                if length:
+                    _client_ffi.buffer(buffer, length)[:] = b"\x00" * length
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -2344,6 +2451,8 @@ __all__ = [
     "TtlvPath",
     "ValidatedExtensionValue",
     "client_batch_item_discover_versions",
+    "client_batch_item_ping",
+    "client_batch_item_query",
     "client_batch_item_encrypt",
     "client_batch_item_decrypt",
     "client_batch_item_hash",

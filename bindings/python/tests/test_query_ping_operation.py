@@ -29,10 +29,33 @@ def test_query_builder_preserves_raw_function_and_group_order_and_presence(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[tuple[str, tuple[object, ...]]] = []
+
+    def make_handle(
+        _kind: str, symbol: str, arguments: tuple[object, ...]
+    ) -> int:
+        calls.append((symbol, arguments))
+        if symbol == "kmipkit_client_batch_item_query":
+            function_values = ffi.cast("uint32_t *", arguments[0])
+            functions_seen = [
+                int(function_values[index]) for index in range(int(arguments[1]))
+            ]
+            spans = ffi.cast("kmipkit_byte_span_v1_t *", arguments[3])
+            groups_seen = [
+                bytes(ffi.buffer(spans[index].data, int(spans[index].length))).decode(
+                    "utf-8"
+                )
+                for index in range(int(arguments[4]))
+            ]
+            captured_query_inputs.append(
+                (functions_seen, int(arguments[2]), groups_seen)
+            )
+        return 23
+
+    captured_query_inputs: list[tuple[list[int], int, list[str]]] = []
     monkeypatch.setattr(
         extensions,
         "_make_handle",
-        lambda _kind, symbol, arguments: calls.append((symbol, arguments)) or 23,
+        make_handle,
     )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
 
@@ -42,15 +65,8 @@ def test_query_builder_preserves_raw_function_and_group_order_and_presence(
 
     symbol, arguments = calls[0]
     assert symbol == "kmipkit_client_batch_item_query"
-    function_values = ffi.cast("uint32_t *", arguments[0])
-    assert [int(function_values[index]) for index in range(int(arguments[1]))] == functions
     assert arguments[2] == 1
-    spans = ffi.cast("kmipkit_byte_span_v1_t *", arguments[3])
-    decoded_groups = [
-        bytes(ffi.buffer(spans[index].data, int(spans[index].length))).decode("utf-8")
-        for index in range(int(arguments[4]))
-    ]
-    assert decoded_groups == groups
+    assert captured_query_inputs[0] == (functions, 1, groups)
 
     extensions.client_batch_item_query([14], None)
     absent_arguments = calls[1][1]
@@ -67,6 +83,29 @@ def test_query_builder_preserves_raw_function_and_group_order_and_presence(
 def test_query_builder_requires_a_non_empty_function_sequence() -> None:
     with pytest.raises(errors.InvalidInputError):
         extensions.client_batch_item_query([], None)
+    with pytest.raises(errors.InvalidInputError):
+        extensions.client_batch_item_query([1], [None])  # type: ignore[list-item]
+    with pytest.raises(errors.InvalidInputError):
+        extensions.client_batch_item_query([1], ["\ud800"])
+
+
+def test_native_ping_and_query_builders_return_owned_items() -> None:
+    ping = extensions.client_batch_item_ping()
+    query = extensions.client_batch_item_query(
+        [1, 0xF123_4567, 1], ["group-a", "gr\u00f8up-b", "group-a"]
+    )
+    absent_groups = extensions.client_batch_item_query([14], None)
+    empty_groups = extensions.client_batch_item_query([14], [])
+    try:
+        assert not ping.closed
+        assert not query.closed
+        assert not absent_groups.closed
+        assert not empty_groups.closed
+    finally:
+        ping.close()
+        query.close()
+        absent_groups.close()
+        empty_groups.close()
 
 
 @pytest.mark.parametrize(

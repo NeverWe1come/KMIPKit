@@ -593,6 +593,15 @@ ffi.cdef(
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_discover_versions(
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_ping(
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_query(
+        const uint32_t *functions,
+        uint64_t function_count,
+        uint8_t has_object_groups,
+        const kmipkit_byte_span_v1_t *object_groups,
+        uint64_t object_group_count,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_interop(
         uint32_t interop_function,
         const uint8_t *interop_identifier_data,
@@ -607,6 +616,13 @@ ffi.cdef(
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_log_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_ping(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present);
+    int32_t kmipkit_client_batch_item_response_query_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
