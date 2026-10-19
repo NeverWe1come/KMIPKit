@@ -853,7 +853,6 @@ class BatchItemResult:
     get_usage_allocation_response: GetUsageAllocationResponse | None = field(
         default=None, repr=False
     )
-    obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
     check_response: CheckResponse | None = field(default=None, repr=False)
     delegated_login_response: DelegatedLoginResponse | None = field(default=None, repr=False)
     derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
@@ -866,6 +865,7 @@ class BatchItemResult:
     interop_response: InteropResponse | None = field(default=None, repr=False)
     log_response: LogResponse | None = field(default=None, repr=False)
     login_response: LoginResponse | None = field(default=None, repr=False)
+    obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -1506,7 +1506,6 @@ def _batch_result(handle: Any) -> BatchResult:
                         *cryptographic_responses,
                         certify_response,
                         allocation_response,
-                        obtain_lease_response,
                         check_response,
                         delegated_login_response,
                         derive_key_response,
@@ -1519,6 +1518,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         interop_response=interop_response,
                         log_response=log_response,
                         login_response=login_response,
+                        obtain_lease_response=obtain_lease_response,
                     )
                 )
             finally:
