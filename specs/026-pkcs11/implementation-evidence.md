@@ -188,6 +188,28 @@ redaction, response lifetime after result closure, and no retry or automatic
 follow-up. The C consumer is compiled and executed; evidence is not limited to
 linking or symbol inspection.
 
+The zeroization follow-up uses distinct DCO commits: Red `20cc1eea` reproduces
+the Python response retaining the correlation bytes after close and the error
+path retaining them after a later field conversion fails; Green `d7599210`
+stores the KMIPKit-owned copy in `_SecretBytes`, exposes only caller-owned
+`bytes`, and wipes the owned copy on close or conversion failure. JNI cleanup
+commit `ffb17be1` uses the existing tested response-array scope so failed
+tuple construction wipes the temporary correlation array, while successful
+tuple construction transfers it to Java's existing cleanup. Refactor/evidence
+commits `de663650` and `36091d3d` wipe Python bytes before releasing TTLV
+copies and tighten the PKCS#11 JNI export audit. A candidate JNI residual
+memory concern was independently reviewed and suppressed by the exact-diff
+security scan because recovery requires privileged same-process memory access
+or OS-level diagnostics outside the canonical threat boundary; no reportable
+finding was recorded.
+
+The follow-up JNI copy-failure path uses Red `ca840e9f` and Green `2c107239`.
+If `SetByteArrayRegion` leaves a pending exception after partially copying a
+response byte string, `span_to_java_bytes` now wipes and deletes its local Java
+array before returning while preserving the original exception. The native
+test exercises cleanup of an allocated response array when the copy reports a
+pending exception.
+
 | Command | Result |
 |---|---|
 | `cargo test -p kmipkit-client pkcs11` | PASS; focused client PKCS#11 suite and public API mapping test |
@@ -201,6 +223,16 @@ linking or symbol inspection.
 | `target/python-t076-venv/Scripts/python.exe -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_pkcs11_parity_manifest tools.api_manifest.tests.test_operation_readiness -v` | PASS; 68 tests |
 | `python -B -m unittest scripts.tests.test_workflow scripts.tests.test_native_package_smoke -v` | PASS; 53 tests and offline installed-wheel probes |
 | `python -B tools/api_manifest/generate.py --write` then `--check` | PASS; 12 generated outputs regenerated and verified with the pinned generator |
+| `cargo test -p kmipkit-protocol pkcs11 --all-features` | PASS at `36091d3d`; 16 PKCS#11 protocol tests, including absent versus present-empty correlation |
+| `bindings/java/native/build.ps1` | PASS at `ffb17be1`; JNI bridge compiled and native response-secret-array cleanup tests passed |
+| `mvn -q -Dkmipkit.nativeLibrary=<built kmipkit_jni.dll> -Dtest=Pkcs11MappingTest,ClientFacadeTlsIntegrationTest test` | PASS at `ffb17be1`; Java/JNI mapping and real mutual-TLS PKCS#11 exchange suites |
+| Python 3.12 `pytest tests/test_pkcs11_operation.py -q` with `KMIPKIT_NATIVE_LIBRARY=target/debug/kmipkit_ffi.dll` | PASS at `de663650`; 10 tests, including owned-correlation wipe and conversion-failure cleanup |
+| Python 3.12 `python -m unittest tools.api_manifest.tests.test_pkcs11_parity_manifest` | PASS at `36091d3d`; 6 manifest/export tests; candidate and uninventoried PKCS#11 JNI exports are rejected |
+| `python -B tools/api_manifest/generate.py --check` | PASS at `36091d3d`; all 12 generated outputs current |
+| `cargo fmt --all --check` and `git diff --check` | PASS at `36091d3d` |
+| `bindings/java/native/build.ps1` | PASS at `2c107239`; JNI DLL compiled and native tests cover zeroization after response byte-array copy failure |
+| `mvn -q -Dkmipkit.nativeLibrary=<built kmipkit_jni.dll> -Dtest=Pkcs11MappingTest,ClientFacadeTlsIntegrationTest test` | PASS after `2c107239`; Java/JNI mapping and mutual-TLS response suites |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib every_exported_c_function_starts_inside_the_shared_panic_boundary` | PASS; export inventory recognizes all 247 C exports and validates their panic boundary |
 | `cargo fmt --all --check` | PASS |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | PASS; only non-fatal AWS-LC toolchain probe warnings on Windows |
 | `git diff --check` | PASS |
