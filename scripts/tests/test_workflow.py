@@ -387,7 +387,24 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(native_jar)
         assert native_jar is not None
         self.assertIn('dependsOn("buildNativeLibrary")', native_jar.group(1))
-        self.assertIn("target/native-test", java_job)
+
+        pom = (REPOSITORY_ROOT / "bindings/java/pom.xml").read_text(encoding="utf-8")
+        self.assertIn(
+            "<KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD>1</KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD>",
+            pom,
+        )
+        self.assertIn("${project.build.directory}/native-test/", pom)
+
+    def test_java_package_smoke_audits_default_native_exports(self) -> None:
+        contents = self.require_workflow()
+        java_job = self.require_job(contents, "language-java")
+        smoke = self.require_named_step(java_job, "Run packaged Java native loader smoke")
+        audit = self.require_named_step(java_job, "Audit the packaged default JNI exports")
+
+        self.assertLess(smoke.end(), audit.start())
+        self.assertIn("bindings/java/target/native", audit.group(1))
+        self.assertIn("audit_binding_exports.py", audit.group(1))
+        self.assertIn("--c-only --c-binary", audit.group(1))
 
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()
