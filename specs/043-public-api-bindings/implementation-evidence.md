@@ -4679,3 +4679,41 @@ object identifier is absent from `UsageAllocationContext.toString()`. The
 snapshot tests now choose the newest date-stamped checked-in report, preventing
 future T055/T078 additions from silently being checked against an older
 inventory.
+
+### T029 — Shared capability parity across Rust, C, Java, and Python (2026-10-20)
+
+T029 verifies the seven shared-capability cases below through Rust, compiled C,
+Java 17, and Python 3.12. The operation-specific Discover Versions and Create
+fixtures remain covered by their own operation-mapping tasks and are not
+claimed as T029 parity evidence.
+
+| Shared fixture case | Runtime behavior checked in each language |
+|---|---|
+| `api-levels.shared.v1` | The three local API levels, zero network calls, and separation from Discover Versions and operation-mapping completeness. |
+| `client-configuration.registry-isolation.v1` | Two independent configurations retain their own registry identities/counts; returned views and owned configuration handles are released. |
+| `errors.schema-redaction.v1` | A fixture marker in rejected schema input does not appear in diagnostics; stable error category is retained without payload text. |
+| `batch.ordered-completed-pending-failed.v1` | Ordered Success/Pending/Failure outcomes, unique item IDs, exact Pending correlation bytes, one exchange, and no automatic follow-up. |
+| `ttlv.open-values-and-child-order.v1` | Unknown Enumeration and opaque ByteString values plus child Tag order survive the public TTLV APIs. |
+| `codec-limits.defaults-and-ranges.v1` | Default and configured limits plus the `resource_limit` category for invalid depth match the fixture. |
+| `usage-allocation.guard-accounting.v1` | Allocation count, accepted cost, over-budget rejection, reservation state, local error category, and no transport for rejected work. |
+
+The C cases use a Rust test harness that parses the checked-in fixture and passes
+its values into compiled C consumers; assertions run against the C ABI
+behavior. The Usage Allocation case cites OASIS KMIP Specification v2.1
+§6.1.23, Table 232, and the approved local guard interpretation in KMIPKIT-0039.
+These tests establish parity for the listed shared capabilities only; they do
+not claim complete operation coverage, OASIS certification, or profile
+conformance.
+
+| Stage | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `f56e2037` | `python -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_t029_fixture_consumers_assert_runtime_values_for_only_core_shared_cases -v` | Expected failure before Green: the contract found missing fixture-driven consumer assertions and C harness support. |
+| Green | `b8560caa` | Focused Rust, compiled C, Java, and Python consumer suites; focused Clippy, `cargo fmt --all --check`, and `git diff --check` | PASS: contract 1/1; Rust mapped suites 24/24; C harness 10/10; Java 41/41; Python 52/52 after the lifecycle update. Exact C/Rust case coverage and the Python environment are recorded above and in the PR. |
+| Red (QA correction) | `1512965f` | `python -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_t029_fixture_consumers_assert_runtime_values_for_only_core_shared_cases` | Expected failure: Java consumed `afterSuccessfulProtection` but lacked the required fixture-derived `allocatedUnits` comparisons after success and rejected attempts (0/3). |
+| Green (QA correction) | `4d1437a3` | Parity contract above; `mvn -f bindings/java/pom.xml "-Dtest=ClientFacadeTlsIntegrationTest#usageAllocationContextGuardsJavaProtectionExecutionLocally" test` | PASS: contract 1/1; Java focal runtime test 1/1. Fixture-derived allocation totals are asserted after success, over-budget rejection, identity mismatch, and the direct-guard success. Independent QA re-review: addressed, no new findings. |
+| Refactor | This DCO-signed evidence commit | `python -B -m unittest tools.api_manifest.tests.test_parity.PublicApiParityTests.test_t029_fixture_consumers_assert_runtime_values_for_only_core_shared_cases -v`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`; `cargo test -p kmipkit-protocol --test extension_redaction`; `cargo test -p kmipkit-client --test extension_registry client_configurations_own_isolated_immutable_registries`; Java focal test above; `cargo clippy -p kmipkit-ffi --features coverage-c-consumer --all-targets -- -D warnings`; `cargo clippy -p kmipkit-protocol --all-targets -- -D warnings`; `cargo fmt --all --check`; `git diff --check`; Codex Security diff scan `0aef02e4-8e63-45ba-bdb6-272de365bb1b` | PASS locally: parity 1/1, Windows compiled C harness 9/9, protocol redaction 2/2, client registry 1/1, Java focal 1/1, both Clippy commands and formatting. The earlier Python 3.12 run passed 52/52; this Windows rerun could not start because `uv` hit access denied while resolving `bindings/python/.venv/lib64`. Security review manually inspected all 13 files in `fe80d38a..4d1437a3` and found no reportable issue in the test-only diff; the automatic inventory returned only one file, recorded as a scan limitation. Full cross-platform CI remains pending for this head. |
+
+Two initial Rust filters selected zero tests and were discarded as evidence;
+the corrected `--lib` filters each ran one test. Cargo emitted existing
+environment warnings for AWS-LC's NASM/alignment probe and the linker, but the
+affected test and Clippy commands passed. No generated API output changed.
