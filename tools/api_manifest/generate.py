@@ -10,7 +10,6 @@ Runtime code uses only the Python standard library.
 from __future__ import annotations
 
 import argparse
-from copy import deepcopy
 import json
 import math
 import os
@@ -18,11 +17,13 @@ import re
 import stat
 import sys
 import tempfile
+import tomllib
+import xml.etree.ElementTree as ET
+from copy import deepcopy
 from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
 from typing import Any
-
 
 MANIFEST_PATH = "specification/api/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
@@ -112,6 +113,25 @@ _C_LAYOUT_FIELD_TYPE_PATTERN = re.compile(
 )
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
+_EXPECTED_PUBLIC_PACKAGE_IDS = frozenset(
+    {
+        "rust-kmipkit-ttlv",
+        "rust-kmipkit-protocol",
+        "rust-kmipkit-transport",
+        "rust-kmipkit-client",
+        "rust-kmipkit",
+        "c-kmipkit",
+        "java-kmipkit",
+        "python-kmipkit",
+    }
+)
+_RUST_PUBLIC_PACKAGE_MANIFESTS = {
+    "rust-kmipkit-ttlv": "crates/kmipkit-ttlv/Cargo.toml",
+    "rust-kmipkit-protocol": "crates/kmipkit-protocol/Cargo.toml",
+    "rust-kmipkit-transport": "crates/kmipkit-transport/Cargo.toml",
+    "rust-kmipkit-client": "crates/kmipkit-client/Cargo.toml",
+    "rust-kmipkit": "crates/kmipkit/Cargo.toml",
+}
 _RUST_2024_KEYWORDS = {
     "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum",
     "extern", "false", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod",
@@ -1201,7 +1221,90 @@ def _validate_v2_manifest(
     _validate_schema(manifest, schema)
     _validate_operation_inventory(manifest, catalog)
     _validate_references(manifest)
+    if require_complete:
+        _validate_release_package_versions(manifest, root)
     _validate_v2_readiness(manifest, root, require_complete=require_complete)
+
+
+def _validate_release_package_versions(
+    manifest: dict[str, Any], root: Path
+) -> None:
+    """Require the complete public package inventory to resolve to releaseLine."""
+    release_line = manifest.get("releaseLine")
+    packages = manifest.get("publicPackages")
+    if not isinstance(release_line, str) or not isinstance(packages, list):
+        raise ManifestError("release package inventory is malformed")
+
+    package_ids = [
+        package.get("id") for package in packages if isinstance(package, dict)
+    ]
+    if (
+        len(package_ids) != len(packages)
+        or any(not isinstance(package_id, str) for package_id in package_ids)
+        or len(set(package_ids)) != len(package_ids)
+        or set(package_ids) != _EXPECTED_PUBLIC_PACKAGE_IDS
+    ):
+        raise ManifestError("release package inventory is incomplete or duplicated")
+    if any(
+        package.get("versionSource") != "releaseLine"
+        for package in packages
+        if isinstance(package, dict)
+    ):
+        raise ManifestError("release package versions do not use releaseLine")
+
+    def read_toml(relative_path: str) -> dict[str, Any]:
+        try:
+            with (root / relative_path).open("rb") as source:
+                document = tomllib.load(source)
+        except (OSError, tomllib.TOMLDecodeError) as error:
+            raise ManifestError("release package version source is missing or invalid") from error
+        if not isinstance(document, dict):
+            raise ManifestError("release package version source is malformed")
+        return document
+
+    workspace = read_toml("Cargo.toml")
+    workspace_section = workspace.get("workspace")
+    workspace_package = (
+        workspace_section.get("package")
+        if isinstance(workspace_section, dict)
+        else None
+    )
+    if not isinstance(workspace_package, dict):
+        raise ManifestError("Rust workspace package version source is malformed")
+    workspace_version = workspace_package.get("version")
+    if workspace_version != release_line:
+        raise ManifestError("Rust package versions are not synchronized with releaseLine")
+    for relative_path in _RUST_PUBLIC_PACKAGE_MANIFESTS.values():
+        crate = read_toml(relative_path)
+        crate_package = crate.get("package")
+        if not isinstance(crate_package, dict):
+            raise ManifestError("Rust package version source is malformed")
+        version_source = crate_package.get("version")
+        if version_source != {"workspace": True}:
+            raise ManifestError("Rust package version does not inherit releaseLine")
+
+    python = read_toml("bindings/python/pyproject.toml")
+    python_project = python.get("project")
+    if not isinstance(python_project, dict):
+        raise ManifestError("Python package version source is malformed")
+    if python_project.get("version") != release_line:
+        raise ManifestError("Python package version is not synchronized with releaseLine")
+
+    try:
+        gradle = (root / "bindings/java/build.gradle.kts").read_text(encoding="utf-8")
+        pom = ET.fromstring((root / "bindings/java/pom.xml").read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, ET.ParseError) as error:
+        raise ManifestError("Java package version source is missing or invalid") from error
+    gradle_version = re.search(r'(?m)^\s*version\s*=\s*"([^"\r\n]+)"\s*$', gradle)
+    namespace = pom.tag.partition("}")[0] + "}" if "}" in pom.tag else ""
+    pom_version = pom.find(f"{namespace}version")
+    if (
+        gradle_version is None
+        or gradle_version.group(1) != release_line
+        or pom_version is None
+        or pom_version.text != release_line
+    ):
+        raise ManifestError("Java package versions are not synchronized with releaseLine")
 
 
 def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> set[Any]:
@@ -2560,7 +2663,7 @@ def _atomic_write(destination: Path, data: bytes, root: Path, relative: str) -> 
                 pass
 
 
-def _run(root_path: Path, write: bool) -> int:
+def _run(root_path: Path, write: bool, *, require_complete: bool = False) -> int:
     try:
         root = root_path.resolve(strict=True)
         manifest = _load_json(root, MANIFEST_PATH, MAX_MANIFEST_BYTES)
@@ -2571,8 +2674,12 @@ def _run(root_path: Path, write: bool) -> int:
             catalog = _load_json(root, CATALOG_PATH, MAX_CATALOG_BYTES)
             if not isinstance(catalog, dict):
                 raise ManifestError("normative catalog root must be a JSON object")
-            _validate_v2_manifest(manifest, schema, catalog, root)
+            _validate_v2_manifest(
+                manifest, schema, catalog, root, require_complete=require_complete
+            )
         else:
+            if require_complete:
+                raise ManifestError("release validation requires a v2 public API manifest")
             _validate_schema(manifest, schema)
             _validate_references(manifest)
         outputs = render_outputs(manifest)
@@ -2610,8 +2717,19 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--write", action="store_true", help="write the six generated API files")
     mode.add_argument("--check", action="store_true", help="compare generated files without writing")
+    parser.add_argument(
+        "--require-complete",
+        action="store_true",
+        help="require release-ready API mappings and synchronized packages (check mode only)",
+    )
     arguments = parser.parse_args(argv)
-    return _run(arguments.repo_root, arguments.write)
+    if arguments.require_complete and not arguments.check:
+        parser.error("--require-complete can only be used with --check")
+    return _run(
+        arguments.repo_root,
+        arguments.write,
+        require_complete=arguments.require_complete,
+    )
 
 
 if __name__ == "__main__":
