@@ -583,6 +583,7 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(UniqueIdentifier.Kind.TEXT_STRING,
                             allocationContext.uniqueIdentifier().kind());
                     assertEquals("allocation-object", allocationContext.uniqueIdentifier().text());
+                    assertFalse(allocationContext.toString().contains("allocation-object"));
                 }
                 assertThrows(InvalidInputException.class,
                         () -> allocated.createUsageAllocationContext(0, 1));

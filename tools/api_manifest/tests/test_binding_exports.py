@@ -651,7 +651,7 @@ class BindingExportAuditTests(unittest.TestCase):
         native_members = {
             "CLIENT", "CLIENT_BATCH", "CLIENT_BATCH_ITEM_RESPONSE",
             "CLIENT_BATCH_RESPONSE", "CODEC_LIMITS", "TRANSPORT_CONFIGURATION",
-            "SPLIT_KEY_REFERENCE",
+            "SPLIT_KEY_REFERENCE", "USAGE_ALLOCATION_CONTEXT",
             "clientBatchAddErrorContinuationValue", "clientBatchAddItem",
             "clientExecuteWithOptions",
             "clientBatchCreate", "clientBatchItemResponseMetadata",
@@ -686,6 +686,12 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemPing", "clientBatchItemQuery",
             "clientBatchItemEncrypt", "clientBatchItemDecrypt",
             "clientBatchItemLogin", "clientBatchItemObtainLease",
+            "clientBatchItemLogout", "clientBatchItemResponseLogout",
+            "clientExecuteGuardedProtectionItem",
+            "clientExecuteGuardedProtectionItemWithAsynchronousIndicator",
+            "usageAllocationContextCreate", "usageAllocationContextUsageLimitsUnit",
+            "usageAllocationContextAllocatedUnits", "usageAllocationContextAvailableUnits",
+            "usageAllocationContextReservedUnits", "usageAllocationContextUniqueIdentifier",
             "clientBatchItemResponsePing", "clientBatchItemResponseQueryTtlv",
             "clientBatchItemResponseEncrypt", "clientBatchItemResponseDecrypt",
             "clientBatchItemResponseLogin", "clientBatchItemResponseObtainLease",
@@ -764,12 +770,15 @@ class BindingExportAuditTests(unittest.TestCase):
             "org.kmipkit.extensions.ClientBatchItemResult.GetResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.ImportResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.LogResponse.toString",
+            "org.kmipkit.extensions.UsageAllocationContext.toString",
         }
         for path in java_boilerplate:
             self.assertIn(("java-kmipkit", path), exclusions)
 
         for path in java_boilerplate:
-            if path.endswith("Response.toString"):
+            if path.endswith("Response.toString") or path.endswith(
+                "UsageAllocationContext.toString"
+            ):
                 self.assertIn("redacted", exclusions[("java-kmipkit", path)]["reason"])
 
         dataclass_names = (
@@ -847,7 +856,8 @@ class BindingExportAuditTests(unittest.TestCase):
             self.assertIn("KMIPKIT-0043-FR-021", exclusions[key]["evidence"])
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
-        report_path = repo_root / "specs/043-public-api-bindings/reports/binding-export-report-2026-10-18.json"
+        report_dir = repo_root / "specs/043-public-api-bindings/reports"
+        report_path = max(report_dir.glob("binding-export-report-*.json"))
         report = json.loads(report_path.read_text(encoding="utf-8"))
         self.assertEqual(
             {package["packageId"] for package in report["packages"]},
