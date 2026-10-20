@@ -357,7 +357,7 @@ jobs:
       - name: Configure the C consumer with Ninja
         id: configure-the-c-consumer-with-ninja
         if: runner.os != 'Windows'
-        run: cmake -G Ninja -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/debug"
+        run: cmake -G Ninja -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$GITHUB_WORKSPACE/target/debug"
 
       - name: Compile the C consumer and example
         id: compile-the-c-consumer-and-example
