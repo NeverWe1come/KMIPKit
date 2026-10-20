@@ -274,7 +274,7 @@ final class ClientFacadeTlsIntegrationTest {
         X509Certificate clientCertificate = testCertificate(clientCertificatePem);
         SSLServerSocket listener = deterministicMtlsListener(
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
-        byte[] responseMessage = pkcs11ResponseMessage(fixture);
+        byte[] responseMessage = pkcs11ResponseMessage(fixture, correlationCase);
         FutureTask<byte[]> peer = new FutureTask<>(
                 () -> serveOneResponse(listener, responseMessage));
         Thread peerThread = new Thread(peer, "kmipkit-java-pkcs11-tls-fixture");
@@ -369,6 +369,7 @@ final class ClientFacadeTlsIntegrationTest {
             assertTagOrder(payloadView, expectedTags.stream().mapToLong(Long::longValue).toArray());
             assertFalse(expectedTags.contains(0x420159L), "absent Interface remains absent");
             assertFalse(expectedTags.contains(0x42015bL), "absent Input Parameters remain absent");
+            int fieldOffset = correlationCase.equals("absent") ? 0 : 1;
             assertNestedInteger(payloadView, 0, fixtureHexField(expectedFunction, "tag"),
                     Math.toIntExact(fixtureLongField(expectedFunction, "childValue")));
             if (!correlationCase.equals("absent")) {
@@ -376,10 +377,10 @@ final class ClientFacadeTlsIntegrationTest {
                         correlationCase.equals("presentEmpty") ? new byte[0]
                                 : fixtureHexBytes(expectedCorrelation, "hex"));
             }
-            assertNestedBytes(payloadView, 2,
+            assertNestedBytes(payloadView, 1 + fieldOffset,
                     fixtureHexField(expectedOutputParameters, "tag"),
                     fixtureHexBytes(expectedOutputParameters, "childHex"));
-            try (TtlvItemView returnItem = payloadView.itemAt(3);
+            try (TtlvItemView returnItem = payloadView.itemAt(2 + fieldOffset);
                     TtlvValueView returnValue = returnItem.value();
                     TtlvStructureView returnCode = returnValue.structure();
                     TtlvItemView codeItem = returnCode.itemAt(0);
@@ -388,7 +389,7 @@ final class ClientFacadeTlsIntegrationTest {
                         tagAt(returnCode, 0));
                 assertEquals(expectedReturnCode, codeValue.enumeration());
             }
-            try (TtlvItemView vendorItem = payloadView.itemAt(4);
+            try (TtlvItemView vendorItem = payloadView.itemAt(3 + fieldOffset);
                     Tag vendorTag = vendorItem.tag();
                     TtlvValueView vendorValue = vendorItem.value()) {
                 assertEquals(expectedVendorTag, vendorTag.raw());
@@ -2216,7 +2217,8 @@ final class ClientFacadeTlsIntegrationTest {
         return usageAllocationResponseMessage(itemId, "allocation-object");
     }
 
-    private static byte[] pkcs11ResponseMessage(String fixture) throws Exception {
+    private static byte[] pkcs11ResponseMessage(String fixture, String correlationCase)
+            throws Exception {
         String expectedOutput = fixtureObject(fixture, "expectedOutput");
         String typedResponse = fixtureObject(expectedOutput, "typedResponse");
         String function = fixtureObject(typedResponse, "function");
@@ -2231,8 +2233,15 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] functionField = structure(Math.toIntExact(fixtureHexField(function, "tag")),
                 item(Math.toIntExact(fixtureHexField(function, "childTag")), 2,
                         integer(Math.toIntExact(fixtureLongField(function, "childValue")))));
-        byte[] correlationField = item(Math.toIntExact(fixtureHexField(correlationValue, "tag")),
-                8, fixtureHexBytes(correlationValue, "hex"));
+        long correlationTag = fixtureHexField(correlationValue, "tag");
+        byte[] correlationBytes = switch (correlationCase) {
+            case "nonempty" -> fixtureHexBytes(correlationValue, "hex");
+            case "presentEmpty" -> new byte[0];
+            case "absent" -> null;
+            default -> throw new AssertionError("unsupported correlation presence case");
+        };
+        byte[] correlationField = correlationBytes == null ? null
+                : item(Math.toIntExact(correlationTag), 8, correlationBytes);
         byte[] outputField = structure(Math.toIntExact(fixtureHexField(outputParameters, "tag")),
                 item(Math.toIntExact(fixtureHexField(outputParameters, "childTag")), 8,
                         fixtureHexBytes(outputParameters, "childHex")));
@@ -2243,8 +2252,9 @@ final class ClientFacadeTlsIntegrationTest {
                 integer(Math.toIntExact(fixtureLongField(vendorExtension, "integer"))));
         List<byte[]> responseFields = new ArrayList<>();
         for (long tag : fixtureLongArray(expectedOutput, "responseTags")) {
+            if (correlationCase.equals("absent") && tag == correlationTag) continue;
             if (tag == fixtureHexField(function, "tag")) responseFields.add(functionField);
-            else if (tag == fixtureHexField(correlationValue, "tag")) responseFields.add(correlationField);
+            else if (tag == correlationTag) responseFields.add(correlationField);
             else if (tag == fixtureHexField(outputParameters, "tag")) responseFields.add(outputField);
             else if (tag == fixtureHexField(returnCode, "tag")) responseFields.add(returnCodeField);
             else if (tag == fixtureHexField(vendorExtension, "tag")) responseFields.add(vendorField);
