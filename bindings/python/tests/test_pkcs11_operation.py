@@ -99,13 +99,24 @@ def _structure_with_text(tag_value: int, value_text: str) -> ttlv.Structure:
     return structure
 
 
-def _pkcs11_response_message(expected: dict[str, object]) -> bytes:
+def _pkcs11_response_message(
+    expected: dict[str, object], correlation_case: str = "nonempty"
+) -> bytes:
     typed = expected["typedResponse"]
     function = typed["function"]
     correlation = typed["correlationValue"]
     output_parameters = typed["outputParameters"]
     return_code = typed["returnCode"]
     vendor = expected["vendorExtension"]
+    correlation_tag = int(correlation["tag"], 16)
+    if correlation_case == "nonempty":
+        correlation_bytes = bytes.fromhex(correlation["hex"])
+    elif correlation_case == "presentEmpty":
+        correlation_bytes = b""
+    elif correlation_case == "absent":
+        correlation_bytes = None
+    else:
+        raise AssertionError(f"unsupported correlation presence case: {correlation_case}")
     fields = {
         int(function["tag"], 16): _ttlv_structure(
             int(function["tag"], 16),
@@ -114,9 +125,6 @@ def _pkcs11_response_message(expected: dict[str, object]) -> bytes:
                 2,
                 struct.pack(">i", function["childValue"]),
             ),
-        ),
-        int(correlation["tag"], 16): _ttlv_item(
-            int(correlation["tag"], 16), 8, bytes.fromhex(correlation["hex"])
         ),
         int(output_parameters["tag"], 16): _ttlv_structure(
             int(output_parameters["tag"], 16),
@@ -138,7 +146,11 @@ def _pkcs11_response_message(expected: dict[str, object]) -> bytes:
             int(vendor["tag"], 16), 2, struct.pack(">i", vendor["integer"])
         ),
     }
+    if correlation_bytes is not None:
+        fields[correlation_tag] = _ttlv_item(correlation_tag, 8, correlation_bytes)
     response_tags = [int(tag, 16) for tag in expected["responseTags"]]
+    if correlation_case == "absent":
+        response_tags.remove(correlation_tag)
     assert set(response_tags) == set(fields)
     version = _ttlv_structure(
         0x420069,
@@ -379,7 +391,7 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values(
             accepted_sockets.append(raw)
             with raw, context.wrap_socket(raw, server_side=True) as stream:
                 received_requests.append(_read_ttlv_frame(stream))
-                stream.sendall(_pkcs11_response_message(expected))
+                stream.sendall(_pkcs11_response_message(expected, correlation_case))
         except BaseException as failure:
             peer_failures.put(failure)
         finally:
