@@ -377,6 +377,14 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotIn("PKCS11_CANDIDATE", cmake)
         self.assertNotIn("PKCS11_CANDIDATE", c_job)
 
+    def test_non_windows_c_consumer_uses_the_bash_workspace_variable(self) -> None:
+        contents = self.require_workflow()
+        c_job = self.require_job(contents, "language-c")
+        configure = self.require_named_step(c_job, "Configure the C consumer with Ninja")
+
+        self.assertIn('"-DKMIPKIT_TARGET_DIR=$GITHUB_WORKSPACE/target/debug"', configure.group(1))
+        self.assertNotIn("$env:GITHUB_WORKSPACE", configure.group(1))
+
     def test_java_and_python_default_packages_include_public_pkcs11_mappings(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
