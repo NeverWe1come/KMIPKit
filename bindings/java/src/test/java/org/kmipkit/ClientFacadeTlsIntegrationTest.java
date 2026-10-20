@@ -46,6 +46,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.kmipkit.extensions.BatchOutcomeKind;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
@@ -246,16 +248,21 @@ final class ClientFacadeTlsIntegrationTest {
         assertTrue(peer.isDone());
     }
 
-    @Test
-    void pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"nonempty", "absent", "presentEmpty"})
+    void pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls(
+            String correlationCase) throws Exception {
         String fixture = Files.readString(pkcs11ParityFixturePath(), StandardCharsets.UTF_8);
-        List<Long> expectedTags = fixtureLongArray(fixture, "responseTags");
+        List<Long> expectedTags = new ArrayList<>(fixtureLongArray(fixture, "responseTags"));
         String expectedOutput = fixtureObject(fixture, "expectedOutput");
         String typedResponse = fixtureObject(expectedOutput, "typedResponse");
         String expectedFunction = fixtureObject(typedResponse, "function");
         String expectedCorrelation = fixtureObject(typedResponse, "correlationValue");
         String expectedOutputParameters = fixtureObject(typedResponse, "outputParameters");
         String expectedPkcs11ReturnCode = fixtureObject(typedResponse, "returnCode");
+        if (correlationCase.equals("absent")) {
+            expectedTags.remove(fixtureHexField(expectedCorrelation, "tag"));
+        }
         String vendorExtension = fixtureObject(expectedOutput, "vendorExtension");
         long expectedReturnCode = fixtureHexField(expectedPkcs11ReturnCode, "childValue");
         long expectedVendorTag = fixtureHexField(vendorExtension, "tag");
@@ -323,8 +330,14 @@ final class ClientFacadeTlsIntegrationTest {
         result.close();
         batchResponse.close();
         assertTrue(pkcs11Response.interfaceTtlv().isEmpty(), "absent Interface stays absent");
-        assertArrayEquals(fixtureHexBytes(expectedCorrelation, "hex"),
-                pkcs11Response.correlationValue().orElseThrow());
+        if (correlationCase.equals("absent")) {
+            assertTrue(pkcs11Response.correlationValue().isEmpty());
+        } else if (correlationCase.equals("presentEmpty")) {
+            assertArrayEquals(new byte[0], pkcs11Response.correlationValue().orElseThrow());
+        } else {
+            assertArrayEquals(fixtureHexBytes(expectedCorrelation, "hex"),
+                    pkcs11Response.correlationValue().orElseThrow());
+        }
         try (TtlvStructure functionTtlv = pkcs11Response.functionTtlv().orElseThrow();
                 TtlvStructureView functionView = functionTtlv.view();
                 TtlvItemView functionItem = functionView.itemAt(0);
@@ -358,8 +371,11 @@ final class ClientFacadeTlsIntegrationTest {
             assertFalse(expectedTags.contains(0x42015bL), "absent Input Parameters remain absent");
             assertNestedInteger(payloadView, 0, fixtureHexField(expectedFunction, "tag"),
                     Math.toIntExact(fixtureLongField(expectedFunction, "childValue")));
-            assertBytesAt(payloadView, 1, fixtureHexField(expectedCorrelation, "tag"),
-                    fixtureHexBytes(expectedCorrelation, "hex"));
+            if (!correlationCase.equals("absent")) {
+                assertBytesAt(payloadView, 1, fixtureHexField(expectedCorrelation, "tag"),
+                        correlationCase.equals("presentEmpty") ? new byte[0]
+                                : fixtureHexBytes(expectedCorrelation, "hex"));
+            }
             assertNestedBytes(payloadView, 2,
                     fixtureHexField(expectedOutputParameters, "tag"),
                     fixtureHexBytes(expectedOutputParameters, "childHex"));
