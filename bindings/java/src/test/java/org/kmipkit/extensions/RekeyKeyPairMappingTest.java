@@ -9,8 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
+import org.kmipkit.ttlv.TtlvValue;
 import org.junit.jupiter.api.Test;
 
 /** Re-key Key Pair mapping tests for OASIS KMIP 2.1 §6.1.47, Tables 308–312. */
@@ -34,12 +39,12 @@ final class RekeyKeyPairMappingTest {
 
     @Test
     void requestBuilderCopiesAllSixOptionalStructures() {
-        try (TtlvStructure commonAttributes = TtlvStructure.create();
-                TtlvStructure privateKeyAttributes = TtlvStructure.create();
-                TtlvStructure publicKeyAttributes = TtlvStructure.create();
-                TtlvStructure commonMasks = TtlvStructure.create();
-                TtlvStructure privateMasks = TtlvStructure.create();
-                TtlvStructure publicMasks = TtlvStructure.create();
+        try (TtlvStructure commonAttributes = requestStructure(0x541101, "common-attributes");
+                TtlvStructure privateKeyAttributes = requestStructure(0x541102, "private-attributes");
+                TtlvStructure publicKeyAttributes = requestStructure(0x541103, "public-attributes");
+                TtlvStructure commonMasks = requestStructure(0x541104, "common-masks");
+                TtlvStructure privateMasks = requestStructure(0x541105, "private-masks");
+                TtlvStructure publicMasks = requestStructure(0x541106, "public-masks");
                 ClientBatchItem item = ClientBatchItem.rekeyKeyPair(
                         null, 86_400L, commonAttributes, privateKeyAttributes, publicKeyAttributes,
                         commonMasks, privateMasks, publicMasks)) {
@@ -51,6 +56,20 @@ final class RekeyKeyPairMappingTest {
                 }
             }
             assertNotNull(item);
+        }
+    }
+
+    private static TtlvStructure requestStructure(int markerTag, String marker) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure empty = TtlvStructure.create();
+        try (RawTag rawTag = RawTag.fromRaw(markerTag);
+                Tag tag = rawTag.checked();
+                TtlvValue value = TtlvValue.ByteString(
+                        marker.getBytes(StandardCharsets.US_ASCII), limits);
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            return TtlvStructure.withItem(empty, item, limits);
+        } finally {
+            empty.close();
         }
     }
 

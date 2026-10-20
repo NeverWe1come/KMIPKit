@@ -1711,12 +1711,12 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(create.withUniqueBatchItemId(uniqueBatchItemId(0)));
             createAttributes.close();
 
-            try (TtlvStructure commonAttributes = TtlvStructure.create();
-                    TtlvStructure privateAttributes = TtlvStructure.create();
-                    TtlvStructure publicAttributes = TtlvStructure.create();
-                    TtlvStructure commonMasks = TtlvStructure.create();
-                    TtlvStructure privateMasks = TtlvStructure.create();
-                    TtlvStructure publicMasks = TtlvStructure.create()) {
+            try (TtlvStructure commonAttributes = requestStructure(0x541101, "common-attributes");
+                    TtlvStructure privateAttributes = requestStructure(0x541102, "private-attributes");
+                    TtlvStructure publicAttributes = requestStructure(0x541103, "public-attributes");
+                    TtlvStructure commonMasks = requestStructure(0x541104, "common-masks");
+                    TtlvStructure privateMasks = requestStructure(0x541105, "private-masks");
+                    TtlvStructure publicMasks = requestStructure(0x541106, "public-masks")) {
                 batch.add(ClientBatchItem.rekeyKeyPair(null, 86_400L, commonAttributes,
                         privateAttributes, publicAttributes, commonMasks, privateMasks, publicMasks)
                         .withUniqueBatchItemId(uniqueBatchItemId(1)));
@@ -1756,6 +1756,7 @@ final class ClientFacadeTlsIntegrationTest {
             listener.close();
         }
 
+        assertRekeyKeyPairRequest(request);
         try (successful; TtlvStructureView responseTtlv = successful.responseTtlv().view()) {
             assertEquals(4, responseTtlv.itemCount());
             assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
@@ -2164,6 +2165,79 @@ final class ClientFacadeTlsIntegrationTest {
             if (exactMatch) return true;
         }
         return false;
+    }
+
+    private static void assertRekeyKeyPairRequest(byte[] bytes) {
+        TtlvSpan message = parseItem(bytes, 0, bytes.length);
+        assertEquals(0x420078, message.tag());
+        assertEquals(1, message.type());
+        assertEquals(bytes.length, message.end());
+
+        TtlvSpan requestPayload = null;
+        for (TtlvSpan batchItem : children(bytes, message)) {
+            if (batchItem.tag() != 0x42000f || batchItem.type() != 1) continue;
+            boolean isRekeyKeyPair = false;
+            TtlvSpan candidatePayload = null;
+            for (TtlvSpan field : children(bytes, batchItem)) {
+                if (field.tag() == 0x42005c && field.type() == 5 && field.valueLength() == 4) {
+                    isRekeyKeyPair = ByteBuffer.wrap(bytes, field.valueStart(), field.valueLength())
+                            .getInt() == 0x1d;
+                } else if (field.tag() == 0x420079 && field.type() == 1) {
+                    candidatePayload = field;
+                }
+            }
+            if (isRekeyKeyPair) {
+                requestPayload = candidatePayload;
+                break;
+            }
+        }
+        assertNotNull(requestPayload, "request did not contain a Re-key Key Pair payload");
+
+        List<TtlvSpan> fields = children(bytes, requestPayload);
+        int[] expectedTags = {0x420058, 0x420126, 0x420127, 0x420128, 0x420163, 0x420164, 0x420165};
+        assertEquals(expectedTags.length, fields.size());
+        for (int index = 0; index < expectedTags.length; index++) {
+            assertEquals(expectedTags[index], fields.get(index).tag(),
+                    "Table 310 request field order at index " + index);
+        }
+        TtlvSpan offset = fields.get(0);
+        assertEquals(10, offset.type());
+        assertEquals(4, offset.valueLength());
+        assertEquals(86_400, ByteBuffer.wrap(bytes, offset.valueStart(), offset.valueLength()).getInt());
+
+        int[] markerTags = {0x541101, 0x541102, 0x541103, 0x541104, 0x541105, 0x541106};
+        byte[][] markers = {
+            "common-attributes".getBytes(StandardCharsets.US_ASCII),
+            "private-attributes".getBytes(StandardCharsets.US_ASCII),
+            "public-attributes".getBytes(StandardCharsets.US_ASCII),
+            "common-masks".getBytes(StandardCharsets.US_ASCII),
+            "private-masks".getBytes(StandardCharsets.US_ASCII),
+            "public-masks".getBytes(StandardCharsets.US_ASCII)
+        };
+        for (int index = 0; index < markerTags.length; index++) {
+            TtlvSpan group = fields.get(index + 1);
+            assertEquals(1, group.type());
+            List<TtlvSpan> children = children(bytes, group);
+            assertEquals(1, children.size());
+            TtlvSpan marker = children.get(0);
+            assertEquals(markerTags[index], marker.tag(), "request field group marker tag");
+            assertEquals(8, marker.type());
+            assertArrayEquals(markers[index], Arrays.copyOfRange(bytes, marker.valueStart(),
+                    marker.valueStart() + marker.valueLength()));
+        }
+    }
+
+    private static TtlvStructure requestStructure(int markerTag, String marker) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure empty = TtlvStructure.create();
+        try (RawTag rawTag = RawTag.fromRaw(markerTag);
+                Tag tag = rawTag.checked();
+                TtlvValue value = TtlvValue.ByteString(marker.getBytes(StandardCharsets.US_ASCII), limits);
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            return TtlvStructure.withItem(empty, item, limits);
+        } finally {
+            empty.close();
+        }
     }
 
     private static List<TtlvSpan> children(byte[] bytes, TtlvSpan parent) {

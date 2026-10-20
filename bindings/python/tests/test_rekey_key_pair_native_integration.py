@@ -103,12 +103,135 @@ def _read_frame(stream: ssl.SSLSocket) -> bytes:
 
 def _tags(value: ttlv.Structure) -> tuple[int, ...]:
     with ttlv.ttlv_structure_view(value) as view:
-        return tuple(
-            ttlv.tag_value(
-                ttlv.ttlv_item_view_tag(ttlv.ttlv_structure_view_item_at(view, i))
+        return _view_tags(view)
+
+
+def _view_tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
+    tags = []
+    for index in range(ttlv.ttlv_structure_view_item_count(view)):
+        with (
+            ttlv.ttlv_structure_view_item_at(view, index) as item,
+            ttlv.ttlv_item_view_tag(item) as tag,
+        ):
+            tags.append(ttlv.tag_value(tag))
+    return tuple(tags)
+
+
+def _sentinel_structure(
+    tag_value: int, marker: bytes, limits: ttlv.CodecLimits
+) -> ttlv.Structure:
+    with (
+        ttlv.raw_tag_from_raw(tag_value) as raw_tag,
+        ttlv.raw_tag_try_checked(raw_tag) as tag,
+        ttlv.ttlv_value_byte_string(marker, limits) as value,
+        ttlv.ttlv_item_create(tag, value, limits) as item,
+    ):
+        structure = ttlv.ttlv_structure_create()
+        try:
+            return ttlv.ttlv_structure_with_item(structure, item, limits)
+        finally:
+            structure.close()
+
+
+def _parse_item(
+    encoded: bytes, offset: int, parent_end: int
+) -> tuple[int, int, int, int, int]:
+    assert 0 <= offset <= parent_end - 8
+    tag_value = int.from_bytes(encoded[offset : offset + 3], "big")
+    item_type = encoded[offset + 3]
+    value_length = int.from_bytes(encoded[offset + 4 : offset + 8], "big")
+    value_start = offset + 8
+    padded_length = value_length + (-value_length % 8)
+    item_end = value_start + padded_length
+    assert item_end <= parent_end
+    return tag_value, item_type, value_start, value_length, item_end
+
+
+def _children(
+    encoded: bytes, parent: tuple[int, int, int, int, int]
+) -> list[tuple[int, int, int, int, int]]:
+    _, item_type, value_start, value_length, _ = parent
+    assert item_type == 1
+    value_end = value_start + value_length
+    children = []
+    offset = value_start
+    while offset < value_end:
+        child = _parse_item(encoded, offset, value_end)
+        children.append(child)
+        offset = child[4]
+    assert offset == value_end
+    return children
+
+
+def _assert_request_fields(encoded: bytes) -> None:
+    message = _parse_item(encoded, 0, len(encoded))
+    assert message[0] == 0x420078 and message[1] == 1
+    assert message[4] == len(encoded)
+    request_payload = None
+    for batch_item in _children(encoded, message):
+        if batch_item[0] != 0x42000F or batch_item[1] != 1:
+            continue
+        is_pair = False
+        candidate_payload = None
+        for field in _children(encoded, batch_item):
+            if field[0] == 0x42005C and field[1] == 5 and field[3] == 4:
+                is_pair = (
+                    int.from_bytes(encoded[field[2] : field[2] + field[3]], "big")
+                    == 0x1D
+                )
+            elif field[0] == 0x420079 and field[1] == 1:
+                candidate_payload = field
+        if is_pair:
+            request_payload = candidate_payload
+            break
+    assert request_payload is not None
+
+    fields = _children(encoded, request_payload)
+    expected_tags = (
+        0x420058,
+        0x420126,
+        0x420127,
+        0x420128,
+        0x420163,
+        0x420164,
+        0x420165,
+    )
+    assert tuple(field[0] for field in fields) == expected_tags
+    offset = fields[0]
+    assert offset[1] == 10 and offset[3] == 4
+    assert int.from_bytes(encoded[offset[2] : offset[2] + offset[3]], "big") == 86_400
+
+    marker_tags = (0x541101, 0x541102, 0x541103, 0x541104, 0x541105, 0x541106)
+    markers = (
+        b"common-attributes",
+        b"private-attributes",
+        b"public-attributes",
+        b"common-masks",
+        b"private-masks",
+        b"public-masks",
+    )
+    for group, marker_tag, marker_value in zip(
+        fields[1:], marker_tags, markers, strict=True
+    ):
+        children = _children(encoded, group)
+        assert len(children) == 1
+        marker = children[0]
+        assert marker[0] == marker_tag and marker[1] == 8
+        assert encoded[marker[2] : marker[2] + marker[3]] == marker_value
+
+
+def _byte_string_at(
+    structure: ttlv.TtlvStructureView, index: int, expected_tag: int
+) -> bytes:
+    with ttlv.ttlv_structure_view_item_at(structure, index) as item:
+        with ttlv.ttlv_item_view_tag(item) as tag:
+            assert ttlv.tag_value(tag) == expected_tag
+        assert ttlv.ttlv_item_view_type(item) == ttlv.ItemType.ByteString
+        with ttlv.ttlv_item_view_value(item) as value:
+            length = ttlv.ttlv_value_view_byte_length(value)
+            return bytes(
+                ttlv.ttlv_value_view_byte_at(value, byte) for byte in range(length)
             )
-            for i in range(ttlv.ttlv_structure_view_item_count(view))
-        )
 
 
 def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response() -> (
@@ -186,12 +309,25 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
             for index, batch_id in enumerate(_BATCH_IDS[1:]):
                 if index == 0:
                     with (
-                        ttlv.ttlv_structure_create() as common_attributes,
-                        ttlv.ttlv_structure_create() as private_attributes,
-                        ttlv.ttlv_structure_create() as public_attributes,
-                        ttlv.ttlv_structure_create() as common_masks,
-                        ttlv.ttlv_structure_create() as private_masks,
-                        ttlv.ttlv_structure_create() as public_masks,
+                        ttlv.codec_limits_defaults() as group_limits,
+                        _sentinel_structure(
+                            0x541101, b"common-attributes", group_limits
+                        ) as common_attributes,
+                        _sentinel_structure(
+                            0x541102, b"private-attributes", group_limits
+                        ) as private_attributes,
+                        _sentinel_structure(
+                            0x541103, b"public-attributes", group_limits
+                        ) as public_attributes,
+                        _sentinel_structure(
+                            0x541104, b"common-masks", group_limits
+                        ) as common_masks,
+                        _sentinel_structure(
+                            0x541105, b"private-masks", group_limits
+                        ) as private_masks,
+                        _sentinel_structure(
+                            0x541106, b"public-masks", group_limits
+                        ) as public_masks,
                     ):
                         item = extensions.client_batch_item_rekey_key_pair(
                             offset=86_400,
@@ -207,6 +343,7 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
                 batch.add_item(extensions.with_unique_batch_item_id(item, batch_id))
             result = kmip.execute(batch, limits)
         assert len(received) == 1
+        _assert_request_fields(received[0])
         assert (
             received[0].count(b"\x42\x00\x5c\x05\x00\x00\x00\x04\x00\x00\x00\x1d") == 3
         )
@@ -238,6 +375,14 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
         assert not pair.response_ttlv.closed
         with ttlv.ttlv_structure_view(pair.response_ttlv) as view:
             assert ttlv.ttlv_structure_view_item_count(view) == 4
+            assert _view_tags(view) == (0x42005C, 0x420093, 0x42007F, 0x42007C)
+            with (
+                ttlv.ttlv_structure_view_item_at(view, 3) as payload_item,
+                ttlv.ttlv_item_view_value(payload_item) as payload_value,
+                ttlv.ttlv_value_view_structure(payload_value) as payload,
+            ):
+                assert _view_tags(payload) == (0x420066, 0x42006F, 0x541234)
+                assert _byte_string_at(payload, 2, 0x541234) == b"\x01\x00\xff"
         assert "replacement-private" not in repr(
             pair
         ) and "replacement-public" not in repr(pair)

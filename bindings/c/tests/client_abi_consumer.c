@@ -3939,10 +3939,17 @@ int kmipkit_client_abi_c_consumer_validate_rekey_key_pair_response_ttlv(
     kmipkit_client_batch_item_response_t *item) {
     static const uint8_t expected_private[] = "replacement-private-key";
     static const uint8_t expected_public[] = "replacement-public-key";
-    uint8_t present = 0, ttlv_present = 0;
+    static const uint32_t response_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    static const uint32_t payload_tags[] = {
+        UINT32_C(0x420066), UINT32_C(0x42006f), UINT32_C(0x540001)};
+    uint8_t present = 0, ttlv_present = 0, payload_type = 0;
     kmipkit_unique_identifier_v1_t private_identifier = {0}, public_identifier = {0};
     kmipkit_ttlv_structure_t *response_ttlv = 0;
     kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *payload_item = 0;
+    kmipkit_ttlv_value_view_t *payload_value = 0;
+    kmipkit_ttlv_structure_view_t *payload_view = 0;
     int result = 0;
     if (item == 0) return 0;
     private_identifier.struct_size = (uint32_t)sizeof(private_identifier);
@@ -3960,9 +3967,23 @@ int kmipkit_client_abi_c_consumer_validate_rekey_key_pair_response_ttlv(
     kmipkit_client_batch_item_response_release(item);
     item = 0;
     if (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0) goto cleanup;
+    if (!check_view_tags(view, response_tags,
+            (uint64_t)(sizeof(response_tags) / sizeof(response_tags[0]))) ||
+        kmipkit_ttlv_structure_view_item_at(view, 3, &payload_item) != 0 ||
+        payload_item == 0 ||
+        kmipkit_ttlv_item_view_type(payload_item, &payload_type) != 0 ||
+        payload_type != KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ||
+        kmipkit_ttlv_item_view_value(payload_item, &payload_value) != 0 ||
+        kmipkit_ttlv_value_view_structure(payload_value, &payload_view) != 0 ||
+        !check_view_tags(payload_view, payload_tags,
+            (uint64_t)(sizeof(payload_tags) / sizeof(payload_tags[0]))) ||
+        !public_ttlv_view_contains_response_sentinel(payload_view, 0)) goto cleanup;
     result = 1;
 cleanup:
     kmipkit_client_batch_item_response_release(item);
+    kmipkit_ttlv_structure_view_release(payload_view);
+    kmipkit_ttlv_value_view_release(payload_value);
+    kmipkit_ttlv_item_view_release(payload_item);
     kmipkit_ttlv_structure_view_release(view);
     kmipkit_ttlv_structure_release(response_ttlv);
     return result;

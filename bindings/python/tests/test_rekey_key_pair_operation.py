@@ -6,6 +6,22 @@ from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
 
+def _sentinel_structure(
+    tag_value: int, marker: bytes, limits: ttlv.CodecLimits
+) -> ttlv.Structure:
+    with (
+        ttlv.raw_tag_from_raw(tag_value) as raw_tag,
+        ttlv.raw_tag_try_checked(raw_tag) as tag,
+        ttlv.ttlv_value_byte_string(marker, limits) as value,
+        ttlv.ttlv_item_create(tag, value, limits) as item,
+    ):
+        structure = ttlv.ttlv_structure_create()
+        try:
+            return ttlv.ttlv_structure_with_item(structure, item, limits)
+        finally:
+            structure.close()
+
+
 def test_pair_request_preserves_omitted_identifier_and_all_optional_fields(
     monkeypatch,
 ) -> None:
@@ -33,12 +49,19 @@ def test_pair_request_passes_each_attribute_and_mask_group(monkeypatch) -> None:
     )
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
     with (
-        ttlv.ttlv_structure_create() as common_attributes,
-        ttlv.ttlv_structure_create() as private_attributes,
-        ttlv.ttlv_structure_create() as public_attributes,
-        ttlv.ttlv_structure_create() as common_masks,
-        ttlv.ttlv_structure_create() as private_masks,
-        ttlv.ttlv_structure_create() as public_masks,
+        ttlv.codec_limits_defaults() as limits,
+        _sentinel_structure(
+            0x541101, b"common-attributes", limits
+        ) as common_attributes,
+        _sentinel_structure(
+            0x541102, b"private-attributes", limits
+        ) as private_attributes,
+        _sentinel_structure(
+            0x541103, b"public-attributes", limits
+        ) as public_attributes,
+        _sentinel_structure(0x541104, b"common-masks", limits) as common_masks,
+        _sentinel_structure(0x541105, b"private-masks", limits) as private_masks,
+        _sentinel_structure(0x541106, b"public-masks", limits) as public_masks,
     ):
         item = extensions.client_batch_item_rekey_key_pair(
             common_attributes=common_attributes,
@@ -48,19 +71,23 @@ def test_pair_request_passes_each_attribute_and_mask_group(monkeypatch) -> None:
             private_protection_storage_masks=private_masks,
             public_protection_storage_masks=public_masks,
         )
-        for structure in (
-            common_attributes,
-            private_attributes,
-            public_attributes,
-            common_masks,
-            private_masks,
-            public_masks,
-        ):
-            with ttlv.ttlv_structure_view(structure) as view:
-                assert ttlv.ttlv_structure_view_item_count(view) == 1
+        expected_arguments = tuple(
+            ffi.cast("uintptr_t", structure._pointer())
+            for structure in (
+                common_attributes,
+                private_attributes,
+                public_attributes,
+                common_masks,
+                private_masks,
+                public_masks,
+            )
+        )
     assert item == 41
     assert calls[0][0] == "kmipkit_client_batch_item_rekey_key_pair"
     assert all(value != ffi.NULL for value in calls[0][1][3:])
+    assert tuple(ffi.cast("uintptr_t", value) for value in calls[0][1][3:]) == tuple(
+        expected_arguments
+    )
 
 
 def test_pair_response_maps_both_ids_owned_ttlv_and_redaction(monkeypatch) -> None:
