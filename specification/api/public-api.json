@@ -280598,6 +280598,54 @@
     },
     {
       "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.UsageAllocationContext.__enter__",
+      "reason": "This exact Python local lifecycle convenience uses the already mapped close lifecycle; it is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-009; T078 maps explicit UsageAllocationContext close/release in the four-language API. This exact exclusion covers only Python context-manager syntax."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.UsageAllocationContext.__exit__",
+      "reason": "This exact Python local lifecycle convenience uses the already mapped close lifecycle; it is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-009; T078 maps explicit UsageAllocationContext close/release in the four-language API. This exact exclusion covers only Python context-manager syntax."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.UsageAllocationContext.__init__",
+      "reason": "This exact inherited Python constructor requires KMIPKit's private native handle token and is used internally by `_wrap_owned_handle`; direct raw-handle adoption is not a separate API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-009; T078 maps UsageAllocationContext creation from a live Get Usage Allocation result in all four languages. This exact exclusion covers only the Python constructor that accepts the private native token."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.UsageAllocationContext.closed",
+      "reason": "This exact Python local lifecycle convenience exposes wrapper-local closed state for the already mapped close lifecycle; it is not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0043-FR-007 and KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-009; T078 maps explicit UsageAllocationContext close/release in the four-language API. This exact exclusion covers only Python wrapper-local state."
+    },
+    {
+      "packageId": "python-kmipkit",
       "exportName": "kmipkit.errors.ClientExecutionError.__init__",
       "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped.",
       "approvalSource": {
