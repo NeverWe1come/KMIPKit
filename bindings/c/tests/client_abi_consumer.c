@@ -196,6 +196,53 @@ static int recertify_response_accessors_clear_outputs_from_c(void) {
     return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
 }
 
+static int rekey_constructor_is_callable_from_c(void) {
+    static const uint8_t identifier_bytes[] = "existing-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = 1;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1);
+
+    if (kmipkit_client_batch_item_rekey(
+            0, 0, 0, 0, 0, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    if (kmipkit_client_batch_item_rekey(
+            &identifier, 1, UINT32_MAX, 0, 0, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
+static int rekey_response_accessors_clear_outputs_from_c(void) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    uint8_t present = 9;
+    kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    const int32_t identifier_status = kmipkit_client_batch_item_response_rekey(
+        0, &present, &identifier);
+    if (identifier_status != T076_ERROR_INVALID_INPUT || present != 0 ||
+        identifier.kind != 0 || identifier.text_data != 0 || identifier.text_length != 0 ||
+        identifier.enumeration_value != 0 || identifier.integer_value != 0) {
+        return 0;
+    }
+    present = 9;
+    const int32_t ttlv_status = kmipkit_client_batch_item_response_rekey_ttlv(
+        0, &present, &response_ttlv);
+    return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
+
 static int certify_constructor_is_callable_from_c(void) {
     static const uint8_t request_value[] = {0x30, 0x82, 0x01, 0x00};
     kmipkit_byte_span_v1_t request_span = {
@@ -3794,6 +3841,50 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_validate_rekey_response_ttlv(
+    kmipkit_client_batch_item_response_t *item) {
+    static const uint8_t expected_identifier[] = "replacement-key";
+    static const uint32_t expected_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    uint8_t identifier_present = 0;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t ttlv_present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    int identifier_matches = 0;
+    int result = 0;
+
+    if (item == 0) {
+        return 0;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_rekey(
+            item, &identifier_present, &identifier) != 0 || identifier_present != 1 ||
+        kmipkit_client_batch_item_response_rekey_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 ||
+        ttlv_present != 1 || response_ttlv == 0) {
+        goto cleanup;
+    }
+    identifier_matches = response_identifier_matches(
+        &identifier, expected_identifier, (uint64_t)(sizeof(expected_identifier) - 1));
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (!identifier_matches || kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+        !check_view_tags(
+            view, expected_tags, (uint64_t)(sizeof(expected_tags) / sizeof(expected_tags[0]))) ||
+        !public_ttlv_view_contains_response_sentinel(view, 0)) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
     kmipkit_client_batch_item_response_t *item) {
     static const uint8_t expected_identifier[] = "joined-id";
@@ -4750,6 +4841,8 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (!creation_create_matches_shared_fixture() ||
+        !rekey_constructor_is_callable_from_c() ||
+        !rekey_response_accessors_clear_outputs_from_c() ||
         !recertify_constructor_is_callable_from_c() ||
         !recertify_response_accessors_clear_outputs_from_c() ||
         !generic_big_integer_constructor_preserves_type_and_octets_from_c() ||

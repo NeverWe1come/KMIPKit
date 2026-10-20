@@ -14,8 +14,9 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OperationData, Pkcs11Request, RecertifyRequest, SecretBytes, SecretText,
-    SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
+    ObtainLeaseRequest, OperationData, Pkcs11Request, RecertifyRequest, RekeyRequest, SecretBytes,
+    SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket, TicketType,
+    UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -5259,6 +5260,9 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_recertify_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_rekey_response_ttlv(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -5425,6 +5429,93 @@ fn ffi_recertify_accessors_leave_failure_results_absent_and_validate_outputs() {
         )
     );
 
+    kmipkit_client_batch_item_response_release(item);
+}
+
+// KMIP Specification v2.1 §6.1.46, Tables 305–307.
+#[test]
+fn ffi_rekey_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
+    let unknown_value = [0xde, 0xad, 0x00, 0xff];
+    let item = successful_cryptographic_item(
+        ClientRequest::Rekey(
+            RekeyRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("old-key".to_owned()))
+                .with_offset(u32::MAX),
+        ),
+        0x04,
+        b"rekey-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"replacement-key"),
+            ttlv_item(0x0054_0001, 0x08, &unknown_value),
+        ],
+    );
+
+    let mut identifier_present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rekey(
+            item,
+            &raw mut identifier_present,
+            &raw mut identifier,
+        )
+    );
+    assert_eq!(identifier_present, 1);
+    assert_response_identifier(&identifier, b"replacement-key");
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rekey_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+
+    // SAFETY: the compiled C consumer takes ownership of this live response-item handle.
+    let result = unsafe { kmipkit_client_abi_c_consumer_validate_rekey_response_ttlv(item) };
+
+    assert_eq!(
+        result, 1,
+        "C preserves the typed identifier and complete ordered response TTLV"
+    );
+}
+
+#[test]
+fn ffi_rekey_accessors_leave_failure_results_absent() {
+    let item = failed_cryptographic_item(
+        ClientRequest::Rekey(RekeyRequest::new()),
+        0x04,
+        b"rekey-failure",
+    );
+
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rekey(item, &raw mut present, &raw mut identifier,)
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rekey_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
     kmipkit_client_batch_item_response_release(item);
 }
 
