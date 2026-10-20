@@ -267,6 +267,18 @@ static int derive_key_constructor_is_callable_from_c(void) {
             derivation_parameters, 0, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
         goto cleanup;
     }
+    identifiers[0].kind = 0;
+    identifiers[0].text_data = 0;
+    identifiers[0].text_length = 0;
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_derive_key(
+            2, identifiers, 2, UINT32_C(0xfeedbeef),
+            derivation_parameters, attributes, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+        goto cleanup;
+    }
+    identifiers[0].kind = 1;
+    identifiers[0].text_data = source_identifier;
+    identifiers[0].text_length = sizeof(source_identifier);
     if (kmipkit_client_batch_item_derive_key(
             2, identifiers, 2, UINT32_C(0xfeedbeef),
             derivation_parameters, attributes, &item) != 0 || item == 0) {
