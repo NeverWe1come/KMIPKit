@@ -106,6 +106,41 @@ fn a_missing_or_failed_required_record_prevents_evidence_completion() {
 }
 
 #[test]
+fn dependent_profile_readiness_includes_transitive_dependency_requirements() {
+    let profiles = kmipkit_protocol::profiles_generated::CLIENT_PROFILES;
+    let dependent = profiles
+        .iter()
+        .find(|profile| profile.profile_id == "KMIPKIT-PROFILE-AES-XTS-CLIENT")
+        .expect("AES-XTS Client resolves");
+    let dependency = profiles
+        .iter()
+        .find(|profile| profile.profile_id == BASELINE)
+        .expect("Baseline Client resolves");
+    let records: Vec<_> = dependent
+        .requirement_ids
+        .iter()
+        .map(|requirement_id| ProfileEvidenceRecord::passed(*requirement_id))
+        .collect();
+
+    let readiness = ProfileEvidenceReadiness::evaluate(dependent.profile_id, &records)
+        .expect("AES-XTS Client resolves");
+    let missing_dependency_requirements: Vec<_> = dependency
+        .requirement_ids
+        .iter()
+        .filter(|requirement_id| !dependent.requirement_ids.contains(requirement_id))
+        .collect();
+
+    assert!(!missing_dependency_requirements.is_empty());
+    assert!(!readiness.requirement_records_complete());
+    for requirement_id in missing_dependency_requirements {
+        assert!(readiness.blockers().iter().any(|blocker| {
+            blocker.requirement_id() == Some(*requirement_id)
+                && blocker.as_str() == "required requirement evidence is missing"
+        }));
+    }
+}
+
+#[test]
 fn local_records_never_advance_catalog_state_or_publish_a_claim() {
     let readiness = ProfileEvidenceReadiness::evaluate(BASELINE, &passing_records())
         .expect("Baseline profile resolves");

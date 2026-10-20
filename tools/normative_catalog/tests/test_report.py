@@ -1220,6 +1220,40 @@ mod unrelated {
         self.assertTrue(any("KMIPKIT-PROFILE-BASELINE-CLIENT" in blocker for blocker in readiness["blockers"]))
         self.assertIs(readiness["published_claim"], False)
 
+    def test_dependency_readiness_recomputes_stale_dependency_evidence(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        baseline_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        dependent_id = "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+        baseline = next(row for row in catalog["profiles"] if row["profile_id"] == baseline_id)
+        dependent = next(row for row in catalog["profiles"] if row["profile_id"] == dependent_id)
+        baseline["claim_state"] = "evidence_complete"
+        dependent["claim_state"] = "evidence_complete"
+        mandatory_test = next(
+            row
+            for row in catalog["test_cases"]
+            if row["test_id"] in baseline["test_case_ids"]
+            and row["mandatory_status"] == "mandatory"
+        )
+        mandatory_test["fixture_path"] = None
+        mandatory_test["fixture_availability"] = "unavailable"
+
+        readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            dependent_id,
+            selected_profile_ids={dependent_id},
+            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIn(
+            f"dependency profile is not evidence complete: {baseline_id}",
+            readiness["blockers"],
+        )
+        self.assertIs(readiness["published_claim"], False)
+
     def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
         catalog = report_catalog()
         credential_marker = "credential=report-secret-sentinel-731"

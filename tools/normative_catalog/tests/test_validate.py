@@ -4895,6 +4895,76 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "(?i)(mandatory.{0,40}fixture|fixture.{0,40}mandatory)"):
             validate(catalog)
 
+    def test_profile_claim_rejects_omitted_catalog_linked_test_cases(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["claim_state"] = "evidence_complete"
+        for requirement in catalog["requirements"]:
+            requirement["implementation_refs"] = ["src/profile.rs"]
+            requirement["verification_refs"] = ["tests/profile_evidence.rs::profile_evidence_is_complete"]
+        official_test = next(
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["source_id"] == "KMIPKIT-SRC-testcases"
+        )
+        baseline["test_case_ids"] = sorted({*baseline["test_case_ids"], official_test["test_id"]})
+        official_test["profile_ids"] = sorted({*official_test["profile_ids"], baseline["profile_id"]})
+        mandatory_test_id = next(
+            test_case["test_id"]
+            for test_case in catalog["test_cases"]
+            if baseline["profile_id"] in test_case["profile_ids"]
+            and test_case["mandatory_status"] == "mandatory"
+        )
+        baseline["test_case_ids"].remove(mandatory_test_id)
+
+        with self.assertRaisesRegex(CatalogValidationError, "missing catalog-linked test cases"):
+            validate(catalog)
+
+    def test_profile_claim_checks_required_fixtures_linked_by_closure_requirements(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["claim_state"] = "evidence_complete"
+        for requirement in catalog["requirements"]:
+            requirement["implementation_refs"] = ["src/profile.rs"]
+            requirement["verification_refs"] = ["tests/profile_evidence.rs::profile_evidence_is_complete"]
+        requirement_test_ids = {
+            test_id
+            for requirement in catalog["requirements"]
+            if requirement["requirement_id"] in baseline["requirement_ids"]
+            for test_id in requirement["test_case_ids"]
+        }
+        unavailable_required_test = next(
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["test_id"] in requirement_test_ids
+            and test_case["test_id"] not in baseline["test_case_ids"]
+        )
+        official_test = next(
+            test_case
+            for test_case in catalog["test_cases"]
+            if test_case["source_id"] == "KMIPKIT-SRC-testcases"
+            and test_case["test_id"] not in requirement_test_ids
+            and test_case["test_id"] not in baseline["test_case_ids"]
+        )
+        baseline["test_case_ids"] = sorted({*baseline["test_case_ids"], official_test["test_id"]})
+        official_test["profile_ids"] = sorted({*official_test["profile_ids"], baseline["profile_id"]})
+        unavailable_required_test["mandatory_status"] = "mandatory"
+
+        with self.assertRaisesRegex(CatalogValidationError, "unavailable mandatory fixture"):
+            validate(catalog)
+
     def test_profile_cannot_claim_complete_evidence_without_requirement_assignments(self) -> None:
         catalog = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
