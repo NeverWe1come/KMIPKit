@@ -39,6 +39,21 @@ OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS = frozenset(
         "__slots__",
     )
 )
+RECERTIFY_RESPONSE_EXCLUDED_EXPORTS = frozenset(
+    f"kmipkit.client.RecertifyResponse.{member}"
+    for member in (
+        "__dataclass_fields__",
+        "__dataclass_params__",
+        "__delattr__",
+        "__eq__",
+        "__hash__",
+        "__init__",
+        "__match_args__",
+        "__repr__",
+        "__setattr__",
+        "__slots__",
+    )
+)
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 T076_SYMBOLS = {
     "kmipkit_client_batch_add_error_continuation_value",
@@ -1582,6 +1597,28 @@ class T076ClientMappingTests(unittest.TestCase):
         }
         self.assertEqual(OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS, actual)
 
+    def test_recertify_response_generated_exports_have_exact_t058_exclusions(self) -> None:
+        expected = RECERTIFY_RESPONSE_EXCLUDED_EXPORTS
+        actual = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.RecertifyResponse.")
+        }
+        self.assertEqual(expected, actual)
+        for export_name in sorted(actual):
+            with self.subTest(export=export_name):
+                exclusion = next(
+                    row for row in self.manifest["approvedExclusions"]
+                    if row["exportName"] == export_name
+                )
+                self.assertEqual(
+                    "specs/022-object-lifecycle/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("T058", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
     def test_python_export_inventory_and_facade_mappings_are_exactly_classified(self) -> None:
         semantic_exports = {
             "kmipkit.client.BatchItemResult.operation",
@@ -1773,6 +1810,8 @@ class T076ClientMappingTests(unittest.TestCase):
             "org.kmipkit.extensions.ClientBatchItemMetadataV2.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.CreateKeyPairResponse.toString",
             "org.kmipkit.extensions.ClientBatchItemResult.CreateResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.RecertifyResponse.toString",
             "org.kmipkit.extensions.UniqueIdentifier.toString",
         }
         generated_enum_members = {

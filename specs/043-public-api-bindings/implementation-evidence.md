@@ -4764,3 +4764,28 @@ candidate and PKCS#11 exports. The audit does not hide or alter native exports.
 | Red | `a8cc51f5` | `py -3 -B -m unittest -v tools.api_manifest.tests.test_pkcs11_parity_manifest.Pkcs11ParityManifestTests.test_default_jni_audit_ignores_dependency_candidate_symbols` | Expected failure: the legitimate OpenSSL probe dependency symbol was incorrectly rejected as a candidate export. |
 | Green | `518c58c3` | Three focused JNI export audit tests | PASS: dependency candidate symbol accepted; unlisted JNI candidate and PKCS#11 methods rejected; all required public JNI symbols required. |
 | Refactor | `29b98c71` | `py -3 -B -m unittest -v tools.api_manifest.tests.test_pkcs11_parity_manifest`; `py -3 -B tools/api_manifest/audit_jni_public_exports.py --binary bindings/java/target/native/libkmipkit_jni.so`; `git diff --check` | PASS: all 8 PKCS#11 manifest tests; representative OpenSSL and resolver Rust dependency candidate symbols are ignored, while unlisted JNI candidate/PKCS#11 symbols remain rejected; existing Linux JNI library audit reports both required public JNI symbols present; no whitespace errors. The exact-head cross-platform CI rerun is pending. |
+
+### T058 — Re-certify API mapping (2026-10-20)
+
+T058 maps OASIS KMIP 2.1 §6.1.45, Tables 300–302, through the Rust client,
+C ABI, Java/JNI, and Python/CFFI. The API exposes the two optional Unique
+Identifiers, the conditional Certificate Request Type/Value fields, optional
+Offset, Attributes, and Protection Storage Masks. Successful outcomes expose
+the replacement Unique Identifier and a separately owned, complete ordered
+response TTLV, including unknown tags. Failure and Pending retain their common
+metadata without exposing raw response bodies or triggering implicit polling.
+The source study records no direct OASIS test-case ID for §6.1.45, so the
+table-derived tests are not described as official vectors or certification.
+
+| Stage | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `2987ecd4`, `a5e3f869` | Re-certify API-manifest parity contract; `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs.PackageDocumentationContractTests.test_recertify_summary_names_every_mapped_request_field -v` | The new parity contract exposed the missing four-language mapping. The bilingual documentation contract failed in English and Spanish because the summaries omitted `Certificate Request Unique Identifier`, `Certificate Request Type`, `Certificate Request Value`, and `Protection Storage Masks`. |
+| Green | `a5d6ff81` | `cargo test -p kmipkit-protocol -p kmipkit-client recertify`; `cargo test -p kmipkit-ffi --features coverage-c-consumer`; focused Java TLS/JNI integration; Python Re-certify and Certify tests; focused manifest and documentation contracts | PASS locally: protocol/client 13 tests; FFI 218 unit tests and 10 compiled C consumers; Java TLS 1.3/mTLS integration build successful; Python 12 tests; T058 manifest 4 tests; T030 package docs 7 tests; T076 and C API contracts 52 tests; generator verified 12 outputs; binding export audit matched C 361/361, Java 666/666, Python 638/638. `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`, `cargo fmt --all --check`, and `git diff --check` pass. |
+| Refactor | Pending | Exact-head GitHub Actions and final report | Pending until the branch is pushed and hosted CI completes. Independent manual review found no actionable security issue in the bindings; the automated security scan did not complete and is not claimed as passed. |
+
+The C consumer checks the typed replacement identifier and caller-owned TTLV
+copy after releasing the response item. Java/JNI and Python/CFFI exercise a
+real loopback TLS 1.3 mutual-authentication exchange, then read the ordered
+response after closing the batch result. Rust tests cover conditional Table
+300 fields, sensitive request-byte handling, Table 301 success data, Table 302
+failure, Pending correlation, delivery state, and no implicit follow-up.

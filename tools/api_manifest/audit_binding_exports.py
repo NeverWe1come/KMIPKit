@@ -403,7 +403,11 @@ def _literal_all(tree: ast.Module, visible_names: set[str]) -> tuple[list[str] |
 def _python_class_members(node: ast.ClassDef) -> list[tuple[str, str, int]]:
     """Return the directly declared public members of one Python class."""
     members: list[tuple[str, str, int]] = []
-    observed_fields: set[str] = set()
+    observed_fields = {
+        child.target.id
+        for child in node.body
+        if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name)
+    }
     for child in node.body:
         if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
             if not child.name.startswith("_") or child.name in _PYTHON_PUBLIC_DUNDER_METHODS:
