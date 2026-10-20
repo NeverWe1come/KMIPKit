@@ -824,6 +824,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.USAGE_ALLOCATION_CONTEXT",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the internal handle-kind discriminator for the typed UsageAllocationContext facade. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchAddErrorContinuationValue",
       "packageId": "java-kmipkit",
@@ -1092,6 +1104,18 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLogin",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLogout",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed ClientBatchItem.logout facade and the Logout result accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
     },
     {
       "approvalSource": {
@@ -1424,6 +1448,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLogout",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed ClientBatchItemResult.logoutResponse facade. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMac",
       "packageId": "java-kmipkit",
@@ -1688,6 +1724,30 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteGuardedProtectionItem",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed Client.executeGuardedProtectionItem facade. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteGuardedProtectionItemWithAsynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed Client.executeGuardedProtectionItemWithAsynchronousIndicator facade. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteWithOptions",
       "packageId": "java-kmipkit",
@@ -1716,6 +1776,78 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.transportConfigCreate",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextAllocatedUnits",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.allocatedUnits accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextAvailableUnits",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.availableUnits accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextCreate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed BatchItemResult.createUsageAllocationContext facade. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextReservedUnits",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.reservedUnits accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextUniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.uniqueIdentifier accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextUsageLimitsUnit",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.usageLimitsUnit accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
     },
     {
       "approvalSource": {
@@ -2352,6 +2484,18 @@
       "exportName": "org.kmipkit.extensions.UniqueIdentifier.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java formatter is a redacted diagnostic representation, not a separate KMIPKit capability; the explicit typed accessors remain mapped and preserve their exact values."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009 and KMIPKIT-0043-FR-008/FR-021. The formatter returns only UsageAllocationContext[accounting=local, identifier=redacted]; ClientFacadeTlsIntegrationTest asserts that the bound object identifier is absent from its output.",
+      "exportName": "org.kmipkit.extensions.UsageAllocationContext.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java formatter emits only a fixed redacted local-accounting summary and is not a separate KMIPKit capability; the typed accessors and close lifecycle remain mapped."
     },
     {
       "approvalSource": {

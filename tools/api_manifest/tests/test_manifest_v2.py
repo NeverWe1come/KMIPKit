@@ -27,10 +27,8 @@ SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
 CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
-RUST_EXPORT_REPORT_PATH = (
-    ROOT / "specs" / "043-public-api-bindings" / "reports"
-    / "rust-export-report-2026-10-17.json"
-)
+RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
+RUST_EXPORT_REPORT_PATH = max(RUST_EXPORT_REPORT_DIR.glob("rust-export-report-*.json"))
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -972,7 +970,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for exclusion in self.checked_in_manifest["approvedExclusions"]
             if exclusion["packageId"] in rust_packages
         ]
-        self.assertEqual(len(declarations), 9513)
+        self.assertEqual(len(declarations), 9517)
         self.assertEqual(len(exclusions), 24)
         report = json.loads(RUST_EXPORT_REPORT_PATH.read_text(encoding="utf-8"))
         observed_keys = {
@@ -1430,7 +1428,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_all_java_public_access_paths(self) -> None:
         declarations = self.declarations_for_package("java-kmipkit")
-        self.assertEqual(len(declarations), 638)
+        self.assertEqual(len(declarations), 650)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         batch_item = by_name["org.kmipkit.extensions.ClientBatchItem"]
         self.assertEqual(batch_item["kind"], "type")
@@ -1772,7 +1770,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_checked_in_manifest_inventories_python_exports_and_lifecycle(self) -> None:
         declarations = self.declarations_for_package("python-kmipkit")
-        self.assertEqual(len(declarations), 610)
+        self.assertEqual(len(declarations), 622)
         by_name = {declaration["exportName"]: declaration for declaration in declarations}
         close_method = by_name["kmipkit.extensions.ClientBatchItem.close"]
         self.assertEqual(close_method["kind"], "python-export")
