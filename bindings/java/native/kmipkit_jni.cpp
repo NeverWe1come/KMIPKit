@@ -1153,7 +1153,13 @@ jbyteArray span_to_java_bytes(JNIEnv* env, uint8_t present, kmipkit_byte_span_v1
     if (result != nullptr && length != 0) {
         env->SetByteArrayRegion(result, 0, length, reinterpret_cast<const jbyte*>(span.data));
     }
-    return result;
+    return kmipkit::jni::discard_response_array_after_copy_failure(
+            result,
+            [&] { return env->ExceptionCheck(); },
+            [&](jbyteArray failed_copy) noexcept {
+                wipe_java_byte_array(env, failed_copy);
+                env->DeleteLocalRef(failed_copy);
+            });
 }
 
 jlongArray make_long_array(JNIEnv* env, const std::vector<jlong>& values) {

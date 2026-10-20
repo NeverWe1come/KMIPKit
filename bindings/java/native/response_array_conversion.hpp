@@ -8,6 +8,16 @@
 
 namespace kmipkit::jni {
 
+template <typename Array, typename HasPendingException, typename Cleanup>
+Array discard_response_array_after_copy_failure(
+        Array array,
+        HasPendingException&& has_pending_exception,
+        Cleanup&& cleanup) {
+    if (array == nullptr || !has_pending_exception()) return array;
+    cleanup(array);
+    return nullptr;
+}
+
 template <typename Array, std::size_t Count, typename Convert,
         typename HasPendingException, typename Cleanup>
 bool convert_response_arrays(
