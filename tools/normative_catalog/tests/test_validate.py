@@ -4965,6 +4965,20 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "unavailable mandatory fixture"):
             validate(catalog)
 
+    def test_profile_claim_rejects_missing_transitive_dependency_requirements(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        profile = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+        )
+        profile["claim_state"] = "evidence_complete"
+
+        with self.assertRaisesRegex(CatalogValidationError, "transitive dependency normative closure"):
+            validate(catalog)
+
     def test_profile_cannot_claim_complete_evidence_without_requirement_assignments(self) -> None:
         catalog = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
