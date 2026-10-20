@@ -375,6 +375,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 declarations,
             )
 
+    def test_requirement_references_resolve_for_capabilities_and_api_levels(self) -> None:
+        mutations = (
+            lambda manifest: manifest["capabilities"][0]["requirementIds"].append(
+                "KMIPKIT-9999-FR-999"
+            ),
+            lambda manifest: manifest["apiLevels"][0]["requirementIds"].append(
+                "KMIPKIT-9999-FR-999"
+            ),
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate.__code__.co_firstlineno):
+                malformed = copy.deepcopy(self.checked_in_manifest)
+                mutate(malformed)
+                with self.assertRaisesRegex(ManifestError, "unknown requirement ID"):
+                    _validate_references(malformed)
+
     def test_release_gate_runs_all_export_audits_and_fails_closed(self) -> None:
         with mock.patch(
             "tools.api_manifest.generate.subprocess.run",
@@ -385,8 +401,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         commands = [call.args[0] for call in run.call_args_list]
         self.assertEqual(len(commands), 2)
         self.assertTrue(all("--check" in command for command in commands))
-        self.assertTrue(any("audit_rust_exports.py" in command[1] for command in commands))
-        self.assertTrue(any("audit_binding_exports.py" in command[1] for command in commands))
+        self.assertTrue(any("audit_rust_exports.py" in " ".join(command) for command in commands))
+        self.assertTrue(any("audit_binding_exports.py" in " ".join(command) for command in commands))
 
         with mock.patch(
             "tools.api_manifest.generate.subprocess.run",
@@ -463,6 +479,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "crates/kmipkit-transport/Cargo.toml",
             "crates/kmipkit-client/Cargo.toml",
             "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
             "bindings/python/pyproject.toml",
             "bindings/java/build.gradle.kts",
             "bindings/java/pom.xml",
