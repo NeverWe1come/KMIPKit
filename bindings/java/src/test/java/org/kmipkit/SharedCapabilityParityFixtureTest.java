@@ -147,6 +147,7 @@ final class SharedCapabilityParityFixtureTest {
         String input = objectField(item, "input");
         String structureInput = objectField(input, "structure");
         String expected = objectField(item, "expectedOutput");
+        assertTrue(Boolean.parseBoolean(stringOrBooleanField(expected, "unknownValuesPreserved")));
         List<String> children = objectArrayFields(structureInput, "children");
         assertEquals(2, children.size());
         String enumerationInput = children.get(0);
@@ -388,6 +389,21 @@ final class SharedCapabilityParityFixtureTest {
         List<String> result = new ArrayList<>();
         while (values.find()) {
             result.add(values.group(1));
+        }
+        return List.copyOf(result);
+    }
+
+    static List<Long> numberArrayField(String source, String name) {
+        Pattern field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*\\[([^\\]]*)\\]");
+        Matcher matcher = field.matcher(source);
+        if (!matcher.find()) {
+            throw new AssertionError("shared capability fixture is missing " + name);
+        }
+        Matcher values = Pattern.compile("-?\\d+").matcher(matcher.group(1));
+        List<Long> result = new ArrayList<>();
+        while (values.find()) {
+            result.add(Long.parseLong(values.group()));
         }
         return List.copyOf(result);
     }

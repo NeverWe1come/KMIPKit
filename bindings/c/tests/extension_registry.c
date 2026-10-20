@@ -1217,10 +1217,15 @@ static bool test_typed_length_safety(void)
     return true;
 }
 
-static bool test_configuration_ownership_and_isolation(void)
+static bool configuration_ownership_and_isolation(
+    const uint8_t *alpha_name,
+    uint64_t alpha_name_length,
+    const uint8_t *beta_name,
+    uint64_t beta_name_length,
+    uint64_t expected_alpha_count,
+    uint64_t expected_beta_count,
+    uint8_t expected_registry_state_is_shared)
 {
-    static const uint8_t alpha_name[] = "alpha";
-    static const uint8_t beta_name[] = "beta";
     static const uint8_t alpha_text[] = "alpha-v1";
     static const uint8_t beta_text[] = "beta-v1";
     kmipkit_codec_limits_t *codec_limits = NULL;
@@ -1243,11 +1248,11 @@ static bool test_configuration_ownership_and_isolation(void)
     REQUIRE_STATUS(kmipkit_codec_limits_defaults(&codec_limits), KMIPKIT_SUCCESS);
     REQUIRE(load_default_limits(&limits));
     REQUIRE(create_fixture_definition(codec_limits, alpha_name,
-        (uint64_t)(sizeof(alpha_name) - 1U), KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR,
+        alpha_name_length, KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR,
         alpha_text, (uint64_t)(sizeof(alpha_text) - 1U),
         &alpha_identity, &alpha_definition));
     REQUIRE(create_fixture_definition(codec_limits, beta_name,
-        (uint64_t)(sizeof(beta_name) - 1U), UINT32_C(0x420010),
+        beta_name_length, UINT32_C(0x420010),
         beta_text, (uint64_t)(sizeof(beta_text) - 1U),
         &beta_identity, &beta_definition));
 
@@ -1274,15 +1279,16 @@ static bool test_configuration_ownership_and_isolation(void)
         beta_configuration, &beta_view), KMIPKIT_SUCCESS);
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_count(
         alpha_view, &definition_count), KMIPKIT_SUCCESS);
-    REQUIRE(definition_count == 1U);
+    REQUIRE(definition_count == expected_alpha_count);
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_count(
         beta_view, &definition_count), KMIPKIT_SUCCESS);
-    REQUIRE(definition_count == 1U);
+    REQUIRE(definition_count == expected_beta_count);
 
     /* Each configuration exposes only the definition declared for that case. */
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
         alpha_view, beta_identity, &found_definition), KMIPKIT_SUCCESS);
-    REQUIRE(found_definition == NULL);
+    REQUIRE((found_definition != NULL) == (expected_registry_state_is_shared != 0U));
+    kmipkit_extension_definition_release(found_definition);
     found_definition = NULL;
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
         alpha_view, alpha_identity, &found_definition), KMIPKIT_SUCCESS);
@@ -1291,7 +1297,9 @@ static bool test_configuration_ownership_and_isolation(void)
     found_definition = NULL;
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
         beta_view, alpha_identity, &found_definition), KMIPKIT_SUCCESS);
-    REQUIRE(found_definition == NULL);
+    REQUIRE((found_definition != NULL) == (expected_registry_state_is_shared != 0U));
+    kmipkit_extension_definition_release(found_definition);
+    found_definition = NULL;
     REQUIRE_STATUS(kmipkit_client_extension_registry_definition_for_identity(
         beta_view, beta_identity, &found_definition), KMIPKIT_SUCCESS);
     REQUIRE(found_definition != NULL);
@@ -1324,6 +1332,39 @@ static bool test_configuration_ownership_and_isolation(void)
     kmipkit_client_extension_registry_release(beta_registry);
     kmipkit_codec_limits_release(codec_limits);
     return true;
+}
+
+static bool test_configuration_ownership_and_isolation(void)
+{
+    static const uint8_t alpha_name[] = "alpha";
+    static const uint8_t beta_name[] = "beta";
+    return configuration_ownership_and_isolation(
+        alpha_name, (uint64_t)(sizeof(alpha_name) - 1U),
+        beta_name, (uint64_t)(sizeof(beta_name) - 1U),
+        UINT64_C(1), UINT64_C(1), UINT8_C(0));
+}
+
+int shared_registry_fixture_matches_cleanup_and_isolation(
+    const uint8_t *alpha_name,
+    uint64_t alpha_name_length,
+    const uint8_t *beta_name,
+    uint64_t beta_name_length,
+    uint64_t expected_alpha_count,
+    uint64_t expected_beta_count,
+    uint8_t expected_registry_state_is_shared,
+    const char *close_configurations_action,
+    const char *release_registry_views_action)
+{
+    if (alpha_name == NULL || beta_name == NULL || close_configurations_action == NULL ||
+        release_registry_views_action == NULL ||
+        strcmp(close_configurations_action, "close-configuration-owned-native-handles-once") != 0 ||
+        strcmp(release_registry_views_action, "release-returned-registry-views-once") != 0) {
+        return 1;
+    }
+    return configuration_ownership_and_isolation(
+        alpha_name, alpha_name_length, beta_name, beta_name_length,
+        expected_alpha_count, expected_beta_count, expected_registry_state_is_shared)
+        ? 0 : 1;
 }
 
 static int32_t create_fixture_schema(const kmipkit_fixture_schema_t *fixture,
@@ -2092,6 +2133,73 @@ static bool test_redacted_stable_errors_and_invalid_handles(void)
     kmipkit_extension_identity_release(identity);
     kmipkit_codec_limits_release(codec_limits);
     return true;
+}
+
+int shared_schema_redaction_fixture_matches_fixture(
+    const uint8_t *diagnostic_marker,
+    uint64_t diagnostic_marker_length,
+    const char *expected_category)
+{
+    static const uint8_t name[] = "alpha";
+    kmipkit_codec_limits_t *codec_limits = NULL;
+    kmipkit_extension_identity_t *identity = NULL;
+    kmipkit_extension_definition_t *definition = NULL;
+    kmipkit_extension_definition_t *definitions[1];
+    kmipkit_client_extension_registry_t *registry = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_registered_extension_value_t *registered = NULL;
+    kmipkit_extension_registry_limits_v1_t limits;
+    int32_t status = KMIPKIT_ERROR_INVALID_INPUT;
+    int32_t error_status = KMIPKIT_SUCCESS;
+    uint32_t error_category = UINT32_C(0);
+    uint32_t error_cause = UINT32_C(0);
+    uint32_t error_delivery = UINT32_C(0);
+    int result = 1;
+
+    if (diagnostic_marker == NULL || diagnostic_marker_length == UINT64_C(0) ||
+        expected_category == NULL || strcmp(expected_category, "invalid_schema") != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_codec_limits_defaults(&codec_limits) != KMIPKIT_SUCCESS ||
+        !load_default_limits(&limits) ||
+        !create_fixture_definition(codec_limits, name,
+            (uint64_t)(sizeof(name) - 1U), KMIPKIT_PAYLOAD_TAG_DISCRIMINATOR,
+            diagnostic_marker, diagnostic_marker_length,
+            &identity, &definition)) {
+        goto cleanup;
+    }
+    definitions[0] = definition;
+    if (!create_registry(definitions, UINT64_C(1), &limits, &registry) ||
+        !create_fixture_payload_with_discriminator(codec_limits, INT64_C(42), UINT32_C(0),
+            false, diagnostic_marker, diagnostic_marker_length, &payload)) {
+        goto cleanup;
+    }
+
+    status = kmipkit_client_extension_registry_validate(
+        registry, identity, payload, codec_limits, &registered);
+    if (status != KMIPKIT_ERROR_INVALID_SCHEMA || registered != NULL) {
+        goto cleanup;
+    }
+    if (kmipkit_last_error_get(&error_status, &error_category, &error_cause,
+            &error_delivery) != KMIPKIT_SUCCESS) {
+        goto cleanup;
+    }
+    if (error_status != KMIPKIT_ERROR_INVALID_SCHEMA ||
+        error_category != UINT32_C(1) || error_cause != UINT32_C(10) ||
+        error_delivery != UINT32_C(0)) {
+        goto cleanup;
+    }
+    /* The public C error result contains only numeric status metadata. */
+    result = 0;
+
+cleanup:
+    kmipkit_ttlv_structure_release(payload);
+    kmipkit_registered_extension_value_release(registered);
+    kmipkit_client_extension_registry_release(registry);
+    kmipkit_extension_definition_release(definition);
+    kmipkit_extension_identity_release(identity);
+    kmipkit_codec_limits_release(codec_limits);
+    return result;
 }
 
 static bool test_explicit_outbound_criticality(void)

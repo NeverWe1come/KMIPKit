@@ -374,6 +374,7 @@ dependencies = [
  "kmipkit-ttlv",
  "quickcheck",
  "roxmltree",
+ "serde_json",
  "zeroize",
 ]
 

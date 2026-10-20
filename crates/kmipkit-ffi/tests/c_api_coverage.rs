@@ -24,6 +24,22 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 #[link(name = "kmipkit_extension_registry_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_extension_registry_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn shared_schema_redaction_fixture_matches_fixture(
+        diagnostic_marker: *const u8,
+        diagnostic_marker_length: u64,
+        expected_category: *const c_char,
+    ) -> i32;
+    fn shared_registry_fixture_matches_cleanup_and_isolation(
+        alpha_name: *const u8,
+        alpha_name_length: u64,
+        beta_name: *const u8,
+        beta_name_length: u64,
+        expected_alpha_count: u64,
+        expected_beta_count: u64,
+        expected_registry_state_is_shared: u8,
+        close_configurations_action: *const c_char,
+        release_registry_views_action: *const c_char,
+    ) -> i32;
 }
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
@@ -182,6 +198,10 @@ fn c_abi_consumer_matches_the_shared_codec_limits_fixture() {
     let invalid_depth = case["input"]["invalidDepth"]
         .as_u64()
         .expect("invalid fixture depth is unsigned");
+    let error_category = case["expectedOutput"]["invalidDepth"]["errorCategory"]
+        .as_str()
+        .expect("invalid-depth fixture error category is text");
+    assert_eq!(error_category, "resource_limit");
 
     // SAFETY: all values come from the parsed fixture and the C consumer creates
     // and releases each limits handle during this synchronous call.
@@ -210,6 +230,135 @@ fn c_abi_consumer_matches_the_shared_codec_limits_fixture() {
     };
 
     assert_eq!(result, 1, "the C ABI must match the CodecLimits fixture");
+}
+
+#[test]
+fn c_abi_consumer_redacts_shared_fixture_diagnostic_marker() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "errors.schema-redaction.v1")
+        .expect("the shared schema-redaction fixture case exists");
+    let marker = CString::new(
+        case["input"]["diagnosticMarker"]
+            .as_str()
+            .expect("fixture diagnostic marker is text"),
+    )
+    .expect("fixture diagnostic marker contains no NUL byte");
+    let expected = &case["expectedOutput"];
+    let category = CString::new(
+        expected["errorCategory"]
+            .as_str()
+            .expect("fixture error category is text"),
+    )
+    .expect("fixture error category contains no NUL byte");
+    assert_eq!(case["errorCategory"], expected["errorCategory"]);
+    assert_eq!(expected["diagnosticOmitsInputMarker"], true);
+    assert_eq!(expected["diagnosticContainsPayload"], false);
+
+    // SAFETY: the fixture marker and category strings remain live through the
+    // synchronous C call; the compiled C consumer receives the marker as input.
+    let result = unsafe {
+        shared_schema_redaction_fixture_matches_fixture(
+            marker.as_bytes().as_ptr(),
+            u64::try_from(marker.as_bytes().len()).expect("marker length fits in u64"),
+            category.as_ptr(),
+        )
+    };
+
+    assert_eq!(
+        result, 0,
+        "the C ABI must return only the fixture's stable error category"
+    );
+}
+
+#[test]
+fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "client-configuration.registry-isolation.v1")
+        .expect("the shared registry cleanup fixture case exists");
+    let configurations = case["input"]["configurations"]
+        .as_array()
+        .expect("fixture configurations are an array");
+    let names = configurations
+        .iter()
+        .map(|configuration| {
+            configuration["extensionIdentities"][0]
+                .as_str()
+                .expect("fixture extension identity is text")
+        })
+        .collect::<Vec<_>>();
+    let expected = &case["expectedOutput"];
+    let counts = expected["configurationDefinitionCounts"]
+        .as_array()
+        .expect("fixture definition counts are an array");
+    let identities = expected["configurationIdentities"]
+        .as_array()
+        .expect("fixture configuration identities are an array");
+    let cleanup = case["cleanup"]
+        .as_array()
+        .expect("fixture cleanup actions are an array");
+    let close_configurations_action = CString::new(
+        cleanup[0]
+            .as_str()
+            .expect("fixture configuration cleanup action is text"),
+    )
+    .expect("fixture cleanup action contains no NUL byte");
+    let release_registry_views_action = CString::new(
+        cleanup[1]
+            .as_str()
+            .expect("fixture registry-view cleanup action is text"),
+    )
+    .expect("fixture cleanup action contains no NUL byte");
+    assert_eq!(names, ["alpha", "beta"]);
+    assert_eq!(identities[0][0], names[0]);
+    assert_eq!(identities[1][0], names[1]);
+    assert_eq!(expected["registryStateIsShared"], false);
+    assert_eq!(
+        close_configurations_action.to_str().unwrap(),
+        "close-configuration-owned-native-handles-once"
+    );
+    assert_eq!(
+        release_registry_views_action.to_str().unwrap(),
+        "release-returned-registry-views-once"
+    );
+
+    // SAFETY: fixture byte spans and C strings stay live for the synchronous C
+    // consumer call; the consumer releases all handles it constructs.
+    let result = unsafe {
+        shared_registry_fixture_matches_cleanup_and_isolation(
+            names[0].as_ptr(),
+            u64::try_from(names[0].len()).expect("fixture identity length fits in u64"),
+            names[1].as_ptr(),
+            u64::try_from(names[1].len()).expect("fixture identity length fits in u64"),
+            counts[0].as_u64().expect("fixture alpha count is unsigned"),
+            counts[1].as_u64().expect("fixture beta count is unsigned"),
+            u8::from(
+                expected["registryStateIsShared"]
+                    .as_bool()
+                    .expect("fixture sharing value is Boolean"),
+            ),
+            close_configurations_action.as_ptr(),
+            release_registry_views_action.as_ptr(),
+        )
+    };
+
+    assert_eq!(
+        result, 0,
+        "the C ABI must match registry fixture values and cleanup"
+    );
 }
 
 #[link(name = "kmipkit_ffi")]

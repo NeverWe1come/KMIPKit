@@ -60,7 +60,18 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/client_abi_consumer.c",
-          "test": "api_level_query_matches_shared_fixture_locally"
+          "test": "api_level_query_matches_shared_fixture_locally",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "generated_public_client_abi_consumer_compiles_and_runs",
+              "assertions": [
+                "fixture-driven-api-level-values",
+                "local-no-network"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",
@@ -141,7 +152,18 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/extension_registry.c",
-          "test": "test_configuration_ownership_and_isolation"
+          "test": "test_configuration_ownership_and_isolation",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_matches_shared_registry_cleanup_fixture",
+              "assertions": [
+                "fixture-identities-and-counts-passed-to-compiled-c",
+                "fixture-cleanup-actions-asserted"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",
@@ -189,7 +211,19 @@
           "status": "available",
           "diagnosticSurface": "none",
           "testFile": "bindings/c/tests/extension_registry.c",
-          "test": "test_redacted_stable_errors_and_invalid_handles"
+          "test": "test_redacted_stable_errors_and_invalid_handles",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_redacts_shared_fixture_diagnostic_marker",
+              "assertions": [
+                "fixture-marker-passed-to-compiled-c",
+                "stable-error-category",
+                "no-diagnostic-text-channel"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",
@@ -950,7 +984,19 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/client_abi_consumer.c",
-          "test": "codec_limits_shared_fixture_matches_defaults_ranges_and_errors"
+          "test": "codec_limits_shared_fixture_matches_defaults_ranges_and_errors",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_matches_the_shared_codec_limits_fixture",
+              "assertions": [
+                "fixture-default-limits",
+                "fixture-configured-limits",
+                "fixture-invalid-range"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",

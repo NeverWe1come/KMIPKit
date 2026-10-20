@@ -219,6 +219,7 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
     case = _parity_cases()["ttlv.open-values-and-child-order.v1"]
     structure_input = case["input"]["structure"]
     expected = case["expectedOutput"]
+    assert expected["unknownValuesPreserved"] is True
     limits = ttlv.codec_limits_defaults()
     structure = _structure_from_shared_ttlv_fixture(structure_input, limits)
 

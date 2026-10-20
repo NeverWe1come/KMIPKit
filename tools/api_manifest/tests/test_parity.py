@@ -105,8 +105,19 @@ T029_CORE_FIXTURE_ASSERTIONS = {
         "afterSuccessfulProtection",
         "transportExchangeCount",
     ),
+    "client-configuration.registry-isolation.v1": (
+        "configurationDefinitionCounts",
+        "configurationIdentities",
+        "registryStateIsShared",
+        "close-configuration-owned-native-handles-once",
+        "release-returned-registry-views-once",
+    ),
 }
 T029_C_HARNESS_TESTS = {
+    "client-configuration.registry-isolation.v1": (
+        "c_abi_consumer_matches_shared_registry_cleanup_fixture",
+        "shared_registry_fixture_matches_cleanup_and_isolation",
+    ),
     "api-levels.shared.v1": (
         "generated_public_client_abi_consumer_compiles_and_runs",
         "kmipkit_client_abi_c_consumer_main",
@@ -572,14 +583,27 @@ class PublicApiParityTests(unittest.TestCase):
                         self.assertEqual(mapping["status"], "available")
                         if language != "c":
                             body = self._mapped_test_body(language, mapping)
+                            source_path = (
+                                JAVA_TEST_ROOT / Path(*mapping["test"].split("#", 1)[0].split(".")).with_suffix(".java")
+                                if language == "java"
+                                else ROOT / mapping["testFile"]
+                            )
+                            file_source = source_path.read_text(encoding="utf-8")
                             if language == "python" and case_id == "usage-allocation.guard-accounting.v1":
                                 self.assertIn("_usage_allocation_fixture()", body)
-                                file_source = (ROOT / mapping["testFile"]).read_text(encoding="utf-8")
                                 self.assertIn(case_id, file_source)
                             else:
-                                self.assertIn(case_id, body)
+                                if case_id not in body:
+                                    self.assertIn(case_id, file_source)
+                                    self.assertIn("caseById(", body)
                             for field in fields:
                                 self.assertIn(field, body, f"{case_id}/{language} must consume {field}")
+                            assertion = {
+                                "rust": r"\bassert(?:_eq|_ne)?!",
+                                "java": r"\bassert(?:Equals|True|False|ArrayEquals|Throws)\s*\(",
+                                "python": r"(?:\bassert\b|\.assert[A-Z]\w*\s*\()",
+                            }[language]
+                            self.assertRegex(body, assertion, f"{case_id}/{language} must assert runtime behavior")
                             continue
 
                         rust_test, c_entry = T029_C_HARNESS_TESTS[case_id]
@@ -599,9 +623,15 @@ class PublicApiParityTests(unittest.TestCase):
                         support_source = (ROOT / support["testFile"]).read_text(encoding="utf-8")
                         support_body = self._rust_test_body(support_source, rust_test)
                         self.assertIn(case_id, support_body)
+                        self.assertIn('tests/fixtures/api/shared-capability-parity.json', support_body)
                         self.assertIn(c_entry, support_body)
+                        self.assertRegex(support_body, r"\bassert(?:_eq|_ne)?!")
                         for field in fields:
-                            self.assertIn(field, support_body, f"{case_id}/c harness must pass {field}")
+                            if field in {"close-configuration-owned-native-handles-once",
+                                         "release-returned-registry-views-once"}:
+                                self.assertIn(field, support_body, f"{case_id}/c harness must verify {field}")
+                            else:
+                                self.assertIn(field, support_body, f"{case_id}/c harness must pass {field}")
 
     def _mapped_test_body(self, language: str, mapping: dict[str, Any]) -> str:
         if language == "java":

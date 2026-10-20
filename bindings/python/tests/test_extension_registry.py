@@ -20,6 +20,7 @@ from kmipkit import extensions as registry_api
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "extensions" / "cases.json"
+SHARED_PARITY_FIXTURE_PATH = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
 MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 VENDOR_IDENTIFIER = "example.vendor"
 
@@ -225,6 +226,28 @@ def _create_limits(values: dict[str, int], records: list[dict[str, Any]]) -> Any
     )
 
 
+def _shared_configuration_definition(name: str, discriminator: str, raw_tag: str) -> Any:
+    limits = _codec_limits()
+    tag = _tag(raw_tag)
+    identity = registry_api.create_extension_identity(VENDOR_IDENTIFIER, name, "1")
+    compatibility = registry_api.create_compatibility(2, 1, 2, 1, "0.0.0", "99.0.0")
+    path = registry_api.create_ttlv_path(tag)
+    value = ttlv.ttlv_value_text_string(discriminator.encode("utf-8"), limits)
+    discriminator_handle = registry_api.create_discriminator(path, value)
+    scalar = registry_api.scalar_schema(ttlv.ItemType.TextString)
+    schema = registry_api.structure_schema(
+        [registry_api.required_child_rule(tag, scalar)], [], False
+    )
+    try:
+        return registry_api.create_extension_definition(
+            identity, compatibility, discriminator_handle, schema
+        )
+    finally:
+        for handle in (schema, scalar, discriminator_handle, value, path, tag,
+                       compatibility, identity, limits):
+            handle.close()
+
+
 class ExtensionRegistryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -234,49 +257,82 @@ class ExtensionRegistryTests(unittest.TestCase):
         cls.definitions = _definition_map(cls.corpus)
 
     def test_registry_registration_is_immutable_owned_by_configuration_and_isolated(self) -> None:
+        parity_case = next(
+            case
+            for case in json.loads(SHARED_PARITY_FIXTURE_PATH.read_text(encoding="utf-8"))["cases"]
+            if case["id"] == "client-configuration.registry-isolation.v1"
+        )
+        configurations = parity_case["input"]["configurations"]
+        expected = parity_case["expectedOutput"]
+        alpha_name = configurations[0]["extensionIdentities"][0]
+        beta_name = configurations[1]["extensionIdentities"][0]
+        expected_identities = expected["configurationIdentities"]
+        expected_counts = expected["configurationDefinitionCounts"]
+        registry_state_is_shared = expected["registryStateIsShared"]
+        cleanup = parity_case["cleanup"]
+        self.assertEqual(expected_identities, [[alpha_name], [beta_name]])
+        self.assertEqual(
+            cleanup,
+            [
+                "close-configuration-owned-native-handles-once",
+                "release-returned-registry-views-once",
+            ],
+        )
         defaults = registry_api.default_extension_registry_limits()
-        alpha_source = [self.definitions["known.alpha"]]
-        beta_source = [self.definitions["ambiguous.beta"]]
+        alpha_definition = _shared_configuration_definition(
+            alpha_name, "alpha-v1", "0x420001"
+        )
+        beta_definition = _shared_configuration_definition(beta_name, "beta-v1", "0x420010")
+        alpha_source = [alpha_definition]
+        beta_source = [beta_definition]
         alpha = registry_api.create_client_extension_registry(alpha_source, defaults)
         beta = registry_api.create_client_extension_registry(beta_source, defaults)
         alpha_configuration = registry_api.create_client_configuration(alpha)
         beta_configuration = registry_api.create_client_configuration(beta)
 
+        def definition_present(registry: Any, name: str) -> bool:
+            identity = registry_api.create_extension_identity(VENDOR_IDENTIFIER, name, "1")
+            definition = None
+            try:
+                definition = registry_api.definition_for_identity(registry, identity)
+                return definition is not None
+            finally:
+                if definition is not None:
+                    definition.close()
+                identity.close()
+
         alpha_source.clear()
+        beta_source.clear()
         alpha.close()
         beta.close()
+        alpha_definition.close()
+        beta_definition.close()
         alpha_owned = registry_api.client_configuration_extension_registry(alpha_configuration)
         beta_owned = registry_api.client_configuration_extension_registry(beta_configuration)
         try:
-            self.assertEqual(registry_api.definition_count(alpha_owned), 1)
-            self.assertEqual(registry_api.definition_count(beta_owned), 1)
-            self.assertIsNotNone(
-                registry_api.definition_for_identity(
-                    alpha_owned,
-                    registry_api.create_extension_identity(VENDOR_IDENTIFIER, "alpha", "1"),
-                )
+            self.assertEqual(registry_api.definition_count(alpha_owned), expected_counts[0])
+            self.assertEqual(registry_api.definition_count(beta_owned), expected_counts[1])
+            self.assertTrue(definition_present(alpha_owned, alpha_name))
+            self.assertEqual(
+                definition_present(alpha_owned, beta_name),
+                registry_state_is_shared,
             )
-            self.assertIsNone(
-                registry_api.definition_for_identity(
-                    alpha_owned,
-                    registry_api.create_extension_identity(
-                        VENDOR_IDENTIFIER, "ambiguous-beta", "1"
-                    ),
-                )
-            )
-            self.assertIsNotNone(
-                registry_api.definition_for_identity(
-                    beta_owned,
-                    registry_api.create_extension_identity(
-                        VENDOR_IDENTIFIER, "ambiguous-beta", "1"
-                    ),
-                )
+            self.assertTrue(definition_present(beta_owned, beta_name))
+            self.assertEqual(
+                definition_present(beta_owned, alpha_name),
+                registry_state_is_shared,
             )
         finally:
             alpha_owned.close()
             beta_owned.close()
             alpha_configuration.close()
             beta_configuration.close()
+        self.assertTrue(alpha_owned.closed)
+        self.assertTrue(beta_owned.closed)
+        self.assertTrue(alpha_configuration.closed)
+        self.assertTrue(beta_configuration.closed)
+        self.assertTrue(alpha_definition.closed)
+        self.assertTrue(beta_definition.closed)
 
     def test_registry_limit_defaults_and_every_hard_boundary_match_the_manifest(self) -> None:
         records, defaults = _limit_values(self.manifest)
@@ -967,7 +1023,19 @@ class ExtensionRegistryTests(unittest.TestCase):
 
     def test_failure_and_default_diagnostics_redact_secret_fixture_values(self) -> None:
         fixture = self.fixtures["synthetic-secret-bearing"]
-        secret = fixture["secretSentinel"]
+        parity_case = next(
+            case
+            for case in json.loads(SHARED_PARITY_FIXTURE_PATH.read_text(encoding="utf-8"))["cases"]
+            if case["id"] == "errors.schema-redaction.v1"
+        )
+        expected = parity_case["expectedOutput"]
+        secret = parity_case["input"]["diagnosticMarker"]
+        self.assertEqual(parity_case["errorCategory"], "invalid_schema")
+        self.assertTrue(expected["diagnosticOmitsInputMarker"])
+        self.assertFalse(expected["diagnosticContainsPayload"])
+        payload_children = copy.deepcopy(fixture["extension"]["payload"]["children"])
+        marker_child = next(item for item in payload_children if item["tag"] == "0x420005")
+        marker_child["value"] = secret
         registry = registry_api.create_client_extension_registry(
             list(self.definitions.values()), registry_api.default_extension_registry_limits()
         )
@@ -975,7 +1043,7 @@ class ExtensionRegistryTests(unittest.TestCase):
             recognition = registry_api.inspect_extension(
                 registry,
                 fixture["extension"]["vendorIdentification"],
-                _structure_from_fixture(fixture["extension"]["payload"]["children"]),
+                _structure_from_fixture(payload_children),
                 _codec_limits(),
             )
             try:
@@ -984,7 +1052,7 @@ class ExtensionRegistryTests(unittest.TestCase):
             finally:
                 recognition.close()
 
-            invalid_payload = copy.deepcopy(fixture["extension"]["payload"]["children"])
+            invalid_payload = copy.deepcopy(payload_children)
             long_integer = next(item for item in invalid_payload if item["tag"] == "0x420004")
             long_integer["value"] = 100
             identity = registry_api.create_extension_identity(VENDOR_IDENTIFIER, "alpha", "1")
@@ -992,6 +1060,7 @@ class ExtensionRegistryTests(unittest.TestCase):
                 registry_api.validate_extension_value(
                     registry, identity, _structure_from_fixture(invalid_payload), _codec_limits()
                 )
+            self.assertEqual(raised.exception.category, parity_case["errorCategory"])
             self.assertNotIn(secret, str(raised.exception))
             self.assertNotIn(secret, repr(raised.exception))
         finally:

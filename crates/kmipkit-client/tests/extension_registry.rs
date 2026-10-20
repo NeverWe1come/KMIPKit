@@ -7,6 +7,8 @@ use kmipkit_client::extension_registry;
 use kmipkit_client::{ClientError, ClientErrorCategory};
 use kmipkit_protocol::extension;
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, ValueView};
+use serde_json::Value as JsonValue;
+use std::sync::Arc;
 
 const VENDOR_IDENTIFIER: &str = "example.vendor";
 
@@ -335,8 +337,45 @@ fn registry_rejects_duplicate_exact_discriminator_keys() {
 
 #[test]
 fn client_configurations_own_isolated_immutable_registries() {
-    let alpha = definition_with("alpha", "1", &[0x42_0001], "alpha-v1");
-    let beta = definition_with("beta", "1", &[0x42_0002], "beta-v1");
+    let fixture: JsonValue = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "client-configuration.registry-isolation.v1")
+        .expect("shared configuration fixture case exists");
+    let configurations = case["input"]["configurations"]
+        .as_array()
+        .expect("fixture configurations are an array");
+    let alpha_name = configurations[0]["extensionIdentities"][0]
+        .as_str()
+        .expect("fixture alpha identity is text");
+    let beta_name = configurations[1]["extensionIdentities"][0]
+        .as_str()
+        .expect("fixture beta identity is text");
+    let expected = &case["expectedOutput"];
+    let counts = expected["configurationDefinitionCounts"]
+        .as_array()
+        .expect("fixture definition counts are an array");
+    let identities = expected["configurationIdentities"]
+        .as_array()
+        .expect("fixture configuration identities are an array");
+    let cleanup = case["cleanup"]
+        .as_array()
+        .expect("fixture cleanup actions are an array");
+    assert_eq!(identities[0][0], alpha_name);
+    assert_eq!(identities[1][0], beta_name);
+    assert_eq!(cleanup[0], "close-configuration-owned-native-handles-once");
+    assert_eq!(cleanup[1], "release-returned-registry-views-once");
+    let registry_state_is_shared = expected["registryStateIsShared"]
+        .as_bool()
+        .expect("fixture registry sharing value is Boolean");
+
+    let alpha = definition_with(alpha_name, "1", &[0x42_0001], "alpha-v1");
+    let beta = definition_with(beta_name, "1", &[0x42_0002], "beta-v1");
     let alpha_identity = extension::identity(&alpha);
     let beta_identity = extension::identity(&beta);
 
@@ -351,21 +390,39 @@ fn client_configurations_own_isolated_immutable_registries() {
 
     let alpha_registry = alpha_configuration.extension_registry();
     let beta_registry = beta_configuration.extension_registry();
-    assert_eq!(extension_registry::definition_count(alpha_registry), 1);
-    assert_eq!(extension_registry::definition_count(beta_registry), 1);
+    assert_eq!(
+        extension_registry::definition_count(alpha_registry),
+        counts[0].as_u64().expect("fixture alpha count is unsigned")
+    );
+    assert_eq!(
+        extension_registry::definition_count(beta_registry),
+        counts[1].as_u64().expect("fixture beta count is unsigned")
+    );
     assert!(
         extension_registry::definition_for_identity(alpha_registry, alpha_identity.clone())
             .is_some()
     );
     assert!(
         extension_registry::definition_for_identity(alpha_registry, beta_identity.clone())
-            .is_none(),
-        "one configuration must not observe another configuration's definitions"
+            .is_some()
+            == registry_state_is_shared,
+        "cross-configuration visibility follows the fixture"
     );
     assert!(extension_registry::definition_for_identity(beta_registry, beta_identity).is_some());
     assert!(
-        extension_registry::definition_for_identity(beta_registry, alpha_identity).is_none(),
-        "configuration registries stay isolated after attachment"
+        extension_registry::definition_for_identity(beta_registry, alpha_identity).is_some()
+            == registry_state_is_shared,
+        "reverse cross-configuration visibility follows the fixture"
+    );
+
+    let alpha_shared = alpha_configuration.shared_extension_registry();
+    let alpha_weak = Arc::downgrade(&alpha_shared);
+    assert_eq!(Arc::strong_count(&alpha_shared), 2);
+    drop(alpha_shared);
+    drop(alpha_configuration);
+    assert!(
+        alpha_weak.upgrade().is_none(),
+        "configuration cleanup releases its registry"
     );
 }
 
