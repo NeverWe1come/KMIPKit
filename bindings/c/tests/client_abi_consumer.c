@@ -4073,6 +4073,7 @@ static int pkcs11_response_matches_fixture(
     kmipkit_ttlv_structure_t *response_ttlv,
     const uint32_t *expected_tags,
     uint64_t expected_tag_count,
+    int expected_correlation_present,
     uint32_t expected_function_tag,
     int32_t expected_function_value,
     uint32_t expected_correlation_tag,
@@ -4116,9 +4117,23 @@ static int pkcs11_response_matches_fixture(
     uint32_t actual_payload_tag = 0;
     int32_t actual_vendor_value = 0;
     uint8_t actual_type = 0;
+    uint32_t filtered_expected_tags[5] = {0};
+    uint64_t filtered_expected_tag_count = 0;
+    uint64_t output_index = expected_correlation_present ? 2 : 1;
+    uint64_t return_code_index = output_index + 1;
+    uint64_t vendor_index = return_code_index + 1;
     int result = 0;
 
-    if (response_ttlv == 0 || expected_tags == 0 || expected_tag_count != 5 ||
+    if (response_ttlv == 0 || expected_tags == 0 || expected_tag_count != 5) {
+        goto cleanup;
+    }
+    for (uint64_t index = 0; index < expected_tag_count; ++index) {
+        if (!expected_correlation_present && expected_tags[index] == expected_correlation_tag) {
+            continue;
+        }
+        filtered_expected_tags[filtered_expected_tag_count++] = expected_tags[index];
+    }
+    if (
         kmipkit_ttlv_structure_view(response_ttlv, &response_view) != 0 ||
         !check_view_tags(response_view, response_tags, 3) ||
         kmipkit_ttlv_structure_view_item_at(response_view, 0, &operation_item) != 0 ||
@@ -4139,23 +4154,14 @@ static int pkcs11_response_matches_fixture(
         actual_payload_tag != UINT32_C(0x42007c) ||
         kmipkit_ttlv_item_view_value(payload_item, &payload_value) != 0 ||
         kmipkit_ttlv_value_view_structure(payload_value, &payload_view) != 0 ||
-        !check_view_tags(payload_view, expected_tags, expected_tag_count) ||
+        !check_view_tags(payload_view, filtered_expected_tags, filtered_expected_tag_count) ||
         pkcs11_view_contains_tag(payload_view, UINT32_C(0x420159)) ||
         pkcs11_view_contains_tag(payload_view, UINT32_C(0x42015b)) ||
         !pkcs11_nested_integer_matches(payload_view, 0, expected_function_tag,
             expected_function_value) ||
-        !pkcs11_nested_bytes_match(payload_view, 2, expected_output_tag, expected_output,
+        !pkcs11_nested_bytes_match(payload_view, output_index, expected_output_tag, expected_output,
             expected_output_length) ||
-        kmipkit_ttlv_structure_view_item_at(payload_view, 1, &correlation_item) != 0 ||
-        kmipkit_ttlv_item_view_tag(correlation_item, &correlation_tag) != 0 ||
-        kmipkit_ttlv_tag_value(correlation_tag, &actual_nested_tag) != 0 ||
-        actual_nested_tag != expected_correlation_tag ||
-        kmipkit_ttlv_item_view_type(correlation_item, &actual_type) != 0 ||
-        actual_type != KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING ||
-        kmipkit_ttlv_item_view_value(correlation_item, &correlation_value) != 0 ||
-        !pkcs11_bytes_match(correlation_value, expected_correlation,
-            expected_correlation_length) ||
-        kmipkit_ttlv_structure_view_item_at(payload_view, 3, &return_item) != 0 ||
+        kmipkit_ttlv_structure_view_item_at(payload_view, return_code_index, &return_item) != 0 ||
         kmipkit_ttlv_item_view_value(return_item, &return_value) != 0 ||
         kmipkit_ttlv_value_view_structure(return_value, &return_code_view) != 0 ||
         kmipkit_ttlv_structure_view_item_count(return_code_view, &nested_count) != 0 ||
@@ -4167,7 +4173,7 @@ static int pkcs11_response_matches_fixture(
         kmipkit_ttlv_item_view_value(code_item, &code_value) != 0 ||
         kmipkit_ttlv_value_view_enumeration(code_value, &actual_return_code) != 0 ||
         actual_return_code != expected_return_code ||
-        kmipkit_ttlv_structure_view_item_at(payload_view, 4, &vendor_item) != 0 ||
+        kmipkit_ttlv_structure_view_item_at(payload_view, vendor_index, &vendor_item) != 0 ||
         kmipkit_ttlv_item_view_tag(vendor_item, &vendor_tag) != 0 ||
         kmipkit_ttlv_tag_value(vendor_tag, &actual_vendor_tag) != 0 ||
         actual_vendor_tag != expected_vendor_tag ||
@@ -4176,6 +4182,21 @@ static int pkcs11_response_matches_fixture(
         kmipkit_ttlv_item_view_value(vendor_item, &vendor_value) != 0 ||
         kmipkit_ttlv_value_view_integer(vendor_value, &actual_vendor_value) != 0 ||
         actual_vendor_value != expected_vendor_value) {
+        goto cleanup;
+    }
+    if (expected_correlation_present) {
+        if (kmipkit_ttlv_structure_view_item_at(payload_view, 1, &correlation_item) != 0 ||
+            kmipkit_ttlv_item_view_tag(correlation_item, &correlation_tag) != 0 ||
+            kmipkit_ttlv_tag_value(correlation_tag, &actual_nested_tag) != 0 ||
+            actual_nested_tag != expected_correlation_tag ||
+            kmipkit_ttlv_item_view_type(correlation_item, &actual_type) != 0 ||
+            actual_type != KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING ||
+            kmipkit_ttlv_item_view_value(correlation_item, &correlation_value) != 0 ||
+            !pkcs11_bytes_match(correlation_value, expected_correlation,
+                expected_correlation_length)) {
+            goto cleanup;
+        }
+    } else if (pkcs11_view_contains_tag(payload_view, expected_correlation_tag)) {
         goto cleanup;
     }
     result = 1;
@@ -4257,11 +4278,12 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
     uint64_t expected_correlation_length = 0;
     uint64_t expected_output_length = 0;
     uint64_t response_count = 0;
+    int expected_correlation_present = 0;
     unsigned long port = 0;
     char *parse_end = 0;
     int result = 1;
 
-    if (argc != 21 || argv == 0 || limits == 0) {
+    if (argc != 22 || argv == 0 || limits == 0) {
         return 2;
     }
     for (int index = 1; index < argc; ++index) {
@@ -4330,6 +4352,11 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
         return 14;
     }
     const uint32_t expected_correlation_tag = (uint32_t)raw_correlation_tag;
+    unsigned long raw_correlation_present = strtoul(argv[21], &parse_end, 10);
+    if (parse_end == argv[21] || *parse_end != '\0' || raw_correlation_present > 1) {
+        return 15;
+    }
+    expected_correlation_present = (int)raw_correlation_present;
 
     client_certificates[0].source_kind = 2;
     client_certificates[0].encoding = 2;
@@ -4439,21 +4466,34 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
         kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(
             response_item, &output_parameters_present, &output_parameters_ttlv) != 0 ||
         kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(
-            response_item, &return_code_present, &return_code_ttlv) != 0 ||
-        interface_present != 0 || interface_ttlv != 0 || function_present != 1 ||
-        function_ttlv == 0 || correlation_present != 1 ||
-        response_correlation.length != expected_correlation_length ||
-        response_correlation.length > (uint64_t)sizeof(correlation_copy) ||
-        response_correlation.data == 0 || output_parameters_present != 1 ||
+            response_item, &return_code_present, &return_code_ttlv) != 0) {
+        goto cleanup;
+    }
+    if (interface_present != 0 || interface_ttlv != 0 || function_present != 1 ||
+        function_ttlv == 0 || output_parameters_present != 1 ||
         output_parameters_ttlv == 0 || return_code_present != 1 || return_code_ttlv == 0) {
         goto cleanup;
     }
-    memcpy(correlation_copy, response_correlation.data, (size_t)response_correlation.length);
+    if (correlation_present != expected_correlation_present) {
+        goto cleanup;
+    }
+    if (response_correlation.length != expected_correlation_length) {
+        goto cleanup;
+    }
+    if (response_correlation.length > (uint64_t)sizeof(correlation_copy) ||
+        (response_correlation.length > 0 && response_correlation.data == 0) ||
+        (!expected_correlation_present && response_correlation.data != 0)) {
+        goto cleanup;
+    }
+    if (response_correlation.length > 0) {
+        memcpy(correlation_copy, response_correlation.data, (size_t)response_correlation.length);
+    }
     kmipkit_client_batch_item_response_release(response_item);
     response_item = 0;
     kmipkit_client_batch_response_release(response);
     response = 0;
-    if (memcmp(correlation_copy, expected_correlation, (size_t)expected_correlation_length) != 0) {
+    if (expected_correlation_length > 0 &&
+        memcmp(correlation_copy, expected_correlation, (size_t)expected_correlation_length) != 0) {
         goto cleanup;
     }
     if (!pkcs11_owned_scalar_matches(
@@ -4466,7 +4506,8 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
         goto cleanup;
     }
     if (!pkcs11_response_matches_fixture(
-            response_ttlv, expected_tags, 5, expected_function_tag, expected_function_value,
+            response_ttlv, expected_tags, 5, expected_correlation_present,
+            expected_function_tag, expected_function_value,
             expected_correlation_tag, expected_correlation, expected_correlation_length,
             expected_output_tag, expected_output, expected_output_length,
             expected_return_code_tag, expected_return_code, expected_vendor_tag,

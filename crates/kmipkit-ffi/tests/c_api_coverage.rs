@@ -661,6 +661,12 @@ fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
         CString::new(correlation_hex).expect("fixture correlation hexadecimal has no NUL byte");
     let correlation_tag = CString::new(format!("0x{correlation_tag:08X}"))
         .expect("fixture correlation tag has no NUL byte");
+    let correlation_present = CString::new(if correlation_case == "absent" {
+        "0"
+    } else {
+        "1"
+    })
+    .expect("correlation presence flag has no NUL byte");
     let output_tag =
         CString::new(format!("0x{output_tag:08X}")).expect("fixture output tag has no NUL byte");
     let output_hex = CString::new(output_hex).expect("fixture output hexadecimal has no NUL byte");
@@ -689,6 +695,7 @@ fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
     arguments.push(output_hex.as_ptr().cast_mut());
     arguments.push(return_code_tag.as_ptr().cast_mut());
     arguments.push(correlation_tag.as_ptr().cast_mut());
+    arguments.push(correlation_present.as_ptr().cast_mut());
     let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot held through the synchronous C call.
@@ -708,7 +715,7 @@ fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
     peer.join().expect("the loopback mTLS peer completes");
     assert_eq!(
         result, 0,
-        "the compiled public C consumer verifies the response fixture"
+        "the compiled public C consumer verifies the {correlation_case} correlation fixture"
     );
     assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
 }
@@ -1116,11 +1123,15 @@ fn pkcs11_success_response_message(fixture: &serde_json::Value, correlation_case
     let return_code_tag = fixture_hex_u32(&typed["returnCode"]["tag"]);
     let correlation = &typed["correlationValue"];
     let correlation_tag = fixture_hex_u32(&correlation["tag"]);
-    let correlation_bytes = decode_fixture_hex(
-        correlation["hex"]
-            .as_str()
-            .expect("shared PKCS#11 fixture correlation bytes are hexadecimal"),
-    );
+    let correlation_bytes = match correlation_case {
+        "nonempty" => decode_fixture_hex(
+            correlation["hex"]
+                .as_str()
+                .expect("shared PKCS#11 fixture correlation bytes are hexadecimal"),
+        ),
+        "absent" | "presentEmpty" => Vec::new(),
+        _ => panic!("the test selects a known correlation case"),
+    };
     let vendor_tag = u32::from_str_radix(
         expected["vendorExtension"]["tag"]
             .as_str()
