@@ -78,8 +78,8 @@ mod metadata_tests;
 #[cfg(test)]
 #[path = "../tests/support/opaque_handle_validation_tests.rs"]
 mod opaque_handle_validation_tests;
-#[path = "../tests/support/pkcs11_abi_tests.rs"]
 #[cfg(test)]
+#[path = "../tests/support/pkcs11_abi_tests.rs"]
 mod pkcs11_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/registry_preflight_tests.rs"]
