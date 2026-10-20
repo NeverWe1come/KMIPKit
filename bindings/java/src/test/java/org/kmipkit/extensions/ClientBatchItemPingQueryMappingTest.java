@@ -48,6 +48,26 @@ final class ClientBatchItemPingQueryMappingTest {
     }
 
     @Test
+    void queryFactoryRequiresLimitsAndEnforcesElementLimit() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.queryWithLimits(new int[] {14}, null, null));
+        assertThrows(ResourceLimitException.class, () -> ClientBatchItem.queryWithLimits(
+                new int[] {14}, null, CodecLimits.create(1024, 64, 1)));
+    }
+
+    @Test
+    void queryFactoryAcceptsSupplementaryUnicodeAndRejectsLoneLowSurrogate() {
+        try (ClientBatchItem item = ClientBatchItem.query(
+                new int[] {14}, new String[] {"group-🔐"})) {
+            assertEquals(0, item.extensionCount());
+        }
+
+        String loneLowSurrogate = new String(new char[] {'\udc00'});
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.query(new int[] {14}, new String[] {loneLowSurrogate}));
+    }
+
+    @Test
     void queryFactoryAcceptsExactTtlvPayloadLimitForPresentEmptyObjectGroups() {
         try (ClientBatchItem item = ClientBatchItem.queryWithLimits(
                 new int[] {1}, new String[0], CodecLimits.create(32, 4, 3))) {
@@ -180,5 +200,11 @@ final class ClientBatchItemPingQueryMappingTest {
                 new Object[] {new long[] {0}, new long[] {payloadHandle}}));
 
         ResponseTtlvTestSupport.assertReleased(payloadHandle);
+    }
+
+    @Test
+    void queryResponseRejectsPresentPayloadWithoutTtlvHandle() {
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseQueryResponse(
+                new Object[] {new long[] {1}, new long[] {0}}));
     }
 }

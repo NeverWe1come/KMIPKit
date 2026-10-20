@@ -4237,6 +4237,138 @@ fn ffi_usage_allocation_context_rejects_non_success_and_nonpositive_counts() {
     kmipkit_client_batch_item_response_release(successful_item);
 }
 
+#[test]
+fn ffi_usage_allocation_context_rejects_a_successful_non_allocation_response() {
+    let identifier = "not-an-allocation-response";
+    let item = successful_cryptographic_item(
+        ClientRequest::Encrypt(EncryptRequest::new(
+            Some(UniqueIdentifier::TextString(identifier.to_owned())),
+            Some(OperationData::ByteString(SecretBytes::new(
+                b"context-source-test".to_vec(),
+            ))),
+        )),
+        0x1f,
+        identifier.as_bytes(),
+        vec![
+            ttlv_item(0x0042_0094, 0x07, identifier.as_bytes()),
+            ttlv_item(0x0042_00c2, 0x08, b"ciphertext"),
+        ],
+    );
+    let mut context = ptr::dangling_mut();
+
+    assert_eq!(
+        kmipkit_usage_allocation_context_create(item, 12, u32::MAX, &raw mut context),
+        ERROR_INVALID_INPUT
+    );
+    assert!(context.is_null());
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_usage_allocation_context_getter_rejects_a_wrong_handle_kind() {
+    let client = unconnected_client_handle();
+    let mut available_units = 99;
+
+    assert_eq!(
+        kmipkit_usage_allocation_context_available_units(client.cast(), &raw mut available_units,),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        available_units, 0,
+        "the failed getter clears its scalar output"
+    );
+    kmipkit_client_release(client);
+}
+
+#[test]
+fn ffi_guarded_execution_rejects_empty_slots_and_validation_without_transport() {
+    let allocation_item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"guarded-validation-allocation",
+        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
+    );
+    let mut context = ptr::null_mut();
+    assert_eq!(
+        kmipkit_usage_allocation_context_create(allocation_item, 5, u32::MAX, &raw mut context),
+        SUCCESS
+    );
+    kmipkit_client_batch_item_response_release(allocation_item);
+
+    let client = unconnected_client_handle();
+    let limits = default_codec_limits_handle();
+    let mut response = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_execute_guarded_protection_item(
+            client,
+            context,
+            ptr::null_mut(),
+            1,
+            limits,
+            &raw mut response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(response.is_null());
+
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_execute_guarded_protection_item(
+            client,
+            context,
+            &raw mut item,
+            1,
+            limits,
+            &raw mut response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    assert!(response.is_null());
+
+    item = make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::Encrypt(
+            EncryptRequest::new(
+                Some(UniqueIdentifier::TextString("allocation-object".to_owned())),
+                Some(OperationData::ByteString(SecretBytes::new(
+                    b"invalid-cost-plaintext".to_vec(),
+                ))),
+            ),
+        )))),
+    );
+    assert_eq!(
+        client_abi::kmipkit_client_execute_guarded_protection_item(
+            client,
+            context,
+            &raw mut item,
+            0,
+            limits,
+            &raw mut response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null(), "the ABI consumes an item before validation");
+    assert!(response.is_null());
+
+    let mut reserved_units = 0;
+    let mut available_units = 0;
+    assert_eq!(
+        kmipkit_usage_allocation_context_reserved_units(context, &raw mut reserved_units),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_available_units(context, &raw mut available_units),
+        SUCCESS
+    );
+    assert_eq!(reserved_units, 0);
+    assert_eq!(available_units, 5);
+
+    kmipkit_client_release(client);
+    kmipkit_usage_allocation_context_release(context);
+    release(limits, Kind::CodecLimits);
+}
+
 fn import_test_request() -> ClientRequest {
     let object = Item::new(
         RawTag::new(0x0042_008f)
@@ -4873,6 +5005,118 @@ fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
     assert_eq!(result, 1, "C executes Encrypt and observes its reservation");
     assert!(item.is_null(), "guarded execution consumes the item handle");
     release(client, Kind::Client);
+    kmipkit_usage_allocation_context_release(context);
+    release(limits, Kind::CodecLimits);
+}
+
+#[test]
+fn ffi_guarded_encrypt_pending_retains_context_and_returns_pending_metadata() {
+    let allocation_item = successful_cryptographic_item(
+        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
+        0x11,
+        b"guarded-pending-allocation",
+        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
+    );
+    let mut context = ptr::null_mut();
+    assert_eq!(
+        kmipkit_usage_allocation_context_create(allocation_item, 5, u32::MAX, &raw mut context,),
+        SUCCESS
+    );
+    kmipkit_client_batch_item_response_release(allocation_item);
+
+    let batch_id = b"guarded-pending-item";
+    let correlation = [0x00, 0xFF, 0x80, 0x7F];
+    let response = pending_response_for_operation(0x1f, batch_id, &correlation);
+    let (client_value, peer) = client_with_one_response(response);
+    let client = make_handle(
+        Kind::Client,
+        HandleValue::Client(Box::new(std::sync::Mutex::new(client_value))),
+    );
+    let request = ClientRequest::Encrypt(EncryptRequest::new(
+        Some(UniqueIdentifier::TextString("allocation-object".to_owned())),
+        Some(OperationData::ByteString(SecretBytes::new(
+            b"guarded-plaintext".to_vec(),
+        ))),
+    ));
+    let mut item = make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(
+            ClientBatchItem::new(request).with_unique_batch_item_id(batch_id.to_vec()),
+        )),
+    );
+    let limits = default_codec_limits_handle();
+    let mut response = ptr::null_mut();
+
+    assert_eq!(
+        client_abi::kmipkit_client_execute_guarded_protection_item_with_asynchronous_indicator(
+            client,
+            context,
+            &raw mut item,
+            2,
+            1,
+            limits,
+            &raw mut response,
+        ),
+        SUCCESS
+    );
+    peer.join()
+        .expect("the mTLS peer completes the guarded exchange");
+    assert!(
+        item.is_null(),
+        "guarded FFI execution consumes the item slot"
+    );
+    assert!(!response.is_null());
+
+    let mut response_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(response, 0, &raw mut response_item),
+        SUCCESS
+    );
+    let mut metadata = kmipkit_client_batch_item_metadata_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_client_batch_item_metadata_v1_t>())
+            .expect("metadata size fits ABI field"),
+        abi_version: 1,
+        outcome_kind: 0,
+        result_status: 0,
+        has_result_reason: 0,
+        result_reason: 0,
+    };
+    assert_eq!(
+        kmipkit_client_batch_item_response_metadata_v1(response_item, &raw mut metadata),
+        SUCCESS
+    );
+    assert_eq!(metadata.outcome_kind, BATCH_OUTCOME_PENDING);
+    assert_eq!(metadata.result_status, 2);
+
+    let mut present = 0;
+    let mut correlation_span = byte_span(&[]);
+    assert_eq!(
+        kmipkit_client_batch_item_response_pending_correlation_value(
+            response_item,
+            &raw mut present,
+            &raw mut correlation_span,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_response_span(correlation_span, &correlation);
+
+    let mut reserved_units = 0;
+    let mut available_units = 0;
+    assert_eq!(
+        kmipkit_usage_allocation_context_reserved_units(context, &raw mut reserved_units),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_available_units(context, &raw mut available_units),
+        SUCCESS
+    );
+    assert_eq!(reserved_units, 2);
+    assert_eq!(available_units, 3);
+
+    kmipkit_client_batch_item_response_release(response_item);
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_release(client);
     kmipkit_usage_allocation_context_release(context);
     release(limits, Kind::CodecLimits);
 }

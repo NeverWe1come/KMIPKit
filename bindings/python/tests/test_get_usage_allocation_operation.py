@@ -171,6 +171,99 @@ def test_usage_allocation_context_uses_live_native_result_and_owns_its_state(
     assert released == [response_pointer, batch_response_pointer, context_pointer]
 
 
+@pytest.mark.parametrize(
+    ("kind", "field", "value", "expected"),
+    (
+        pytest.param(
+            extensions.UniqueIdentifierKind.ENUMERATION,
+            "enumeration_value",
+            7,
+            extensions.UniqueIdentifier.enumeration(7),
+            id="enumeration",
+        ),
+        pytest.param(
+            extensions.UniqueIdentifierKind.INTEGER,
+            "integer_value",
+            -17,
+            extensions.UniqueIdentifier.integer(-17),
+            id="integer",
+        ),
+    ),
+)
+def test_usage_allocation_context_preserves_native_identifier_kind(
+    monkeypatch: pytest.MonkeyPatch,
+    kind: extensions.UniqueIdentifierKind,
+    field: str,
+    value: int,
+    expected: extensions.UniqueIdentifier,
+) -> None:
+    pointer = ffi.cast("kmipkit_usage_allocation_context_t *", 25)
+    context = client._wrap_owned_handle(client.UsageAllocationContext, pointer)
+    released: list[object] = []
+
+    def identifier(_context: object, output: object) -> int:
+        output.kind = int(kind)  # type: ignore[attr-defined]
+        setattr(output, field, value)
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_usage_allocation_context_unique_identifier=identifier,
+            kmipkit_usage_allocation_context_release=lambda handle: released.append(handle),
+        ),
+    )
+
+    assert context.unique_identifier == expected
+    context.close()
+    assert released == [pointer]
+
+
+@pytest.mark.parametrize(
+    "malformation",
+    ("text-too-large", "text-null-data", "text-invalid-utf8", "unknown-kind"),
+)
+def test_usage_allocation_context_rejects_malformed_native_identifiers(
+    monkeypatch: pytest.MonkeyPatch, malformation: str
+) -> None:
+    pointer = ffi.cast("kmipkit_usage_allocation_context_t *", 26)
+    context = client._wrap_owned_handle(client.UsageAllocationContext, pointer)
+    storage_refs: list[object] = []
+
+    def identifier(_context: object, output: object) -> int:
+        if malformation == "unknown-kind":
+            output.kind = 99  # type: ignore[attr-defined]
+        else:
+            output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+            if malformation == "text-too-large":
+                output.text_length = client._MAX_INPUT_BYTES + 1  # type: ignore[attr-defined]
+            elif malformation == "text-null-data":
+                output.text_length = 1  # type: ignore[attr-defined]
+            else:
+                storage = ffi.new("uint8_t[]", b"\xff")
+                storage_refs.append(storage)
+                output.text_data = storage  # type: ignore[attr-defined]
+                output.text_length = 1  # type: ignore[attr-defined]
+        return 0
+
+    released: list[object] = []
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_usage_allocation_context_unique_identifier=identifier,
+            kmipkit_usage_allocation_context_release=lambda handle: released.append(handle),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        context.unique_identifier
+
+    context.close()
+    assert released == [pointer]
+
+
 def test_get_usage_allocation_response_allows_absent_response(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

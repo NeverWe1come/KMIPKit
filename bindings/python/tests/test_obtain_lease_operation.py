@@ -117,6 +117,87 @@ def test_obtain_lease_response_preserves_zero_and_raw_datetime_and_redacts_ident
     result.close()
 
 
+def test_obtain_lease_releases_unexpected_ttlv_handle(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ttlv_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 73)
+    identifier_text = ffi.new("uint8_t[]", b"leased-object")
+    released: list[object] = []
+
+    def response(_item: object, present: object, identifier: object,
+                 lease_time: object, last_change_date: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        identifier.text_data = identifier_text  # type: ignore[attr-defined]
+        identifier.text_length = len(b"leased-object")  # type: ignore[attr-defined]
+        lease_time[0] = 5  # type: ignore[index]
+        last_change_date[0] = 7  # type: ignore[index]
+        return 0
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = ttlv_pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_obtain_lease=response,
+            kmipkit_client_batch_item_response_obtain_lease_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._obtain_lease_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [ttlv_pointer]
+
+
+def test_obtain_lease_releases_ttlv_handle_when_wrapper_conversion_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ttlv_pointer = ffi.cast("kmipkit_ttlv_structure_t *", 74)
+    identifier_text = ffi.new("uint8_t[]", b"leased-object")
+    released: list[object] = []
+
+    def response(_item: object, present: object, identifier: object,
+                 lease_time: object, last_change_date: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)  # type: ignore[attr-defined]
+        identifier.text_data = identifier_text  # type: ignore[attr-defined]
+        identifier.text_length = len(b"leased-object")  # type: ignore[attr-defined]
+        lease_time[0] = 5  # type: ignore[index]
+        last_change_date[0] = 7  # type: ignore[index]
+        return 0
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = ttlv_pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_obtain_lease=response,
+            kmipkit_client_batch_item_response_obtain_lease_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+
+    def fail_conversion(_address: int) -> ttlv.Structure:
+        raise RuntimeError("test conversion failure")
+
+    monkeypatch.setattr(client.ttlv, "_structure_from_native_address", fail_conversion)
+
+    with pytest.raises(RuntimeError, match="test conversion failure"):
+        client._obtain_lease_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [ttlv_pointer]
+
+
 def test_obtain_lease_absent_result_has_no_success_ttlv(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 

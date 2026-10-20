@@ -2798,6 +2798,69 @@ def test_guarded_protection_rejects_nonpositive_cost_before_consuming_item(
     assert released == [native_context_pointer, native_client_pointer]
 
 
+@pytest.mark.parametrize(
+    ("mode", "expected_error", "item_consumed"),
+    (
+        pytest.param("wrong-context", errors.InvalidInputError, False, id="wrong-context"),
+        pytest.param("conversion-error", errors.InvalidInputError, False, id="conversion-error"),
+        pytest.param("not-consumed", errors.KmipKitError, False, id="not-consumed"),
+        pytest.param("null-response", errors.KmipKitError, True, id="null-response"),
+    ),
+)
+def test_guarded_protection_failures_preserve_item_ownership(
+    monkeypatch: pytest.MonkeyPatch,
+    mode: str,
+    expected_error: type[Exception],
+    item_consumed: bool,
+) -> None:
+    native_client_pointer = client.ffi.cast("kmipkit_client_t *", 51)
+    native_context_pointer = client.ffi.cast(
+        "kmipkit_usage_allocation_context_t *", 52
+    )
+    handle = _wrap_owned_handle(client.Client, native_client_pointer)
+    context = _wrap_owned_handle(client.UsageAllocationContext, native_context_pointer)
+    item = extensions.client_batch_item_encrypt(
+        extensions.UniqueIdentifier.text_string("allocation-object")
+    )
+    limits = ttlv.codec_limits_defaults()
+    released: list[object] = []
+
+    def execute(*arguments: object) -> int:
+        _client, _context, item_slot, _cost, _limits, _response = arguments
+        if mode == "conversion-error":
+            raise TypeError("native argument conversion failed")
+        if mode == "not-consumed":
+            return 0
+        native_item = item_slot[0]  # type: ignore[index]
+        extensions._client_lib.kmipkit_client_batch_item_release(native_item)
+        item_slot[0] = client.ffi.NULL  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_execute_guarded_protection_item=execute,
+            kmipkit_client_release=lambda value: released.append(value),
+            kmipkit_usage_allocation_context_release=lambda value: released.append(value),
+        ),
+    )
+
+    actual_context = object() if mode == "wrong-context" else context
+    try:
+        with pytest.raises(expected_error):
+            handle.execute_guarded_protection_item(actual_context, item, 9, limits)  # type: ignore[arg-type]
+        assert item.closed is item_consumed
+    finally:
+        if not item.closed:
+            item.close()
+        context.close()
+        handle.close()
+        limits.close()
+
+    assert released == [native_context_pointer, native_client_pointer]
+
+
 def test_response_span_rejects_inconsistent_absence_and_null_nonempty_data(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

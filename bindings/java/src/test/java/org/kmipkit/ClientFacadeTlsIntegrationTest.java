@@ -154,7 +154,7 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
-    void pingAndQueryRoundTripThroughNativeJniOverDeterministicTls13Peer() throws Exception {
+    void pingQueryAndLogoutRoundTripThroughNativeJniOverDeterministicTls13Peer() throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
         byte[] clientCertificatePem = testFixture("client-cert.pem");
@@ -176,13 +176,14 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setNeedClientAuth(true);
         listener.setSoTimeout(10_000);
         FutureTask<byte[]> peer = new FutureTask<>(
-                () -> serveOneResponse(listener, pingQueryResponseMessage()));
+                () -> serveOneResponse(listener, pingQueryLogoutResponseMessage()));
         Thread peerThread = new Thread(peer, "kmipkit-java-ping-query-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
 
         byte[] pingId = "ping-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] queryId = "query-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] logoutId = "logout-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] request;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());
@@ -198,13 +199,19 @@ final class ClientFacadeTlsIntegrationTest {
             batch.add(ClientBatchItem.query(
                             new int[] {1, 2, 1}, new String[] {"group-b", "group-a"})
                     .withUniqueBatchItemId(queryId));
+            try (TtlvStructure ticket = logoutTicket()) {
+                batch.add(ClientBatchItem.logout(ticket).withUniqueBatchItemId(logoutId));
+            }
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult pingResult = response.itemAt(0);
-                    ClientBatchItemResult queryResult = response.itemAt(1)) {
-                assertEquals(2, response.itemCount());
+                    ClientBatchItemResult queryResult = response.itemAt(1);
+                    ClientBatchItemResult logoutResult = response.itemAt(2)) {
+                assertEquals(3, response.itemCount());
                 assertEquals(0x3b, pingResult.operation());
                 assertEquals(Boolean.TRUE, pingResult.pingResponse().orElseThrow());
                 assertEquals(0x18, queryResult.operation());
+                assertEquals(0x2e, logoutResult.operation());
+                assertEquals(Boolean.TRUE, logoutResult.logoutResponse().orElseThrow());
                 try (TtlvStructure queryPayload = queryResult.queryResponse().orElseThrow();
                         TtlvStructureView payloadView = queryPayload.view();
                         TtlvItemView masksItem = payloadView.itemAt(0);
@@ -227,6 +234,8 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(request, enumeration(0x42005c, 0x18));
         assertContains(request, item(0x420093, 8, pingId));
         assertContains(request, item(0x420093, 8, queryId));
+        assertContains(request, enumeration(0x42005c, 0x2e));
+        assertContains(request, item(0x420093, 8, logoutId));
         assertContains(request, enumeration(0x420074, 1));
         assertContains(request, enumeration(0x420074, 2));
         assertContains(request, item(0x420056, 7, "group-b".getBytes(StandardCharsets.UTF_8)));
@@ -801,10 +810,12 @@ final class ClientFacadeTlsIntegrationTest {
 
         byte[] allocationItemId = uniqueBatchItemId(0);
         byte[] encryptionItemId = uniqueBatchItemId(1);
+        byte[] defaultEncryptionItemId = uniqueBatchItemId(2);
         CodecLimits limits = CodecLimits.defaults();
         FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
                 usageAllocationResponseMessage(allocationItemId),
-                guardedEncryptResponseMessage(encryptionItemId)));
+                guardedEncryptResponseMessage(encryptionItemId),
+                guardedEncryptResponseMessage(defaultEncryptionItemId)));
         Thread peerThread = new Thread(peer, "kmipkit-java-usage-allocation-guard-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -841,16 +852,49 @@ final class ClientFacadeTlsIntegrationTest {
                             ClientBatchItem encryption = ClientBatchItem.encrypt(
                                             UniqueIdentifier.textString("allocation-object"),
                                             parameters, data, null, null, null, null, null)
-                                    .withUniqueBatchItemId(encryptionItemId);
-                            ClientBatchResponse guarded = client.executeGuardedProtectionItemWithAsynchronousIndicator(
+                                    .withUniqueBatchItemId(encryptionItemId)) {
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItemWithAsynchronousIndicator(
+                                        context, encryption, 2L, -1L, limits));
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItemWithAsynchronousIndicator(
+                                        context, encryption, 2L, 0x1_0000_0000L, limits));
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItem(null, encryption, 2L, limits));
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItem(context, null, 2L, limits));
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItem(context, encryption, 0L, limits));
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItem(context, encryption, 2L, null));
+
+                        try (ClientBatchResponse guarded = client.executeGuardedProtectionItemWithAsynchronousIndicator(
                                     context, encryption, 2L, 2L, limits);
-                            ClientBatchItemResult guardedItem = guarded.itemAt(0);
-                            ClientBatchItemResult.EncryptResponse encrypted =
-                                    guardedItem.encryptResponse().orElseThrow()) {
-                        assertEquals(0L, guardedItem.resultStatus());
-                        assertEquals("allocation-object", encrypted.uniqueIdentifier().text());
-                        assertEquals(2L, context.reservedUnits());
-                        assertEquals(3L, context.availableUnits());
+                                ClientBatchItemResult guardedItem = guarded.itemAt(0);
+                                ClientBatchItemResult.EncryptResponse encrypted =
+                                        guardedItem.encryptResponse().orElseThrow()) {
+                            assertEquals(0L, guardedItem.resultStatus());
+                            assertEquals("allocation-object", encrypted.uniqueIdentifier().text());
+                            assertEquals(2L, context.reservedUnits());
+                            assertEquals(3L, context.availableUnits());
+                        }
+                    }
+
+                    try (TtlvStructure parameters = TtlvStructure.create();
+                            TtlvValue data = TtlvValue.ByteString(new byte[] {4, 5, 6}, limits);
+                            ClientBatchItem defaultEncryption = ClientBatchItem.encrypt(
+                                            UniqueIdentifier.textString("allocation-object"),
+                                            parameters, data, null, null, null, null, null)
+                                    .withUniqueBatchItemId(defaultEncryptionItemId);
+                            ClientBatchResponse defaultGuarded = client.executeGuardedProtectionItem(
+                                    context, defaultEncryption, 1L, limits);
+                            ClientBatchItemResult defaultGuardedItem = defaultGuarded.itemAt(0);
+                            ClientBatchItemResult.EncryptResponse defaultEncrypted =
+                                    defaultGuardedItem.encryptResponse().orElseThrow()) {
+                        assertEquals(0L, defaultGuardedItem.resultStatus());
+                        assertEquals("allocation-object", defaultEncrypted.uniqueIdentifier().text());
+                        assertEquals(3L, context.reservedUnits());
+                        assertEquals(2L, context.availableUnits());
                     }
 
                     try (TtlvStructure parameters = TtlvStructure.create();
@@ -862,14 +906,14 @@ final class ClientFacadeTlsIntegrationTest {
                                 () -> client.executeGuardedProtectionItem(
                                         context, mismatched, 1L, limits));
                     }
-                    assertEquals(2L, context.reservedUnits());
-                    assertEquals(3L, context.availableUnits());
+                    assertEquals(3L, context.reservedUnits());
+                    assertEquals(2L, context.availableUnits());
                 }
             }
         } finally {
             listener.close();
         }
-        assertEquals(2, peer.get(10, TimeUnit.SECONDS).size());
+        assertEquals(3, peer.get(10, TimeUnit.SECONDS).size());
     }
 
     @Test
@@ -2158,13 +2202,14 @@ final class ClientFacadeTlsIntegrationTest {
                 getFailure, locateFailure, importItem, importFailure, interopItem, logItem, loginItem);
     }
 
-    private static byte[] pingQueryResponseMessage() throws Exception {
+    private static byte[] pingQueryLogoutResponseMessage() throws Exception {
         byte[] pingId = "ping-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] queryId = "query-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] logoutId = "logout-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(2)));
+                item(0x42000d, 2, integer(3)));
         byte[] pingItem = structure(0x42000f,
                 enumeration(0x42005c, 0x3b),
                 item(0x420093, 8, pingId),
@@ -2176,7 +2221,31 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, queryId),
                 enumeration(0x42007f, 0),
                 queryPayload);
-        return structure(0x42007b, header, pingItem, queryItem);
+        byte[] logoutItem = structure(0x42000f,
+                enumeration(0x42005c, 0x2e),
+                item(0x420093, 8, logoutId),
+                enumeration(0x42007f, 0),
+                structure(0x42007c));
+        return structure(0x42007b, header, pingItem, queryItem, logoutItem);
+    }
+
+    private static TtlvStructure logoutTicket() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure empty = TtlvStructure.create();
+        try (empty;
+                RawTag typeRawTag = RawTag.fromRaw(0x42014a);
+                Tag typeTag = typeRawTag.checked();
+                TtlvValue type = TtlvValue.Enumeration(1);
+                TtlvItem typeItem = TtlvItem.create(typeTag, type, limits)) {
+            TtlvStructure withType = TtlvStructure.withItem(empty, typeItem, limits);
+            try (withType;
+                    RawTag valueRawTag = RawTag.fromRaw(0x42014b);
+                    Tag valueTag = valueRawTag.checked();
+                    TtlvValue value = TtlvValue.ByteString(new byte[] {1, 2, 3}, limits);
+                    TtlvItem valueItem = TtlvItem.create(valueTag, value, limits)) {
+                return TtlvStructure.withItem(withType, valueItem, limits);
+            }
+        }
     }
 
     private static byte[] largeCryptoResponseMessage(int operation, byte[] data) throws Exception {

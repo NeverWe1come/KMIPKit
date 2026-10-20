@@ -13,7 +13,10 @@ use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
-use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
+use crate::execute_test_support::{
+    asynchronous_response_bytes, asynchronous_response_with_batch_id_bytes, test_item,
+    test_structure,
+};
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientErrorCategory,
     ClientRequest, UsageAllocationContext, UsageAllocationContextError,
@@ -747,4 +750,131 @@ fn guarded_batch_item_returns_standard_batch_and_preserves_request_metadata() {
     );
     assert_eq!(context.reserved_units(), 3);
     assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn guarded_batch_item_pending_preserves_metadata_and_retains_reservation() {
+    let mut context = allocate_context();
+    let correlation = [0xA5, 0x5A, 0xC3];
+    let batch_id = vec![0xB1, 0xB2];
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_with_batch_id_bytes(
+            0x1F,
+            2,
+            None,
+            Some(&correlation),
+            Some(&batch_id),
+            Some(test_structure([])),
+        ),
+        request_write_chunks: Vec::new(),
+    });
+    let item = ClientBatchItem::new(protection_request(
+        0x1F,
+        Some(UniqueIdentifier::TextString(OBJECT_ID.to_owned())),
+    ))
+    .with_unique_batch_item_id(batch_id.clone());
+
+    let response = client
+        .execute_guarded_protection_item_with_asynchronous_indicator(
+            &mut context,
+            item,
+            3,
+            1,
+            &CodecLimits::defaults(),
+        )
+        .expect("the explicit asynchronous indicator permits Pending");
+    let item_response = response.get(0).expect("one Pending response");
+    let ClientBatchOutcome::Pending(pending) = item_response.outcome() else {
+        panic!("the operation returns its standard Pending outcome");
+    };
+
+    assert_eq!(pending.asynchronous_correlation_value(), correlation);
+    assert_eq!(
+        item_response.unique_batch_item_id(),
+        Some(batch_id.as_slice())
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(context.reserved_units(), 3);
+    assert_eq!(context.available_units(), ALLOCATION - 3);
+}
+
+#[test]
+fn guarded_batch_item_rejects_invalid_scope_and_cost_before_transport() {
+    let valid_identifier = || UniqueIdentifier::TextString(OBJECT_ID.to_owned());
+    let invalid_cases = [
+        (unprotected_request(0x20), 1),
+        (protection_request(0x1F, None), 1),
+        (
+            protection_request(0x1F, Some(UniqueIdentifier::Enumeration(1))),
+            1,
+        ),
+        (
+            protection_request(
+                0x23,
+                Some(UniqueIdentifier::TextString("different-object".to_owned())),
+            ),
+            1,
+        ),
+        (protection_request(0x21, Some(valid_identifier())), 0),
+        (
+            protection_request(0x1F, Some(valid_identifier())),
+            ALLOCATION + 1,
+        ),
+    ];
+
+    for (request, cost) in invalid_cases {
+        let mut context = allocate_context();
+        let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+        let item = ClientBatchItem::new(request);
+        let error = client
+            .execute_guarded_protection_item(&mut context, item, cost, &CodecLimits::defaults())
+            .expect_err("invalid item scope or cost fails before transport");
+
+        assert_eq!(error.category(), ClientErrorCategory::Validation);
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(fake.borrow().exchange_count(), 0);
+        assert_eq!(context.reserved_units(), 0);
+        assert_eq!(context.available_units(), ALLOCATION);
+    }
+}
+
+#[test]
+fn guarded_batch_item_transport_failures_settle_reservations_by_delivery_state() {
+    let cases = [
+        (
+            ExchangeScript::FailBeforeWrite,
+            RequestDeliveryState::NotSent,
+            0,
+        ),
+        (
+            ExchangeScript::FailAfterPartialWrite { written_bytes: 1 },
+            RequestDeliveryState::PossiblySent,
+            2,
+        ),
+        (
+            ExchangeScript::FailAfterPartialRead {
+                written_bytes: usize::MAX,
+                response_bytes: vec![0x42, 0x00],
+            },
+            RequestDeliveryState::ResponseStarted,
+            2,
+        ),
+    ];
+
+    for (script, expected_state, expected_reservation) in cases {
+        let mut context = allocate_context();
+        let (mut client, fake, _) = client_for(script);
+        let item = ClientBatchItem::new(protection_request(
+            0x21,
+            Some(UniqueIdentifier::TextString(OBJECT_ID.to_owned())),
+        ));
+        let error = client
+            .execute_guarded_protection_item(&mut context, item, 2, &CodecLimits::defaults())
+            .expect_err("the scripted transport failure is surfaced");
+
+        assert_eq!(error.delivery_state(), Some(expected_state));
+        assert_eq!(fake.borrow().exchange_count(), 1);
+        assert_eq!(context.reserved_units(), expected_reservation);
+        assert_eq!(context.available_units(), ALLOCATION - expected_reservation);
+    }
 }

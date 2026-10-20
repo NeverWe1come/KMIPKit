@@ -102,6 +102,14 @@ final class ObtainLeaseMappingTest {
                     new long[] {1, 0, -7}, null, new long[] {missingIdentifierHandle}
                 }));
         ResponseTtlvTestSupport.assertReleased(missingIdentifierHandle);
+
+        long malformedIdentifierHandle = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseObtainLeaseResponse(new Object[] {
+                    new long[] {1, 0, -7}, new Object[] {new long[] {1}, null},
+                    new long[] {malformedIdentifierHandle}
+                }));
+        ResponseTtlvTestSupport.assertReleased(malformedIdentifierHandle);
     }
 
     private static TtlvStructure responseTtlv() {

@@ -41,6 +41,19 @@ fn query_payload_limit_preflight_rejects_excess_elements() {
 }
 
 #[test]
+fn query_payload_limit_preflight_rejects_object_groups_over_depth_limit() {
+    let batch = ClientBatch::new(ClientBatchItem::query(
+        QueryRequest::new([QueryFunction::OPERATIONS]).with_object_groups(["group-a"]),
+    ));
+    let limits = CodecLimits::new(1024, 2, 100).expect("two structure levels are valid");
+
+    let error = validate_query_batch_limits(&batch, &limits)
+        .expect_err("Object Groups requires one structure level beyond this limit");
+
+    assert_eq!(error.kind(), ProtocolErrorKind::ResourceLimit);
+}
+
+#[test]
 fn query_payload_limit_preflight_rejects_excess_encoded_size() {
     let large_group = "g".repeat(512);
     let batch = ClientBatch::new(ClientBatchItem::query(

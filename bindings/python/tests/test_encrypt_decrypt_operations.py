@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from kmipkit import client, extensions, ttlv
+from kmipkit import client, errors, extensions, ttlv
 
 
 def _capture_constructor(
@@ -263,6 +263,7 @@ def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
     assert all(value is None or isinstance(value, client._SecretBytes) for value in owned)
     buffers = [value.buffer for value in owned if value is not None]
     response.close()
+    response.close()
     assert all(not any(buffer) for buffer in buffers)
     public_fields = (
         "unique_identifier", "data", "iv_counter_nonce", "correlation_value",
@@ -272,3 +273,91 @@ def test_typed_encrypt_and_decrypt_success_responses_copy_and_redact_outputs(
         if hasattr(type(response), name):
             with pytest.raises(RuntimeError, match="response is closed"):
                 getattr(response, name)
+
+
+@pytest.mark.parametrize(
+    ("operation", "scenario"),
+    (
+        ("encrypt", "absent"),
+        ("encrypt", "absent-with-data"),
+        ("encrypt", "invalid-presence"),
+        ("encrypt", "present-without-identifier"),
+        ("decrypt", "absent"),
+        ("decrypt", "absent-with-data"),
+        ("decrypt", "invalid-presence"),
+        ("decrypt", "present-without-identifier"),
+    ),
+)
+def test_encrypt_and_decrypt_response_parsers_validate_optional_shapes(
+    monkeypatch: pytest.MonkeyPatch, operation: str, scenario: str
+) -> None:
+    def get_response(_item: object, *outputs: object) -> int:
+        if scenario == "absent":
+            outputs[0][0] = 0  # type: ignore[index]
+        elif scenario == "absent-with-data":
+            outputs[0][0] = 0  # type: ignore[index]
+            outputs[2][0] = 1  # type: ignore[index]
+        elif scenario == "invalid-presence":
+            outputs[0][0] = 2  # type: ignore[index]
+        else:
+            outputs[0][0] = 1  # type: ignore[index]
+        return 0
+
+    symbol = f"kmipkit_client_batch_item_response_{operation}"
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{symbol: get_response}))
+    parser = getattr(client, f"_{operation}_response")
+    item = SimpleNamespace(_pointer=lambda: object())
+
+    if scenario == "absent":
+        assert parser(item) is None
+    else:
+        with pytest.raises(errors.InvalidInputError):
+            parser(item)
+
+
+@pytest.mark.parametrize(
+    ("malformation", "error_type"),
+    (
+        ("absent-with-data", errors.InvalidInputError),
+        ("invalid-presence", errors.InvalidInputError),
+        ("too-large", errors.ResourceLimitError),
+        ("null-nonempty", errors.InvalidInputError),
+    ),
+)
+def test_optional_output_secret_span_rejects_malformed_native_shapes(
+    malformation: str, error_type: type[Exception]
+) -> None:
+    present = extensions.ffi.new("uint8_t *")
+    span = extensions.ffi.new("kmipkit_byte_span_v1_t *")
+    storage: object | None = None
+
+    if malformation == "absent-with-data":
+        present[0] = 0
+        storage = extensions.ffi.new("uint8_t[]", b"x")
+        span.data = storage
+        span.length = 1
+    elif malformation == "invalid-presence":
+        present[0] = 2
+    else:
+        present[0] = 1
+        span.length = client.sys.maxsize + 1 if malformation == "too-large" else 1
+
+    with pytest.raises(error_type):
+        client._optional_output_secret_span(present, span)
+
+
+def test_encrypt_response_copies_caller_bytes_into_wipeable_storage() -> None:
+    response = client.EncryptResponse(
+        extensions.UniqueIdentifier.text_string("response-id"),
+        b"caller-owned-secret",
+        None,
+        None,
+        None,
+    )
+    owned = response._data
+
+    assert isinstance(owned, client._SecretBytes)
+    assert response.data == b"caller-owned-secret"
+    response.close()
+    assert owned is not None
+    assert not any(owned.buffer)

@@ -186,9 +186,15 @@ def test_native_query_builder_accepts_object_group_larger_than_default_limit() -
     [
         pytest.param(0x3B, "_ping_response", "ping_response", id="ping"),
         pytest.param(0x18, "_query_response", "query_response", id="query"),
+        pytest.param(
+            0x10,
+            "_obtain_lease_response",
+            "obtain_lease_response",
+            id="obtain-lease",
+        ),
     ],
 )
-def test_batch_result_dispatches_ping_and_query_payload_mappers(
+def test_batch_result_dispatches_operation_specific_payload_mappers(
     monkeypatch: pytest.MonkeyPatch,
     operation: int,
     mapper_name: str,
