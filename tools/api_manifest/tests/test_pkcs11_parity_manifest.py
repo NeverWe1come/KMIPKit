@@ -88,50 +88,50 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             for row in self.manifest["operations"]
             if row["operationId"] == OPERATION_ID
         ]
-        self.declarations = {
-            row["declarationId"]: row for row in self.manifest["publicDeclarations"]
-        }
-
-    def test_pkcs11_has_verified_four_language_mapping_and_evidence(self) -> None:
+    def test_pkcs11_remains_blocked_without_formal_owner_acceptance(self) -> None:
         self.assertEqual(1, len(self.operations))
         operation = self.operations[0]
         self.assertEqual("PKCS#11", operation["name"])
         self.assertEqual("6.1.37", operation["section"])
         self.assertEqual("client_1_0", operation["scope"])
-        self.assertEqual("verified", operation["apiState"])
-        self.assertEqual("KMIPKIT-0040", operation["featureSpecId"])
+        self.assertEqual("blocked", operation["apiState"])
         self.assertEqual("approved", operation["ownerDependency"]["state"])
         self.assertEqual("KMIPKIT-0040", operation["ownerDependency"]["specId"])
-        self.assertEqual(OWNER_SPEC, operation["approvalEvidence"]["path"])
-        self.assertEqual("Approved", operation["approvalEvidence"]["status"])
-        self.assertIn("Approved for implementation", operation["approvalEvidence"]["evidence"])
-        self.assertNotIn("blockedReason", operation)
-        self.assertEqual(LANGUAGES, set(operation["declarations"]))
-        self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
+        self.assertNotIn("featureSpecId", operation)
+        self.assertNotIn("approvalEvidence", operation)
+        self.assertNotIn("declarations", operation)
+        self.assertNotIn("parityEvidenceIds", operation)
+        self.assertIn("blockedReason", operation)
+        owner_spec = (ROOT / OWNER_SPEC).read_text(encoding="utf-8")
+        self.assertIn(
+            "**Status**: Approved for implementation — 2026-10-11", owner_spec
+        )
+        self.assertIn("This approval does not start implementation", owner_spec)
+
+        self.assertEqual(
+            "**Status**: Approved for implementation — 2026-10-11",
+            next(line for line in owner_spec.splitlines() if "**Status**:" in line),
+        )
+        self.assertIn("This approval does not start implementation", owner_spec)
+
+    def test_pkcs11_code_declares_all_four_language_mappings(self) -> None:
+        self.assertTrue(PARITY_FIXTURE.is_file(), "shared PKCS#11 parity fixture is missing")
+        fixture = json.loads(PARITY_FIXTURE.read_text(encoding="utf-8"))
+        mappings = fixture["languageMappings"]
+        self.assertEqual(LANGUAGES, set(mappings))
+        self.assertTrue(PARITY_EVIDENCE <= set(fixture["parityEvidence"]))
+        self.assertTrue(OWNER_REQUIREMENTS <= set(fixture["requirementIds"]))
+        self.assertTrue(API_REQUIREMENTS <= set(fixture["requirementIds"]))
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
-
-        linked_requirements: set[str] = set()
-        actual_mappings = {language: set() for language in LANGUAGES}
-        for language, declaration_ids in operation["declarations"].items():
-            self.assertTrue(declaration_ids, f"PKCS#11 has no {language} declarations")
-            for declaration_id in declaration_ids:
-                declaration = self.declarations[declaration_id]
-                self.assertEqual(OPERATION_ID, declaration["capabilityId"])
-                self.assertEqual("verified", declaration["declarationState"])
-                self.assertEqual("four-language", declaration["parityScope"])
-                self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
-                self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
-                self.assertEqual("Approved", declaration["approvalSource"]["status"])
-                actual_mappings[language].add(
-                    declaration["languageMappings"][language]["name"]
-                )
-                linked_requirements.update(declaration["requirementIds"])
-
         for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertTrue(expected <= actual_mappings[language], language)
-        self.assertTrue(OWNER_REQUIREMENTS <= linked_requirements)
-        self.assertTrue(API_REQUIREMENTS <= linked_requirements)
+            self.assertTrue(expected <= set(mappings[language]), language)
+            source_files = fixture["mappingSourceFiles"][language]
+            source = "\n".join(
+                (ROOT / path).read_text(encoding="utf-8") for path in source_files
+            )
+            for token in fixture["mappingSourceTokens"][language]:
+                self.assertIn(token, source, f"missing {language} mapping token: {token}")
 
     def test_pkcs11_shared_fixture_links_normative_source_and_all_consumers(self) -> None:
         self.assertTrue(PARITY_FIXTURE.is_file(), "shared PKCS#11 parity fixture is missing")
