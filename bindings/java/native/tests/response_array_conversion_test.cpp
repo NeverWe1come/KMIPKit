@@ -11,6 +11,21 @@ struct Array final {};
 } // namespace
 
 int main() {
+    Array partially_copied{};
+    bool copy_exception_pending = true;
+    bool partially_copied_array_wiped = false;
+    Array* discarded = kmipkit::jni::discard_response_array_after_copy_failure(
+            &partially_copied,
+            [&] { return copy_exception_pending; },
+            [&](Array* value) noexcept {
+                assert(value == &partially_copied);
+                partially_copied_array_wiped = true;
+                copy_exception_pending = true;
+            });
+    assert(discarded == nullptr);
+    assert(partially_copied_array_wiped);
+    assert(copy_exception_pending);
+
     std::array<Array*, 3> output{};
     std::array<Array, 3> input{};
     std::size_t cleaned_count = 0;
