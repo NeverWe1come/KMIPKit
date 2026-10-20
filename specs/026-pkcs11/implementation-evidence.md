@@ -259,12 +259,15 @@ production behavior change was needed.
 | `cargo llvm-cov --workspace --all-features --json --output-path target/t057-current-coverage-raw.json` | BLOCKED locally before export: unrelated `kmipkit-test-support::dns::loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame` could not bind `127.0.0.1:53817` after 32 attempts (`PermissionDenied`, Windows error 10013) |
 
 The focused T057 success-path checks, source/configuration tests, traceability,
-manifest, generator, formatting and Clippy pass locally. The scoped Rust
-percentage above does **not** establish the 95% changed-production threshold,
-the cross-language coverage aggregate, or the multi-platform gate. T057
-therefore remains open until hosted cross-platform CI and its current-head
-aggregate coverage run. The candidate-only build gates were removed from the
-default source/configuration and the default Rust/C/Java/Python path now
+manifest, generator, formatting and Clippy pass locally. Exact-head hosted CI
+run `39456251264` on `b0f786243b7acfec6b031caebe02a3685793c57f` passed all 34
+required jobs, including the Ubuntu/Windows/macOS adapter matrix and selected-
+scope coverage. The changed-production aggregate is 10,508/11,059 lines
+(95.02%), including 22 summary-only lines counted as uncovered. This completes
+the T057 mapping, parity, platform, and coverage gates. The earlier Windows
+workspace coverage bind failure remains a local-environment limitation, not a
+failure of the hosted gate. The candidate-only build gates were removed from
+the default source/configuration and the default Rust/C/Java/Python path now
 exercises the public API. The successful loopback exchange verifies adapter
-behavior and is not interoperability evidence. T022 remains open for two
-independent KMIP 2.1 server implementations.
+behavior and is not interoperability evidence. `formalAcceptance` remains
+`false`; T022 remains open for two independent KMIP 2.1 server implementations.
