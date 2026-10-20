@@ -275,6 +275,46 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Re-certify request using the fields in §6.1.45, Table 300. */
+    public static ClientBatchItem recertify(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable UniqueIdentifier certificateRequestUniqueIdentifier,
+            @Nullable Long certificateRequestType,
+            @Nullable byte[] certificateRequestValue,
+            @Nullable Long offset,
+            @Nullable TtlvStructure attributes,
+            @Nullable TtlvStructure protectionStorageMasks) {
+        requireOperationInputWithinLimit(certificateRequestValue);
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        byte[] certificateRequestIdentifierText = certificateRequestUniqueIdentifier == null
+                ? null : certificateRequestUniqueIdentifier.nativeText();
+        byte[] requestValueCopy = copyForNative(certificateRequestValue);
+        try {
+            long requestType = certificateRequestType == null ? 0 : certificateRequestType;
+            if (certificateRequestType != null) {
+                requireU32(requestType, "Certificate Request Type");
+            }
+            long offsetValue = offset == null ? 0 : offset;
+            if (offset != null) {
+                requireU32(offsetValue, "Offset");
+            }
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemRecertify(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier),
+                            identifierKind(certificateRequestUniqueIdentifier),
+                            certificateRequestIdentifierText,
+                            identifierNumber(certificateRequestUniqueIdentifier),
+                            certificateRequestType != null, requestType, requestValueCopy,
+                            offset != null, offsetValue, handleOrNull(attributes),
+                            handleOrNull(protectionStorageMasks)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText, certificateRequestIdentifierText, requestValueCopy);
+        }
+    }
+
     /** Creates a Check request with optional §6.1.7 Usage Limits Count, usage mask, and lease. */
     public static ClientBatchItem check(
             @Nullable UniqueIdentifier uniqueIdentifier,

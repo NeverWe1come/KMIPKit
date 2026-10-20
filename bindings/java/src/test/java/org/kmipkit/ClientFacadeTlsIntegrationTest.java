@@ -1499,6 +1499,80 @@ final class ClientFacadeTlsIntegrationTest {
 
     // OASIS KMIP Specification v2.1 §6.1.35, Tables 268–270.
     @Test
+    void recertifyResponseUsesNativeJniBridgeAndRetainsOrderedOwnedTtlvOverTls() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("recertify-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("recertify-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, recertifyResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-recertify-response-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        ClientBatchItemResult.RecertifyResponse recertified;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.recertify(
+                    UniqueIdentifier.textString("certificate-to-recertify"), null,
+                    null, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(0)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult item = response.itemAt(0)) {
+                assertEquals(1, response.itemCount());
+                assertEquals(0x07, item.operation());
+                assertEquals(0, item.resultStatus());
+                recertified = item.recertifyResponse().orElseThrow();
+            }
+        } finally {
+            listener.close();
+        }
+
+        try (recertified; TtlvStructureView responseTtlv = recertified.responseTtlv().view()) {
+            assertEquals(UniqueIdentifier.Kind.TEXT_STRING, recertified.uniqueIdentifier().kind());
+            assertEquals("replacement-certificate", recertified.uniqueIdentifier().text());
+            assertEquals(4, responseTtlv.itemCount());
+            assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            try (TtlvItemView payload = responseTtlv.itemAt(3);
+                    TtlvValueView payloadValue = payload.value();
+                    TtlvStructureView payloadStructure = payloadValue.structure()) {
+                assertEquals(2, payloadStructure.itemCount());
+                assertTagOrder(payloadStructure, 0x420094, 0x541234);
+                assertTrue(containsByteString(payloadStructure, 0x541234,
+                        new byte[] {0x01, 0x00, (byte) 0xff}));
+            }
+            assertFalse(recertified.toString().contains("replacement-certificate"));
+        }
+        assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
+    }
+
+    @Test
     void obtainLeaseResponseUsesNativeJniBridgeAndRetainsOwnedTtlvOverTls() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("obtain-lease-server.p12");
         Path clientStorePath = temporaryDirectory.resolve("obtain-lease-client.p12");
@@ -2830,6 +2904,21 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x541234, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
         byte[] responseItem = structure(0x42000f,
                 item(0x42005c, 5, integer(0x10)),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                item(0x42007f, 5, integer(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] recertifyResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "replacement-certificate".getBytes(StandardCharsets.UTF_8)),
+                item(0x541234, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, integer(0x07)),
                 item(0x420093, 8, uniqueBatchItemId(0)),
                 item(0x42007f, 5, integer(0)), payload);
         return structure(0x42007b, header, responseItem);

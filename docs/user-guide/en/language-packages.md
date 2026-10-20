@@ -72,15 +72,15 @@ changes to this table.
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 | `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
 
-Of the **56** KMIP `client_1_0` operation rows, **27 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **25 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Twenty operation mappings
+or implementation code elsewhere in the repository. Twenty-two operation mappings
 are `verified`: Certify, Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get,
 Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-Log, Login, Logout, Obtain Lease, Ping, and Query. Logout sends the caller-supplied
+Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, and Re-certify. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;
 see [credential sessions](credential-sessions.md). The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
@@ -103,7 +103,12 @@ repeated Unique Identifiers, and the distinction between omitted and empty
 Located Items. The Get Usage Allocation mapping includes its optional identifier
 and signed count request, resolved identifier response, and common batch outcomes
 in Rust, C, Java, and Python. This mapping evidence does not claim full operation
-conformance. Log preserves its request message and exposes the complete response
+conformance. Re-certify maps the Table 300 request fields: optional Unique
+Identifier and Certificate Request Unique Identifier, Certificate Request
+Type (required when Certificate Request Value is present), Certificate Request
+Value, Offset, Attributes, and Protection Storage Masks. Successful results
+expose the replacement identifier and complete ordered response TTLV across
+Rust, C, Java, and Python. Log preserves its request message and exposes the complete response
 TTLV through its typed result in all four languages. Login maps the optional
 Table 253 fields and exposes the raw Ticket Type, Ticket Value, and ordered
 generic Ticket TTLV from a successful response. C's

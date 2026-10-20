@@ -214,8 +214,9 @@ class PackageDocumentationContractTests(unittest.TestCase):
         )
         for language, guide in (("en", self.english), ("es", self.spanish)):
             with self.subTest(language=language):
+                normalized_guide = " ".join(guide.split())
                 for field in request_fields:
-                    self.assertIn(field, guide)
+                    self.assertIn(field, normalized_guide)
 
     def test_vendor_extension_examples_document_native_handle_release_parity(self) -> None:
         english = (ROOT / "docs/user-guide/en/vendor-extensions.md").read_text(

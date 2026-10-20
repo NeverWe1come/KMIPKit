@@ -877,6 +877,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     ping_response: bool | None = None
     query_response: ttlv.Structure | None = field(default=None, repr=False)
     pkcs11_response: Pkcs11Response | None = field(default=None, repr=False)
+    recertify_response: RecertifyResponse | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1077,6 +1078,21 @@ class CertifyResponse:
     def close(self) -> None:
         """Release the caller-owned complete generic response structure."""
         self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class RecertifyResponse:
+    """Successful §6.1.45 result with its owned complete generic response TTLV."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return "RecertifyResponse(unique_identifier=redacted, response_ttlv=preserved)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1821,6 +1837,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x06
                 ):
                     certify_response = _certify_response(item)
+                recertify_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x07
+                ):
+                    recertify_response = _recertify_response(item)
                 check_response = None
                 if int(metadata.operation) == 0x09:
                     check_response = _check_response(item)
@@ -1952,6 +1975,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         decrypt_response=decrypt_response,
                         ping_response=ping_response,
                         query_response=query_response,
+                        recertify_response=recertify_response,
                     )
                 items.append(result)
                 if (
@@ -2287,6 +2311,46 @@ def _certify_response(item: _ClientBatchItemResponse) -> CertifyResponse | None:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return CertifyResponse(unique_identifier, response_ttlv)
+
+
+def _recertify_response(item: _ClientBatchItemResponse) -> RecertifyResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_recertify(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_recertify_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return RecertifyResponse(unique_identifier, response_ttlv)
 
 
 def _check_response(item: _ClientBatchItemResponse) -> CheckResponse | None:

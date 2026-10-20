@@ -1763,6 +1763,45 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify(
     })
 }
 
+/// Copies the replacement certificate identifier only from a successful Re-certify result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_recertify(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(recertify) = outcome.recertify_response() {
+            if let Err(status) = // COVERAGE-EXCLUDE: output record passed preflight.
+                write_unique_identifier_v1(
+                    out_unique_identifier,
+                    recertify.unique_identifier(),
+                )
+            {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same stable output record passed the preflight immediately above.
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Copies typed Check fields, preserving policy values on failure and hiding any failure identifier.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_check(
@@ -2124,6 +2163,41 @@ pub extern "C" fn kmipkit_client_batch_item_response_certify_ttlv(
                 return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: a successful parsed Certify result always retains its validated TTLV.
             };
             let structure = try_ffi!(structure);
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic response only from a successful Re-certify result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_recertify_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let outcome = item.outcome();
+        if outcome.result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(recertify) = outcome.recertify_response() {
+            let structure =
+                try_ffi!(recertify.with_ttlv(|view| super::clone_structure_view(&view)));
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),

@@ -74,6 +74,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseCertifyResponse(values);
     }
 
+    /** Returns the replacement certificate identifier and TTLV only for a successful Re-certify. */
+    public Optional<RecertifyResponse> recertifyResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseRecertify);
+        return parseRecertifyResponse(values);
+    }
+
     /** Returns the typed Check result, including policy fields and generic TTLV on failure. */
     public Optional<CheckResponse> checkResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -463,6 +472,26 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "CertifyResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Re-certify response with its independently owned complete generic TTLV. */
+    public static final class RecertifyResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final TtlvStructure responseTtlv;
+
+        private RecertifyResponse(UniqueIdentifier uniqueIdentifier, TtlvStructure responseTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.responseTtlv = responseTtlv;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns the complete ordered response structure owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "RecertifyResponse[uniqueIdentifier=redacted]"; }
     }
 
     /** Typed Check fields with the caller-owned complete ordered response TTLV. */
@@ -1240,6 +1269,35 @@ public final class ClientBatchItemResult implements AutoCloseable {
         TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
         try {
             return Optional.of(new CertifyResponse(identifierRecord(tuple[1]), responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<RecertifyResponse> parseRecertifyResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Re-certify response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 1, "native Re-certify response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Re-certify response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null || responseTtlvHandle[0] != 0) {
+                if (responseTtlvHandle[0] > 0) {
+                    TtlvStructure.fromNative(responseTtlvHandle[0], null).close();
+                }
+                throw new InvalidInputException(
+                        "native absent Re-certify response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (responseTtlvHandle[0] <= 0) {
+            throw new InvalidInputException("native Re-certify response is invalid");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            return Optional.of(new RecertifyResponse(
+                    identifierRecord(tuple[1]), responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
             throw exception;

@@ -44,9 +44,9 @@ use kmipkit_protocol::{
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    QueryFunction, QueryRequest, RegisterRequest, SecretBytes, SecretText, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
-    UniqueIdentifier,
+    QueryFunction, QueryRequest, RecertifyRequest, RegisterRequest, SecretBytes, SecretText,
+    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    Ticket, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3306,6 +3306,66 @@ pub extern "C" fn kmipkit_client_batch_item_certify(
             request = request.with_protection_storage_masks(masks);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::Certify(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Re-certify request and copies certificate request bytes as sensitive data.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_recertify(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    certificate_request_unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_certificate_request_type: u8,
+    certificate_request_type: u32,
+    certificate_request_value: *const crate::kmipkit_byte_span_v1_t,
+    has_offset: u8,
+    offset: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let request_identifier = try_ffi!(copy_optional_identifier(
+            certificate_request_unique_identifier
+        ));
+        let request_type = match has_certificate_request_type {
+            0 => None,
+            1 => Some(certificate_request_type),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let request_value = try_ffi!(copy_optional_secret_span(certificate_request_value));
+        let offset = match has_offset {
+            0 => None,
+            1 => Some(offset),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let attributes = try_ffi!(copy_structure_handle(attributes, false));
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = RecertifyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(request_identifier) = request_identifier {
+            request = request.with_certificate_request_unique_identifier(request_identifier);
+        }
+        if let Some(request_type) = request_type {
+            request = request.with_certificate_request_type(request_type);
+        }
+        if let Some(request_value) = request_value {
+            request = request.with_certificate_request_value(request_value);
+        }
+        if let Some(offset) = offset {
+            request = request.with_offset(offset);
+        }
+        if let Some(attributes) = attributes {
+            request = request.with_attributes(attributes);
+        }
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Recertify(request)));
         SUCCESS
     })
 }

@@ -14,8 +14,8 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OperationData, Pkcs11Request, SecretBytes, SecretText, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
+    ObtainLeaseRequest, OperationData, Pkcs11Request, RecertifyRequest, SecretBytes, SecretText,
+    SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -5256,6 +5256,9 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_recertify_response_ttlv(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -5321,6 +5324,59 @@ fn ffi_certify_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
     assert_eq!(
         result, 1,
         "C can inspect response order and unknown fields after the item handle is released"
+    );
+}
+
+// KMIP Specification v2.1 §6.1.45, Tables 301–302.
+#[test]
+fn ffi_recertify_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
+    let unknown_value = [0xde, 0xad, 0x00, 0xff];
+    let item = successful_cryptographic_item(
+        ClientRequest::recertify(
+            RecertifyRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("old-certificate".to_owned())),
+        ),
+        0x07,
+        b"recertify-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"replacement-certificate"),
+            ttlv_item(0x0054_0001, 0x08, &unknown_value),
+        ],
+    );
+
+    let mut identifier_present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_recertify(
+            item,
+            &raw mut identifier_present,
+            &raw mut identifier,
+        )
+    );
+    assert_eq!(identifier_present, 1);
+    assert_response_identifier(&identifier, b"replacement-certificate");
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_recertify_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+
+    // SAFETY: the compiled C consumer receives this live response-item handle and takes ownership.
+    let result = unsafe { kmipkit_client_abi_c_consumer_validate_recertify_response_ttlv(item) };
+
+    assert_eq!(
+        result, 1,
+        "C reads the replacement identifier and complete ordered TTLV after releasing the source item"
     );
 }
 

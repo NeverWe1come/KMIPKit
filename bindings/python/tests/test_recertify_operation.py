@@ -2,10 +2,78 @@
 
 from __future__ import annotations
 
+import queue
+import socket
+import ssl
+import struct
+import threading
+from pathlib import Path
 from types import SimpleNamespace
 
-from kmipkit import client, extensions
+from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi
+
+_TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
+_UNKNOWN_RESPONSE_TAG = 0x541234
+
+
+def _ttlv_item(tag: int, item_type: int, value: bytes) -> bytes:
+    header = tag.to_bytes(3, "big") + bytes((item_type,)) + len(value).to_bytes(4, "big")
+    return header + value + bytes((-len(value)) % 8)
+
+
+def _ttlv_structure(tag: int, *children: bytes) -> bytes:
+    return _ttlv_item(tag, 1, b"".join(children))
+
+
+def _read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
+    output = bytearray()
+    while len(output) < length:
+        chunk = stream.recv(length - len(output))
+        if not chunk:
+            raise AssertionError("client closed before sending a complete TTLV frame")
+        output.extend(chunk)
+    return bytes(output)
+
+
+def _read_ttlv_frame(stream: ssl.SSLSocket) -> bytes:
+    header = _read_exact(stream, 8)
+    return header + _read_exact(stream, int.from_bytes(header[4:8], "big"))
+
+
+def _recertify_response_message() -> bytes:
+    protocol_version = _ttlv_structure(
+        0x420069,
+        _ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
+        _ttlv_item(0x42006B, 2, struct.pack(">i", 1)),
+    )
+    response_header = _ttlv_structure(
+        0x42007A,
+        protocol_version,
+        _ttlv_item(0x420092, 9, struct.pack(">q", 1)),
+        _ttlv_item(0x42000D, 2, struct.pack(">i", 1)),
+    )
+    response_payload = _ttlv_structure(
+        0x42007C,
+        _ttlv_item(0x420094, 7, b"replacement-certificate-7"),
+        _ttlv_item(_UNKNOWN_RESPONSE_TAG, 2, struct.pack(">i", -7)),
+    )
+    response_item = _ttlv_structure(
+        0x42000F,
+        _ttlv_item(0x42005C, 5, struct.pack(">I", 0x07)),
+        _ttlv_item(0x42007F, 5, struct.pack(">I", 0)),
+        response_payload,
+    )
+    return _ttlv_structure(0x42007B, response_header, response_item)
+
+
+def _structure_view_tags(view: ttlv.TtlvStructureView) -> list[int]:
+    tags: list[int] = []
+    for index in range(ttlv.ttlv_structure_view_item_count(view)):
+        with ttlv.ttlv_structure_view_item_at(view, index) as item:
+            with ttlv.ttlv_item_view_tag(item) as tag:
+                tags.append(ttlv.tag_value(tag))
+    return tags
 
 
 def test_recertify_builder_maps_table_300_values_and_zeroizes_owned_request_bytes(
@@ -15,11 +83,12 @@ def test_recertify_builder_maps_table_300_values_and_zeroizes_owned_request_byte
     staged_values: list[bytes] = []
     secret = bytearray(b"certificate-request-private-marker")
     original_owned_bytes = extensions._owned_bytes
-    staged_buffers: list[object] = []
+    request_buffers: list[object] = []
 
     def track_owned_bytes(value: object, maximum: int = 4_096) -> tuple[bytes, object]:
         raw, staging = original_owned_bytes(value, maximum)  # type: ignore[arg-type]
-        staged_buffers.append(staging)
+        if raw == bytes(secret):
+            request_buffers.append(staging)
         return raw, staging
 
     def make_handle(_kind: str, symbol: str, arguments: tuple[object, ...]) -> int:
@@ -46,8 +115,10 @@ def test_recertify_builder_maps_table_300_values_and_zeroizes_owned_request_byte
     assert calls[0][1][5:7] == (1, 0xFFFF_FFFF)
     assert calls[0][1][7:] == (ffi.NULL, ffi.NULL)
     assert staged_values == [bytes(secret)]
-    assert len(staged_buffers) == 1
-    assert bytes(ffi.buffer(staged_buffers[0], len(secret))) == bytes(len(secret))  # type: ignore[arg-type]
+    assert len(request_buffers) == 1
+    assert bytes(extensions.ffi.buffer(request_buffers[0], len(secret))) == bytes(
+        len(secret)
+    )
     assert secret == bytearray(b"certificate-request-private-marker")
 
 
@@ -101,3 +172,123 @@ def test_recertify_response_maps_replacement_identifier_and_closes_owned_ttlv(
     assert "replacement-certificate" not in repr(result)
     result.close()
     assert closed == [True]
+
+
+def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(
+) -> None:
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    listener.bind(("127.0.0.1", 0))
+    listener.listen(1)
+    listener.settimeout(10)
+    port = listener.getsockname()[1]
+    peer_failures: queue.Queue[BaseException] = queue.Queue()
+    received_requests: list[bytes] = []
+    accepted_sockets: list[socket.socket] = []
+
+    def serve_recertify_response() -> None:
+        try:
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.minimum_version = ssl.TLSVersion.TLSv1_3
+            context.maximum_version = ssl.TLSVersion.TLSv1_3
+            context.load_cert_chain(
+                _TLS_FIXTURES / "server-cert.pem", _TLS_FIXTURES / "server-key.pem"
+            )
+            context.load_verify_locations(cafile=_TLS_FIXTURES / "client-cert.pem")
+            context.verify_mode = ssl.CERT_REQUIRED
+            raw, _address = listener.accept()
+            raw.settimeout(5)
+            accepted_sockets.append(raw)
+            with raw, context.wrap_socket(raw, server_side=True) as stream:
+                received_requests.append(_read_ttlv_frame(stream))
+                stream.sendall(_recertify_response_message())
+        except BaseException as failure:
+            peer_failures.put(failure)
+        finally:
+            listener.close()
+
+    peer = threading.Thread(target=serve_recertify_response, daemon=True)
+    peer.start()
+    client_certificate = client.TransportInput.file(
+        _TLS_FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
+    )
+    client_key = client.TransportInput.file(
+        _TLS_FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
+    )
+    server_certificate = client.TransportInput.file(
+        _TLS_FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
+    )
+    transport = client.TransportConfig(
+        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
+        client_certificates=(client_certificate,),
+        client_private_key=client_key,
+        trust=client.TrustSource.certificate_authorities((server_certificate,)),
+        connect_timeout=client.TimeoutLimit.bounded(5),
+        write_timeout=client.TimeoutLimit.bounded(5),
+        read_timeout=client.TimeoutLimit.bounded(5),
+        total_timeout=client.TimeoutLimit.bounded(8),
+    )
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result = None
+    response = None
+    response_ttlv = None
+    try:
+        with configuration, client.Client.create(configuration, transport) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits, client.Batch.create() as batch:
+                batch.add_item(
+                    extensions.client_batch_item_recertify(
+                        extensions.UniqueIdentifier.text_string("certificate-7"),
+                        certificate_request_type=5,
+                        certificate_request_value=b"test-certificate-request",
+                    )
+                )
+                result = kmip_client.execute(batch, limits)
+
+        assert peer_failures.empty(), "the loopback mTLS peer must complete its response"
+        assert len(received_requests) == 1
+        assert _ttlv_item(0x42005C, 5, struct.pack(">I", 0x07)) in received_requests[0]
+        assert _ttlv_item(0x420140, 8, b"test-certificate-request") in received_requests[0]
+        assert result is not None and len(result.items) == 1
+        item = result.items[0]
+        assert item.operation == 0x07
+        assert item.outcome is client.BatchOutcome.COMPLETED
+        assert item.result_status == 0
+        response = item.recertify_response
+        assert response is not None
+        assert response.unique_identifier == extensions.UniqueIdentifier.text_string(
+            "replacement-certificate-7"
+        )
+        response_ttlv = response.response_ttlv
+
+        # Both the request batch and native result/item handles are closed before
+        # reading the independently owned generic response copy.
+        result.close()
+        result = None
+        assert not response_ttlv.closed
+        with ttlv.ttlv_structure_view(response_ttlv) as response_view:
+            assert _structure_view_tags(response_view) == [0x42005C, 0x42007F, 0x42007C]
+            with ttlv.ttlv_structure_view_item_at(response_view, 2) as payload_item:
+                with ttlv.ttlv_item_view_value(payload_item) as payload_value:
+                    with ttlv.ttlv_value_view_structure(payload_value) as payload_view:
+                        assert _structure_view_tags(payload_view) == [
+                            0x420094,
+                            _UNKNOWN_RESPONSE_TAG,
+                        ]
+                        with ttlv.ttlv_structure_view_item_at(payload_view, 1) as unknown:
+                            with ttlv.ttlv_item_view_value(unknown) as value:
+                                assert ttlv.ttlv_value_view_integer(value) == -7
+    finally:
+        listener.close()
+        for accepted_socket in accepted_sockets:
+            accepted_socket.close()
+        if response is not None:
+            response.close()
+        if result is not None:
+            result.close()
+        peer.join(timeout=10)
+        if peer.is_alive():
+            raise AssertionError("the loopback Re-certify peer did not finish")
+        if not peer_failures.empty():
+            raise peer_failures.get()

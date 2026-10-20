@@ -76,15 +76,15 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **27 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **25 / 56** siguen en
 estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
 Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
 Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Veinte mapeos de operación están `verified`: Certify,
+parte del repositorio. Veintidós mapeos de operación están `verified`: Certify,
 Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get, Get Constraints, Get Usage
-Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping y Query. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
+Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query y Re-certify. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. Ping mapea la petición y la respuesta correcta
@@ -107,7 +107,13 @@ Unique Identifier repetidos y la diferencia entre Located Items omitido y
 vacío. El mapeo de Get Usage Allocation incluye su petición con identificador
 opcional y contador con signo, la respuesta con identificador resuelto y los
 resultados comunes del lote en Rust, C, Java y Python. Esta evidencia de mapeo
-no afirma la conformidad completa de las operaciones. Log conserva el mensaje
+no afirma la conformidad completa de las operaciones. Re-certify mapea los
+campos de petición de la Tabla 300: Unique Identifier y Certificate Request
+Unique Identifier opcionales, Certificate Request Type (obligatorio cuando
+está presente Certificate Request Value), Certificate Request Value, Offset,
+Attributes y Protection Storage Masks. Las respuestas correctas exponen el
+identificador de reemplazo y el TTLV completo y ordenado en Rust, C, Java y
+Python. Log conserva el mensaje
 de solicitud y expone el TTLV completo de respuesta mediante el resultado tipado
 en los cuatro lenguajes. Login mapea los campos opcionales de la Tabla 253 y
 expone el Ticket Type raw, el Ticket Value y el TTLV genérico ordenado de una

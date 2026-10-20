@@ -121,6 +121,23 @@ class RecertifyParityManifestTests(unittest.TestCase):
         self.assertEqual({}, missing)
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
 
+    def test_recertify_jni_bridge_is_an_exact_approved_exclusion(self) -> None:
+        bridge_names = {
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemRecertify",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRecertify",
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "java-kmipkit" and row["exportName"] in bridge_names
+        }
+        self.assertEqual(bridge_names, set(exclusions))
+        for export_name, exclusion in exclusions.items():
+            with self.subTest(export=export_name):
+                self.assertIn("raw-handle JNI bridge", exclusion["reason"])
+                self.assertIn("KMIPKIT-0043-FR-008", exclusion["evidence"])
+                self.assertIn("T058", exclusion["evidence"])
+
     def test_recertify_traceability_links_normative_and_api_requirements(self) -> None:
         rows = [line for line in TRACEABILITY.read_text(encoding="utf-8").splitlines()
                 if line.startswith("| T058 |")]

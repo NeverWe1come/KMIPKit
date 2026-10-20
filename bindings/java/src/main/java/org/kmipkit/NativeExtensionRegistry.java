@@ -128,6 +128,12 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemCertify(int identifierKind, @Nullable byte[] identifierText,
             long identifierNumber, boolean hasCertificateRequestType, long certificateRequestType,
             @Nullable byte[] certificateRequestValue, long attributes, long protectionStorageMasks);
+    public static native long clientBatchItemRecertify(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber,
+            int certificateRequestIdentifierKind, @Nullable byte[] certificateRequestIdentifierText,
+            long certificateRequestIdentifierNumber, boolean hasCertificateRequestType,
+            long certificateRequestType, @Nullable byte[] certificateRequestValue,
+            boolean hasOffset, long offset, long attributes, long protectionStorageMasks);
     public static native long clientBatchItemCheck(int identifierKind, @Nullable byte[] identifierText,
             long identifierNumber, boolean hasUsageLimitsCount, long usageLimitsCount,
             boolean hasCryptographicUsageMask, int cryptographicUsageMask,
@@ -253,6 +259,7 @@ public final class NativeExtensionRegistry {
             long itemResponse);
     public static native Object[] clientBatchItemResponseCreate(long itemResponse);
     public static native Object[] clientBatchItemResponseCertify(long itemResponse);
+    public static native Object[] clientBatchItemResponseRecertify(long itemResponse);
     public static native Object[] clientBatchItemResponseCheck(long itemResponse);
     public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
     public static native Object[] clientBatchItemResponseLogin(long itemResponse);

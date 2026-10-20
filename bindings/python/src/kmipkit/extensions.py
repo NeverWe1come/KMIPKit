@@ -1837,6 +1837,60 @@ def client_batch_item_certify(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_recertify(
+    unique_identifier: UniqueIdentifier | None = None,
+    certificate_request_unique_identifier: UniqueIdentifier | None = None,
+    *,
+    certificate_request_type: int | None = None,
+    certificate_request_value: bytes | bytearray | memoryview | None = None,
+    offset: int | None = None,
+    attributes: ttlv.Structure | None = None,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create one typed Re-certify item from KMIP 2.1 §6.1.45, Table 300.
+
+    Certificate Request Value is copied into a temporary native staging buffer
+    and that buffer is wiped after the synchronous ABI call. Python-owned input
+    and runtime copies cannot be deterministically zeroized.
+    """
+    if certificate_request_type is None:
+        has_request_type = 0
+        request_type = 0
+    else:
+        has_request_type = 1
+        request_type = _integer_range(certificate_request_type, 0, 0xFFFF_FFFF)
+    if offset is None:
+        has_offset = 0
+        raw_offset = 0
+    else:
+        has_offset = 1
+        raw_offset = _integer_range(offset, 0, 0xFFFF_FFFF)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        request_identifier, _ = _native_unique_identifier(
+            certificate_request_unique_identifier, staging_buffers
+        )
+        request_value, _ = _native_optional_span(
+            certificate_request_value, staging_buffers
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_recertify",
+            (
+                identifier,
+                request_identifier,
+                has_request_type,
+                request_type,
+                request_value,
+                has_offset,
+                raw_offset,
+                _native_structure(attributes),
+                _native_structure(protection_storage_masks),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_check(
     unique_identifier: UniqueIdentifier | None = None,
     *,
@@ -2651,6 +2705,7 @@ __all__ = [
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",
     "client_batch_item_certify",
+    "client_batch_item_recertify",
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_interop",

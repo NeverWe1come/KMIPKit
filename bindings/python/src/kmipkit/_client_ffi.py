@@ -254,6 +254,14 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_recertify(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_recertify_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_check(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -493,6 +501,17 @@ ffi.cdef(
         uint8_t has_certificate_request_type,
         uint32_t certificate_request_type,
         const kmipkit_byte_span_v1_t *certificate_request_value,
+        kmipkit_ttlv_structure_t *attributes,
+        kmipkit_ttlv_structure_t *protection_storage_masks,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_recertify(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        const kmipkit_unique_identifier_v1_t *certificate_request_unique_identifier,
+        uint8_t has_certificate_request_type,
+        uint32_t certificate_request_type,
+        const kmipkit_byte_span_v1_t *certificate_request_value,
+        uint8_t has_offset,
+        uint32_t offset,
         kmipkit_ttlv_structure_t *attributes,
         kmipkit_ttlv_structure_t *protection_storage_masks,
         kmipkit_client_batch_item_t **out_item);
