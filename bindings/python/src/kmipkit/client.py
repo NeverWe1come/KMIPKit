@@ -876,6 +876,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     decrypt_response: DecryptResponse | None = field(default=None, repr=False)
     ping_response: bool | None = None
     query_response: ttlv.Structure | None = field(default=None, repr=False)
+    pkcs11_response: Pkcs11Response | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1269,6 +1270,20 @@ class InteropResponse:
 
     def __repr__(self) -> str:
         return "InteropResponse(response_ttlv=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class Pkcs11Response:
+    """PKCS#11 result with an owned complete generic TTLV for every result status."""
+
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return "Pkcs11Response(response_ttlv=redacted)"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -1817,6 +1832,9 @@ def _batch_result(handle: Any) -> BatchResult:
                 interop_response = None
                 if int(metadata.operation) == 0x34:
                     interop_response = _interop_response(item)
+                pkcs11_response = None
+                if int(metadata.operation) == 0x33:
+                    pkcs11_response = _pkcs11_response(item)
                 log_response = None
                 if int(metadata.operation) == 0x2C:
                     log_response = _log_response(item)
@@ -1871,6 +1889,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         import_response=import_response,
                         join_split_key_response=join_split_key_response,
                         interop_response=interop_response,
+                        pkcs11_response=pkcs11_response,
                         log_response=log_response,
                         login_response=login_response,
                         logout_response=logout_response,
@@ -2835,6 +2854,35 @@ def _interop_response(item: _ClientBatchItemResponse) -> InteropResponse | None:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return InteropResponse(response_ttlv)
+
+
+def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
+    present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    status = lib.kmipkit_client_batch_item_response_pkcs11_ttlv(
+        item._pointer(), present, response_ttlv_output
+    )
+    if status != 0:
+        if response_ttlv_output[0] != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+        _raise_abi_status(status)
+    response_ttlv_handle = response_ttlv_output[0]
+    if present[0] not in (0, 1) or (present[0] == 1) != (
+        response_ttlv_handle != ffi.NULL
+    ):
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        return None
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return Pkcs11Response(response_ttlv)
 
 
 def _log_response(item: _ClientBatchItemResponse) -> LogResponse | None:

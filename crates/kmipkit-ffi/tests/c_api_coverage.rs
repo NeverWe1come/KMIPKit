@@ -70,6 +70,11 @@ unsafe extern "C" {
         argv: *mut *mut c_char,
         limits: *mut kmipkit_codec_limits_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
+        argc: i32,
+        argv: *mut *mut c_char,
+        limits: *mut kmipkit_codec_limits_t,
+    ) -> i32;
 }
 
 #[test]
@@ -506,6 +511,162 @@ fn generated_public_client_abi_consumer_compiles_and_runs() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
+fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/pkcs11-parity.json"
+    ))
+    .expect("the shared PKCS#11 parity fixture is valid JSON");
+    let expected = &fixture["expectedOutput"];
+    let expected_tags = expected["responseTags"]
+        .as_array()
+        .expect("fixture response tags are an array")
+        .iter()
+        .map(|tag| {
+            u32::from_str_radix(
+                tag.as_str()
+                    .expect("fixture response tags are strings")
+                    .strip_prefix("0x")
+                    .expect("fixture response tags have a hexadecimal prefix"),
+                16,
+            )
+            .expect("fixture response tag is hexadecimal")
+        })
+        .collect::<Vec<_>>();
+    let expected_return_code = u32::from_str_radix(
+        expected["unknownReturnCode"]
+            .as_str()
+            .expect("fixture return code is text")
+            .strip_prefix("0x")
+            .expect("fixture return code has a hexadecimal prefix"),
+        16,
+    )
+    .expect("fixture return code is hexadecimal");
+    let expected_vendor_tag = u32::from_str_radix(
+        expected["vendorExtension"]["tag"]
+            .as_str()
+            .expect("fixture vendor tag is text")
+            .strip_prefix("0x")
+            .expect("fixture vendor tag has a hexadecimal prefix"),
+        16,
+    )
+    .expect("fixture vendor tag is hexadecimal");
+    let expected_vendor_value = expected["vendorExtension"]["integer"]
+        .as_i64()
+        .and_then(|value| i32::try_from(value).ok())
+        .expect("fixture vendor integer fits the public C integer type");
+    assert_eq!(expected_tags.len(), 5);
+    assert_eq!(expected["preserveUnknownValuesAndOrder"], true);
+    assert_eq!(expected["preserveOptionalAbsence"], true);
+    assert_eq!(expected["automaticRetry"], false);
+    assert_eq!(expected["automaticFollowUp"], false);
+
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let response_bytes = pkcs11_success_response_message(expected);
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the compiled C client connects to the loopback peer");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded PKCS#11 request arrives");
+        assert!(
+            c_request_matches_pkcs11_fixture(&request),
+            "C request contains one ordered PKCS#11 operation with the fixture inputs"
+        );
+        tls.write_all(&response_bytes)
+            .expect("the fixture-backed KMIP response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable =
+        CString::new("kmipkit_pkcs11_c_consumer").expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let expected_tag_arguments = expected_tags
+        .iter()
+        .map(|tag| CString::new(format!("0x{tag:08X}")))
+        .collect::<Result<Vec<_>, _>>()
+        .expect("fixture tags have no NUL bytes");
+    let return_code = CString::new(format!("0x{expected_return_code:08X}"))
+        .expect("fixture return code has no NUL byte");
+    let vendor_tag = CString::new(format!("0x{expected_vendor_tag:08X}"))
+        .expect("fixture vendor tag has no NUL byte");
+    let vendor_value = CString::new(expected_vendor_value.to_string())
+        .expect("fixture vendor value has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    arguments.extend(
+        expected_tag_arguments
+            .iter()
+            .map(|value| value.as_ptr().cast_mut()),
+    );
+    arguments.push(return_code.as_ptr().cast_mut());
+    arguments.push(vendor_tag.as_ptr().cast_mut());
+    arguments.push(vendor_value.as_ptr().cast_mut());
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status = unsafe { kmipkit_codec_limits_defaults(&raw mut limits) };
+    assert_eq!(status, 0);
+    assert!(!limits.is_null());
+    // SAFETY: all argv strings and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
+            argument_count,
+            arguments.as_mut_ptr(),
+            limits,
+        )
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join().expect("the loopback mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the compiled public C consumer verifies the response fixture"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
 // Keep the fixture-backed argv values and TLS server alive through one visible FFI call.
 #[allow(clippy::too_many_lines)]
 fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
@@ -804,6 +965,153 @@ fn c_request_contains_large_query(encoded: &[u8]) -> bool {
 fn decode_test_request(encoded: &[u8]) -> Option<Item> {
     let limits = kmipkit_ttlv::codec::CodecLimits::new(8_388_608, 64, 400_000).ok()?;
     kmipkit_ttlv::codec::decode_with_limits(encoded, &limits).ok()
+}
+
+fn c_request_matches_pkcs11_fixture(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000f;
+    const OPERATION: u32 = 0x0042_005c;
+    const PKCS11: u32 = 0x33;
+    const REQUEST_PAYLOAD: u32 = 0x0042_0079;
+    const EXPECTED_PAYLOAD_TAGS: [u32; 4] = [0x0042_0159, 0x0042_015a, 0x0042_00d6, 0x0042_015b];
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        let batch_items = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .collect::<Vec<_>>();
+        if batch_items.len() != 1 {
+            return false;
+        }
+        batch_items[0].with_value(|value| {
+            let ValueView::Structure(batch_item) = value else {
+                return false;
+            };
+            let children = batch_item.children();
+            let operation = children.iter().find(|item| item.tag().raw() == OPERATION);
+            let payload = children
+                .iter()
+                .find(|item| item.tag().raw() == REQUEST_PAYLOAD);
+            let has_pkcs11_operation = operation.is_some_and(|item| {
+                item.with_value(
+                    |value| matches!(value, ValueView::Enumeration(actual) if *actual == PKCS11),
+                )
+            });
+            let has_ordered_payload = payload.is_some_and(|item| {
+                item.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        return false;
+                    };
+                    let fields = payload.children();
+                    if fields.len() != EXPECTED_PAYLOAD_TAGS.len()
+                        || fields
+                            .iter()
+                            .map(|field| field.tag().raw())
+                            .ne(EXPECTED_PAYLOAD_TAGS)
+                    {
+                        return false;
+                    }
+                    let interface_matches = fields[0].with_value(|value| {
+                        let ValueView::Structure(interface) = value else {
+                            return false;
+                        };
+                        interface.children().len() == 1
+                            && interface.children()[0].tag().raw() == 0x0042_0159
+                            && interface.children()[0].with_value(|value| {
+                                matches!(value, ValueView::TextString(actual) if actual == "test-interface")
+                            })
+                    });
+                    let function_matches = fields[1].with_value(|value| {
+                        let ValueView::Structure(function) = value else {
+                            return false;
+                        };
+                        function.children().len() == 1
+                            && function.children()[0].tag().raw() == 0x0042_015a
+                            && function.children()[0].with_value(|value| {
+                                matches!(value, ValueView::Integer(actual) if *actual == -12345)
+                            })
+                    });
+                    let correlation_matches = fields[2].with_value(|value| {
+                        matches!(value, ValueView::ByteString(actual) if actual == b"pkcs11-correlation")
+                    });
+                    let input_matches = fields[3].with_value(|value| {
+                        let ValueView::Structure(input) = value else {
+                            return false;
+                        };
+                        input.children().len() == 1
+                            && input.children()[0].tag().raw() == 0x0042_015b
+                            && input.children()[0].with_value(|value| {
+                                matches!(value, ValueView::ByteString(actual) if actual == b"opaque-input")
+                            })
+                    });
+                    interface_matches && function_matches && correlation_matches && input_matches
+                })
+            });
+            has_pkcs11_operation && has_ordered_payload
+        })
+    })
+}
+
+fn pkcs11_success_response_message(fixture: &serde_json::Value) -> Vec<u8> {
+    let expected = fixture;
+    let return_code = u32::from_str_radix(
+        expected["unknownReturnCode"]
+            .as_str()
+            .expect("shared PKCS#11 fixture return code is text")
+            .strip_prefix("0x")
+            .expect("shared PKCS#11 fixture return code is hexadecimal"),
+        16,
+    )
+    .expect("shared PKCS#11 fixture return code is a valid enumeration");
+    let vendor_tag = u32::from_str_radix(
+        expected["vendorExtension"]["tag"]
+            .as_str()
+            .expect("shared PKCS#11 fixture vendor tag is text")
+            .strip_prefix("0x")
+            .expect("shared PKCS#11 fixture vendor tag is hexadecimal"),
+        16,
+    )
+    .expect("shared PKCS#11 fixture vendor tag is valid");
+    let vendor_value = expected["vendorExtension"]["integer"]
+        .as_i64()
+        .and_then(|value| i32::try_from(value).ok())
+        .expect("shared PKCS#11 fixture vendor integer fits i32");
+    let version = structure(
+        0x0042_0069,
+        [integer(0x0042_006a, 2), integer(0x0042_006b, 1)],
+    );
+    let header = structure(
+        0x0042_007a,
+        [version, date_time(0x0042_0092, 1), integer(0x0042_000d, 1)],
+    );
+    let payload = structure(
+        0x0042_007c,
+        [
+            structure(0x0042_015a, [integer(0x0042_015a, -12345)]),
+            ttlv_item(0x0042_00d6, 0x08, b"pkcs11-response-correlation"),
+            structure(
+                0x0042_015c,
+                [ttlv_item(0x0042_015c, 0x08, b"vendor-output")],
+            ),
+            structure(0x0042_015d, [enumeration(0x0042_015d, return_code)]),
+            integer(vendor_tag, vendor_value),
+        ],
+    );
+    let response_item = structure(
+        0x0042_000f,
+        [
+            enumeration(0x0042_005c, 0x33),
+            enumeration(0x0042_007f, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007b, [header, response_item])
 }
 
 fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 import queue
 import socket
 import ssl
@@ -17,30 +16,11 @@ from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi as client_ffi
 from kmipkit._client_ffi import lib as client_lib
 from kmipkit._ffi import ffi
-from kmipkit._handles import _wrap_owned_handle
 
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
 TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
-CANDIDATE_RUNTIME = os.environ.get("KMIPKIT_PKCS11_CANDIDATE_TEST_RUNTIME") == "1"
-
-client_ffi.cdef(
-    """
-    int32_t kmipkit_client_batch_item_pkcs11(
-        kmipkit_ttlv_structure_t *function,
-        kmipkit_ttlv_structure_t *interface,
-        const kmipkit_byte_span_v1_t *correlation_value,
-        kmipkit_ttlv_structure_t *input_parameters,
-        kmipkit_client_batch_item_t **out_item);
-    int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(
-        kmipkit_client_batch_item_response_t *item,
-        uint8_t *out_present,
-        kmipkit_ttlv_structure_t **out_response_ttlv);
-    """
-)
-
-
 def _client_structure(value: ttlv.Structure | None) -> object:
     if value is None:
         return client_ffi.NULL
@@ -191,15 +171,12 @@ def test_pkcs11_facade_and_cffi_symbols_are_public_by_default() -> None:
     assert hasattr(client_lib, "kmipkit_client_batch_item_response_pkcs11_ttlv")
 
 
-def test_pkcs11_candidate_symbol_is_present_only_in_the_candidate_runtime() -> None:
-    assert hasattr(client_lib, "kmipkit_client_batch_item_pkcs11") is CANDIDATE_RUNTIME
+def test_pkcs11_native_symbols_are_available_in_the_default_runtime() -> None:
+    assert hasattr(client_lib, "kmipkit_client_batch_item_pkcs11")
+    assert hasattr(client_lib, "kmipkit_client_batch_item_response_pkcs11_ttlv")
 
 
-@pytest.mark.skipif(
-    not CANDIDATE_RUNTIME,
-    reason="owner-gated PKCS#11 symbols exist only in the isolated candidate runtime",
-)
-def test_pkcs11_cffi_candidate_constructor_accepts_optional_structures_and_bytes() -> None:
+def test_pkcs11_cffi_constructor_accepts_optional_structures_and_bytes() -> None:
     function = ttlv.ttlv_structure_create()
     interface = ttlv.ttlv_structure_create()
     input_parameters = ttlv.ttlv_structure_create()
@@ -230,10 +207,6 @@ def test_pkcs11_cffi_candidate_constructor_accepts_optional_structures_and_bytes
         input_parameters.close()
 
 
-@pytest.mark.skipif(
-    not CANDIDATE_RUNTIME,
-    reason="owner-gated PKCS#11 symbols exist only in the isolated candidate runtime",
-)
 def test_pkcs11_cffi_response_accessor_clears_outputs_for_invalid_handle() -> None:
     present = client_ffi.new("uint8_t *", 0xFF)
     response = client_ffi.new(
@@ -260,11 +233,7 @@ def test_pkcs11_shared_fixture_declares_the_canonical_contract() -> None:
     assert "profileSupport" not in fixture["expectedOutput"]
 
 
-@pytest.mark.skipif(
-    not CANDIDATE_RUNTIME,
-    reason="owner-gated PKCS#11 symbols exist only in the isolated candidate runtime",
-)
-def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> None:
+def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
     """Check parity with OASIS KMIP v2.1 §6.1.37, Tables 273–275."""
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
     expected = fixture["expectedOutput"]
@@ -272,11 +241,6 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
     interface = _structure_with_text(0x420159, "test-interface")
     input_parameters = _structure_with_bytes(0x42015B, b"opaque-input")
     correlation = b"pkcs11-correlation"
-    staged = client_ffi.new("uint8_t[]", correlation)
-    correlation_span = client_ffi.new("kmipkit_byte_span_v1_t *")
-    correlation_span.data = staged
-    correlation_span.length = len(correlation)
-    item_output = client_ffi.new("kmipkit_client_batch_item_t **")
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
     listener.listen(1)
@@ -333,25 +297,12 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
     )
     configuration = extensions.create_client_configuration(registry)
     result = None
-    response_item = None
     response_ttlv = None
+    pkcs11_response = None
     try:
-        assert client_lib.kmipkit_client_batch_item_pkcs11(
-            _client_structure(function),
-            _client_structure(interface),
-            correlation_span,
-            _client_structure(input_parameters),
-            item_output,
-        ) == 0
-        assert item_output[0] != client_ffi.NULL
-        native_request = _wrap_owned_handle(
-            extensions.ClientBatchItem,
-            ffi.cast(
-                "kmipkit_client_batch_item_t *",
-                int(client_ffi.cast("uintptr_t", item_output[0])),
-            ),
+        native_request = extensions.client_batch_item_pkcs11(
+            function, interface, correlation, input_parameters
         )
-        item_output[0] = client_ffi.NULL
         with configuration, client.Client.create(configuration, transport) as kmip_client:
             with ttlv.codec_limits_defaults() as limits, client.Batch.create() as batch:
                 batch.add_item(native_request)
@@ -387,40 +338,9 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
         assert result is not None and len(result.items) == 1
         assert result.items[0].operation == 0x33
         assert result.items[0].result_status == 0
-
-        batch_response = client_ffi.cast(
-            "kmipkit_client_batch_response_t *",
-            int(ffi.cast("uintptr_t", result._pointer())),
-        )
-        item_output_for_response = client_ffi.new(
-            "kmipkit_client_batch_item_response_t **"
-        )
-        assert client_lib.kmipkit_client_batch_response_item_at(
-            batch_response, 0, item_output_for_response
-        ) == 0
-        assert item_output_for_response[0] != client_ffi.NULL
-        response_item = _wrap_owned_handle(
-            client._ClientBatchItemResponse,
-            client_ffi.cast(
-                "kmipkit_client_batch_item_response_t *",
-                int(client_ffi.cast("uintptr_t", item_output_for_response[0])),
-            ),
-        )
-        present = client_ffi.new("uint8_t *")
-        response_ttlv_output = client_ffi.new("kmipkit_ttlv_structure_t **")
-        assert client_lib.kmipkit_client_batch_item_response_pkcs11_ttlv(
-            client_ffi.cast(
-                "kmipkit_client_batch_item_response_t *",
-                int(ffi.cast("uintptr_t", response_item._pointer())),
-            ),
-            present,
-            response_ttlv_output,
-        ) == 0
-        assert present[0] == 1
-        assert response_ttlv_output[0] != client_ffi.NULL
-        response_ttlv = ttlv._structure_from_native_address(
-            int(client_ffi.cast("uintptr_t", response_ttlv_output[0]))
-        )
+        pkcs11_response = result.items[0].pkcs11_response
+        assert pkcs11_response is not None
+        response_ttlv = pkcs11_response.response_ttlv
 
         with ttlv.ttlv_structure_view(response_ttlv) as response_view:
             payload_view = None
@@ -474,15 +394,10 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
         listener.close()
         for accepted_socket in accepted_sockets:
             accepted_socket.close()
-        if response_ttlv is not None:
-            response_ttlv.close()
-        if response_item is not None:
-            response_item.close()
+        if pkcs11_response is not None:
+            pkcs11_response.close()
         if result is not None:
             result.close()
-        if item_output[0] != client_ffi.NULL:
-            client_lib.kmipkit_client_batch_item_release(item_output[0])
-        client_ffi.buffer(staged, len(correlation))[:] = bytes(len(correlation))
         function.close()
         interface.close()
         input_parameters.close()

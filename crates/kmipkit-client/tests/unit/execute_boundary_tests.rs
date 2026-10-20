@@ -1484,8 +1484,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         }
         if !(macro_call.path.is_ident("write")
             || macro_call.path.is_ident("matches")
-            || macro_call.path.is_ident("vec")
-            || is_candidate_cfg_guard_env(macro_call))
+            || macro_call.path.is_ident("vec"))
         {
             let path = macro_call
                 .path
@@ -1504,18 +1503,6 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             self.reject("protected boundary tokens appear in opaque macro input");
         }
     }
-}
-
-fn is_candidate_cfg_guard_env(macro_call: &syn::Macro) -> bool {
-    if !macro_call.path.is_ident("env") {
-        return false;
-    }
-    macro_call
-        .tokens
-        .to_string()
-        .split_whitespace()
-        .collect::<String>()
-        == "\"KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION\""
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -2862,7 +2849,6 @@ fn allowed_macro_contains_forbidden_content(macro_call: &Macro) -> bool {
                 },
             )
         }
-        "env" => !is_candidate_cfg_guard_env(macro_call),
         _ => true,
     }
 }

@@ -34,7 +34,6 @@ use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
     ClientErrorCategory, ClientRequest,
 };
-#[cfg(kmipkit_pkcs11_candidate_test)]
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
@@ -79,8 +78,8 @@ mod metadata_tests;
 #[cfg(test)]
 #[path = "../tests/support/opaque_handle_validation_tests.rs"]
 mod opaque_handle_validation_tests;
-#[cfg(all(test, kmipkit_pkcs11_candidate_test))]
 #[path = "../tests/support/pkcs11_abi_tests.rs"]
+#[cfg(test)]
 mod pkcs11_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/registry_preflight_tests.rs"]
@@ -2801,7 +2800,6 @@ pub extern "C" fn kmipkit_client_batch_item_interop(
 ///
 /// Function is required. The optional Interface, Correlation Value, and Input Parameters retain
 /// their presence independently; correlation bytes are copied into a redacted, zeroizing owner.
-#[cfg(kmipkit_pkcs11_candidate_test)]
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_pkcs11(
     function: *mut kmipkit_ttlv_structure_t,

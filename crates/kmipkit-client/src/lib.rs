@@ -3,7 +3,7 @@
 //! The typed request enum supports explicit Discover Versions, Activate,
 //! Archive, Certify, Destroy, Recover, Create, Create Key Pair, Create Split Key, Add
 //! Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
-//! Attribute List, Modify Attribute, Set Attribute, Query, and Ping operations.
+//! Attribute List, Modify Attribute, Set Attribute, Query, Ping, and PKCS#11 operations.
 //! Separate methods execute Poll, Cancel, Process, and Query Asynchronous
 //! Requests. The synchronous [`Client`] is constructed from an immutable client
 //! configuration and validated production transport configuration; callers
@@ -30,9 +30,6 @@
 #![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]
 #![forbid(unsafe_code)]
 
-#[cfg(kmipkit_pkcs11_candidate_test)]
-const _: [(); 8] = [(); env!("KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION").len()];
-
 mod error;
 pub mod extension_registry;
 
@@ -54,8 +51,7 @@ mod extension_execution_tests;
 
 mod execute;
 
-/// Typed opaque PKCS#11 forwarding models for isolated candidate tests.
-#[cfg(kmipkit_pkcs11_candidate_test)]
+/// Typed opaque KMIP 2.1 §6.1.37 PKCS#11 forwarding models.
 pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 mod usage_allocation;
 
@@ -300,6 +296,5 @@ mod log_execution_tests;
 mod validate_execution_tests;
 
 #[cfg(test)]
-#[cfg(kmipkit_pkcs11_candidate_test)]
 #[path = "../tests/unit/pkcs11_execution_tests.rs"]
 mod pkcs11_execution_tests;

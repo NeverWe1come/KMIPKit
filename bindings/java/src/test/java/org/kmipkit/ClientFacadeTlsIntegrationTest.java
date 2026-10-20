@@ -35,6 +35,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -241,6 +243,110 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(request, item(0x420056, 7, "group-b".getBytes(StandardCharsets.UTF_8)));
         assertContains(request, item(0x420056, 7, "group-a".getBytes(StandardCharsets.UTF_8)));
         assertTrue(peer.isDone());
+    }
+
+    @Test
+    void pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls() throws Exception {
+        String fixture = Files.readString(pkcs11ParityFixturePath(), StandardCharsets.UTF_8);
+        List<Long> expectedTags = fixtureLongArray(fixture, "responseTags");
+        long expectedReturnCode = fixtureHexField(fixture, "unknownReturnCode");
+        long expectedVendorTag = fixtureHexField(fixture, "tag");
+        int expectedVendorValue = Math.toIntExact(fixtureLongField(fixture, "integer"));
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        byte[] responseMessage = pkcs11ResponseMessage(expectedReturnCode, expectedVendorTag,
+                expectedVendorValue);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, responseMessage));
+        Thread peerThread = new Thread(peer, "kmipkit-java-pkcs11-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] correlation = "pkcs11-correlation".getBytes(StandardCharsets.US_ASCII);
+        byte[] request;
+        ClientBatchItemResult result;
+        ClientBatchResponse batchResponse;
+        CodecLimits limits = CodecLimits.defaults();
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create();
+                TtlvStructure function = pkcs11Structure(0x42015a, TtlvValue.Integer(-12345), limits);
+                TtlvStructure interfaceStructure = pkcs11Structure(0x420159,
+                        TtlvValue.TextString("test-interface".getBytes(StandardCharsets.US_ASCII), limits),
+                        limits);
+                TtlvStructure inputParameters = pkcs11Structure(0x42015b,
+                        TtlvValue.ByteString("opaque-input".getBytes(StandardCharsets.US_ASCII), limits),
+                        limits)) {
+            try (ClientBatchItem item = ClientBatchItem.pkcs11(
+                    function, interfaceStructure, correlation, inputParameters)) {
+                batch.add(item);
+            }
+            batchResponse = client.execute(batch, limits);
+            assertEquals(1, batchResponse.itemCount());
+            result = batchResponse.itemAt(0);
+            assertEquals(0x33, result.operation());
+            assertEquals(0, result.resultStatus());
+            request = peer.get(15, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        byte[] interfaceField = structure(0x420159,
+                item(0x420159, 7, "test-interface".getBytes(StandardCharsets.US_ASCII)));
+        byte[] functionField = structure(0x42015a,
+                item(0x42015a, 2, integer(-12345)));
+        byte[] correlationField = item(0x4200d6, 8, correlation);
+        byte[] inputField = structure(0x42015b,
+                item(0x42015b, 8, "opaque-input".getBytes(StandardCharsets.US_ASCII)));
+        assertEncodedInOrder(request, interfaceField, functionField, correlationField, inputField);
+
+        ClientBatchItemResult.Pkcs11Response pkcs11Response = result.pkcs11Response().orElseThrow();
+        result.close();
+        batchResponse.close();
+        try (pkcs11Response;
+                TtlvStructureView responseView = pkcs11Response.responseTtlv().view();
+                TtlvItemView payloadItem = responseView.itemAt(2);
+                TtlvValueView payloadValue = payloadItem.value();
+                TtlvStructureView payloadView = payloadValue.structure()) {
+            assertTagOrder(responseView, 0x42005c, 0x42007f, 0x42007c);
+            assertEquals(expectedTags.size(), payloadView.itemCount());
+            assertTagOrder(payloadView, expectedTags.stream().mapToLong(Long::longValue).toArray());
+            assertFalse(expectedTags.contains(0x420159L), "absent Interface remains absent");
+            assertFalse(expectedTags.contains(0x42015bL), "absent Input Parameters remain absent");
+            assertNestedInteger(payloadView, 0, 0x42015a, -12345);
+            assertBytesAt(payloadView, 1, 0x4200d6,
+                    "pkcs11-response-correlation".getBytes(StandardCharsets.US_ASCII));
+            assertNestedBytes(payloadView, 2, 0x42015c, "vendor-output".getBytes(StandardCharsets.US_ASCII));
+            try (TtlvItemView returnItem = payloadView.itemAt(3);
+                    TtlvValueView returnValue = returnItem.value();
+                    TtlvStructureView returnCode = returnValue.structure();
+                    TtlvItemView codeItem = returnCode.itemAt(0);
+                    TtlvValueView codeValue = codeItem.value()) {
+                assertEquals(0x42015d, tagAt(returnCode, 0));
+                assertEquals(expectedReturnCode, codeValue.enumeration());
+            }
+            try (TtlvItemView vendorItem = payloadView.itemAt(4);
+                    Tag vendorTag = vendorItem.tag();
+                    TtlvValueView vendorValue = vendorItem.value()) {
+                assertEquals(expectedVendorTag, vendorTag.raw());
+                assertEquals(expectedVendorValue, vendorValue.integer());
+            }
+            assertTrue(pkcs11Response.toString().contains("redacted"));
+            assertFalse(pkcs11Response.toString().contains("opaque-input"));
+        }
+        assertTrue(peer.isDone(), "the peer handles exactly one exchange");
     }
 
     @Test
@@ -2057,6 +2163,137 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] usageAllocationResponseMessage(byte[] itemId) throws Exception {
         return usageAllocationResponseMessage(itemId, "allocation-object");
+    }
+
+    private static byte[] pkcs11ResponseMessage(
+            long unknownReturnCode, long vendorTag, int vendorValue) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] payload = structure(0x42007c,
+                structure(0x42015a, item(0x42015a, 2, integer(-12345))),
+                item(0x4200d6, 8, "pkcs11-response-correlation".getBytes(StandardCharsets.US_ASCII)),
+                structure(0x42015c, item(0x42015c, 8, "vendor-output".getBytes(StandardCharsets.US_ASCII))),
+                structure(0x42015d, enumeration(0x42015d, (int) unknownReturnCode)),
+                item(Math.toIntExact(vendorTag), 2, integer(vendorValue)));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x33), enumeration(0x42007f, 0), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static TtlvStructure pkcs11Structure(int tagValue, TtlvValue value, CodecLimits limits) {
+        TtlvStructure structure = TtlvStructure.create();
+        try (Tag tag = RawTag.fromRaw(tagValue).checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            return TtlvStructure.withItem(structure, item, limits);
+        } catch (RuntimeException failure) {
+            structure.close();
+            throw failure;
+        }
+    }
+
+    private static Path pkcs11ParityFixturePath() throws Exception {
+        Path directory = Path.of("").toAbsolutePath();
+        while (directory != null) {
+            Path candidate = directory.resolve("tests/fixtures/api/pkcs11-parity.json");
+            if (Files.isRegularFile(candidate)) return candidate;
+            directory = directory.getParent();
+        }
+        throw new IllegalStateException("shared PKCS#11 parity fixture is missing");
+    }
+
+    private static List<Long> fixtureLongArray(String source, String name) {
+        Matcher field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*\\[([^\\]]*)\\]").matcher(source);
+        if (!field.find()) throw new AssertionError("PKCS#11 parity fixture is missing " + name);
+        Matcher values = Pattern.compile("\\\"0x([0-9a-fA-F]+)\\\"").matcher(field.group(1));
+        List<Long> result = new ArrayList<>();
+        while (values.find()) result.add(Long.parseUnsignedLong(values.group(1), 16));
+        return List.copyOf(result);
+    }
+
+    private static long fixtureHexField(String source, String name) {
+        Matcher field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*\\\"0x([0-9a-fA-F]+)\\\"").matcher(source);
+        if (!field.find()) throw new AssertionError("PKCS#11 parity fixture is missing " + name);
+        return Long.parseUnsignedLong(field.group(1), 16);
+    }
+
+    private static long fixtureLongField(String source, String name) {
+        Matcher field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*(-?\\d+)").matcher(source);
+        if (!field.find()) throw new AssertionError("PKCS#11 parity fixture is missing " + name);
+        return Long.parseLong(field.group(1));
+    }
+
+    private static void assertEncodedInOrder(byte[] encoded, byte[]... expectedItems)
+            throws Exception {
+        int previousEnd = -1;
+        for (byte[] expected : expectedItems) {
+            int offset = indexOf(encoded, expected);
+            assertTrue(offset > previousEnd, "request fields retain their KMIP wire order");
+            previousEnd = offset + expected.length - 1;
+        }
+    }
+
+    private static int indexOf(byte[] value, byte[] expected) {
+        for (int offset = 0; offset <= value.length - expected.length; offset++) {
+            if (Arrays.equals(expected, Arrays.copyOfRange(value, offset, offset + expected.length))) {
+                return offset;
+            }
+        }
+        return -1;
+    }
+
+    private static void assertNestedInteger(
+            TtlvStructureView structure, long index, long expectedTag, int expectedValue) {
+        try (TtlvItemView outer = structure.itemAt(index);
+                Tag outerTag = outer.tag();
+                TtlvValueView outerValue = outer.value();
+                TtlvStructureView nested = outerValue.structure();
+                TtlvItemView inner = nested.itemAt(0);
+                Tag innerTag = inner.tag();
+                TtlvValueView innerValue = inner.value()) {
+            assertEquals(expectedTag, outerTag.raw());
+            assertEquals(1, nested.itemCount());
+            assertEquals(expectedTag, innerTag.raw());
+            assertEquals(expectedValue, innerValue.integer());
+        }
+    }
+
+    private static void assertNestedBytes(
+            TtlvStructureView structure, long index, long expectedTag, byte[] expectedBytes) {
+        try (TtlvItemView outer = structure.itemAt(index);
+                Tag outerTag = outer.tag();
+                TtlvValueView outerValue = outer.value();
+                TtlvStructureView nested = outerValue.structure();
+                TtlvItemView inner = nested.itemAt(0);
+                Tag innerTag = inner.tag();
+                TtlvValueView innerValue = inner.value()) {
+            assertEquals(expectedTag, outerTag.raw());
+            assertEquals(1, nested.itemCount());
+            assertEquals(expectedTag, innerTag.raw());
+            assertArrayEquals(expectedBytes, bytesFrom(innerValue));
+        }
+    }
+
+    private static void assertBytesAt(
+            TtlvStructureView structure, long index, long expectedTag, byte[] expectedBytes) {
+        try (TtlvItemView item = structure.itemAt(index);
+                Tag tag = item.tag();
+                TtlvValueView value = item.value()) {
+            assertEquals(expectedTag, tag.raw());
+            assertArrayEquals(expectedBytes, bytesFrom(value));
+        }
+    }
+
+    private static byte[] bytesFrom(TtlvValueView value) {
+        byte[] bytes = new byte[Math.toIntExact(value.byteLength())];
+        for (int index = 0; index < bytes.length; index++) {
+            bytes[index] = (byte) value.byteAt(index);
+        }
+        return bytes;
     }
 
     private static byte[] usageAllocationResponseMessage(byte[] itemId, String allocationIdentifier)

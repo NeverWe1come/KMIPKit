@@ -1,7 +1,5 @@
 //! The stable C application binary interface for `KMIPKit`.
 #![deny(unsafe_code)]
-#[cfg(kmipkit_pkcs11_candidate_test)]
-const _: [(); 8] = [(); env!("KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION").len()];
 #[allow(unsafe_code)]
 mod extension_registry;
 #[allow(dead_code)]

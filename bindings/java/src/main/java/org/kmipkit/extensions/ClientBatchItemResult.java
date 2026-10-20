@@ -219,6 +219,13 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseInteropResponse(values);
     }
 
+    /** Returns the complete PKCS#11 result TTLV for Success, Failure, or Pending. */
+    public Optional<Pkcs11Response> pkcs11Response() {
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponsePkcs11);
+        return parsePkcs11Response(values);
+    }
+
     /** Returns the complete typed Log result for Success, Failure, or Pending. */
     public Optional<LogResponse> logResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -678,6 +685,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "InteropResponse[responseTtlv=redacted]"; }
+    }
+
+    /** PKCS#11 response with its complete ordered generic TTLV copy. */
+    public static final class Pkcs11Response implements AutoCloseable {
+        private final TtlvStructure responseTtlv;
+
+        private Pkcs11Response(TtlvStructure responseTtlv) {
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the full ordered response structure, including unknown fields. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "Pkcs11Response[responseTtlv=redacted]"; }
     }
 
     /** Log response with its complete ordered generic TTLV for every valid result status. */
@@ -1686,6 +1709,23 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Interop response is invalid");
         }
         return Optional.of(new InteropResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<Pkcs11Response> parsePkcs11Response(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native PKCS#11 response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1, "native PKCS#11 response is invalid");
+        long[] handles = requireLongArray(tuple[1], 1, "native PKCS#11 response is invalid");
+        if (!responsePresent(fields)) {
+            if (handles[0] != 0) {
+                TtlvStructure.fromNative(handles[0], null).close();
+                throw new InvalidInputException("native absent PKCS#11 response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (handles[0] <= 0) {
+            throw new InvalidInputException("native PKCS#11 response is invalid");
+        }
+        return Optional.of(new Pkcs11Response(TtlvStructure.fromNative(handles[0], null)));
     }
 
     static Optional<LogResponse> parseLogResponse(Object[] values) {

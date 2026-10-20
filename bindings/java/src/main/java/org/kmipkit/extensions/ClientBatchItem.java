@@ -547,6 +547,30 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /**
+     * Creates a KMIP 2.1 §6.1.37 PKCS#11 item. Function is required; optional structures and
+     * Correlation Value preserve absent versus present-empty input. The native request owns copies.
+     */
+    public static ClientBatchItem pkcs11(
+            TtlvStructure function,
+            @Nullable TtlvStructure interfaceStructure,
+            @Nullable byte[] correlationValue,
+            @Nullable TtlvStructure inputParameters) {
+        requireStructure(function, "PKCS#11 Function");
+        byte[] correlationCopy = correlationValue == null ? null : correlationValue.clone();
+        if (correlationCopy != null) requireOperationInputWithinLimit(correlationCopy);
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemPkcs11(
+                            function.handle(), handleOrNull(interfaceStructure), correlationCopy,
+                            handleOrNull(inputParameters)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(correlationCopy);
+        }
+    }
+
     /** Creates a §6.1.29 Log item with a required UTF-8 message. */
     public static ClientBatchItem log(byte[] logMessage) {
         if (logMessage == null) {

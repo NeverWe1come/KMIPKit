@@ -25,7 +25,6 @@ fn copy_transport_span(data: *const u8, length: u64, maximum: u64) -> FfiResult<
 ///
 /// The typed result handle is available only for a valid server response. Local transport,
 /// decoding, and validation errors do not expose a response body.
-#[cfg(kmipkit_pkcs11_candidate_test)]
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_ttlv(
     item: *mut kmipkit_client_batch_item_response_t,

@@ -88,6 +88,7 @@ _MAX_CHILD_RULES_PER_STRUCTURE = 4_096
 _MAX_OPERATION_INPUT_BYTES = 16 * 1024 * 1024
 _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
     {
+        "kmipkit_client_batch_item_pkcs11",
         "kmipkit_client_batch_item_ping",
         "kmipkit_client_batch_item_query",
         "kmipkit_client_batch_item_query_with_limits",
@@ -1917,6 +1918,56 @@ def client_batch_item_interop(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_pkcs11(
+    function: ttlv.Structure,
+    interface: ttlv.Structure | None = None,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    input_parameters: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.37 PKCS#11 item, preserving optional field presence."""
+    native_function = _native_structure(function, required=True)
+    native_interface = _client_ffi.cast(
+        "kmipkit_ttlv_structure_t *",
+        int(ffi.cast("uintptr_t", _native_structure(interface)))
+        if interface is not None
+        else 0,
+    )
+    native_input = _client_ffi.cast(
+        "kmipkit_ttlv_structure_t *",
+        int(ffi.cast("uintptr_t", _native_structure(input_parameters)))
+        if input_parameters is not None
+        else 0,
+    )
+    with _staging_buffer_scope() as staging_buffers:
+        if correlation_value is None:
+            correlation_span = _client_ffi.NULL
+        else:
+            raw_correlation, staged_correlation = _owned_bytes(
+                correlation_value, _MAX_OPERATION_INPUT_BYTES
+            )
+            staging_buffers.append(staged_correlation)
+            correlation_span = _client_ffi.new("kmipkit_byte_span_v1_t *")
+            correlation_span.data = (
+                _client_ffi.cast(
+                    "const uint8_t *",
+                    int(ffi.cast("uintptr_t", staged_correlation)),
+                )
+                if raw_correlation
+                else _client_ffi.NULL
+            )
+            correlation_span.length = len(raw_correlation)
+        function_pointer = _client_ffi.cast(
+            "kmipkit_ttlv_structure_t *",
+            int(ffi.cast("uintptr_t", native_function)),
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_pkcs11",
+            (function_pointer, native_interface, correlation_span, native_input),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_log(
     log_message: str | bytes | bytearray | memoryview,
 ) -> ClientBatchItem:
@@ -2611,6 +2662,7 @@ __all__ = [
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_interop",
+    "client_batch_item_pkcs11",
     "client_batch_item_log",
     "client_batch_item_delegated_login",
     "client_batch_item_login",

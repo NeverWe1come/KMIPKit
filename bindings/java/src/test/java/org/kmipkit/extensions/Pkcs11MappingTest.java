@@ -1,7 +1,7 @@
 package org.kmipkit.extensions;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -24,50 +24,32 @@ final class Pkcs11MappingTest {
     }
 
     @Test
-    void ownerGatedFactoryAndResultAreNotPublicJavaDeclarations() {
-        assertThrows(
-                NoSuchMethodException.class,
-                () -> ClientBatchItem.class.getDeclaredMethod(
-                        "pkcs11",
-                        TtlvStructure.class,
-                        TtlvStructure.class,
-                        byte[].class,
-                        TtlvStructure.class));
-        assertThrows(
-                NoSuchMethodException.class,
-                () -> ClientBatchItemResult.class.getDeclaredMethod("pkcs11Response"));
-        assertFalse(
-                java.util.Arrays.stream(ClientBatchItemResult.class.getClasses())
-                        .anyMatch(type -> type.getSimpleName().equals("Pkcs11Response")));
-    }
-
-    @Test
-    void candidateJniHarnessAcceptsOptionalStructuresAndCorrelationValue() {
+    void publicFactoryAcceptsOptionalStructuresAndCorrelationValue() {
         try (TtlvStructure function = TtlvStructure.create();
                 TtlvStructure interfaceStructure = TtlvStructure.create();
                 TtlvStructure inputParameters = TtlvStructure.create()) {
-            java.util.List<Long> items = new java.util.ArrayList<>();
-            try {
-                items.add(Pkcs11NativeBridge.create(
-                        function, interfaceStructure,
-                        new byte[] {0x41, 0x00, (byte) 0xff}, inputParameters));
-                items.add(Pkcs11NativeBridge.create(function, null, null, null));
-                items.add(Pkcs11NativeBridge.create(function, null, new byte[0], null));
-                assertTrue(items.stream().allMatch(item -> item > 0));
-            } finally {
-                items.forEach(Pkcs11NativeBridge::releaseBatchItem);
+            try (ClientBatchItem allFields = ClientBatchItem.pkcs11(
+                            function, interfaceStructure,
+                            new byte[] {0x41, 0x00, (byte) 0xff}, inputParameters);
+                    ClientBatchItem omitted = ClientBatchItem.pkcs11(function, null, null, null);
+                    ClientBatchItem emptyCorrelation = ClientBatchItem.pkcs11(
+                            function, null, new byte[0], null)) {
+                assertNotNull(allFields);
+                assertNotNull(omitted);
+                assertNotNull(emptyCorrelation);
             }
         }
     }
 
     @Test
-    void candidateJniHarnessRejectsAMissingRequiredFunction() {
-        assertThrows(InvalidInputException.class,
-                () -> Pkcs11NativeBridge.create(null, null, null, null));
+    void publicFactoryRejectsAMissingRequiredFunction() {
+        assertThrows(InvalidInputException.class, () -> ClientBatchItem.pkcs11(null, null, null, null));
     }
 
     @Test
-    void pkcs11ResponseAccessorRejectsAnInvalidNativeResponseHandle() {
-        assertThrows(InvalidInputException.class, () -> Pkcs11NativeBridge.responseTtlv(0));
+    void pkcs11ResponseParserRejectsAnInconsistentPresentHandle() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parsePkcs11Response(
+                        new Object[] {new long[] {1}, new long[] {0}}));
     }
 }
