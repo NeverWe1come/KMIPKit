@@ -1593,6 +1593,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::rekey",
     ),
     (
+        "rust-observed-c70bc13dfc6a8142ae3c",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rekey_key_pair",
+    ),
+    (
         "T046:response:rustVariant",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::DeriveKey",
@@ -1693,6 +1698,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::recertify_response",
     ),
     (
+        "rust-observed-28e4f9dec1c7c47da0c3",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::rekey_key_pair_response",
+    ),
+    (
         "rust-observed-8c8b0cc18d697d176281",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::rekey_response",
@@ -1776,6 +1786,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-c04397047a73d2d560fd",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Rekey",
+    ),
+    (
+        "rust-observed-ea621624ffc08446e4eb",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::RekeyKeyPair",
     ),
     (
         "rust-observed-1cc0c37b6e3da35277b2",
@@ -2421,6 +2436,31 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ab7fec008d9c62cd5adb",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RegisterRequest::new",
+    ),
+    (
+        "rust-observed-f89901b2baab877ba993",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyKeyPairRequest",
+    ),
+    (
+        "rust-observed-62176a97906083757b55",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyKeyPairResponse",
+    ),
+    (
+        "rust-observed-2ef5a2a7d883e3b658c3",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyKeyPairResponse::private_key_unique_identifier",
+    ),
+    (
+        "rust-observed-fe952cc60febe33b881f",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyKeyPairResponse::public_key_unique_identifier",
+    ),
+    (
+        "rust-observed-4e59ec498a3147eee9b0",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyKeyPairResponse::with_ttlv",
     ),
     (
         "rust-observed-1c78da08f5f3972c0dbc",

@@ -224,6 +224,56 @@ cleanup:
     return result;
 }
 
+static int rekey_key_pair_constructor_is_callable_from_c(void) {
+    static const uint8_t identifier_bytes[] = "existing-private-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_ttlv_structure_t *structures[6] = {0};
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = 1;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1);
+    if (kmipkit_client_batch_item_rekey_key_pair(
+            0, 0, 0, 0, 0, 0, 0, 0, 0, &item) != 0 || item == 0) goto cleanup;
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    for (size_t index = 0; index < 6; ++index) {
+        if (kmipkit_ttlv_structure_create(&structures[index]) != 0 || structures[index] == 0) goto cleanup;
+    }
+    if (kmipkit_client_batch_item_rekey_key_pair(
+            &identifier, 1, UINT32_MAX,
+            structures[0], structures[1], structures[2],
+            structures[3], structures[4], structures[5], &item) != 0 || item == 0) goto cleanup;
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    for (size_t index = 0; index < 6; ++index) kmipkit_ttlv_structure_release(structures[index]);
+    return result;
+}
+
+static int rekey_key_pair_response_accessors_clear_outputs_from_c(void) {
+    kmipkit_unique_identifier_v1_t private_identifier = {0};
+    kmipkit_unique_identifier_v1_t public_identifier = {0};
+    uint8_t present = 9;
+    kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    private_identifier.struct_size = (uint32_t)sizeof(private_identifier);
+    private_identifier.abi_version = 1;
+    public_identifier.struct_size = (uint32_t)sizeof(public_identifier);
+    public_identifier.abi_version = 1;
+    const int32_t status = kmipkit_client_batch_item_response_rekey_key_pair(
+            0, &present, &private_identifier, &public_identifier);
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 || private_identifier.kind != 0 ||
+            public_identifier.kind != 0 || private_identifier.text_data != 0 ||
+            public_identifier.text_data != 0 || private_identifier.text_length != 0 ||
+            public_identifier.text_length != 0) return 0;
+    present = 9;
+    const int32_t ttlv_status = kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
+            0, &present, &response_ttlv);
+    return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
+
 static int rekey_response_accessors_clear_outputs_from_c(void) {
     kmipkit_unique_identifier_v1_t identifier = {0};
     identifier.struct_size = (uint32_t)sizeof(identifier);
@@ -3885,6 +3935,39 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_validate_rekey_key_pair_response_ttlv(
+    kmipkit_client_batch_item_response_t *item) {
+    static const uint8_t expected_private[] = "replacement-private-key";
+    static const uint8_t expected_public[] = "replacement-public-key";
+    uint8_t present = 0, ttlv_present = 0;
+    kmipkit_unique_identifier_v1_t private_identifier = {0}, public_identifier = {0};
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    int result = 0;
+    if (item == 0) return 0;
+    private_identifier.struct_size = (uint32_t)sizeof(private_identifier);
+    private_identifier.abi_version = 1;
+    public_identifier.struct_size = (uint32_t)sizeof(public_identifier);
+    public_identifier.abi_version = 1;
+    if (kmipkit_client_batch_item_response_rekey_key_pair(item, &present,
+            &private_identifier, &public_identifier) != 0 || present != 1 ||
+        !response_identifier_matches(&private_identifier, expected_private,
+                (uint64_t)(sizeof(expected_private) - 1)) ||
+        !response_identifier_matches(&public_identifier, expected_public,
+                (uint64_t)(sizeof(expected_public) - 1)) ||
+        kmipkit_client_batch_item_response_rekey_key_pair_ttlv(item, &ttlv_present,
+                &response_ttlv) != 0 || ttlv_present != 1 || response_ttlv == 0) goto cleanup;
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0) goto cleanup;
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
     kmipkit_client_batch_item_response_t *item) {
     static const uint8_t expected_identifier[] = "joined-id";
@@ -4842,6 +4925,8 @@ int main(int argc, char **argv) {
     }
     if (!creation_create_matches_shared_fixture() ||
         !rekey_constructor_is_callable_from_c() ||
+        !rekey_key_pair_constructor_is_callable_from_c() ||
+        !rekey_key_pair_response_accessors_clear_outputs_from_c() ||
         !rekey_response_accessors_clear_outputs_from_c() ||
         !recertify_constructor_is_callable_from_c() ||
         !recertify_response_accessors_clear_outputs_from_c() ||

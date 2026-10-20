@@ -91,6 +91,14 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseRekeyResponse(values);
     }
 
+    /** Returns both replacement identifiers and complete TTLV only for successful Re-key Key Pair. */
+    public Optional<RekeyKeyPairResponse> rekeyKeyPairResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseRekeyKeyPair);
+        return parseRekeyKeyPairResponse(values);
+    }
+
     /** Returns the typed Check result, including policy fields and generic TTLV on failure. */
     public Optional<CheckResponse> checkResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -520,6 +528,25 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "RekeyResponse[uniqueIdentifier=redacted]"; }
+    }
+
+    /** Successful Re-key Key Pair result with both replacement identifiers and owned TTLV. */
+    public static final class RekeyKeyPairResponse implements AutoCloseable {
+        private final UniqueIdentifier privateKeyUniqueIdentifier;
+        private final UniqueIdentifier publicKeyUniqueIdentifier;
+        private final TtlvStructure responseTtlv;
+
+        private RekeyKeyPairResponse(UniqueIdentifier privateId, UniqueIdentifier publicId,
+                TtlvStructure responseTtlv) {
+            this.privateKeyUniqueIdentifier = privateId;
+            this.publicKeyUniqueIdentifier = publicId;
+            this.responseTtlv = responseTtlv;
+        }
+        public UniqueIdentifier privateKeyUniqueIdentifier() { return privateKeyUniqueIdentifier; }
+        public UniqueIdentifier publicKeyUniqueIdentifier() { return publicKeyUniqueIdentifier; }
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+        @Override public void close() { responseTtlv.close(); }
+        @Override public String toString() { return "RekeyKeyPairResponse[identifiers=redacted]"; }
     }
 
     /** Typed Check fields with the caller-owned complete ordered response TTLV. */
@@ -1354,6 +1381,27 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return Optional.of(new RekeyResponse(identifierRecord(tuple[1]), responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<RekeyKeyPairResponse> parseRekeyKeyPairResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 4, "native Re-key Key Pair response is invalid");
+        long[] fields = requireLongArray(tuple[0], 1, "native Re-key Key Pair response is invalid");
+        long[] ttlvHandle = requireLongArray(tuple[3], 1, "native Re-key Key Pair response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null || tuple[2] != null || ttlvHandle[0] != 0) {
+                if (ttlvHandle[0] > 0) TtlvStructure.fromNative(ttlvHandle[0], null).close();
+                throw new InvalidInputException("native absent Re-key Key Pair response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (ttlvHandle[0] <= 0) throw new InvalidInputException("native Re-key Key Pair response is invalid");
+        TtlvStructure ttlv = TtlvStructure.fromNative(ttlvHandle[0], null);
+        try {
+            return Optional.of(new RekeyKeyPairResponse(identifierRecord(tuple[1]), identifierRecord(tuple[2]), ttlv));
+        } catch (RuntimeException exception) {
+            ttlv.close();
             throw exception;
         }
     }

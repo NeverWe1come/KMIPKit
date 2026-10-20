@@ -337,6 +337,33 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Re-key Key Pair request from the optional fields in KMIP 2.1 §6.1.47, Table 310. */
+    public static ClientBatchItem rekeyKeyPair(
+            @Nullable UniqueIdentifier privateKeyUniqueIdentifier,
+            @Nullable Long offset,
+            @Nullable TtlvStructure commonAttributes,
+            @Nullable TtlvStructure privateKeyAttributes,
+            @Nullable TtlvStructure publicKeyAttributes,
+            @Nullable TtlvStructure commonProtectionStorageMasks,
+            @Nullable TtlvStructure privateProtectionStorageMasks,
+            @Nullable TtlvStructure publicProtectionStorageMasks) {
+        byte[] identifierText = privateKeyUniqueIdentifier == null ? null : privateKeyUniqueIdentifier.nativeText();
+        try {
+            long offsetValue = offset == null ? 0 : offset;
+            if (offset != null) requireU32(offsetValue, "Offset");
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemRekeyKeyPair(
+                    identifierKind(privateKeyUniqueIdentifier), identifierText,
+                    identifierNumber(privateKeyUniqueIdentifier), offset != null, offsetValue,
+                    handleOrNull(commonAttributes), handleOrNull(privateKeyAttributes),
+                    handleOrNull(publicKeyAttributes), handleOrNull(commonProtectionStorageMasks),
+                    handleOrNull(privateProtectionStorageMasks), handleOrNull(publicProtectionStorageMasks)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Check request with optional §6.1.7 Usage Limits Count, usage mask, and lease. */
     public static ClientBatchItem check(
             @Nullable UniqueIdentifier uniqueIdentifier,

@@ -44,9 +44,9 @@ use kmipkit_protocol::{
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    QueryFunction, QueryRequest, RecertifyRequest, RegisterRequest, RekeyRequest, SecretBytes,
-    SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
-    StorageStatusMask, Ticket, UniqueIdentifier,
+    QueryFunction, QueryRequest, RecertifyRequest, RegisterRequest, RekeyKeyPairRequest,
+    RekeyRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3366,6 +3366,75 @@ pub extern "C" fn kmipkit_client_batch_item_recertify(
             request = request.with_protection_storage_masks(masks);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::Recertify(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Re-key Key Pair request using KMIP 2.1 §6.1.47, Table 310.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_rekey_key_pair(
+    private_key_unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_offset: u8,
+    offset: u32,
+    common_attributes: *mut kmipkit_ttlv_structure_t,
+    private_key_attributes: *mut kmipkit_ttlv_structure_t,
+    public_key_attributes: *mut kmipkit_ttlv_structure_t,
+    common_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    private_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    public_protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(private_key_unique_identifier));
+        let offset = match has_offset {
+            0 => None,
+            1 => Some(offset),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let common_attributes = try_ffi!(copy_attribute_set_handle(common_attributes, false));
+        let private_key_attributes =
+            try_ffi!(copy_attribute_set_handle(private_key_attributes, false));
+        let public_key_attributes =
+            try_ffi!(copy_attribute_set_handle(public_key_attributes, false));
+        let common_masks = try_ffi!(copy_structure_handle(
+            common_protection_storage_masks,
+            false
+        ));
+        let private_masks = try_ffi!(copy_structure_handle(
+            private_protection_storage_masks,
+            false
+        ));
+        let public_masks = try_ffi!(copy_structure_handle(
+            public_protection_storage_masks,
+            false
+        ));
+        let mut request = RekeyKeyPairRequest::new();
+        if let Some(value) = identifier {
+            request = request.with_private_key_unique_identifier(value);
+        }
+        if let Some(value) = offset {
+            request = request.with_offset(value);
+        }
+        if let Some(value) = common_attributes {
+            request = request.with_common_attributes(value);
+        }
+        if let Some(value) = private_key_attributes {
+            request = request.with_private_key_attributes(value);
+        }
+        if let Some(value) = public_key_attributes {
+            request = request.with_public_key_attributes(value);
+        }
+        if let Some(value) = common_masks {
+            request = request.with_common_protection_storage_masks(value);
+        }
+        if let Some(value) = private_masks {
+            request = request.with_private_protection_storage_masks(value);
+        }
+        if let Some(value) = public_masks {
+            request = request.with_public_protection_storage_masks(value);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::RekeyKeyPair(request)));
         SUCCESS
     })
 }

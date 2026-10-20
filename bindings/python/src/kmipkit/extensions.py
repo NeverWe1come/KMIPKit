@@ -93,6 +93,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_query",
         "kmipkit_client_batch_item_query_with_limits",
         "kmipkit_client_batch_item_rekey",
+        "kmipkit_client_batch_item_rekey_key_pair",
     }
 )
 
@@ -1936,6 +1937,61 @@ def client_batch_item_rekey(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_rekey_key_pair(
+    private_key_unique_identifier: UniqueIdentifier | None = None,
+    *,
+    offset: int | None = None,
+    common_attributes: ttlv.Structure | None = None,
+    private_key_attributes: ttlv.Structure | None = None,
+    public_key_attributes: ttlv.Structure | None = None,
+    common_protection_storage_masks: ttlv.Structure | None = None,
+    private_protection_storage_masks: ttlv.Structure | None = None,
+    public_protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a typed Re-key Key Pair item from KMIP 2.1 §6.1.47, Table 310."""
+    if offset is None:
+        has_offset, raw_offset = 0, 0
+    else:
+        has_offset, raw_offset = 1, _integer_range(offset, 0, 0xFFFF_FFFF)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(
+            private_key_unique_identifier, staging_buffers
+        )
+        client_identifier = _client_ffi.cast(
+            "kmipkit_unique_identifier_v1_t *",
+            int(_client_ffi.cast("uintptr_t", identifier)),
+        )
+        structures = tuple(
+            _native_structure(value)
+            for value in (
+                common_attributes,
+                private_key_attributes,
+                public_key_attributes,
+                common_protection_storage_masks,
+                private_protection_storage_masks,
+                public_protection_storage_masks,
+            )
+        )
+        args = (
+            client_identifier,
+            has_offset,
+            raw_offset,
+            *(
+                _client_ffi.cast(
+                    "kmipkit_ttlv_structure_t *",
+                    int(_client_ffi.cast("uintptr_t", value)),
+                )
+                for value in structures
+            ),
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_rekey_key_pair",
+            args,
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_check(
     unique_identifier: UniqueIdentifier | None = None,
     *,
@@ -2752,6 +2808,7 @@ __all__ = [
     "client_batch_item_certify",
     "client_batch_item_recertify",
     "client_batch_item_rekey",
+    "client_batch_item_rekey_key_pair",
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_interop",

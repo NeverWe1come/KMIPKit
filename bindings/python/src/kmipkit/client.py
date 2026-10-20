@@ -879,6 +879,9 @@ class BatchItemResult(_BatchItemResultNativeState):
     pkcs11_response: Pkcs11Response | None = field(default=None, repr=False)
     recertify_response: RecertifyResponse | None = field(default=None, repr=False)
     rekey_response: RekeyResponse | None = field(default=None, repr=False)
+    rekey_key_pair_response: RekeyKeyPairResponse | None = field(
+        default=None, repr=False
+    )
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1109,6 +1112,22 @@ class RekeyResponse:
 
     def __repr__(self) -> str:
         return "RekeyResponse(unique_identifier=redacted, response_ttlv=preserved)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class RekeyKeyPairResponse:
+    """Successful §6.1.47 result with both replacement IDs and complete response TTLV."""
+
+    private_key_unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    public_key_unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return "RekeyKeyPairResponse(private_key_unique_identifier=redacted, public_key_unique_identifier=redacted, response_ttlv=preserved)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1867,6 +1886,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x04
                 ):
                     rekey_response = _rekey_response(item)
+                rekey_key_pair_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x1D
+                ):
+                    rekey_key_pair_response = _rekey_key_pair_response(item)
                 check_response = None
                 if int(metadata.operation) == 0x09:
                     check_response = _check_response(item)
@@ -1959,48 +1985,49 @@ def _batch_result(handle: Any) -> BatchResult:
                     signature_verify_response,
                 ) = cryptographic_responses
                 result = BatchItemResult(
-                        outcome,
-                        int(metadata.result_status),
-                        result_reason,
-                        unique_id,
-                        correlation,
-                        supported_versions,
-                        int(metadata.operation),
-                        result_message,
-                        create_object_type,
-                        create_identifier,
-                        private_identifier,
-                        public_identifier,
-                        split_identifiers,
-                        hash_response,
-                        mac_response,
-                        mac_verify_response,
-                        sign_response,
-                        signature_verify_response,
-                        certify_response,
-                        allocation_response,
-                        check_response,
-                        delegated_login_response,
-                        derive_key_response,
-                        export_response,
-                        get_constraints_response=constraints_response,
-                        _get_response=get_response,
-                        _locate_response=locate_response,
-                        import_response=import_response,
-                        join_split_key_response=join_split_key_response,
-                        interop_response=interop_response,
-                        pkcs11_response=pkcs11_response,
-                        log_response=log_response,
-                        login_response=login_response,
-                        logout_response=logout_response,
-                        obtain_lease_response=obtain_lease_response,
-                        encrypt_response=encrypt_response,
-                        decrypt_response=decrypt_response,
-                        ping_response=ping_response,
-                        query_response=query_response,
-                        recertify_response=recertify_response,
-                        rekey_response=rekey_response,
-                    )
+                    outcome,
+                    int(metadata.result_status),
+                    result_reason,
+                    unique_id,
+                    correlation,
+                    supported_versions,
+                    int(metadata.operation),
+                    result_message,
+                    create_object_type,
+                    create_identifier,
+                    private_identifier,
+                    public_identifier,
+                    split_identifiers,
+                    hash_response,
+                    mac_response,
+                    mac_verify_response,
+                    sign_response,
+                    signature_verify_response,
+                    certify_response,
+                    allocation_response,
+                    check_response,
+                    delegated_login_response,
+                    derive_key_response,
+                    export_response,
+                    get_constraints_response=constraints_response,
+                    _get_response=get_response,
+                    _locate_response=locate_response,
+                    import_response=import_response,
+                    join_split_key_response=join_split_key_response,
+                    interop_response=interop_response,
+                    pkcs11_response=pkcs11_response,
+                    log_response=log_response,
+                    login_response=login_response,
+                    logout_response=logout_response,
+                    obtain_lease_response=obtain_lease_response,
+                    encrypt_response=encrypt_response,
+                    decrypt_response=decrypt_response,
+                    ping_response=ping_response,
+                    query_response=query_response,
+                    recertify_response=recertify_response,
+                    rekey_response=rekey_response,
+                    rekey_key_pair_response=rekey_key_pair_response,
+                )
                 items.append(result)
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -2415,6 +2442,47 @@ def _rekey_response(item: _ClientBatchItemResponse) -> RekeyResponse | None:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return RekeyResponse(unique_identifier, response_ttlv)
+
+
+def _rekey_key_pair_response(
+    item: _ClientBatchItemResponse,
+) -> RekeyKeyPairResponse | None:
+    present = ffi.new("uint8_t *")
+    private_identifier = _initialize_unique_identifier_output()
+    public_identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_rekey_key_pair(
+            item._pointer(), present, private_identifier, public_identifier
+        )
+    )
+    if present[0] == 0:
+        _optional_output_identifier(private_identifier)
+        _optional_output_identifier(public_identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    private_value = _optional_output_identifier(private_identifier)
+    public_value = _optional_output_identifier(public_identifier)
+    if private_value is None or public_value is None:
+        errors.raise_for_status(4)
+    ttlv_present = ffi.new("uint8_t *")
+    ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
+            item._pointer(), ttlv_present, ttlv_output
+        )
+    )
+    native = ttlv_output[0]
+    if ttlv_present[0] != 1 or native == ffi.NULL:
+        if native != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(native)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(int(ffi.cast("uintptr_t", native)))
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(native)
+        raise
+    return RekeyKeyPairResponse(private_value, public_value, response_ttlv)
 
 
 def _check_response(item: _ClientBatchItemResponse) -> CheckResponse | None:

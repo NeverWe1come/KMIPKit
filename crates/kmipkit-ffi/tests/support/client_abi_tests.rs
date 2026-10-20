@@ -14,9 +14,9 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OperationData, Pkcs11Request, RecertifyRequest, RekeyRequest, SecretBytes,
-    SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket, TicketType,
-    UniqueIdentifier,
+    ObtainLeaseRequest, OperationData, Pkcs11Request, RecertifyRequest, RekeyKeyPairRequest,
+    RekeyRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    Ticket, TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -5263,6 +5263,9 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_rekey_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_rekey_key_pair_response_ttlv(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -5484,6 +5487,87 @@ fn ffi_rekey_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
         result, 1,
         "C preserves the typed identifier and complete ordered response TTLV"
     );
+}
+
+#[test]
+fn ffi_rekey_key_pair_returns_both_identifiers_and_compiled_c_owned_ttlv() {
+    let unknown = [0xde, 0xad, 0x00, 0xff];
+    let item = successful_cryptographic_item(
+        ClientRequest::RekeyKeyPair(
+            RekeyKeyPairRequest::new().with_private_key_unique_identifier(
+                UniqueIdentifier::TextString("existing-private-key".to_owned()),
+            ),
+        ),
+        0x1d,
+        b"rekey-pair",
+        vec![
+            ttlv_item(0x0042_0066, 0x07, b"replacement-private-key"),
+            ttlv_item(0x0042_006f, 0x07, b"replacement-public-key"),
+            ttlv_item(0x0054_0001, 0x08, &unknown),
+        ],
+    );
+    let mut present = 0;
+    let mut private_identifier = empty_unique_identifier_output_v1();
+    let mut public_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rekey_key_pair(
+            item,
+            &raw mut present,
+            &raw mut private_identifier,
+            &raw mut public_identifier
+        )
+    );
+    assert_eq!(present, 1);
+    assert_response_identifier(&private_identifier, b"replacement-private-key");
+    assert_response_identifier(&public_identifier, b"replacement-public-key");
+    // SAFETY: the compiled C consumer takes ownership of this live response item.
+    assert_eq!(1, unsafe {
+        kmipkit_client_abi_c_consumer_validate_rekey_key_pair_response_ttlv(item)
+    });
+}
+
+#[test]
+fn ffi_rekey_key_pair_failure_hides_identifiers_and_response_ttlv() {
+    let item = failed_cryptographic_item(
+        ClientRequest::RekeyKeyPair(
+            RekeyKeyPairRequest::new().with_private_key_unique_identifier(
+                UniqueIdentifier::TextString("existing-private-key".to_owned()),
+            ),
+        ),
+        0x1d,
+        b"rekey-pair-fail",
+    );
+    let mut present = 9;
+    let mut private_identifier = empty_unique_identifier_output_v1();
+    let mut public_identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rekey_key_pair(
+            item,
+            &raw mut present,
+            &raw mut private_identifier,
+            &raw mut public_identifier
+        )
+    );
+    assert_eq!(present, 0);
+    assert_eq!(private_identifier.kind, 0);
+    assert_eq!(public_identifier.kind, 0);
+    assert!(private_identifier.text_data.is_null());
+    assert!(public_identifier.text_data.is_null());
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(item);
 }
 
 #[test]

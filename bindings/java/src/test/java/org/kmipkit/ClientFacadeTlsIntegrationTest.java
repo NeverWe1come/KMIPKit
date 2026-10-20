@@ -1665,6 +1665,118 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
+    void rekeyKeyPairResponseUsesNativeJniBridgeAndPreservesBothIdentifiers() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry("kmipkit-test-server", testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD, new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, rekeyKeyPairResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-rekey-key-pair-response-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        ClientBatchItemResult.RekeyKeyPairResponse successful;
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create();
+                TtlvStructure createAttributes = TtlvStructure.create();
+                ClientBatchItem create = ClientBatchItem.create(4, createAttributes, null)) {
+            batch.asynchronousIndicator(1);
+            batch.add(create.withUniqueBatchItemId(uniqueBatchItemId(0)));
+            createAttributes.close();
+
+            try (TtlvStructure commonAttributes = TtlvStructure.create();
+                    TtlvStructure privateAttributes = TtlvStructure.create();
+                    TtlvStructure publicAttributes = TtlvStructure.create();
+                    TtlvStructure commonMasks = TtlvStructure.create();
+                    TtlvStructure privateMasks = TtlvStructure.create();
+                    TtlvStructure publicMasks = TtlvStructure.create()) {
+                batch.add(ClientBatchItem.rekeyKeyPair(null, 86_400L, commonAttributes,
+                        privateAttributes, publicAttributes, commonMasks, privateMasks, publicMasks)
+                        .withUniqueBatchItemId(uniqueBatchItemId(1)));
+            }
+            batch.add(ClientBatchItem.rekeyKeyPair(null, null, null, null, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(2)));
+            batch.add(ClientBatchItem.rekeyKeyPair(null, null, null, null, null, null, null, null)
+                    .withUniqueBatchItemId(uniqueBatchItemId(3)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult created = response.itemAt(0);
+                    ClientBatchItemResult success = response.itemAt(1);
+                    ClientBatchItemResult failure = response.itemAt(2);
+                    ClientBatchItemResult pending = response.itemAt(3)) {
+                assertEquals(4, response.itemCount());
+                assertEquals(1, created.operation());
+                assertEquals(0, created.resultStatus());
+                assertEquals(0x1d, success.operation());
+                assertEquals(0, success.resultStatus());
+                successful = success.rekeyKeyPairResponse().orElseThrow();
+                assertEquals("replacement-private", successful.privateKeyUniqueIdentifier().text());
+                assertEquals("replacement-public", successful.publicKeyUniqueIdentifier().text());
+
+                assertEquals(0x1d, failure.operation());
+                assertEquals(1, failure.resultStatus());
+                assertEquals(5, failure.resultReason().orElseThrow());
+                assertTrue(failure.rekeyKeyPairResponse().isEmpty());
+
+                assertEquals(0x1d, pending.operation());
+                assertEquals(2, pending.resultStatus());
+                assertTrue(pending.outcomeKind().isPending());
+                assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
+                assertTrue(pending.rekeyKeyPairResponse().isEmpty());
+            }
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        try (successful; TtlvStructureView responseTtlv = successful.responseTtlv().view()) {
+            assertEquals(4, responseTtlv.itemCount());
+            assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            try (TtlvItemView payload = responseTtlv.itemAt(3);
+                    TtlvValueView payloadValue = payload.value();
+                    TtlvStructureView payloadStructure = payloadValue.structure()) {
+                assertEquals(3, payloadStructure.itemCount());
+                assertTagOrder(payloadStructure, 0x420066, 0x42006f, 0x541234);
+                assertTrue(containsByteString(payloadStructure, 0x541234,
+                        new byte[] {0x01, 0x00, (byte) 0xff}));
+            }
+            assertFalse(successful.toString().contains("replacement-private"));
+            assertFalse(successful.toString().contains("replacement-public"));
+        }
+        assertContains(request, enumeration(0x42005c, 0x1d));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 0x1d)));
+        assertEquals(0, countOccurrences(request, new byte[] {0x42, 0x00, 0x66}));
+        assertTrue(peer.isDone());
+    }
+
+    @Test
     void obtainLeaseResponseUsesNativeJniBridgeAndRetainsOwnedTtlvOverTls() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("obtain-lease-server.p12");
         Path clientStorePath = temporaryDirectory.resolve("obtain-lease-client.p12");
@@ -3033,6 +3145,30 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, uniqueBatchItemId(2)), enumeration(0x42007f, 2),
                 item(0x420006, 8, CORRELATION), structure(0x42007c));
         return structure(0x42007b, header, success, failure, pending);
+    }
+
+    private static byte[] rekeyKeyPairResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(4)));
+        byte[] createPayload = structure(0x42007c, enumeration(0x420057, 4),
+                item(0x420094, 7, "existing-private".getBytes(StandardCharsets.UTF_8)));
+        byte[] create = structure(0x42000f, enumeration(0x42005c, 1),
+                item(0x420093, 8, uniqueBatchItemId(0)), enumeration(0x42007f, 0), createPayload);
+        byte[] pairPayload = structure(0x42007c,
+                item(0x420066, 7, "replacement-private".getBytes(StandardCharsets.UTF_8)),
+                item(0x42006f, 7, "replacement-public".getBytes(StandardCharsets.UTF_8)),
+                item(0x541234, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
+        byte[] success = structure(0x42000f, enumeration(0x42005c, 0x1d),
+                item(0x420093, 8, uniqueBatchItemId(1)), enumeration(0x42007f, 0), pairPayload);
+        byte[] failure = structure(0x42000f, enumeration(0x42005c, 0x1d),
+                item(0x420093, 8, uniqueBatchItemId(2)), enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5));
+        byte[] pending = structure(0x42000f, enumeration(0x42005c, 0x1d),
+                item(0x420093, 8, uniqueBatchItemId(3)), enumeration(0x42007f, 2),
+                item(0x420006, 8, CORRELATION), structure(0x42007c));
+        return structure(0x42007b, header, create, success, failure, pending);
     }
 
     private static byte[] locateResponseMessage(int identifierCount) throws Exception {

@@ -270,6 +270,15 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_rekey_key_pair(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_private_key_unique_identifier,
+        kmipkit_unique_identifier_v1_t *out_public_key_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_check(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -529,6 +538,17 @@ ffi.cdef(
         uint32_t offset,
         kmipkit_ttlv_structure_t *attributes,
         kmipkit_ttlv_structure_t *protection_storage_masks,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_rekey_key_pair(
+        const kmipkit_unique_identifier_v1_t *private_key_unique_identifier,
+        uint8_t has_offset,
+        uint32_t offset,
+        kmipkit_ttlv_structure_t *common_attributes,
+        kmipkit_ttlv_structure_t *private_key_attributes,
+        kmipkit_ttlv_structure_t *public_key_attributes,
+        kmipkit_ttlv_structure_t *common_protection_storage_masks,
+        kmipkit_ttlv_structure_t *private_protection_storage_masks,
+        kmipkit_ttlv_structure_t *public_protection_storage_masks,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_check(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

@@ -1749,6 +1749,40 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemRekeyKeyPair(
+        JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
+        jlong raw_identifier_number, jboolean raw_has_offset, jlong raw_offset,
+        jlong common_attributes, jlong private_key_attributes, jlong public_key_attributes,
+        jlong common_masks, jlong private_masks, jlong public_masks) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                    raw_identifier_number, &identifier, identifier_text, &identifier_present)) {
+            return static_cast<jlong>(0);
+        }
+        if ((raw_has_offset != JNI_TRUE && raw_has_offset != JNI_FALSE) || raw_offset < 0
+                || static_cast<uint64_t>(raw_offset) > UINT32_MAX
+                || (raw_has_offset == JNI_FALSE && raw_offset != 0)) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const auto* identifier_pointer = identifier_present ? &identifier : nullptr;
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_rekey_key_pair(identifier_pointer,
+                    raw_has_offset == JNI_TRUE ? 1 : 0, static_cast<uint32_t>(raw_offset),
+                    from_java_handle<kmipkit_ttlv_structure_t>(common_attributes),
+                    from_java_handle<kmipkit_ttlv_structure_t>(private_key_attributes),
+                    from_java_handle<kmipkit_ttlv_structure_t>(public_key_attributes),
+                    from_java_handle<kmipkit_ttlv_structure_t>(common_masks),
+                    from_java_handle<kmipkit_ttlv_structure_t>(private_masks),
+                    from_java_handle<kmipkit_ttlv_structure_t>(public_masks), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCheck(
         JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
         jlong raw_identifier_number, jboolean raw_has_usage_limits_count,
@@ -4490,6 +4524,57 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         env->DeleteLocalRef(fields);
         if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
         env->DeleteLocalRef(response_ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseRekeyKeyPair(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t private_identifier{};
+        private_identifier.struct_size = static_cast<uint32_t>(sizeof(private_identifier));
+        private_identifier.abi_version = 1;
+        kmipkit_unique_identifier_v1_t public_identifier{};
+        public_identifier.struct_size = static_cast<uint32_t>(sizeof(public_identifier));
+        public_identifier.abi_version = 1;
+        auto* item = from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
+        const int32_t status = kmipkit_client_batch_item_response_rekey_key_pair(
+                item, &present, &private_identifier, &public_identifier);
+        if (status != 0) { throw_status(env, status); return static_cast<jobjectArray>(nullptr); }
+        if (present > 1 || (present == 1 && (private_identifier.kind == 0 || public_identifier.kind == 0))
+                || (present == 0 && (private_identifier.kind != 0 || public_identifier.kind != 0))) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); return static_cast<jobjectArray>(nullptr);
+        }
+        uint8_t ttlv_present = 0;
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        const int32_t ttlv_status = kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
+                item, &ttlv_present, &response_ttlv);
+        if (ttlv_status != 0 || ttlv_present != present
+                || (present == 1 && response_ttlv == nullptr)
+                || (present == 0 && response_ttlv != nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        jobject private_record = present == 1 ? identifier_to_java(env, private_identifier, 1) : nullptr;
+        jobject public_record = present == 1 ? identifier_to_java(env, public_identifier, 1) : nullptr;
+        jlongArray ttlv_handle = make_long_array(env, {to_java_handle(response_ttlv)});
+        if (fields == nullptr || ttlv_handle == nullptr || (present == 1 && (private_record == nullptr || public_record == nullptr))) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            if (fields != nullptr) env->DeleteLocalRef(fields);
+            if (private_record != nullptr) env->DeleteLocalRef(private_record);
+            if (public_record != nullptr) env->DeleteLocalRef(public_record);
+            if (ttlv_handle != nullptr) env->DeleteLocalRef(ttlv_handle);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, private_record, public_record, ttlv_handle});
+        if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        env->DeleteLocalRef(fields);
+        if (private_record != nullptr) env->DeleteLocalRef(private_record);
+        if (public_record != nullptr) env->DeleteLocalRef(public_record);
+        env->DeleteLocalRef(ttlv_handle);
         return result;
     });
 }
