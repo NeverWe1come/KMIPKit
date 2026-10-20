@@ -4246,6 +4246,8 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
     }
     kmipkit_client_batch_item_response_release(response_item);
     response_item = 0;
+    kmipkit_client_batch_response_release(response);
+    response = 0;
     if (!pkcs11_response_matches_fixture(
             response_ttlv, expected_tags, 5, expected_return_code, expected_vendor_tag,
             expected_vendor_value)) {

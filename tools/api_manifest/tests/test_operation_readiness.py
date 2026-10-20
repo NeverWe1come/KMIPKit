@@ -324,11 +324,30 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
         self.assertIn("Approved for implementation", owner_spec)
         self.assertIn("does not start implementation", owner_spec)
-        self.assertEqual(pkcs11_operation["apiState"], "blocked")
-        self.assertIn("has not formally accepted", pkcs11_operation["blockedReason"])
+        self.assertEqual(pkcs11_operation["apiState"], "verified")
+        self.assertEqual(
+            pkcs11_operation["ownerDependency"],
+            {"state": "approved", "specId": "KMIPKIT-0040"},
+        )
+        self.assertEqual(
+            pkcs11_operation["approvalEvidence"]["status"], "Approved"
+        )
+        self.assertNotIn("blockedReason", pkcs11_operation)
         self.assertIn("Approved for implementation", pkcs11_row)
         self.assertIn("not formal acceptance", pkcs11_row)
         self.assertNotIn("Approved owner", pkcs11_row)
+
+        fixture = json.loads(
+            (ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(fixture["authorization"]["manifestApiState"], "verified")
+        self.assertEqual(
+            fixture["authorization"]["implementationAuthorization"]["date"],
+            "2026-10-20",
+        )
+        self.assertFalse(fixture["authorization"]["formalAcceptance"])
 
     def test_blocked_operation_records_only_candidate_and_reason(self) -> None:
         manifest = _contract_manifest()

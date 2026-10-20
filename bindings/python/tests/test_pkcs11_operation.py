@@ -1,4 +1,4 @@
-"""Candidate-only CFFI smoke tests; these bindings are not shipped in the wheel."""
+"""Public Python API and CFFI parity tests for KMIP PKCS#11 operations."""
 
 from __future__ import annotations
 
@@ -16,6 +16,12 @@ from kmipkit import client, extensions, ttlv
 from kmipkit._client_ffi import ffi as client_ffi
 from kmipkit._client_ffi import lib as client_lib
 from kmipkit._ffi import ffi
+
+
+def test_pkcs11_response_is_exported_by_client_star_import() -> None:
+    namespace: dict[str, object] = {}
+    exec("from kmipkit.client import *", namespace)
+    assert namespace["Pkcs11Response"] is client.Pkcs11Response
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -341,6 +347,8 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
         pkcs11_response = result.items[0].pkcs11_response
         assert pkcs11_response is not None
         response_ttlv = pkcs11_response.response_ttlv
+        result.close()
+        result = None
 
         with ttlv.ttlv_structure_view(response_ttlv) as response_view:
             payload_view = None
