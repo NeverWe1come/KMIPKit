@@ -6347,7 +6347,7 @@ fn assert_symmetric_crypto_result_getters_return_status(
     );
 }
 
-fn successful_pkcs11_response_item() -> *mut kmipkit_client_batch_item_response_t {
+fn pkcs11_function_structure() -> Structure {
     let mut request_function = Structure::new();
     request_function
         .try_push(
@@ -6361,10 +6361,13 @@ fn successful_pkcs11_response_item() -> *mut kmipkit_client_batch_item_response_
             .expect("the PKCS#11 Function item fits the test model"),
         )
         .expect("the PKCS#11 request Function fits the test structure");
+    request_function
+}
 
+fn successful_pkcs11_response_item() -> *mut kmipkit_client_batch_item_response_t {
     let correlation = b"pkcs11-ffi-response-correlation";
     successful_cryptographic_item(
-        ClientRequest::Pkcs11(Pkcs11Request::new(request_function)),
+        ClientRequest::Pkcs11(Pkcs11Request::new(pkcs11_function_structure())),
         0x33,
         b"pkcs11-ffi-response",
         vec![
@@ -6397,6 +6400,40 @@ fn assert_present_pkcs11_structure(
     assert_eq!(present, 1);
     assert!(!structure.is_null());
     kmipkit_ttlv_structure_release(structure);
+}
+
+fn assert_absent_pkcs11_structure(
+    getter: extern "C" fn(
+        *mut crate::kmipkit_client_batch_item_response_t,
+        *mut u8,
+        *mut *mut crate::kmipkit_ttlv_structure_t,
+    ) -> i32,
+    item: *mut crate::kmipkit_client_batch_item_response_t,
+) {
+    let mut present = u8::MAX;
+    let mut structure = ptr::dangling_mut();
+    assert_eq!(getter(item, &raw mut present, &raw mut structure), SUCCESS);
+    assert_eq!(present, 0);
+    assert!(structure.is_null());
+}
+
+fn assert_pkcs11_structure_getters_absent(item: *mut crate::kmipkit_client_batch_item_response_t) {
+    assert_absent_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_interface_ttlv,
+        item,
+    );
+    assert_absent_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_function_ttlv,
+        item,
+    );
+    assert_absent_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv,
+        item,
+    );
+    assert_absent_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_return_code_ttlv,
+        item,
+    );
 }
 
 #[test]
@@ -6489,6 +6526,100 @@ fn ffi_pkcs11_response_ttlv_rejects_mismatched_handle() {
     assert!(interface.is_null());
 
     kmipkit_client_batch_item_response_release(mismatched);
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_pkcs11_response_getters_return_absent_for_other_operations() {
+    let response = Arc::new(
+        create_key_pair_success_response()
+            .expect("the successful Create Key Pair response matches its request"),
+    );
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(response),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item,),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(response_handle);
+
+    let mut present = u8::MAX;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_ttlv(
+            item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    assert_pkcs11_structure_getters_absent(item);
+
+    let mut correlation = byte_span(&[]);
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+            item,
+            &raw mut present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(correlation.data.is_null());
+    assert_eq!(correlation.length, 0);
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+            item,
+            &raw mut present,
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_pkcs11_response_getters_preserve_absence_for_failure_result() {
+    let item = failed_cryptographic_item(
+        ClientRequest::Pkcs11(Pkcs11Request::new(pkcs11_function_structure())),
+        0x33,
+        b"pkcs11-failed-response",
+    );
+
+    assert_pkcs11_structure_getters_absent(item);
+    let mut present = u8::MAX;
+    let mut correlation = byte_span(&[]);
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+            item,
+            &raw mut present,
+            &raw mut correlation,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 0);
+    assert!(correlation.data.is_null());
+    assert_eq!(correlation.length, 0);
+
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_ttlv(
+            item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
     kmipkit_client_batch_item_response_release(item);
 }
 
