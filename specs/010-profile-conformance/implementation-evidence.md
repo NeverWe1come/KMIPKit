@@ -4145,3 +4145,15 @@ The first dependency-array Red probe was exploratory and was removed after traci
 | Refactor | This DCO-signed refactor commit; `python -B -m unittest tools.normative_catalog.tests.test_report -q`; `git diff --check` | PASS: all 46 report tests (1 skipped) and whitespace checks pass. The public readiness function now starts a fresh dependency traversal; the private recursive evaluator owns cycle-path state. Readiness output is unchanged. |
 
 The workflow already carries the exact protected release aggregate in this branch: release pushes run `core`, `script-contracts`, `normative-inventory`, `coverage`, `coverage-gate`, and `dependency-policy`; schedule-only jobs remain outside the manifest; coverage uses the push `before` SHA. The aggregate builds its manifest only from `CI_NEEDS_JSON` and current GitHub context, and branch-policy parser/tests require the normalized review/admin/force-push/deletion and empty-bypass fields. The credential is referenced only by the protected `release-summary` job with Administration:read. No secret or repository protection configuration was inspected or changed, and no protected release push was run; T026 remains open until an eligible run proves the installed App credential and live policy query.
+
+### T026 independent review follow-up — report dependency-cycle regression
+
+Independent QA identified a missing evaluator-level regression for cyclic profile readiness. Added a self-dependency case to the report tests. It verifies the cycle blocker is emitted, an `evidence_complete` catalog state is downgraded to `evidence_incomplete`, and no public claim is published. The existing cycle guard passed; this test-only follow-up adds no catalog, generated-file, or runtime behavior change.
+
+| Verification | Command | Result |
+|---|---|---|
+| Focused cycle evaluator | `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_dependency_cycle_blocks_readiness_without_publishing_claim -v` | PASS: 1 test; cycle blocked, readiness downgraded, `published_claim` false. |
+| Serial report suite | `python -B -m unittest tools.normative_catalog.tests.test_report -q` | PASS: 47 tests, 1 skipped. |
+| Serial full validator suite | `python -B -m unittest tools.normative_catalog.tests.test_validate -q` | PASS: 284 tests, 1 skipped, completed in 267.565 seconds. |
+
+This local test evidence does not satisfy the external protected-release-push gate. No CI run ID, current-run evidence, secret, token, or protection response was persisted or inspected; T026 remains open.

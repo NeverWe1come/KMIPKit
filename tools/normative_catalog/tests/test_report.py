@@ -1254,6 +1254,28 @@ mod unrelated {
         )
         self.assertIs(readiness["published_claim"], False)
 
+    def test_dependency_cycle_blocks_readiness_without_publishing_claim(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
+        profile["claim_state"] = "evidence_complete"
+        profile["dependency_profile_ids"] = [profile_id]
+
+        readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_id,
+            selected_profile_ids={profile_id},
+            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
+            verification_manifest=None,
+            current_context=None,
+        )
+
+        self.assertIn(f"dependency cycle detected: {profile_id}", readiness["blockers"])
+        self.assertEqual("evidence_incomplete", readiness["effective_state"])
+        self.assertIs(readiness["published_claim"], False)
+
     def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:
         catalog = report_catalog()
         credential_marker = "credential=report-secret-sentinel-731"
