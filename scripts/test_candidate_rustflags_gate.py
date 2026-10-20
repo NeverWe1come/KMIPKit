@@ -35,6 +35,22 @@ def main() -> int:
             "candidate cfg must be enabled only through the isolated build opt-in",
             {},
         ),
+        (
+            "direct cargo rustc arguments",
+            [
+                "cargo",
+                "rustc",
+                "--locked",
+                "-p",
+                "kmipkit-protocol",
+                "--lib",
+                "--",
+                "--cfg",
+                "kmipkit_pkcs11_candidate_test",
+            ],
+            "candidate cfg must be enabled only through the isolated build opt-in",
+            {},
+        ),
     )
     for name, command, expected_message, overrides in probes:
         environment = os.environ.copy()
