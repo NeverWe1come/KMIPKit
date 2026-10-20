@@ -201,7 +201,6 @@ fn every_client_operation_value_matches_kmip_21_table_470() {
         (ClientOperation::MacVerify, 0x24),
         (ClientOperation::ModifyAttribute, 0x0e),
         (ClientOperation::ObtainLease, 0x10),
-        (ClientOperation::Pkcs11, 0x33),
         (ClientOperation::Ping, 0x3b),
         (ClientOperation::Poll, 0x1a),
         (ClientOperation::Process, 0x3a),
@@ -224,6 +223,12 @@ fn every_client_operation_value_matches_kmip_21_table_470() {
         (ClientOperation::Validate, 0x17),
         (ClientOperation::DelegatedLogin, 0x2f),
     ];
+    #[cfg(kmipkit_pkcs11_candidate_test)]
+    let cases = {
+        let mut cases = cases.to_vec();
+        cases.push((ClientOperation::Pkcs11, 0x33));
+        cases
+    };
 
     for (operation, raw) in cases {
         assert_eq!(operation.raw(), raw, "operation: {operation:?}");

@@ -28,8 +28,8 @@ use kmipkit_protocol::{
     LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, MacRequest, MacResponse,
     MacVerifyRequest, MacVerifyResponse, MessageExtensionView, ModifyAttributeRequest,
     ModifyAttributeResponse, NewAttribute, ObtainLeaseRequest, ObtainLeaseResponse, PingRequest,
-    PingResponse, Pkcs11Request, Pkcs11Response, PollRequest, PollResponse, ProcessRequest,
-    ProcessResponse, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    PingResponse, PollRequest, PollResponse, ProcessRequest, ProcessResponse,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     QueryAsyncRequestsRequest, QueryAsyncRequestsResponse, QueryRequest, QueryResponse,
     ReProvisionRequest, ReProvisionResponse, RecertifyRequest, RecertifyResponse, RecoverRequest,
     RecoverResponse, RegisterRequest, RegisterResponse, RekeyKeyPairRequest, RekeyKeyPairResponse,
@@ -40,6 +40,8 @@ use kmipkit_protocol::{
     SignRequest, SignResponse, SignatureVerifyRequest, SignatureVerifyResponse,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
+#[cfg(kmipkit_pkcs11_candidate_test)]
+use kmipkit_protocol::{Pkcs11Request, Pkcs11Response};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 
 #[cfg(test)]
@@ -187,6 +189,7 @@ const CANCEL_OPERATION: u32 = 0x0000_0019;
 const POLL_OPERATION: u32 = 0x0000_001A;
 const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
 const PROCESS_OPERATION: u32 = 0x0000_003A;
+#[cfg(kmipkit_pkcs11_candidate_test)]
 const PKCS11_OPERATION: u32 = 0x0000_0033; // KMIP v2.1 §6.1.37, Tables 273–275.
 const PING_OPERATION: u32 = 0x0000_003B;
 const VALIDATE_OPERATION: u32 = 0x0000_0017; // KMIP v2.1 section 6.1.57.
@@ -280,6 +283,7 @@ pub enum ClientRequest {
     /// An explicit typed Validate request with caller-selected parameters.
     Validate(ValidateRequest),
     /// An explicit opaque PKCS#11 forwarding request.
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     Pkcs11(Pkcs11Request),
     /// An explicit client-to-server Get Constraints request.
     GetConstraints(GetConstraintsRequest),
@@ -328,6 +332,7 @@ impl ClientRequest {
 
     /// Creates an explicit opaque PKCS#11 forwarding request variant.
     #[must_use]
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     pub const fn pkcs11(request: Pkcs11Request) -> Self {
         Self::Pkcs11(request)
     }
@@ -649,6 +654,7 @@ impl ClientRequest {
             Self::Interop(_) => INTEROP_OPERATION,
             Self::Log(_) => LOG_OPERATION,
             Self::Validate(_) => VALIDATE_OPERATION,
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(_) => PKCS11_OPERATION,
             Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
             Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
@@ -761,6 +767,7 @@ impl ClientRequest {
             Self::Interop(request) => request.into_ttlv_payload(),
             Self::Log(request) => request.into_ttlv_payload(),
             Self::Validate(request) => request.into_ttlv_payload(),
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(request) => request.into_ttlv_payload(),
             Self::GetConstraints(request) => request.to_ttlv_payload(),
             Self::SetConstraints(request) => request.to_ttlv_payload(),
@@ -836,6 +843,7 @@ impl fmt::Debug for ClientRequest {
             Self::Interop(request) => formatter.debug_tuple("Interop").field(request).finish(),
             Self::Log(request) => formatter.debug_tuple("Log").field(request).finish(),
             Self::Validate(request) => formatter.debug_tuple("Validate").field(request).finish(),
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(request) => formatter.debug_tuple("Pkcs11").field(request).finish(),
             Self::GetConstraints(_) => formatter.write_str("GetConstraints"),
             Self::SetConstraints(request) => formatter
@@ -1222,6 +1230,7 @@ enum PendingResponse {
     Log(LogResponse),
     Validate(ValidateResponse),
     /// The typed PKCS#11 result.
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     Pkcs11(Pkcs11Response),
     GetConstraints(GetConstraintsResponse),
     SetConstraints(SetConstraintsResponse),
@@ -1279,6 +1288,7 @@ impl PendingResponse {
             Self::Interop(response) => ClientResponseRef::Interop(response),
             Self::Log(response) => ClientResponseRef::Log(response),
             Self::Validate(response) => ClientResponseRef::Validate(response),
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(response) => ClientResponseRef::Pkcs11(response),
             Self::GetConstraints(response) => ClientResponseRef::GetConstraints(response),
             Self::SetConstraints(response) => ClientResponseRef::SetConstraints(response),
@@ -1514,6 +1524,7 @@ pub enum ClientOperation {
     /// Validate one supplied certificate chain on the server.
     Validate,
     /// Forward one caller-selected PKCS#11 function to the server.
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     Pkcs11,
     /// Read the server's Constraints Structure.
     GetConstraints,
@@ -1600,6 +1611,7 @@ impl ClientOperation {
             Self::MacVerify => 0x24,
             Self::ModifyAttribute => 0x0e,
             Self::ObtainLease => 0x10,
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11 => 0x33,
             Self::Ping => 0x3b,
             Self::Poll => 0x1a,
@@ -1784,6 +1796,7 @@ enum ClientResponseRef<'a> {
     Log(&'a LogResponse),
     Validate(&'a ValidateResponse),
     /// A borrowed PKCS#11 result.
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     Pkcs11(&'a Pkcs11Response),
     GetConstraints(&'a GetConstraintsResponse),
     SetConstraints(&'a SetConstraintsResponse),
@@ -1858,6 +1871,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::Interop(response) => response.result(),
             ClientResponseRef::Log(response) => response.result(),
             ClientResponseRef::Validate(response) => response.result(),
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             ClientResponseRef::Pkcs11(response) => response.result(),
             ClientResponseRef::GetConstraints(response) => response.result(),
             ClientResponseRef::SetConstraints(response) => response.result(),
@@ -2271,6 +2285,7 @@ impl<'a> ClientResponseView<'a> {
 
     /// Returns the PKCS#11 response when this view represents it, including Pending.
     #[must_use]
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     pub const fn pkcs11(&self) -> Option<&'a Pkcs11Response> {
         match self.response {
             ClientResponseRef::Pkcs11(response) => Some(response),
@@ -2465,6 +2480,7 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::Validate(response) => {
                 debug_response(formatter, "Validate", response)
             }
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             ClientResponseRef::Pkcs11(response) => debug_response(formatter, "Pkcs11", response),
             ClientResponseRef::GetConstraints(response) => {
                 debug_response(formatter, "GetConstraints", response)
@@ -2581,6 +2597,7 @@ pub enum ClientBatchOutcome {
     /// The server returned a typed Validate result.
     Validate(ValidateResponse),
     /// The typed PKCS#11 result.
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     Pkcs11(Pkcs11Response),
     /// The server returned a Get Constraints result.
     GetConstraints(GetConstraintsResponse),
@@ -2647,7 +2664,6 @@ impl ClientBatchOutcome {
             | Self::Interop(_)
             | Self::Log(_)
             | Self::Validate(_)
-            | Self::Pkcs11(_)
             | Self::GetConstraints(_)
             | Self::SetConstraints(_)
             | Self::SetDefaults(_)
@@ -2655,6 +2671,8 @@ impl ClientBatchOutcome {
             | Self::RngRetrieve(_)
             | Self::RngSeed(_)
             | Self::Query(_) => None,
+            #[cfg(kmipkit_pkcs11_candidate_test)]
+            Self::Pkcs11(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
     }
@@ -2707,6 +2725,7 @@ impl ClientBatchOutcome {
             Self::Interop(response) => response.result(),
             Self::Log(response) => response.result(),
             Self::Validate(response) => response.result(),
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(response) => response.result(),
             Self::GetConstraints(response) => response.result(),
             Self::SetConstraints(response) => response.result(),
@@ -2767,6 +2786,7 @@ impl ClientBatchOutcome {
             Self::Interop(_) => ClientOperation::Interop,
             Self::Log(_) => ClientOperation::Log,
             Self::Validate(_) => ClientOperation::Validate,
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(_) => ClientOperation::Pkcs11,
             Self::GetConstraints(_) => ClientOperation::GetConstraints,
             Self::SetConstraints(_) => ClientOperation::SetConstraints,
@@ -3320,6 +3340,7 @@ impl ClientBatchOutcome {
             Self::Validate(response) => {
                 ClientResponseView::new(ClientResponseRef::Validate(response))
             }
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(response) => ClientResponseView::new(ClientResponseRef::Pkcs11(response)),
             Self::GetConstraints(response) => {
                 ClientResponseView::new(ClientResponseRef::GetConstraints(response))
@@ -3457,6 +3478,7 @@ impl fmt::Debug for ClientBatchOutcome {
             Self::Interop(response) => formatter.debug_tuple("Interop").field(response).finish(),
             Self::Log(response) => formatter.debug_tuple("Log").field(response).finish(),
             Self::Validate(response) => formatter.debug_tuple("Validate").field(response).finish(),
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(response) => formatter.debug_tuple("Pkcs11").field(response).finish(),
             Self::GetConstraints(response) => formatter
                 .debug_tuple("GetConstraints")
@@ -3568,6 +3590,7 @@ impl fmt::Display for ClientBatchOutcome {
             Self::Interop(response) => write!(formatter, "Interop({})", response.result()),
             Self::Log(response) => write!(formatter, "Log({})", response.result()),
             Self::Validate(response) => write!(formatter, "Validate({})", response.result()),
+            #[cfg(kmipkit_pkcs11_candidate_test)]
             Self::Pkcs11(response) => write!(formatter, "Pkcs11({})", response.result()),
             Self::GetConstraints(response) => {
                 write!(formatter, "GetConstraints({})", response.result())
@@ -4845,6 +4868,7 @@ impl Client {
     ///
     /// # Errors
     /// Returns sanitized validation/protocol/transport errors with delivery evidence.
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     pub fn pkcs11(
         &mut self,
         request: Pkcs11Request,
@@ -4857,6 +4881,7 @@ impl Client {
     ///
     /// # Errors
     /// Returns sanitized validation/protocol/transport errors with delivery evidence.
+    #[cfg(kmipkit_pkcs11_candidate_test)]
     pub fn pkcs11_with_options(
         &mut self,
         request: Pkcs11Request,
@@ -6000,7 +6025,6 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::Interop(_)
         | ClientRequest::Log(_)
         | ClientRequest::Validate(_)
-        | ClientRequest::Pkcs11(_)
         | ClientRequest::GetConstraints(_)
         | ClientRequest::SetConstraints(_)
         | ClientRequest::SetDefaults(_)
@@ -6019,6 +6043,8 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::SignatureVerify(_)
         | ClientRequest::RngRetrieve(_)
         | ClientRequest::RngSeed(_) => false,
+        #[cfg(kmipkit_pkcs11_candidate_test)]
+        ClientRequest::Pkcs11(_) => false,
     }
 }
 
@@ -6656,6 +6682,7 @@ fn response_outcome(
             PendingResponse::Query,
             ClientBatchOutcome::Query,
         ),
+        #[cfg(kmipkit_pkcs11_candidate_test)]
         PKCS11_OPERATION => pkcs11_response_outcome(item),
         PING_OPERATION | INTEROP_OPERATION | LOG_OPERATION | VALIDATE_OPERATION => {
             diagnostics_response_outcome(operation, item)
@@ -6700,6 +6727,7 @@ fn response_outcome(
     }
 }
 
+#[cfg(kmipkit_pkcs11_candidate_test)]
 fn pkcs11_response_outcome(
     item: ResponseBatchItemView<'_>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {

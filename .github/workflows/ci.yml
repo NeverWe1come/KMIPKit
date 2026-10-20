@@ -157,6 +157,15 @@ jobs:
         id: run-workspace-tests
         run: cargo test --workspace --all-features --locked
 
+      - name: Run isolated Rust PKCS#11 candidate tests
+        id: run-isolated-rust-pkcs11-candidate-tests
+        shell: pwsh
+        run: |
+          $env:KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD = '1'
+          $env:CARGO_TARGET_DIR = Join-Path $env:GITHUB_WORKSPACE 'target/pkcs11-candidate-rust'
+          cargo test --locked -p kmipkit-protocol -p kmipkit-client
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Build documentation
         id: build-documentation
         run: cargo doc --workspace --all-features --no-deps --locked
@@ -361,12 +370,12 @@ jobs:
       - name: Configure the C consumer with MSVC
         id: configure-the-c-consumer-with-msvc
         if: runner.os == 'Windows'
-        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/pkcs11-candidate/debug"
+        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/pkcs11-candidate/debug" -DKMIPKIT_PKCS11_CANDIDATE_TEST=ON
 
       - name: Configure the C consumer with Ninja
         id: configure-the-c-consumer-with-ninja
         if: runner.os != 'Windows'
-        run: cmake -G Ninja -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/pkcs11-candidate/debug"
+        run: cmake -G Ninja -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/pkcs11-candidate/debug" -DKMIPKIT_PKCS11_CANDIDATE_TEST=ON
 
       - name: Compile the C consumer and example
         id: compile-the-c-consumer-and-example

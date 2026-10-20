@@ -59,6 +59,7 @@ mod multipart;
 mod obtain_lease;
 mod operation_data;
 mod ping;
+#[cfg(kmipkit_pkcs11_candidate_test)]
 mod pkcs11;
 mod poll;
 mod process;
@@ -161,6 +162,7 @@ pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyA
 pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
+#[cfg(kmipkit_pkcs11_candidate_test)]
 pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 pub use poll::{PollRequest, PollResponse};
 pub use process::{ProcessRequest, ProcessResponse};
@@ -516,5 +518,6 @@ mod log_operation_tests;
 mod validate_operation_tests;
 
 #[cfg(test)]
+#[cfg(kmipkit_pkcs11_candidate_test)]
 #[path = "../tests/unit/pkcs11_operation_tests.rs"]
 mod pkcs11_operation_tests;

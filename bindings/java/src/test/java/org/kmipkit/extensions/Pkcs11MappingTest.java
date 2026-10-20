@@ -1,12 +1,11 @@
 package org.kmipkit.extensions;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
-import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.TtlvStructure;
 
 final class Pkcs11MappingTest {
@@ -14,7 +13,7 @@ final class Pkcs11MappingTest {
     void ownerGatedFactoryAndResultAreNotPublicJavaDeclarations() {
         assertThrows(
                 NoSuchMethodException.class,
-                () -> ClientBatchItem.class.getMethod(
+                () -> ClientBatchItem.class.getDeclaredMethod(
                         "pkcs11",
                         TtlvStructure.class,
                         TtlvStructure.class,
@@ -22,45 +21,35 @@ final class Pkcs11MappingTest {
                         TtlvStructure.class));
         assertThrows(
                 NoSuchMethodException.class,
-                () -> ClientBatchItemResult.class.getMethod("pkcs11Response"));
+                () -> ClientBatchItemResult.class.getDeclaredMethod("pkcs11Response"));
         assertFalse(
                 java.util.Arrays.stream(ClientBatchItemResult.class.getClasses())
                         .anyMatch(type -> type.getSimpleName().equals("Pkcs11Response")));
     }
 
     @Test
-    void pkcs11FactoryAcceptsOptionalGenericStructuresAndCorrelationValue() {
+    void candidateJniHarnessAcceptsOptionalStructuresAndCorrelationValue() {
         try (TtlvStructure function = TtlvStructure.create();
                 TtlvStructure interfaceStructure = TtlvStructure.create();
-                TtlvStructure inputParameters = TtlvStructure.create();
-                ClientBatchItem populated = ClientBatchItem.pkcs11(
-                        function, interfaceStructure, new byte[] {0x41, 0x00, (byte) 0xff},
-                        inputParameters);
-                ClientBatchItem omitted = ClientBatchItem.pkcs11(function, null, null, null);
-                ClientBatchItem presentEmptyCorrelation = ClientBatchItem.pkcs11(
-                        function, null, new byte[0], null)) {
-            assertEquals(0, populated.extensionCount());
-            assertEquals(0, omitted.extensionCount());
-            assertEquals(0, presentEmptyCorrelation.extensionCount());
+                TtlvStructure inputParameters = TtlvStructure.create()) {
+            java.util.List<Long> items = new java.util.ArrayList<>();
+            try {
+                items.add(Pkcs11NativeBridge.create(
+                        function, interfaceStructure,
+                        new byte[] {0x41, 0x00, (byte) 0xff}, inputParameters));
+                items.add(Pkcs11NativeBridge.create(function, null, null, null));
+                items.add(Pkcs11NativeBridge.create(function, null, new byte[0], null));
+                assertTrue(items.stream().allMatch(item -> item > 0));
+            } finally {
+                items.forEach(Pkcs11NativeBridge::releaseBatchItem);
+            }
         }
     }
 
     @Test
-    void pkcs11FactoryRequiresFunctionAndBoundsCorrelationBytes() {
+    void candidateJniHarnessRejectsAMissingRequiredFunction() {
         assertThrows(InvalidInputException.class,
-                () -> ClientBatchItem.pkcs11(null, null, null, null));
-        try (TtlvStructure function = TtlvStructure.create()) {
-            assertThrows(ResourceLimitException.class,
-                    () -> ClientBatchItem.pkcs11(function, null,
-                            new byte[16 * 1024 * 1024 + 1], null));
-        }
-    }
-
-    @Test
-    void pkcs11ResponseParserPreservesAbsentAndRejectsInvalidOwnedHandle() {
-        assertFalse(ClientBatchItemResult.parsePkcs11Response(0).isPresent());
-        assertThrows(InvalidInputException.class,
-                () -> ClientBatchItemResult.parsePkcs11Response(-1));
+                () -> Pkcs11NativeBridge.create(null, null, null, null));
     }
 
     @Test

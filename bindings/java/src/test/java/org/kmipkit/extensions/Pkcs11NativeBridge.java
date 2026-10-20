@@ -1,11 +1,12 @@
 package org.kmipkit.extensions;
 
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.jspecify.annotations.Nullable;
 
-/** Private JNI bridge for the owner-gated PKCS#11 C ABI mapping. */
+/** Test-only JNI harness for the owner-gated PKCS#11 candidate mapping. */
 final class Pkcs11NativeBridge {
     private Pkcs11NativeBridge() {}
 
@@ -14,6 +15,9 @@ final class Pkcs11NativeBridge {
             @Nullable TtlvStructure interfaceStructure,
             @Nullable byte[] correlationValue,
             @Nullable TtlvStructure inputParameters) {
+        if (function == null) {
+            throw new InvalidInputException("PKCS#11 Function is required");
+        }
         NativeExtensionRegistry.ensureLoaded();
         return NativeHandle.withNativeHandles(() -> createNative(
                 function.handle(),
@@ -25,6 +29,10 @@ final class Pkcs11NativeBridge {
     static long responseTtlv(long itemResponse) {
         NativeExtensionRegistry.ensureLoaded();
         return responseTtlvNative(itemResponse);
+    }
+
+    static void releaseBatchItem(long item) {
+        NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, item);
     }
 
     private static native long createNative(

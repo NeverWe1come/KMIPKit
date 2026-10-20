@@ -13,6 +13,16 @@ from tools.native_package_smoke import python_smoke
 
 
 class PythonNativePackageSmokeTests(unittest.TestCase):
+    def test_wheel_smoke_rejects_owner_gated_candidate_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            package_root = Path(temporary_directory) / "kmipkit"
+            package_root.mkdir()
+            (package_root / "client.py").write_text(
+                "kmipkit_client_batch_item_pkcs11", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(RuntimeError, "owner-gated PKCS#11 support"):
+                python_smoke.verify_owner_gated_candidate_absent(package_root)
+
     def test_main_preserves_consumer_virtualenv_interpreter_path(self) -> None:
         consumer_environment = Path.cwd() / "consumer-env"
         consumer_python = consumer_environment / (

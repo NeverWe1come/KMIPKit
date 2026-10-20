@@ -5,6 +5,7 @@ enable_testing()
 
 set(KMIPKIT_TARGET_DIR "${CMAKE_CURRENT_LIST_DIR}/../../target/debug" CACHE PATH
     "Directory containing the KMIPKit FFI library selected for this consumer")
+option(KMIPKIT_PKCS11_CANDIDATE_TEST "Enable isolated PKCS#11 candidate ABI probes" OFF)
 find_library(KMIPKIT_FFI_LIBRARY
     NAMES kmipkit_ffi
     PATHS "${KMIPKIT_TARGET_DIR}"
@@ -32,6 +33,9 @@ target_include_directories(kmipkit_register_opaque_context_consumer PRIVATE incl
 add_executable(kmipkit_client_abi_consumer tests/client_abi_consumer.c)
 target_compile_features(kmipkit_client_abi_consumer PRIVATE c_std_11)
 target_include_directories(kmipkit_client_abi_consumer PRIVATE include)
+if(KMIPKIT_PKCS11_CANDIDATE_TEST)
+    target_compile_definitions(kmipkit_client_abi_consumer PRIVATE KMIPKIT_PKCS11_CANDIDATE_TEST)
+endif()
 target_link_libraries(kmipkit_client_abi_consumer PRIVATE "${KMIPKIT_FFI_LIBRARY}")
 set_target_properties(kmipkit_client_abi_consumer PROPERTIES
     BUILD_RPATH "${KMIPKIT_TARGET_DIR}"

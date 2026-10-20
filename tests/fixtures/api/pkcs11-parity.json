@@ -61,20 +61,16 @@
     "c": [
       "kmipkit_client_batch_item_pkcs11",
       "kmipkit_client_batch_item_response_pkcs11_ttlv"
-    ],
+    ]
+  },
+  "candidateTestHarnessMappings": {
     "java": [
-      "org.kmipkit.extensions.ClientBatchItem.pkcs11",
-      "org.kmipkit.extensions.ClientBatchItemResult.pkcs11Response",
-      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response",
-      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.responseTtlv",
-      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.close"
+      "org.kmipkit.extensions.Pkcs11NativeBridge.create",
+      "org.kmipkit.extensions.Pkcs11NativeBridge.responseTtlv"
     ],
     "python": [
-      "kmipkit.extensions._client_batch_item_pkcs11_candidate",
-      "kmipkit.client._Pkcs11BatchItemResult._pkcs11_response",
-      "kmipkit.client._Pkcs11Response",
-      "kmipkit.client._Pkcs11Response.response_ttlv",
-      "kmipkit.client._Pkcs11Response.close"
+      "test_pkcs11_operation.test_pkcs11_cffi_candidate_constructor_accepts_optional_structures_and_bytes",
+      "test_pkcs11_operation.test_pkcs11_cffi_response_accessor_clears_outputs_for_invalid_handle"
     ]
   },
   "mappingSourceFiles": {
@@ -88,15 +84,13 @@
       "bindings/c/tests/client_abi_consumer.c"
     ],
     "java": [
-      "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
-      "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
-      "bindings/java/src/main/java/org/kmipkit/extensions/Pkcs11NativeBridge.java",
+      "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+      "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11NativeBridge.java",
       "bindings/java/native/kmipkit_jni.cpp"
     ],
     "python": [
-      "bindings/python/src/kmipkit/_client_ffi.py",
-      "bindings/python/src/kmipkit/extensions.py",
-      "bindings/python/src/kmipkit/client.py"
+      "bindings/python/tests/test_pkcs11_operation.py",
+      "bindings/python/tests/test_candidate_package_isolation.py"
     ]
   },
   "mappingSourceTokens": {
@@ -116,19 +110,15 @@
       "kmipkit_client_batch_item_pkcs11"
     ],
     "java": [
-      "static ClientBatchItem pkcs11(",
-      "Optional<Pkcs11Response> pkcs11Response()",
-      "class Pkcs11Response",
-      "TtlvStructure responseTtlv()",
+      "static long create(",
+      "static long responseTtlv(",
       "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative",
       "Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseTtlvNative"
     ],
     "python": [
-      "def _client_batch_item_pkcs11_candidate(",
-      "_pkcs11_response: _Pkcs11Response | None",
-      "class _Pkcs11Response:",
-      "response_ttlv: ttlv.Structure = field(repr=False)",
-      "def close(self)"
+      "int32_t kmipkit_client_batch_item_pkcs11(",
+      "client_lib.kmipkit_client_batch_item_pkcs11(",
+      "client_lib.kmipkit_client_batch_item_response_pkcs11_ttlv("
     ]
   },
   "candidateOnlyNativeExports": {

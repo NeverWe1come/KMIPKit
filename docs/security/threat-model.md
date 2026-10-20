@@ -4,8 +4,9 @@ Status: implementation snapshot and design baseline
 Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007
 client execution, KMIPKIT-0013 production transport, the Rust lifecycle
 operation additions in KMIPKIT-0036, and Register Opaque Object context in
-KMIPKIT-0044
-Last reviewed: 2026-10-13
+KMIPKIT-0044, and the owner-gated PKCS#11 candidate build boundary in
+KMIPKIT-0043
+Last reviewed: 2026-10-20
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
@@ -19,6 +20,11 @@ operations do not establish complete KMIP 2.1 operation or profile coverage.
 C, Java, and Python parity for the Register Opaque Object context is implemented
 under KMIPKIT-0044. Full parity for the nine KMIPKIT-0036 lifecycle operations
 remains assigned to KMIPKIT-0043 and is not established by this branch.
+The PKCS#11 operation remains blocked from the public manifest until formal
+KMIPKIT-0040 owner acceptance. Candidate Rust support is confined to explicit
+debug builds with an isolated `pkcs11-candidate` target path; Java and Python
+candidate adapters are test-only sources. Default C/JNI exports and Java/Python
+packages are audited to exclude those candidate surfaces.
 Publication remains planned. Scenarios below remain hypotheses and security
 requirements unless a control is explicitly tied to executable evidence. The
 model must be revised as each executable boundary is introduced.
@@ -222,6 +228,13 @@ work.
 11. **Source to release.** Generated artifacts are reproducible from reviewed
    inputs, third-party sources and licenses are controlled, and publication
    occurs only from protected CI (`docs/development/git-and-releases.md:44-64`).
+12. **Candidate to default package.** The owner-gated PKCS#11 candidate surface
+   must not enter default Rust APIs, C headers or libraries, Java JARs, Python
+   packages, or uploaded code artifacts. Candidate Rust builds require the
+   explicit environment gate, debug profile, and an isolated target directory;
+   Java/Python adapters stay under test sources. The public manifest remains
+   `blocked` until formal acceptance (`docs/architecture/ffi-and-bindings.md#owner-gated-candidate-builds`;
+   `specification/api/public-api.json`).
 
 ### Assumptions and caller obligations
 

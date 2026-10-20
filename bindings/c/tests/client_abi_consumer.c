@@ -6,7 +6,8 @@
 
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
-/* The PKCS#11 owner gate keeps these T057 symbols out of generated public headers for now. */
+#if defined(KMIPKIT_PKCS11_CANDIDATE_TEST)
+/* The owner gate keeps these T057 symbols out of generated public headers. */
 extern int32_t kmipkit_client_batch_item_pkcs11(
     kmipkit_ttlv_structure_t *function,
     kmipkit_ttlv_structure_t *interface,
@@ -17,6 +18,7 @@ extern int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(
     kmipkit_client_batch_item_response_t *item,
     uint8_t *out_present,
     kmipkit_ttlv_structure_t **out_response_ttlv);
+#endif
 
 static int execute_with_options_and_error_ttlv_clears_outputs(void) {
     kmipkit_client_batch_response_t *response = (kmipkit_client_batch_response_t *)(uintptr_t)1;
@@ -968,6 +970,7 @@ static int interop_constructor_is_callable_from_c(void) {
     return result;
 }
 
+#if defined(KMIPKIT_PKCS11_CANDIDATE_TEST)
 static int pkcs11_constructor_is_callable_from_c(void) {
     kmipkit_ttlv_structure_t *function = 0;
     kmipkit_client_batch_item_t *item = 0;
@@ -990,6 +993,7 @@ static int pkcs11_response_accessor_clears_invalid_outputs_from_c(void) {
         0, &present, &response_ttlv);
     return status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
 }
+#endif
 
 static int log_constructor_is_callable_from_c(void) {
     static const uint8_t message[] = "log-message-private-sentinel";
@@ -3851,10 +3855,8 @@ int main(int argc, char **argv) {
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
-        !pkcs11_constructor_is_callable_from_c() ||
         !log_constructor_is_callable_from_c() ||
         !interop_response_accessor_clears_invalid_outputs_from_c() ||
-        !pkcs11_response_accessor_clears_invalid_outputs_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
         !ping_query_abi_is_callable() ||
@@ -3872,6 +3874,12 @@ int main(int argc, char **argv) {
         !encrypt_decrypt_abi_is_callable_from_compiled_c()) {
         return 7;
     }
+#if defined(KMIPKIT_PKCS11_CANDIDATE_TEST)
+    if (!pkcs11_constructor_is_callable_from_c() ||
+        !pkcs11_response_accessor_clears_invalid_outputs_from_c()) {
+        return 7;
+    }
+#endif
 
     kmipkit_transport_config_v1_t transport_input = {0};
     kmipkit_transport_config_t *transport = 0;

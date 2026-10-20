@@ -115,6 +115,25 @@ python -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c
 
 CI additionally audits the compiled C library on Windows, Linux, and macOS.
 
+## Owner-gated candidate builds
+
+The KMIP 2.1 PKCS#11 operation remains blocked in the public API manifest until
+the KMIPKIT-0040 owner formally accepts its specification. Candidate code is
+available only to isolated tests. The Rust protocol, client, and FFI build
+scripts enable it only when `KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD=1` is set, the
+build uses a debug profile, and `CARGO_TARGET_DIR` contains a dedicated
+`pkcs11-candidate` path component. Parent-directory traversal is rejected; a
+Cargo feature cannot enable the candidate API. The normal Rust workspace build
+therefore has no PKCS#11 request, response, or client operation surface.
+
+The C ABI and JNI candidate symbols are compiled only for candidate tests and
+use separate output directories. CMake enables its C consumer probes with the
+explicit `KMIPKIT_PKCS11_CANDIDATE_TEST` option when linking that candidate
+library. Java candidate bridge code and Python candidate CFFI declarations live
+under test sources, not distributable main-package sources. CI separately
+audits default C/JNI exports and checks that the default Java JAR and Python
+wheel do not contain candidate support.
+
 ## C distribution
 
 - C11 public umbrella header: [`kmipkit.h`](../../bindings/c/include/kmipkit.h).

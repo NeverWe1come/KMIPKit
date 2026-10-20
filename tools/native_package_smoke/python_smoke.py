@@ -44,6 +44,22 @@ if mode != "success":
 print(f"PACKAGE_NATIVE_LOAD_OK ABI={version.abi_version}")
 """
 
+OWNER_GATED_PYTHON_TOKENS = (
+    "kmipkit_client_batch_item_pkcs11",
+    "kmipkit_client_batch_item_response_pkcs11_ttlv",
+    "_client_batch_item_pkcs11_candidate",
+    "_Pkcs11Response",
+    "_Pkcs11BatchItemResult",
+    "_pkcs11_response",
+)
+
+
+def verify_owner_gated_candidate_absent(package_root: Path) -> None:
+    for source_file in package_root.rglob("*.py"):
+        source = source_file.read_text(encoding="utf-8")
+        if any(token in source for token in OWNER_GATED_PYTHON_TOKENS):
+            raise RuntimeError("The installed Python wheel contains owner-gated PKCS#11 support.")
+
 
 def run_probe(python: Path, mode: str, audit_path: Path) -> subprocess.CompletedProcess[str]:
     audit_path.unlink(missing_ok=True)
@@ -83,6 +99,7 @@ def package_native_directory(python: Path) -> Path:
 
 def run_smokes(consumer_python: Path, wrong_abi_library: Path, smoke_root: Path) -> None:
     native_directory = package_native_directory(consumer_python)
+    verify_owner_gated_candidate_absent(native_directory.parent)
     libraries = sorted(
         path
         for path in native_directory.iterdir()

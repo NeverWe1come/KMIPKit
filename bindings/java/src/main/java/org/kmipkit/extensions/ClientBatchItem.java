@@ -563,25 +563,6 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
-    /** Creates a KMIP 2.1 §6.1.37 item from caller-owned generic PKCS#11 structures. */
-    static ClientBatchItem pkcs11(
-            TtlvStructure function,
-            @Nullable TtlvStructure interfaceStructure,
-            @Nullable byte[] correlationValue,
-            @Nullable TtlvStructure inputParameters) {
-        requireStructure(function, "PKCS#11 Function");
-        requireOperationInputWithinLimit(correlationValue);
-        byte[] correlationCopy = correlationValue == null ? null : correlationValue.clone();
-        try {
-            NativeExtensionRegistry.ensureLoaded();
-            long value = Pkcs11NativeBridge.create(
-                    function, interfaceStructure, correlationCopy, inputParameters);
-            return new ClientBatchItem(value, List.of());
-        } finally {
-            clearNativeCopies(correlationCopy);
-        }
-    }
-
     /** Creates an Export request, preserving unknown Table 217 selector values. */
     public static ClientBatchItem export(
             @Nullable UniqueIdentifier uniqueIdentifier,

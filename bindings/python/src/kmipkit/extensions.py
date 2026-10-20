@@ -91,7 +91,6 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_ping",
         "kmipkit_client_batch_item_query",
         "kmipkit_client_batch_item_query_with_limits",
-        "kmipkit_client_batch_item_pkcs11",
     }
 )
 
@@ -1914,49 +1913,6 @@ def client_batch_item_interop(
             "kmipkit_client_batch_item_t",
             "kmipkit_client_batch_item_interop",
             (raw_function, identifier, len(raw_identifier)),
-        )
-    return _wrap_owned_handle(ClientBatchItem, handle)
-
-
-def _client_structure_candidate(value: ttlv.Structure | None, *, required: bool = False) -> Any:
-    pointer = _native_structure(value, required=required)
-    if pointer == ffi.NULL:
-        return _client_ffi.NULL
-    address = int(ffi.cast("uintptr_t", pointer))
-    return _client_ffi.cast("kmipkit_ttlv_structure_t *", address)
-
-
-def _client_optional_span_candidate(
-    value: bytes | bytearray | memoryview | None,
-    staging_buffers: list[Any],
-) -> tuple[Any, Any]:
-    span, _owner = _native_optional_span(value, staging_buffers)
-    if span == ffi.NULL:
-        return _client_ffi.NULL, None
-    address = int(ffi.cast("uintptr_t", span))
-    return _client_ffi.cast("kmipkit_byte_span_v1_t *", address), span
-
-
-def _client_batch_item_pkcs11_candidate(
-    function: ttlv.Structure,
-    interface: ttlv.Structure | None = None,
-    correlation_value: bytes | bytearray | memoryview | None = None,
-    input_parameters: ttlv.Structure | None = None,
-) -> ClientBatchItem:
-    """Create a private KMIP 2.1 §6.1.37 candidate request for parity tests."""
-    with _staging_buffer_scope() as staging_buffers:
-        correlation, _correlation_owner = _client_optional_span_candidate(
-            correlation_value, staging_buffers
-        )
-        handle = _make_handle(
-            "kmipkit_client_batch_item_t",
-            "kmipkit_client_batch_item_pkcs11",
-            (
-                _client_structure_candidate(function, required=True),
-                _client_structure_candidate(interface),
-                correlation,
-                _client_structure_candidate(input_parameters),
-            ),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
