@@ -729,6 +729,118 @@ fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
 }
 
 #[test]
+// Keep PKI, argv, and the synchronous C ABI call together for this mTLS harness.
+#[allow(clippy::too_many_lines)]
+fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
+    let client_chain = pki.client_identity().certificate_chain_der();
+    let paths = TemporaryCredentialFiles::create([
+        client_chain[0],
+        client_chain[1],
+        pki.client_identity().private_key_der(),
+        pki.authority_certificate_der(),
+    ]);
+    let listener =
+        TcpListener::bind(("127.0.0.1", 0)).expect("an ephemeral local TCP port is available");
+    let port = listener
+        .local_addr()
+        .expect("listener has a local address")
+        .port();
+    let server_config = mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
+    let peer = thread::spawn(move || {
+        let (stream, _) = listener
+            .accept()
+            .expect("the compiled C client connects to the loopback peer");
+        peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server read timeout is configured");
+        stream
+            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+            .expect("server write timeout is configured");
+        let connection = ServerConnection::new(server_config)
+            .expect("the TLS 1.3 server connection is configured");
+        let mut tls = StreamOwned::new(connection, stream);
+        let request = read_ttlv_frame(&mut tls).expect("bounded Re-key Key Pair request arrives");
+        let request_issue = c_request_rekey_key_pair_issue(&request);
+        assert_eq!(
+            request_issue, "",
+            "C ABI request mapping check failed: {request_issue}"
+        );
+        tls.write_all(&rekey_key_pair_success_response())
+            .expect("the Re-key Key Pair response is written");
+        tls.flush().expect("the TLS response is flushed");
+        let _ = tls.get_ref().shutdown(Shutdown::Both);
+    });
+
+    let executable = CString::new("kmipkit_rekey_key_pair_c_consumer")
+        .expect("test executable name has no NUL byte");
+    let certificate = CString::new(paths.paths[0].to_string_lossy().as_bytes())
+        .expect("temporary certificate path has no NUL byte");
+    let authority = CString::new(paths.paths[1].to_string_lossy().as_bytes())
+        .expect("temporary authority path has no NUL byte");
+    let private_key = CString::new(paths.paths[2].to_string_lossy().as_bytes())
+        .expect("temporary key path has no NUL byte");
+    let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
+        .expect("temporary trust root path has no NUL byte");
+    let port = CString::new(port.to_string()).expect("port has no NUL byte");
+    let fixture_ids = [
+        CString::new("00").expect("fixture ID has no NUL byte"),
+        CString::new("01").expect("fixture ID has no NUL byte"),
+        CString::new("02").expect("fixture ID has no NUL byte"),
+    ];
+    let fixture_statuses = [
+        CString::new("0").expect("fixture status has no NUL byte"),
+        CString::new("2").expect("fixture status has no NUL byte"),
+        CString::new("1").expect("fixture status has no NUL byte"),
+    ];
+    let correlation = CString::new("00a17f70616972").expect("correlation has no NUL byte");
+    let fixture_item_count = CString::new("3").expect("fixture count has no NUL byte");
+    let fixture_pending_count = CString::new("1").expect("pending count has no NUL byte");
+    let mode = CString::new("rekey-key-pair").expect("mode has no NUL byte");
+    let mut arguments = vec![
+        executable.as_ptr().cast_mut(),
+        certificate.as_ptr().cast_mut(),
+        authority.as_ptr().cast_mut(),
+        private_key.as_ptr().cast_mut(),
+        trust_root.as_ptr().cast_mut(),
+        port.as_ptr().cast_mut(),
+    ];
+    arguments.extend(fixture_ids.iter().map(|value| value.as_ptr().cast_mut()));
+    arguments.extend(
+        fixture_statuses
+            .iter()
+            .map(|value| value.as_ptr().cast_mut()),
+    );
+    arguments.push(correlation.as_ptr().cast_mut());
+    arguments.push(fixture_item_count.as_ptr().cast_mut());
+    arguments.push(fixture_pending_count.as_ptr().cast_mut());
+    arguments.push(mode.as_ptr().cast_mut());
+    let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
+    let mut limits = std::ptr::null_mut();
+    // SAFETY: `limits` is a writable output slot held through the synchronous C call.
+    let status =
+        unsafe { kmipkit_codec_limits_create(16 * 1024 * 1024, 64, 400_000, &raw mut limits) };
+    assert_eq!(status, 0, "configured codec limits must succeed");
+    assert!(!limits.is_null(), "configured codec limits return a handle");
+    // SAFETY: argv values and the codec-limits handle remain live for the synchronous C call.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_execute_tls(argument_count, arguments.as_mut_ptr(), limits)
+    };
+    // SAFETY: the test owns this limits handle and the C consumer only borrows it.
+    unsafe { kmipkit_codec_limits_release(limits) };
+    peer.join()
+        .expect("the Re-key Key Pair loopback mTLS peer completes");
+    assert_eq!(
+        result, 0,
+        "the compiled C consumer completes the typed request"
+    );
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+}
+
+#[test]
 // Keep the fixture-backed argv values and TLS server alive through one visible FFI call.
 #[allow(clippy::too_many_lines)]
 fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
@@ -914,10 +1026,6 @@ fn spawn_public_client_batch_peer(
         let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
         assert!(request.starts_with(&[0x42, 0x00, 0x78]));
         assert!(
-            c_request_contains_rekey_key_pair(&request),
-            "C ABI consumer must transmit the Re-key Key Pair fields over mTLS"
-        );
-        assert!(
             c_request_contains_large_query(&request),
             "C ABI consumer must transmit 100,001 Query Functions and Object Groups over mTLS"
         );
@@ -1028,37 +1136,154 @@ fn c_request_contains_large_query(encoded: &[u8]) -> bool {
     })
 }
 
-fn c_request_contains_rekey_key_pair(encoded: &[u8]) -> bool {
-    const BATCH_ITEM: u32 = 0x0042_000F;
-    const OPERATION: u32 = 0x0042_005C;
-    const REKEY_KEY_PAIR: u32 = 0x1D;
+const C_REKEY_BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const C_REKEY_OPERATION_TAG: u32 = 0x0042_005C;
+const C_REKEY_OPERATION_VALUE: u32 = 0x1D;
+const C_REKEY_BATCH_ID_TAG: u32 = 0x0042_0093;
+const C_REKEY_REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
+const C_REKEY_PRIVATE_IDENTIFIER_TAG: u32 = 0x0042_0066;
+const C_REKEY_OFFSET_TAG: u32 = 0x0042_0058;
+const C_REKEY_FIELD_TAGS: [u32; 6] = [
+    0x0042_0126,
+    0x0042_0127,
+    0x0042_0128,
+    0x0042_0163,
+    0x0042_0164,
+    0x0042_0165,
+];
+const C_REKEY_MARKERS: [(&[u8], u32); 6] = [
+    (b"common-attributes", 0x0054_1101),
+    (b"private-attributes", 0x0054_1102),
+    (b"public-attributes", 0x0054_1103),
+    (b"common-masks", 0x0054_1104),
+    (b"private-masks", 0x0054_1105),
+    (b"public-masks", 0x0054_1106),
+];
 
+fn c_request_rekey_key_pair_issue(encoded: &[u8]) -> &'static str {
     let Some(root) = decode_test_request(encoded) else {
-        return false;
+        return "encoded request is not valid TTLV";
     };
     root.with_value(|value| {
         let ValueView::Structure(message) = value else {
-            return false;
+            return "request root is not a Structure";
         };
-        message
+        let mut matching = message
             .children()
             .iter()
-            .filter(|item| item.tag().raw() == BATCH_ITEM)
-            .filter(|item| {
-                item.with_value(|value| {
-                    let ValueView::Structure(batch_item) = value else {
-                        return false;
-                    };
-                    batch_item.children().iter().any(|field| {
-                        field.tag().raw() == OPERATION
-                            && field.with_value(|value| {
-                                matches!(value, ValueView::Enumeration(actual) if *actual == REKEY_KEY_PAIR)
-                            })
-                    })
+            .filter(|item| item.tag().raw() == C_REKEY_BATCH_ITEM_TAG)
+            .filter(|item| c_is_rekey_key_pair_batch_item(item));
+        let Some(item) = matching.next() else {
+            return "request has no Re-key Key Pair item";
+        };
+        if matching.next().is_some() {
+            return "request has multiple Re-key Key Pair items";
+        }
+        c_rekey_key_pair_batch_item_issue(item)
+    })
+}
+
+fn c_is_rekey_key_pair_batch_item(item: &Item) -> bool {
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return false;
+        };
+        batch_item.children().iter().any(|field| {
+            field.tag().raw() == C_REKEY_OPERATION_TAG
+                && field.with_value(|value| {
+                    matches!(value, ValueView::Enumeration(actual) if *actual == C_REKEY_OPERATION_VALUE)
                 })
-            })
-            .count()
-            == 1
+        })
+    })
+}
+
+fn c_rekey_key_pair_batch_item_issue(item: &Item) -> &'static str {
+    item.with_value(|value| {
+        let ValueView::Structure(batch_item) = value else {
+            return "Re-key Key Pair batch item is not a Structure";
+        };
+        let mut operation_matches = false;
+        let mut id_matches = false;
+        let mut payload = None;
+        for field in batch_item.children() {
+            match field.tag().raw() {
+                C_REKEY_OPERATION_TAG => {
+                    operation_matches = field.with_value(|value| {
+                        matches!(value, ValueView::Enumeration(actual) if *actual == C_REKEY_OPERATION_VALUE)
+                    });
+                }
+                C_REKEY_BATCH_ID_TAG => {
+                    id_matches = field.with_value(|value| {
+                        matches!(value, ValueView::ByteString(actual) if actual == b"pair-c")
+                    });
+                }
+                C_REKEY_REQUEST_PAYLOAD_TAG if payload.is_some() => {
+                    return "request has duplicate Request Payload fields";
+                }
+                C_REKEY_REQUEST_PAYLOAD_TAG => payload = Some(field),
+                _ => {}
+            }
+        }
+        if !operation_matches {
+            return "Operation is not Re-key Key Pair";
+        }
+        if !id_matches {
+            return "Unique Batch Item ID does not match the C API input";
+        }
+        let Some(payload) = payload else {
+            return "Request Payload is missing";
+        };
+        c_rekey_key_pair_payload_issue(payload)
+    })
+}
+
+fn c_rekey_key_pair_payload_issue(payload: &Item) -> &'static str {
+    payload.with_value(|value| {
+        let ValueView::Structure(payload) = value else {
+            return "Request Payload is not a Structure";
+        };
+        let children = payload.children();
+        if children.len() != 8 {
+            return "Request Payload does not contain identifier, offset, and six fields";
+        }
+        if children[0].tag().raw() != C_REKEY_PRIVATE_IDENTIFIER_TAG {
+            return "Private Key Unique Identifier tag is incorrect";
+        }
+        if !children[0].with_value(|value| {
+            matches!(value, ValueView::TextString(actual) if actual == "existing-private-key")
+        }) {
+            return "Private Key Unique Identifier type or value is incorrect";
+        }
+        if children[1].tag().raw() != C_REKEY_OFFSET_TAG
+            || !children[1].with_value(
+                |value| matches!(value, ValueView::Interval(actual) if *actual == 86_400),
+            )
+        {
+            return "Offset does not match the C API input";
+        }
+        for (index, (marker, marker_tag)) in C_REKEY_MARKERS.iter().enumerate() {
+            let field = &children[index + 2];
+            if field.tag().raw() != C_REKEY_FIELD_TAGS[index] {
+                return "optional fields are not in KMIP Table 310 order";
+            }
+            if !c_rekey_key_pair_group_matches(field, *marker_tag, marker) {
+                return "optional field structure does not match its C API sentinel";
+            }
+        }
+        ""
+    })
+}
+
+fn c_rekey_key_pair_group_matches(group_item: &Item, marker_tag: u32, marker: &[u8]) -> bool {
+    group_item.with_value(|value| {
+        let ValueView::Structure(group) = value else {
+            return false;
+        };
+        group.children().len() == 1
+            && group.children()[0].tag().raw() == marker_tag
+            && group.children()[0].with_value(
+                |value| matches!(value, ValueView::ByteString(actual) if actual == marker),
+            )
     })
 }
 
@@ -2161,6 +2386,38 @@ fn discover_versions_response() -> Vec<u8> {
     );
     /* The peer returns a reversed batch; item IDs restore caller-request order. */
     structure(0x0042_007B, [header, failed_item, successful_item])
+}
+
+fn rekey_key_pair_success_response() -> Vec<u8> {
+    let protocol_version = structure(
+        0x0042_0069,
+        [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
+    );
+    let header = structure(
+        0x0042_007A,
+        [
+            protocol_version,
+            date_time(0x0042_0092, 1),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let payload = structure(
+        0x0042_007C,
+        [
+            ttlv_item(0x0042_0066, 0x07, b"replacement-private"),
+            ttlv_item(0x0042_006F, 0x07, b"replacement-public"),
+        ],
+    );
+    let item = structure(
+        0x0042_000F,
+        [
+            enumeration(0x0042_005C, 0x1D),
+            ttlv_item(0x0042_0093, 0x08, b"pair-c"),
+            enumeration(0x0042_007F, 0),
+            payload,
+        ],
+    );
+    structure(0x0042_007B, [header, item])
 }
 
 // This TLS batch returns 28 ordered items, including Login, Encrypt, Decrypt, Ping, and Query results.

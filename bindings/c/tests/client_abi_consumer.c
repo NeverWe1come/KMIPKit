@@ -2254,7 +2254,162 @@ static int parse_fixture_decimal(const char *text, uint64_t *value) {
     return 1;
 }
 
-static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limits) {
+static int rekey_key_pair_marker_structure_create(
+    kmipkit_codec_limits_t *limits,
+    uint32_t marker_tag,
+    const uint8_t *marker_value,
+    uint64_t marker_length,
+    kmipkit_ttlv_structure_t **out_structure) {
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_ttlv_item_t *item = 0;
+    kmipkit_ttlv_structure_t *structure = 0;
+    kmipkit_ttlv_structure_t *updated = 0;
+    int result = 0;
+
+    if (limits == 0 || marker_value == 0 || out_structure == 0) return 0;
+    *out_structure = 0;
+    if (kmipkit_ttlv_structure_create(&structure) != 0 ||
+        kmipkit_ttlv_raw_tag_create(marker_tag, &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_value_byte_string(limits, marker_value, marker_length, &value) != 0 ||
+        kmipkit_ttlv_item_create(tag, value, limits, &item) != 0) {
+        goto cleanup;
+    }
+    value = 0; /* the item owns the marker bytes */
+    if (kmipkit_ttlv_structure_with_item(structure, item, limits, &updated) != 0) {
+        goto cleanup;
+    }
+    structure = 0; /* the updated structure owns the original structure and item */
+    item = 0;
+    *out_structure = updated;
+    updated = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(updated);
+    kmipkit_ttlv_structure_release(structure);
+    kmipkit_ttlv_item_release(item);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    return result;
+}
+
+static int execute_rekey_key_pair_request_from_c(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t private_identifier_bytes[] = "existing-private-key";
+    static const uint8_t batch_item_id[] = "pair-c";
+    static const uint8_t expected_private_identifier[] = "replacement-private";
+    static const uint8_t expected_public_identifier[] = "replacement-public";
+    static const uint8_t marker_values[6][20] = {
+        "common-attributes", "private-attributes", "public-attributes",
+        "common-masks", "private-masks", "public-masks",
+    };
+    static const uint64_t marker_lengths[6] = {
+        sizeof("common-attributes") - 1,
+        sizeof("private-attributes") - 1,
+        sizeof("public-attributes") - 1,
+        sizeof("common-masks") - 1,
+        sizeof("private-masks") - 1,
+        sizeof("public-masks") - 1,
+    };
+    static const uint32_t marker_tags[6] = {
+        UINT32_C(0x541101), UINT32_C(0x541102), UINT32_C(0x541103),
+        UINT32_C(0x541104), UINT32_C(0x541105), UINT32_C(0x541106),
+    };
+    kmipkit_ttlv_structure_t *structures[6] = {0};
+    kmipkit_client_batch_t *batch = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_client_batch_item_t *identified_item = 0;
+    kmipkit_client_batch_response_t *response = 0;
+    kmipkit_client_batch_item_response_t *response_item = 0;
+    kmipkit_client_batch_item_metadata_v2_t metadata = {0};
+    kmipkit_unique_identifier_v1_t private_identifier = {0};
+    kmipkit_unique_identifier_v1_t public_identifier = {0};
+    uint64_t response_count = 0;
+    uint8_t present = 0;
+    int result = 1;
+
+    if (client == 0 || limits == 0) goto cleanup;
+    for (uint64_t index = 0; index < 6; ++index) {
+        if (!rekey_key_pair_marker_structure_create(
+                limits, marker_tags[index], marker_values[index], marker_lengths[index],
+                &structures[index])) {
+            goto cleanup;
+        }
+    }
+    private_identifier.struct_size = (uint32_t)sizeof(private_identifier);
+    private_identifier.abi_version = 1;
+    private_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    private_identifier.text_data = private_identifier_bytes;
+    private_identifier.text_length = (uint64_t)(sizeof(private_identifier_bytes) - 1);
+    if (kmipkit_client_batch_item_rekey_key_pair(
+            &private_identifier, 1, UINT32_C(86400),
+            structures[0], structures[1], structures[2],
+            structures[3], structures[4], structures[5], &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_with_unique_batch_item_id(
+            item, batch_item_id, (uint64_t)(sizeof(batch_item_id) - 1), &identified_item) != 0 ||
+        identified_item == 0) {
+        item = 0; /* the valid input was consumed by the identifier builder */
+        goto cleanup;
+    }
+    item = 0; /* the identifier builder consumed the original item */
+    item = identified_item;
+    identified_item = 0;
+    if (kmipkit_client_batch_create(&batch) != 0 || batch == 0 ||
+        kmipkit_client_batch_add_item(batch, &item) != 0 || item != 0 ||
+        kmipkit_client_execute(client, &batch, limits, &response) != 0 ||
+        batch != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != 1 ||
+        kmipkit_client_batch_response_item_at(response, 0, &response_item) != 0 ||
+        response_item == 0) {
+        goto cleanup;
+    }
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = 2;
+    private_identifier = (kmipkit_unique_identifier_v1_t){0};
+    private_identifier.struct_size = (uint32_t)sizeof(private_identifier);
+    private_identifier.abi_version = 1;
+    public_identifier.struct_size = (uint32_t)sizeof(public_identifier);
+    public_identifier.abi_version = 1;
+    if (kmipkit_client_batch_item_response_metadata_v2(response_item, &metadata) != 0 ||
+        metadata.operation != UINT32_C(0x1d) || metadata.outcome_kind != 1 ||
+        metadata.result_status != 0 ||
+        kmipkit_client_batch_item_response_rekey_key_pair(
+            response_item, &present, &private_identifier, &public_identifier) != 0 ||
+        present != 1 || private_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        private_identifier.text_data == 0 ||
+        private_identifier.text_length != sizeof(expected_private_identifier) - 1 ||
+        memcmp(private_identifier.text_data, expected_private_identifier,
+            sizeof(expected_private_identifier) - 1) != 0 ||
+        public_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        public_identifier.text_data == 0 ||
+        public_identifier.text_length != sizeof(expected_public_identifier) - 1 ||
+        memcmp(public_identifier.text_data, expected_public_identifier,
+            sizeof(expected_public_identifier) - 1) != 0) {
+        goto cleanup;
+    }
+    result = 0;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(response_item);
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_item_release(identified_item);
+    kmipkit_client_batch_item_release(item);
+    for (uint64_t index = 0; index < 6; ++index) {
+        kmipkit_ttlv_structure_release(structures[index]);
+    }
+    return result;
+}
+
+static int execute_public_tls_request(
+    char **argv, kmipkit_codec_limits_t *limits, int rekey_key_pair_only) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
     static const uint32_t expected_statuses[] = {
@@ -2394,6 +2549,10 @@ static int execute_public_tls_request(char **argv, kmipkit_codec_limits_t *limit
         goto cleanup;
     }
     transport = 0; /* consumed by client */
+    if (rekey_key_pair_only) {
+        result = execute_rekey_key_pair_request_from_c(client, limits);
+        goto cleanup;
+    }
     if (kmipkit_client_batch_create(&batch) != 0) {
         result = 30;
         goto cleanup;
@@ -4921,10 +5080,16 @@ failure:
 
 int kmipkit_client_abi_c_consumer_execute_tls(
     int argc, char **argv, kmipkit_codec_limits_t *limits) {
-    if (argc != 15 || argv == 0 || limits == 0) {
+    int rekey_key_pair_only = 0;
+    if (argv == 0 || limits == 0) {
         return 22;
     }
-    return execute_public_tls_request(argv, limits);
+    if (argc == 16 && argv[15] != 0 && strcmp(argv[15], "rekey-key-pair") == 0) {
+        rekey_key_pair_only = 1;
+    } else if (argc != 15) {
+        return 22;
+    }
+    return execute_public_tls_request(argv, limits, rekey_key_pair_only);
 }
 
 int main(int argc, char **argv) {
