@@ -344,7 +344,10 @@ def test_pkcs11_response_wipes_correlation_if_later_mapping_fails(
     assert owned.buffer == bytearray(len(correlation))
 
 
-def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
+@pytest.mark.parametrize("correlation_case", ["nonempty", "absent", "presentEmpty"])
+def test_pkcs11_success_path_preserves_order_and_unknown_values(
+    correlation_case: str,
+) -> None:
     """Check parity with OASIS KMIP v2.1 §6.1.37, Tables 273–275."""
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
     expected = fixture["expectedOutput"]
@@ -456,9 +459,14 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
         result.close()
         result = None
         assert pkcs11_response.interface_ttlv is None
-        assert pkcs11_response.correlation_value == bytes.fromhex(
-            typed["correlationValue"]["hex"]
+        expected_correlation = (
+            bytes.fromhex(typed["correlationValue"]["hex"])
+            if correlation_case == "nonempty"
+            else None
+            if correlation_case == "absent"
+            else b""
         )
+        assert pkcs11_response.correlation_value == expected_correlation
         function_ttlv = pkcs11_response.function_ttlv
         output_ttlv = pkcs11_response.output_parameters_ttlv
         return_code_ttlv = pkcs11_response.return_code_ttlv
@@ -511,9 +519,10 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
             assert payload_view is not None
             with payload_view:
                 response_tags = _structure_view_tags(payload_view)
-                assert response_tags == [
-                    int(tag, 16) for tag in expected["responseTags"]
-                ]
+                expected_tags = [int(tag, 16) for tag in expected["responseTags"]]
+                if correlation_case == "absent":
+                    expected_tags.remove(0x4200D6)
+                assert response_tags == expected_tags
                 if expected["preserveOptionalAbsence"]:
                     assert 0x420159 not in response_tags
                     assert 0x42015B not in response_tags
