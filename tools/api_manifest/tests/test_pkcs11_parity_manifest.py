@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import contextlib
+import importlib.util
+import io
 import json
 import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.api_manifest import audit_binding_exports
 
@@ -214,6 +220,45 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             }
             & native_exports
         )
+
+    def test_default_jni_audit_rejects_candidate_c_abi_symbols(self) -> None:
+        candidate_c_symbol = "kmipkit_client_batch_item_pkcs11"
+        audit_path = Path(__file__).resolve().parents[1] / "audit_jni_candidate_exports.py"
+        with patch.dict(sys.path, [str(audit_path.parent), *sys.path]):
+            specification = importlib.util.spec_from_file_location(
+                "audit_jni_candidate_exports", audit_path
+            )
+            self.assertIsNotNone(specification)
+            self.assertIsNotNone(specification.loader)
+            audit_module = importlib.util.module_from_spec(specification)
+            specification.loader.exec_module(audit_module)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            binary = Path(temporary_directory) / "libkmipkit_jni.so"
+            binary.touch()
+            stderr = io.StringIO()
+            with (
+                patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "audit_jni_candidate_exports.py",
+                        "--mode",
+                        "default",
+                        "--binary",
+                        str(binary),
+                    ],
+                ),
+                patch.object(
+                    audit_module,
+                    "read_native_exports",
+                    return_value=[candidate_c_symbol],
+                ),
+                contextlib.redirect_stderr(stderr),
+            ):
+                exit_code = audit_jni_candidate_exports.main()
+
+        self.assertEqual(1, exit_code)
+        self.assertIn(candidate_c_symbol, stderr.getvalue())
 
     def test_pkcs11_code_declares_all_four_language_mappings(self) -> None:
         self.assertTrue(PARITY_FIXTURE.is_file(), "shared PKCS#11 parity fixture is missing")
