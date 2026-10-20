@@ -58,6 +58,60 @@ def _ttlv_structure(tag: int, *children: bytes) -> bytes:
     return _ttlv_item(tag, 1, b"".join(children))
 
 
+def _parse_ttlv_items(data: bytes) -> list[tuple[int, int, bytes, list[tuple]]]:
+    items: list[tuple[int, int, bytes, list[tuple]]] = []
+    offset = 0
+    while offset < len(data):
+        assert len(data) - offset >= 8, "captured TTLV item has a truncated header"
+        tag = int.from_bytes(data[offset : offset + 3], "big")
+        item_type = data[offset + 3]
+        length = int.from_bytes(data[offset + 4 : offset + 8], "big")
+        value_start = offset + 8
+        value_end = value_start + length
+        padded_end = value_end + (-length) % 8
+        assert padded_end <= len(data), "captured TTLV item is truncated"
+        value = data[value_start:value_end]
+        children = _parse_ttlv_items(value) if item_type == 1 else []
+        items.append((tag, item_type, value, children))
+        offset = padded_end
+    assert offset == len(data)
+    return items
+
+
+def _find_ttlv_node(
+    nodes: list[tuple[int, int, bytes, list[tuple]]], tag: int
+) -> tuple[int, int, bytes, list[tuple]]:
+    matches = [node for node in nodes if node[0] == tag]
+    assert len(matches) == 1, f"expected exactly one TTLV tag 0x{tag:06X}"
+    return matches[0]
+
+
+def _structure_with_bytes(tag_value: int, value_bytes: bytes) -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+    raw_tag = ttlv.raw_tag_from_raw(tag_value)
+    tag = ttlv.raw_tag_try_checked(raw_tag)
+    value = ttlv.ttlv_value_byte_string(value_bytes, limits)
+    item = ttlv.ttlv_item_create(tag, value, limits)
+    structure = ttlv.ttlv_structure_with_item(ttlv.ttlv_structure_create(), item, limits)
+    tag.close()
+    raw_tag.close()
+    limits.close()
+    return structure
+
+
+def _structure_with_text(tag_value: int, value_text: str) -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+    raw_tag = ttlv.raw_tag_from_raw(tag_value)
+    tag = ttlv.raw_tag_try_checked(raw_tag)
+    value = ttlv.ttlv_value_text_string(value_text.encode("utf-8"), limits)
+    item = ttlv.ttlv_item_create(tag, value, limits)
+    structure = ttlv.ttlv_structure_with_item(ttlv.ttlv_structure_create(), item, limits)
+    tag.close()
+    raw_tag.close()
+    limits.close()
+    return structure
+
+
 def _pkcs11_response_message() -> bytes:
     version = _ttlv_structure(
         0x420069,
@@ -214,8 +268,8 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
     expected = fixture["expectedOutput"]
     function = _structure_with_integer(0x42015A, -12345)
-    interface = ttlv.ttlv_structure_create()
-    input_parameters = ttlv.ttlv_structure_create()
+    interface = _structure_with_text(0x420159, "test-interface")
+    input_parameters = _structure_with_bytes(0x42015B, b"opaque-input")
     correlation = b"pkcs11-correlation"
     staged = client_ffi.new("uint8_t[]", correlation)
     correlation_span = client_ffi.new("kmipkit_byte_span_v1_t *")
@@ -229,6 +283,7 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
     port = listener.getsockname()[1]
     peer_failures: queue.Queue[BaseException] = queue.Queue()
     received_requests: list[bytes] = []
+    accepted_sockets: list[socket.socket] = []
 
     def serve_one_pkcs11_response() -> None:
         try:
@@ -241,6 +296,8 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
             context.load_verify_locations(cafile=TLS_FIXTURES / "client-cert.pem")
             context.verify_mode = ssl.CERT_REQUIRED
             raw, _address = listener.accept()
+            raw.settimeout(5)
+            accepted_sockets.append(raw)
             with raw, context.wrap_socket(raw, server_side=True) as stream:
                 received_requests.append(_read_ttlv_frame(stream))
                 stream.sendall(_pkcs11_response_message())
@@ -301,6 +358,27 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
 
         assert peer_failures.empty(), "the loopback mTLS peer must complete the response"
         assert len(received_requests) == 1
+        request = _parse_ttlv_items(received_requests[0])
+        message = _find_ttlv_node(request, 0x420078)
+        batch_item = _find_ttlv_node(message[3], 0x42000F)
+        payload = _find_ttlv_node(batch_item[3], 0x420079)
+        assert [item[0] for item in payload[3]] == [
+            0x420159,
+            0x42015A,
+            0x4200D6,
+            0x42015B,
+        ]
+        interface_node = _find_ttlv_node(payload[3], 0x420159)
+        assert interface_node[1] == 1
+        assert interface_node[3] == [(0x420159, 7, b"test-interface", [])]
+        function_node = _find_ttlv_node(payload[3], 0x42015A)
+        assert function_node[1] == 1
+        assert function_node[3] == [(0x42015A, 2, struct.pack(">i", -12345), [])]
+        correlation_node = _find_ttlv_node(payload[3], 0x4200D6)
+        assert correlation_node[1:3] == (8, correlation)
+        input_node = _find_ttlv_node(payload[3], 0x42015B)
+        assert input_node[1] == 1
+        assert input_node[3] == [(0x42015B, 8, b"opaque-input", [])]
         assert (
             b"\x42\x00\x5c\x05\x00\x00\x00\x04\x00\x00\x00\x33"
             in received_requests[0]
@@ -393,6 +471,8 @@ def test_pkcs11_candidate_success_path_preserves_order_and_unknown_values() -> N
                         ]["integer"]
     finally:
         listener.close()
+        for accepted_socket in accepted_sockets:
+            accepted_socket.close()
         if response_ttlv is not None:
             response_ttlv.close()
         if response_item is not None:
