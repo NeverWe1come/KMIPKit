@@ -441,6 +441,11 @@ final class CryptoOperationsJavaFacadeTest {
     }
 
     private byte[] successResponse(Operation operation, int index, boolean includeValidityIndicator) throws Exception {
+        return successResponse(operation, index, includeValidityIndicator, true);
+    }
+
+    private byte[] successResponse(Operation operation, int index, boolean includeValidityIndicator,
+            boolean includeOptionalFields) throws Exception {
         List<byte[]> fields = new ArrayList<>();
         if (!operation.name().equals("hash")) {
             fields.add(ttlvItem(0x420094, 7, "response-id-secret".getBytes(StandardCharsets.UTF_8)));
@@ -448,17 +453,23 @@ final class CryptoOperationsJavaFacadeTest {
         switch (operation.name()) {
             case "encrypt" -> {
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
-                fields.add(ttlvItem(0x42003d, 8, "response-iv".getBytes(StandardCharsets.UTF_8)));
-                fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
-                fields.add(ttlvItem(0x4200ff, 8, "response-tag".getBytes(StandardCharsets.UTF_8)));
+                if (includeOptionalFields) {
+                    fields.add(ttlvItem(0x42003d, 8, "response-iv".getBytes(StandardCharsets.UTF_8)));
+                    fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
+                    fields.add(ttlvItem(0x4200ff, 8, "response-tag".getBytes(StandardCharsets.UTF_8)));
+                }
             }
             case "decrypt" -> {
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
-                fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
+                if (includeOptionalFields) {
+                    fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
+                }
             }
             case "hash" -> {
                 fields.add(ttlvItem(0x4200c2, 8, SECRET_MARKER));
-                fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
+                if (includeOptionalFields) {
+                    fields.add(ttlvItem(0x4200d6, 8, new byte[] {0x01, 0x00, (byte) 0xfd}));
+                }
             }
             case "mac" -> fields.add(ttlvItem(0x4200c4, 8, SECRET_MARKER));
             case "macVerify" -> {

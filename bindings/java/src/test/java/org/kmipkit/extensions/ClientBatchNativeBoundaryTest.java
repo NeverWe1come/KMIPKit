@@ -8,7 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvValue;
 
 /** Exercises fixed-width validation at the Java-to-JNI boundary. */
 final class ClientBatchNativeBoundaryTest {
@@ -69,6 +74,72 @@ final class ClientBatchNativeBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemExport(
                         0, null, 1, false, 0, false, 0, false, 0, 0));
+    }
+
+    @Test
+    void importExportAndSplitKeyJniAcceptOptionalBoundariesAndRejectMismatchedPresence() {
+        try (TtlvStructure attributes = TtlvStructure.create();
+                TtlvStructure anyObject = anyObjectWithSingleItem()) {
+            long attributesHandle = attributes.handle();
+            long anyObjectHandle = anyObject.handle();
+            long imported = 0;
+            long exported = 0;
+            long splitKey = 0;
+            try {
+                byte[] importId = "import-native-id".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                imported = NativeExtensionRegistry.clientBatchItemImport(
+                        UniqueIdentifier.Kind.TEXT_STRING.raw(), importId, 0,
+                        0xffff_ffffL, false, false, true, 0xffff_ffffL,
+                        attributesHandle, anyObjectHandle);
+                assertNotEquals(0, imported);
+                assertEquals(0, NativeExtensionRegistry.clientBatchItemExtensionCount(imported));
+
+                assertThrows(InvalidInputException.class,
+                        () -> NativeExtensionRegistry.clientBatchItemImport(
+                                UniqueIdentifier.Kind.TEXT_STRING.raw(), importId, 0,
+                                7, false, true, false, 0, attributesHandle, anyObjectHandle));
+                assertThrows(InvalidInputException.class,
+                        () -> NativeExtensionRegistry.clientBatchItemImport(
+                                UniqueIdentifier.Kind.TEXT_STRING.raw(), importId, 0,
+                                7, false, false, true, 0x1_0000_0000L,
+                                attributesHandle, anyObjectHandle));
+
+                exported = NativeExtensionRegistry.clientBatchItemExport(
+                        UniqueIdentifier.Kind.TEXT_STRING.raw(),
+                        "export-native-id".getBytes(java.nio.charset.StandardCharsets.UTF_8), 0,
+                        true, 0xffff_ffffL, false, 0, true, 0xffff_ffffL, 0);
+                assertNotEquals(0, exported);
+                assertEquals(0, NativeExtensionRegistry.clientBatchItemExtensionCount(exported));
+                assertThrows(InvalidInputException.class,
+                        () -> NativeExtensionRegistry.clientBatchItemExport(
+                                UniqueIdentifier.Kind.TEXT_STRING.raw(), importId, 0,
+                                false, 1, false, 0, false, 0, 0));
+
+                splitKey = NativeExtensionRegistry.clientBatchItemCreateSplitKey(
+                        7, 4, 2, 1, UniqueIdentifier.Kind.TEXT_STRING.raw(),
+                        "split-native-id".getBytes(java.nio.charset.StandardCharsets.UTF_8), 0,
+                        new byte[0], attributesHandle, 0);
+                assertNotEquals(0, splitKey);
+                assertEquals(0, NativeExtensionRegistry.clientBatchItemExtensionCount(splitKey));
+            } finally {
+                if (splitKey != 0) NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, splitKey);
+                if (exported != 0) NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, exported);
+                if (imported != 0) NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, imported);
+            }
+        }
+    }
+
+    private static TtlvStructure anyObjectWithSingleItem() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure object = TtlvStructure.create();
+        TtlvStructure anyObject = TtlvStructure.create();
+        try (Tag tag = RawTag.fromRaw(0x0042_008f).checked();
+                TtlvItem objectItem = TtlvItem.create(tag, TtlvValue.structure(object, limits), limits)) {
+            return TtlvStructure.withItem(anyObject, objectItem, limits);
+        } finally {
+            object.close();
+            anyObject.close();
+        }
     }
 
     @Test

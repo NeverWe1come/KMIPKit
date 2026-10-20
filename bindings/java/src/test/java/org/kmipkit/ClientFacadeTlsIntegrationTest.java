@@ -895,6 +895,15 @@ final class ClientFacadeTlsIntegrationTest {
 
     @Test
     void cryptoOperationResponsesConvertSuccessfullyOverMutualTls() throws Exception {
+        executeCryptoOperationsOverMutualTls(true);
+    }
+
+    @Test
+    void cryptoOperationResponsesPreserveOmittedOptionalFieldsOverMutualTls() throws Exception {
+        executeCryptoOperationsOverMutualTls(false);
+    }
+
+    private void executeCryptoOperationsOverMutualTls(boolean includeOptionalResponseFields) throws Exception {
         List<?> operations = cryptoOperations();
         Path serverStorePath = temporaryDirectory.resolve("crypto-server.p12");
         Path clientStorePath = temporaryDirectory.resolve("crypto-client.p12");
@@ -914,7 +923,8 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setNeedClientAuth(true);
         listener.setSoTimeout(10_000);
         FutureTask<byte[]> peer = new FutureTask<>(
-                () -> serveOneResponse(listener, cryptoOperationResponseMessage(operations)));
+                () -> serveOneResponse(listener,
+                        cryptoOperationResponseMessage(operations, includeOptionalResponseFields)));
         Thread peerThread = new Thread(peer, "kmipkit-java-crypto-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -946,16 +956,72 @@ final class ClientFacadeTlsIntegrationTest {
                     try (ClientBatchItemResult result = response.itemAt(operationIndex)) {
                         assertEquals(0, result.resultStatus());
                         Object typedResponse = cryptoTypedResponse(cryptoOperationName(operation), result);
-                        boolean validityIndicatorPresent = !cryptoOperationName(operation).endsWith("Verify");
-                        invokeCryptoFixture(null, "assertSuccessfulOutput",
-                                new Class<?>[] {operation.getClass(), Object.class, boolean.class},
-                                operation, typedResponse, validityIndicatorPresent);
+                        if (includeOptionalResponseFields) {
+                            boolean validityIndicatorPresent = !cryptoOperationName(operation).endsWith("Verify");
+                            invokeCryptoFixture(null, "assertSuccessfulOutput",
+                                    new Class<?>[] {operation.getClass(), Object.class, boolean.class},
+                                    operation, typedResponse, validityIndicatorPresent);
+                        } else {
+                            assertCryptoOptionalFieldsAbsent(cryptoOperationName(operation), typedResponse);
+                        }
                     }
                 }
             }
             assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
         } finally {
             listener.close();
+        }
+    }
+
+    private static void assertCryptoOptionalFieldsAbsent(String operationName, Object response) {
+        switch (operationName) {
+            case "encrypt" -> {
+                ClientBatchItemResult.EncryptResponse encrypt =
+                        (ClientBatchItemResult.EncryptResponse) response;
+                try (encrypt) {
+                    assertTrue(encrypt.data().isPresent());
+                    assertTrue(encrypt.ivCounterNonce().isEmpty());
+                    assertTrue(encrypt.correlationValue().isEmpty());
+                    assertTrue(encrypt.authenticatedEncryptionTag().isEmpty());
+                }
+            }
+            case "decrypt" -> {
+                ClientBatchItemResult.DecryptResponse decrypt =
+                        (ClientBatchItemResult.DecryptResponse) response;
+                try (decrypt) {
+                    assertTrue(decrypt.data().isPresent());
+                    assertTrue(decrypt.correlationValue().isEmpty());
+                }
+            }
+            case "hash" -> {
+                ClientBatchItemResult.HashResponse hash = (ClientBatchItemResult.HashResponse) response;
+                assertTrue(hash.data().isPresent());
+                assertTrue(hash.correlationValue().isEmpty());
+            }
+            case "mac" -> {
+                ClientBatchItemResult.MacResponse mac = (ClientBatchItemResult.MacResponse) response;
+                assertTrue(mac.macData().isPresent());
+                assertTrue(mac.correlationValue().isEmpty());
+            }
+            case "macVerify" -> {
+                ClientBatchItemResult.MacVerifyResponse macVerify =
+                        (ClientBatchItemResult.MacVerifyResponse) response;
+                assertTrue(macVerify.validityIndicatorRaw().isEmpty());
+                assertTrue(macVerify.correlationValue().isEmpty());
+            }
+            case "sign" -> {
+                ClientBatchItemResult.SignResponse sign = (ClientBatchItemResult.SignResponse) response;
+                assertTrue(sign.signatureData().isPresent());
+                assertTrue(sign.correlationValue().isEmpty());
+            }
+            case "signatureVerify" -> {
+                ClientBatchItemResult.SignatureVerifyResponse signatureVerify =
+                        (ClientBatchItemResult.SignatureVerifyResponse) response;
+                assertTrue(signatureVerify.validityIndicatorRaw().isEmpty());
+                assertTrue(signatureVerify.recoveredData().isPresent());
+                assertTrue(signatureVerify.correlationValue().isEmpty());
+            }
+            default -> throw new IllegalArgumentException("unknown crypto operation: " + operationName);
         }
     }
 
@@ -1661,6 +1727,11 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] cryptoOperationResponseMessage(List<?> operations) throws Exception {
+        return cryptoOperationResponseMessage(operations, true);
+    }
+
+    private static byte[] cryptoOperationResponseMessage(
+            List<?> operations, boolean includeOptionalResponseFields) throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
@@ -1670,12 +1741,12 @@ final class ClientFacadeTlsIntegrationTest {
         for (int index = 0; index < operations.size(); index++) {
             Object operation = operations.get(index);
             Method successResponse = CryptoOperationsJavaFacadeTest.class.getDeclaredMethod(
-                    "successResponse", operation.getClass(), int.class, boolean.class);
+                    "successResponse", operation.getClass(), int.class, boolean.class, boolean.class);
             if (!successResponse.trySetAccessible()) {
                 throw new AssertionError("crypto success response fixture must remain accessible to TLS tests");
             }
             responseItems.add((byte[]) invokeCryptoFixture(
-                    fixture, successResponse, operation, index, false));
+                    fixture, successResponse, operation, index, false, includeOptionalResponseFields));
         }
         List<byte[]> messageItems = new ArrayList<>();
         messageItems.add(header);
