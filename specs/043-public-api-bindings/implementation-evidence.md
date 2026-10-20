@@ -4597,3 +4597,49 @@ The current Java/JNI changed-line subset is 4,734/5,181 (91.37%); this is not
 the all-language aggregate and does not satisfy or replace the required
 current-head 95% selected-scope CI gate. T083, T055, and T084 remain open
 until the complete current-head CI aggregate passes.
+
+### Current-head CI correction — T055/T078 inventory checks (2026-10-20)
+
+CI run `39347497789` on head `9a1beaa8` exposed two stale inventory contracts:
+the C panic-boundary test still expected 238 exports after the two Logout C
+symbols were added, and the Python export audit did not classify the inherited
+`UsageAllocationContext` constructor and local lifecycle members from T078.
+The Rust formatting and Clippy steps passed; the workspace and coverage jobs
+then stopped at the same C export-count assertion, while the selected API
+contract failed on the four unclassified Python exports. No runtime behavior
+was changed.
+
+| Stage | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `aa1a9783` | `test_remaining_python_exports_are_mapped_or_exactly_excluded` | Expected Red: the new exact-classification assertions fail until the four T078 Python exports have approved manifest exclusions. CI run `39347497789` independently reports the stale 238 C-export expectation. |
+| Green | `4dff46e3` | `python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v`; extension-fixture contract suite; both pinned generators with `--check`; C-export source count | PASS: parity/T076 59/59; extension-fixture tests 17 with 1 platform skip; all 12 API outputs current; extension fixtures current; source parser confirms 240 exports and all enter `ffi_entrypoint` first. |
+| Refactor | This DCO-signed evidence commit | Full current-head cross-platform CI and selected-scope coverage aggregate | Pending after this correction is pushed. |
+
+The four Python entries are exact KMIPKIT-0043 exclusions: direct handle
+construction is private to `_wrap_owned_handle`; `closed`, `__enter__`, and
+`__exit__` are local lifecycle conveniences over the already mapped explicit
+close operation. Their evidence cites T078, KMIPKIT-0039-FR-009, and the
+approved KMIPKIT-0043 traceability requirement. No public capability is
+removed or newly implied.
+
+### Current inventory and package-summary corrections (2026-10-20)
+
+The broader current-source checks found stale package documentation counts,
+stale Rust report selection, and newly added Java JNI exports that were not yet
+classified. These were inventory and documentation gaps; the typed operation
+behavior did not change.
+
+| Scope | Red | Green | Verification and result |
+|---|---|---|---|
+| T055 bilingual package summary | `9fba3646` | `585fa819` | The new contract failed while Logout and `usage_allocation_guard` were absent from the guides and the counts still said 28/56 blocked and 19 verified. Both guides now report 27/56 blocked, 20 verified operations, and the declared guard scope; the T030 contract suite passes. |
+| T076 current Rust export snapshot | `1a5fb2f6` | `131e7c77` | The latest-report contract failed against the 2026-10-17 snapshot, which predates T078. The generated 2026-10-20 Rust 1.94 snapshot passes `--check`: 9,541 observed paths (7,653 direct, 1,888 conditional), 9,517 exact manifest matches, 24 exact approved exclusions, and zero missing, stale, issue, kind, or condition mismatches. Two `kmipkit::Client` facade aliases remain exact blocked `public_binding_surface` rows; the approved T078 four-language mappings remain in `kmipkit_client`. |
+| T055/T078 Java binding inventory | `6312fcd3` | `131e7c77` | The contract failed on 12 unclassified Java exports. The canonical manifest now records 11 exact internal JNI bridge/discriminator exclusions and the fixed redacted `UsageAllocationContext.toString` diagnostic exclusion. The generated 2026-10-20 binding report passes `--check`: C 351/351, Java 650/650, Python 622/622 exact matches; 37, 147, and 380 exact exclusions; zero missing, stale, kind-mismatched, or scanner-issue entries. |
+| Refactor | This DCO-signed evidence commit | Current scoped API suite, script contracts, Java integration, Rust formatting, both audit `--check` commands, both generators `--check`, and `git diff --check` | PASS locally: 121 API-manifest tests; 288 script tests (26 skipped); `ClientFacadeTlsIntegrationTest` BUILD SUCCESSFUL; Rust and binding reports reconcile; 12 API outputs and extension fixtures are current; formatting and whitespace checks pass. Current-head GitHub CI and the selected-scope 95% changed-code coverage aggregate remain pending after this update is pushed. |
+
+The 12 Java exclusions are exact and follow the approved `NativeExtensionRegistry`
+internal-bridge boundary; the public Logout and Usage Allocation wrapper APIs
+remain separately mapped. The diagnostic assertion verifies that the bound
+object identifier is absent from `UsageAllocationContext.toString()`. The
+snapshot tests now choose the newest date-stamped checked-in report, preventing
+future T055/T078 additions from silently being checked against an older
+inventory.
