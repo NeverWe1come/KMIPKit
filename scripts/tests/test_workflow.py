@@ -345,6 +345,19 @@ class WorkflowContractTests(unittest.TestCase):
             "The standalone CTest consumer must receive the expected API-level values.",
         )
 
+    def test_rust_pkcs11_candidate_tests_use_an_isolated_debug_build(self) -> None:
+        contents = self.require_workflow()
+        core_job = self.require_job(contents, "core")
+        workspace_tests = self.require_named_step(core_job, "Run workspace tests")
+        candidate_tests = self.require_named_step(
+            core_job, "Run isolated Rust PKCS#11 candidate tests"
+        )
+
+        self.assertLess(workspace_tests.end(), candidate_tests.start())
+        self.assertIn("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", candidate_tests.group(1))
+        self.assertIn("target/pkcs11-candidate-rust", candidate_tests.group(1))
+        self.assertIn("-p kmipkit-protocol -p kmipkit-client", candidate_tests.group(1))
+
     def test_c_consumer_uses_an_isolated_candidate_library_after_default_export_audit(self) -> None:
         contents = self.require_workflow()
         c_job = self.require_job(contents, "language-c")
