@@ -1418,6 +1418,14 @@ class T076ClientMappingTests(unittest.TestCase):
         split_key_reference_storage_exclusion = {
             "kmipkit.extensions.SplitKeyReference.__slots__"
         }
+        usage_allocation_context_constructor_exclusion = {
+            "kmipkit.client.UsageAllocationContext.__init__"
+        }
+        usage_allocation_context_lifecycle_exclusions = {
+            "kmipkit.client.UsageAllocationContext.closed",
+            "kmipkit.client.UsageAllocationContext.__enter__",
+            "kmipkit.client.UsageAllocationContext.__exit__",
+        }
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
@@ -1432,6 +1440,8 @@ class T076ClientMappingTests(unittest.TestCase):
             | split_key_reference_lifecycle_exclusions
             | split_key_reference_repr_exclusion
             | split_key_reference_storage_exclusion
+            | usage_allocation_context_constructor_exclusion
+            | usage_allocation_context_lifecycle_exclusions
             | OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS
             | {"kmipkit.metadata.Version.__init__"}
         )
@@ -1506,6 +1516,14 @@ class T076ClientMappingTests(unittest.TestCase):
                 elif path in split_key_reference_storage_exclusion:
                     self.assertIn("storage metadata", exclusion["reason"])
                     self.assertIn("T052", exclusion["evidence"])
+                elif path in usage_allocation_context_constructor_exclusion:
+                    self.assertIn("private native handle token", exclusion["reason"])
+                    self.assertIn("_wrap_owned_handle", exclusion["reason"])
+                    self.assertIn("T078", exclusion["evidence"])
+                elif path in usage_allocation_context_lifecycle_exclusions:
+                    self.assertIn("local lifecycle convenience", exclusion["reason"])
+                    self.assertIn("close lifecycle", exclusion["reason"])
+                    self.assertIn("T078", exclusion["evidence"])
                 elif path in exception_constructor_exclusions:
                     self.assertIn("exception constructor", exclusion["reason"])
                     self.assertIn("local", exclusion["reason"])
