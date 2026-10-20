@@ -944,6 +944,30 @@ trait Example { fn declaration(&self); }
         self.assertFalse(excluded)
         self.assertTrue(adjacent)
 
+    def test_documented_coverage_exclusions_are_removed_from_scope_totals(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "int unreachable() { return 0; } // COVERAGE-EXCLUDE: The ABI makes this state unreachable.\n"
+                "int exercised_but_marked() { return 1; } // COVERAGE-EXCLUDE: The state is invariant.\n"
+                "int exercised() { return 2; }\n",
+                encoding="utf-8",
+            )
+            report = GATE.CoverageReport(
+                {relative: {1: 0, 2: 1, 3: 1}},
+                {relative: 3},
+            )
+
+            filtered = GATE._exclude_documented_coverage_lines(report, root)
+
+        self.assertEqual({relative: {2: 1, 3: 1}}, filtered)
+        self.assertEqual({relative: 3}, filtered.summary_uncovered_excess)
+        self.assertEqual({relative: 1}, filtered.documented_exclusions)
+
     def test_coverage_exclusion_markers_inside_literals_are_not_comments(self) -> None:
         self.require_gate()
         cases = (
