@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import unittest
@@ -71,6 +72,66 @@ SHARED_PARITY_CASES = {
     "usage-allocation.guard-accounting.v1",
 }
 SHARED_PARITY_LANGUAGES = ["rust", "c", "java", "python"]
+T029_CORE_FIXTURE_ASSERTIONS = {
+    "api-levels.shared.v1": ("apiLevels", "networkCalls", "operationMappingCompleteness"),
+    "errors.schema-redaction.v1": (
+        "diagnosticMarker",
+        "diagnosticOmitsInputMarker",
+        "diagnosticContainsPayload",
+    ),
+    "batch.ordered-completed-pending-failed.v1": (
+        "resultStatuses",
+        "uniqueBatchItemIds",
+        "pendingCount",
+        "correlationValueHex",
+        "transportExchangeCount",
+    ),
+    "ttlv.open-values-and-child-order.v1": (
+        "childTagsInOrder",
+        "enumerationValue",
+        "byteStringHex",
+        "unknownValuesPreserved",
+    ),
+    "codec-limits.defaults-and-ranges.v1": (
+        "maxMessageBytes",
+        "maxStructureDepth",
+        "maxElements",
+        "errorCategory",
+    ),
+    "usage-allocation.guard-accounting.v1": (
+        "allocationCount",
+        "successfulCost",
+        "overBudgetCost",
+        "afterSuccessfulProtection",
+        "transportExchangeCount",
+    ),
+}
+T029_C_HARNESS_TESTS = {
+    "api-levels.shared.v1": (
+        "generated_public_client_abi_consumer_compiles_and_runs",
+        "kmipkit_client_abi_c_consumer_main",
+    ),
+    "errors.schema-redaction.v1": (
+        "c_abi_consumer_redacts_shared_fixture_diagnostic_marker",
+        "shared_schema_redaction_fixture_matches_fixture",
+    ),
+    "batch.ordered-completed-pending-failed.v1": (
+        "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+        "kmipkit_client_abi_c_consumer_execute_tls",
+    ),
+    "ttlv.open-values-and-child-order.v1": (
+        "c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order",
+        "shared_ttlv_fixture_preserves_open_values_and_order",
+    ),
+    "codec-limits.defaults-and-ranges.v1": (
+        "c_abi_consumer_matches_the_shared_codec_limits_fixture",
+        "codec_limits_shared_fixture_matches_defaults_ranges_and_errors",
+    ),
+    "usage-allocation.guard-accounting.v1": (
+        "ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost",
+        "shared_usage_allocation_guard_matches_fixture",
+    ),
+}
 JAVA_TEST_ROOT = ROOT / "bindings" / "java" / "src" / "test" / "java"
 JAVA_KEYWORDS = {
     "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char",
@@ -457,6 +518,7 @@ class PublicApiParityTests(unittest.TestCase):
                     java["package"] == "org.kmipkit"
                     or java["package"].startswith("org.kmipkit.")
                 )
+
                 if function["id"] in {
                     "client_batch_item_response_delegated_login_ttlv",
                     "client_batch_item_response_login_ttlv",
@@ -492,6 +554,93 @@ class PublicApiParityTests(unittest.TestCase):
                     for row in aliases
                 }
                 self.assertEqual(len(java_signatures), 1)
+
+    def test_t029_fixture_consumers_assert_runtime_values_for_only_core_shared_cases(self) -> None:
+        """T029 parity is limited to shared capabilities, not operation-specific rows."""
+        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+        cases = {case["id"]: case for case in fixtures["cases"]}
+        self.assertTrue(set(T029_CORE_FIXTURE_ASSERTIONS).issubset(cases))
+        self.assertNotIn("discover-versions.supported-versions.v1", T029_CORE_FIXTURE_ASSERTIONS)
+        self.assertFalse(any(case_id.startswith("creation.") for case_id in T029_CORE_FIXTURE_ASSERTIONS))
+
+        for case_id, fields in T029_CORE_FIXTURE_ASSERTIONS.items():
+            case = cases[case_id]
+            with self.subTest(fixture=case_id):
+                self.assertEqual(set(case["consumerTests"]), set(SHARED_PARITY_LANGUAGES))
+                for language, mapping in case["consumerTests"].items():
+                    with self.subTest(fixture=case_id, language=language):
+                        self.assertEqual(mapping["status"], "available")
+                        if language != "c":
+                            body = self._mapped_test_body(language, mapping)
+                            if language == "python" and case_id == "usage-allocation.guard-accounting.v1":
+                                self.assertIn("_usage_allocation_fixture()", body)
+                                file_source = (ROOT / mapping["testFile"]).read_text(encoding="utf-8")
+                                self.assertIn(case_id, file_source)
+                            else:
+                                self.assertIn(case_id, body)
+                            for field in fields:
+                                self.assertIn(field, body, f"{case_id}/{language} must consume {field}")
+                            continue
+
+                        rust_test, c_entry = T029_C_HARNESS_TESTS[case_id]
+                        support = next(
+                            (
+                                item
+                                for item in mapping.get("supportingTests", [])
+                                if item.get("language") == "rust" and item.get("test") == rust_test
+                            ),
+                            None,
+                        )
+                        self.assertIsNotNone(
+                            support,
+                            f"{case_id}/c must have a Rust fixture parser that passes data into compiled C",
+                        )
+                        assert support is not None
+                        support_source = (ROOT / support["testFile"]).read_text(encoding="utf-8")
+                        support_body = self._rust_test_body(support_source, rust_test)
+                        self.assertIn(case_id, support_body)
+                        self.assertIn(c_entry, support_body)
+                        for field in fields:
+                            self.assertIn(field, support_body, f"{case_id}/c harness must pass {field}")
+
+    def _mapped_test_body(self, language: str, mapping: dict[str, Any]) -> str:
+        if language == "java":
+            class_name, method_name = mapping["test"].split("#", 1)
+            source_path = JAVA_TEST_ROOT / Path(*class_name.split(".")).with_suffix(".java")
+            source = source_path.read_text(encoding="utf-8")
+            match = re.search(rf"@Test\s+void\s+{re.escape(method_name)}\s*\([^)]*\)[^{{]*\{{", source)
+            self.assertIsNotNone(match, mapping["test"])
+            assert match is not None
+            return self._braced_body(source, match.end() - 1)
+
+        source_path = ROOT / mapping["testFile"]
+        source = source_path.read_text(encoding="utf-8")
+        test_name = mapping["test"].rsplit("::", 1)[-1]
+        if language == "python":
+            tree = ast.parse(source, filename=str(source_path))
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == test_name:
+                    return ast.get_source_segment(source, node) or ""
+            self.fail(f"Python consumer test {test_name} is missing from {source_path}")
+        return self._rust_test_body(source, test_name)
+
+    def _rust_test_body(self, source: str, test_name: str) -> str:
+        match = re.search(rf"\bfn\s+{re.escape(test_name)}\s*\([^)]*\)[^{{]*\{{", source)
+        self.assertIsNotNone(match, test_name)
+        assert match is not None
+        return self._braced_body(source, match.end() - 1)
+
+    def _braced_body(self, source: str, opening_brace: int) -> str:
+        depth = 0
+        for index in range(opening_brace, len(source)):
+            if source[index] == "{":
+                depth += 1
+            elif source[index] == "}":
+                depth -= 1
+                if depth == 0:
+                    return source[opening_brace:index + 1]
+        self.fail("mapped consumer test has an unterminated body")
+        return ""
 
     def test_locate_identifier_index_helper_uses_the_response_jni_entrypoint(self) -> None:
         functions = {function["id"]: function for function in self.manifest["functions"]}
