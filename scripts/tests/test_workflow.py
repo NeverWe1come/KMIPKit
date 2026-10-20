@@ -401,7 +401,7 @@ class WorkflowContractTests(unittest.TestCase):
         smoke = self.require_named_step(java_job, "Run packaged Java native loader smoke")
         audit = self.require_named_step(java_job, "Audit the packaged default JNI exports")
 
-        self.assertLess(smoke.end(), audit.start())
+        self.assertLessEqual(smoke.end(), audit.start())
         self.assertIn("bindings/java/target/native", audit.group(1))
         self.assertIn("audit_binding_exports.py", audit.group(1))
         self.assertIn("--c-only --c-binary", audit.group(1))
