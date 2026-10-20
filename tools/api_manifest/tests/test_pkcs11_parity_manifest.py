@@ -120,6 +120,10 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
         self.assertEqual("6.1.37", operation["section"])
         self.assertEqual("client_1_0", operation["scope"])
         self.assertEqual("blocked", operation["apiState"])
+        self.assertEqual(
+            "The KMIPKIT-0040 owner authorized implementation but has not formally accepted the specification; the operation remains blocked.",
+            operation["blockedReason"],
+        )
         self.assertEqual("approved", operation["ownerDependency"]["state"])
         self.assertEqual("KMIPKIT-0040", operation["ownerDependency"]["specId"])
         self.assertNotIn("featureSpecId", operation)

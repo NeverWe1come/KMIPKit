@@ -120,6 +120,24 @@ def test_pkcs11_response_releases_unexpected_owned_handle(
     assert released == [handle]
 
 
+def test_pkcs11_response_field_preserves_legacy_positional_batch_item_results() -> None:
+    legacy_suffix = [object() for _ in range(7)]
+    arguments: list[object] = [0, 0, None, b"legacy-batch-item", None]
+    arguments.extend([None] * 26)
+    arguments.extend(legacy_suffix)
+
+    result = client.BatchItemResult(*arguments)
+
+    assert len(arguments) == 38
+    assert result.login_response is legacy_suffix[0]
+    assert result.logout_response is legacy_suffix[1]
+    assert result.obtain_lease_response is legacy_suffix[2]
+    assert result.encrypt_response is legacy_suffix[3]
+    assert result.decrypt_response is legacy_suffix[4]
+    assert result.ping_response is legacy_suffix[5]
+    assert result.query_response is legacy_suffix[6]
+
+
 def test_pkcs11_shared_fixture_declares_the_canonical_four_language_contract() -> None:
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
 
