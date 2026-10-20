@@ -1045,5 +1045,3 @@ def test_pending_or_failed_batch_item_never_calls_success_payload_getters(
     for operation in _OPERATIONS:
         assert getattr(item, f"{operation}_response") is None
     response.close()
-
-
