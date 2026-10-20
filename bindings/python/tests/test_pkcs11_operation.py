@@ -59,6 +59,19 @@ def test_pkcs11_builder_preserves_generic_inputs_and_wipes_staging_bytes(
     assert bytes(ffi.buffer(span.data, span.length)) == bytes(span.length)
 
 
+def test_pkcs11_builder_executes_through_the_client_cffi_declarations() -> None:
+    function = ttlv.ttlv_structure_create()
+    item = None
+    try:
+        item = extensions.client_batch_item_pkcs11(function)
+        assert isinstance(item, extensions.ClientBatchItem)
+        assert not item.closed
+    finally:
+        if item is not None:
+            item.close()
+        function.close()
+
+
 def test_pkcs11_response_owns_generic_ttlv_and_redacts_repr(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
