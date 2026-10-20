@@ -1029,7 +1029,7 @@ def _effective_catalog_evidence_state(
     return effective_state, sorted(set(unique_blockers))
 
 
-def evaluate_profile_readiness(
+def _evaluate_profile_readiness(
     catalog: dict[str, Any],
     profile_id: str,
     *,
@@ -1039,7 +1039,7 @@ def evaluate_profile_readiness(
     current_context: dict[str, Any] | None,
     current_head: str | None = None,
     repository_root: Path | None = None,
-    _dependency_path: tuple[str, ...] = (),
+    dependency_path: tuple[str, ...],
 ) -> dict[str, Any]:
     """Evaluate stable catalog obligations against one current CI run, without publishing a claim."""
     profiles_by_id = {
@@ -1158,15 +1158,15 @@ def evaluate_profile_readiness(
     if not official_sources:
         blockers.append("profile has no linked official test case")
 
-    dependency_path = (*_dependency_path, profile_id)
+    current_dependency_path = (*dependency_path, profile_id)
     for dependency_id in profile.get("dependency_profile_ids", []):
         if not isinstance(dependency_id, str):
             blockers.append("profile contains a malformed dependency link")
             continue
-        if dependency_id in dependency_path:
+        if dependency_id in current_dependency_path:
             blockers.append(f"dependency cycle detected: {dependency_id}")
             continue
-        dependency_readiness = evaluate_profile_readiness(
+        dependency_readiness = _evaluate_profile_readiness(
             catalog,
             dependency_id,
             selected_profile_ids=selected_profile_ids,
@@ -1175,7 +1175,7 @@ def evaluate_profile_readiness(
             current_context=current_context,
             current_head=current_head,
             repository_root=repository_root,
-            _dependency_path=dependency_path,
+            dependency_path=current_dependency_path,
         )
         if (
             dependency_readiness["effective_state"] != "evidence_complete"
@@ -1200,6 +1200,31 @@ def evaluate_profile_readiness(
         "blockers": sorted(set(unique_blockers)),
         "published_claim": False,
     }
+
+
+def evaluate_profile_readiness(
+    catalog: dict[str, Any],
+    profile_id: str,
+    *,
+    selected_profile_ids: set[str] | None,
+    typed_rule_mappings: list[dict[str, Any]] | None,
+    verification_manifest: dict[str, Any] | None,
+    current_context: dict[str, Any] | None,
+    current_head: str | None = None,
+    repository_root: Path | None = None,
+) -> dict[str, Any]:
+    """Evaluate one public profile request and its dependency closure."""
+    return _evaluate_profile_readiness(
+        catalog,
+        profile_id,
+        selected_profile_ids=selected_profile_ids,
+        typed_rule_mappings=typed_rule_mappings,
+        verification_manifest=verification_manifest,
+        current_context=current_context,
+        current_head=current_head,
+        repository_root=repository_root,
+        dependency_path=(),
+    )
 
 
 def render_report(
