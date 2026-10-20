@@ -2683,7 +2683,7 @@ JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchI
         }
         if (criticality > 1) {
             throw_invalid_input(env);
-            return static_cast<jboolean>(JNI_FALSE);
+            return static_cast<jboolean>(JNI_FALSE); // COVERAGE-EXCLUDE: The FFI converts this bool to 0 or 1.
         }
         return static_cast<jboolean>(criticality == 1 ? JNI_TRUE : JNI_FALSE);
     });
@@ -4923,7 +4923,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                 || (payload_present == 0 && (located_items_present != 0 || located_items != 0
                         || identifier_count != 0))
                 || (located_items_present == 0 && located_items != 0)) {
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: The FFI derives outputs from one typed response.
             return static_cast<jobjectArray>(nullptr);
         }
         if (identifier_count > kMaximumNativeInputArrayElements
@@ -4999,7 +4999,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         if (present > 1 || (present == 1 && response_ttlv == nullptr)
                 || (present == 0 && response_ttlv != nullptr)) {
             kmipkit_ttlv_structure_release(response_ttlv);
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: FFI returns presence and handle from one typed outcome.
             return static_cast<jobjectArray>(nullptr);
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
@@ -5033,7 +5033,7 @@ JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatc
             return static_cast<jlongArray>(nullptr);
         }
         if (present > 1) {
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: FFI converts this Ping option to 0 or 1.
             return static_cast<jlongArray>(nullptr);
         }
         return make_long_array(env, {static_cast<jlong>(present)});
@@ -5051,7 +5051,7 @@ JNIEXPORT jlongArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatc
             return static_cast<jlongArray>(nullptr);
         }
         if (present > 1) {
-            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: FFI converts this Logout option to 0 or 1.
             return static_cast<jlongArray>(nullptr);
         }
         return make_long_array(env, {static_cast<jlong>(present)});
@@ -5153,7 +5153,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             if (present[index] > 1
                     || (present[index] == 1 && structure == nullptr)
                     || (present[index] == 0 && structure != nullptr)) {
-                throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+                throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: FFI derives presence and handle from one optional TTLV.
                 return false;
             }
             return true;
