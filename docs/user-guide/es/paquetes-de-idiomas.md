@@ -74,16 +74,17 @@ tabla.
 | `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
+| `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **28 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **27 / 56** siguen en
 estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
 Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
 Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Diecinueve mapeos de operación están `verified`: Certify,
+parte del repositorio. Veinte mapeos de operación están `verified`: Certify,
 Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get, Get Constraints, Get Usage
-Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Obtain Lease, Ping y Query. El mapeo de Derive
+Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping y Query. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. Ping mapea la petición y la respuesta correcta

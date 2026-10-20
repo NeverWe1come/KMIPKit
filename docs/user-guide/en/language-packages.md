@@ -70,16 +70,19 @@ changes to this table.
 | `api_level_discovery` | declared | Rust, C, Java, and Python expose the local API-level taxonomy without network access. |
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
+| `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
 
-Of the **56** KMIP `client_1_0` operation rows, **28 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **27 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Nineteen operation mappings
+or implementation code elsewhere in the repository. Twenty operation mappings
 are `verified`: Certify, Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get,
 Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-Log, Login, Obtain Lease, Ping, and Query. The Derive Key mapping rejects a successful result without its
+Log, Login, Logout, Obtain Lease, Ping, and Query. Logout sends the caller-supplied
+Ticket and does not add credential data to later requests or log out automatically;
+see [credential sessions](credential-sessions.md). The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
 complete ordered response TTLV in all four languages. The Get Constraints mapping
 sends the empty §6.1.22 request and exposes its required ordered Constraints
