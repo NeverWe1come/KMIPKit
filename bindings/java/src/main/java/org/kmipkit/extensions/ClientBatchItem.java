@@ -564,7 +564,7 @@ public final class ClientBatchItem implements AutoCloseable {
     }
 
     /** Creates a KMIP 2.1 §6.1.37 item from caller-owned generic PKCS#11 structures. */
-    public static ClientBatchItem pkcs11(
+    static ClientBatchItem pkcs11(
             TtlvStructure function,
             @Nullable TtlvStructure interfaceStructure,
             @Nullable byte[] correlationValue,

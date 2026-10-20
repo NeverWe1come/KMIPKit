@@ -49,11 +49,11 @@ EXPECTED_MAPPINGS = {
         "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.close",
     },
     "python": {
-        "kmipkit.extensions.client_batch_item_pkcs11",
-        "kmipkit.client.BatchItemResult.pkcs11_response",
-        "kmipkit.client.Pkcs11Response",
-        "kmipkit.client.Pkcs11Response.response_ttlv",
-        "kmipkit.client.Pkcs11Response.close",
+        "kmipkit.extensions._client_batch_item_pkcs11_candidate",
+        "kmipkit.client._Pkcs11BatchItemResult.pkcs11_response",
+        "kmipkit.client._Pkcs11Response",
+        "kmipkit.client._Pkcs11Response.response_ttlv",
+        "kmipkit.client._Pkcs11Response.close",
     },
 }
 PKCS11_CANDIDATE_EXPORTS = {
@@ -166,7 +166,7 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
     def test_pkcs11_code_declares_all_four_language_mappings(self) -> None:
         self.assertTrue(PARITY_FIXTURE.is_file(), "shared PKCS#11 parity fixture is missing")
         fixture = json.loads(PARITY_FIXTURE.read_text(encoding="utf-8"))
-        mappings = fixture["languageMappings"]
+        mappings = fixture["candidateImplementationMappings"]
         self.assertEqual(LANGUAGES, set(mappings))
         self.assertTrue(PARITY_EVIDENCE <= set(fixture["parityEvidence"]))
         self.assertTrue(OWNER_REQUIREMENTS <= set(fixture["requirementIds"]))

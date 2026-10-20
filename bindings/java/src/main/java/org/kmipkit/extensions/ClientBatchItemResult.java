@@ -227,7 +227,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     /** Returns the complete PKCS#11 result for Success, Failure, or Pending. */
-    public Optional<Pkcs11Response> pkcs11Response() {
+    Optional<Pkcs11Response> pkcs11Response() {
         long responseTtlv = handle.withValue(Pkcs11NativeBridge::responseTtlv);
         return parsePkcs11Response(responseTtlv);
     }
@@ -703,7 +703,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     /** PKCS#11 result with its complete ordered generic TTLV for every valid result status. */
-    public static final class Pkcs11Response implements AutoCloseable {
+    static final class Pkcs11Response implements AutoCloseable {
         private final TtlvStructure responseTtlv;
 
         private Pkcs11Response(TtlvStructure responseTtlv) {
@@ -711,7 +711,7 @@ public final class ClientBatchItemResult implements AutoCloseable {
         }
 
         /** Returns the complete ordered response structure, including unknown fields. */
-        public TtlvStructure responseTtlv() { return responseTtlv; }
+        TtlvStructure responseTtlv() { return responseTtlv; }
 
         @Override public void close() { responseTtlv.close(); }
 

@@ -869,7 +869,6 @@ class BatchItemResult(_BatchItemResultNativeState):
     join_split_key_response: JoinSplitKeyResponse | None = field(default=None, repr=False)
     interop_response: InteropResponse | None = field(default=None, repr=False)
     log_response: LogResponse | None = field(default=None, repr=False)
-    pkcs11_response: Pkcs11Response | None = field(default=None, repr=False)
     login_response: LoginResponse | None = field(default=None, repr=False)
     logout_response: bool | None = None
     obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
@@ -1287,7 +1286,7 @@ class LogResponse:
 
 
 @dataclass(frozen=True, slots=True, repr=False)
-class Pkcs11Response:
+class _Pkcs11Response:
     """PKCS#11 result with an owned complete response TTLV for every KMIP status."""
 
     response_ttlv: ttlv.Structure = field(repr=False)
@@ -1297,7 +1296,14 @@ class Pkcs11Response:
         self.response_ttlv.close()
 
     def __repr__(self) -> str:
-        return "Pkcs11Response(response_ttlv=redacted)"
+        return "_Pkcs11Response(response_ttlv=redacted)"
+
+
+@dataclass(frozen=True, slots=True)
+class _Pkcs11BatchItemResult(BatchItemResult):
+    """Private result subtype for the owner-gated PKCS#11 candidate mapping."""
+
+    pkcs11_response: _Pkcs11Response | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1858,7 +1864,17 @@ def _batch_result(handle: Any) -> BatchResult:
                     sign_response,
                     signature_verify_response,
                 ) = cryptographic_responses
-                result = BatchItemResult(
+                result_type = (
+                    _Pkcs11BatchItemResult
+                    if pkcs11_response is not None
+                    else BatchItemResult
+                )
+                candidate_response = (
+                    {"pkcs11_response": pkcs11_response}
+                    if pkcs11_response is not None
+                    else {}
+                )
+                result = result_type(
                         outcome,
                         int(metadata.result_status),
                         result_reason,
@@ -1890,7 +1906,6 @@ def _batch_result(handle: Any) -> BatchResult:
                         join_split_key_response=join_split_key_response,
                         interop_response=interop_response,
                         log_response=log_response,
-                        pkcs11_response=pkcs11_response,
                         login_response=login_response,
                         logout_response=logout_response,
                         obtain_lease_response=obtain_lease_response,
@@ -1898,6 +1913,7 @@ def _batch_result(handle: Any) -> BatchResult:
                         decrypt_response=decrypt_response,
                         ping_response=ping_response,
                         query_response=query_response,
+                        **candidate_response,
                     )
                 items.append(result)
                 if (
@@ -2881,7 +2897,7 @@ def _log_response(item: _ClientBatchItemResponse) -> LogResponse | None:
     return LogResponse(response_ttlv)
 
 
-def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
+def _pkcs11_response(item: _ClientBatchItemResponse) -> _Pkcs11Response | None:
     present = ffi.new("uint8_t *")
     response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
     status = lib.kmipkit_client_batch_item_response_pkcs11_ttlv(
@@ -2906,7 +2922,7 @@ def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
     except Exception:
         lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
         raise
-    return Pkcs11Response(response_ttlv)
+    return _Pkcs11Response(response_ttlv)
 
 
 def _derive_key_response(
@@ -3475,7 +3491,6 @@ __all__ = [
     "JoinSplitKeyResponse",
     "InteropResponse",
     "LogResponse",
-    "Pkcs11Response",
     "GetConstraintsResponse",
     "GetResponse",
     "LocateResponse",

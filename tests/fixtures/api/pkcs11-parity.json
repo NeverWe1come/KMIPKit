@@ -47,7 +47,7 @@
     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS",
     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE"
   ],
-  "languageMappings": {
+  "candidateImplementationMappings": {
     "rust": [
       "kmipkit_client::Client::pkcs11",
       "kmipkit_client::ClientRequest::Pkcs11",
@@ -70,11 +70,11 @@
       "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.close"
     ],
     "python": [
-      "kmipkit.extensions.client_batch_item_pkcs11",
-      "kmipkit.client.BatchItemResult.pkcs11_response",
-      "kmipkit.client.Pkcs11Response",
-      "kmipkit.client.Pkcs11Response.response_ttlv",
-      "kmipkit.client.Pkcs11Response.close"
+      "kmipkit.extensions._client_batch_item_pkcs11_candidate",
+      "kmipkit.client._Pkcs11BatchItemResult.pkcs11_response",
+      "kmipkit.client._Pkcs11Response",
+      "kmipkit.client._Pkcs11Response.response_ttlv",
+      "kmipkit.client._Pkcs11Response.close"
     ]
   },
   "mappingSourceFiles": {
@@ -116,16 +116,16 @@
       "kmipkit_client_batch_item_pkcs11"
     ],
     "java": [
-      "public static ClientBatchItem pkcs11(",
-      "public Optional<Pkcs11Response> pkcs11Response()",
+      "static ClientBatchItem pkcs11(",
+      "Optional<Pkcs11Response> pkcs11Response()",
       "class Pkcs11Response",
       "TtlvStructure responseTtlv()",
       "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative"
     ],
     "python": [
-      "def client_batch_item_pkcs11(",
-      "pkcs11_response: Pkcs11Response | None",
-      "class Pkcs11Response:",
+      "def _client_batch_item_pkcs11_candidate(",
+      "pkcs11_response: _Pkcs11Response | None",
+      "class _Pkcs11Response:",
       "response_ttlv: ttlv.Structure = field(repr=False)",
       "def close(self)"
     ]

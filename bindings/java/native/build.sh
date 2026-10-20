@@ -47,7 +47,8 @@ response_bridge_test="$native_output/response_bridge_test"
     "$script_dir/tests/response_bridge_test.cpp" -o "$response_bridge_test"
 "$response_bridge_test"
 
-cargo build --locked -p kmipkit-ffi --manifest-path "$repository_root/Cargo.toml"
+cargo build --locked -p kmipkit-ffi --features test-pkcs11-candidate \
+    --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in
     Linux*)

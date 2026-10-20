@@ -28,7 +28,7 @@ if ([string]::IsNullOrWhiteSpace($devCommand) -or -not (Test-Path -LiteralPath $
 }
 
 New-Item -ItemType Directory -Path $nativeOutput -Force | Out-Null
-cargo build --locked -p kmipkit-ffi
+cargo build --locked -p kmipkit-ffi --features test-pkcs11-candidate
 if ($LASTEXITCODE -ne 0) {
     throw "cargo build failed with exit code $LASTEXITCODE."
 }
