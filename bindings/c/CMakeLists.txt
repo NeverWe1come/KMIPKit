@@ -3,7 +3,8 @@ project(kmipkit_c_consumer LANGUAGES C)
 
 enable_testing()
 
-set(KMIPKIT_TARGET_DIR "${CMAKE_CURRENT_LIST_DIR}/../../target/debug")
+set(KMIPKIT_TARGET_DIR "${CMAKE_CURRENT_LIST_DIR}/../../target/debug" CACHE PATH
+    "Directory containing the KMIPKit FFI library selected for this consumer")
 find_library(KMIPKIT_FFI_LIBRARY
     NAMES kmipkit_ffi
     PATHS "${KMIPKIT_TARGET_DIR}"

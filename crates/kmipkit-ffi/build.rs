@@ -1,7 +1,16 @@
 use std::env;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 
 fn main() {
+    println!("cargo:rerun-if-env-changed=KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD");
+    println!("cargo:rustc-check-cfg=cfg(kmipkit_pkcs11_candidate_test)");
+    if env::var_os("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD")
+        .is_some_and(|value| value == OsStr::new("1"))
+    {
+        println!("cargo:rustc-cfg=kmipkit_pkcs11_candidate_test");
+    }
+
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_COVERAGE_C_CONSUMER");
     let feature_enabled = env::var_os("CARGO_FEATURE_COVERAGE_C_CONSUMER").is_some();
     if !feature_enabled {

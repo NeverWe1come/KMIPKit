@@ -349,15 +349,24 @@ jobs:
           & $python.Source -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Build the isolated PKCS#11 candidate C ABI
+        id: build-isolated-pkcs11-candidate-c-abi
+        shell: pwsh
+        run: |
+          $env:KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD = '1'
+          $env:CARGO_TARGET_DIR = Join-Path $env:GITHUB_WORKSPACE 'target/pkcs11-candidate'
+          cargo build --locked -p kmipkit-ffi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Configure the C consumer with MSVC
         id: configure-the-c-consumer-with-msvc
         if: runner.os == 'Windows'
-        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer
+        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/pkcs11-candidate/debug"
 
       - name: Configure the C consumer with Ninja
         id: configure-the-c-consumer-with-ninja
         if: runner.os != 'Windows'
-        run: cmake -G Ninja -S bindings/c -B build/c-consumer
+        run: cmake -G Ninja -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/pkcs11-candidate/debug"
 
       - name: Compile the C consumer and example
         id: compile-the-c-consumer-and-example
@@ -369,7 +378,7 @@ jobs:
         shell: pwsh
         run: |
           if ($IsWindows) {
-            $nativeLibraryDirectory = Join-Path $env:GITHUB_WORKSPACE 'target/debug'
+            $nativeLibraryDirectory = Join-Path $env:GITHUB_WORKSPACE 'target/pkcs11-candidate/debug'
             $env:PATH = "$nativeLibraryDirectory;$env:PATH"
           }
           ctest --test-dir build/c-consumer -C Release --output-on-failure
@@ -453,6 +462,20 @@ jobs:
         id: run-java-tests
         run: mvn --batch-mode --file bindings/java/pom.xml test
 
+      - name: Verify isolated candidate JNI harness exports
+        id: verify-isolated-candidate-jni-harness-exports
+        shell: pwsh
+        run: |
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) { throw 'Python 3 is required to audit the JNI exports.' }
+          $nativeLibrary = Get-ChildItem -LiteralPath 'bindings/java/target/native-test' -File |
+            Where-Object { $_.Name -like 'kmipkit_jni.*' } |
+            Select-Object -First 1
+          if (-not $nativeLibrary) { throw 'The isolated JNI candidate library was not built.' }
+          & $python.Source -B tools/api_manifest/audit_jni_candidate_exports.py --mode candidate --binary $nativeLibrary.FullName
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Prime Gradle Java compile dependencies
         id: prime-gradle-java-compile-dependencies
         shell: pwsh
@@ -474,6 +497,20 @@ jobs:
           } else {
             sh ./gradlew --offline nativeJarSmoke
           }
+
+      - name: Audit the packaged default JNI exports
+        id: audit-packaged-default-jni-exports
+        shell: pwsh
+        run: |
+          $python = Get-Command -Name python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
+          if (-not $python) { throw 'Python 3 is required to audit the JNI exports.' }
+          $nativeLibrary = Get-ChildItem -LiteralPath 'bindings/java/target/native' -File |
+            Where-Object { $_.Name -like 'kmipkit_jni.*' } |
+            Select-Object -First 1
+          if (-not $nativeLibrary) { throw 'The default JNI library was not built for the package smoke.' }
+          & $python.Source -B tools/api_manifest/audit_jni_candidate_exports.py --mode default --binary $nativeLibrary.FullName
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -549,6 +586,23 @@ jobs:
           python -m pytest -q bindings/python/tests
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python bindings/python/examples/vendor_extension_registry.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build isolated PKCS#11 CFFI runtime and run parity test
+        id: run-python-pkcs11-candidate-parity
+        shell: pwsh
+        run: |
+          $env:KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD = '1'
+          $env:CARGO_TARGET_DIR = Join-Path $env:GITHUB_WORKSPACE 'target/pkcs11-candidate'
+          cargo build --locked -p kmipkit-ffi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $nativeLibrary = Get-ChildItem -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'debug') -File |
+            Where-Object { $_.Name -like '*kmipkit_ffi*' -and $_.Extension -in @('.dll', '.dylib', '.so') } |
+            Select-Object -First 1
+          if (-not $nativeLibrary) { throw 'The isolated PKCS#11 CFFI runtime was not built.' }
+          $env:KMIPKIT_NATIVE_LIBRARY = $nativeLibrary.FullName
+          $env:KMIPKIT_PKCS11_CANDIDATE_TEST_RUNTIME = '1'
+          python -m pytest -q bindings/python/tests/test_pkcs11_operation.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run isolated offline Python wheel smoke

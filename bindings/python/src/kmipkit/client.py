@@ -1303,7 +1303,7 @@ class _Pkcs11Response:
 class _Pkcs11BatchItemResult(BatchItemResult):
     """Private result subtype for the owner-gated PKCS#11 candidate mapping."""
 
-    pkcs11_response: _Pkcs11Response | None = field(default=None, repr=False)
+    _pkcs11_response: _Pkcs11Response | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1870,7 +1870,7 @@ def _batch_result(handle: Any) -> BatchResult:
                     else BatchItemResult
                 )
                 candidate_response = (
-                    {"pkcs11_response": pkcs11_response}
+                    {"_pkcs11_response": pkcs11_response}
                     if pkcs11_response is not None
                     else {}
                 )

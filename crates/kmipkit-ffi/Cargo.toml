@@ -13,7 +13,6 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 
 [features]
 coverage-c-consumer = []
-test-pkcs11-candidate = []
 
 [dependencies]
 aws-lc-rs.workspace = true

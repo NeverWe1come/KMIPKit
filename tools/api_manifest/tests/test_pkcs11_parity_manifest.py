@@ -51,7 +51,7 @@ EXPECTED_MAPPINGS = {
     },
     "python": {
         "kmipkit.extensions._client_batch_item_pkcs11_candidate",
-        "kmipkit.client._Pkcs11BatchItemResult.pkcs11_response",
+        "kmipkit.client._Pkcs11BatchItemResult._pkcs11_response",
         "kmipkit.client._Pkcs11Response",
         "kmipkit.client._Pkcs11Response.response_ttlv",
         "kmipkit.client._Pkcs11Response.close",
@@ -153,6 +153,33 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             in PKCS11_CANDIDATE_EXPORTS
         }
         self.assertFalse(inventory)
+
+    def test_candidate_native_symbols_are_in_private_harness_inventory_only(self) -> None:
+        fixture = json.loads(PARITY_FIXTURE.read_text(encoding="utf-8"))
+        c_symbols = {
+            "kmipkit_client_batch_item_pkcs11",
+            "kmipkit_client_batch_item_response_pkcs11_ttlv",
+        }
+        jni_symbols = {
+            "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative",
+            "Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseTtlvNative",
+        }
+
+        self.assertEqual(c_symbols, set(fixture["candidateImplementationMappings"]["c"]))
+        self.assertEqual(jni_symbols, set(fixture["candidateOnlyNativeExports"]["javaJni"]))
+        public_names = {row["exportName"] for row in self.manifest["publicDeclarations"]}
+        self.assertFalse((c_symbols | jni_symbols) & public_names)
+
+        c_consumer = (ROOT / fixture["consumerTests"]["c"]).read_text(encoding="utf-8")
+        jni_bridge = (ROOT / "bindings/java/native/kmipkit_jni.cpp").read_text(
+            encoding="utf-8"
+        )
+        for symbol in c_symbols:
+            with self.subTest(symbol=symbol):
+                self.assertIn(symbol, c_consumer)
+        for symbol in jni_symbols:
+            with self.subTest(symbol=symbol):
+                self.assertIn(symbol, jni_bridge)
 
     def test_candidate_build_gate_is_not_a_cargo_feature(self) -> None:
         completed = subprocess.run(

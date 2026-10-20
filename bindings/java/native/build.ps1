@@ -6,8 +6,16 @@ $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..\..'
 $javaExecutable = (Get-Command javac -ErrorAction Stop).Source
 $javaHome = Split-Path -Parent (Split-Path -Parent $javaExecutable)
 $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
-$nativeOutput = Join-Path $PSScriptRoot '..\target\native'
-$rustLibrary = Join-Path $repositoryRoot 'target\debug\kmipkit_ffi.lib'
+$candidateBuild = $env:KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD -eq '1'
+if ($candidateBuild) {
+    $cargoTargetDirectory = Join-Path $repositoryRoot 'target\pkcs11-candidate'
+    $nativeOutput = Join-Path $PSScriptRoot '..\target\native-test'
+} else {
+    $cargoTargetDirectory = Join-Path $repositoryRoot 'target'
+    $nativeOutput = Join-Path $PSScriptRoot '..\target\native'
+}
+$env:CARGO_TARGET_DIR = $cargoTargetDirectory
+$rustLibrary = Join-Path $cargoTargetDirectory 'debug\kmipkit_ffi.lib'
 $jniSource = Join-Path $PSScriptRoot 'kmipkit_jni.cpp'
 $zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
 $clientBatchItemTransferTestSource = Join-Path $PSScriptRoot 'tests\client_batch_item_transfer_test.cpp'
@@ -28,12 +36,12 @@ if ([string]::IsNullOrWhiteSpace($devCommand) -or -not (Test-Path -LiteralPath $
 }
 
 New-Item -ItemType Directory -Path $nativeOutput -Force | Out-Null
-cargo build --locked -p kmipkit-ffi --features test-pkcs11-candidate
+cargo build --locked -p kmipkit-ffi
 if ($LASTEXITCODE -ne 0) {
     throw "cargo build failed with exit code $LASTEXITCODE."
 }
 if (-not (Test-Path -LiteralPath $rustLibrary -PathType Leaf)) {
-    throw 'Cargo did not produce target\debug\kmipkit_ffi.lib for the JNI link.'
+    throw "Cargo did not produce '$rustLibrary' for the JNI link."
 }
 
 $zeroizingTestObject = Join-Path $nativeOutput 'zeroizing_bytes_test.obj'
@@ -147,6 +155,9 @@ $objectPath = Join-Path $nativeOutput 'kmipkit_jni.obj'
 $dllPath = Join-Path $nativeOutput 'kmipkit_jni.dll'
 $importPath = Join-Path $nativeOutput 'kmipkit_jni.lib'
 $compiler = 'cl.exe /nologo /std:c++17 /EHsc /MD /LD'
+if ($env:KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD -eq '1') {
+    $compiler += ' /DKMIPKIT_PKCS11_CANDIDATE_TEST'
+}
 $compiler += ' /I' + '"' + $jniInclude + '"'
 $compiler += ' /I' + '"' + $jniPlatformInclude + '"'
 $compiler += ' /I' + '"' + $cHeader + '"'

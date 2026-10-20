@@ -71,7 +71,7 @@
     ],
     "python": [
       "kmipkit.extensions._client_batch_item_pkcs11_candidate",
-      "kmipkit.client._Pkcs11BatchItemResult.pkcs11_response",
+      "kmipkit.client._Pkcs11BatchItemResult._pkcs11_response",
       "kmipkit.client._Pkcs11Response",
       "kmipkit.client._Pkcs11Response.response_ttlv",
       "kmipkit.client._Pkcs11Response.close"
@@ -120,14 +120,21 @@
       "Optional<Pkcs11Response> pkcs11Response()",
       "class Pkcs11Response",
       "TtlvStructure responseTtlv()",
-      "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative"
+      "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative",
+      "Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseTtlvNative"
     ],
     "python": [
       "def _client_batch_item_pkcs11_candidate(",
-      "pkcs11_response: _Pkcs11Response | None",
+      "_pkcs11_response: _Pkcs11Response | None",
       "class _Pkcs11Response:",
       "response_ttlv: ttlv.Structure = field(repr=False)",
       "def close(self)"
+    ]
+  },
+  "candidateOnlyNativeExports": {
+    "javaJni": [
+      "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative",
+      "Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseTtlvNative"
     ]
   },
   "consumerTests": {

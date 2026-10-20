@@ -398,9 +398,17 @@ class WorkflowContractTests(unittest.TestCase):
     def test_java_package_smoke_audits_default_native_exports(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
+        java_tests = self.require_named_step(java_job, "Run Java 17 JNI tests and example")
+        candidate_audit = self.require_named_step(
+            java_job, "Verify isolated candidate JNI harness exports"
+        )
         smoke = self.require_named_step(java_job, "Run packaged Java native loader smoke")
         audit = self.require_named_step(java_job, "Audit the packaged default JNI exports")
 
+        self.assertLessEqual(java_tests.end(), candidate_audit.start())
+        self.assertIn("bindings/java/target/native-test", candidate_audit.group(1))
+        self.assertIn("audit_jni_candidate_exports.py", candidate_audit.group(1))
+        self.assertIn("--mode candidate", candidate_audit.group(1))
         self.assertLessEqual(smoke.end(), audit.start())
         self.assertIn("bindings/java/target/native", audit.group(1))
         self.assertIn("audit_jni_candidate_exports.py", audit.group(1))

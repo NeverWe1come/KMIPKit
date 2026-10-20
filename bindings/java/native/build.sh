@@ -20,7 +20,19 @@ else
             ;;
     esac
 fi
-native_output="$script_dir/../target/native"
+if [ "${KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD:-}" = "1" ]; then
+    cargo_target_directory="$repository_root/target/pkcs11-candidate"
+    native_output="$script_dir/../target/native-test"
+else
+    cargo_target_directory="$repository_root/target"
+    native_output="$script_dir/../target/native"
+fi
+export CARGO_TARGET_DIR="$cargo_target_directory"
+if [ "${KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD:-}" = "1" ]; then
+    jni_candidate_define="-DKMIPKIT_PKCS11_CANDIDATE_TEST"
+else
+    jni_candidate_define=""
+fi
 mkdir -p "$native_output"
 
 zeroizing_bytes_test="$native_output/zeroizing_bytes_test"
@@ -47,17 +59,18 @@ response_bridge_test="$native_output/response_bridge_test"
     "$script_dir/tests/response_bridge_test.cpp" -o "$response_bridge_test"
 "$response_bridge_test"
 
-cargo build --locked -p kmipkit-ffi --features test-pkcs11-candidate \
+cargo build --locked -p kmipkit-ffi \
     --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in
     Linux*)
-        rust_library="$repository_root/target/debug/libkmipkit_ffi.a"
+        rust_library="$cargo_target_directory/debug/libkmipkit_ffi.a"
         set -- -std=c++17 -fPIC -shared
         if [ "${KMIPKIT_JNI_COVERAGE:-}" = "llvm" ]; then
             set -- "$@" -fprofile-instr-generate -fcoverage-mapping
         fi
         "${CXX:-c++}" "$@" \
+            ${jni_candidate_define:+$jni_candidate_define} \
             -I"$java_home/include" -I"$java_home/include/linux" \
             -I"$repository_root/bindings/c/include" \
             -I"$repository_root/tests/fixtures/api/generated" \
@@ -65,8 +78,9 @@ case "$(uname -s)" in
             -ldl -lpthread -lm -o "$native_output/libkmipkit_jni.so"
         ;;
     Darwin*)
-        rust_library="$repository_root/target/debug/libkmipkit_ffi.a"
+        rust_library="$cargo_target_directory/debug/libkmipkit_ffi.a"
         "${CXX:-c++}" -std=c++17 -dynamiclib \
+            ${jni_candidate_define:+$jni_candidate_define} \
             -I"$java_home/include" -I"$java_home/include/darwin" \
             -I"$repository_root/bindings/c/include" \
             -I"$repository_root/tests/fixtures/api/generated" \

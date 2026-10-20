@@ -48,18 +48,22 @@ extern "C" int32_t kmipkit_client_batch_item_query_with_limits(
         kmipkit_codec_limits_t* limits, const uint32_t* functions, uint64_t function_count,
         uint8_t has_object_groups, const kmipkit_byte_span_v1_t* object_groups,
         uint64_t object_group_count, kmipkit_client_batch_item_t** out_item);
+#if defined(KMIPKIT_PKCS11_CANDIDATE_TEST)
 extern "C" int32_t kmipkit_client_batch_item_pkcs11(
         kmipkit_ttlv_structure_t* function, kmipkit_ttlv_structure_t* interface_structure,
         const kmipkit_byte_span_v1_t* correlation_value,
         kmipkit_ttlv_structure_t* input_parameters, kmipkit_client_batch_item_t** out_item);
+#endif
 extern "C" int32_t kmipkit_client_batch_item_response_ping(
         kmipkit_client_batch_item_response_t* item, uint8_t* out_present);
 extern "C" int32_t kmipkit_client_batch_item_response_query_ttlv(
         kmipkit_client_batch_item_response_t* item, uint8_t* out_present,
         kmipkit_ttlv_structure_t** out_response_ttlv);
+#if defined(KMIPKIT_PKCS11_CANDIDATE_TEST)
 extern "C" int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(
         kmipkit_client_batch_item_response_t* item, uint8_t* out_present,
         kmipkit_ttlv_structure_t** out_response_ttlv);
+#endif
 
 // Layouts come from the generated internal header. Keep compile-time checks
 // here so the JNI bridge consumes the same ABI definition as the C harness.
@@ -1391,6 +1395,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+#if defined(KMIPKIT_PKCS11_CANDIDATE_TEST)
 JNIEXPORT jlong JNICALL Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative(
         JNIEnv* env, jclass, jlong raw_function, jlong raw_interface,
         jbyteArray raw_correlation_value, jlong raw_input_parameters) {
@@ -1446,6 +1451,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseT
         return present == 0 ? static_cast<jlong>(0) : to_java_handle(response_ttlv);
     });
 }
+#endif
 
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemQuery(
         JNIEnv* env, jclass, jintArray raw_functions, jobjectArray raw_object_groups) {

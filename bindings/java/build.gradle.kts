@@ -34,8 +34,8 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.test {
     useJUnitPlatform()
-    dependsOn("buildNativeLibrary")
-    systemProperty("kmipkit.nativeLibrary", layout.projectDirectory.file("target/native/${hostLibraryName()}").asFile.absolutePath)
+    dependsOn("buildCandidateNativeLibrary")
+    systemProperty("kmipkit.nativeLibrary", layout.projectDirectory.file("target/native-test/${hostLibraryName()}").asFile.absolutePath)
 }
 
 fun hostTargetId(): String {
@@ -81,7 +81,22 @@ tasks.register<org.gradle.api.tasks.Exec>("buildNativeLibrary") {
     outputs.file(layout.projectDirectory.file("target/native/${hostLibraryName()}"))
 }
 
+tasks.register<org.gradle.api.tasks.Exec>("buildCandidateNativeLibrary") {
+    val windows = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
+    workingDir(projectDir)
+    environment("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", "1")
+    if (windows) {
+        commandLine(
+            "powershell.exe", "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", file("native/build.ps1").absolutePath)
+    } else {
+        commandLine("sh", file("native/build.sh").absolutePath)
+    }
+    outputs.file(layout.projectDirectory.file("target/native-test/${hostLibraryName()}"))
+}
+
 val prepareNativeResources = tasks.register("prepareNativeResources") {
+    dependsOn("buildNativeLibrary")
     inputs.property("nativeTarget", nativeTarget)
     if (nativeLibrary.isPresent) {
         inputs.file(nativeLibrary)
@@ -120,6 +135,7 @@ val prepareNativeResources = tasks.register("prepareNativeResources") {
 }
 
 tasks.register<Jar>("nativeJar") {
+    dependsOn("buildNativeLibrary")
     dependsOn(prepareNativeResources)
     from(sourceSets.main.get().output)
     from(nativeResources)
