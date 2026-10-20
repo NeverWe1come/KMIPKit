@@ -5072,6 +5072,32 @@ fn ffi_guarded_encrypt_pending_retains_context_and_returns_pending_metadata() {
         kmipkit_client_batch_response_item_at(response, 0, &raw mut response_item),
         SUCCESS
     );
+    assert_pending_abi_item_metadata(response_item, &correlation);
+
+    let mut reserved_units = 0;
+    let mut available_units = 0;
+    assert_eq!(
+        kmipkit_usage_allocation_context_reserved_units(context, &raw mut reserved_units),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_usage_allocation_context_available_units(context, &raw mut available_units),
+        SUCCESS
+    );
+    assert_eq!(reserved_units, 2);
+    assert_eq!(available_units, 3);
+
+    kmipkit_client_batch_item_response_release(response_item);
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_release(client);
+    kmipkit_usage_allocation_context_release(context);
+    release(limits, Kind::CodecLimits);
+}
+
+fn assert_pending_abi_item_metadata(
+    response_item: *mut kmipkit_client_batch_item_response_t,
+    expected_correlation: &[u8],
+) {
     let mut metadata = kmipkit_client_batch_item_metadata_v1_t {
         struct_size: u32::try_from(std::mem::size_of::<kmipkit_client_batch_item_metadata_v1_t>())
             .expect("metadata size fits ABI field"),
@@ -5099,26 +5125,7 @@ fn ffi_guarded_encrypt_pending_retains_context_and_returns_pending_metadata() {
         SUCCESS
     );
     assert_eq!(present, 1);
-    assert_response_span(correlation_span, &correlation);
-
-    let mut reserved_units = 0;
-    let mut available_units = 0;
-    assert_eq!(
-        kmipkit_usage_allocation_context_reserved_units(context, &raw mut reserved_units),
-        SUCCESS
-    );
-    assert_eq!(
-        kmipkit_usage_allocation_context_available_units(context, &raw mut available_units),
-        SUCCESS
-    );
-    assert_eq!(reserved_units, 2);
-    assert_eq!(available_units, 3);
-
-    kmipkit_client_batch_item_response_release(response_item);
-    kmipkit_client_batch_response_release(response);
-    kmipkit_client_release(client);
-    kmipkit_usage_allocation_context_release(context);
-    release(limits, Kind::CodecLimits);
+    assert_response_span(correlation_span, expected_correlation);
 }
 
 // KMIP Specification v2.1 §6.1.27, Tables 244–246.
