@@ -535,6 +535,11 @@ class PublicApiParityTests(unittest.TestCase):
                     "client_batch_item_response_login_ttlv",
                     "client_batch_item_response_locate_unique_identifier_at",
                     "client_batch_item_response_obtain_lease_ttlv",
+                    "client_batch_item_response_pkcs11_interface_ttlv",
+                    "client_batch_item_response_pkcs11_function_ttlv",
+                    "client_batch_item_response_pkcs11_correlation_value",
+                    "client_batch_item_response_pkcs11_output_parameters_ttlv",
+                    "client_batch_item_response_pkcs11_return_code_ttlv",
                 }:
                     self.assertNotIn("jniSymbol", java)
                 else:

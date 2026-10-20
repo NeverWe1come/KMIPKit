@@ -4712,46 +4712,10 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact.",
-      "exportName": "kmipkit.client.Pkcs11Response.__delattr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact.",
-      "exportName": "kmipkit.client.Pkcs11Response.__eq__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact.",
-      "exportName": "kmipkit.client.Pkcs11Response.__hash__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact.",
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. The client adapter constructs Pkcs11Response; its response TTLV fields and close lifecycle are mapped individually. This excludes only direct caller construction.",
       "exportName": "kmipkit.client.Pkcs11Response.__init__",
       "packageId": "python-kmipkit",
-      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability."
+      "reason": "This adapter-owned constructor assembles the PKCS#11 response record and is not an independent KMIP capability for direct caller construction."
     },
     {
       "approvalSource": {
@@ -4776,18 +4740,6 @@
       "exportName": "kmipkit.client.Pkcs11Response.__repr__",
       "packageId": "python-kmipkit",
       "reason": "This exact __repr__ is a redacted diagnostic representation, not an independent cross-language KMIPKit capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact.",
-      "exportName": "kmipkit.client.Pkcs11Response.__setattr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability."
     },
     {
       "approvalSource": {
@@ -30714,7 +30666,6 @@
           "internal"
         ],
         "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
         "method": "interfaceTtlv",
         "package": "org.kmipkit.extensions",
         "parameters": [],
@@ -30822,7 +30773,6 @@
           "internal"
         ],
         "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
         "method": "functionTtlv",
         "package": "org.kmipkit.extensions",
         "parameters": [],
@@ -30930,7 +30880,6 @@
           "internal"
         ],
         "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
         "method": "correlationValue",
         "package": "org.kmipkit.extensions",
         "parameters": [],
@@ -31038,7 +30987,6 @@
           "internal"
         ],
         "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
         "method": "outputParametersTtlv",
         "package": "org.kmipkit.extensions",
         "parameters": [],
@@ -31146,7 +31094,6 @@
           "internal"
         ],
         "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11",
         "method": "returnCodeTtlv",
         "package": "org.kmipkit.extensions",
         "parameters": [],
