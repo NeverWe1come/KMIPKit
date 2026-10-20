@@ -1836,6 +1836,14 @@ static int get_locate_abi_is_callable_from_c(void) {
     kmipkit_ttlv_structure_t *attributes = 0;
     kmipkit_client_batch_item_t *get_item = 0;
     kmipkit_client_batch_item_t *locate_item = 0;
+    kmipkit_client_batch_item_t *invalid_locate_item =
+        (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_locate(
+            0, 0, 0, 0, 0, 0, 0, 0, 0, &invalid_locate_item) !=
+            T076_ERROR_INVALID_INPUT ||
+        invalid_locate_item != 0) {
+        return 0;
+    }
     if (kmipkit_ttlv_structure_create(&wrapping_specification) != 0 ||
         kmipkit_ttlv_structure_create(&attributes) != 0 ||
         kmipkit_client_batch_item_get(
