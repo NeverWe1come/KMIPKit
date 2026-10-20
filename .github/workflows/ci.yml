@@ -483,7 +483,7 @@ jobs:
           if (-not $python) { $python = Get-Command -Name python3 -ErrorAction SilentlyContinue }
           if (-not $python) { throw 'Python 3 is required to audit the JNI exports.' }
           $nativeLibrary = Get-ChildItem -LiteralPath 'bindings/java/target/native' -File |
-            Where-Object { $_.Name -like 'kmipkit_jni.*' } |
+            Where-Object { $_.Name -like '*kmipkit_jni.*' } |
             Select-Object -First 1
           if (-not $nativeLibrary) { throw 'The default JNI library was not built for the package smoke.' }
           & $python.Source -B tools/api_manifest/audit_jni_public_exports.py --binary $nativeLibrary.FullName
