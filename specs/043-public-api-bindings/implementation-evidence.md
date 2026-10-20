@@ -4555,10 +4555,10 @@ protocol semantics or OASIS conformance claim changed.
 Red, Green, and Refactor are separate DCO-signed commits. The traceability row
 links `KMIPKIT-024-T256-REQUEST`, `KMIPKIT-024-T257-RESPONSE`, and
 `KMIPKIT-024-T258-ERROR` to the approved owner requirements and API mapping
-requirements. Current-head CI and the selected-scope changed-code coverage gate
-have not been run for this worktree, so T055 remains unchecked pending those
-gates. No OASIS conformance, profile-support, interoperability, or certification
-claim is made.
+requirements. CI run `39365112249` passed on head `aca874f1`; its selected-scope
+coverage gate measured 95.01% changed-production coverage and all applicable
+scope thresholds passed. No OASIS conformance, profile-support,
+interoperability, or certification claim is made.
 
 ### T084 — Native Python Logout regression (2026-10-20)
 
@@ -4575,8 +4575,11 @@ does not mark T055 complete.
 | Green | `6708f119` | In `bindings/python`, run `maturin develop` to regenerate the CFFI bindings from the current public header; then run `test_logout_native_integration.py` and `test_logout_operation.py` with `KMIPKIT_NATIVE_LIBRARY` pointing at the current local DLL | PASS: native TLS 1.3/mTLS Logout round-trip and all 4 existing stubbed Logout tests; combined focused run 5/5. No production source changes were needed. |
 | Refactor | This DCO-signed refactor/evidence commit | `ruff check tests/test_logout_native_integration.py`; `ruff format --check tests/test_logout_native_integration.py`; focused Logout pytest modules; `git diff --check` | PASS: lint and format; 5 focused Python Logout tests; no whitespace errors. Server peer error handling is restricted to expected assertion/socket/TLS failures. |
 
-Red, Green, and Refactor are separate DCO-signed commits. T084 and T055 remain
-open pending current-head CI and the selected-scope changed-code coverage gate.
+Red, Green, and Refactor are separate DCO-signed commits. CI run
+`39365112249` passed on head `aca874f1`, including Python bindings on Ubuntu,
+Windows, and macOS and the selected-scope changed-code coverage gate. T084's
+native-backed acceptance criteria are complete; T055's mapping criteria also
+passed in that run.
 
 ### T083 — JNI and changed-production coverage recovery (2026-10-20)
 
@@ -4595,8 +4598,8 @@ thresholds are unchanged.
 
 The current Java/JNI changed-line subset is 4,734/5,181 (91.37%); this is not
 the all-language aggregate and does not satisfy or replace the required
-current-head 95% selected-scope CI gate. T083, T055, and T084 remain open
-until the complete current-head CI aggregate passes.
+current-head 95% selected-scope CI gate. That checkpoint was superseded by the
+current-head aggregate recorded below.
 
 T083 follow-up (2026-10-20): CI run `39358504243` passed every job except the
 selected-scope changed-production gate, which measured 10,053/10,592 (94.91%).
@@ -4614,8 +4617,18 @@ cross-platform CI evidence.
 
 The three new getter tests pass within the 208-test FFI suite. The workspace
 coverage run completed all Rust tests; `cargo fmt --all --check`, scoped
-Clippy, and `git diff --check` pass. Current-head CI must still confirm the
-selected-scope aggregate before T083, T055, or T084 can be checked complete.
+Clippy, and `git diff --check` pass.
+
+Current-head verification: CI run
+[`39365112249`](https://github.com/NeverWe1come/KMIPKit/actions/runs/39365112249)
+passed on `aca874f1c1d241eb69659fa3fd2fa27d7d9ec0df`; every required check
+passed, with only the two schedule-only checks skipped. The selected-scope gate
+reported changed production 10,063/10,592 (95.01%), TTLV 99.19%, protocol
+96.99%, transport 95.16%, FFI 94.93%, Java 98.06%, Python 98.83%, JNI 85.16%,
+and Rust workspace 96.39%. Each scope met its configured threshold (95% for
+TTLV, protocol, and changed production; 85% for transport, FFI, Java, Python,
+and JNI; 90% for the workspace). T083, T055, and T084 are complete. Other
+KMIPKIT-0043 tasks remain open, so this does not make the draft PR complete.
 
 ### Current-head CI correction — T055/T078 inventory checks (2026-10-20)
 
