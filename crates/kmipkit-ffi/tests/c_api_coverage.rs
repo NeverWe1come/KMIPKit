@@ -786,19 +786,6 @@ fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
     let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
         .expect("temporary trust root path has no NUL byte");
     let port = CString::new(port.to_string()).expect("port has no NUL byte");
-    let fixture_ids = [
-        CString::new("00").expect("fixture ID has no NUL byte"),
-        CString::new("01").expect("fixture ID has no NUL byte"),
-        CString::new("02").expect("fixture ID has no NUL byte"),
-    ];
-    let fixture_statuses = [
-        CString::new("0").expect("fixture status has no NUL byte"),
-        CString::new("2").expect("fixture status has no NUL byte"),
-        CString::new("1").expect("fixture status has no NUL byte"),
-    ];
-    let correlation = CString::new("00a17f70616972").expect("correlation has no NUL byte");
-    let fixture_item_count = CString::new("3").expect("fixture count has no NUL byte");
-    let fixture_pending_count = CString::new("1").expect("pending count has no NUL byte");
     let mode = CString::new("rekey-key-pair").expect("mode has no NUL byte");
     let mut arguments = vec![
         executable.as_ptr().cast_mut(),
@@ -808,15 +795,6 @@ fn generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls() {
         trust_root.as_ptr().cast_mut(),
         port.as_ptr().cast_mut(),
     ];
-    arguments.extend(fixture_ids.iter().map(|value| value.as_ptr().cast_mut()));
-    arguments.extend(
-        fixture_statuses
-            .iter()
-            .map(|value| value.as_ptr().cast_mut()),
-    );
-    arguments.push(correlation.as_ptr().cast_mut());
-    arguments.push(fixture_item_count.as_ptr().cast_mut());
-    arguments.push(fixture_pending_count.as_ptr().cast_mut());
     arguments.push(mode.as_ptr().cast_mut());
     let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
     let mut limits = std::ptr::null_mut();

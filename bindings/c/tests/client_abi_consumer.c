@@ -2480,24 +2480,27 @@ static int execute_public_tls_request(
     if (port_end == argv[5] || *port_end != '\0' || port == 0 || port > 65535UL) {
         return 2;
     }
-    for (uint64_t index = 0; index < UINT64_C(3); ++index) {
-        uint64_t parsed_status = 0;
+    if (!rekey_key_pair_only) {
+        for (uint64_t index = 0; index < UINT64_C(3); ++index) {
+            uint64_t parsed_status = 0;
+            if (!parse_fixture_hex(
+                    argv[6 + index], fixture_ids[index], sizeof(fixture_ids[index]),
+                    &fixture_id_lengths[index]) ||
+                !parse_fixture_decimal(argv[9 + index], &parsed_status) ||
+                parsed_status > UINT32_MAX) {
+                return 3;
+            }
+            fixture_statuses[index] = (uint32_t)parsed_status;
+        }
         if (!parse_fixture_hex(
-                argv[6 + index], fixture_ids[index], sizeof(fixture_ids[index]),
-                &fixture_id_lengths[index]) ||
-            !parse_fixture_decimal(argv[9 + index], &parsed_status) ||
-            parsed_status > UINT32_MAX) {
+                argv[12], fixture_correlation, sizeof(fixture_correlation),
+                &fixture_correlation_length) ||
+            !parse_fixture_decimal(argv[13], &fixture_item_count) ||
+            !parse_fixture_decimal(argv[14], &fixture_pending_count) ||
+            fixture_item_count != UINT64_C(3) ||
+            fixture_pending_count > fixture_item_count) {
             return 3;
         }
-        fixture_statuses[index] = (uint32_t)parsed_status;
-    }
-    if (!parse_fixture_hex(
-            argv[12], fixture_correlation, sizeof(fixture_correlation),
-            &fixture_correlation_length) ||
-        !parse_fixture_decimal(argv[13], &fixture_item_count) ||
-        !parse_fixture_decimal(argv[14], &fixture_pending_count) ||
-        fixture_item_count != UINT64_C(3) || fixture_pending_count > fixture_item_count) {
-        return 3;
     }
     client_certificates[0].source_kind = 2; /* file */
     client_certificates[0].encoding = 2; /* DER */
@@ -5084,7 +5087,7 @@ int kmipkit_client_abi_c_consumer_execute_tls(
     if (argv == 0 || limits == 0) {
         return 22;
     }
-    if (argc == 16 && argv[15] != 0 && strcmp(argv[15], "rekey-key-pair") == 0) {
+    if (argc == 7 && argv[6] != 0 && strcmp(argv[6], "rekey-key-pair") == 0) {
         rekey_key_pair_only = 1;
     } else if (argc != 15) {
         return 22;

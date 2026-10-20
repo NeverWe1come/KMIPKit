@@ -208,9 +208,9 @@ unchecked pending controller review, security review, exact-head CI, and coverag
 - Python native loopback verifies response and payload field order, unknown tag
   `0x541234` and value `01 00 FF`, and that the copied TTLV remains usable after
   closing/freeing the source `ClientBatchResult`.
-- No C outgoing-request TTLV assertion was added: the existing public C
-  consumer has no request-capture/serialization inspection seam. Its available
-  ABI surface allows response TTLV inspection only.
+- At this stage of the parity follow-up, no C outgoing-request TTLV assertion
+  had been added. The final QA residual follow-up below closes that gap using
+  the existing C consumer and Rust mTLS peer, without changing the public ABI.
 
 ### Refactor and final checks
 
@@ -241,6 +241,75 @@ unchecked pending controller review, security review, exact-head CI, and coverag
 - This report records the Red and Green follow-up commits; its final update is
   included in the separate DCO-signed Refactor commit.
 - Self-review found no production-path, ABI, wire-contract, manifest, generated
-  output, or normative-source change in this follow-up. Remaining review limits
-  are the unavailable C request-capture seam and pending controller/security/
-  exact-head CI/coverage checks.
+  output, or normative-source change in this follow-up. The C request-capture
+  gap noted above is closed by the final QA residual follow-up below. Controller
+  review, security review, exact-head CI, and coverage checks remain pending.
+
+## Final QA residual C request-capture follow-up
+
+This follow-up closes the remaining request-side C parity gap with a test-only
+mode in the compiled public C consumer and an isolated Rust mTLS loopback peer.
+The C API constructs the request; the peer captures and decodes the transmitted
+TTLV bytes. No production API, ABI, manifest, generated output, or normative
+source was changed. T060 remains unchecked pending controller review, security
+review, exact-head CI, and coverage.
+
+### Red
+
+- Commit: `9f432e839aece1ff2ce358044964fb079fc595fd`
+  (`test: require C Re-key Key Pair request mapping`), DCO signed.
+- Command:
+  `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact`
+- Result: expected failure. The mTLS peer panicked with
+  `C ABI consumer must transmit the Re-key Key Pair fields over mTLS`; the
+  compiled consumer exited with status 9 (category 3, cause 5, delivery 2),
+  one server exchange was observed, and the test assertion reported
+  `left: 109, right: 0`. This confirmed the compiled C request had not yet been
+  checked for the Re-key Key Pair operation.
+
+### Green
+
+- Commit: `ad60bde9e7680946029332ede71cce2c3b123680`
+  (`test: verify C Re-key Key Pair request TTLV`), DCO signed.
+- The C consumer test constructs all six optional structures with unique,
+  non-empty marker tags `0x541101` through `0x541106` and values
+  `common-attributes`, `private-attributes`, `public-attributes`,
+  `common-masks`, `private-masks`, and `public-masks`. It calls the C
+  Re-key Key Pair builder with private identifier `existing-private-key`,
+  offset `86400`, and batch item ID `pair-c`.
+- The Rust mTLS peer reads the actual request frame and asserts the unique
+  Re-key operation, request payload order, identifier tag `0x420066`, offset
+  tag `0x420058`, and optional field tags in KMIP Table 310 order:
+  `0x420126`, `0x420127`, `0x420128`, `0x420163`, `0x420164`, `0x420165`.
+  It checks each field's nested marker tag and exact byte-string value. The
+  response exercises the public C result accessor and checks both replacement
+  identifiers.
+- Exact dedicated command, rerun after the Refactor cleanup:
+  `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_c_consumer_maps_rekey_key_pair_request_over_mtls -- --exact`
+  passed: `1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out`.
+- Full focused compiled C consumer harness, rerun after the Refactor cleanup:
+  `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage`
+  passed: `11 passed; 0 failed; 0 ignored`.
+
+### Refactor and final checks
+
+- The test-only mode now takes only the TLS credential paths, port, and mode;
+  it skips parsing unrelated batch fixture arguments. This keeps the dedicated
+  C mTLS path isolated while preserving the original fixture-backed mode.
+- Refactor commit: this report update, argv simplification, and check evidence
+  are included in the separate DCO-signed Refactor commit.
+- `cargo clippy --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage -- -D warnings`:
+  PASS, exit 0.
+- `cargo fmt --all --check`: PASS, exit 0.
+- `git diff --check`: PASS, exit 0 before staging the Refactor changes.
+- The focused C runs emitted existing AWS-LC/NASM and `stdalign_check.c`
+  build warnings, plus non-fatal MSVC linker LNK4217 warnings. The test targets
+  completed successfully.
+- Self-review: all changes are confined to C/Rust test harnesses and this
+  report. The six request fields are checked by wire tag, order, nested marker,
+  and value; the server peer decodes bytes received from the C API over mTLS.
+  Unrelated untracked local coverage artifacts were left untouched. No
+  production source, public API/ABI, manifest, generated file, or OASIS source
+  was edited.
+- Remaining limits: security review, controller review, exact-head CI, and
+  selected-scope coverage remain pending. T060 is not marked complete.
