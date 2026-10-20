@@ -350,23 +350,47 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "bindings/java/build.gradle.kts",
             "bindings/java/pom.xml",
         )
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            for relative in version_paths:
-                destination = root / relative
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(ROOT / relative, destination)
-            generate._validate_release_package_versions(self.checked_in_manifest, root)
-
-            python_metadata = root / "bindings/python/pyproject.toml"
-            python_metadata.write_text(
-                python_metadata.read_text(encoding="utf-8").replace(
-                    'version = "1.0.0"', 'version = "9.9.9"', 1
-                ),
-                encoding="utf-8",
-            )
-            with self.assertRaises(ManifestError):
-                generate._validate_release_package_versions(self.checked_in_manifest, root)
+        mutations = (
+            (
+                "Cargo.toml",
+                'version = "1.0.0"',
+                'version = "9.9.9"',
+            ),
+            (
+                "crates/kmipkit-client/Cargo.toml",
+                "version.workspace = true",
+                'version = "1.0.0"',
+            ),
+            (
+                "bindings/python/pyproject.toml",
+                'version = "1.0.0"',
+                'version = "9.9.9"',
+            ),
+            (
+                "bindings/java/build.gradle.kts",
+                'version = "1.0.0"',
+                'version = "9.9.9"',
+            ),
+            (
+                "bindings/java/pom.xml",
+                "<version>1.0.0</version>",
+                "<version>9.9.9</version>",
+            ),
+        )
+        for relative, expected, replacement in mutations:
+            with self.subTest(path=relative), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                for version_path in version_paths:
+                    destination = root / version_path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(ROOT / version_path, destination)
+                source = root / relative
+                original = source.read_text(encoding="utf-8")
+                mutated = original.replace(expected, replacement, 1)
+                self.assertNotEqual(mutated, original, relative)
+                source.write_text(mutated, encoding="utf-8")
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(self.checked_in_manifest, root)
 
     def test_runtime_metadata_exports_are_inventoried_in_every_language(self) -> None:
         declarations = {
