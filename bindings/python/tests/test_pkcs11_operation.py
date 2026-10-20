@@ -302,7 +302,46 @@ def test_pkcs11_correlation_mapping_distinguishes_absent_from_present_empty(
             ),
         )
         actual = client._pkcs11_correlation_value(item)
-        assert actual == (raw if expected["present"] else None), name
+        assert (
+            None if actual is None else actual.to_bytes()
+        ) == (raw if expected["present"] else None), name
+
+
+def test_pkcs11_response_zeroizes_owned_correlation_when_closed() -> None:
+    correlation = b"pkcs11-correlation-private-sentinel"
+    owned = client._SecretBytes(correlation)
+    response = client.Pkcs11Response(
+        _structure_with_text(0x420159, "response"), correlation_value=owned
+    )
+
+    assert response.correlation_value == correlation
+
+    response.close()
+
+    assert owned.buffer == bytearray(len(correlation))
+
+
+def test_pkcs11_response_wipes_correlation_if_later_mapping_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    correlation = b"pkcs11-correlation-private-sentinel"
+    owned = client._SecretBytes(correlation)
+    response_ttlv = _structure_with_text(0x420159, "response")
+
+    def get_structure(_item: object, symbol: str) -> ttlv.Structure | None:
+        if symbol.endswith("_pkcs11_ttlv"):
+            return response_ttlv
+        if "output_parameters" in symbol:
+            raise RuntimeError("injected output-parameter mapping failure")
+        return None
+
+    monkeypatch.setattr(client, "_pkcs11_owned_structure", get_structure)
+    monkeypatch.setattr(client, "_pkcs11_correlation_value", lambda _item: owned)
+
+    with pytest.raises(RuntimeError, match="injected output-parameter mapping failure"):
+        client._pkcs11_response(SimpleNamespace())
+
+    assert owned.buffer == bytearray(len(correlation))
 
 
 def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
