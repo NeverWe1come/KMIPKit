@@ -165,6 +165,32 @@ fn ffi_query_builder_applies_codec_limits_before_copying_and_accepts_custom_limi
 }
 
 #[test]
+fn ffi_query_preflight_rejects_object_groups_over_the_element_budget() {
+    let function = QUERY_OPERATION;
+    let group = b"group";
+    let groups = [byte_span(group)];
+
+    assert_eq!(
+        custom_query_status(1024, 4, 3, &function, 1, 1, groups.as_ptr(), 1,),
+        ERROR_RESOURCE_LIMIT,
+        "the function fits, but the Object Groups structure and member exceed the budget"
+    );
+}
+
+#[test]
+fn ffi_query_preflight_rejects_encoded_size_after_object_groups_are_added() {
+    let function = QUERY_OPERATION;
+    let group = b"group";
+    let groups = [byte_span(group)];
+
+    assert_eq!(
+        custom_query_status(40, 4, 100, &function, 1, 1, groups.as_ptr(), 1,),
+        ERROR_RESOURCE_LIMIT,
+        "the Query functions fit, but the complete payload with Object Groups does not"
+    );
+}
+
+#[test]
 fn ffi_query_builder_accepts_present_empty_object_groups_at_exact_ttlv_size() {
     let function = QUERY_OPERATION;
 
@@ -322,12 +348,18 @@ fn ffi_query_constructor_rejects_invalid_flags_pointers_and_limits() {
         query_status(functions.as_ptr(), 1, 1, missing_bytes.as_ptr(), 1),
         ERROR_INVALID_INPUT
     );
+}
 
-    let invalid_utf8 = [0xff_u8];
-    let invalid_utf8_group = [byte_span(&invalid_utf8)];
+#[test]
+fn ffi_query_constructor_rejects_malformed_object_group_utf8_after_preflight() {
+    let function = QUERY_OPERATION;
+    let malformed_group = [b'g', 0xc3, 0x28];
+    let groups = [byte_span(&malformed_group)];
+
     assert_eq!(
-        query_status(functions.as_ptr(), 1, 1, invalid_utf8_group.as_ptr(), 1,),
-        ERROR_INVALID_INPUT
+        custom_query_status(1024, 4, 100, &function, 1, 1, groups.as_ptr(), 1,),
+        ERROR_INVALID_INPUT,
+        "object group bytes must be valid UTF-8 after passing size preflight"
     );
 }
 

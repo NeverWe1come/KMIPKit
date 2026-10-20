@@ -346,6 +346,16 @@ def test_optional_output_secret_span_rejects_malformed_native_shapes(
         client._optional_output_secret_span(present, span)
 
 
+def test_optional_output_span_rejects_length_above_platform_limit() -> None:
+    present = client.ffi.new("uint8_t *")
+    span = client.ffi.new("kmipkit_byte_span_v1_t *")
+    present[0] = 1
+    span.length = client.sys.maxsize + 1
+
+    with pytest.raises(errors.ResourceLimitError):
+        client._optional_output_span(present, span)
+
+
 def test_encrypt_response_copies_caller_bytes_into_wipeable_storage() -> None:
     response = client.EncryptResponse(
         extensions.UniqueIdentifier.text_string("response-id"),

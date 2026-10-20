@@ -101,6 +101,103 @@ def test_query_builder_requires_a_non_empty_function_sequence() -> None:
         extensions.client_batch_item_query([1], ["\ud800"])
 
 
+@pytest.mark.parametrize("invalid_argument", ("limits", "functions", "groups"))
+def test_query_builder_rejects_invalid_sequence_and_limit_types(
+    invalid_argument: str,
+) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        if invalid_argument == "limits":
+            extensions.client_batch_item_query_with_limits(
+                [1], [], object()  # type: ignore[arg-type]
+            )
+        elif invalid_argument == "functions":
+            extensions.client_batch_item_query(1, None)  # type: ignore[arg-type]
+        else:
+            extensions.client_batch_item_query([1], object())  # type: ignore[arg-type]
+
+
+def test_query_snapshot_uses_tuple_backing_and_string_contents(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class HostileTuple(tuple):
+        def __len__(self) -> int:
+            raise AssertionError("tuple subclass length override must be ignored")
+
+        def __iter__(self):
+            raise AssertionError("tuple subclass iterator override must be ignored")
+
+    class HostileString(str):
+        def __len__(self) -> int:
+            raise AssertionError("string subclass length override must be ignored")
+
+        def __getitem__(self, index: int) -> str:
+            raise AssertionError("string subclass indexing override must be ignored")
+
+        def encode(self, *_args: object, **_kwargs: object) -> bytes:
+            raise AssertionError("string subclass encoding override must be ignored")
+
+    observed: list[tuple[list[int], list[str]]] = []
+
+    def make_handle(_kind: str, _symbol: str, arguments: tuple[object, ...]) -> int:
+        function_values = ffi.cast("uint32_t *", arguments[0])
+        functions = [int(function_values[index]) for index in range(int(arguments[1]))]
+        spans = ffi.cast("kmipkit_byte_span_v1_t *", arguments[3])
+        groups = [
+            bytes(ffi.buffer(spans[index].data, int(spans[index].length))).decode(
+                "utf-8"
+            )
+            for index in range(int(arguments[4]))
+        ]
+        observed.append((functions, groups))
+        return 23
+
+    monkeypatch.setattr(extensions, "_make_handle", make_handle)
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    functions = HostileTuple((1, 0xF123_4567))
+    groups = HostileTuple((HostileString("backing-value"),))
+    assert extensions.client_batch_item_query(functions, groups) == 23  # type: ignore[arg-type]
+    assert observed == [([1, 0xF123_4567], ["backing-value"])]
+
+
+def test_query_builder_rejects_group_text_when_character_count_exceeds_budget() -> None:
+    limits = ttlv.codec_limits_create(32, 64, 100)
+    try:
+        with pytest.raises(errors.ResourceLimitError):
+            extensions.client_batch_item_query_with_limits([1], ["x"], limits)
+    finally:
+        limits.close()
+
+
+def test_query_builder_rejects_ttlv_padding_over_message_budget() -> None:
+    limits = ttlv.codec_limits_create(35, 64, 100)
+    try:
+        with pytest.raises(errors.ResourceLimitError):
+            extensions.client_batch_item_query_with_limits([1], ["x"], limits)
+    finally:
+        limits.close()
+
+
+def test_query_builder_counts_utf8_bytes_and_preserves_supplementary_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed: list[str] = []
+
+    def make_handle(_kind: str, _symbol: str, arguments: tuple[object, ...]) -> int:
+        spans = ffi.cast("kmipkit_byte_span_v1_t *", arguments[3])
+        observed.append(
+            bytes(ffi.buffer(spans[0].data, int(spans[0].length))).decode("utf-8")
+        )
+        return 23
+
+    monkeypatch.setattr(extensions, "_make_handle", make_handle)
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    group = "\u07ff\u0800\U0001f642"
+    assert extensions.client_batch_item_query([1], [group]) == 23
+    assert observed == [group]
+
+
 def test_query_builder_rejects_default_limit_excess_before_snapshot(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

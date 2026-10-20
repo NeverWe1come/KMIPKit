@@ -171,6 +171,122 @@ def test_usage_allocation_context_uses_live_native_result_and_owns_its_state(
     assert released == [response_pointer, batch_response_pointer, context_pointer]
 
 
+def test_usage_allocation_context_rejects_null_handle_after_successful_create(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer = ffi.cast("kmipkit_client_batch_item_response_t *", 27)
+    native_response = client._wrap_owned_handle(
+        client._ClientBatchItemResponse, response_pointer
+    )
+    result = client.BatchItemResult(
+        client.BatchOutcome.COMPLETED, 0, None, None, None, operation=0x11
+    )
+    object.__setattr__(result, "_native_usage_allocation_response", native_response)
+    released: list[object] = []
+    calls: list[tuple[object, int, int]] = []
+
+    def create(item: object, requested: int, unit: int, _output: object) -> int:
+        calls.append((item, requested, unit))
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_usage_allocation_context_create=create,
+            kmipkit_client_batch_item_response_release=lambda value: released.append(
+                value
+            ),
+        ),
+    )
+
+    with pytest.raises(errors.KmipKitError):
+        result.create_usage_allocation_context(5, 1)
+
+    native_response.close()
+    assert calls == [(response_pointer, 5, 1)]
+    assert released == [response_pointer]
+
+
+def test_batch_result_releases_retained_allocation_if_later_mapper_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    batch_pointer = client.ffi.cast("kmipkit_client_batch_response_t *", 31)
+    item_pointers = (
+        client.ffi.cast("kmipkit_client_batch_item_response_t *", 32),
+        client.ffi.cast("kmipkit_client_batch_item_response_t *", 33),
+    )
+    addresses = tuple(
+        int(client.ffi.cast("uintptr_t", pointer)) for pointer in item_pointers
+    )
+    released: list[tuple[str, int]] = []
+
+    def metadata(item: object, output: object) -> int:
+        item_address = int(client.ffi.cast("uintptr_t", item))
+        output.struct_size = client.ffi.sizeof(  # type: ignore[attr-defined]
+            "kmipkit_client_batch_item_metadata_v2_t"
+        )
+        output.abi_version = 2  # type: ignore[attr-defined]
+        output.reserved = 0  # type: ignore[attr-defined]
+        output.operation = 0x11 if item_address == addresses[0] else 0x18  # type: ignore[attr-defined]
+        output.outcome_kind = int(client.BatchOutcome.COMPLETED)  # type: ignore[attr-defined]
+        output.result_status = 0  # type: ignore[attr-defined]
+        output.has_result_reason = 0  # type: ignore[attr-defined]
+        output.result_reason = 0  # type: ignore[attr-defined]
+        output.has_result_message = 0  # type: ignore[attr-defined]
+        output.result_message_data = client.ffi.NULL  # type: ignore[attr-defined]
+        output.result_message_length = 0  # type: ignore[attr-defined]
+        return 0
+
+    def item_at(_batch: object, index: int, output: object) -> int:
+        output[0] = item_pointers[index]  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_response_release=lambda value: released.append(
+                ("batch", int(client.ffi.cast("uintptr_t", value)))
+            ),
+            kmipkit_client_batch_item_response_release=lambda value: released.append(
+                ("item", int(client.ffi.cast("uintptr_t", value)))
+            ),
+            kmipkit_client_batch_response_item_count=lambda _batch, count: count.__setitem__(
+                0, 2
+            ) or 0,
+            kmipkit_client_batch_response_item_at=item_at,
+            kmipkit_client_batch_item_response_metadata_v2=metadata,
+            kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
+            kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+        ),
+    )
+    monkeypatch.setattr(client, "_response_span", lambda *_args: None)
+    monkeypatch.setattr(client, "_discover_versions_supported_versions", lambda _item: None)
+    monkeypatch.setattr(client, "_create_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_key_pair_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_split_key_response", lambda _item: None)
+    monkeypatch.setattr(client, "_get_usage_allocation_response", lambda _item: object())
+    monkeypatch.setattr(
+        client, "_join_split_key_response_for_result", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(client, "_cryptographic_responses", lambda *_args: (None,) * 7)
+
+    def fail_query_mapper(_item: object) -> None:
+        raise RuntimeError("later query mapper failed")
+
+    monkeypatch.setattr(client, "_query_response", fail_query_mapper)
+
+    with pytest.raises(RuntimeError, match="later query mapper failed"):
+        client._batch_result(batch_pointer)
+
+    assert released == [
+        ("item", addresses[1]),
+        ("item", addresses[0]),
+        ("batch", int(client.ffi.cast("uintptr_t", batch_pointer))),
+    ]
+
+
 @pytest.mark.parametrize(
     ("kind", "field", "value", "expected"),
     (
@@ -262,6 +378,15 @@ def test_usage_allocation_context_rejects_malformed_native_identifiers(
 
     context.close()
     assert released == [pointer]
+
+
+def test_native_unique_identifier_rejects_length_above_platform_limit() -> None:
+    identifier = client._initialize_unique_identifier_output()
+    identifier.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+    identifier.text_length = client.sys.maxsize + 1
+
+    with pytest.raises(errors.ResourceLimitError):
+        client._read_unique_identifier(identifier)
 
 
 def test_get_usage_allocation_response_allows_absent_response(
