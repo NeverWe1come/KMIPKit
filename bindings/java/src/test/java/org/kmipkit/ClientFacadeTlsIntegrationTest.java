@@ -893,6 +893,8 @@ final class ClientFacadeTlsIntegrationTest {
                             context.availableUnits());
                     assertEquals(SharedCapabilityParityFixtureTest.numberField(initial, "reserved"),
                             context.reservedUnits());
+                    String afterSuccess = SharedCapabilityParityFixtureTest.objectField(
+                            fixtureExpected, "afterSuccessfulProtection");
 
                     try (TtlvStructure parameters = TtlvStructure.create();
                             TtlvValue data = TtlvValue.ByteString(new byte[] {1, 2, 3}, limits);
@@ -922,8 +924,8 @@ final class ClientFacadeTlsIntegrationTest {
                                         guardedItem.encryptResponse().orElseThrow()) {
                             assertEquals(0L, guardedItem.resultStatus());
                             assertEquals(allocationIdentifier, encrypted.uniqueIdentifier().text());
-                            String afterSuccess = SharedCapabilityParityFixtureTest.objectField(
-                                    fixtureExpected, "afterSuccessfulProtection");
+                            assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "allocated"),
+                                    context.allocatedUnits());
                             assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "reserved"),
                                     context.reservedUnits());
                             assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "available"),
@@ -945,6 +947,8 @@ final class ClientFacadeTlsIntegrationTest {
                                 rejected, "accepted"));
                         assertEquals("true", SharedCapabilityParityFixtureTest.stringOrBooleanField(
                                 rejected, "stateUnchanged"));
+                        assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "allocated"),
+                                context.allocatedUnits());
                     }
 
                     try (TtlvStructure parameters = TtlvStructure.create();
@@ -955,9 +959,11 @@ final class ClientFacadeTlsIntegrationTest {
                         assertThrows(InvalidInputException.class,
                                 () -> client.executeGuardedProtectionItem(
                                         context, mismatched, 1L, limits));
+                        assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "allocated"),
+                                context.allocatedUnits());
                     }
-                    String afterSuccess = SharedCapabilityParityFixtureTest.objectField(
-                            fixtureExpected, "afterSuccessfulProtection");
+                    assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "allocated"),
+                            context.allocatedUnits());
                     assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "reserved"),
                             context.reservedUnits());
                     assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "available"),
@@ -976,6 +982,8 @@ final class ClientFacadeTlsIntegrationTest {
                                     context, directGuard, successfulCost, limits);
                             ClientBatchItemResult guardedItem = guarded.itemAt(0)) {
                         assertEquals(0L, guardedItem.resultStatus());
+                        assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "allocated"),
+                                context.allocatedUnits());
                         assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "reserved")
                                         + successfulCost,
                                 context.reservedUnits());
