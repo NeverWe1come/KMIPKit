@@ -175,6 +175,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Locate",
                 "Log",
                 "Login",
+                "Logout",
                 "Obtain Lease",
                 "Ping",
                 "Query",
