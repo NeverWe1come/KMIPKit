@@ -1538,10 +1538,6 @@ def _client_batch_item_query(
     raw_functions = [
         _integer_range(value, 0, 0xFFFF_FFFF) for value in function_values
     ]
-    if group_values is not None and len(group_values) > sys.maxsize // _client_ffi.sizeof(
-        "kmipkit_byte_span_v1_t"
-    ):
-        errors.raise_for_status(6)
     staged_buffers: list[Any] = []
     try:
         function_array = _client_ffi.new("uint32_t[]", raw_functions)
@@ -1556,12 +1552,8 @@ def _client_batch_item_query(
             ) if group_values else _client_ffi.NULL
             total_bytes = 0
             for index, group in enumerate(group_values):
-                if not isinstance(group, str):
-                    errors.raise_for_status(4)
-                try:
-                    encoded = str.encode(group, "utf-8")
-                except UnicodeEncodeError:
-                    errors.raise_for_status(4)
+                # The immutable snapshot was type-checked and UTF-8 validated above.
+                encoded = str.encode(group, "utf-8")
                 _validate_query_ttlv_text_length(len(encoded))
                 if len(encoded) > sys.maxsize - total_bytes:
                     errors.raise_for_status(6)
