@@ -42,10 +42,10 @@ use kmipkit_protocol::{
     GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    QueryFunction, QueryRequest, RegisterRequest, SecretBytes, SecretText, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
-    UniqueIdentifier,
+    ObtainLeaseRequest, OpaqueObjectContext, OperationData, Pkcs11Request, ProtocolError,
+    ProtocolErrorKind, QueryFunction, QueryRequest, RegisterRequest, SecretBytes, SecretText,
+    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    Ticket, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -77,6 +77,9 @@ mod metadata_tests;
 #[cfg(test)]
 #[path = "../tests/support/opaque_handle_validation_tests.rs"]
 mod opaque_handle_validation_tests;
+#[cfg(test)]
+#[path = "../tests/support/pkcs11_abi_tests.rs"]
+mod pkcs11_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/registry_preflight_tests.rs"]
 mod registry_preflight_tests;
@@ -2788,6 +2791,41 @@ pub extern "C" fn kmipkit_client_batch_item_interop(
                 request,
             )))),
         ));
+        SUCCESS
+    })
+}
+
+/// Creates a typed PKCS#11 batch item from KMIP 2.1 §6.1.37, Table 273.
+///
+/// Function is required. The optional Interface, Correlation Value, and Input Parameters retain
+/// their presence independently; correlation bytes are copied into a redacted, zeroizing owner.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_pkcs11(
+    function: *mut kmipkit_ttlv_structure_t,
+    interface: *mut kmipkit_ttlv_structure_t,
+    correlation_value: *const crate::kmipkit_byte_span_v1_t,
+    input_parameters: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let Some(function) = (try_ffi!(copy_structure_handle(function, true))) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let interface = try_ffi!(copy_structure_handle(interface, false));
+        let correlation = try_ffi!(copy_optional_secret_span(correlation_value));
+        let input = try_ffi!(copy_structure_handle(input_parameters, false));
+        let mut request = Pkcs11Request::new(function);
+        if let Some(interface) = interface {
+            request = request.with_interface(interface);
+        }
+        if let Some(correlation) = correlation {
+            request = request.with_correlation_value(correlation);
+        }
+        if let Some(input) = input {
+            request = request.with_input_parameters(input);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::pkcs11(request)));
         SUCCESS
     })
 }

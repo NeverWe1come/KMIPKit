@@ -226,6 +226,12 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseLogResponse(values);
     }
 
+    /** Returns the complete PKCS#11 result for Success, Failure, or Pending. */
+    public Optional<Pkcs11Response> pkcs11Response() {
+        long responseTtlv = handle.withValue(Pkcs11NativeBridge::responseTtlv);
+        return parsePkcs11Response(responseTtlv);
+    }
+
     /** Returns a typed Export response for both Success and KMIP Failure outcomes. */
     public Optional<ExportResponse> exportResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -694,6 +700,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "LogResponse[responseTtlv=redacted]"; }
+    }
+
+    /** PKCS#11 result with its complete ordered generic TTLV for every valid result status. */
+    public static final class Pkcs11Response implements AutoCloseable {
+        private final TtlvStructure responseTtlv;
+
+        private Pkcs11Response(TtlvStructure responseTtlv) {
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the complete ordered response structure, including unknown fields. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "Pkcs11Response[responseTtlv=redacted]"; }
     }
 
     /** Successful Derive Key response with its owned complete generic TTLV. */
@@ -1703,6 +1725,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Log response is invalid");
         }
         return Optional.of(new LogResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<Pkcs11Response> parsePkcs11Response(long responseTtlvHandle) {
+        if (responseTtlvHandle == 0) return Optional.empty();
+        if (responseTtlvHandle < 0) {
+            throw new InvalidInputException("native PKCS#11 response is invalid");
+        }
+        return Optional.of(new Pkcs11Response(
+                TtlvStructure.fromNative(responseTtlvHandle, null)));
     }
 
     static Optional<ExportResponse> parseExportResponse(Object[] values) {

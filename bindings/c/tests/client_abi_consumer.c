@@ -6,6 +6,18 @@
 
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
+/* The PKCS#11 owner gate keeps these T057 symbols out of generated public headers for now. */
+extern int32_t kmipkit_client_batch_item_pkcs11(
+    kmipkit_ttlv_structure_t *function,
+    kmipkit_ttlv_structure_t *interface,
+    const kmipkit_byte_span_v1_t *correlation_value,
+    kmipkit_ttlv_structure_t *input_parameters,
+    kmipkit_client_batch_item_t **out_item);
+extern int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(
+    kmipkit_client_batch_item_response_t *item,
+    uint8_t *out_present,
+    kmipkit_ttlv_structure_t **out_response_ttlv);
+
 static int execute_with_options_and_error_ttlv_clears_outputs(void) {
     kmipkit_client_batch_response_t *response = (kmipkit_client_batch_response_t *)(uintptr_t)1;
     kmipkit_ttlv_structure_t *error_response = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
@@ -954,6 +966,29 @@ static int interop_constructor_is_callable_from_c(void) {
     const int result = item != 0;
     kmipkit_client_batch_item_release(item);
     return result;
+}
+
+static int pkcs11_constructor_is_callable_from_c(void) {
+    kmipkit_ttlv_structure_t *function = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+    if (kmipkit_ttlv_structure_create(&function) != 0 ||
+        kmipkit_client_batch_item_pkcs11(function, 0, 0, 0, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(function);
+    return result;
+}
+
+static int pkcs11_response_accessor_clears_invalid_outputs_from_c(void) {
+    uint8_t present = UINT8_MAX;
+    kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    const int32_t status = kmipkit_client_batch_item_response_pkcs11_ttlv(
+        0, &present, &response_ttlv);
+    return status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
 }
 
 static int log_constructor_is_callable_from_c(void) {
@@ -3816,8 +3851,10 @@ int main(int argc, char **argv) {
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
+        !pkcs11_constructor_is_callable_from_c() ||
         !log_constructor_is_callable_from_c() ||
         !interop_response_accessor_clears_invalid_outputs_from_c() ||
+        !pkcs11_response_accessor_clears_invalid_outputs_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
         !ping_query_abi_is_callable() ||

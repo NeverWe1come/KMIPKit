@@ -55,6 +55,31 @@ EXPECTED_MAPPINGS = {
         "kmipkit.client.Pkcs11Response.close",
     },
 }
+BLOCKED_PUBLIC_EXPORTS = {
+    ("c-kmipkit", "c-symbol", "kmipkit_client_batch_item_pkcs11"),
+    ("c-kmipkit", "c-symbol", "kmipkit_client_batch_item_response_pkcs11_ttlv"),
+    ("java-kmipkit", "java-member", "org.kmipkit.extensions.ClientBatchItem.pkcs11"),
+    ("java-kmipkit", "type", "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response"),
+    ("java-kmipkit", "java-member", "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.close"),
+    ("java-kmipkit", "java-member", "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.responseTtlv"),
+    ("java-kmipkit", "java-member", "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.toString"),
+    ("java-kmipkit", "java-member", "org.kmipkit.extensions.ClientBatchItemResult.pkcs11Response"),
+    ("python-kmipkit", "field", "kmipkit.client.BatchItemResult.pkcs11_response"),
+    ("python-kmipkit", "type", "kmipkit.client.Pkcs11Response"),
+    ("python-kmipkit", "field", "kmipkit.client.Pkcs11Response.__dataclass_fields__"),
+    ("python-kmipkit", "field", "kmipkit.client.Pkcs11Response.__dataclass_params__"),
+    ("python-kmipkit", "python-export", "kmipkit.client.Pkcs11Response.__delattr__"),
+    ("python-kmipkit", "python-export", "kmipkit.client.Pkcs11Response.__eq__"),
+    ("python-kmipkit", "python-export", "kmipkit.client.Pkcs11Response.__hash__"),
+    ("python-kmipkit", "python-export", "kmipkit.client.Pkcs11Response.__init__"),
+    ("python-kmipkit", "field", "kmipkit.client.Pkcs11Response.__match_args__"),
+    ("python-kmipkit", "python-export", "kmipkit.client.Pkcs11Response.__repr__"),
+    ("python-kmipkit", "python-export", "kmipkit.client.Pkcs11Response.__setattr__"),
+    ("python-kmipkit", "field", "kmipkit.client.Pkcs11Response.__slots__"),
+    ("python-kmipkit", "python-export", "kmipkit.client.Pkcs11Response.close"),
+    ("python-kmipkit", "field", "kmipkit.client.Pkcs11Response.response_ttlv"),
+    ("python-kmipkit", "python-export", "kmipkit.extensions.client_batch_item_pkcs11"),
+}
 API_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004",
     "KMIPKIT-0043-FR-005",
@@ -113,6 +138,23 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             next(line for line in owner_spec.splitlines() if "**Status**:" in line),
         )
         self.assertIn("This approval does not start implementation", owner_spec)
+
+    def test_pkcs11_binding_exports_remain_blocked_pending_formal_acceptance(self) -> None:
+        inventory = {
+            (row["packageId"], row["kind"], row["exportName"]): row
+            for row in self.manifest["publicDeclarations"]
+            if (row["packageId"], row["kind"], row["exportName"])
+            in BLOCKED_PUBLIC_EXPORTS
+        }
+        self.assertEqual(BLOCKED_PUBLIC_EXPORTS, set(inventory))
+        for row in inventory.values():
+            self.assertEqual("blocked", row["declarationState"])
+            self.assertEqual("four-language", row["parityScope"])
+            self.assertEqual("KMIPKIT-0040", row["candidateSpecId"])
+            self.assertEqual(["KMIPKIT-0043-FR-021"], row["requirementIds"])
+            self.assertIn("formal owner acceptance is required", row["blockedReason"])
+            self.assertNotIn("approvalSource", row)
+            self.assertNotIn("languageMappings", row)
 
     def test_pkcs11_code_declares_all_four_language_mappings(self) -> None:
         self.assertTrue(PARITY_FIXTURE.is_file(), "shared PKCS#11 parity fixture is missing")

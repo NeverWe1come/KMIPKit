@@ -1917,6 +1917,28 @@ def client_batch_item_interop(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_pkcs11(
+    function: ttlv.Structure,
+    interface: ttlv.Structure | None = None,
+    correlation_value: bytes | bytearray | memoryview | None = None,
+    input_parameters: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.37 request from lossless generic PKCS#11 structures."""
+    with _staging_buffer_scope() as staging_buffers:
+        correlation, _ = _native_optional_span(correlation_value, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_pkcs11",
+            (
+                _native_structure(function, required=True),
+                _native_structure(interface),
+                correlation,
+                _native_structure(input_parameters),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_log(
     log_message: str | bytes | bytearray | memoryview,
 ) -> ClientBatchItem:
@@ -2617,6 +2639,7 @@ __all__ = [
     "client_batch_item_logout",
     "client_batch_item_get_usage_allocation",
     "client_batch_item_obtain_lease",
+    "client_batch_item_pkcs11",
     "client_batch_item_import",
     "client_batch_item_join_split_key",
     "client_batch_item_get",

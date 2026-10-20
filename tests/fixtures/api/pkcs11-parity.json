@@ -1,0 +1,154 @@
+{
+  "capability": "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+  "normativeSource": "OASIS KMIP Specification v2.1 §6.1.37, Tables 273–275",
+  "normativeReferences": [
+    {
+      "document": "OASIS Key Management Interoperability Protocol Specification Version 2.1",
+      "url": "https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html#_Toc57115669",
+      "section": "6.1.37",
+      "tables": [273, 274, 275]
+    }
+  ],
+  "authorization": {
+    "ownerSpec": "specs/026-pkcs11/spec.md",
+    "status": "Approved for implementation — 2026-10-11",
+    "scope": "Phase 6 implementation authorization; not formal acceptance",
+    "manifestApiState": "blocked"
+  },
+  "requirementIds": [
+    "KMIPKIT-0040-FR-001",
+    "KMIPKIT-0040-FR-002",
+    "KMIPKIT-0040-FR-003",
+    "KMIPKIT-0040-FR-004",
+    "KMIPKIT-0040-FR-005",
+    "KMIPKIT-0040-FR-006",
+    "KMIPKIT-0040-FR-007",
+    "KMIPKIT-0040-FR-008",
+    "KMIPKIT-0043-FR-004",
+    "KMIPKIT-0043-FR-005",
+    "KMIPKIT-0043-FR-007",
+    "KMIPKIT-0043-FR-008",
+    "KMIPKIT-0043-FR-009",
+    "KMIPKIT-0043-FR-010",
+    "KMIPKIT-0043-FR-011",
+    "KMIPKIT-0043-FR-012",
+    "KMIPKIT-0043-FR-013",
+    "KMIPKIT-0043-FR-017",
+    "KMIPKIT-0043-FR-018",
+    "KMIPKIT-0043-FR-021",
+    "KMIPKIT-0043-FR-022"
+  ],
+  "oasisElementIds": [
+    "KMIPKIT-ELEM-OP-C2S-PKCS-11",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-26-PKCS-11-FUNCTION",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-28-PKCS-11-INTERFACE",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-27-PKCS-11-INPUT-PARAMETERS",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-29-PKCS-11-OUTPUT-PARAMETERS",
+    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-30-PKCS-11-RETURN-CODE"
+  ],
+  "languageMappings": {
+    "rust": [
+      "kmipkit_client::Client::pkcs11",
+      "kmipkit_client::ClientRequest::Pkcs11",
+      "kmipkit_client::ClientBatchOutcome::Pkcs11",
+      "kmipkit_protocol::Pkcs11Request",
+      "kmipkit_protocol::Pkcs11Request::new",
+      "kmipkit_protocol::Pkcs11Response",
+      "kmipkit_protocol::Pkcs11Response::with_ttlv",
+      "kmipkit_protocol::Pkcs11Response::with_ttlv_payload"
+    ],
+    "c": [
+      "kmipkit_client_batch_item_pkcs11",
+      "kmipkit_client_batch_item_response_pkcs11_ttlv"
+    ],
+    "java": [
+      "org.kmipkit.extensions.ClientBatchItem.pkcs11",
+      "org.kmipkit.extensions.ClientBatchItemResult.pkcs11Response",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.responseTtlv",
+      "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.close"
+    ],
+    "python": [
+      "kmipkit.extensions.client_batch_item_pkcs11",
+      "kmipkit.client.BatchItemResult.pkcs11_response",
+      "kmipkit.client.Pkcs11Response",
+      "kmipkit.client.Pkcs11Response.response_ttlv",
+      "kmipkit.client.Pkcs11Response.close"
+    ]
+  },
+  "mappingSourceFiles": {
+    "rust": [
+      "crates/kmipkit-client/src/execute.rs",
+      "crates/kmipkit-protocol/src/pkcs11.rs"
+    ],
+    "c": [
+      "crates/kmipkit-ffi/src/extension_registry.rs",
+      "crates/kmipkit-ffi/src/extension_registry/client_abi.rs",
+      "bindings/c/tests/client_abi_consumer.c"
+    ],
+    "java": [
+      "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+      "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+      "bindings/java/src/main/java/org/kmipkit/extensions/Pkcs11NativeBridge.java",
+      "bindings/java/native/kmipkit_jni.cpp"
+    ],
+    "python": [
+      "bindings/python/src/kmipkit/_client_ffi.py",
+      "bindings/python/src/kmipkit/extensions.py",
+      "bindings/python/src/kmipkit/client.py"
+    ]
+  },
+  "mappingSourceTokens": {
+    "rust": [
+      "pub fn pkcs11(",
+      "Pkcs11(Pkcs11Request)",
+      "Pkcs11(Pkcs11Response)",
+      "pub struct Pkcs11Request",
+      "pub const fn new(function: Structure)",
+      "pub struct Pkcs11Response",
+      "pub fn with_ttlv<R>",
+      "pub fn with_ttlv_payload<R>"
+    ],
+    "c": [
+      "kmipkit_client_batch_item_pkcs11(",
+      "kmipkit_client_batch_item_response_pkcs11_ttlv(",
+      "kmipkit_client_batch_item_pkcs11"
+    ],
+    "java": [
+      "public static ClientBatchItem pkcs11(",
+      "public Optional<Pkcs11Response> pkcs11Response()",
+      "class Pkcs11Response",
+      "TtlvStructure responseTtlv()",
+      "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative"
+    ],
+    "python": [
+      "def client_batch_item_pkcs11(",
+      "pkcs11_response: Pkcs11Response | None",
+      "class Pkcs11Response:",
+      "response_ttlv: ttlv.Structure = field(repr=False)",
+      "def close(self)"
+    ]
+  },
+  "consumerTests": {
+    "rust": "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+    "c": "bindings/c/tests/client_abi_consumer.c",
+    "java": "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+    "python": "bindings/python/tests/test_pkcs11_operation.py"
+  },
+  "parityEvidence": [
+    "tests/fixtures/api/pkcs11-parity.json",
+    "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
+    "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+    "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+    "bindings/python/tests/test_pkcs11_operation.py"
+  ],
+  "expectedOutput": {
+    "preserveUnknownValuesAndOrder": true,
+    "preserveOptionalAbsence": true,
+    "redactSensitiveValuesAndBodies": true,
+    "automaticRetry": false,
+    "automaticFollowUp": false
+  }
+}

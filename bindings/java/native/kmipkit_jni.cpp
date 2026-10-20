@@ -48,9 +48,16 @@ extern "C" int32_t kmipkit_client_batch_item_query_with_limits(
         kmipkit_codec_limits_t* limits, const uint32_t* functions, uint64_t function_count,
         uint8_t has_object_groups, const kmipkit_byte_span_v1_t* object_groups,
         uint64_t object_group_count, kmipkit_client_batch_item_t** out_item);
+extern "C" int32_t kmipkit_client_batch_item_pkcs11(
+        kmipkit_ttlv_structure_t* function, kmipkit_ttlv_structure_t* interface_structure,
+        const kmipkit_byte_span_v1_t* correlation_value,
+        kmipkit_ttlv_structure_t* input_parameters, kmipkit_client_batch_item_t** out_item);
 extern "C" int32_t kmipkit_client_batch_item_response_ping(
         kmipkit_client_batch_item_response_t* item, uint8_t* out_present);
 extern "C" int32_t kmipkit_client_batch_item_response_query_ttlv(
+        kmipkit_client_batch_item_response_t* item, uint8_t* out_present,
+        kmipkit_ttlv_structure_t** out_response_ttlv);
+extern "C" int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(
         kmipkit_client_batch_item_response_t* item, uint8_t* out_present,
         kmipkit_ttlv_structure_t** out_response_ttlv);
 
@@ -1381,6 +1388,62 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             return kmipkit_client_batch_item_logout(
                     from_java_handle<kmipkit_ttlv_structure_t>(raw_ticket), output);
         });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative(
+        JNIEnv* env, jclass, jlong raw_function, jlong raw_interface,
+        jbyteArray raw_correlation_value, jlong raw_input_parameters) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> correlation_value;
+        kmipkit::secure::VectorWiper correlation_value_wiper(correlation_value);
+        bool correlation_present = false;
+        if (!read_optional_java_bytes(
+                    env, raw_correlation_value, correlation_value, &correlation_present)) {
+            return static_cast<jlong>(0);
+        }
+        const kmipkit_byte_span_v1_t correlation_span = byte_span(correlation_value);
+        const kmipkit_byte_span_v1_t* correlation_pointer =
+                correlation_present ? &correlation_span : nullptr;
+        kmipkit_client_batch_item_t* output = nullptr;
+        const int32_t status = kmipkit_client_batch_item_pkcs11(
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_function),
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_interface),
+                correlation_pointer,
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_input_parameters), &output);
+        if (status != 0) {
+            kmipkit_client_batch_item_release(output);
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (output == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(output);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseTtlvNative(
+        JNIEnv* env, jclass, jlong raw_item_response) {
+    return guarded<jlong>(env, 0, [&] {
+        uint8_t present = 0;
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_pkcs11_ttlv(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item_response),
+                &present, &response_ttlv);
+        if (status != 0) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (present > 1 || (present == 0 && response_ttlv != nullptr)
+                || (present == 1 && response_ttlv == nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return present == 0 ? static_cast<jlong>(0) : to_java_handle(response_ttlv);
     });
 }
 
