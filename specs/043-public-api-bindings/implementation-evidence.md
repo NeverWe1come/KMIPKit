@@ -4598,6 +4598,25 @@ the all-language aggregate and does not satisfy or replace the required
 current-head 95% selected-scope CI gate. T083, T055, and T084 remain open
 until the complete current-head CI aggregate passes.
 
+T083 follow-up (2026-10-20): CI run `39358504243` passed every job except the
+selected-scope changed-production gate, which measured 10,053/10,592 (94.91%).
+The local reproduction with the updated Windows workspace report measured
+10,060/10,592 (94.97%) before this follow-up. Added public C ABI tests for the
+Encrypt and Decrypt failed-result getters and invalid Encrypt identifier output
+records; no production behavior or threshold changed. The same local aggregate
+then measured 10,063/10,592 (95.01%), including 22 summary-only lines as
+uncovered. Its component results were TTLV 99.19%, protocol 96.99%, transport
+95.16%, FFI 94.93% (above the 85% FFI threshold), Java 98.06%, Python 98.83%,
+JNI 85.16%, and Rust workspace 96.39%. The non-Windows reports in this local
+reproduction came from CI run `39358504243`; only the Windows workspace report
+included the new tests, so this is a local gate reproduction, not current-head
+cross-platform CI evidence.
+
+The three new getter tests pass within the 208-test FFI suite. The workspace
+coverage run completed all Rust tests; `cargo fmt --all --check`, scoped
+Clippy, and `git diff --check` pass. Current-head CI must still confirm the
+selected-scope aggregate before T083, T055, or T084 can be checked complete.
+
 ### Current-head CI correction — T055/T078 inventory checks (2026-10-20)
 
 CI run `39347497789` on head `9a1beaa8` exposed two stale inventory contracts:

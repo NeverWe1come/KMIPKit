@@ -723,6 +723,125 @@ fn ffi_successful_encrypt_response_getter_returns_typed_fields() {
 }
 
 #[test]
+fn ffi_encrypt_response_getter_clears_fields_for_failed_result() {
+    let encrypt = failed_cryptographic_item(
+        ClientRequest::Encrypt(EncryptRequest::new(
+            Some(UniqueIdentifier::TextString(
+                "encrypt-request-key".to_owned(),
+            )),
+            Some(OperationData::ByteString(SecretBytes::new(
+                b"request-plaintext".to_vec(),
+            ))),
+        )),
+        0x1f,
+        b"encrypt-failure",
+    );
+    let sentinel = b"stale-output";
+    let mut present = 1;
+    let mut output_identifier = empty_unique_identifier_output_v1();
+    let mut data_present = 1;
+    let mut data = byte_span(sentinel);
+    let mut iv_present = 1;
+    let mut iv = byte_span(sentinel);
+    let mut correlation_present = 1;
+    let mut correlation_value = byte_span(sentinel);
+    let mut tag_present = 1;
+    let mut tag = byte_span(sentinel);
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_encrypt(
+            encrypt,
+            &raw mut present,
+            &raw mut output_identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut iv_present,
+            &raw mut iv,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+            &raw mut tag_present,
+            &raw mut tag,
+        )
+    );
+    assert_eq!(
+        (
+            present,
+            data_present,
+            iv_present,
+            correlation_present,
+            tag_present
+        ),
+        (0, 0, 0, 0, 0)
+    );
+    assert_eq!(output_identifier.kind, 0);
+    for span in [data, iv, correlation_value, tag] {
+        assert!(span.data.is_null());
+        assert_eq!(span.length, 0);
+    }
+    kmipkit_client_batch_item_response_release(encrypt);
+}
+
+#[test]
+fn ffi_encrypt_response_getter_rejects_invalid_identifier_output_record() {
+    let encrypt = failed_cryptographic_item(
+        ClientRequest::Encrypt(EncryptRequest::new(
+            Some(UniqueIdentifier::TextString(
+                "encrypt-request-key".to_owned(),
+            )),
+            Some(OperationData::ByteString(SecretBytes::new(
+                b"request-plaintext".to_vec(),
+            ))),
+        )),
+        0x1f,
+        b"encrypt-failure",
+    );
+    let mut present = 1;
+    let mut output_identifier = empty_unique_identifier_output_v1();
+    output_identifier.struct_size = 0;
+    let mut data_present = 1;
+    let mut data = byte_span(b"stale-data");
+    let mut iv_present = 1;
+    let mut iv = byte_span(b"stale-iv");
+    let mut correlation_present = 1;
+    let mut correlation_value = byte_span(b"stale-correlation");
+    let mut tag_present = 1;
+    let mut tag = byte_span(b"stale-tag");
+
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_response_encrypt(
+            encrypt,
+            &raw mut present,
+            &raw mut output_identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut iv_present,
+            &raw mut iv,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+            &raw mut tag_present,
+            &raw mut tag,
+        )
+    );
+    assert_eq!(
+        (
+            present,
+            data_present,
+            iv_present,
+            correlation_present,
+            tag_present
+        ),
+        (0, 0, 0, 0, 0)
+    );
+    for span in [data, iv, correlation_value, tag] {
+        assert!(span.data.is_null());
+        assert_eq!(span.length, 0);
+    }
+    kmipkit_client_batch_item_response_release(encrypt);
+}
+
+#[test]
 fn ffi_successful_decrypt_response_getter_returns_typed_fields() {
     let correlation = [0x61, 0x00, 0x62];
     let identifier = b"decrypt-response-id";
@@ -766,6 +885,48 @@ fn ffi_successful_decrypt_response_getter_returns_typed_fields() {
     assert_response_identifier(&output_identifier, identifier);
     assert_response_span(data, b"plaintext");
     assert_response_span(correlation_value, &correlation);
+    kmipkit_client_batch_item_response_release(decrypt);
+}
+
+#[test]
+fn ffi_decrypt_response_getter_clears_fields_for_failed_result() {
+    let decrypt = failed_cryptographic_item(
+        ClientRequest::Decrypt(DecryptRequest::new(
+            Some(UniqueIdentifier::TextString(
+                "decrypt-request-key".to_owned(),
+            )),
+            Some(OperationData::ByteString(SecretBytes::new(
+                b"ciphertext".to_vec(),
+            ))),
+        )),
+        0x20,
+        b"decrypt-failure",
+    );
+    let mut present = 1;
+    let mut output_identifier = empty_unique_identifier_output_v1();
+    let mut data_present = 1;
+    let mut data = byte_span(b"stale-data");
+    let mut correlation_present = 1;
+    let mut correlation_value = byte_span(b"stale-correlation");
+
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_decrypt(
+            decrypt,
+            &raw mut present,
+            &raw mut output_identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut correlation_present,
+            &raw mut correlation_value,
+        )
+    );
+    assert_eq!((present, data_present, correlation_present), (0, 0, 0));
+    assert_eq!(output_identifier.kind, 0);
+    for span in [data, correlation_value] {
+        assert!(span.data.is_null());
+        assert_eq!(span.length, 0);
+    }
     kmipkit_client_batch_item_response_release(decrypt);
 }
 
@@ -4316,6 +4477,17 @@ fn ffi_usage_allocation_context_getters_clear_outputs_for_a_wrong_handle_kind() 
 }
 
 #[test]
+fn ffi_usage_allocation_identifier_getter_rejects_an_invalid_output_record() {
+    let mut identifier = empty_unique_identifier_output_v1();
+    identifier.struct_size = 0;
+
+    assert_eq!(
+        kmipkit_usage_allocation_context_unique_identifier(ptr::null_mut(), &raw mut identifier,),
+        ERROR_INVALID_INPUT
+    );
+}
+
+#[test]
 fn ffi_guarded_execution_rejects_empty_slots_and_validation_without_transport() {
     let allocation_item = successful_cryptographic_item(
         ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
@@ -5512,6 +5684,80 @@ fn ffi_join_split_key_request_rejects_non_boolean_secret_data_presence() {
 }
 
 #[test]
+fn ffi_split_key_reference_rejects_a_missing_identifier() {
+    let mut reference = ptr::dangling_mut();
+
+    assert_eq!(
+        kmipkit_split_key_reference_create(ptr::null(), 1, &raw mut reference),
+        ERROR_INVALID_INPUT
+    );
+    assert!(reference.is_null());
+}
+
+#[test]
+fn ffi_join_split_key_rejects_missing_references_and_wrong_optional_handle_kinds() {
+    let mut item = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_join_split_key(
+            7,
+            ptr::null_mut(),
+            0,
+            0,
+            0,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            &raw mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+
+    let mut identifier = empty_unique_identifier_output_v1();
+    identifier.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
+    identifier.integer_value = 42;
+    let mut reference = ptr::null_mut();
+    assert_eq!(
+        kmipkit_split_key_reference_create(&raw const identifier, 1, &raw mut reference),
+        SUCCESS
+    );
+    let mut references = [reference];
+    let wrong_attributes = unconnected_client_handle();
+    assert_eq!(
+        kmipkit_client_batch_item_join_split_key(
+            7,
+            references.as_mut_ptr(),
+            1,
+            0,
+            0,
+            wrong_attributes.cast(),
+            ptr::null_mut(),
+            &raw mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    kmipkit_client_release(wrong_attributes);
+
+    let wrong_masks = unconnected_client_handle();
+    assert_eq!(
+        kmipkit_client_batch_item_join_split_key(
+            7,
+            references.as_mut_ptr(),
+            1,
+            0,
+            0,
+            ptr::null_mut(),
+            wrong_masks.cast(),
+            &raw mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    kmipkit_client_release(wrong_masks);
+    kmipkit_split_key_reference_release(reference);
+}
+
+#[test]
 fn ffi_join_split_key_response_identifier_getter_fails_closed_for_invalid_and_failed_items() {
     let failed_item = failed_join_split_key_response_item();
     let response_owner = reference_handle(failed_item, Kind::ClientBatchItemResponse)
@@ -6305,6 +6551,20 @@ fn ffi_creation_requests_reject_missing_attributes_and_malformed_structure_handl
         Err(ERROR_INVALID_INPUT)
     ));
     release(malformed_structure, Kind::Structure);
+}
+
+#[test]
+fn ffi_create_request_accepts_protection_storage_masks() {
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let masks = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut item = ptr::dangling_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_create(1, attributes, masks, &raw mut item),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    kmipkit_client_batch_item_release(item);
 }
 
 #[test]
@@ -7406,6 +7666,40 @@ fn ffi_execute_with_options_and_error_ttlv_clears_outputs_before_options_validat
     );
     assert!(response.is_null());
     assert!(error_response.is_null());
+}
+
+#[test]
+fn ffi_execute_with_options_and_error_ttlv_rejects_invalid_options_before_consuming_batch() {
+    let client = unconnected_client_handle();
+    let limits = default_codec_limits_handle();
+    let mut batch = empty_client_batch_handle();
+    let mut options = request_options(
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+        timeout(0, 0, 0),
+    );
+    options.abi_version = 2;
+    let mut response = ptr::dangling_mut();
+    let mut error_response = ptr::dangling_mut();
+
+    assert_eq!(
+        kmipkit_client_execute_with_options_and_error_ttlv_v1(
+            client,
+            &mut batch,
+            limits,
+            &raw const options,
+            &raw mut response,
+            &raw mut error_response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(!batch.is_null());
+    assert!(response.is_null());
+    assert!(error_response.is_null());
+    kmipkit_client_batch_release(batch);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_client_release(client);
 }
 
 #[test]

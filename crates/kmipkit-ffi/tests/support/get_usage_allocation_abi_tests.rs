@@ -45,3 +45,25 @@ fn get_usage_allocation_constructor_copies_identifier_and_preserves_signed_count
 
     kmipkit_client_batch_item_release(item);
 }
+
+#[test]
+fn get_usage_allocation_constructor_preserves_an_omitted_identifier() {
+    let mut item = ptr::dangling_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_get_usage_allocation(ptr::null(), 12, &raw mut item),
+        SUCCESS
+    );
+    let handle = reference_handle(item, Kind::BatchItem)
+        .expect("the returned Get Usage Allocation batch item handle is valid");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("the constructor returns a batch item handle");
+    };
+    let ClientRequest::GetUsageAllocation(request) = batch_item.request() else {
+        panic!("the batch item contains Get Usage Allocation");
+    };
+    assert_eq!(request.usage_limits_count(), 12);
+    assert!(request.unique_identifier().is_none());
+
+    kmipkit_client_batch_item_release(item);
+}

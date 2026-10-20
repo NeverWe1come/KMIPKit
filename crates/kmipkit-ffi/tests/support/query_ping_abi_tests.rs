@@ -285,6 +285,17 @@ fn ffi_ping_and_query_constructors_cover_empty_and_counted_inputs() {
 }
 
 #[test]
+fn ffi_query_constructor_accepts_absent_object_groups() {
+    let function = QUERY_OPERATION;
+
+    assert_eq!(
+        query_status(&function, 1, 0, ptr::null(), 0),
+        SUCCESS,
+        "an absent optional Object Groups field is valid"
+    );
+}
+
+#[test]
 fn ffi_query_preflight_rejects_parent_structure_length_overflow_before_copying() {
     let length = u64::from(u32::MAX) - 7;
     let spans = [kmipkit_byte_span_v1_t {
