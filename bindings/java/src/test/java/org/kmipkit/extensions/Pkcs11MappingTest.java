@@ -56,6 +56,13 @@ final class Pkcs11MappingTest {
     }
 
     @Test
+    void typedResponseParserPreservesAbsentResponse() {
+        assertTrue(ClientBatchItemResult.parsePkcs11Response(
+                new Object[] {new long[] {0, 0, 0, 0, 0, 0}, null, new long[] {0, 0, 0, 0, 0}})
+                .isEmpty());
+    }
+
+    @Test
     void typedResponseParserDistinguishesAbsentFromPresentEmptyCorrelation() {
         try (ClientBatchItemResult.Pkcs11Response absent = parseCorrelationResponse(false, null);
                 ClientBatchItemResult.Pkcs11Response presentEmpty =
