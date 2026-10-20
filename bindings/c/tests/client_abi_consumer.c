@@ -113,6 +113,60 @@ cleanup:
     return result;
 }
 
+static int recertify_constructor_is_callable_from_c(void) {
+    static const uint8_t existing_id_bytes[] = "certificate-7";
+    static const uint8_t request_id_bytes[] = "request-7";
+    static const uint8_t request_value[] = {0x30, 0x82, 0x01, 0x00};
+    kmipkit_unique_identifier_v1_t existing_id = {0};
+    kmipkit_unique_identifier_v1_t request_id = {0};
+    kmipkit_byte_span_v1_t request_span = {
+        request_value,
+        (uint64_t)sizeof(request_value),
+    };
+    kmipkit_client_batch_item_t *item = 0;
+
+    existing_id.struct_size = (uint32_t)sizeof(existing_id);
+    existing_id.abi_version = 1;
+    existing_id.kind = 1;
+    existing_id.text_data = existing_id_bytes;
+    existing_id.text_length = (uint64_t)(sizeof(existing_id_bytes) - 1);
+    request_id.struct_size = (uint32_t)sizeof(request_id);
+    request_id.abi_version = 1;
+    request_id.kind = 1;
+    request_id.text_data = request_id_bytes;
+    request_id.text_length = (uint64_t)(sizeof(request_id_bytes) - 1);
+
+    if (kmipkit_client_batch_item_recertify(
+            &existing_id, &request_id, 1, UINT32_C(0xfedcba98), &request_span,
+            1, UINT32_C(0xffffffff), 0, 0, &item) != 0) {
+        kmipkit_client_batch_item_release(item);
+        return 0;
+    }
+    const int result = item != 0;
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
+static int recertify_response_accessors_clear_outputs_from_c(void) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    uint8_t present = 9;
+    kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)1;
+    const int32_t identifier_status = kmipkit_client_batch_item_response_recertify(
+        0, &present, &identifier);
+    if (identifier_status != T076_ERROR_INVALID_INPUT || present != 0 ||
+        identifier.kind != 0 || identifier.text_data != 0 ||
+        identifier.text_length != 0 || identifier.enumeration_value != 0 ||
+        identifier.integer_value != 0) {
+        return 0;
+    }
+    present = 9;
+    const int32_t ttlv_status = kmipkit_client_batch_item_response_recertify_ttlv(
+        0, &present, &response_ttlv);
+    return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
+
 static int certify_constructor_is_callable_from_c(void) {
     static const uint8_t request_value[] = {0x30, 0x82, 0x01, 0x00};
     kmipkit_byte_span_v1_t request_span = {
@@ -4596,6 +4650,8 @@ int main(int argc, char **argv) {
         return 2;
     }
     if (!creation_create_matches_shared_fixture() ||
+        !recertify_constructor_is_callable_from_c() ||
+        !recertify_response_accessors_clear_outputs_from_c() ||
         !generic_big_integer_constructor_preserves_type_and_octets_from_c() ||
         !certify_constructor_is_callable_from_c() ||
         !certify_response_accessor_is_callable_from_c() ||
