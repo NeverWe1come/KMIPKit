@@ -224,7 +224,7 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
     def test_default_jni_audit_rejects_candidate_c_abi_symbols(self) -> None:
         candidate_c_symbol = "kmipkit_client_batch_item_pkcs11"
         audit_path = Path(__file__).resolve().parents[1] / "audit_jni_candidate_exports.py"
-        with patch.dict(sys.path, [str(audit_path.parent), *sys.path]):
+        with patch.object(sys, "path", [str(audit_path.parent), *sys.path]):
             specification = importlib.util.spec_from_file_location(
                 "audit_jni_candidate_exports", audit_path
             )
@@ -255,7 +255,7 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
                 ),
                 contextlib.redirect_stderr(stderr),
             ):
-                exit_code = audit_jni_candidate_exports.main()
+                exit_code = audit_module.main()
 
         self.assertEqual(1, exit_code)
         self.assertIn(candidate_c_symbol, stderr.getvalue())
