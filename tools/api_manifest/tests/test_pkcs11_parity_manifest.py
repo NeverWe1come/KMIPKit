@@ -6,6 +6,7 @@ import json
 import unittest
 from pathlib import Path
 
+from tools.api_manifest import audit_binding_exports
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
@@ -55,7 +56,7 @@ EXPECTED_MAPPINGS = {
         "kmipkit.client.Pkcs11Response.close",
     },
 }
-BLOCKED_PUBLIC_EXPORTS = {
+PKCS11_CANDIDATE_EXPORTS = {
     ("c-kmipkit", "c-symbol", "kmipkit_client_batch_item_pkcs11"),
     ("c-kmipkit", "c-symbol", "kmipkit_client_batch_item_response_pkcs11_ttlv"),
     ("java-kmipkit", "java-member", "org.kmipkit.extensions.ClientBatchItem.pkcs11"),
@@ -143,22 +144,24 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
         )
         self.assertIn("This approval does not start implementation", owner_spec)
 
-    def test_pkcs11_binding_exports_remain_blocked_pending_formal_acceptance(self) -> None:
+    def test_candidate_bindings_are_not_public_before_formal_owner_acceptance(self) -> None:
         inventory = {
-            (row["packageId"], row["kind"], row["exportName"]): row
+            (row["packageId"], row["kind"], row["exportName"])
             for row in self.manifest["publicDeclarations"]
             if (row["packageId"], row["kind"], row["exportName"])
-            in BLOCKED_PUBLIC_EXPORTS
+            in PKCS11_CANDIDATE_EXPORTS
         }
-        self.assertEqual(BLOCKED_PUBLIC_EXPORTS, set(inventory))
-        for row in inventory.values():
-            self.assertEqual("blocked", row["declarationState"])
-            self.assertEqual("four-language", row["parityScope"])
-            self.assertEqual("KMIPKIT-0040", row["candidateSpecId"])
-            self.assertEqual(["KMIPKIT-0043-FR-021"], row["requirementIds"])
-            self.assertIn("formal owner acceptance is required", row["blockedReason"])
-            self.assertNotIn("approvalSource", row)
-            self.assertNotIn("languageMappings", row)
+        self.assertFalse(inventory)
+
+    def test_default_c_abi_does_not_export_owner_gated_pkcs11_symbols(self) -> None:
+        native_exports = set(audit_binding_exports.build_c_binary_exports(ROOT))
+        self.assertFalse(
+            {
+                "kmipkit_client_batch_item_pkcs11",
+                "kmipkit_client_batch_item_response_pkcs11_ttlv",
+            }
+            & native_exports
+        )
 
     def test_pkcs11_code_declares_all_four_language_mappings(self) -> None:
         self.assertTrue(PARITY_FIXTURE.is_file(), "shared PKCS#11 parity fixture is missing")

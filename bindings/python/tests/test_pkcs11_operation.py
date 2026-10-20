@@ -16,6 +16,12 @@ ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
 
 
+def test_pkcs11_candidate_is_not_public_in_the_python_package_surface() -> None:
+    assert not hasattr(extensions, "client_batch_item_pkcs11")
+    assert not hasattr(client, "Pkcs11Response")
+    assert not hasattr(client.BatchItemResult, "pkcs11_response")
+
+
 def test_pkcs11_builder_preserves_generic_inputs_and_wipes_staging_bytes(
     monkeypatch: Any,
 ) -> None:

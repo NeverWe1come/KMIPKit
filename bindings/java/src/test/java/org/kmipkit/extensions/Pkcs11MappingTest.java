@@ -11,6 +11,24 @@ import org.kmipkit.ttlv.TtlvStructure;
 
 final class Pkcs11MappingTest {
     @Test
+    void ownerGatedFactoryAndResultAreNotPublicJavaDeclarations() {
+        assertThrows(
+                NoSuchMethodException.class,
+                () -> ClientBatchItem.class.getMethod(
+                        "pkcs11",
+                        TtlvStructure.class,
+                        TtlvStructure.class,
+                        byte[].class,
+                        TtlvStructure.class));
+        assertThrows(
+                NoSuchMethodException.class,
+                () -> ClientBatchItemResult.class.getMethod("pkcs11Response"));
+        assertFalse(
+                java.util.Arrays.stream(ClientBatchItemResult.class.getClasses())
+                        .anyMatch(type -> type.getSimpleName().equals("Pkcs11Response")));
+    }
+
+    @Test
     void pkcs11FactoryAcceptsOptionalGenericStructuresAndCorrelationValue() {
         try (TtlvStructure function = TtlvStructure.create();
                 TtlvStructure interfaceStructure = TtlvStructure.create();
