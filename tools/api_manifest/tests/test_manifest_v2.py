@@ -391,6 +391,26 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 with self.assertRaisesRegex(ManifestError, "unknown requirement ID"):
                     _validate_references(malformed)
 
+    def test_capability_and_api_level_requirements_are_unique_and_sorted(self) -> None:
+        mutations = (
+            lambda manifest: manifest["capabilities"][0]["requirementIds"].append(
+                manifest["capabilities"][0]["requirementIds"][0]
+            ),
+            lambda manifest: manifest["capabilities"][0]["requirementIds"].reverse(),
+            lambda manifest: manifest["apiLevels"][0]["requirementIds"].append(
+                manifest["apiLevels"][0]["requirementIds"][0]
+            ),
+            lambda manifest: manifest["apiLevels"][0]["requirementIds"].reverse(),
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate.__code__.co_firstlineno):
+                malformed = copy.deepcopy(self.checked_in_manifest)
+                mutate(malformed)
+                with self.assertRaisesRegex(
+                    ManifestError, "requirement IDs must be unique and lexicographically sorted"
+                ):
+                    _validate_references(malformed)
+
     def test_release_gate_runs_all_export_audits_and_fails_closed(self) -> None:
         with mock.patch(
             "tools.api_manifest.generate.subprocess.run",

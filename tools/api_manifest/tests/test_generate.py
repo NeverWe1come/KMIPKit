@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import errno
 import copy
+import errno
 import json
 import os
 import shutil
@@ -12,11 +12,11 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from jsonschema import Draft202012Validator
 
 from tools.api_manifest import generate
-
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = ROOT / "tools" / "api_manifest" / "generate.py"
@@ -1570,6 +1570,15 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             "registry API generation failed: manifest or path validation failed\n",
         )
         self.assertEqual((ROOT / V2_GENERATED_OUTPUTS[0]).read_bytes(), output_before)
+
+    def test_check_require_complete_returns_success_when_validator_accepts_manifest(self) -> None:
+        with mock.patch.object(generate, "_validate_v2_manifest") as validate_manifest:
+            result = generate.main(
+                ["--repo-root", str(ROOT), "--check", "--require-complete"]
+            )
+
+        self.assertEqual(result, 0)
+        self.assertTrue(validate_manifest.call_args.kwargs["require_complete"])
 
     def test_rejects_malformed_manifest_without_writing_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

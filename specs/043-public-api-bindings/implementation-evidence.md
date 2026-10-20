@@ -4717,3 +4717,33 @@ Two initial Rust filters selected zero tests and were discarded as evidence;
 the corrected `--lib` filters each ran one test. Cargo emitted existing
 environment warnings for AWS-LC's NASM/alignment probe and the linker, but the
 affected test and Clippy commands passed. No generated API output changed.
+
+### T070 — Complete release manifest gate (2026-10-20)
+
+The release-only `--check --require-complete` path now requires the exact
+client 1.0 operation inventory and shared-capability inventory, verified
+readiness for every operation, capability, and declaration, all eight package
+families at `releaseLine`, and successful Rust plus C/Java/Python source export
+audits. The C distribution is version-checked through the `kmipkit-ffi` Cargo
+crate. Version metadata reads are bounded to 1 MiB and reject repository path
+traversal/reparse points. Normal phased `--check` remains non-mutating and does
+not run the release audits.
+
+| Stage | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `63afc891`, `56cbfe00` | Release-mode CLI and package-version drift tests | Expected failures: the CLI rejected the new option and the checker did not detect package metadata drift. |
+| Green | `7f2937d8` | Release-mode readiness, package synchronization, and focused tests | Initial gate added; independent QA then found missing export-audit execution, C package coverage, and a canonical shared-capability inventory. |
+| Red (QA/security correction) | `f601de6c` | Shared-capability omission, audit failure, C package drift, and oversized-source tests | Expected failures: omitted capabilities and C version drift passed; export auditing was not called; oversized metadata was accepted. |
+| Green (QA/security correction) | `767d8581` | Seven focused generator and manifest tests; full API-manifest suites and current-head CI | Focused tests pass 7/7. Broader suites and exact-head CI are pending. |
+| Red (QA correction 2) | `86fb65f4` | Capability and API-level requirement-reference tests | Expected failure: both record types accepted an unknown `requirementIds` entry. |
+| Green (QA correction 2) | `5c177aa8` | Requirement-reference regression plus four release-gate focused tests | PASS: 5/5 tests; both record types now resolve against top-level requirements and participate in sorted/unique checks. |
+| Refactor (readiness-fixture alignment) | Pending | API-manifest suite (144 tests), Ruff import/performance checks, generator `--check` | PASS locally: 144 tests, 0 failures/errors, 2 skipped; 12 generated outputs current. Ruff and generator check pass. The complete-readiness fixture now includes the exact 15 shared capabilities and four-language declarations required by the release gate. |
+
+The checked-in manifest is intentionally incomplete today, so the strict gate
+must fail closed and is not evidence that KMIPKit is release-ready. T029's
+preceding head CI run `39379616226` passed on `6b303dae`; final T029/T070 status
+will be recorded against the combined branch head after an independent security
+diff review and exact-head CI pass. The strict release gate's successful path
+is exercised by a complete synthetic readiness fixture; the repository's
+actual release manifest remains incomplete and the strict CLI is expected to
+reject it.

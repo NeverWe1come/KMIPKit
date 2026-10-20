@@ -11,8 +11,10 @@ from jsonschema import Draft202012Validator
 
 from tools.api_manifest import generate
 from tools.api_manifest.generate import ManifestError
-from tools.api_manifest.tests.test_manifest_v2 import _valid_v2_manifest
-
+from tools.api_manifest.tests.test_manifest_v2 import (
+    EXPECTED_RELEASE_SHARED_CAPABILITIES,
+    _valid_v2_manifest,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
@@ -183,21 +185,48 @@ def _complete_readiness_manifest(root: Path) -> dict[str, object]:
         for index, operation in enumerate(manifest["operations"])
         for language in LANGUAGES
     ]
+    manifest["publicDeclarations"].extend(
+        {
+            "declarationId": f"shared_capability_{index:02d}_{language}",
+            "packageId": language_packages[language],
+            "kind": "function",
+            "exportName": f"{language}.shared_{index:02d}",
+            "capabilityId": capability_id,
+            "requirementIds": ["KMIPKIT-0043-FR-001"],
+            "declarationState": "verified",
+            "parityScope": "four-language",
+            "approvalSource": _approved_feature_source(),
+            "languageMappings": {
+                mapped_language: {
+                    "packageId": language_packages[mapped_language],
+                    "name": f"{mapped_language}.shared_{index:02d}",
+                }
+                for mapped_language in LANGUAGES
+            },
+            "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
+        }
+        for index, capability_id in enumerate(
+            sorted(EXPECTED_RELEASE_SHARED_CAPABILITIES)
+        )
+        for language in LANGUAGES
+    )
     manifest["capabilities"] = [
         {
-            "capabilityId": operation["operationId"],
+            "capabilityId": capability_id,
             "requirementIds": ["KMIPKIT-0043-FR-001"],
             "capabilityState": "verified",
             "parityScope": "four-language",
             "ownerSpecId": "KMIPKIT-0007",
             "approvalEvidence": _approved_feature_source(),
             "mappings": {
-                language: [f"{language}.operation_{index:02d}"]
+                language: [f"{language}.shared_{index:02d}"]
                 for language in LANGUAGES
             },
             "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
         }
-        for index, operation in enumerate(manifest["operations"])
+        for index, capability_id in enumerate(
+            sorted(EXPECTED_RELEASE_SHARED_CAPABILITIES)
+        )
     ]
     return manifest
 
