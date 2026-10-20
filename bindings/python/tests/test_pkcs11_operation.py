@@ -183,11 +183,12 @@ def _structure_with_integer(tag_value: int, integer_value: int) -> ttlv.Structur
     return structure
 
 
-def test_pkcs11_candidate_is_absent_from_default_python_facade() -> None:
-    assert not hasattr(extensions, "client_batch_item_pkcs11")
-    assert not hasattr(extensions, "_client_batch_item_pkcs11_candidate")
-    assert not hasattr(client, "_Pkcs11Response")
-    assert not hasattr(client, "_pkcs11_response")
+def test_pkcs11_facade_and_cffi_symbols_are_public_by_default() -> None:
+    assert callable(extensions.client_batch_item_pkcs11)
+    assert hasattr(client.BatchItemResult, "pkcs11_response")
+    assert hasattr(client, "Pkcs11Response")
+    assert hasattr(client_lib, "kmipkit_client_batch_item_pkcs11")
+    assert hasattr(client_lib, "kmipkit_client_batch_item_response_pkcs11_ttlv")
 
 
 def test_pkcs11_candidate_symbol_is_present_only_in_the_candidate_runtime() -> None:

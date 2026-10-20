@@ -10,6 +10,20 @@ import org.kmipkit.ttlv.TtlvStructure;
 
 final class Pkcs11MappingTest {
     @Test
+    void pkcs11FactoryAndTypedResponseArePublicJavaDeclarations() throws Exception {
+        assertTrue(ClientBatchItem.class.getDeclaredMethod(
+                "pkcs11",
+                TtlvStructure.class,
+                TtlvStructure.class,
+                byte[].class,
+                TtlvStructure.class) != null);
+        assertTrue(ClientBatchItemResult.class.getDeclaredMethod("pkcs11Response") != null);
+        assertTrue(
+                java.util.Arrays.stream(ClientBatchItemResult.class.getClasses())
+                        .anyMatch(type -> type.getSimpleName().equals("Pkcs11Response")));
+    }
+
+    @Test
     void ownerGatedFactoryAndResultAreNotPublicJavaDeclarations() {
         assertThrows(
                 NoSuchMethodException.class,
