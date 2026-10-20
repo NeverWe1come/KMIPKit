@@ -14,6 +14,13 @@ const OP: u32 = 0x33;
 const FUNCTION: u32 = 0x0042_015A;
 const RETURN: u32 = 0x0042_015D;
 const SENTINEL: &[u8] = b"pkcs11-client-secret-sentinel";
+const SUCCESS_RESPONSE_TAGS: [u32; 5] = [
+    0x0042_015A,
+    0x0042_00D6,
+    0x0042_015C,
+    0x0042_015D,
+    0x0054_1234,
+];
 fn request() -> Pkcs11Request {
     Pkcs11Request::new(structure([item(FUNCTION, Value::integer(-12345))]))
         .with_correlation_value(SecretBytes::new(SENTINEL.to_vec()))
@@ -62,6 +69,16 @@ fn pkcs11_sends_table_273_once_and_exposes_table_274_losslessly() {
         Some(SENTINEL.to_vec())
     );
     assert_eq!(result.with_ttlv_payload(|p| p.children().len()), Some(5));
+    assert_eq!(
+        result.with_ttlv_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .map(|child| child.tag().raw())
+                .collect::<Vec<_>>()
+        }),
+        Some(SUCCESS_RESPONSE_TAGS.to_vec())
+    );
     assert_eq!(result.with_ttlv(|p| p.children().len()), 3);
     assert_eq!(
         result
