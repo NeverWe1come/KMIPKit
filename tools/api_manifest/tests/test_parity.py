@@ -604,6 +604,20 @@ class PublicApiParityTests(unittest.TestCase):
                                 "python": r"(?:\bassert\b|\.assert[A-Z]\w*\s*\()",
                             }[language]
                             self.assertRegex(body, assertion, f"{case_id}/{language} must assert runtime behavior")
+                            if case_id == "usage-allocation.guard-accounting.v1" and language == "java":
+                                allocated_state_assertions = re.findall(
+                                    r"assertEquals\s*\(\s*SharedCapabilityParityFixtureTest\.numberField\(\s*"
+                                    r"afterSuccess\s*,\s*\"allocated\"\s*\)\s*,\s*"
+                                    r"context\.allocatedUnits\(\)\s*\)",
+                                    body,
+                                    flags=re.DOTALL,
+                                )
+                                self.assertGreaterEqual(
+                                    len(allocated_state_assertions),
+                                    3,
+                                    "Java Usage Allocation must compare fixture allocated units after success "
+                                    "and each rejected attempt",
+                                )
                             continue
 
                         rust_test, c_entry = T029_C_HARNESS_TESTS[case_id]
