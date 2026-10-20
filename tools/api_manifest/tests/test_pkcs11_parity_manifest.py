@@ -255,6 +255,41 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             ):
                 self.assertEqual(1, audit_module.audit(binary))
 
+    def test_default_jni_audit_ignores_dependency_candidate_symbols(self) -> None:
+        audit_module = _public_jni_audit_module()
+        expected = set(self.fixture["publicNativeExports"]["javaJni"])
+        dependency_candidate = (
+            "_ZN13openssl_probe19candidate_cert_dirs17he65a59d48d868d1eE"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            binary = Path(directory) / "libkmipkit_jni.so"
+            binary.touch()
+            with patch.object(
+                audit_module,
+                "read_native_exports",
+                return_value=expected | {dependency_candidate},
+            ):
+                self.assertEqual(0, audit_module.audit(binary))
+
+    def test_default_jni_audit_rejects_unlisted_jni_candidate_symbols(self) -> None:
+        audit_module = _public_jni_audit_module()
+        expected = set(self.fixture["publicNativeExports"]["javaJni"])
+        jni_candidate = (
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCandidate"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            binary = Path(directory) / "libkmipkit_jni.so"
+            binary.touch()
+            with (
+                patch.object(
+                    audit_module,
+                    "read_native_exports",
+                    return_value=expected | {jni_candidate},
+                ),
+                contextlib.redirect_stderr(io.StringIO()),
+            ):
+                self.assertEqual(1, audit_module.audit(binary))
+
     def test_rust_build_has_no_candidate_only_pkcs11_gate(self) -> None:
         metadata = subprocess.run(
             [
