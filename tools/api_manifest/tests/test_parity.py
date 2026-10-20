@@ -725,6 +725,24 @@ class PublicApiParityTests(unittest.TestCase):
             response_ttlv["java"].get("jniAggregateSymbol"),
         )
 
+    def test_pkcs11_response_accessors_name_the_aggregate_jni_owner(self) -> None:
+        functions = {function["id"]: function for function in self.manifest["functions"]}
+        response = functions["client_batch_item_response_pkcs11_ttlv"]
+        aggregate = response["java"]["jniSymbol"]
+        accessor_ids = (
+            "client_batch_item_response_pkcs11_interface_ttlv",
+            "client_batch_item_response_pkcs11_function_ttlv",
+            "client_batch_item_response_pkcs11_correlation_value",
+            "client_batch_item_response_pkcs11_output_parameters_ttlv",
+            "client_batch_item_response_pkcs11_return_code_ttlv",
+        )
+
+        for function_id in accessor_ids:
+            with self.subTest(function=function_id):
+                java = functions[function_id]["java"]
+                self.assertNotIn("jniSymbol", java)
+                self.assertEqual(aggregate, java.get("jniAggregateSymbol"))
+
     def test_java_method_names_are_legal_java_identifiers(self) -> None:
         for function in self.manifest["functions"]:
             method = function["java"]["method"]
