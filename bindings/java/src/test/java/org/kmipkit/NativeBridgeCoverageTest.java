@@ -118,6 +118,59 @@ final class NativeBridgeCoverageTest {
     }
 
     @Test
+    void nativeResponseBridgesRejectNullHandlesForRemainingOperations() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseRekey(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponsePing(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseQueryTtlv(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponsePkcs11(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0));
+    }
+
+    @Test
+    void usageAllocationContextBridgesRejectNullHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextUsageLimitsUnit(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextAllocatedUnits(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextAvailableUnits(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextReservedUnits(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextUniqueIdentifier(0));
+    }
+
+    @Test
+    void nativeQueryBridgesRejectMalformedObjectGroupText() {
+        byte[][] malformedObjectGroups = {new byte[] {(byte) 0xff}};
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQuery(new int[] {1}, malformedObjectGroups));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                        new int[] {1}, malformedObjectGroups, CODEC_LIMITS));
+    }
+
+    @Test
+    void nativePkcs11BridgeRejectsMissingTtlvInputs() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemPkcs11(0, 0, null, 0));
+    }
+
+    @Test
+    void nativeRekeyBridgeRejectsInvalidIdentifiersAndOffsets() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemRekey(99, null, 0, false, 0, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemRekey(
+                        1, new byte[] {'k'}, 0, true, -1, 0, 0));
+    }
+
+    @Test
     void nativeClientOperationBridgesRejectMalformedIdentifiersAndAbsentValues() {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemCheck(
