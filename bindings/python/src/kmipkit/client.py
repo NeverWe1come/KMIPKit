@@ -3472,6 +3472,7 @@ __all__ = [
     "HashResponse",
     "GetUsageAllocationResponse",
     "ObtainLeaseResponse",
+    "Pkcs11Response",
     "ImportResponse",
     "JoinSplitKeyResponse",
     "InteropResponse",
