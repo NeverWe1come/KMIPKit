@@ -4885,6 +4885,7 @@ class CatalogValidationTests(unittest.TestCase):
             *baseline["test_case_ids"],
             official_test["test_id"],
         })
+        official_test["profile_ids"] = sorted({*official_test["profile_ids"], baseline["profile_id"]})
 
         self.assertTrue(any(
             test_case["test_id"] in baseline["test_case_ids"]
@@ -5014,6 +5015,21 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "dependency profile evidence is incomplete"):
             validate(catalog)
 
+    def test_profile_claim_rejects_dependency_cycles(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        baseline = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        )
+        baseline["claim_state"] = "evidence_complete"
+        baseline["dependency_profile_ids"] = [baseline["profile_id"]]
+
+        with self.assertRaisesRegex(CatalogValidationError, "dependency cycle"):
+            validate(catalog)
+
     def test_profile_cannot_claim_complete_evidence_without_requirement_assignments(self) -> None:
         catalog = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
@@ -5033,6 +5049,7 @@ class CatalogValidationTests(unittest.TestCase):
             *baseline["test_case_ids"],
             official_test["test_id"],
         })
+        official_test["profile_ids"] = sorted({*official_test["profile_ids"], baseline["profile_id"]})
         for test_case in catalog["test_cases"]:
             if test_case["test_id"] in baseline["test_case_ids"]:
                 test_case["mandatory_status"] = "optional"
