@@ -20,7 +20,8 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
 OWNER_SPEC = "specs/026-pkcs11/spec.md"
-LANGUAGES = {"rust", "c", "java", "python"}
+IMPLEMENTATION_LANGUAGES = {"rust", "c"}
+TEST_HARNESS_LANGUAGES = {"java", "python"}
 OWNER_REQUIREMENTS = {
     f"KMIPKIT-0040-FR-{number:03d}" for number in range(1, 9)
 }
@@ -48,19 +49,15 @@ EXPECTED_MAPPINGS = {
         "kmipkit_client_batch_item_pkcs11",
         "kmipkit_client_batch_item_response_pkcs11_ttlv",
     },
+}
+EXPECTED_TEST_HARNESSES = {
     "java": {
-        "org.kmipkit.extensions.ClientBatchItem.pkcs11",
-        "org.kmipkit.extensions.ClientBatchItemResult.pkcs11Response",
-        "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response",
-        "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.responseTtlv",
-        "org.kmipkit.extensions.ClientBatchItemResult.Pkcs11Response.close",
+        "org.kmipkit.extensions.Pkcs11NativeBridge.create",
+        "org.kmipkit.extensions.Pkcs11NativeBridge.responseTtlv",
     },
     "python": {
-        "kmipkit.extensions._client_batch_item_pkcs11_candidate",
-        "kmipkit.client._Pkcs11BatchItemResult._pkcs11_response",
-        "kmipkit.client._Pkcs11Response",
-        "kmipkit.client._Pkcs11Response.response_ttlv",
-        "kmipkit.client._Pkcs11Response.close",
+        "test_pkcs11_operation.test_pkcs11_cffi_candidate_constructor_accepts_optional_structures_and_bytes",
+        "test_pkcs11_operation.test_pkcs11_cffi_response_accessor_clears_outputs_for_invalid_handle",
     },
 }
 PKCS11_CANDIDATE_EXPORTS = {
@@ -210,6 +207,13 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
         )
 
         self.assertNotIn("test-pkcs11-candidate", ffi_package["features"])
+        for crate in ("kmipkit-protocol", "kmipkit-client", "kmipkit-ffi"):
+            with self.subTest(crate=crate):
+                build_script = (ROOT / "crates" / crate / "build.rs").read_text(
+                    encoding="utf-8"
+                )
+                self.assertIn("CARGO_TARGET_DIR", build_script)
+                self.assertIn("pkcs11-candidate", build_script)
 
     def test_default_c_abi_does_not_export_owner_gated_pkcs11_symbols(self) -> None:
         native_exports = set(audit_binding_exports.build_c_binary_exports(ROOT))
@@ -260,18 +264,22 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
         self.assertEqual(1, exit_code)
         self.assertIn(candidate_c_symbol, stderr.getvalue())
 
-    def test_pkcs11_code_declares_all_four_language_mappings(self) -> None:
+    def test_pkcs11_fixture_separates_implementations_from_test_harnesses(self) -> None:
         self.assertTrue(PARITY_FIXTURE.is_file(), "shared PKCS#11 parity fixture is missing")
         fixture = json.loads(PARITY_FIXTURE.read_text(encoding="utf-8"))
         mappings = fixture["candidateImplementationMappings"]
-        self.assertEqual(LANGUAGES, set(mappings))
+        harnesses = fixture["candidateTestHarnessMappings"]
+        self.assertEqual(IMPLEMENTATION_LANGUAGES, set(mappings))
+        self.assertEqual(TEST_HARNESS_LANGUAGES, set(harnesses))
         self.assertTrue(PARITY_EVIDENCE <= set(fixture["parityEvidence"]))
         self.assertTrue(OWNER_REQUIREMENTS <= set(fixture["requirementIds"]))
         self.assertTrue(API_REQUIREMENTS <= set(fixture["requirementIds"]))
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
-        for language, expected in EXPECTED_MAPPINGS.items():
-            self.assertTrue(expected <= set(mappings[language]), language)
+        expected_by_language = EXPECTED_MAPPINGS | EXPECTED_TEST_HARNESSES
+        actual_by_language = mappings | harnesses
+        for language, expected in expected_by_language.items():
+            self.assertTrue(expected <= set(actual_by_language[language]), language)
             source_files = fixture["mappingSourceFiles"][language]
             source = "\n".join(
                 (ROOT / path).read_text(encoding="utf-8") for path in source_files
