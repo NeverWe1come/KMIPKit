@@ -1465,9 +1465,17 @@ def _validate_references(manifest: dict[str, Any]) -> None:
     for record in [*manifest["types"], *manifest["functions"]]:
         if any(identifier not in root_requirements for identifier in record["requirementIds"]):
             raise ManifestError("declaration references an unknown requirement ID")
+    requirement_bearing_records = [
+        *manifest.get("capabilities", []),
+        *manifest.get("apiLevels", []),
+    ]
+    for record in requirement_bearing_records:
+        if any(identifier not in root_requirements for identifier in record["requirementIds"]):
+            raise ManifestError("manifest record references an unknown requirement ID")
     requirement_lists = [
         manifest["requirementIds"],
         *(record["requirementIds"] for record in [*manifest["types"], *manifest["functions"]]),
+        *(record["requirementIds"] for record in requirement_bearing_records),
     ]
     if any(identifiers != sorted(set(identifiers)) for identifiers in requirement_lists):
         raise ManifestError("requirement IDs must be unique and lexicographically sorted")
