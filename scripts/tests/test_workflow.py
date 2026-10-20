@@ -348,12 +348,15 @@ class WorkflowContractTests(unittest.TestCase):
     def test_rust_pkcs11_candidate_tests_use_an_isolated_debug_build(self) -> None:
         contents = self.require_workflow()
         core_job = self.require_job(contents, "core")
-        workspace_tests = self.require_named_step(core_job, "Run workspace tests")
+        self.require_named_step(core_job, "Run workspace tests")
         candidate_tests = self.require_named_step(
             core_job, "Run isolated Rust PKCS#11 candidate tests"
         )
 
-        self.assertLess(workspace_tests.end(), candidate_tests.start())
+        self.assertLess(
+            core_job.index("Run workspace tests"),
+            core_job.index("Run isolated Rust PKCS#11 candidate tests"),
+        )
         self.assertIn("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", candidate_tests.group(1))
         self.assertIn("target/pkcs11-candidate-rust", candidate_tests.group(1))
         self.assertIn("-p kmipkit-protocol -p kmipkit-client", candidate_tests.group(1))
@@ -378,6 +381,12 @@ class WorkflowContractTests(unittest.TestCase):
             r"(?m)^set\(KMIPKIT_TARGET_DIR .*CACHE PATH",
             "CMake must accept the isolated target directory for the candidate consumer.",
         )
+        self.assertIn("option(KMIPKIT_PKCS11_CANDIDATE_TEST", cmake)
+        self.assertIn(
+            "target_compile_definitions(kmipkit_client_abi_consumer PRIVATE KMIPKIT_PKCS11_CANDIDATE_TEST)",
+            cmake,
+        )
+        self.assertIn("-DKMIPKIT_PKCS11_CANDIDATE_TEST=ON", c_job)
         self.assertIn("target/pkcs11-candidate/debug", c_job)
 
     def test_java_and_python_candidate_libraries_are_separate_from_default_packages(self) -> None:
