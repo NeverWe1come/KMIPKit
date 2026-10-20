@@ -1303,7 +1303,10 @@ class Pkcs11Response:
 
     @property
     def correlation_value(self) -> bytes | None:
-        """Return a caller-owned copy of the response correlation bytes."""
+        """Return caller-owned bytes.
+
+        Copies retained by Python are outside KMIPKit's zeroization control.
+        """
         self._ensure_open()
         return (
             None
@@ -1315,6 +1318,9 @@ class Pkcs11Response:
         """Wipe owned correlation bytes and release all response TTLV copies."""
         if self._closed:
             return
+        if self._correlation_value is not None:
+            self._correlation_value.wipe()
+            self._correlation_value = None
         for value in (
             self.interface_ttlv,
             self.function_ttlv,
@@ -1324,9 +1330,6 @@ class Pkcs11Response:
         ):
             if value is not None:
                 value.close()
-        if self._correlation_value is not None:
-            self._correlation_value.wipe()
-            self._correlation_value = None
         self._closed = True
 
     def _ensure_open(self) -> None:
