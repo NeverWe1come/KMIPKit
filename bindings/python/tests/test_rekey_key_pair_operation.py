@@ -48,6 +48,16 @@ def test_pair_request_passes_each_attribute_and_mask_group(monkeypatch) -> None:
             private_protection_storage_masks=private_masks,
             public_protection_storage_masks=public_masks,
         )
+        for structure in (
+            common_attributes,
+            private_attributes,
+            public_attributes,
+            common_masks,
+            private_masks,
+            public_masks,
+        ):
+            with ttlv.ttlv_structure_view(structure) as view:
+                assert ttlv.ttlv_structure_view_item_count(view) == 1
     assert item == 41
     assert calls[0][0] == "kmipkit_client_batch_item_rekey_key_pair"
     assert all(value != ffi.NULL for value in calls[0][1][3:])

@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.junit.jupiter.api.Test;
 
 /** Re-key Key Pair mapping tests for OASIS KMIP 2.1 §6.1.47, Tables 308–312. */
@@ -42,6 +43,13 @@ final class RekeyKeyPairMappingTest {
                 ClientBatchItem item = ClientBatchItem.rekeyKeyPair(
                         null, 86_400L, commonAttributes, privateKeyAttributes, publicKeyAttributes,
                         commonMasks, privateMasks, publicMasks)) {
+            for (TtlvStructure structure : new TtlvStructure[] {
+                    commonAttributes, privateKeyAttributes, publicKeyAttributes,
+                    commonMasks, privateMasks, publicMasks}) {
+                try (TtlvStructureView view = structure.view()) {
+                    assertEquals(1, view.itemCount());
+                }
+            }
             assertNotNull(item);
         }
     }
