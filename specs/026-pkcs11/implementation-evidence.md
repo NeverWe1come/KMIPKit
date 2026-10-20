@@ -210,16 +210,34 @@ array before returning while preserving the original exception. The native
 test exercises cleanup of an allocated response array when the copy reports a
 pending exception.
 
+The adapter parity follow-up now exercises three distinct Correlation Value
+states over real TLS 1.3 mutual-authentication loopback exchanges: non-empty,
+absent, and present with zero bytes. Red commits are Python/CFFI `559027aa`,
+Java/JNI `4a023359`, and compiled C `c744254b`; Green commits are respectively
+`2b0a7993`, `c53eabc3`, and `49d26f9c`. Each bridge checks that optional
+presence is preserved independently of byte length. The C consumer also
+checks that absence removes the TTLV field and shifts the remaining ordered
+payload items, while present-empty keeps the Byte String field and reports
+present with length zero. QA accepted the behavior and raised a P3 fixture
+maintenance concern; Refactor `df8cc99d` now derives all three C case values
+from `typedResponse.correlationValue` and
+`correlationValuePresenceCases`. QA confirmed that finding is resolved. No
+production behavior change was needed.
+
 | Command | Result |
 |---|---|
 | `cargo test -p kmipkit-client pkcs11` | PASS; focused client PKCS#11 suite and public API mapping test |
 | `cargo test -p kmipkit-protocol pkcs11` | PASS; 15 tests |
 | `cargo test --workspace --all-features` | PASS; full Windows workspace test and doctest run |
 | `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls -- --exact` | PASS; compiled C consumer executed its mTLS success exchange |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage` | PASS after `b319c7fb`; all 10 compiled C ABI integration tests, including non-empty, absent, and present-empty correlation responses over mTLS |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls -- --exact` | PASS after fixture-driven Refactor `df8cc99d`; all three fixture cases still pass through the compiled C consumer over mTLS |
 | `cd bindings/java; .\gradlew.bat test --rerun-tasks --tests 'org.kmipkit.ClientFacadeTlsIntegrationTest.pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls' --tests 'org.kmipkit.extensions.Pkcs11MappingTest'` | PASS; Java/JNI mTLS fixture tests |
 | `cd bindings/java; .\gradlew.bat nativeJarSmoke --offline` | PASS; packaged JNI loading and negative probes completed offline |
 | `python -B tools/api_manifest/audit_jni_public_exports.py --binary bindings/java/target/native/kmipkit_jni.dll` | PASS; 2 required public JNI symbols present |
 | `$env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path target/debug/kmipkit_ffi.dll).Path; & target/python-t076-venv/Scripts/python.exe -m pytest bindings/python/tests/test_pkcs11_operation.py -q` | PASS; 7 tests using the Windows native library, including import-star and copied response after batch result closure |
+| Python 3.12 `pytest bindings/python/tests/test_pkcs11_operation.py -q` with `KMIPKIT_NATIVE_LIBRARY=target/debug/kmipkit_ffi.dll` | PASS after `2b0a7993`; 12 tests, including all three real CFFI mTLS correlation states |
+| `cd bindings/java; .\gradlew.bat test --tests 'org.kmipkit.ClientFacadeTlsIntegrationTest.pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls' --rerun-tasks` | PASS after `c53eabc3`; three real JNI mTLS cases for non-empty, absent, and present-empty correlation |
 | `target/python-t076-venv/Scripts/python.exe -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_pkcs11_parity_manifest tools.api_manifest.tests.test_operation_readiness -v` | PASS; 68 tests |
 | `python -B -m unittest scripts.tests.test_workflow scripts.tests.test_native_package_smoke -v` | PASS; 53 tests and offline installed-wheel probes |
 | `python -B tools/api_manifest/generate.py --write` then `--check` | PASS; 12 generated outputs regenerated and verified with the pinned generator |
@@ -237,12 +255,12 @@ pending exception.
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | PASS; only non-fatal AWS-LC toolchain probe warnings on Windows |
 | `git diff --check` | PASS |
 
-| `cargo llvm-cov -p kmipkit-protocol -p kmipkit-client -p kmipkit-ffi --all-features --all-targets --json --output-path target/t057-rust-adapters-coverage-raw.json` | PASS; fresh current-head Windows report: client 5,887/6,130 (96.04%), protocol 13,665/14,205 (96.20%), FFI 7,128/7,627 (93.46%), PKCS#11 protocol module 218/226 (96.46%), FFI client ABI module 2,540/2,860 (88.81%) |
+| `cargo llvm-cov -p kmipkit-protocol -p kmipkit-client -p kmipkit-ffi --all-features --all-targets --json --output-path target/t057-rust-adapters-current-head-optional-correlation.json` | PASS on Green `49d26f9c`; selected Rust crate set 26,799/28,099 lines (95.37%), including compiled C consumer tests; this does not measure the changed-production aggregate or cross-language gate |
 | `cargo llvm-cov --workspace --all-features --json --output-path target/t057-current-coverage-raw.json` | BLOCKED locally before export: unrelated `kmipkit-test-support::dns::loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame` could not bind `127.0.0.1:53817` after 32 attempts (`PermissionDenied`, Windows error 10013) |
 
 The focused T057 success-path checks, source/configuration tests, traceability,
 manifest, generator, formatting and Clippy pass locally. The scoped Rust
-percentages above do **not** establish the 95% changed-production threshold,
+percentage above does **not** establish the 95% changed-production threshold,
 the cross-language coverage aggregate, or the multi-platform gate. T057
 therefore remains open until hosted cross-platform CI and its current-head
 aggregate coverage run. The candidate-only build gates were removed from the
