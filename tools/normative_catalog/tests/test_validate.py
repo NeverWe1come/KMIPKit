@@ -4979,6 +4979,30 @@ class CatalogValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(CatalogValidationError, "transitive dependency normative closure"):
             validate(catalog)
 
+    def test_profile_claim_rejects_incomplete_dependency_claim_state(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        profile = next(
+            profile
+            for profile in catalog["profiles"]
+            if profile["profile_id"] == "KMIPKIT-PROFILE-AES-XTS-CLIENT"
+        )
+        dependency_profiles = {
+            candidate["profile_id"]: candidate for candidate in catalog["profiles"]
+        }
+        profile["claim_state"] = "evidence_complete"
+        profile["requirement_ids"] = sorted(
+            {
+                requirement_id
+                for profile_id in (profile["profile_id"], *profile["dependency_profile_ids"])
+                for requirement_id in dependency_profiles[profile_id]["requirement_ids"]
+            }
+        )
+
+        with self.assertRaisesRegex(CatalogValidationError, "dependency profile evidence is incomplete"):
+            validate(catalog)
+
     def test_profile_cannot_claim_complete_evidence_without_requirement_assignments(self) -> None:
         catalog = json.loads(
             (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
