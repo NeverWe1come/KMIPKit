@@ -1,6 +1,9 @@
 //! KMIP 2.1 protocol models and validation for `KMIPKit`.
 #![forbid(unsafe_code)]
 
+#[cfg(kmipkit_pkcs11_candidate_test)]
+const _: [(); 8] = [(); env!("KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION").len()];
+
 #[cfg(test)]
 #[path = "../tests/unit/interop_operation_tests.rs"]
 mod interop_operation_tests;

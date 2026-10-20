@@ -48,8 +48,8 @@ def main() -> int:
                 "--cfg",
                 "kmipkit_pkcs11_candidate_test",
             ],
-            "candidate cfg must be enabled only through the isolated build opt-in",
-            {},
+            "expected an array with a size of 8",
+            {"KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION": "isolated"},
         ),
     )
     for name, command, expected_message, overrides in probes:

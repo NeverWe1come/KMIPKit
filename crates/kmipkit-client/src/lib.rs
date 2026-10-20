@@ -30,6 +30,9 @@
 #![doc = include_str!("../../../docs/user-guide/es/transportes-produccion.md")]
 #![forbid(unsafe_code)]
 
+#[cfg(kmipkit_pkcs11_candidate_test)]
+const _: [(); 8] = [(); env!("KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION").len()];
+
 mod error;
 pub mod extension_registry;
 

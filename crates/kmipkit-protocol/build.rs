@@ -8,11 +8,21 @@ fn main() {
     println!("cargo:rerun-if-env-changed=CARGO_ENCODED_RUSTFLAGS");
     println!("cargo:rerun-if-env-changed=RUSTFLAGS");
     println!("cargo:rustc-check-cfg=cfg(kmipkit_pkcs11_candidate_test)");
+    let candidate_cfg_authorization = if env::var_os("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD")
+        .is_some_and(|value| value == OsStr::new("1"))
+    {
+        ensure_isolated_debug_target();
+        "isolated"
+    } else {
+        "blocked"
+    };
+    println!(
+        "cargo:rustc-env=KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION={candidate_cfg_authorization}"
+    );
     let candidate_test_build = env::var_os("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD")
         .is_some_and(|value| value == OsStr::new("1"));
     reject_unrequested_candidate_cfg(candidate_test_build);
     if candidate_test_build {
-        ensure_isolated_debug_target();
         println!("cargo:rustc-cfg=kmipkit_pkcs11_candidate_test");
     }
 }
