@@ -512,8 +512,21 @@ fn generated_public_client_abi_consumer_compiles_and_runs() {
 
 #[test]
 fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
-    for correlation_case in ["nonempty", "absent", "presentEmpty"] {
-        compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case);
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/pkcs11-parity.json"
+    ))
+    .expect("the shared PKCS#11 parity fixture is valid JSON");
+    let expected = &fixture["expectedOutput"];
+    let mut correlation_cases = vec!["nonempty".to_owned()];
+    correlation_cases.extend(
+        expected["correlationValuePresenceCases"]
+            .as_object()
+            .expect("fixture correlation presence cases are an object")
+            .keys()
+            .cloned(),
+    );
+    for correlation_case in correlation_cases {
+        compiled_c_pkcs11_consumer_matches_correlation_case(&correlation_case);
     }
 }
 
@@ -569,13 +582,8 @@ fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
             .expect("fixture function value is an integer"),
     )
     .expect("fixture function value fits the public C integer type");
-    let correlation_hex = match correlation_case {
-        "nonempty" => typed["correlationValue"]["hex"]
-            .as_str()
-            .expect("fixture correlation value is hexadecimal"),
-        "absent" | "presentEmpty" => "",
-        _ => panic!("the test selects a known correlation case"),
-    };
+    let (expected_correlation_present, correlation_hex) =
+        fixture_pkcs11_correlation_value(expected, correlation_case);
     let correlation_tag = fixture_hex_u32(&typed["correlationValue"]["tag"]);
     let output_tag = fixture_hex_u32(&typed["outputParameters"]["childTag"]);
     let output_hex = typed["outputParameters"]["childHex"]
@@ -661,10 +669,10 @@ fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
         CString::new(correlation_hex).expect("fixture correlation hexadecimal has no NUL byte");
     let correlation_tag = CString::new(format!("0x{correlation_tag:08X}"))
         .expect("fixture correlation tag has no NUL byte");
-    let correlation_present = CString::new(if correlation_case == "absent" {
-        "0"
-    } else {
+    let correlation_present = CString::new(if expected_correlation_present {
         "1"
+    } else {
+        "0"
     })
     .expect("correlation presence flag has no NUL byte");
     let output_tag =
@@ -1112,6 +1120,19 @@ fn c_request_matches_pkcs11_fixture(encoded: &[u8]) -> bool {
     })
 }
 
+fn fixture_pkcs11_correlation_value(expected: &serde_json::Value, case: &str) -> (bool, String) {
+    let correlation = if case == "nonempty" {
+        &expected["typedResponse"]["correlationValue"]
+    } else {
+        &expected["correlationValuePresenceCases"][case]
+    };
+    let present = correlation["present"]
+        .as_bool()
+        .expect("fixture correlation presence is Boolean");
+    let hexadecimal = correlation["hex"].as_str().unwrap_or("").to_owned();
+    (present, hexadecimal)
+}
+
 fn pkcs11_success_response_message(fixture: &serde_json::Value, correlation_case: &str) -> Vec<u8> {
     let expected = fixture;
     let typed = &expected["typedResponse"];
@@ -1123,15 +1144,9 @@ fn pkcs11_success_response_message(fixture: &serde_json::Value, correlation_case
     let return_code_tag = fixture_hex_u32(&typed["returnCode"]["tag"]);
     let correlation = &typed["correlationValue"];
     let correlation_tag = fixture_hex_u32(&correlation["tag"]);
-    let correlation_bytes = match correlation_case {
-        "nonempty" => decode_fixture_hex(
-            correlation["hex"]
-                .as_str()
-                .expect("shared PKCS#11 fixture correlation bytes are hexadecimal"),
-        ),
-        "absent" | "presentEmpty" => Vec::new(),
-        _ => panic!("the test selects a known correlation case"),
-    };
+    let (correlation_present, correlation_hex) =
+        fixture_pkcs11_correlation_value(expected, correlation_case);
+    let correlation_bytes = decode_fixture_hex(&correlation_hex);
     let vendor_tag = u32::from_str_radix(
         expected["vendorExtension"]["tag"]
             .as_str()
@@ -1159,7 +1174,7 @@ fn pkcs11_success_response_message(fixture: &serde_json::Value, correlation_case
         .expect("shared fixture response tags are an array")
     {
         let tag = fixture_hex_u32(tag);
-        if tag == correlation_tag && correlation_case == "absent" {
+        if tag == correlation_tag && !correlation_present {
             continue;
         }
         payload_items.push(match tag {
