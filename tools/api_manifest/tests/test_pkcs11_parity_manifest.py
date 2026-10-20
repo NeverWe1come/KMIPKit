@@ -258,16 +258,18 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
     def test_default_jni_audit_ignores_dependency_candidate_symbols(self) -> None:
         audit_module = _public_jni_audit_module()
         expected = set(self.fixture["publicNativeExports"]["javaJni"])
-        dependency_candidate = (
-            "_ZN13openssl_probe19candidate_cert_dirs17he65a59d48d868d1eE"
-        )
+        dependency_candidates = {
+            "_ZN13openssl_probe19candidate_cert_dirs17he65a59d48d868d1eE",
+            "_ZN17kmipkit_transport8resolver8Resolver23lookup_candidates_until"
+            "17h51e3a68a679a9549E",
+        }
         with tempfile.TemporaryDirectory() as directory:
             binary = Path(directory) / "libkmipkit_jni.so"
             binary.touch()
             with patch.object(
                 audit_module,
                 "read_native_exports",
-                return_value=expected | {dependency_candidate},
+                return_value=expected | dependency_candidates,
             ):
                 self.assertEqual(0, audit_module.audit(binary))
 
