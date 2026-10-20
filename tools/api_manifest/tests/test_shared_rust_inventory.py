@@ -10,6 +10,8 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
+RUST_REPORT_DIR = REPO_ROOT / "specs" / "043-public-api-bindings" / "reports"
+RUST_REPORT_PATH = max(RUST_REPORT_DIR.glob("rust-export-report-*.json"))
 SPEC = importlib.util.spec_from_file_location("audit_shared_rust_inventory", MODULE_PATH)
 AUDIT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(AUDIT)
@@ -21,13 +23,7 @@ class SharedRustInventoryTests(unittest.TestCase):
             (REPO_ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8")
         )
         self.rust_report = json.loads(
-            (
-                REPO_ROOT
-                / "specs"
-                / "043-public-api-bindings"
-                / "reports"
-                / "rust-export-report-2026-10-17.json"
-            ).read_text(encoding="utf-8")
+            RUST_REPORT_PATH.read_text(encoding="utf-8")
         )
 
     def test_approved_owner_lookup_uses_feature_requirements_when_directory_number_differs(self) -> None:
