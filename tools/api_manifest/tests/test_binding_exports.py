@@ -456,6 +456,30 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertEqual(observed["kmipkit.client.ClientExecutionError.status"], "field")
         self.assertTrue(result["complete"])
 
+    def test_python_inventory_deduplicates_annotated_fields_assigned_in_init(self):
+        source = textwrap.dedent("""
+            class Pkcs11Response:
+                response_ttlv: object
+                interface_ttlv: object | None
+
+                def __init__(self, response_ttlv, interface_ttlv=None):
+                    self.response_ttlv = response_ttlv
+                    self.interface_ttlv = interface_ttlv
+        """)
+        result = AUDIT.inventory_python_sources({"kmipkit/client.py": source})
+        fields = [
+            row for row in result["declarations"]
+            if row["exportName"].startswith("kmipkit.client.Pkcs11Response.")
+            and row["kind"] == "field"
+        ]
+
+        self.assertEqual(
+            {"kmipkit.client.Pkcs11Response.response_ttlv", "kmipkit.client.Pkcs11Response.interface_ttlv"},
+            {row["exportName"] for row in fields},
+        )
+        self.assertEqual(2, len(fields))
+        self.assertTrue(result["complete"], result["issues"])
+
     def test_python_inventory_includes_public_dataclass_generated_members(self):
         sources = {
             "kmipkit/client.py": textwrap.dedent("""
@@ -675,6 +699,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponseCertify",
             "clientBatchItemResponseCheck",
             "clientBatchItemResponseMetadataV2",
+            "clientBatchItemPkcs11", "clientBatchItemRecertify",
             "clientBatchItemHash", "clientBatchItemMac",
             "clientBatchItemMacVerify", "clientBatchItemSign",
             "clientBatchItemSignatureVerify", "clientBatchItemResponseHash",
@@ -693,6 +718,7 @@ class BindingExportAuditTests(unittest.TestCase):
             "usageAllocationContextAllocatedUnits", "usageAllocationContextAvailableUnits",
             "usageAllocationContextReservedUnits", "usageAllocationContextUniqueIdentifier",
             "clientBatchItemResponsePing", "clientBatchItemResponseQueryTtlv",
+            "clientBatchItemResponsePkcs11", "clientBatchItemResponseRecertify",
             "clientBatchItemResponseEncrypt", "clientBatchItemResponseDecrypt",
             "clientBatchItemResponseLogin", "clientBatchItemResponseObtainLease",
             "clientBatchItemResponseGet", "clientBatchItemResponseLocate",

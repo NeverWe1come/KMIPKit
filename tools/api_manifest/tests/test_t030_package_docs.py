@@ -178,7 +178,9 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Logout",
                 "Obtain Lease",
                 "Ping",
+                "PKCS#11",
                 "Query",
+                "Re-certify",
             ],
         )
         self.assertEqual(
@@ -202,6 +204,18 @@ class PackageDocumentationContractTests(unittest.TestCase):
             self.assertIn(operation_phrase, normalized_guide)
             for operation in (*declared_operations, *verified_operations):
                 self.assertIn(operation["name"].lower(), normalized_guide)
+
+    def test_recertify_summary_names_every_mapped_request_field(self) -> None:
+        request_fields = (
+            "Certificate Request Unique Identifier",
+            "Certificate Request Type",
+            "Certificate Request Value",
+            "Protection Storage Masks",
+        )
+        for language, guide in (("en", self.english), ("es", self.spanish)):
+            with self.subTest(language=language):
+                for field in request_fields:
+                    self.assertIn(field, guide)
 
     def test_vendor_extension_examples_document_native_handle_release_parity(self) -> None:
         english = (ROOT / "docs/user-guide/en/vendor-extensions.md").read_text(

@@ -540,8 +540,15 @@ class PublicApiParityTests(unittest.TestCase):
                     "client_batch_item_response_pkcs11_correlation_value",
                     "client_batch_item_response_pkcs11_output_parameters_ttlv",
                     "client_batch_item_response_pkcs11_return_code_ttlv",
+                    "client_batch_item_response_recertify_ttlv",
                 }:
                     self.assertNotIn("jniSymbol", java)
+                    if "jniAggregateSymbol" in java:
+                        self.assertTrue(
+                            java["jniAggregateSymbol"].startswith("Java_org_kmipkit_")
+                        )
+                    if function["id"] == "client_batch_item_response_recertify_ttlv":
+                        self.assertIn("jniAggregateSymbol", java)
                 else:
                     self.assertTrue(java["jniSymbol"].startswith("Java_org_kmipkit_"))
                     jni_symbols.setdefault(java["jniSymbol"], []).append(function)
