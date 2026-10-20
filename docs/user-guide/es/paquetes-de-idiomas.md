@@ -76,15 +76,15 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **24 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **23 / 56** siguen en
 estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
 Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
 Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Veintitrés mapeos de operación están `verified`: Certify,
+parte del repositorio. Veinticuatro mapeos de operación están `verified`: Certify,
 Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get, Get Constraints, Get Usage
-Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify y Re-key. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
+Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key y Re-key Key Pair. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. Ping mapea la petición y la respuesta correcta
@@ -121,7 +121,23 @@ campos desconocidos. C devuelve una copia TTLV propiedad del llamador; Java y
 Python devuelven un resultado propio que el llamador debe cerrar. Failure y
 Pending conservan los metadatos comunes del resultado y de entrega sin campos
 de éxito, cuerpos de error sin procesar ni reintentos automáticos. Es evidencia
-de mapeo de API, no una afirmación de conformidad. Log conserva el mensaje
+de mapeo de API, no una afirmación de conformidad. Re-key Key Pair mapea §6.1.47,
+Tablas 308–312: la petición puede incluir Private Key Unique Identifier,
+Offset, tres grupos diferenciados de Attributes y tres grupos diferenciados
+de Protection Storage Masks. Java usa `ClientBatchItem.rekeyKeyPair(...)`;
+Python usa `extensions.client_batch_item_rekey_key_pair(...)`. C usa
+`kmipkit_client_batch_item_rekey_key_pair` y copia cada estructura recibida
+antes de volver. Si se omite el identificador, se conserva el ID Placeholder
+del servidor y no se inventa localmente. Una respuesta Success expone ambos
+identificadores de sustitución y el TTLV completo y ordenado, incluidos los
+campos desconocidos. Los llamadores de Java y Python cierran la respuesta
+propia; en C, los spans de texto son prestados hasta liberar el elemento de
+respuesta, mientras que `kmipkit_client_batch_item_response_rekey_key_pair_ttlv`
+devuelve una copia independiente propiedad del llamador. Failure y Pending
+conservan el estado, el motivo, la correlación y los metadatos de entrega
+comunes, sin campos de éxito del par ni seguimientos automáticos. Este mapeo
+no afirma conformidad, interoperabilidad, compatibilidad con perfiles ni
+certificación. Log conserva el mensaje
 de solicitud y expone el TTLV completo de respuesta mediante el resultado tipado
 en los cuatro lenguajes. Login mapea los campos opcionales de la Tabla 253 y
 expone el Ticket Type raw, el Ticket Value y el TTLV genérico ordenado de una

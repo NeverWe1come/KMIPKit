@@ -52,7 +52,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.44 | Revoke | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
 | §6.1.45 | Re-certify | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; four-language request/response mapping verified by T058. This is API mapping evidence, not operation conformance or certification. |
 | §6.1.46 | Re-key | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; T059 records a four-language API mapping for Tables 305–307. This is API mapping evidence, not operation conformance or certification. |
-| §6.1.47 | Re-key Key Pair | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.47 | Re-key Key Pair | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; T060 records a four-language API mapping for Tables 308–312. This is local mapping evidence, not operation conformance or certification; exact-head CI and selected coverage remain pending. |
 | §6.1.48 | Re-Provision | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
 | §6.1.49 | RNG Retrieve | KMIPKIT-0041 | Approved owner; KMIPKIT-0041 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
 | §6.1.50 | RNG Seed | KMIPKIT-0041 | Approved owner; KMIPKIT-0041 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |

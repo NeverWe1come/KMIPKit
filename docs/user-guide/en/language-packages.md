@@ -72,15 +72,16 @@ changes to this table.
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 | `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
 
-Of the **56** KMIP `client_1_0` operation rows, **24 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **23 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Twenty-three operation mappings
+or implementation code elsewhere in the repository. Twenty-four operation mappings
 are `verified`: Certify, Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get,
 Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, and Re-key. Logout sends the caller-supplied
+Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key, and
+Re-key Key Pair. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;
 see [credential sessions](credential-sessions.md). The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
@@ -115,7 +116,23 @@ replacement Unique Identifier and complete ordered response TTLV, including
 unknown fields. C returns a caller-owned TTLV copy; Java and Python return an
 owned response that callers close. Failure and Pending retain common result and
 delivery metadata without success fields, raw error bodies, or automatic
-retries. This is an API mapping, not a conformance claim. Log preserves its request message and exposes the complete response
+retries. This is an API mapping, not a conformance claim. Re-key Key Pair
+maps §6.1.47 Tables 308–312: its request may carry the Private Key Unique
+Identifier, Offset, three distinct Attributes groups, and three distinct
+Protection Storage Masks groups. Java uses
+`ClientBatchItem.rekeyKeyPair(...)`; Python uses
+`extensions.client_batch_item_rekey_key_pair(...)`. C uses
+`kmipkit_client_batch_item_rekey_key_pair`; it copies each supplied structure
+before returning. An omitted request identifier remains a server-side ID
+Placeholder and is not synthesized locally. On Success, the typed response
+exposes both replacement identifiers and the complete ordered response TTLV,
+including unknown fields. Java and Python callers close the owned response;
+C's typed text spans are borrowed until the response item is released, while
+`kmipkit_client_batch_item_response_rekey_key_pair_ttlv` returns an independent
+caller-owned copy. Failure and Pending retain shared status, reason,
+correlation, and delivery metadata without successful pair fields or automatic
+follow-up. This mapping does not claim conformance, interoperability, profile
+support, or certification. Log preserves its request message and exposes the complete response
 TTLV through its typed result in all four languages. Login maps the optional
 Table 253 fields and exposes the raw Ticket Type, Ticket Value, and ordered
 generic Ticket TTLV from a successful response. C's

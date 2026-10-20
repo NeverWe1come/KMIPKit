@@ -182,6 +182,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Query",
                 "Re-certify",
                 "Re-key",
+                "Re-key Key Pair",
             ],
         )
         self.assertEqual(

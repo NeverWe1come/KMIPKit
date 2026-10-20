@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 import queue
 import socket
 import ssl
 import struct
 import threading
 from pathlib import Path
+
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -118,7 +120,7 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
     listener.settimeout(10)
     port = listener.getsockname()[1]
     received: list[bytes] = []
-    failures: queue.Queue[BaseException] = queue.Queue()
+    failures: queue.Queue[Exception] = queue.Queue()
 
     def serve() -> None:
         try:
@@ -134,7 +136,7 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
             with raw, context.wrap_socket(raw, server_side=True) as stream:
                 received.append(_read_frame(stream))
                 stream.sendall(_response())
-        except BaseException as error:
+        except Exception as error:  # noqa: BLE001 - propagate background peer failures to the test thread.
             failures.put(error)
         finally:
             listener.close()
@@ -171,38 +173,39 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
     result = None
     pair = None
     try:
-        with config, client.Client.create(config, transport) as kmip:
-            with ttlv.codec_limits_defaults() as limits:
-                batch = client.Batch.create()
-                batch.set_asynchronous_indicator(1)
-                with ttlv.ttlv_structure_create() as attributes:
-                    create = extensions.client_batch_item_create(4, attributes)
-                batch.add_item(
-                    extensions.with_unique_batch_item_id(create, _BATCH_IDS[0])
-                )
-                for index, batch_id in enumerate(_BATCH_IDS[1:]):
-                    if index == 0:
-                        with (
-                            ttlv.ttlv_structure_create() as common_attributes,
-                            ttlv.ttlv_structure_create() as private_attributes,
-                            ttlv.ttlv_structure_create() as public_attributes,
-                            ttlv.ttlv_structure_create() as common_masks,
-                            ttlv.ttlv_structure_create() as private_masks,
-                            ttlv.ttlv_structure_create() as public_masks,
-                        ):
-                            item = extensions.client_batch_item_rekey_key_pair(
-                                offset=86_400,
-                                common_attributes=common_attributes,
-                                private_key_attributes=private_attributes,
-                                public_key_attributes=public_attributes,
-                                common_protection_storage_masks=common_masks,
-                                private_protection_storage_masks=private_masks,
-                                public_protection_storage_masks=public_masks,
-                            )
-                    else:
-                        item = extensions.client_batch_item_rekey_key_pair()
-                    batch.add_item(extensions.with_unique_batch_item_id(item, batch_id))
-                result = kmip.execute(batch, limits)
+        with (
+            config,
+            client.Client.create(config, transport) as kmip,
+            ttlv.codec_limits_defaults() as limits,
+        ):
+            batch = client.Batch.create()
+            batch.set_asynchronous_indicator(1)
+            with ttlv.ttlv_structure_create() as attributes:
+                create = extensions.client_batch_item_create(4, attributes)
+            batch.add_item(extensions.with_unique_batch_item_id(create, _BATCH_IDS[0]))
+            for index, batch_id in enumerate(_BATCH_IDS[1:]):
+                if index == 0:
+                    with (
+                        ttlv.ttlv_structure_create() as common_attributes,
+                        ttlv.ttlv_structure_create() as private_attributes,
+                        ttlv.ttlv_structure_create() as public_attributes,
+                        ttlv.ttlv_structure_create() as common_masks,
+                        ttlv.ttlv_structure_create() as private_masks,
+                        ttlv.ttlv_structure_create() as public_masks,
+                    ):
+                        item = extensions.client_batch_item_rekey_key_pair(
+                            offset=86_400,
+                            common_attributes=common_attributes,
+                            private_key_attributes=private_attributes,
+                            public_key_attributes=public_attributes,
+                            common_protection_storage_masks=common_masks,
+                            private_protection_storage_masks=private_masks,
+                            public_protection_storage_masks=public_masks,
+                        )
+                else:
+                    item = extensions.client_batch_item_rekey_key_pair()
+                batch.add_item(extensions.with_unique_batch_item_id(item, batch_id))
+            result = kmip.execute(batch, limits)
         assert len(received) == 1
         assert (
             received[0].count(b"\x42\x00\x5c\x05\x00\x00\x00\x04\x00\x00\x00\x1d") == 3
