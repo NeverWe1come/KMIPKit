@@ -418,6 +418,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertLessEqual(smoke.end(), audit.start())
         self.assertIn("bindings/java/target/native", audit.group(1))
         self.assertIn("audit_jni_public_exports.py", audit.group(1))
+        self.assertIn("-like '*kmipkit_jni.*'", audit.group(1))
         self.assertNotIn("--mode", audit.group(1))
         self.assertNotIn("audit_binding_exports.py", audit.group(1))
 
