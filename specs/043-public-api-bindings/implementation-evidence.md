@@ -4434,7 +4434,7 @@ copies. No formal conformance or certification claim is made here.
 |---|---|---|---|
 | Red | `23a9538e`, `3ae0229c`, `e65fd6ad`, `201dc74e`, `9c2beeae`, `9f06db93`, `0663bbb6`, `4fbbcc8a`, `51f71c4a`, `d7ed5061`, `04fdb59c`, `396de3c8`, `b6b02af1` | Focused Rust protocol/client/FFI tests; Java facade tests; Python Encrypt/Decrypt response tests; manifest parity and traceability tests; compiled C mTLS consumer; JNI native build | Expected Red evidence covered missing typed mappings, parity declarations, secret lifecycle and requirement traces, successful C response fields, and stopping JNI work after a pending exception. The last native Red failed to compile because `response_array_conversion.hpp` did not yet exist. |
 | Green | `8f37ac10` | `cargo fmt --all --check`; `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls -- --exact`; `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings`; `py -3 -B tools/api_manifest/generate.py --check`; manifest unit tests; `uv run --offline --no-project --with pytest --with cffi python -m pytest -q bindings/python/tests/test_encrypt_decrypt_operations.py`; `bindings/java/native/build.ps1`; focused Maven tests; `git diff --cached --check` | PASS: C mTLS Encrypt/Decrypt response assertions, FFI Clippy, 12 generated outputs, 9 manifest/documentation tests, 5 Python tests, native JNI build and exception-path test, and 5 focused Java tests. The compiled C test passed 1/1. Windows AWS-LC compiler-probe and missing NASM warnings did not fail builds. |
-| Refactor | This DCO-signed evidence commit | `cargo fmt --all --check`; `cargo clippy -p kmipkit-ffi -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `py -3 -B tools/api_manifest/generate.py --check`; 10 focused manifest/parity tests; Rust export audit | PASS: formatting, Clippy, generated outputs, T040/T041 manifest reconciliation, and the 9,511-entry Rust export audit all pass with zero discrepancies. Final current-head CI and selected-scope coverage remain pending; T040 stays unchecked until they pass. |
+| Refactor | This DCO-signed evidence commit | `cargo fmt --all --check`; `cargo clippy -p kmipkit-ffi -p kmipkit-protocol --all-targets --all-features -- -D warnings`; `py -3 -B tools/api_manifest/generate.py --check`; 10 focused manifest/parity tests; Rust export audit | PASS: formatting, Clippy, generated outputs, T040/T041 manifest reconciliation, and the 9,511-entry Rust export audit all pass with zero discrepancies. Final-head CI run `39366149497` passed on `ade95892`, including selected-scope coverage. |
 
 Independent QA confirmed Python access after `close()` now raises consistently,
 all four §4.16 requirement IDs are present in the API manifest and T040
@@ -4446,7 +4446,10 @@ conversion raises an exception. A follow-up JNI fix registers each array for
 cleanup before checking for a pending exception and stops before converting
 the next span. The native regression test asserts that only the first
 conversion runs and that its array is wiped. Final selected-scope coverage and
-CI results are required before checking T040 complete.
+CI run `39366149497` passed on `ade95892`, including the selected-scope
+changed-production gate. This satisfies T040's current-head verification
+condition; the open KMIPKIT-DISC-045/046 interpretations remain bounded as
+documented by the approved owner specification.
 
 ### T041 — Ping and Query four-language mappings (2026-10-19)
 
@@ -4465,9 +4468,9 @@ conformance.
 | Refactor | This DCO-signed evidence commit | `uv run --no-project --offline --with jsonschema python -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_java_public_access_paths tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_rust_public_access_paths tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_python_exports_and_lifecycle tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages tools.api_manifest.tests.test_ping_query_parity_manifest tools.api_manifest.tests.test_encrypt_decrypt_parity_manifest -v`; `py -3 -B tools/api_manifest/generate.py --check`; `git diff --check` | PASS: 10 manifest/parity tests; all 12 generated outputs current; the Rust export report matches 9,511 declarations with zero kind mismatches, missing paths, or issues. |
 
 The Windows AWS-LC compiler-probe and missing NASM messages are warnings; all
-listed commands completed successfully. Final cross-platform CI and the
-selected-scope changed-code coverage gate are still required before checking
-T041 complete.
+listed commands completed successfully. Final-head CI run `39366149497` passed
+on `ade95892`, including the selected-scope changed-production gate, so the
+cross-platform verification requirement for T041 is satisfied.
 
 ### T041 Query payload preflight bounds follow-up (2026-10-19)
 
@@ -4487,9 +4490,10 @@ transport exchange. No OASIS scope or wire encoding changed.
 
 The full local Rust coverage report was regenerated on Windows. The selected
 cross-platform aggregate cannot be completed locally because the report set
-does not include the required macOS artifact; the current-head GitHub coverage
-gate remains authoritative. T041 remains unchecked until current-head CI and
-selected-scope coverage pass.
+does not include the required macOS artifact; final-head GitHub CI run
+`39366149497` on `ade95892` is authoritative and passed both the platform matrix
+and selected-scope changed-production coverage gate. T041 is complete; no
+server-conformance claim is made.
 
 #### T041 default Query documentation correction
 
@@ -4529,10 +4533,10 @@ blocked by the Windows host's excluded TCP port ranges: the unrelated
 `kmipkit-test-support::dns::tests::loopback_udp_fixture_answers_tracks_nxdomain_and_drops_selected_questions`
 test received `PermissionDenied` for TCP ports within ranges reported by
 `netsh interface ipv4 show excludedportrange protocol=tcp`, including on an
-isolated rerun. No source change was made for this host restriction. Current
-head cross-platform CI remains required. T078's task checkbox remains open
-until its explicit T040 dependency passes current-head CI and selected-scope
-coverage; the T078 code and language-specific tests are implemented.
+isolated rerun. No source change was made for this host restriction. Final-head
+GitHub CI run `39366149497` on `ade95892` passed the required cross-platform
+matrix, native binding checks, and selected-scope coverage gate. T040's
+dependency is therefore satisfied and the T078 acceptance scope is complete.
 
 ### T055 Logout four-language mapping (2026-10-20)
 
@@ -4666,7 +4670,7 @@ behavior did not change.
 | T055 bilingual package summary | `9fba3646` | `585fa819` | The new contract failed while Logout and `usage_allocation_guard` were absent from the guides and the counts still said 28/56 blocked and 19 verified. Both guides now report 27/56 blocked, 20 verified operations, and the declared guard scope; the T030 contract suite passes. |
 | T076 current Rust export snapshot | `1a5fb2f6` | `131e7c77` | The latest-report contract failed against the 2026-10-17 snapshot, which predates T078. The generated 2026-10-20 Rust 1.94 snapshot passes `--check`: 9,541 observed paths (7,653 direct, 1,888 conditional), 9,517 exact manifest matches, 24 exact approved exclusions, and zero missing, stale, issue, kind, or condition mismatches. Two `kmipkit::Client` facade aliases remain exact blocked `public_binding_surface` rows; the approved T078 four-language mappings remain in `kmipkit_client`. |
 | T055/T078 Java binding inventory | `6312fcd3` | `131e7c77` | The contract failed on 12 unclassified Java exports. The canonical manifest now records 11 exact internal JNI bridge/discriminator exclusions and the fixed redacted `UsageAllocationContext.toString` diagnostic exclusion. The generated 2026-10-20 binding report passes `--check`: C 351/351, Java 650/650, Python 622/622 exact matches; 37, 147, and 380 exact exclusions; zero missing, stale, kind-mismatched, or scanner-issue entries. |
-| Refactor | This DCO-signed evidence commit | Current scoped API suite, script contracts, Java integration, Rust formatting, both audit `--check` commands, both generators `--check`, and `git diff --check` | PASS locally: 121 API-manifest tests; 288 script tests (26 skipped); `ClientFacadeTlsIntegrationTest` BUILD SUCCESSFUL; Rust and binding reports reconcile; 12 API outputs and extension fixtures are current; formatting and whitespace checks pass. Current-head GitHub CI and the selected-scope 95% changed-code coverage aggregate remain pending after this update is pushed. |
+| Refactor | This DCO-signed evidence commit | Current scoped API suite, script contracts, Java integration, Rust formatting, both audit `--check` commands, both generators `--check`, and `git diff --check` | PASS locally: 121 API-manifest tests; 288 script tests (26 skipped); `ClientFacadeTlsIntegrationTest` BUILD SUCCESSFUL; Rust and binding reports reconcile; 12 API outputs and extension fixtures are current; formatting and whitespace checks pass. Final-head GitHub CI run `39366149497` passed on `ade95892`, including the selected-scope 95% changed-production coverage gate. |
 
 The 12 Java exclusions are exact and follow the approved `NativeExtensionRegistry`
 internal-bridge boundary; the public Logout and Usage Allocation wrapper APIs
