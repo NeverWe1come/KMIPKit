@@ -13,30 +13,55 @@ TARGET_DIRECTORY = REPOSITORY_ROOT / "target" / "candidate-rustflags-gate-probe"
 
 
 def main() -> int:
-    environment = os.environ.copy()
-    environment.pop("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", None)
-    environment.pop("CARGO_ENCODED_RUSTFLAGS", None)
-    environment["RUSTFLAGS"] = "--cfg kmipkit_pkcs11_candidate_test"
-    environment["CARGO_TARGET_DIR"] = str(TARGET_DIRECTORY)
-
-    result = subprocess.run(
-        ["cargo", "check", "--locked", "-p", "kmipkit-client", "--lib"],
-        cwd=REPOSITORY_ROOT,
-        env=environment,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=300,
+    probes = (
+        (
+            "RUSTFLAGS",
+            ["cargo", "check", "--locked", "-p", "kmipkit-client", "--lib"],
+            "candidate cfg must be enabled only through the isolated build opt-in",
+            {"RUSTFLAGS": "--cfg kmipkit_pkcs11_candidate_test"},
+        ),
+        (
+            "Cargo build.rustflags config",
+            [
+                "cargo",
+                "--config",
+                'build.rustflags=["--cfg","kmipkit_pkcs11_candidate_test"]',
+                "check",
+                "--locked",
+                "-p",
+                "kmipkit-ffi",
+                "--lib",
+            ],
+            "candidate cfg must be enabled only through the isolated build opt-in",
+            {},
+        ),
     )
-    output = f"{result.stdout}\n{result.stderr}"
-    if result.returncode == 0:
-        print("Cargo accepted a direct candidate cfg without the isolated-build opt-in.", file=sys.stderr)
-        return 1
-    if "candidate cfg must be enabled only through the isolated build opt-in" not in output:
-        print(output, file=sys.stderr)
-        print("Cargo failed for a reason other than the candidate cfg guard.", file=sys.stderr)
-        return 1
-    print("Direct candidate cfg injection was rejected by the build gate.")
+    for name, command, expected_message, overrides in probes:
+        environment = os.environ.copy()
+        environment.pop("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", None)
+        environment.pop("CARGO_ENCODED_RUSTFLAGS", None)
+        environment.pop("RUSTFLAGS", None)
+        environment.update(overrides)
+        environment["CARGO_TARGET_DIR"] = str(TARGET_DIRECTORY / name.replace(" ", "-"))
+
+        result = subprocess.run(
+            command,
+            cwd=REPOSITORY_ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=300,
+        )
+        output = f"{result.stdout}\n{result.stderr}"
+        if result.returncode == 0:
+            print(f"Cargo accepted candidate cfg injection through {name}.", file=sys.stderr)
+            return 1
+        if expected_message not in output:
+            print(output, file=sys.stderr)
+            print(f"Cargo failed for a reason other than the {name} candidate cfg guard.", file=sys.stderr)
+            return 1
+        print(f"Candidate cfg injection through {name} was rejected.")
     return 0
 
 
