@@ -541,13 +541,17 @@ class PublicApiParityTests(unittest.TestCase):
                     "client_batch_item_response_pkcs11_output_parameters_ttlv",
                     "client_batch_item_response_pkcs11_return_code_ttlv",
                     "client_batch_item_response_recertify_ttlv",
+                    "client_batch_item_response_rekey_ttlv",
                 }:
                     self.assertNotIn("jniSymbol", java)
                     if "jniAggregateSymbol" in java:
                         self.assertTrue(
                             java["jniAggregateSymbol"].startswith("Java_org_kmipkit_")
                         )
-                    if function["id"] == "client_batch_item_response_recertify_ttlv":
+                    if function["id"] in {
+                        "client_batch_item_response_recertify_ttlv",
+                        "client_batch_item_response_rekey_ttlv",
+                    }:
                         self.assertIn("jniAggregateSymbol", java)
                 else:
                     self.assertTrue(java["jniSymbol"].startswith("Java_org_kmipkit_"))
@@ -732,6 +736,18 @@ class PublicApiParityTests(unittest.TestCase):
 
         self.assertNotIn("jniSymbol", response_ttlv["java"])
         self.assertEqual("responseTtlv", response_ttlv["java"]["method"])
+        self.assertEqual(
+            response["java"]["jniSymbol"],
+            response_ttlv["java"].get("jniAggregateSymbol"),
+        )
+
+    def test_rekey_response_ttlv_names_its_aggregate_jni_owner(self) -> None:
+        functions = {function["id"]: function for function in self.manifest["functions"]}
+        response = functions["client_batch_item_response_rekey"]
+        response_ttlv = functions["client_batch_item_response_rekey_ttlv"]
+
+        self.assertNotIn("jniSymbol", response_ttlv["java"])
+        self.assertEqual("rekeyResponse", response_ttlv["java"]["method"])
         self.assertEqual(
             response["java"]["jniSymbol"],
             response_ttlv["java"].get("jniAggregateSymbol"),
