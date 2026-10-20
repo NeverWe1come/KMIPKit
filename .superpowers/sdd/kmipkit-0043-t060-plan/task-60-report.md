@@ -159,3 +159,88 @@ uv run --no-project --offline --python 3.12 --with ruff ruff format --check test
   remain pending. T060 is deliberately still unchecked.
 - No direct official OASIS test-case ID for §6.1.47 was identified; table-based
   parity tests are not represented as official conformance vectors.
+
+## Independent QA parity follow-up
+
+This follow-up addresses two test-evidence gaps identified by independent QA.
+It changes tests and their helper only; it does not change normative requirements,
+generated output, the API manifest, or production behavior. The T060 task remains
+unchecked pending controller review, security review, exact-head CI, and coverage.
+
+### Red
+
+- Commit: `2616a47e89f09e609598957296311e9b6438498b`
+  (`test: expose empty Re-key Key Pair mapping fixtures`), DCO signed.
+- Java focused command:
+  `mvn -f bindings/java/pom.xml -Dtest=RekeyKeyPairMappingTest test`
+  failed as expected: 5 tests, 1 failure. The new test
+  `requestBuilderCopiesAllSixOptionalStructures` reported
+  `expected: <1> but was: <0>` at line 50, showing the six optional structures
+  were not yet asserted at their individual JNI argument positions.
+- Python focused command from `bindings/python` using the candidate Python 3.12
+  environment and a temporary copy of `target/debug/kmipkit_ffi.dll`:
+  `python.exe -B -m pytest tests/test_rekey_key_pair_operation.py -q -p no:cacheprovider`
+  failed as expected: `1 failed, 2 passed`; the new
+  `test_pair_request_passes_each_attribute_and_mask_group` reported
+  `assert 0 == 1` for the not-yet-implemented slot assertion.
+
+### Green
+
+- Commit: `821618efb2f9b5c63aee687260650cd03af43766`
+  (`test: verify Re-key Key Pair TTLV parity`), DCO signed.
+- Java mapping and loopback TLS/JNI verification:
+  `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=RekeyKeyPairMappingTest,ClientFacadeTlsIntegrationTest#rekeyKeyPairResponseUsesNativeJniBridgeAndPreservesBothIdentifiers' test`
+  passed: 6 tests, 0 failures, 0 errors, 0 skipped. The loopback test inspects
+  encoded request TTLV, asserting the six optional field tags and order, the
+  86,400-second offset, each distinct nested marker, and absence of a locally
+  substituted Private Key Unique Identifier.
+- Python focused operation and native loopback tests:
+  `python.exe -B -m pytest tests/test_rekey_key_pair_operation.py tests/test_rekey_key_pair_native_integration.py -q -p no:cacheprovider`
+  passed: `4 passed`. The encoded request asserts the same field order,
+  offset, and six distinct nested marker values.
+- C ABI tests:
+  `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib ffi_rekey_key_pair_`
+  passed: 2 tests. The compiled public C consumer command
+  `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact`
+  passed: 1 test. The consumer checks response field order, unknown tag
+  `0x540001` and value `DE AD 00 FF`, and accesses the independent TTLV copy
+  after releasing its source result.
+- Python native loopback verifies response and payload field order, unknown tag
+  `0x541234` and value `01 00 FF`, and that the copied TTLV remains usable after
+  closing/freeing the source `ClientBatchResult`.
+- No C outgoing-request TTLV assertion was added: the existing public C
+  consumer has no request-capture/serialization inspection seam. Its available
+  ABI surface allows response TTLV inspection only.
+
+### Refactor and final checks
+
+- The test-only Python TTLV parser now returns a named `_TtlvSpan` structure
+  instead of a positional tuple, so the parity assertions identify tags, types,
+  value spans, and item ends by name.
+- `cargo fmt --all --check`: PASS.
+- Focused Ruff check of the two changed Python test modules: PASS.
+- Focused Ruff format check of the two changed Python test modules: PASS.
+- The focused Java, Python, C ABI, and compiled C consumer tests listed above
+  passed on the final test logic. Python reported `4 passed in 1.21s` after the
+  parser refactor. `git diff --check`: PASS.
+- Python tests were invoked with the existing candidate Python 3.12 environment
+  and a temporary native DLL copy set via `KMIPKIT_NATIVE_LIBRARY`; the copy was
+  removed afterward. `uv run` could not clean a stale `.venv\\lib64` symlink,
+  so direct use of the already provisioned candidate interpreter avoided that
+  environment cleanup issue. Builds emitted non-fatal existing AWS-LC/NASM and
+  C linker warnings.
+
+### Follow-up files and review
+
+- Tests updated: `bindings/c/tests/client_abi_consumer.c`,
+  `bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java`,
+  `bindings/java/src/test/java/org/kmipkit/extensions/RekeyKeyPairMappingTest.java`,
+  `bindings/python/tests/test_rekey_key_pair_operation.py`, and
+  `bindings/python/tests/test_rekey_key_pair_native_integration.py`.
+- Refactor evidence helper: `bindings/python/tests/test_rekey_key_pair_native_integration.py`.
+- This report records the Red and Green follow-up commits; its final update is
+  included in the separate DCO-signed Refactor commit.
+- Self-review found no production-path, ABI, wire-contract, manifest, generated
+  output, or normative-source change in this follow-up. Remaining review limits
+  are the unavailable C request-capture seam and pending controller/security/
+  exact-head CI/coverage checks.

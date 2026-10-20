@@ -6,12 +6,21 @@ import ssl
 import struct
 import threading
 from pathlib import Path
+from typing import NamedTuple
 
 from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _BATCH_IDS = (b"create-0", b"pair-0", b"pair-1", b"pair-2")
 _CORRELATION = b"\x00\xa1\x7fpair"
+
+
+class _TtlvSpan(NamedTuple):
+    tag: int
+    item_type: int
+    value_start: int
+    value_length: int
+    end: int
 
 
 def _item(tag: int, kind: int, value: bytes) -> bytes:
@@ -133,9 +142,7 @@ def _sentinel_structure(
             structure.close()
 
 
-def _parse_item(
-    encoded: bytes, offset: int, parent_end: int
-) -> tuple[int, int, int, int, int]:
+def _parse_item(encoded: bytes, offset: int, parent_end: int) -> _TtlvSpan:
     assert 0 <= offset <= parent_end - 8
     tag_value = int.from_bytes(encoded[offset : offset + 3], "big")
     item_type = encoded[offset + 3]
@@ -144,17 +151,14 @@ def _parse_item(
     padded_length = value_length + (-value_length % 8)
     item_end = value_start + padded_length
     assert item_end <= parent_end
-    return tag_value, item_type, value_start, value_length, item_end
+    return _TtlvSpan(tag_value, item_type, value_start, value_length, item_end)
 
 
-def _children(
-    encoded: bytes, parent: tuple[int, int, int, int, int]
-) -> list[tuple[int, int, int, int, int]]:
-    _, item_type, value_start, value_length, _ = parent
-    assert item_type == 1
-    value_end = value_start + value_length
+def _children(encoded: bytes, parent: _TtlvSpan) -> list[_TtlvSpan]:
+    assert parent.item_type == 1
+    value_end = parent.value_start + parent.value_length
     children = []
-    offset = value_start
+    offset = parent.value_start
     while offset < value_end:
         child = _parse_item(encoded, offset, value_end)
         children.append(child)
@@ -165,21 +169,30 @@ def _children(
 
 def _assert_request_fields(encoded: bytes) -> None:
     message = _parse_item(encoded, 0, len(encoded))
-    assert message[0] == 0x420078 and message[1] == 1
-    assert message[4] == len(encoded)
+    assert message.tag == 0x420078 and message.item_type == 1
+    assert message.end == len(encoded)
     request_payload = None
     for batch_item in _children(encoded, message):
-        if batch_item[0] != 0x42000F or batch_item[1] != 1:
+        if batch_item.tag != 0x42000F or batch_item.item_type != 1:
             continue
         is_pair = False
         candidate_payload = None
         for field in _children(encoded, batch_item):
-            if field[0] == 0x42005C and field[1] == 5 and field[3] == 4:
+            if (
+                field.tag == 0x42005C
+                and field.item_type == 5
+                and field.value_length == 4
+            ):
                 is_pair = (
-                    int.from_bytes(encoded[field[2] : field[2] + field[3]], "big")
+                    int.from_bytes(
+                        encoded[
+                            field.value_start : field.value_start + field.value_length
+                        ],
+                        "big",
+                    )
                     == 0x1D
                 )
-            elif field[0] == 0x420079 and field[1] == 1:
+            elif field.tag == 0x420079 and field.item_type == 1:
                 candidate_payload = field
         if is_pair:
             request_payload = candidate_payload
@@ -196,10 +209,16 @@ def _assert_request_fields(encoded: bytes) -> None:
         0x420164,
         0x420165,
     )
-    assert tuple(field[0] for field in fields) == expected_tags
+    assert tuple(field.tag for field in fields) == expected_tags
     offset = fields[0]
-    assert offset[1] == 10 and offset[3] == 4
-    assert int.from_bytes(encoded[offset[2] : offset[2] + offset[3]], "big") == 86_400
+    assert offset.item_type == 10 and offset.value_length == 4
+    assert (
+        int.from_bytes(
+            encoded[offset.value_start : offset.value_start + offset.value_length],
+            "big",
+        )
+        == 86_400
+    )
 
     marker_tags = (0x541101, 0x541102, 0x541103, 0x541104, 0x541105, 0x541106)
     markers = (
@@ -216,8 +235,11 @@ def _assert_request_fields(encoded: bytes) -> None:
         children = _children(encoded, group)
         assert len(children) == 1
         marker = children[0]
-        assert marker[0] == marker_tag and marker[1] == 8
-        assert encoded[marker[2] : marker[2] + marker[3]] == marker_value
+        assert marker.tag == marker_tag and marker.item_type == 8
+        assert (
+            encoded[marker.value_start : marker.value_start + marker.value_length]
+            == marker_value
+        )
 
 
 def _byte_string_at(
