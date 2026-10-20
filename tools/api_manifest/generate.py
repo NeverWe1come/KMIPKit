@@ -15,6 +15,7 @@ import math
 import os
 import re
 import stat
+import subprocess
 import sys
 import tempfile
 import tomllib
@@ -31,6 +32,7 @@ CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 MAX_SCHEMA_BYTES = 4 * 1024 * 1024
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
+MAX_RELEASE_METADATA_BYTES = 1024 * 1024
 OUTPUTS = {
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "cHeader": "bindings/c/include/kmipkit.h",
@@ -113,6 +115,25 @@ _C_LAYOUT_FIELD_TYPE_PATTERN = re.compile(
 )
 _REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
+_EXPECTED_RELEASE_SHARED_CAPABILITY_IDS = frozenset(
+    {
+        "generic_ttlv_model",
+        "public_binding_surface",
+        "rust_transport_exchange",
+        "ttlv_wire_codec",
+        "vendor_extension_registry",
+        "ffi_runtime_metadata",
+        "discover_versions_request_item",
+        "opaque_register_context",
+        "client_batch_model",
+        "client_execution",
+        "production_transport",
+        "api_level_discovery",
+        "server_generated_creation",
+        "crypto_response_ttlv",
+        "usage_allocation_guard",
+    }
+)
 _EXPECTED_PUBLIC_PACKAGE_IDS = frozenset(
     {
         "rust-kmipkit-ttlv",
@@ -125,12 +146,13 @@ _EXPECTED_PUBLIC_PACKAGE_IDS = frozenset(
         "python-kmipkit",
     }
 )
-_RUST_PUBLIC_PACKAGE_MANIFESTS = {
+_CARGO_PUBLIC_PACKAGE_MANIFESTS = {
     "rust-kmipkit-ttlv": "crates/kmipkit-ttlv/Cargo.toml",
     "rust-kmipkit-protocol": "crates/kmipkit-protocol/Cargo.toml",
     "rust-kmipkit-transport": "crates/kmipkit-transport/Cargo.toml",
     "rust-kmipkit-client": "crates/kmipkit-client/Cargo.toml",
     "rust-kmipkit": "crates/kmipkit/Cargo.toml",
+    "c-kmipkit": "crates/kmipkit-ffi/Cargo.toml",
 }
 _RUST_2024_KEYWORDS = {
     "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum",
@@ -915,6 +937,16 @@ def _require_complete_readiness(
         record.get("apiState") != "verified" for record in operations
     ):
         raise ManifestError("release manifest contains an incomplete operation API")
+    capability_ids = [
+        record.get("capabilityId") for record in capabilities if isinstance(record, dict)
+    ]
+    if (
+        len(capability_ids) != len(capabilities)
+        or any(not isinstance(capability_id, str) for capability_id in capability_ids)
+        or len(set(capability_ids)) != len(capability_ids)
+        or set(capability_ids) != _EXPECTED_RELEASE_SHARED_CAPABILITY_IDS
+    ):
+        raise ManifestError("release manifest contains an incomplete capability inventory")
     if any(record.get("capabilityState") != "verified" for record in capabilities):
         raise ManifestError("release manifest contains an incomplete capability API")
     if any(record.get("declarationState") != "verified" for record in declarations):
@@ -1224,6 +1256,53 @@ def _validate_v2_manifest(
     if require_complete:
         _validate_release_package_versions(manifest, root)
     _validate_v2_readiness(manifest, root, require_complete=require_complete)
+    if require_complete:
+        _validate_release_export_inventories(root)
+
+
+def _read_release_metadata(root: Path, relative_path: str) -> str:
+    try:
+        source_path = _safe_destination(root, relative_path)
+        with source_path.open("rb") as source:
+            content = source.read(MAX_RELEASE_METADATA_BYTES + 1)
+    except (OSError, PathSecurityError) as error:
+        raise ManifestError("release package version source is missing or invalid") from error
+    if len(content) > MAX_RELEASE_METADATA_BYTES:
+        raise ManifestError("release package version source exceeds its size limit")
+    try:
+        return content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ManifestError("release package version source is missing or invalid") from error
+
+
+def _validate_release_export_inventories(root: Path) -> None:
+    """Require source audits to account for all Rust and binding exports."""
+    scripts = (
+        "audit_rust_exports.py",
+        "audit_binding_exports.py",
+    )
+    for script_name in scripts:
+        command = [
+            sys.executable,
+            "-B",
+            str(root / "tools" / "api_manifest" / script_name),
+            "--repo-root",
+            str(root),
+            "--check",
+        ]
+        try:
+            result = subprocess.run(
+                command,
+                cwd=root,
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=900,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ManifestError("release export inventory could not be validated") from error
+        if result.returncode != 0:
+            raise ManifestError("release export inventory is incomplete or inconsistent")
 
 
 def _validate_release_package_versions(
@@ -1254,9 +1333,8 @@ def _validate_release_package_versions(
 
     def read_toml(relative_path: str) -> dict[str, Any]:
         try:
-            with (root / relative_path).open("rb") as source:
-                document = tomllib.load(source)
-        except (OSError, tomllib.TOMLDecodeError) as error:
+            document = tomllib.loads(_read_release_metadata(root, relative_path))
+        except tomllib.TOMLDecodeError as error:
             raise ManifestError("release package version source is missing or invalid") from error
         if not isinstance(document, dict):
             raise ManifestError("release package version source is malformed")
@@ -1274,7 +1352,7 @@ def _validate_release_package_versions(
     workspace_version = workspace_package.get("version")
     if workspace_version != release_line:
         raise ManifestError("Rust package versions are not synchronized with releaseLine")
-    for relative_path in _RUST_PUBLIC_PACKAGE_MANIFESTS.values():
+    for relative_path in _CARGO_PUBLIC_PACKAGE_MANIFESTS.values():
         crate = read_toml(relative_path)
         crate_package = crate.get("package")
         if not isinstance(crate_package, dict):
@@ -1291,9 +1369,9 @@ def _validate_release_package_versions(
         raise ManifestError("Python package version is not synchronized with releaseLine")
 
     try:
-        gradle = (root / "bindings/java/build.gradle.kts").read_text(encoding="utf-8")
-        pom = ET.fromstring((root / "bindings/java/pom.xml").read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, ET.ParseError) as error:
+        gradle = _read_release_metadata(root, "bindings/java/build.gradle.kts")
+        pom = ET.fromstring(_read_release_metadata(root, "bindings/java/pom.xml"))
+    except ET.ParseError as error:
         raise ManifestError("Java package version source is missing or invalid") from error
     gradle_version = re.search(r'(?m)^\s*version\s*=\s*"([^"\r\n]+)"\s*$', gradle)
     namespace = pom.tag.partition("}")[0] + "}" if "}" in pom.tag else ""
