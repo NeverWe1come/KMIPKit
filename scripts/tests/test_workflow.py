@@ -403,8 +403,9 @@ class WorkflowContractTests(unittest.TestCase):
 
         self.assertLessEqual(smoke.end(), audit.start())
         self.assertIn("bindings/java/target/native", audit.group(1))
-        self.assertIn("audit_binding_exports.py", audit.group(1))
-        self.assertIn("--c-only --c-binary", audit.group(1))
+        self.assertIn("audit_jni_candidate_exports.py", audit.group(1))
+        self.assertIn("--mode default", audit.group(1))
+        self.assertNotIn("audit_binding_exports.py", audit.group(1))
 
     def test_default_java_native_bridge_excludes_candidate_entrypoints(self) -> None:
         native = (REPOSITORY_ROOT / "bindings/java/native/kmipkit_jni.cpp").read_text(
