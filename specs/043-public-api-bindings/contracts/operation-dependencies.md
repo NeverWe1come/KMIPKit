@@ -42,7 +42,7 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.34 | Modify Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.35 | Obtain Lease | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
 | §6.1.36 | Ping | KMIPKIT-0020 | Approved for autonomous implementation under the maintainer's standing direct instruction; T041 four-language mapping is in progress. This is not formal acceptance or a complete KMIP conformance claim. |
-| §6.1.37 | PKCS#11 | KMIPKIT-0040 | Approved owner; KMIPKIT-0040 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.37 | PKCS#11 | KMIPKIT-0040 | Approved for implementation, not formal acceptance; the owner specification says this approval does not start implementation. The API remains blocked until formal acceptance and four-language parity evidence exist |
 | §6.1.38 | Poll | KMIPKIT-0009 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-039` remains a typed asynchronous response gate |
 | §6.1.39 | Process | KMIPKIT-0009 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-039` remains a typed asynchronous response gate |
 | §6.1.40 | Query | KMIPKIT-0020 | Approved for autonomous implementation under the maintainer's standing direct instruction; T041 four-language mapping is in progress. Preserve open `KMIPKIT-DISC-047`; this is not formal acceptance or a complete KMIP conformance claim. |
