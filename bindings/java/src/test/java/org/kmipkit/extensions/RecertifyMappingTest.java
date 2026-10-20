@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.junit.jupiter.api.Test;
 
@@ -55,5 +58,38 @@ final class RecertifyMappingTest {
             assertNotNull(response.responseTtlv());
             assertFalse(response.toString().contains("replacement-certificate"));
         }
+    }
+
+    @Test
+    void absentResponseIsEmptyAndRejectsUnexpectedOwnedTtlv() {
+        assertTrue(ClientBatchItemResult
+                .parseRecertifyResponse(new Object[] {new long[] {0}, null, new long[] {0}})
+                .isEmpty());
+
+        NativeExtensionRegistry.ensureLoaded();
+        long unexpectedTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseRecertifyResponse(new Object[] {
+                    new long[] {0}, null, new long[] {unexpectedTtlv}}
+                ));
+        ResponseTtlvTestSupport.assertReleased(unexpectedTtlv);
+    }
+
+    @Test
+    void malformedSuccessRejectsMissingTtlvAndReleasesTtlvOnInvalidIdentifier() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseRecertifyResponse(new Object[] {
+                    new long[] {1}, new Object[] {new long[] {1, 1, 0, 0},
+                        "replacement-certificate".getBytes(StandardCharsets.UTF_8)}, new long[] {0}}
+                ));
+
+        NativeExtensionRegistry.ensureLoaded();
+        long malformedIdentifierTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseRecertifyResponse(new Object[] {
+                    new long[] {1}, new Object[] {new long[] {0, 1, 0, 0}, null},
+                    new long[] {malformedIdentifierTtlv}}
+                ));
+        ResponseTtlvTestSupport.assertReleased(malformedIdentifierTtlv);
     }
 }

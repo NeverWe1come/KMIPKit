@@ -5381,6 +5381,54 @@ fn ffi_recertify_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
 }
 
 #[test]
+fn ffi_recertify_accessors_leave_failure_results_absent_and_validate_outputs() {
+    let item = failed_cryptographic_item(
+        ClientRequest::recertify(
+            RecertifyRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("old-certificate".to_owned())),
+        ),
+        0x07,
+        b"recertify-failure",
+    );
+
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_recertify(item, &raw mut present, &raw mut identifier,)
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_recertify_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
+
+    let mut invalid_identifier = empty_unique_identifier_output_v1();
+    invalid_identifier.struct_size -= 1;
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_response_recertify(
+            item,
+            &raw mut present,
+            &raw mut invalid_identifier,
+        )
+    );
+
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
 fn ffi_usage_allocation_ttlv_is_a_complete_ordered_caller_owned_copy() {
     let unknown_value = [0xde, 0xad, 0x00, 0xff];
     let item = successful_cryptographic_item(
@@ -6350,7 +6398,29 @@ fn assert_crypto_result_getters_return_status(
         expected_status
     );
 
+    assert_recertify_result_getters_return_status(item, expected_status);
     assert_symmetric_crypto_result_getters_return_status(item, expected_status);
+}
+
+fn assert_recertify_result_getters_return_status(
+    item: *mut kmipkit_client_batch_item_response_t,
+    expected_status: i32,
+) {
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_recertify(item, &raw mut present, &raw mut identifier,),
+        expected_status
+    );
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_recertify_ttlv(
+            item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        expected_status
+    );
 }
 
 fn assert_symmetric_crypto_result_getters_return_status(

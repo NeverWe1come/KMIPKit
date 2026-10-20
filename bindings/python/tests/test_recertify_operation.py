@@ -10,7 +10,10 @@ import threading
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from kmipkit import client, extensions, ttlv
+from kmipkit import errors
 from kmipkit._client_ffi import ffi
 
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -172,6 +175,158 @@ def test_recertify_response_maps_replacement_identifier_and_closes_owned_ttlv(
     assert "replacement-certificate" not in repr(result)
     result.close()
     assert closed == [True]
+
+
+def _stub_recertify_response(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    present: int,
+    identifier_kind: int = 0,
+    response_ttlv_present: int = 1,
+    response_ttlv_handle: object = ffi.cast("kmipkit_ttlv_structure_t *", 42),
+) -> list[object]:
+    identifier_text = ffi.new("uint8_t[]", b"replacement")
+    pointer = response_ttlv_handle
+    released: list[object] = []
+
+    def response(_item: object, out_present: object, identifier: object) -> int:
+        out_present[0] = present  # type: ignore[index]
+        identifier.kind = identifier_kind  # type: ignore[attr-defined]
+        if identifier_kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
+            identifier.text_data = identifier_text  # type: ignore[attr-defined]
+            identifier.text_length = len(b"replacement")  # type: ignore[attr-defined]
+        return 0
+
+    def response_ttlv(_item: object, out_present: object, output: object) -> int:
+        out_present[0] = response_ttlv_present  # type: ignore[index]
+        output[0] = pointer  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_recertify=response,
+            kmipkit_client_batch_item_response_recertify_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    return released
+
+
+def test_recertify_absent_response_has_zeroed_identifier_and_skips_ttlv(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    def unexpected_ttlv(_item: object, _out_present: object, _output: object) -> int:
+        calls.append("ttlv")
+        return 0
+
+    def response(_item: object, out_present: object, _identifier: object) -> int:
+        calls.append("typed")
+        out_present[0] = 0  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_recertify=response,
+            kmipkit_client_batch_item_response_recertify_ttlv=unexpected_ttlv,
+            kmipkit_ttlv_structure_release=lambda _value: None,
+        ),
+    )
+
+    assert client._recertify_response(SimpleNamespace(_pointer=lambda: object())) is None
+    assert calls == ["typed"]
+
+
+def test_recertify_absent_response_rejects_unexpected_identifier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _stub_recertify_response(
+        monkeypatch,
+        present=0,
+        identifier_kind=int(extensions.UniqueIdentifierKind.TEXT_STRING),
+        response_ttlv_present=0,
+        response_ttlv_handle=ffi.NULL,
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._recertify_response(SimpleNamespace(_pointer=lambda: object()))
+
+
+def test_recertify_response_rejects_invalid_presence_and_missing_identifier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _stub_recertify_response(monkeypatch, present=2)
+    with pytest.raises(errors.InvalidInputError):
+        client._recertify_response(SimpleNamespace(_pointer=lambda: object()))
+
+    _stub_recertify_response(monkeypatch, present=1)
+    with pytest.raises(errors.InvalidInputError):
+        client._recertify_response(SimpleNamespace(_pointer=lambda: object()))
+
+
+def test_recertify_response_releases_unexpected_ttlv_and_rejects_absence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pointer = ffi.cast("kmipkit_ttlv_structure_t *", 73)
+    released = _stub_recertify_response(
+        monkeypatch,
+        present=1,
+        identifier_kind=int(extensions.UniqueIdentifierKind.TEXT_STRING),
+        response_ttlv_present=0,
+        response_ttlv_handle=pointer,
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._recertify_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [pointer]
+
+
+def test_recertify_response_releases_ttlv_when_wrapper_conversion_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pointer = ffi.cast("kmipkit_ttlv_structure_t *", 74)
+    released = _stub_recertify_response(
+        monkeypatch,
+        present=1,
+        identifier_kind=int(extensions.UniqueIdentifierKind.TEXT_STRING),
+        response_ttlv_present=1,
+        response_ttlv_handle=pointer,
+    )
+
+    def fail_conversion(_address: int) -> ttlv.Structure:
+        raise RuntimeError("test wrapper conversion failure")
+
+    monkeypatch.setattr(client.ttlv, "_structure_from_native_address", fail_conversion)
+    with pytest.raises(RuntimeError, match="test wrapper conversion failure"):
+        client._recertify_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [pointer]
+
+
+def test_recertify_builder_maps_omitted_optional_type_and_offset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, tuple[object, ...]]] = []
+
+    monkeypatch.setattr(
+        extensions,
+        "_make_handle",
+        lambda _kind, symbol, arguments: (calls.append((symbol, arguments)), 41)[1],
+    )
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    item = extensions.client_batch_item_recertify()
+
+    assert item == 41
+    assert calls[0][0] == "kmipkit_client_batch_item_recertify"
+    assert calls[0][1][2:4] == (0, 0)
+    assert calls[0][1][5:7] == (0, 0)
 
 
 def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(

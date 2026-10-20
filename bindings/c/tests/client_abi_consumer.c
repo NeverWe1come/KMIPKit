@@ -123,7 +123,10 @@ static int recertify_constructor_is_callable_from_c(void) {
         request_value,
         (uint64_t)sizeof(request_value),
     };
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *masks = 0;
     kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
 
     existing_id.struct_size = (uint32_t)sizeof(existing_id);
     existing_id.abi_version = 1;
@@ -136,14 +139,40 @@ static int recertify_constructor_is_callable_from_c(void) {
     request_id.text_data = request_id_bytes;
     request_id.text_length = (uint64_t)(sizeof(request_id_bytes) - 1);
 
+    if (kmipkit_ttlv_structure_create(&attributes) != 0 ||
+        kmipkit_ttlv_structure_create(&masks) != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_recertify(
+            &existing_id, &request_id, 2, 0, 0, 0, 0, attributes, masks,
+            &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+        kmipkit_client_batch_item_release(item);
+        item = 0;
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_recertify(
+            &existing_id, &request_id, 0, 0, 0, 2, 0, attributes, masks,
+            &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+        kmipkit_client_batch_item_release(item);
+        item = 0;
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_recertify(
+            0, 0, 0, 0, 0, 0, 0, attributes, masks, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
     if (kmipkit_client_batch_item_recertify(
             &existing_id, &request_id, 1, UINT32_C(0xfedcba98), &request_span,
-            1, UINT32_C(0xffffffff), 0, 0, &item) != 0) {
-        kmipkit_client_batch_item_release(item);
-        return 0;
+            1, UINT32_C(0xffffffff), attributes, masks, &item) != 0 || item == 0) {
+        goto cleanup;
     }
-    const int result = item != 0;
+    result = 1;
+cleanup:
     kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(masks);
+    kmipkit_ttlv_structure_release(attributes);
     return result;
 }
 
