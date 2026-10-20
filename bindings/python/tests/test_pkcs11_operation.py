@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -14,6 +15,7 @@ from kmipkit._ffi import ffi, lib as ttlv_lib
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
+CANDIDATE_RUNTIME = os.environ.get("KMIPKIT_PKCS11_CANDIDATE_TEST_RUNTIME") == "1"
 
 
 def test_pkcs11_candidate_is_not_public_in_the_python_package_surface() -> None:
@@ -82,6 +84,10 @@ def test_pkcs11_builder_preserves_generic_inputs_and_wipes_staging_bytes(
     assert bytes(ffi.buffer(staged_owners[0], expected_length)) == bytes(expected_length)
 
 
+@pytest.mark.skipif(
+    not CANDIDATE_RUNTIME,
+    reason="the owner-gated CFFI symbol exists only in the isolated candidate runtime",
+)
 def test_pkcs11_builder_executes_through_the_client_cffi_declarations() -> None:
     function = ttlv.ttlv_structure_create()
     item = None
@@ -93,6 +99,15 @@ def test_pkcs11_builder_executes_through_the_client_cffi_declarations() -> None:
         if item is not None:
             item.close()
         function.close()
+
+
+def test_pkcs11_candidate_symbol_is_present_only_in_the_candidate_runtime() -> None:
+    symbol_present = hasattr(
+        extensions._client_lib,
+        "kmipkit_client_batch_item_pkcs11",
+    )
+
+    assert symbol_present is CANDIDATE_RUNTIME
 
 
 def test_pkcs11_response_owns_generic_ttlv_and_redacts_repr(
@@ -172,6 +187,73 @@ def test_pkcs11_response_field_preserves_legacy_positional_batch_item_results() 
     assert result.decrypt_response is legacy_suffix[4]
     assert result.ping_response is legacy_suffix[5]
     assert result.query_response is legacy_suffix[6]
+
+
+def test_pkcs11_response_is_private_on_the_returned_batch_result_item(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response_pointer = client.ffi.cast("kmipkit_client_batch_response_t *", 1)
+    item_pointer = client.ffi.cast("kmipkit_client_batch_item_response_t *", 2)
+    expected_response = object()
+
+    def item_count(_response: object, output: object) -> int:
+        output[0] = 1  # type: ignore[index]
+        return 0
+
+    def item_at(_response: object, _index: int, output: object) -> int:
+        output[0] = item_pointer  # type: ignore[index]
+        return 0
+
+    def metadata_v2(_item: object, output: object) -> int:
+        output[0].struct_size = client.ffi.sizeof(
+            "kmipkit_client_batch_item_metadata_v2_t"
+        )  # type: ignore[index,union-attr]
+        output[0].abi_version = 2  # type: ignore[index,union-attr]
+        output[0].outcome_kind = int(client.BatchOutcome.PENDING)  # type: ignore[index,union-attr]
+        output[0].result_status = 0  # type: ignore[index,union-attr]
+        output[0].has_result_reason = 0  # type: ignore[index,union-attr]
+        output[0].result_reason = 0  # type: ignore[index,union-attr]
+        output[0].has_result_message = 0  # type: ignore[index,union-attr]
+        output[0].result_message_data = client.ffi.NULL  # type: ignore[index,union-attr]
+        output[0].result_message_length = 0  # type: ignore[index,union-attr]
+        output[0].operation = 0x33  # type: ignore[index,union-attr]
+        output[0].reserved = 0  # type: ignore[index,union-attr]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_response_item_count=item_count,
+            kmipkit_client_batch_response_item_at=item_at,
+            kmipkit_client_batch_item_response_metadata_v2=metadata_v2,
+            kmipkit_client_batch_item_response_unique_batch_item_id=lambda *_args: 0,
+            kmipkit_client_batch_item_response_pending_correlation_value=lambda *_args: 0,
+            kmipkit_client_batch_item_response_release=lambda _item: 0,
+            kmipkit_client_batch_response_release=lambda _response: 0,
+        ),
+    )
+    monkeypatch.setattr(client, "_metadata_result_message", lambda _metadata: None)
+    monkeypatch.setattr(client, "_response_span", lambda _item, _function: None)
+    monkeypatch.setattr(client, "_discover_versions_supported_versions", lambda _item: None)
+    monkeypatch.setattr(client, "_create_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_key_pair_response", lambda _item: (None, None))
+    monkeypatch.setattr(client, "_create_split_key_response", lambda _item: None)
+    monkeypatch.setattr(
+        client,
+        "_join_split_key_response_for_result",
+        lambda _item, **_keywords: None,
+    )
+    monkeypatch.setattr(client, "_pkcs11_response", lambda _item: expected_response)
+
+    result = client._batch_result(response_pointer)
+    try:
+        (item,) = result.items
+
+        assert not hasattr(item, "pkcs11_response")
+        assert item._pkcs11_response is expected_response
+    finally:
+        result.close()
 
 
 def test_pkcs11_shared_fixture_declares_the_canonical_four_language_contract() -> None:

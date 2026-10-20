@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -152,6 +153,30 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             in PKCS11_CANDIDATE_EXPORTS
         }
         self.assertFalse(inventory)
+
+    def test_candidate_build_gate_is_not_a_cargo_feature(self) -> None:
+        completed = subprocess.run(
+            [
+                "cargo",
+                "metadata",
+                "--no-deps",
+                "--format-version",
+                "1",
+                "--manifest-path",
+                str(ROOT / "crates" / "kmipkit-ffi" / "Cargo.toml"),
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        metadata = json.loads(completed.stdout)
+        ffi_package = next(
+            package for package in metadata["packages"] if package["name"] == "kmipkit-ffi"
+        )
+
+        self.assertNotIn("test-pkcs11-candidate", ffi_package["features"])
 
     def test_default_c_abi_does_not_export_owner_gated_pkcs11_symbols(self) -> None:
         native_exports = set(audit_binding_exports.build_c_binary_exports(ROOT))

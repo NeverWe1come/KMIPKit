@@ -345,6 +345,50 @@ class WorkflowContractTests(unittest.TestCase):
             "The standalone CTest consumer must receive the expected API-level values.",
         )
 
+    def test_c_consumer_uses_an_isolated_candidate_library_after_default_export_audit(self) -> None:
+        contents = self.require_workflow()
+        c_job = self.require_job(contents, "language-c")
+        audit = self.require_named_step(c_job, "Audit the built C ABI export allowlist")
+        candidate_build = self.require_named_step(
+            c_job, "Build the isolated PKCS#11 candidate C ABI"
+        )
+        self.assertLess(audit.start(), candidate_build.start())
+        self.assertIn("target/debug", audit.group(1))
+        self.assertIn("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", candidate_build.group(1))
+        self.assertIn("target/pkcs11-candidate", candidate_build.group(1))
+
+        cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            cmake,
+            r"(?m)^set\(KMIPKIT_TARGET_DIR .*CACHE PATH",
+            "CMake must accept the isolated target directory for the candidate consumer.",
+        )
+        self.assertIn("target/pkcs11-candidate/debug", c_job)
+
+    def test_java_and_python_candidate_libraries_are_separate_from_default_packages(self) -> None:
+        contents = self.require_workflow()
+        java_job = self.require_job(contents, "language-java")
+        python_job = self.require_job(contents, "language-python")
+        self.require_named_step(
+            python_job, "Build isolated PKCS#11 CFFI runtime and run parity test"
+        )
+        self.assertIn("target/pkcs11-candidate", python_job)
+        self.assertIn("KMIPKIT_NATIVE_LIBRARY", python_job)
+        self.assertIn("KMIPKIT_PKCS11_CANDIDATE_TEST_RUNTIME", python_job)
+
+        gradle = (REPOSITORY_ROOT / "bindings/java/build.gradle.kts").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('"buildCandidateNativeLibrary"', gradle)
+        self.assertIn('target/native-test/${hostLibraryName()}', gradle)
+        native_jar = re.search(r'(?ms)tasks\.register<Jar>\("nativeJar"\) \{(.*?)^\}', gradle)
+        self.assertIsNotNone(native_jar)
+        assert native_jar is not None
+        self.assertIn('dependsOn("buildNativeLibrary")', native_jar.group(1))
+        self.assertIn("target/native-test", java_job)
+
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
