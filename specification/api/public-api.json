@@ -102849,6 +102849,7 @@
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
         "bindings/python/tests/test_pkcs11_operation.py"
@@ -102914,8 +102915,10 @@
         "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/pkcs11_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
         "bindings/c/tests/client_abi_consumer.c",
         "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/python/tests/test_pkcs11_operation.py"
       ],
       "languageMappings": {
@@ -281497,6 +281500,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed for KMIPKIT-0017-FR-013 and KMIPKIT-0043-FR-021; the typed response fields and callable APIs are mapped individually. This exclusion applies only to the exact response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__delattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__eq__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__hash__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__init__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__match_args__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__repr__",
+      "reason": "This exact __repr__ is a redacted diagnostic representation, not an independent cross-language KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-005 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exact representation is tested to redact response contents."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__setattr__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.Pkcs11Response.__slots__",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the Pkcs11Response record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed for KMIPKIT-0040-FR-004 and KMIPKIT-0043-FR-021/T057. Pkcs11Response response TTLV and close lifecycle are mapped individually; this exclusion applies only to the generated Python response-record artifact."
     },
     {
       "packageId": "python-kmipkit",

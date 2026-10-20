@@ -345,33 +345,26 @@ class WorkflowContractTests(unittest.TestCase):
             "The standalone CTest consumer must receive the expected API-level values.",
         )
 
-    def test_rust_pkcs11_candidate_tests_use_an_isolated_debug_build(self) -> None:
+    def test_rust_pkcs11_runs_in_the_default_workspace_test_build(self) -> None:
         contents = self.require_workflow()
         core_job = self.require_job(contents, "core")
         self.require_named_step(core_job, "Run workspace tests")
-        candidate_tests = self.require_named_step(
-            core_job, "Run isolated Rust PKCS#11 candidate tests"
-        )
+        self.assertNotIn("PKCS11_CANDIDATE", core_job)
+        self.assertFalse((REPOSITORY_ROOT / "scripts/test_candidate_rustflags_gate.py").exists())
 
-        self.assertLess(
-            core_job.index("Run workspace tests"),
-            core_job.index("Run isolated Rust PKCS#11 candidate tests"),
-        )
-        self.assertIn("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", candidate_tests.group(1))
-        self.assertIn("target/pkcs11-candidate-rust", candidate_tests.group(1))
-        self.assertIn("-p kmipkit-protocol -p kmipkit-client", candidate_tests.group(1))
-
-    def test_c_consumer_uses_an_isolated_candidate_library_after_default_export_audit(self) -> None:
+    def test_c_consumer_compiles_and_runs_against_the_default_public_abi(self) -> None:
         contents = self.require_workflow()
         c_job = self.require_job(contents, "language-c")
         audit = self.require_named_step(c_job, "Audit the built C ABI export allowlist")
-        candidate_build = self.require_named_step(
-            c_job, "Build the isolated PKCS#11 candidate C ABI"
-        )
-        self.assertLess(audit.start(), candidate_build.start())
+        configure = self.require_named_step(c_job, "Configure the C consumer with Ninja")
+        compile_step = self.require_named_step(c_job, "Compile the C consumer and example")
+        run_step = self.require_named_step(c_job, "Run the C consumer and example")
+        self.assertLess(audit.start(), configure.start())
+        self.assertLess(configure.start(), compile_step.start())
+        self.assertLess(compile_step.start(), run_step.start())
         self.assertIn("target/debug", audit.group(1))
-        self.assertIn("KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD", candidate_build.group(1))
-        self.assertIn("target/pkcs11-candidate", candidate_build.group(1))
+        self.assertIn("target/debug", configure.group(1))
+        self.assertIn("ctest", run_step.group(1))
 
         cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
             encoding="utf-8"
@@ -379,104 +372,70 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertRegex(
             cmake,
             r"(?m)^set\(KMIPKIT_TARGET_DIR .*CACHE PATH",
-            "CMake must accept the isolated target directory for the candidate consumer.",
+            "CMake must accept the target directory for the public C consumer.",
         )
-        self.assertIn("option(KMIPKIT_PKCS11_CANDIDATE_TEST", cmake)
-        self.assertIn(
-            "target_compile_definitions(kmipkit_client_abi_consumer PRIVATE KMIPKIT_PKCS11_CANDIDATE_TEST)",
-            cmake,
-        )
-        self.assertIn("-DKMIPKIT_PKCS11_CANDIDATE_TEST=ON", c_job)
-        self.assertIn("target/pkcs11-candidate/debug", c_job)
+        self.assertNotIn("PKCS11_CANDIDATE", cmake)
+        self.assertNotIn("PKCS11_CANDIDATE", c_job)
 
-    def test_java_and_python_candidate_libraries_are_separate_from_default_packages(self) -> None:
+    def test_java_and_python_default_packages_include_public_pkcs11_mappings(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
         python_job = self.require_job(contents, "language-python")
-        self.require_named_step(
-            python_job, "Build isolated PKCS#11 CFFI runtime and run parity test"
+        python_tests = self.require_named_step(
+            python_job, "Build the Python Maturin CFFI package and run tests and example"
         )
-        self.assertIn("target/pkcs11-candidate", python_job)
-        self.assertIn("KMIPKIT_NATIVE_LIBRARY", python_job)
-        self.assertIn("KMIPKIT_PKCS11_CANDIDATE_TEST_RUNTIME", python_job)
+        self.assertIn("bindings/python/tests", python_tests.group(1))
+        self.assertNotIn("PKCS11_CANDIDATE", python_job)
 
         gradle = (REPOSITORY_ROOT / "bindings/java/build.gradle.kts").read_text(
             encoding="utf-8"
         )
-        self.assertIn('"buildCandidateNativeLibrary"', gradle)
-        self.assertIn('target/native-test/${hostLibraryName()}', gradle)
+        self.assertNotIn('"buildCandidateNativeLibrary"', gradle)
+        self.assertIn('target/native/${hostLibraryName()}', gradle)
         native_jar = re.search(r'(?ms)tasks\.register<Jar>\("nativeJar"\) \{(.*?)^\}', gradle)
         self.assertIsNotNone(native_jar)
         assert native_jar is not None
         self.assertIn('dependsOn("buildNativeLibrary")', native_jar.group(1))
 
         pom = (REPOSITORY_ROOT / "bindings/java/pom.xml").read_text(encoding="utf-8")
-        self.assertIn(
-            "<KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD>1</KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD>",
-            pom,
-        )
-        self.assertIn("${project.build.directory}/native-test/", pom)
+        self.assertNotIn("PKCS11_CANDIDATE", pom)
+        self.assertIn("${project.build.directory}/native/", pom)
 
-    def test_java_package_smoke_audits_default_native_exports(self) -> None:
+    def test_java_package_smoke_audits_public_jni_exports(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
-        java_tests = self.require_named_step(java_job, "Run Java 17 JNI tests and example")
-        candidate_audit = self.require_named_step(
-            java_job, "Verify isolated candidate JNI harness exports"
-        )
         smoke = self.require_named_step(java_job, "Run packaged Java native loader smoke")
         audit = self.require_named_step(java_job, "Audit the packaged default JNI exports")
 
-        self.assertLessEqual(java_tests.end(), candidate_audit.start())
-        self.assertIn("bindings/java/target/native-test", candidate_audit.group(1))
-        self.assertIn("audit_jni_candidate_exports.py", candidate_audit.group(1))
-        self.assertIn("--mode candidate", candidate_audit.group(1))
         self.assertLessEqual(smoke.end(), audit.start())
         self.assertIn("bindings/java/target/native", audit.group(1))
-        self.assertIn("audit_jni_candidate_exports.py", audit.group(1))
-        self.assertIn("--mode default", audit.group(1))
+        self.assertIn("audit_jni_public_exports.py", audit.group(1))
+        self.assertNotIn("--mode", audit.group(1))
         self.assertNotIn("audit_binding_exports.py", audit.group(1))
 
-    def test_default_java_native_bridge_excludes_candidate_entrypoints(self) -> None:
+    def test_default_java_native_bridge_exports_public_pkcs11_entrypoints(self) -> None:
         native = (REPOSITORY_ROOT / "bindings/java/native/kmipkit_jni.cpp").read_text(
             encoding="utf-8"
-        )
-        candidate_guard = re.compile(
-            r"(?m)^#if defined\(KMIPKIT_PKCS11_CANDIDATE_TEST\)\s*$"
         )
         for symbol in (
             'extern "C" int32_t kmipkit_client_batch_item_pkcs11(',
             'extern "C" int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(',
-            "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative(",
-            "Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseTtlvNative(",
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPkcs11(",
+            "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponsePkcs11(",
         ):
             with self.subTest(symbol=symbol):
                 position = native.find(symbol)
-                self.assertGreaterEqual(position, 0, f"JNI bridge is missing {symbol}")
-                guards = [match for match in candidate_guard.finditer(native, 0, position)]
-                self.assertTrue(guards, f"{symbol} must be candidate-build-only")
-                closing_guard = native.find("#endif", position)
-                self.assertGreater(closing_guard, position, f"{symbol} guard must close")
+                self.assertGreaterEqual(position, 0, f"public JNI bridge is missing {symbol}")
 
         powershell = (REPOSITORY_ROOT / "bindings/java/native/build.ps1").read_text(
             encoding="utf-8"
         )
-        self.assertRegex(
-            powershell,
-            r"(?s)if \(\$env:KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD -eq '1'\) \{\s*"
-            r"\$compiler \+= ' /DKMIPKIT_PKCS11_CANDIDATE_TEST'\s*\}",
-        )
+        self.assertNotIn("PKCS11_CANDIDATE", powershell)
 
         shell = (REPOSITORY_ROOT / "bindings/java/native/build.sh").read_text(
             encoding="utf-8"
         )
-        self.assertRegex(
-            shell,
-            r'(?s)if \[ "\$\{KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD:-\}" = "1" \]; then\s*'
-            r'jni_candidate_define="-DKMIPKIT_PKCS11_CANDIDATE_TEST"\s*else\s*'
-            r'jni_candidate_define=""\s*fi',
-        )
-        self.assertIn("${jni_candidate_define:+$jni_candidate_define}", shell)
+        self.assertNotIn("PKCS11_CANDIDATE", shell)
 
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()

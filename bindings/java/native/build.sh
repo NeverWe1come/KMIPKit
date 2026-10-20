@@ -20,19 +20,9 @@ else
             ;;
     esac
 fi
-if [ "${KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD:-}" = "1" ]; then
-    cargo_target_directory="$repository_root/target/pkcs11-candidate"
-    native_output="$script_dir/../target/native-test"
-else
-    cargo_target_directory="$repository_root/target"
-    native_output="$script_dir/../target/native"
-fi
+cargo_target_directory="$repository_root/target"
+native_output="$script_dir/../target/native"
 export CARGO_TARGET_DIR="$cargo_target_directory"
-if [ "${KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD:-}" = "1" ]; then
-    jni_candidate_define="-DKMIPKIT_PKCS11_CANDIDATE_TEST"
-else
-    jni_candidate_define=""
-fi
 mkdir -p "$native_output"
 
 zeroizing_bytes_test="$native_output/zeroizing_bytes_test"
@@ -70,7 +60,6 @@ case "$(uname -s)" in
             set -- "$@" -fprofile-instr-generate -fcoverage-mapping
         fi
         "${CXX:-c++}" "$@" \
-            ${jni_candidate_define:+$jni_candidate_define} \
             -I"$java_home/include" -I"$java_home/include/linux" \
             -I"$repository_root/bindings/c/include" \
             -I"$repository_root/tests/fixtures/api/generated" \
@@ -80,7 +69,6 @@ case "$(uname -s)" in
     Darwin*)
         rust_library="$cargo_target_directory/debug/libkmipkit_ffi.a"
         "${CXX:-c++}" -std=c++17 -dynamiclib \
-            ${jni_candidate_define:+$jni_candidate_define} \
             -I"$java_home/include" -I"$java_home/include/darwin" \
             -I"$repository_root/bindings/c/include" \
             -I"$repository_root/tests/fixtures/api/generated" \

@@ -1,7 +1,8 @@
 # KMIPKIT-0040 implementation evidence
 
-Status: verified Rust increment; **specification incomplete** while T019/T022
-remain open. Scope: OASIS KMIP Specification v2.1 §6.1.37, Tables 273–275 and
+Status: Rust increment and T019 four-language API mapping verified on the
+KMIPKIT-0043 feature branch; **specification incomplete** while T022 remains
+open. Scope: OASIS KMIP Specification v2.1 §6.1.37, Tables 273–275 and
 nested §§7.26–7.30, Tables 378–382. All fixtures are source-derived.
 
 ## Branch and source baseline
@@ -12,6 +13,17 @@ branch was merged from current `origin/release/1.0.0` at
 history rewrite. Pinned OASIS sources were checked against that exact base.
 Baseline catalog: 4 sources, 1,411 clauses, 4,044 records; validator passed.
 All required operation, enum, nested structure/member and tag records exist.
+
+## Authorization and acceptance status
+
+The KMIPKIT-0040 specification remains **Approved for implementation** as
+recorded in `spec.md` on 2026-10-11. On 2026-10-20, the maintainer directly
+authorized autonomous implementation of the approved plan, including this
+contract. This is implementation authorization only; it does not change the
+specification's approval status or constitute formal acceptance. The parity
+fixture records `formalAcceptance: false` separately from the verified
+implementation mapping state. No scope expansion, Profile claim, or
+certification claim follows from that authorization.
 
 ## Distinct DCO evidence commits
 
@@ -85,8 +97,8 @@ Opaque Structure/Item values and SecretBytes use existing owned-memory
 zeroization. Debug only shows redacted metadata; Function, Input, Output,
 Correlation and generic response sentinel tests verify that values do not
 escape through Debug, Display or sanitized errors. Caller-created external
-copies are outside KMIPKit-owned memory. Binding/runtime-copy documentation
-and C/Java/Python parity remain gated by KMIPKIT-0043 / T019.
+copies are outside KMIPKit-owned memory. Binding and runtime-copy limits are
+documented alongside the four-language mappings.
 
 No official PKCS#11 fixture is linked in the pinned catalog. No official
 vector pass, profile support, certification, FIPS status or interoperability
@@ -149,7 +161,60 @@ Existing exact exceptions were KMIPKIT-0011-EX-003 and KMIPKIT-0011-EX-004.
 Both Cargo.lock hashes and resolved-package invariance checks passed.
 
 Independent QA confirmed both review observations resolved after the nested
-member correction and source-context trace. T019 remains blocked by missing
-KMIPKIT-0043 on release; T022's remaining condition is real PKCS#11 execution
-against two independent supported KMIP 2.1 implementations. The PR remains a
-draft, and the whole specification is not declared complete.
+member correction and source-context trace. T022's remaining condition is real
+PKCS#11 execution against two independent supported KMIP 2.1 implementations.
+The PR remains a draft, and the whole specification is not declared complete.
+
+## Four-language API mapping evidence — 2026-10-20
+
+Implementation authorization and formal acceptance remain distinct: the
+contract is **Approved for implementation**, the direct human instruction to
+start implementation is dated 2026-10-20, and `formalAcceptance` is `false`.
+The operation mapping is marked verified in the API manifest only to describe
+implementation and parity evidence; it is not a statement of formal spec
+acceptance, complete KMIP conformance, Profile support, or interoperability.
+
+The TDD implementation commits are Red `2416f30a`, `2d7d6442`, `9bfca7d6`,
+`f8cba650`, and `60ba97d4`; Green `b75a6a4d`. Review correction Red
+`8bf29ae9` reproduced the missing Python star-import export and strengthened
+the C/Python response-copy lifetime checks; Green `e2c0e948` exports
+`Pkcs11Response` in `client.__all__`. Final Refactor/evidence is recorded in
+the feature branch's latest commit. Rust, compiled C over a TLS 1.3
+mutual-authentication loopback, Java/JNI over the same fixture, and
+Python/CFFI all assert the shared successful response. The checks include the
+full Batch Item Response wrapper followed by all five payload tags in order,
+unknown Return Code and vendor extension preservation, optional absence,
+redaction, response lifetime after result closure, and no retry or automatic
+follow-up. The C consumer is compiled and executed; evidence is not limited to
+linking or symbol inspection.
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-client pkcs11` | PASS; focused client PKCS#11 suite and public API mapping test |
+| `cargo test -p kmipkit-protocol pkcs11` | PASS; 15 tests |
+| `cargo test --workspace --all-features` | PASS; full Windows workspace test and doctest run |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls -- --exact` | PASS; compiled C consumer executed its mTLS success exchange |
+| `cd bindings/java; .\gradlew.bat test --rerun-tasks --tests 'org.kmipkit.ClientFacadeTlsIntegrationTest.pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls' --tests 'org.kmipkit.extensions.Pkcs11MappingTest'` | PASS; Java/JNI mTLS fixture tests |
+| `cd bindings/java; .\gradlew.bat nativeJarSmoke --offline` | PASS; packaged JNI loading and negative probes completed offline |
+| `python -B tools/api_manifest/audit_jni_public_exports.py --binary bindings/java/target/native/kmipkit_jni.dll` | PASS; 2 required public JNI symbols present |
+| `$env:KMIPKIT_NATIVE_LIBRARY=(Resolve-Path target/debug/kmipkit_ffi.dll).Path; & target/python-t076-venv/Scripts/python.exe -m pytest bindings/python/tests/test_pkcs11_operation.py -q` | PASS; 7 tests using the Windows native library, including import-star and copied response after batch result closure |
+| `target/python-t076-venv/Scripts/python.exe -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_pkcs11_parity_manifest tools.api_manifest.tests.test_operation_readiness -v` | PASS; 68 tests |
+| `python -B -m unittest scripts.tests.test_workflow scripts.tests.test_native_package_smoke -v` | PASS; 53 tests and offline installed-wheel probes |
+| `python -B tools/api_manifest/generate.py --write` then `--check` | PASS; 12 generated outputs regenerated and verified with the pinned generator |
+| `cargo fmt --all --check` | PASS |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | PASS; only non-fatal AWS-LC toolchain probe warnings on Windows |
+| `git diff --check` | PASS |
+
+| `cargo llvm-cov -p kmipkit-protocol -p kmipkit-client -p kmipkit-ffi --all-features --all-targets --json --output-path target/t057-rust-adapters-coverage-raw.json` | PASS; fresh current-head Windows report: client 5,887/6,130 (96.04%), protocol 13,665/14,205 (96.20%), FFI 7,128/7,627 (93.46%), PKCS#11 protocol module 218/226 (96.46%), FFI client ABI module 2,540/2,860 (88.81%) |
+| `cargo llvm-cov --workspace --all-features --json --output-path target/t057-current-coverage-raw.json` | BLOCKED locally before export: unrelated `kmipkit-test-support::dns::loopback_tcp_fixture_answers_a_framed_query_and_closes_on_short_frame` could not bind `127.0.0.1:53817` after 32 attempts (`PermissionDenied`, Windows error 10013) |
+
+The focused T057 success-path checks, source/configuration tests, traceability,
+manifest, generator, formatting and Clippy pass locally. The scoped Rust
+percentages above do **not** establish the 95% changed-production threshold,
+the cross-language coverage aggregate, or the multi-platform gate. T057
+therefore remains open until hosted cross-platform CI and its current-head
+aggregate coverage run. The candidate-only build gates were removed from the
+default source/configuration and the default Rust/C/Java/Python path now
+exercises the public API. The successful loopback exchange verifies adapter
+behavior and is not interoperability evidence. T022 remains open for two
+independent KMIP 2.1 server implementations.

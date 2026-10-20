@@ -13,15 +13,29 @@ from tools.native_package_smoke import python_smoke
 
 
 class PythonNativePackageSmokeTests(unittest.TestCase):
-    def test_wheel_smoke_rejects_owner_gated_candidate_source(self) -> None:
+    def test_wheel_smoke_requires_public_pkcs11_sources(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             package_root = Path(temporary_directory) / "kmipkit"
             package_root.mkdir()
             (package_root / "client.py").write_text(
-                "kmipkit_client_batch_item_pkcs11", encoding="utf-8"
+                "class Pkcs11Response: pass\nclass BatchItemResult: pkcs11_response = None\n",
+                encoding="utf-8",
             )
-            with self.assertRaisesRegex(RuntimeError, "owner-gated PKCS#11 support"):
-                python_smoke.verify_owner_gated_candidate_absent(package_root)
+            (package_root / "extensions.py").write_text(
+                "def client_batch_item_pkcs11(): pass\n", encoding="utf-8"
+            )
+            python_smoke.verify_public_pkcs11_api_present(package_root)
+
+    def test_wheel_smoke_rejects_missing_public_pkcs11_response_api(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            package_root = Path(temporary_directory) / "kmipkit"
+            package_root.mkdir()
+            (package_root / "client.py").write_text("class BatchItemResult: pass\n", encoding="utf-8")
+            (package_root / "extensions.py").write_text(
+                "def client_batch_item_pkcs11(): pass\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(RuntimeError, "public PKCS#11 response API"):
+                python_smoke.verify_public_pkcs11_api_present(package_root)
 
     def test_main_preserves_consumer_virtualenv_interpreter_path(self) -> None:
         consumer_environment = Path.cwd() / "consumer-env"

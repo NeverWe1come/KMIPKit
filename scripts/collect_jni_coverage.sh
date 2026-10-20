@@ -39,7 +39,7 @@ fi
 
 readonly profile_data="${output_dir}/jni.profdata"
 readonly raw_report="${output_dir}/coverage-raw.json"
-readonly native_library="${repository_root}/bindings/java/target/native-test/libkmipkit_jni.so"
+readonly native_library="${repository_root}/bindings/java/target/native/libkmipkit_jni.so"
 readonly ignored_source_regex='^/usr/lib/jvm/[^/]+/include/(linux/)?jni(_md)?\.h$|^/opt/hostedtoolcache/Java_[^/]+/[^/]+/[^/]+/include/(linux/)?jni(_md)?\.h$|/bindings/c/include/kmipkit\.h$'
 "llvm-profdata-${llvm_major}" merge -sparse "${profile_files[@]}" -o "${profile_data}"
 "llvm-cov-${llvm_major}" export "${native_library}" --instr-profile="${profile_data}" \

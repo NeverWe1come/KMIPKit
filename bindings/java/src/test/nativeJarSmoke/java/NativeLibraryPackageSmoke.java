@@ -38,7 +38,7 @@ public final class NativeLibraryPackageSmoke {
 
         Path packagedJar = Path.of(args[0]).toAbsolutePath();
         Path wrongAbiLibrary = Path.of(args[1]).toAbsolutePath();
-        verifyOwnerGatedCandidateAbsent(packagedJar);
+        verifyPublicPkcs11ApiPresent(packagedJar);
         Path classes = Path.of(NativeLibraryPackageSmoke.class.getProtectionDomain()
                 .getCodeSource().getLocation().toURI());
         Path temporaryDirectory = Files.createTempDirectory("kmipkit-java-native-package-smoke-");
@@ -134,30 +134,23 @@ public final class NativeLibraryPackageSmoke {
         return 0;
     }
 
-    private static void verifyOwnerGatedCandidateAbsent(Path packagedJar) throws IOException {
-        List<String> candidateClassEntries = List.of(
-                "org/kmipkit/extensions/Pkcs11NativeBridge.class",
-                "org/kmipkit/extensions/ClientBatchItemResult$Pkcs11Response.class");
-        List<String> sharedClassEntries = List.of(
+    private static void verifyPublicPkcs11ApiPresent(Path packagedJar) throws IOException {
+        List<String> publicClassEntries = List.of(
+                "org/kmipkit/NativeExtensionRegistry.class",
                 "org/kmipkit/extensions/ClientBatchItem.class",
-                "org/kmipkit/extensions/ClientBatchItemResult.class");
+                "org/kmipkit/extensions/ClientBatchItemResult.class",
+                "org/kmipkit/extensions/ClientBatchItemResult$Pkcs11Response.class");
         try (JarFile jar = new JarFile(packagedJar.toFile())) {
-            for (String candidateClass : candidateClassEntries) {
-                if (jar.getEntry(candidateClass) != null) {
-                    throw new IllegalStateException(
-                            "The default Java JAR contains owner-gated PKCS#11 code.");
-                }
-            }
-            for (String sharedClass : sharedClassEntries) {
-                var entry = jar.getJarEntry(sharedClass);
+            for (String publicClass : publicClassEntries) {
+                var entry = jar.getJarEntry(publicClass);
                 if (entry == null) {
-                    throw new IllegalStateException("The Java native JAR is missing a required API class.");
+                    throw new IllegalStateException("The Java native JAR is missing a public PKCS#11 API class.");
                 }
                 String constantPool = new String(
                         jar.getInputStream(entry).readAllBytes(), StandardCharsets.ISO_8859_1);
-                if (constantPool.contains("pkcs11") || constantPool.contains("Pkcs11")) {
-                    throw new IllegalStateException(
-                            "The default Java JAR contains owner-gated PKCS#11 code.");
+                if (publicClass.contains("Pkcs11Response")
+                        && (!constantPool.contains("responseTtlv") || !constantPool.contains("close"))) {
+                    throw new IllegalStateException("The Java JAR is missing PKCS#11 response accessors.");
                 }
             }
         }

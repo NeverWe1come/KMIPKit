@@ -115,24 +115,23 @@ python -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c
 
 CI additionally audits the compiled C library on Windows, Linux, and macOS.
 
-## Owner-gated candidate builds
+## PKCS#11 public mapping
 
-The KMIP 2.1 PKCS#11 operation remains blocked in the public API manifest until
-the KMIPKIT-0040 owner formally accepts its specification. Candidate code is
-available only to isolated tests. The Rust protocol, client, and FFI build
-scripts enable it only when `KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD=1` is set, the
-build uses a debug profile, and `CARGO_TARGET_DIR` contains a dedicated
-`pkcs11-candidate` path component. Parent-directory traversal is rejected; a
-Cargo feature cannot enable the candidate API. The normal Rust workspace build
-therefore has no PKCS#11 request, response, or client operation surface.
+The KMIP 2.1 PKCS#11 request and response have public Rust, C, Java, and Python
+API mappings under OASIS KMIP v2.1 §6.1.37, Tables 273–275. The KMIPKIT-0040
+specification remains **Approved for implementation**; the maintainer's direct
+instruction dated 2026-10-20 authorized implementation without changing its
+formal acceptance status (`formalAcceptance: false`). Manifest state
+`verified` records implemented mappings and parity evidence, not formal
+acceptance, complete KMIP conformance, Profile support, or interoperability.
 
-The C ABI and JNI candidate symbols are compiled only for candidate tests and
-use separate output directories. CMake enables its C consumer probes with the
-explicit `KMIPKIT_PKCS11_CANDIDATE_TEST` option when linking that candidate
-library. Java candidate bridge code and Python candidate CFFI declarations live
-under test sources, not distributable main-package sources. CI separately
-audits default C/JNI exports and checks that the default Java JAR and Python
-wheel do not contain candidate support.
+Function and Return Code are represented by the typed operation model;
+Interface and parameter structures remain opaque TTLV values. The bindings
+preserve unknown members and order, optional absence, and the complete response
+TTLV while applying the existing redaction and ownership rules. Java/JNI and
+Python/CFFI expose caller-owned response data and document runtime copy limits.
+The default Rust, C, Java, and Python builds include these public APIs. The
+compiled C and JNI export checks require their manifest-backed symbols.
 
 ## C distribution
 

@@ -32,7 +32,13 @@ for operation in ("bind", "listen", "accept"):
 
 try:
     from kmipkit.metadata import get_version
+    from kmipkit.client import BatchItemResult, Pkcs11Response
+    from kmipkit.extensions import client_batch_item_pkcs11
     version = get_version()
+    if (not callable(client_batch_item_pkcs11)
+            or not hasattr(BatchItemResult, "pkcs11_response")
+            or not callable(Pkcs11Response.close)):
+        raise RuntimeError("The installed Python package is missing its public PKCS#11 API.")
 except BaseException as failure:
     print("PACKAGE_NATIVE_LOAD_ERROR " + str(failure))
     sys.exit(2)
@@ -44,21 +50,17 @@ if mode != "success":
 print(f"PACKAGE_NATIVE_LOAD_OK ABI={version.abi_version}")
 """
 
-OWNER_GATED_PYTHON_TOKENS = (
-    "kmipkit_client_batch_item_pkcs11",
-    "kmipkit_client_batch_item_response_pkcs11_ttlv",
-    "_client_batch_item_pkcs11_candidate",
-    "_Pkcs11Response",
-    "_Pkcs11BatchItemResult",
-    "_pkcs11_response",
-)
-
-
-def verify_owner_gated_candidate_absent(package_root: Path) -> None:
-    for source_file in package_root.rglob("*.py"):
-        source = source_file.read_text(encoding="utf-8")
-        if any(token in source for token in OWNER_GATED_PYTHON_TOKENS):
-            raise RuntimeError("The installed Python wheel contains owner-gated PKCS#11 support.")
+def verify_public_pkcs11_api_present(package_root: Path) -> None:
+    client_source = package_root / "client.py"
+    extension_source = package_root / "extensions.py"
+    if not client_source.is_file() or not extension_source.is_file():
+        raise RuntimeError("The installed Python wheel is missing its public PKCS#11 API modules.")
+    client = client_source.read_text(encoding="utf-8")
+    extensions = extension_source.read_text(encoding="utf-8")
+    if "class Pkcs11Response" not in client or "pkcs11_response" not in client:
+        raise RuntimeError("The installed Python wheel is missing its public PKCS#11 response API.")
+    if "def client_batch_item_pkcs11" not in extensions:
+        raise RuntimeError("The installed Python wheel is missing its public PKCS#11 request API.")
 
 
 def run_probe(python: Path, mode: str, audit_path: Path) -> subprocess.CompletedProcess[str]:
@@ -99,7 +101,7 @@ def package_native_directory(python: Path) -> Path:
 
 def run_smokes(consumer_python: Path, wrong_abi_library: Path, smoke_root: Path) -> None:
     native_directory = package_native_directory(consumer_python)
-    verify_owner_gated_candidate_absent(native_directory.parent)
+    verify_public_pkcs11_api_present(native_directory.parent)
     libraries = sorted(
         path
         for path in native_directory.iterdir()

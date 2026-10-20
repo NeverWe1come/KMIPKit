@@ -3,9 +3,8 @@
 Status: implementation snapshot and design baseline
 Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007
 client execution, KMIPKIT-0013 production transport, the Rust lifecycle
-operation additions in KMIPKIT-0036, and Register Opaque Object context in
-KMIPKIT-0044, and the owner-gated PKCS#11 candidate build boundary in
-KMIPKIT-0043
+operation additions in KMIPKIT-0036, Register Opaque Object context in
+KMIPKIT-0044, and the four-language PKCS#11 API mapping in KMIPKIT-0043
 Last reviewed: 2026-10-20
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
@@ -20,11 +19,13 @@ operations do not establish complete KMIP 2.1 operation or profile coverage.
 C, Java, and Python parity for the Register Opaque Object context is implemented
 under KMIPKIT-0044. Full parity for the nine KMIPKIT-0036 lifecycle operations
 remains assigned to KMIPKIT-0043 and is not established by this branch.
-The PKCS#11 operation remains blocked from the public manifest until formal
-KMIPKIT-0040 owner acceptance. Candidate Rust support is confined to explicit
-debug builds with an isolated `pkcs11-candidate` target path; Java and Python
-candidate adapters are test-only sources. Default C/JNI exports and Java/Python
-packages are audited to exclude those candidate surfaces.
+The PKCS#11 request/response mapping is public in Rust, C, Java, and Python
+under OASIS KMIP v2.1 §6.1.37. KMIPKIT-0040 remains **Approved for
+implementation**, and the direct implementation authorization dated
+2026-10-20 is recorded separately; formal acceptance remains false. This API
+mapping does not claim Profile support, complete KMIP conformance, or
+interoperability. Existing bounds, opaque parameter handling, zeroization,
+redaction, response ownership, and no-retry behavior apply to the new bindings.
 Publication remains planned. Scenarios below remain hypotheses and security
 requirements unless a control is explicitly tied to executable evidence. The
 model must be revised as each executable boundary is introduced.
@@ -228,12 +229,14 @@ work.
 11. **Source to release.** Generated artifacts are reproducible from reviewed
    inputs, third-party sources and licenses are controlled, and publication
    occurs only from protected CI (`docs/development/git-and-releases.md:44-64`).
-12. **Candidate to default package.** The owner-gated PKCS#11 candidate surface
-   must not enter default Rust APIs, C headers or libraries, Java JARs, Python
-   packages, or uploaded code artifacts. Candidate Rust builds require the
-   explicit environment gate, debug profile, and an isolated target directory;
-   Java/Python adapters stay under test sources. The public manifest remains
-   `blocked` until formal acceptance (`docs/architecture/ffi-and-bindings.md#owner-gated-candidate-builds`;
+12. **Public PKCS#11 request and response handling.** Opaque parameters and
+   vendor values are untrusted and may contain sensitive data. The operation
+   reuses the bounded TTLV model, preserves unknown fields and order, redacts
+   diagnostics, zeroizes KMIPKit-owned sensitive buffers, returns owned
+   response TTLV, and never retries or follows up automatically. The compiled
+   C and JNI checks verify the public exports; cross-language tests exercise
+   ownership and redaction. The mapping does not imply formal acceptance,
+   Profile support, or server interoperability (`docs/architecture/ffi-and-bindings.md#pkcs11-public-mapping`;
    `specification/api/public-api.json`).
 
 ### Assumptions and caller obligations

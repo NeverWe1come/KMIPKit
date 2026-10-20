@@ -1396,6 +1396,23 @@ class T076ClientMappingTests(unittest.TestCase):
         log_response_repr_exclusion = {
             "kmipkit.client.LogResponse.__repr__"
         }
+        pkcs11_response_dataclass_exclusions = {
+            f"kmipkit.client.Pkcs11Response.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
+        pkcs11_response_repr_exclusion = {
+            "kmipkit.client.Pkcs11Response.__repr__"
+        }
         login_response_repr_exclusion = {"kmipkit.client.LoginResponse.__repr__"}
         login_response_dataclass_exclusions = (
             LOGIN_RESPONSE_EXCLUDED_EXPORTS - login_response_repr_exclusion
@@ -1433,6 +1450,8 @@ class T076ClientMappingTests(unittest.TestCase):
             | join_split_response_repr_exclusion
             | log_response_dataclass_exclusions
             | log_response_repr_exclusion
+            | pkcs11_response_dataclass_exclusions
+            | pkcs11_response_repr_exclusion
             | login_response_dataclass_exclusions
             | login_response_repr_exclusion
             | split_key_reference_constructor_exclusion
@@ -1489,6 +1508,16 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])
                     self.assertIn("T053", exclusion["evidence"])
+                elif path in pkcs11_response_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn("interpreter mechanics", exclusion["reason"])
+                    self.assertIn("T057", exclusion["evidence"])
+                    self.assertIn("KMIPKIT-0040-FR-004", exclusion["evidence"])
+                elif path in pkcs11_response_repr_exclusion:
+                    self.assertIn("redacted", exclusion["reason"])
+                    self.assertIn("diagnostic representation", exclusion["reason"])
+                    self.assertIn("T057", exclusion["evidence"])
+                    self.assertIn("KMIPKIT-0040-FR-005", exclusion["evidence"])
                 elif path in login_response_dataclass_exclusions:
                     self.assertIn("dataclass-generated", exclusion["reason"])
                     self.assertIn("not an independent cross-language product capability", exclusion["reason"])
