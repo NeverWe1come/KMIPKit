@@ -4747,3 +4747,20 @@ diff review and exact-head CI pass. The strict release gate's successful path
 is exercised by a complete synthetic readiness fixture; the repository's
 actual release manifest remains incomplete and the strict CLI is expected to
 reject it.
+
+### T076 current-head correction — packaged JNI export audit (2026-10-20)
+
+CI run `39443443940` exposed a platform-specific false positive in the
+packaged JNI export audit: Linux and macOS exported Rust dependency symbols
+whose mangled names contain `candidate` (`openssl_probe::candidate_cert_dirs`
+and `kmipkit_transport::resolver::Resolver::lookup_candidates_until`). The
+audit intended to reject unlisted KMIPKit JNI candidate methods, not unrelated
+symbols pulled into the shared library. The detector now scopes that check to
+the `Java_org_kmipkit_` export prefix while continuing to reject unlisted JNI
+candidate and PKCS#11 exports. The audit does not hide or alter native exports.
+
+| Stage | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `a8cc51f5` | `py -3 -B -m unittest -v tools.api_manifest.tests.test_pkcs11_parity_manifest.Pkcs11ParityManifestTests.test_default_jni_audit_ignores_dependency_candidate_symbols` | Expected failure: the legitimate OpenSSL probe dependency symbol was incorrectly rejected as a candidate export. |
+| Green | `518c58c3` | Three focused JNI export audit tests | PASS: dependency candidate symbol accepted; unlisted JNI candidate and PKCS#11 methods rejected; all required public JNI symbols required. |
+| Refactor | `29b98c71` | `py -3 -B -m unittest -v tools.api_manifest.tests.test_pkcs11_parity_manifest`; `py -3 -B tools/api_manifest/audit_jni_public_exports.py --binary bindings/java/target/native/libkmipkit_jni.so`; `git diff --check` | PASS: all 8 PKCS#11 manifest tests; existing Linux JNI library audit reports both required public JNI symbols present; no whitespace errors. The exact-head cross-platform CI rerun is pending. |
