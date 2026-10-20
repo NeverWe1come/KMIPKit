@@ -533,6 +533,35 @@ fn successful_cryptographic_response(
     ttlv_structure(0x0042_007b, [header, response_item])
 }
 
+fn successful_response_without_batch_item_id(
+    operation: u32,
+    response_fields: Vec<Vec<u8>>,
+) -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let children = response_fields.into_iter().flatten().collect::<Vec<_>>();
+    let response_payload = ttlv_item(0x0042_007c, 0x01, &children);
+    let response_item = ttlv_structure(
+        0x0042_000f,
+        [
+            ttlv_enumeration(0x0042_005c, operation),
+            ttlv_enumeration(0x0042_007f, 0),
+            response_payload,
+        ],
+    );
+    ttlv_structure(0x0042_007b, [header, response_item])
+}
+
 fn successful_cryptographic_item(
     request: ClientRequest,
     operation: u32,
@@ -2847,6 +2876,13 @@ fn execute_single_abi_response_with_async(
 }
 
 fn client_with_one_response(response: Vec<u8>) -> (Client, thread::JoinHandle<()>) {
+    let (client, peer, _) = client_with_responses(vec![response]);
+    (client, peer)
+}
+
+fn client_with_responses(
+    responses: Vec<Vec<u8>>,
+) -> (Client, thread::JoinHandle<()>, Arc<AtomicU64>) {
     let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
     let listener = TcpListener::bind(("127.0.0.1", 0)).expect("loopback binds");
     let port = listener
@@ -2857,36 +2893,46 @@ fn client_with_one_response(response: Vec<u8>) -> (Client, thread::JoinHandle<()
         .set_nonblocking(true)
         .expect("test listener accepts with a bounded wait");
     let server_config = tls13_mtls_server_config(&pki);
+    let exchange_count = Arc::new(AtomicU64::new(0));
+    let peer_exchange_count = Arc::clone(&exchange_count);
     let peer = thread::spawn(move || {
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
-        let (stream, _) = loop {
-            match listener.accept() {
-                Ok(connection) => break connection,
-                Err(error)
-                    if error.kind() == io::ErrorKind::WouldBlock
-                        && std::time::Instant::now() < deadline =>
-                {
-                    thread::sleep(std::time::Duration::from_millis(10));
+        for response in responses {
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+            let (stream, _) = loop {
+                match listener.accept() {
+                    Ok(connection) => break connection,
+                    Err(error)
+                        if error.kind() == io::ErrorKind::WouldBlock
+                            && std::time::Instant::now() < deadline =>
+                    {
+                        thread::sleep(std::time::Duration::from_millis(10));
+                    }
+                    Err(error) if error.kind() == io::ErrorKind::WouldBlock => return,
+                    Err(error) => panic!("accepting the client connection: {error}"),
                 }
-                Err(error) if error.kind() == io::ErrorKind::WouldBlock => return,
-                Err(error) => panic!("accepting the client connection: {error}"),
+            };
+            stream
+                .set_nonblocking(false)
+                .expect("accepted test stream uses blocking reads");
+            stream
+                .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+                .expect("peer read timeout is set");
+            stream
+                .set_write_timeout(Some(std::time::Duration::from_secs(5)))
+                .expect("peer write timeout is set");
+            let connection =
+                ServerConnection::new(server_config.clone()).expect("TLS 1.3 connection builds");
+            let mut tls = StreamOwned::new(connection, stream);
+            match receive_ttlv_frame(&mut tls) {
+                Ok(()) => {}
+                Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => return,
+                Err(error) => panic!("the typed request frame is bounded: {error}"),
             }
-        };
-        stream
-            .set_nonblocking(false)
-            .expect("accepted test stream uses blocking reads");
-        stream
-            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
-            .expect("peer read timeout is set");
-        stream
-            .set_write_timeout(Some(std::time::Duration::from_secs(5)))
-            .expect("peer write timeout is set");
-        let connection = ServerConnection::new(server_config).expect("TLS 1.3 connection builds");
-        let mut tls = StreamOwned::new(connection, stream);
-        receive_ttlv_frame(&mut tls).expect("the typed request frame is bounded");
-        tls.write_all(&response)
-            .expect("the scripted response is written");
-        tls.flush().expect("the response is flushed");
+            peer_exchange_count.fetch_add(1, Ordering::Relaxed);
+            tls.write_all(&response)
+                .expect("the scripted response is written");
+            tls.flush().expect("the response is flushed");
+        }
     });
 
     let identity = pki.client_identity();
@@ -2911,7 +2957,7 @@ fn client_with_one_response(response: Vec<u8>) -> (Client, thread::JoinHandle<()
         .expect("the empty approved extension registry is valid");
     let configuration = client_extension::ClientConfiguration::new(registry);
     let client = Client::new(configuration, transport).expect("client construction succeeds");
-    (client, peer)
+    (client, peer, exchange_count)
 }
 
 fn empty_unique_identifier_output_v1() -> kmipkit_unique_identifier_v1_t {
@@ -5216,11 +5262,21 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_context(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
-    fn kmipkit_client_abi_c_consumer_execute_guarded_protection_item(
+    fn shared_usage_allocation_guard_matches_fixture(
         client: *mut kmipkit_client_t,
-        context: *mut kmipkit_usage_allocation_context_t,
+        identifier_data: *const u8,
+        identifier_length: u64,
+        allocation_count: i64,
+        usage_limits_unit: u32,
+        successful_cost: i64,
+        over_budget_cost: i64,
+        expected_initial_allocated: i64,
+        expected_initial_reserved: i64,
+        expected_initial_available: i64,
+        expected_allocated: i64,
+        expected_reserved: i64,
+        expected_available: i64,
         item: *mut *mut kmipkit_client_batch_item_t,
-        cost: i64,
         limits: *mut kmipkit_codec_limits_t,
     ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
@@ -5324,35 +5380,73 @@ fn ffi_usage_allocation_context_survives_source_item_release_in_c() {
 }
 
 #[test]
+// Keep fixture parsing, mTLS setup, the FFI call, and handle cleanup together
+// so the shared test inputs and native resource lifetimes stay explicit.
+#[allow(clippy::too_many_lines)]
 fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
-    let allocation_item = successful_cryptographic_item(
-        ClientRequest::GetUsageAllocation(GetUsageAllocationRequest::new(5)),
-        0x11,
-        b"allocation-result",
-        vec![ttlv_item(0x0042_0094, 0x07, b"allocation-object")],
-    );
-    let mut context = ptr::null_mut();
-    assert_eq!(
-        kmipkit_usage_allocation_context_create(allocation_item, 5, u32::MAX, &raw mut context,),
-        SUCCESS
-    );
-    kmipkit_client_batch_item_response_release(allocation_item);
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "usage-allocation.guard-accounting.v1")
+        .expect("shared Usage Allocation fixture case exists");
+    let input = &case["input"];
+    let expected = &case["expectedOutput"];
+    let allocation_identifier = input["allocationIdentifier"]
+        .as_str()
+        .expect("allocation identifier is text");
+    let allocation_count = input["allocationCount"]
+        .as_i64()
+        .expect("allocation count is signed");
+    let usage_limits_unit = u32::try_from(
+        input["usageLimitsUnit"]
+            .as_u64()
+            .expect("usage limits unit is unsigned"),
+    )
+    .expect("usage limits unit fits U32");
+    let successful_cost = input["successfulCost"]
+        .as_i64()
+        .expect("successful cost is signed");
+    let over_budget_cost = input["overBudgetCost"]
+        .as_i64()
+        .expect("over-budget cost is signed");
+    let operation = match input["operation"]
+        .as_str()
+        .expect("protection operation is text")
+    {
+        "Encrypt" => 0x1F,
+        other => panic!("unsupported protection operation {other}"),
+    };
 
+    let allocation_response = successful_response_without_batch_item_id(
+        0x11,
+        vec![ttlv_item(
+            0x0042_0094,
+            0x07,
+            allocation_identifier.as_bytes(),
+        )],
+    );
     let response = successful_cryptographic_response(
-        0x1f,
-        b"allocation-object",
+        operation,
+        allocation_identifier.as_bytes(),
         vec![
-            ttlv_item(0x0042_0094, 0x07, b"allocation-object"),
+            ttlv_item(0x0042_0094, 0x07, allocation_identifier.as_bytes()),
             ttlv_item(0x0042_00c2, 0x08, b"ciphertext"),
         ],
     );
-    let (client, peer) = client_with_one_response(response);
+    let (client, peer, exchange_count) = client_with_responses(vec![allocation_response, response]);
     let client: *mut kmipkit_client_t = make_handle(
         Kind::Client,
         HandleValue::Client(Box::new(std::sync::Mutex::new(client))),
     );
     let request = ClientRequest::Encrypt(EncryptRequest::new(
-        Some(UniqueIdentifier::TextString("allocation-object".to_owned())),
+        Some(UniqueIdentifier::TextString(
+            allocation_identifier.to_owned(),
+        )),
         Some(OperationData::ByteString(SecretBytes::new(
             b"plaintext".to_vec(),
         ))),
@@ -5360,30 +5454,69 @@ fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
     let mut item = make_handle(
         Kind::BatchItem,
         HandleValue::BatchItem(Box::new(
-            ClientBatchItem::new(request).with_unique_batch_item_id(b"allocation-object".to_vec()),
+            ClientBatchItem::new(request)
+                .with_unique_batch_item_id(allocation_identifier.as_bytes().to_vec()),
         )),
     );
     let limits = default_codec_limits_handle();
 
-    // SAFETY: the C consumer borrows the live client/context/limits and consumes the valid item
-    // slot exactly once, then releases the returned response and its item handle.
+    let initial = &expected["initial"];
+    let after_success = &expected["afterSuccessfulProtection"];
+    // SAFETY: the fixture-backed identifier and scalar values remain live for
+    // this synchronous call; C executes both exchanges and releases its context.
     let result = unsafe {
-        kmipkit_client_abi_c_consumer_execute_guarded_protection_item(
+        shared_usage_allocation_guard_matches_fixture(
             client.cast(),
-            context,
+            allocation_identifier.as_bytes().as_ptr(),
+            u64::try_from(allocation_identifier.len()).expect("identifier length fits u64"),
+            allocation_count,
+            usage_limits_unit,
+            successful_cost,
+            over_budget_cost,
+            initial["allocated"]
+                .as_i64()
+                .expect("fixture allocated units are signed"),
+            initial["reserved"]
+                .as_i64()
+                .expect("fixture reserved units are signed"),
+            initial["available"]
+                .as_i64()
+                .expect("fixture available units are signed"),
+            after_success["allocated"]
+                .as_i64()
+                .expect("fixture allocated units are signed"),
+            after_success["reserved"]
+                .as_i64()
+                .expect("fixture reserved units are signed"),
+            after_success["available"]
+                .as_i64()
+                .expect("fixture available units are signed"),
             &raw mut item,
-            2,
             limits,
         )
     };
+    release(client, Kind::Client);
+    release(limits, Kind::CodecLimits);
     peer.join()
         .expect("the mTLS peer completes the guarded exchange");
 
-    assert_eq!(result, 1, "C executes Encrypt and observes its reservation");
+    assert_eq!(
+        result,
+        1,
+        "C executes Encrypt and observes its reservation; peer exchanges={}",
+        exchange_count.load(Ordering::Relaxed)
+    );
     assert!(item.is_null(), "guarded execution consumes the item handle");
-    release(client, Kind::Client);
-    kmipkit_usage_allocation_context_release(context);
-    release(limits, Kind::CodecLimits);
+    assert_eq!(case["errorCategory"].as_str(), Some("invalid_input"));
+    assert!(expected["localOnlyAccounting"].as_bool().unwrap());
+    assert_eq!(expected["overBudgetAttempt"]["accepted"], false);
+    assert_eq!(expected["overBudgetAttempt"]["stateUnchanged"], true);
+    assert_eq!(
+        exchange_count.load(Ordering::Relaxed),
+        expected["transportExchangeCount"]
+            .as_u64()
+            .expect("fixture exchange count is unsigned")
+    );
 }
 
 #[test]

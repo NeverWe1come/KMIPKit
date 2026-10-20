@@ -10,6 +10,7 @@ use kmipkit_protocol::{
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
 use kmipkit_ttlv::codec::CodecLimits;
+use serde_json::Value as JsonValue;
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
@@ -137,8 +138,24 @@ fn allocate_context() -> UsageAllocationContext {
 }
 
 fn allocate_context_with_count(count: i64) -> UsageAllocationContext {
-    let (mut client, _, _) = client_for(ExchangeScript::Success {
-        response: response_bytes(GET_USAGE_ALLOCATION, 0, None, None, Some(OBJECT_ID)),
+    allocate_context_for(count, UNKNOWN_USAGE_UNIT, OBJECT_ID)
+}
+
+fn allocate_context_for(
+    count: i64,
+    usage_limits_unit: u32,
+    identifier: &str,
+) -> UsageAllocationContext {
+    allocate_context_for_with_exchange_count(count, usage_limits_unit, identifier).0
+}
+
+fn allocate_context_for_with_exchange_count(
+    count: i64,
+    usage_limits_unit: u32,
+    identifier: &str,
+) -> (UsageAllocationContext, usize) {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(GET_USAGE_ALLOCATION, 0, None, None, Some(identifier)),
         request_write_chunks: Vec::new(),
     });
     let response = client
@@ -151,8 +168,13 @@ fn allocate_context_with_count(count: i64) -> UsageAllocationContext {
     let typed_response = response_view
         .get_usage_allocation()
         .expect("the exchange returns its typed allocation result");
-    UsageAllocationContext::from_successful_allocation(typed_response, count, UNKNOWN_USAGE_UNIT)
-        .expect("the caller supplies the exact requested count and known unit")
+    let context = UsageAllocationContext::from_successful_allocation(
+        typed_response,
+        count,
+        usage_limits_unit,
+    )
+    .expect("the caller supplies the exact requested count and known unit");
+    (context, fake.borrow().exchange_count())
 }
 
 fn execute_allocation(
@@ -246,6 +268,161 @@ fn successful_allocation_binds_returned_identifier_and_open_caller_unit() {
     assert_eq!(context.allocated_units(), ALLOCATION);
     assert_eq!(context.available_units(), ALLOCATION);
     assert_eq!(context.reserved_units(), 0);
+}
+
+// This parity scenario checks allocation, accepted use, and local rejection as one contract.
+#[allow(clippy::too_many_lines)]
+#[test]
+fn fixture_usage_allocation_guard_matches_shared_accounting_contract() {
+    // KMIP 2.1 §6.1.23 is the normative protocol source. The local reservation
+    // behavior and accounting scope are project policy traced by this fixture.
+    let fixture: JsonValue = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "usage-allocation.guard-accounting.v1")
+        .expect("shared Usage Allocation fixture case exists");
+    let input = &case["input"];
+    let identifier = input["allocationIdentifier"]
+        .as_str()
+        .expect("allocation identifier is text");
+    let allocation_count = input["allocationCount"]
+        .as_i64()
+        .expect("allocation count is signed");
+    let usage_limits_unit = u32::try_from(
+        input["usageLimitsUnit"]
+            .as_u64()
+            .expect("usage limits unit is unsigned"),
+    )
+    .expect("usage limits unit fits the KMIP Enumeration");
+    let operation = match input["operation"]
+        .as_str()
+        .expect("protection operation is text")
+    {
+        "Encrypt" => 0x1F,
+        other => panic!("unsupported protection operation {other}"),
+    };
+    let successful_cost = input["successfulCost"]
+        .as_i64()
+        .expect("successful cost is signed");
+    let over_budget_cost = input["overBudgetCost"]
+        .as_i64()
+        .expect("over-budget cost is signed");
+    let expected = &case["expectedOutput"];
+    assert_eq!(case["errorCategory"], "invalid_input");
+    assert_eq!(expected["localOnlyAccounting"], true);
+
+    let (mut context, allocation_exchanges) =
+        allocate_context_for_with_exchange_count(allocation_count, usage_limits_unit, identifier);
+    assert_eq!(allocation_exchanges, 1);
+    let initial = &expected["initial"];
+    assert_eq!(
+        context.allocated_units(),
+        initial["allocated"].as_i64().unwrap()
+    );
+    assert_eq!(
+        context.reserved_units(),
+        initial["reserved"].as_i64().unwrap()
+    );
+    assert_eq!(
+        context.available_units(),
+        initial["available"].as_i64().unwrap()
+    );
+    assert_eq!(context.usage_limits_unit(), usage_limits_unit);
+    assert_eq!(
+        context.unique_identifier(),
+        &UniqueIdentifier::TextString(identifier.to_owned())
+    );
+
+    let (mut protection_client, protection_transport, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(operation, 0, None, None, Some(identifier)),
+        request_write_chunks: Vec::new(),
+    });
+    let protection_response = protection_client
+        .execute_guarded_protection(
+            &mut context,
+            protection_request(
+                operation,
+                Some(UniqueIdentifier::TextString(identifier.to_owned())),
+            ),
+            successful_cost,
+            &CodecLimits::defaults(),
+        )
+        .expect("the fixture protection operation succeeds");
+    assert_eq!(
+        protection_response
+            .outcome()
+            .response()
+            .result()
+            .status()
+            .raw(),
+        0
+    );
+    assert_eq!(protection_transport.borrow().exchange_count(), 1);
+
+    let after_success = &expected["afterSuccessfulProtection"];
+    assert_eq!(
+        context.allocated_units(),
+        after_success["allocated"].as_i64().unwrap()
+    );
+    assert_eq!(
+        context.reserved_units(),
+        after_success["reserved"].as_i64().unwrap()
+    );
+    assert_eq!(
+        context.available_units(),
+        after_success["available"].as_i64().unwrap()
+    );
+
+    let state_before_rejection = (
+        context.allocated_units(),
+        context.reserved_units(),
+        context.available_units(),
+    );
+    let (mut rejected_client, rejected_transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let rejection = rejected_client
+        .execute_guarded_protection(
+            &mut context,
+            protection_request(
+                operation,
+                Some(UniqueIdentifier::TextString(identifier.to_owned())),
+            ),
+            over_budget_cost,
+            &CodecLimits::defaults(),
+        )
+        .expect_err("the over-budget fixture attempt is rejected before transport");
+    assert_eq!(rejection.category(), ClientErrorCategory::Validation);
+    assert_eq!(
+        rejection.delivery_state(),
+        Some(RequestDeliveryState::NotSent)
+    );
+    assert_eq!(rejected_transport.borrow().exchange_count(), 0);
+    assert_eq!(
+        (
+            context.allocated_units(),
+            context.reserved_units(),
+            context.available_units(),
+        ),
+        state_before_rejection,
+        "rejecting an over-budget operation leaves local accounting unchanged"
+    );
+    assert_eq!(expected["overBudgetAttempt"]["accepted"], false);
+    assert_eq!(expected["overBudgetAttempt"]["stateUnchanged"], true);
+    assert_eq!(
+        allocation_exchanges
+            + protection_transport.borrow().exchange_count()
+            + rejected_transport.borrow().exchange_count(),
+        usize::try_from(
+            expected["transportExchangeCount"]
+                .as_u64()
+                .expect("fixture transport exchange count is unsigned")
+        )
+        .expect("transport exchange count fits usize")
+    );
 }
 
 #[test]

@@ -264,7 +264,7 @@
       },
       "errorCategory": null,
       "cleanup": [
-        "no-batch-or-transport-resource-created"
+        "release-batch-item-results-and-transport-resources-once-after-one-exchange"
       ],
       "consumerTests": {
         "rust": {
@@ -276,7 +276,9 @@
           "status": "available",
           "adapterAssertions": [
             "ordered-mixed-outcomes",
-            "pending-correlation"
+            "pending-correlation",
+            "fixture-driven-first-three-batch-ids-and-statuses",
+            "fixture-driven-pending-count"
           ],
           "testFile": "bindings/c/tests/client_abi_consumer.c",
           "test": "execute_public_tls_request",
@@ -286,6 +288,7 @@
               "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
               "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
               "assertions": [
+                "fixture-driven-batch-ids-statuses-correlation-and-count",
                 "transportExchangeCount"
               ]
             }
@@ -446,12 +449,26 @@
       ],
       "consumerTests": {
         "rust": {
-          "status": "blocked",
-          "reason": "Rust has separate open-enumeration and child-order tests, but no consumer test currently asserts both values from this exact shared case."
+          "status": "available",
+          "testFile": "crates/kmipkit-ttlv/tests/shared_api_parity.rs",
+          "test": "generic_ttlv_shared_fixture_preserves_open_values_and_child_order"
         },
         "c": {
-          "status": "blocked",
-          "reason": "No C consumer test currently asserts both the open enumeration value and ordered children from this shared case."
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "shared_ttlv_fixture_preserves_open_values_and_order",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order",
+              "assertions": [
+                "open-enumeration",
+                "ordered-children",
+                "owner-lifecycle"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",
@@ -869,6 +886,182 @@
           "test": "test_creation_result_message_matches_failure_fixture"
         }
       }
+    },
+    {
+      "id": "codec-limits.defaults-and-ranges.v1",
+      "capability": "generic_ttlv_model",
+      "requirementIds": [
+        "KMIPKIT-0005-FR-007",
+        "KMIPKIT-0043-FR-010"
+      ],
+      "input": {
+        "defaults": true,
+        "configured": {
+          "maxMessageBytes": 0,
+          "maxStructureDepth": 64,
+          "maxElements": 0
+        },
+        "invalidDepth": 65
+      },
+      "expectedOutput": {
+        "defaults": {
+          "maxMessageBytes": 16777216,
+          "maxStructureDepth": 64,
+          "maxElements": 100000
+        },
+        "configured": {
+          "maxMessageBytes": 0,
+          "maxStructureDepth": 64,
+          "maxElements": 0
+        },
+        "invalidDepth": {
+          "value": 65,
+          "accepted": false,
+          "errorCategory": "resource_limit"
+        }
+      },
+      "javaObservedOutput": {
+        "defaults": {
+          "maxMessageBytes": 16777216,
+          "maxStructureDepth": 64,
+          "maxElements": 100000
+        },
+        "configured": {
+          "maxMessageBytes": 0,
+          "maxStructureDepth": 64,
+          "maxElements": 0
+        },
+        "invalidDepth": {
+          "value": 65,
+          "accepted": false,
+          "errorCategory": "resource_limit"
+        }
+      },
+      "errorCategory": null,
+      "cleanup": [
+        "release-default-and-custom-limits-once"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-ttlv/tests/shared_api_parity.rs",
+          "test": "codec_limits_shared_fixture_covers_defaults_ranges_and_rejection"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "codec_limits_shared_fixture_matches_defaults_ranges_and_errors"
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.SharedCapabilityParityFixtureTest#codecLimitsFixtureMatchesDefaultsRangesAndErrors"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_shared_parity_fixtures.py",
+          "test": "test_codec_limits_shared_fixture_matches_defaults_ranges_and_errors"
+        }
+      }
+    },
+    {
+      "id": "usage-allocation.guard-accounting.v1",
+      "capability": "usage_allocation_guard",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-009",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+      ],
+      "input": {
+        "allocationIdentifier": "allocation-object",
+        "allocationCount": 5,
+        "usageLimitsUnit": 4275878552,
+        "operation": "Encrypt",
+        "successfulCost": 2,
+        "overBudgetCost": 4
+      },
+      "expectedOutput": {
+        "initial": {
+          "allocated": 5,
+          "reserved": 0,
+          "available": 5
+        },
+        "afterSuccessfulProtection": {
+          "allocated": 5,
+          "reserved": 2,
+          "available": 3
+        },
+        "overBudgetAttempt": {
+          "accepted": false,
+          "stateUnchanged": true
+        },
+        "transportExchangeCount": 2,
+        "localOnlyAccounting": true
+      },
+      "javaObservedOutput": {
+        "initial": {
+          "allocated": 5,
+          "reserved": 0,
+          "available": 5
+        },
+        "afterSuccessfulProtection": {
+          "allocated": 5,
+          "reserved": 2,
+          "available": 3
+        },
+        "overBudgetAttempt": {
+          "accepted": false,
+          "stateUnchanged": true
+        },
+        "transportExchangeCount": 2,
+        "localOnlyAccounting": true
+      },
+      "errorCategory": "invalid_input",
+      "cleanup": [
+        "release-usage-allocation-context-and-native-client-resources-once"
+      ],
+      "consumerTests": {
+        "rust": {
+          "status": "available",
+          "testFile": "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs",
+          "test": "fixture_usage_allocation_guard_matches_shared_accounting_contract"
+        },
+        "c": {
+          "status": "available",
+          "testFile": "bindings/c/tests/client_abi_consumer.c",
+          "test": "shared_usage_allocation_guard_matches_fixture",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+              "test": "ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost",
+              "assertions": [
+                "two-transport-exchanges",
+                "guarded-cost-reservation",
+                "over-budget-no-send"
+              ]
+            }
+          ]
+        },
+        "java": {
+          "status": "available",
+          "test": "org.kmipkit.ClientFacadeTlsIntegrationTest#usageAllocationContextGuardsJavaProtectionExecutionLocally"
+        },
+        "python": {
+          "status": "available",
+          "testFile": "bindings/python/tests/test_usage_allocation_guard_native_integration.py",
+          "test": "test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_transport"
+        }
+      },
+      "normativeSource": "OASIS KMIP Specification v2.1 §6.1.23, Table 232; approved local guard interpretation in KMIPKIT-0039"
     }
   ]
 }

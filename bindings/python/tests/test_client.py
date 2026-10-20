@@ -1327,16 +1327,39 @@ def test_batch_result_dispatches_get_locate_and_log_mappers(
 def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execute_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    fixture_path = (
+        Path(__file__).resolve().parents[3]
+        / "tests/fixtures/api/shared-capability-parity.json"
+    )
+    cases = json.loads(fixture_path.read_text(encoding="utf-8"))["cases"]
+    case = next(
+        item
+        for item in cases
+        if item["id"] == "batch.ordered-completed-pending-failed.v1"
+    )
+    expected = case["expectedOutput"]
+    expected_ids = tuple(
+        bytes.fromhex(value) for value in expected["uniqueBatchItemIds"]
+    )
+    status_codes = {"Success": 0, "Operation Pending": 2, "Operation Failed": 1}
+    expected_statuses = tuple(
+        status_codes[value] for value in expected["resultStatuses"]
+    )
+    assert len(expected["itemIndexes"]) == len(expected_ids) == len(expected_statuses)
+
     client_pointer, _client_storage = _opaque("kmipkit_client_t")
     batch_pointer, _batch_storage = _opaque("kmipkit_client_batch_t")
     response_pointer, _response_storage = _opaque("kmipkit_client_batch_response_t")
     handle = _wrap_owned_handle(client.Client, client_pointer)
     batch = _wrap_owned_handle(client.Batch, batch_pointer)
     limits = ttlv.codec_limits_defaults()
-    item_storage = [_opaque("kmipkit_client_batch_item_response_t") for _ in range(3)]
+    item_storage = [
+        _opaque("kmipkit_client_batch_item_response_t") for _ in expected["itemIndexes"]
+    ]
     item_pointers = [pointer for pointer, _storage in item_storage]
-    identifiers = [client.ffi.new("uint8_t[]", f"item-{index}".encode()) for index in range(3)]
-    correlation = client.ffi.new("uint8_t[]", b"\x00\xa1\x7f")
+    identifiers = [client.ffi.new("uint8_t[]", value) for value in expected_ids]
+    correlation_value = bytes.fromhex(expected["correlationValueHex"])
+    correlation = client.ffi.new("uint8_t[]", correlation_value)
     released: list[str] = []
     execution_calls: list[bool] = []
 
@@ -1359,10 +1382,12 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
     def metadata(item: object, out: object) -> int:
         index = item_index(item)
         _initialize_metadata_v2(out)
-        out.outcome_kind = (1, 2, 1)[index]  # type: ignore[attr-defined]
-        out.result_status = (0, 2, 1)[index]  # type: ignore[attr-defined]
-        out.has_result_reason = int(index == 2)  # type: ignore[attr-defined]
-        if index == 2:
+        status = expected["resultStatuses"][index]
+        out.outcome_kind = 2 if status == "Operation Pending" else 1  # type: ignore[attr-defined]
+        out.result_status = expected_statuses[index]  # type: ignore[attr-defined]
+        failed = status == "Operation Failed"
+        out.has_result_reason = int(failed)  # type: ignore[attr-defined]
+        if failed:
             out.result_reason = 1  # type: ignore[attr-defined]
         return 0
 
@@ -1374,14 +1399,14 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
         index = item_index(item)
         present[0] = 1  # type: ignore[index]
         value.data = identifiers[index]  # type: ignore[attr-defined]
-        value.length = 6  # type: ignore[attr-defined]
+        value.length = len(expected_ids[index])  # type: ignore[attr-defined]
         return 0
 
     def pending_correlation(item: object, present: object, value: object) -> int:
-        if item_index(item) == 1:
+        if expected["resultStatuses"][item_index(item)] == "Operation Pending":
             present[0] = 1  # type: ignore[index]
             value.data = correlation  # type: ignore[attr-defined]
-            value.length = 3  # type: ignore[attr-defined]
+            value.length = len(correlation_value)  # type: ignore[attr-defined]
         else:
             present[0] = 0  # type: ignore[index]
             value.data = client.ffi.NULL  # type: ignore[attr-defined]
@@ -1394,7 +1419,9 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
         kmipkit_client_batch_release=lambda _ptr: None,
         kmipkit_client_batch_response_release=lambda _ptr: released.append("response"),
         kmipkit_client_batch_item_response_release=lambda _ptr: released.append("item"),
-        kmipkit_client_batch_response_item_count=lambda _ptr, count: count.__setitem__(0, 3) or 0,
+        kmipkit_client_batch_response_item_count=lambda _ptr, count: (
+            count.__setitem__(0, len(item_pointers)) or 0
+        ),
         kmipkit_client_batch_response_item_at=item_at,
         kmipkit_client_batch_item_response_metadata_v2=metadata,
         kmipkit_client_batch_item_response_unique_batch_item_id=unique_id,
@@ -1407,12 +1434,26 @@ def test_batch_execute_preserves_ordered_mixed_outcomes_and_invokes_native_execu
     result = None
     try:
         result = handle.execute(batch, limits)
-        assert result.items == (
-            client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, b"item-0", None),
-            client.BatchItemResult(client.BatchOutcome.PENDING, 2, None, b"item-1", b"\x00\xa1\x7f"),
-            client.BatchItemResult(client.BatchOutcome.COMPLETED, 1, 1, b"item-2", None),
+        expected_results = tuple(
+            client.BatchItemResult(
+                client.BatchOutcome.PENDING
+                if status == "Operation Pending"
+                else client.BatchOutcome.COMPLETED,
+                expected_statuses[index],
+                1 if status == "Operation Failed" else None,
+                expected_ids[index],
+                correlation_value if status == "Operation Pending" else None,
+            )
+            for index, status in enumerate(expected["resultStatuses"])
         )
-        assert execution_calls == [True]
+        assert result.items == expected_results
+        assert (
+            sum(item.outcome is client.BatchOutcome.PENDING for item in result.items)
+            == expected["pendingCount"]
+        )
+        assert expected["automaticFollowUp"] is False
+        assert expected["transportExchangeCount"] == 1
+        assert len(execution_calls) == expected["transportExchangeCount"]
         assert batch.closed
     finally:
         if result is not None:

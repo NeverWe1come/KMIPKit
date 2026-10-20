@@ -67,6 +67,8 @@ SHARED_PARITY_CASES = {
     "creation.key-pair.request-response.v1",
     "creation.split-key.request-response.v1",
     "creation.result-message-on-failure.v1",
+    "codec-limits.defaults-and-ranges.v1",
+    "usage-allocation.guard-accounting.v1",
 }
 SHARED_PARITY_LANGUAGES = ["rust", "c", "java", "python"]
 JAVA_TEST_ROOT = ROOT / "bindings" / "java" / "src" / "test" / "java"
@@ -140,10 +142,13 @@ class PublicApiParityTests(unittest.TestCase):
                             "KMIPKIT-0043-FR-",
                             "KMIPKIT-0003-FR-",
                             "KMIPKIT-0004-FR-",
+                            "KMIPKIT-0005-FR-",
                             "KMIPKIT-0006-FR-",
                             "KMIPKIT-0007-FR-",
                             "KMIPKIT-0012-FR-",
                             "KMIPKIT-0014-FR-",
+                            "KMIPKIT-0039-FR-",
+                            "KMIPKIT-REQ-SPEC-6.1.23-",
                         ))
                         for requirement in case["requirementIds"]
                     ),
@@ -262,18 +267,28 @@ class PublicApiParityTests(unittest.TestCase):
                                 rf"\bfn\s+{re.escape(support['test'])}\s*\(",
                             )
                             if language == "c":
-                                self.assertIn("expected_statuses[index]", source)
-                                self.assertIn("expected_correlation", source)
+                                self.assertIn("fixture_statuses[index]", source)
+                                self.assertIn("fixture_correlation", source)
+                                self.assertIn("fixture_item_count", source)
+                                self.assertIn("fixture_pending_count", source)
                                 self.assertIn(
-                                    "assert_eq!(exchange_count.load(Ordering::Relaxed), 1);",
+                                    "expected_exchange_count",
                                     support_source,
                                 )
-                            else:
-                                self.assertIn("assert execution_calls == [True]", source)
                                 self.assertIn(
-                                    "assert_eq!(fake.borrow().exchange_count(), 1);",
+                                    'expected["transportExchangeCount"]',
                                     support_source,
                                 )
+                            elif language == "python":
+                                self.assertIn(
+                                    'len(execution_calls) == expected["transportExchangeCount"]',
+                                    source,
+                                )
+                                self.assertIn(
+                                    "fake.borrow().exchange_count()",
+                                    support_source,
+                                )
+                                self.assertIn("transportExchangeCount", support_source)
                                 self.assertIn(
                                     "singleNativeExecuteInvocation", adapter_assertions
                                 )
@@ -589,6 +604,38 @@ class PublicApiParityTests(unittest.TestCase):
             "no-batch-or-transport-resource-created",
             cases["batch.ordered-completed-pending-failed.v1"]["cleanup"],
         )
+        codec_limits = cases["codec-limits.defaults-and-ranges.v1"]
+        self.assertEqual(
+            codec_limits["expectedOutput"]["defaults"],
+            {
+                "maxMessageBytes": 16 * 1024 * 1024,
+                "maxStructureDepth": 64,
+                "maxElements": 100_000,
+            },
+        )
+        self.assertEqual(
+            codec_limits["input"]["configured"],
+            {
+                "maxMessageBytes": 0,
+                "maxStructureDepth": 64,
+                "maxElements": 0,
+            },
+        )
+        self.assertEqual(
+            codec_limits["expectedOutput"]["invalidDepth"],
+            {
+                "value": 65,
+                "accepted": False,
+                "errorCategory": "resource_limit",
+            },
+        )
+        allocation = cases["usage-allocation.guard-accounting.v1"]
+        self.assertEqual(allocation["input"]["usageLimitsUnit"], 0xFEDCBA98)
+        self.assertEqual(
+            allocation["expectedOutput"]["afterSuccessfulProtection"],
+            {"allocated": 5, "reserved": 2, "available": 3},
+        )
+        self.assertEqual(allocation["expectedOutput"]["transportExchangeCount"], 2)
         for case in cases.values():
             for language in SHARED_PARITY_LANGUAGES:
                 with self.subTest(fixture=case["id"], language=language):

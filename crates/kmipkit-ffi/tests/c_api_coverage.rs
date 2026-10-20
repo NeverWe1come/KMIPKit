@@ -29,6 +29,21 @@ unsafe extern "C" {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_main(argc: i32, argv: *mut *mut c_char) -> i32;
+    fn shared_ttlv_fixture_preserves_open_values_and_order(
+        raw_tags: *const u32,
+        enumeration_value: u32,
+        byte_string: *const u8,
+        byte_string_length: u64,
+    ) -> i32;
+    fn codec_limits_shared_fixture_matches_defaults_ranges_and_errors(
+        expected_default_message_bytes: u64,
+        expected_default_structure_depth: u64,
+        expected_default_elements: u64,
+        configured_message_bytes: u64,
+        configured_structure_depth: u64,
+        configured_elements: u64,
+        invalid_structure_depth: u64,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_execute_tls(
         argc: i32,
         argv: *mut *mut c_char,
@@ -39,6 +54,162 @@ unsafe extern "C" {
         argv: *mut *mut c_char,
         limits: *mut kmipkit_codec_limits_t,
     ) -> i32;
+}
+
+#[test]
+fn c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "ttlv.open-values-and-child-order.v1")
+        .expect("the generic TTLV fixture case exists");
+    let input_children = case["input"]["structure"]["children"]
+        .as_array()
+        .expect("generic TTLV input children are an array");
+    let expected_tags = case["expectedOutput"]["childTagsInOrder"]
+        .as_array()
+        .expect("generic TTLV expected child tags are an array")
+        .iter()
+        .map(|tag| {
+            u32::from_str_radix(
+                tag.as_str()
+                    .expect("generic TTLV child tag is a string")
+                    .strip_prefix("0x")
+                    .expect("generic TTLV child tag has a hexadecimal prefix"),
+                16,
+            )
+            .expect("generic TTLV child tag is valid hexadecimal")
+        })
+        .collect::<Vec<_>>();
+    let input_tags = input_children
+        .iter()
+        .map(|child| {
+            u32::from_str_radix(
+                child["tag"]
+                    .as_str()
+                    .expect("generic TTLV input tag is a string")
+                    .strip_prefix("0x")
+                    .expect("generic TTLV input tag has a hexadecimal prefix"),
+                16,
+            )
+            .expect("generic TTLV input tag is valid hexadecimal")
+        })
+        .collect::<Vec<_>>();
+    let enumeration_value = u32::try_from(
+        input_children[0]["value"]
+            .as_u64()
+            .expect("generic TTLV enumeration input is an unsigned integer"),
+    )
+    .expect("generic TTLV enumeration fits the public fixed-width type");
+    let expected_enumeration = u32::try_from(
+        case["expectedOutput"]["enumerationValue"]
+            .as_u64()
+            .expect("generic TTLV expected enumeration is an unsigned integer"),
+    )
+    .expect("generic TTLV expected enumeration fits the public fixed-width type");
+    let input_byte_string = input_children[1]["valueHex"]
+        .as_str()
+        .expect("generic TTLV byte-string input is hexadecimal");
+    let byte_string = decode_fixture_hex(input_byte_string);
+    let expected_byte_string = decode_fixture_hex(
+        case["expectedOutput"]["byteStringHex"]
+            .as_str()
+            .expect("generic TTLV expected byte string is hexadecimal"),
+    );
+
+    assert_eq!(input_tags, expected_tags, "fixture input order is expected");
+    assert_eq!(
+        enumeration_value, expected_enumeration,
+        "fixture enumeration input and output agree"
+    );
+    assert_eq!(
+        byte_string, expected_byte_string,
+        "fixture byte values agree"
+    );
+    assert_eq!(
+        case["expectedOutput"]["unknownValuesPreserved"], true,
+        "the fixture requires unknown values to be preserved"
+    );
+
+    // SAFETY: the fixture-backed tag and byte slices remain live for the
+    // synchronous call; the C consumer creates, inspects, and releases its own handles.
+    let result = unsafe {
+        shared_ttlv_fixture_preserves_open_values_and_order(
+            input_tags.as_ptr(),
+            enumeration_value,
+            byte_string.as_ptr(),
+            u64::try_from(byte_string.len()).expect("fixture byte length fits in u64"),
+        )
+    };
+
+    assert_eq!(
+        result, 0,
+        "the C ABI must preserve fixture values and child order"
+    );
+}
+
+fn decode_fixture_hex(value: &str) -> Vec<u8> {
+    let (pairs, remainder) = value.as_bytes().as_chunks::<2>();
+    assert!(remainder.is_empty(), "fixture hexadecimal has whole bytes");
+    pairs
+        .iter()
+        .map(|digits| {
+            let pair = std::str::from_utf8(digits).expect("fixture hex digits are ASCII");
+            u8::from_str_radix(pair, 16).expect("fixture byte is valid hexadecimal")
+        })
+        .collect()
+}
+
+#[test]
+fn c_abi_consumer_matches_the_shared_codec_limits_fixture() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "codec-limits.defaults-and-ranges.v1")
+        .expect("the shared CodecLimits fixture case exists");
+    let defaults = &case["expectedOutput"]["defaults"];
+    let configured = &case["input"]["configured"];
+    let invalid_depth = case["input"]["invalidDepth"]
+        .as_u64()
+        .expect("invalid fixture depth is unsigned");
+
+    // SAFETY: all values come from the parsed fixture and the C consumer creates
+    // and releases each limits handle during this synchronous call.
+    let result = unsafe {
+        codec_limits_shared_fixture_matches_defaults_ranges_and_errors(
+            defaults["maxMessageBytes"]
+                .as_u64()
+                .expect("default message limit is unsigned"),
+            defaults["maxStructureDepth"]
+                .as_u64()
+                .expect("default depth is unsigned"),
+            defaults["maxElements"]
+                .as_u64()
+                .expect("default element count is unsigned"),
+            configured["maxMessageBytes"]
+                .as_u64()
+                .expect("configured message limit is unsigned"),
+            configured["maxStructureDepth"]
+                .as_u64()
+                .expect("configured depth is unsigned"),
+            configured["maxElements"]
+                .as_u64()
+                .expect("configured element count is unsigned"),
+            invalid_depth,
+        )
+    };
+
+    assert_eq!(result, 1, "the C ABI must match the CodecLimits fixture");
 }
 
 #[link(name = "kmipkit_ffi")]
@@ -186,7 +357,74 @@ fn generated_public_client_abi_consumer_compiles_and_runs() {
 }
 
 #[test]
+// Keep the fixture-backed argv values and TLS server alive through one visible FFI call.
+#[allow(clippy::too_many_lines)]
 fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("the shared API fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("the shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "batch.ordered-completed-pending-failed.v1")
+        .expect("the ordered batch fixture case exists");
+    let input_ids = case["input"]["uniqueBatchItemIds"]
+        .as_array()
+        .expect("fixture batch IDs are an array")
+        .iter()
+        .map(|id| {
+            CString::new(id.as_str().expect("fixture batch ID is hexadecimal"))
+                .expect("fixture batch ID has no NUL byte")
+        })
+        .collect::<Vec<_>>();
+    let expected = &case["expectedOutput"];
+    let fixture_statuses = expected["resultStatuses"]
+        .as_array()
+        .expect("fixture result statuses are an array")
+        .iter()
+        .map(|status| {
+            let value = match status.as_str().expect("fixture result status is text") {
+                "Success" => "0",
+                "Operation Pending" => "2",
+                "Operation Failed" => "1",
+                other => panic!("unsupported fixture result status {other}"),
+            };
+            CString::new(value).expect("numeric status has no NUL byte")
+        })
+        .collect::<Vec<_>>();
+    let correlation = CString::new(
+        expected["correlationValueHex"]
+            .as_str()
+            .expect("fixture correlation is hexadecimal"),
+    )
+    .expect("fixture correlation has no NUL byte");
+    let fixture_item_count = CString::new(
+        expected["itemIndexes"]
+            .as_array()
+            .expect("fixture item indexes are an array")
+            .len()
+            .to_string(),
+    )
+    .expect("fixture item count has no NUL byte");
+    let fixture_pending_count = CString::new(
+        expected["pendingCount"]
+            .as_u64()
+            .expect("fixture pending count is unsigned")
+            .to_string(),
+    )
+    .expect("fixture pending count has no NUL byte");
+    let expected_exchange_count = expected["transportExchangeCount"]
+        .as_u64()
+        .expect("fixture transport exchange count is unsigned");
+    assert_eq!(
+        input_ids.len(),
+        3,
+        "the C fixture contract covers three items"
+    );
+    assert_eq!(fixture_statuses.len(), input_ids.len());
+
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
     let client_chain = pki.client_identity().certificate_chain_der();
     let paths = TemporaryCredentialFiles::create([
@@ -216,7 +454,7 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         .expect("temporary path has no NUL byte");
     let trust_root = CString::new(paths.paths[3].to_string_lossy().as_bytes())
         .expect("temporary path has no NUL byte");
-    let mut arguments = [
+    let mut arguments = vec![
         executable.as_ptr().cast_mut(),
         certificate.as_ptr().cast_mut(),
         authority.as_ptr().cast_mut(),
@@ -224,6 +462,15 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         trust_root.as_ptr().cast_mut(),
         port.as_ptr().cast_mut(),
     ];
+    arguments.extend(input_ids.iter().map(|id| id.as_ptr().cast_mut()));
+    arguments.extend(
+        fixture_statuses
+            .iter()
+            .map(|status| status.as_ptr().cast_mut()),
+    );
+    arguments.push(correlation.as_ptr().cast_mut());
+    arguments.push(fixture_item_count.as_ptr().cast_mut());
+    arguments.push(fixture_pending_count.as_ptr().cast_mut());
     let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot and the successful handle is
@@ -267,7 +514,10 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         exchange_count.load(Ordering::Relaxed)
     );
     peer.join().expect("the loopback TLS peer completes");
-    assert_eq!(exchange_count.load(Ordering::Relaxed), 1);
+    assert_eq!(
+        exchange_count.load(Ordering::Relaxed),
+        expected_exchange_count
+    );
 }
 
 fn spawn_public_client_batch_peer(

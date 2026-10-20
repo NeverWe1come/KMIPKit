@@ -19,6 +19,7 @@ use std::rc::Rc;
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::CodecLimits;
+use serde_json::Value as JsonValue;
 
 use crate::ClientErrorCategory;
 use crate::execute::{
@@ -455,22 +456,64 @@ fn mixed_completed_and_pending_results_preserve_exact_pending_correlation_value(
     );
 }
 
+// This end-to-end scenario keeps the complete shared batch contract together.
+#[allow(clippy::too_many_lines)]
 #[test]
 fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
-    let ids: [&[u8]; 3] = [b"item-0", b"item-1", b"item-2"];
-    let request = ClientBatch::from_items(ids.map(|id| {
+    let fixture: JsonValue = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/api/shared-capability-parity.json"
+    ))
+    .expect("shared API parity fixture is valid JSON");
+    let case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "batch.ordered-completed-pending-failed.v1")
+        .expect("shared ordered batch case exists");
+    let input_ids = case["input"]["uniqueBatchItemIds"]
+        .as_array()
+        .expect("batch fixture IDs are an array")
+        .iter()
+        .map(|id| decode_fixture_hex(id.as_str().expect("batch fixture ID is hex")))
+        .collect::<Vec<_>>();
+    let expected = &case["expectedOutput"];
+    let expected_ids = expected["uniqueBatchItemIds"]
+        .as_array()
+        .expect("expected batch IDs are an array")
+        .iter()
+        .map(|id| decode_fixture_hex(id.as_str().expect("expected batch ID is hex")))
+        .collect::<Vec<_>>();
+    let expected_statuses = expected["resultStatuses"]
+        .as_array()
+        .expect("expected batch statuses are an array")
+        .iter()
+        .map(|status| status.as_str().expect("batch status is text").to_owned())
+        .collect::<Vec<_>>();
+    assert_eq!(input_ids, expected_ids, "request and result IDs agree");
+    assert_eq!(input_ids.len(), expected_statuses.len());
+    assert_eq!(expected["automaticFollowUp"], false);
+
+    let correlation = decode_fixture_hex(
+        expected["correlationValueHex"]
+            .as_str()
+            .expect("pending correlation value is hex"),
+    );
+    let response_items = expected_statuses
+        .iter()
+        .zip(&expected_ids)
+        .map(|(status, id)| match status.as_str() {
+            "Success" => ResponseItemFixture::success(Some(id)),
+            "Operation Pending" => ResponseItemFixture::pending(Some(id), &correlation),
+            "Operation Failed" => ResponseItemFixture::failure(Some(id)),
+            other => panic!("unsupported batch result status {other}"),
+        })
+        .collect::<Vec<_>>();
+    let request = ClientBatch::from_items(input_ids.iter().map(|id| {
         ClientBatchItem::new(ClientRequest::discover_versions())
-            .with_unique_batch_item_id(id.to_vec())
+            .with_unique_batch_item_id(id.clone())
     }))
     .with_asynchronous_indicator(2);
-    let response = response_bytes(
-        (2, 1),
-        &[
-            ResponseItemFixture::success(Some(ids[0])),
-            ResponseItemFixture::pending(Some(ids[1]), b"\x00\xa1\x7f"),
-            ResponseItemFixture::failure(Some(ids[2])),
-        ],
-    );
+    let response = response_bytes((2, 1), &response_items);
     let (mut client, fake, _) = client_for(
         ExchangeScript::Success {
             response,
@@ -483,43 +526,72 @@ fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
         .execute(request, &CodecLimits::defaults())
         .expect("one mixed batch response is returned without follow-up exchanges");
 
-    assert_eq!(result.len(), 3);
-    assert_eq!(fake.borrow().exchange_count(), 1);
-    for (index, expected_id) in ids.into_iter().enumerate() {
+    let expected_count = expected["itemIndexes"]
+        .as_array()
+        .expect("expected item indexes are an array")
+        .len();
+    assert_eq!(result.len(), expected_count);
+    assert_eq!(
+        fake.borrow().exchange_count(),
+        usize::try_from(
+            expected["transportExchangeCount"]
+                .as_u64()
+                .expect("transport exchange count is unsigned")
+        )
+        .expect("transport exchange count fits usize")
+    );
+    let expected_pending_count = usize::try_from(
+        expected["pendingCount"]
+            .as_u64()
+            .expect("pending count is unsigned"),
+    )
+    .expect("pending count fits usize");
+    let mut actual_pending_count = 0;
+    for (index, expected_id) in expected_ids.iter().enumerate() {
         let item = result
             .get(index)
             .expect("each request has an ordered result");
-        assert_eq!(item.unique_batch_item_id(), Some(expected_id));
-        assert_eq!(item.outcome().result().status().raw(), [0, 2, 1][index]);
+        assert_eq!(item.unique_batch_item_id(), Some(expected_id.as_slice()));
+        let status = expected_statuses[index].as_str();
+        let expected_code = match status {
+            "Success" => 0,
+            "Operation Pending" => 2,
+            "Operation Failed" => 1,
+            other => panic!("unsupported batch result status {other}"),
+        };
+        assert_eq!(item.outcome().result().status().raw(), expected_code);
+        match (status, item.outcome()) {
+            ("Success", ClientBatchOutcome::Completed(_)) => {
+                let supported_versions = item
+                    .discover_versions_supported_versions()
+                    .expect("successful Discover Versions response has a present list");
+                assert_eq!(supported_versions.len(), 1);
+                assert_eq!(supported_versions[0].major(), 2);
+                assert_eq!(supported_versions[0].minor(), 1);
+            }
+            ("Operation Pending", ClientBatchOutcome::Pending(pending)) => {
+                actual_pending_count += 1;
+                assert_eq!(pending.asynchronous_correlation_value(), correlation);
+                assert_eq!(item.discover_versions_supported_versions(), None);
+            }
+            ("Operation Failed", ClientBatchOutcome::Completed(_)) => {}
+            (expected_status, _) => panic!("unexpected outcome for {expected_status}"),
+        }
     }
-    assert!(matches!(
-        result.get(0).expect("success item").outcome(),
-        ClientBatchOutcome::Completed(_)
-    ));
-    let supported_versions = result
-        .get(0)
-        .expect("success item")
-        .discover_versions_supported_versions()
-        .expect("successful Discover Versions response has a present list");
-    assert_eq!(supported_versions.len(), 1);
-    assert_eq!(supported_versions[0].major(), 2);
-    assert_eq!(supported_versions[0].minor(), 1);
-    let ClientBatchOutcome::Pending(pending) = result.get(1).expect("pending item").outcome()
-    else {
-        panic!("second ordered result is Pending");
-    };
-    assert_eq!(pending.asynchronous_correlation_value(), b"\x00\xa1\x7f");
-    assert_eq!(
-        result
-            .get(1)
-            .expect("pending item")
-            .discover_versions_supported_versions(),
-        None
-    );
-    assert!(matches!(
-        result.get(2).expect("failure item").outcome(),
-        ClientBatchOutcome::Completed(_)
-    ));
+    assert_eq!(actual_pending_count, expected_pending_count);
+}
+
+fn decode_fixture_hex(value: &str) -> Vec<u8> {
+    assert_eq!(value.len() % 2, 0, "fixture hexadecimal has whole bytes");
+    let (pairs, remainder) = value.as_bytes().as_chunks::<2>();
+    assert!(remainder.is_empty(), "fixture hex has whole bytes");
+    pairs
+        .iter()
+        .map(|digits| {
+            let pair = std::str::from_utf8(digits).expect("fixture hex digits are ASCII");
+            u8::from_str_radix(pair, 16).expect("fixture byte is valid hexadecimal")
+        })
+        .collect()
 }
 
 #[test]

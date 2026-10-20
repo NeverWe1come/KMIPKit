@@ -320,6 +320,22 @@ final class ClientFacadeTlsIntegrationTest {
 
     @Test
     void executionPreservesOrderedMixedOutcomesOverOneMutualTlsExchange() throws Exception {
+        String fixture = Files.readString(SharedCapabilityParityFixtureTest.sharedFixturePath());
+        String batchFixture = SharedCapabilityParityFixtureTest.caseById(fixture,
+                "batch.ordered-completed-pending-failed.v1");
+        String fixtureInput = SharedCapabilityParityFixtureTest.objectField(batchFixture, "input");
+        String fixtureExpected = SharedCapabilityParityFixtureTest.objectField(batchFixture, "expectedOutput");
+        List<String> requestIdsHex = SharedCapabilityParityFixtureTest.stringArrayField(
+                fixtureInput, "uniqueBatchItemIds");
+        List<byte[]> requestIds = requestIdsHex.stream().map(java.util.HexFormat.of()::parseHex).toList();
+        List<String> expectedStatuses = SharedCapabilityParityFixtureTest.stringArrayField(
+                fixtureExpected, "resultStatuses");
+        List<String> expectedIdsHex = SharedCapabilityParityFixtureTest.stringArrayField(
+                fixtureExpected, "uniqueBatchItemIds");
+        List<byte[]> expectedIds = expectedIdsHex.stream().map(java.util.HexFormat.of()::parseHex).toList();
+        byte[] expectedCorrelation = java.util.HexFormat.of().parseHex(
+                SharedCapabilityParityFixtureTest.stringField(fixtureExpected, "correlationValueHex"));
+
         Path serverStorePath = temporaryDirectory.resolve("server.p12");
         Path clientStorePath = temporaryDirectory.resolve("client.p12");
         createKeyStore(serverStorePath, "server");
@@ -337,7 +353,8 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setEnabledProtocols(new String[] {"TLSv1.3"});
         listener.setNeedClientAuth(true);
         listener.setSoTimeout(10_000);
-        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener));
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, mixedResponseMessage(requestIds, expectedCorrelation)));
         Thread peerThread = new Thread(peer, "kmipkit-java-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -381,9 +398,9 @@ final class ClientFacadeTlsIntegrationTest {
 
             ClientBatch batch = ClientBatch.create();
             batch.asynchronousIndicator(2)
-                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(0)))
-                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(1)))
-                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(2)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(requestIds.get(0)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(requestIds.get(1)))
+                    .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(requestIds.get(2)))
                     .add(ClientBatchItem.discoverVersions().withUniqueBatchItemId(uniqueBatchItemId(3)))
                     .add(ClientBatchItem.create(7, createAttributes, null)
                             .withUniqueBatchItemId(uniqueBatchItemId(4)))
@@ -490,25 +507,32 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(27, response.itemCount());
                 assertTrue(completed.getResponse().isEmpty());
                 assertTrue(completed.locateResponse().isEmpty());
-                assertEquals(0, completed.resultStatus());
-                assertTrue(completed.outcomeKind().isCompleted());
-                assertArrayEquals(uniqueBatchItemId(0), completed.uniqueBatchItemId().orElseThrow());
+                assertEquals(resultStatusCode(expectedStatuses.get(0)), completed.resultStatus());
+                assertEquals("Success".equals(expectedStatuses.get(0)),
+                        completed.outcomeKind().isCompleted());
+                assertArrayEquals(expectedIds.get(0), completed.uniqueBatchItemId().orElseThrow());
                 assertTrue(completed.pendingCorrelationValue().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());
                 assertEquals(List.of(new ProtocolVersion(2, 1), new ProtocolVersion(2, 1)),
                         completed.supportedVersions().orElseThrow());
-                assertEquals(2, pending.resultStatus());
-                assertTrue(pending.outcomeKind().isPending());
-                assertArrayEquals(uniqueBatchItemId(1), pending.uniqueBatchItemId().orElseThrow());
-                assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
+                assertEquals(resultStatusCode(expectedStatuses.get(1)), pending.resultStatus());
+                assertEquals("Operation Pending".equals(expectedStatuses.get(1)),
+                        pending.outcomeKind().isPending());
+                assertArrayEquals(expectedIds.get(1), pending.uniqueBatchItemId().orElseThrow());
+                assertArrayEquals(expectedCorrelation, pending.pendingCorrelationValue().orElseThrow());
                 assertTrue(pending.resultReason().isEmpty());
                 assertTrue(pending.supportedVersions().isEmpty());
-                assertEquals(1, failed.resultStatus());
-                assertTrue(failed.outcomeKind().isCompleted());
-                assertArrayEquals(uniqueBatchItemId(2), failed.uniqueBatchItemId().orElseThrow());
+                assertEquals(resultStatusCode(expectedStatuses.get(2)), failed.resultStatus());
+                assertEquals("Operation Failed".equals(expectedStatuses.get(2)),
+                        failed.outcomeKind().isCompleted());
+                assertArrayEquals(expectedIds.get(2), failed.uniqueBatchItemId().orElseThrow());
                 assertTrue(failed.pendingCorrelationValue().isEmpty());
                 assertEquals(1, failed.resultReason().orElseThrow());
                 assertTrue(failed.supportedVersions().isEmpty());
+                long pendingCount = List.of(completed, pending, failed).stream()
+                        .filter(result -> result.outcomeKind().isPending()).count();
+                assertEquals(SharedCapabilityParityFixtureTest.numberField(fixtureExpected, "pendingCount"),
+                        pendingCount);
                 assertEquals(0, empty.resultStatus());
                 assertTrue(empty.supportedVersions().isPresent());
                 assertTrue(empty.supportedVersions().orElseThrow().isEmpty());
@@ -778,6 +802,10 @@ final class ClientFacadeTlsIntegrationTest {
                 }
             }
             byte[] request = peer.get(12, TimeUnit.SECONDS);
+            assertEquals(1L, SharedCapabilityParityFixtureTest.numberField(
+                    fixtureExpected, "transportExchangeCount"));
+            assertEquals("false", SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                    fixtureExpected, "automaticFollowUp"));
             assertTrue(request.length >= 8);
             assertArrayEquals(new byte[] {0x42, 0x00, 0x78},
                     new byte[] {request[0], request[1], request[2]});
@@ -792,6 +820,21 @@ final class ClientFacadeTlsIntegrationTest {
 
     @Test
     void usageAllocationContextGuardsJavaProtectionExecutionLocally() throws Exception {
+        String fixture = Files.readString(SharedCapabilityParityFixtureTest.sharedFixturePath());
+        String usageFixture = SharedCapabilityParityFixtureTest.caseById(fixture,
+                "usage-allocation.guard-accounting.v1");
+        String fixtureInput = SharedCapabilityParityFixtureTest.objectField(usageFixture, "input");
+        String fixtureExpected = SharedCapabilityParityFixtureTest.objectField(usageFixture, "expectedOutput");
+        String allocationIdentifier = SharedCapabilityParityFixtureTest.stringField(
+                fixtureInput, "allocationIdentifier");
+        long allocationCount = SharedCapabilityParityFixtureTest.numberField(fixtureInput, "allocationCount");
+        long usageLimitsUnit = SharedCapabilityParityFixtureTest.numberField(fixtureInput, "usageLimitsUnit");
+        long successfulCost = SharedCapabilityParityFixtureTest.numberField(fixtureInput, "successfulCost");
+        long overBudgetCost = SharedCapabilityParityFixtureTest.numberField(fixtureInput, "overBudgetCost");
+        assertEquals("Encrypt", SharedCapabilityParityFixtureTest.stringField(fixtureInput, "operation"));
+        assertEquals("invalid_input", SharedCapabilityParityFixtureTest.stringField(
+                usageFixture, "errorCategory"));
+
         Path serverStorePath = temporaryDirectory.resolve("usage-guard-server.p12");
         Path clientStorePath = temporaryDirectory.resolve("usage-guard-client.p12");
         createKeyStore(serverStorePath, "server");
@@ -810,12 +853,10 @@ final class ClientFacadeTlsIntegrationTest {
 
         byte[] allocationItemId = uniqueBatchItemId(0);
         byte[] encryptionItemId = uniqueBatchItemId(1);
-        byte[] defaultEncryptionItemId = uniqueBatchItemId(2);
         CodecLimits limits = CodecLimits.defaults();
         FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
-                usageAllocationResponseMessage(allocationItemId),
-                guardedEncryptResponseMessage(encryptionItemId),
-                guardedEncryptResponseMessage(defaultEncryptionItemId)));
+                usageAllocationResponseMessage(allocationItemId, allocationIdentifier),
+                guardedEncryptResponseMessage(encryptionItemId, allocationIdentifier)));
         Thread peerThread = new Thread(peer, "kmipkit-java-usage-allocation-guard-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -835,66 +876,73 @@ final class ClientFacadeTlsIntegrationTest {
                 Client client = Client.create(extensions, transport)) {
             try (ClientBatch allocationBatch = ClientBatch.create()) {
                 allocationBatch.add(ClientBatchItem.getUsageAllocation(
-                        UniqueIdentifier.textString("allocation-object"), 5L)
+                        UniqueIdentifier.textString(allocationIdentifier), allocationCount)
                         .withUniqueBatchItemId(allocationItemId));
                 try (ClientBatchResponse allocationResponse = client.execute(allocationBatch, limits);
                         ClientBatchItemResult allocation = allocationResponse.itemAt(0);
                         UsageAllocationContext context =
-                                allocation.createUsageAllocationContext(5L, 0xfedc_ba98L)) {
-                    assertEquals("allocation-object", context.uniqueIdentifier().text());
-                    assertEquals(0xfedc_ba98L, context.usageLimitsUnit());
-                    assertEquals(5L, context.allocatedUnits());
-                    assertEquals(5L, context.availableUnits());
-                    assertEquals(0L, context.reservedUnits());
+                                allocation.createUsageAllocationContext(allocationCount, usageLimitsUnit)) {
+                    String initial = SharedCapabilityParityFixtureTest.objectField(fixtureExpected, "initial");
+                    assertEquals(allocationIdentifier, context.uniqueIdentifier().text());
+                    assertEquals(usageLimitsUnit, context.usageLimitsUnit());
+                    assertEquals(SharedCapabilityParityFixtureTest.numberField(initial, "allocated"),
+                            context.allocatedUnits());
+                    assertEquals(SharedCapabilityParityFixtureTest.numberField(initial, "available"),
+                            context.availableUnits());
+                    assertEquals(SharedCapabilityParityFixtureTest.numberField(initial, "reserved"),
+                            context.reservedUnits());
 
                     try (TtlvStructure parameters = TtlvStructure.create();
                             TtlvValue data = TtlvValue.ByteString(new byte[] {1, 2, 3}, limits);
                             ClientBatchItem encryption = ClientBatchItem.encrypt(
-                                            UniqueIdentifier.textString("allocation-object"),
+                                            UniqueIdentifier.textString(allocationIdentifier),
                                             parameters, data, null, null, null, null, null)
                                     .withUniqueBatchItemId(encryptionItemId)) {
                         assertThrows(InvalidInputException.class,
                                 () -> client.executeGuardedProtectionItemWithAsynchronousIndicator(
-                                        context, encryption, 2L, -1L, limits));
+                                        context, encryption, successfulCost, -1L, limits));
                         assertThrows(InvalidInputException.class,
                                 () -> client.executeGuardedProtectionItemWithAsynchronousIndicator(
-                                        context, encryption, 2L, 0x1_0000_0000L, limits));
+                                        context, encryption, successfulCost, 0x1_0000_0000L, limits));
                         assertThrows(InvalidInputException.class,
-                                () -> client.executeGuardedProtectionItem(null, encryption, 2L, limits));
+                                () -> client.executeGuardedProtectionItem(null, encryption, successfulCost, limits));
                         assertThrows(InvalidInputException.class,
-                                () -> client.executeGuardedProtectionItem(context, null, 2L, limits));
+                                () -> client.executeGuardedProtectionItem(context, null, successfulCost, limits));
                         assertThrows(InvalidInputException.class,
                                 () -> client.executeGuardedProtectionItem(context, encryption, 0L, limits));
                         assertThrows(InvalidInputException.class,
-                                () -> client.executeGuardedProtectionItem(context, encryption, 2L, null));
+                                () -> client.executeGuardedProtectionItem(context, encryption, successfulCost, null));
 
                         try (ClientBatchResponse guarded = client.executeGuardedProtectionItemWithAsynchronousIndicator(
-                                    context, encryption, 2L, 2L, limits);
+                                    context, encryption, successfulCost, 2L, limits);
                                 ClientBatchItemResult guardedItem = guarded.itemAt(0);
                                 ClientBatchItemResult.EncryptResponse encrypted =
                                         guardedItem.encryptResponse().orElseThrow()) {
                             assertEquals(0L, guardedItem.resultStatus());
-                            assertEquals("allocation-object", encrypted.uniqueIdentifier().text());
-                            assertEquals(2L, context.reservedUnits());
-                            assertEquals(3L, context.availableUnits());
+                            assertEquals(allocationIdentifier, encrypted.uniqueIdentifier().text());
+                            String afterSuccess = SharedCapabilityParityFixtureTest.objectField(
+                                    fixtureExpected, "afterSuccessfulProtection");
+                            assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "reserved"),
+                                    context.reservedUnits());
+                            assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "available"),
+                                    context.availableUnits());
                         }
                     }
 
                     try (TtlvStructure parameters = TtlvStructure.create();
                             TtlvValue data = TtlvValue.ByteString(new byte[] {4, 5, 6}, limits);
-                            ClientBatchItem defaultEncryption = ClientBatchItem.encrypt(
-                                            UniqueIdentifier.textString("allocation-object"),
-                                            parameters, data, null, null, null, null, null)
-                                    .withUniqueBatchItemId(defaultEncryptionItemId);
-                            ClientBatchResponse defaultGuarded = client.executeGuardedProtectionItem(
-                                    context, defaultEncryption, 1L, limits);
-                            ClientBatchItemResult defaultGuardedItem = defaultGuarded.itemAt(0);
-                            ClientBatchItemResult.EncryptResponse defaultEncrypted =
-                                    defaultGuardedItem.encryptResponse().orElseThrow()) {
-                        assertEquals(0L, defaultGuardedItem.resultStatus());
-                        assertEquals("allocation-object", defaultEncrypted.uniqueIdentifier().text());
-                        assertEquals(3L, context.reservedUnits());
-                        assertEquals(2L, context.availableUnits());
+                            ClientBatchItem overBudget = ClientBatchItem.encrypt(
+                                    UniqueIdentifier.textString(allocationIdentifier),
+                                    parameters, data, null, null, null, null, null)) {
+                        assertThrows(InvalidInputException.class,
+                                () -> client.executeGuardedProtectionItem(
+                                        context, overBudget, overBudgetCost, limits));
+                        String rejected = SharedCapabilityParityFixtureTest.objectField(
+                                fixtureExpected, "overBudgetAttempt");
+                        assertEquals("false", SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                                rejected, "accepted"));
+                        assertEquals("true", SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                                rejected, "stateUnchanged"));
                     }
 
                     try (TtlvStructure parameters = TtlvStructure.create();
@@ -906,14 +954,21 @@ final class ClientFacadeTlsIntegrationTest {
                                 () -> client.executeGuardedProtectionItem(
                                         context, mismatched, 1L, limits));
                     }
-                    assertEquals(3L, context.reservedUnits());
-                    assertEquals(2L, context.availableUnits());
+                    String afterSuccess = SharedCapabilityParityFixtureTest.objectField(
+                            fixtureExpected, "afterSuccessfulProtection");
+                    assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "reserved"),
+                            context.reservedUnits());
+                    assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "available"),
+                            context.availableUnits());
+                    assertEquals("true", SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                            fixtureExpected, "localOnlyAccounting"));
                 }
             }
         } finally {
             listener.close();
         }
-        assertEquals(3, peer.get(10, TimeUnit.SECONDS).size());
+        assertEquals(SharedCapabilityParityFixtureTest.numberField(fixtureExpected, "transportExchangeCount"),
+                peer.get(10, TimeUnit.SECONDS).size());
     }
 
     @Test
@@ -1972,12 +2027,17 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] usageAllocationResponseMessage(byte[] itemId) throws Exception {
+        return usageAllocationResponseMessage(itemId, "allocation-object");
+    }
+
+    private static byte[] usageAllocationResponseMessage(byte[] itemId, String allocationIdentifier)
+            throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
         byte[] payload = structure(0x42007c,
-                item(0x420094, 7, "allocation-object".getBytes(StandardCharsets.UTF_8)));
+                item(0x420094, 7, allocationIdentifier.getBytes(StandardCharsets.UTF_8)));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 17), item(0x420093, 8, itemId),
                 enumeration(0x42007f, 0), payload);
@@ -1985,12 +2045,17 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] guardedEncryptResponseMessage(byte[] itemId) throws Exception {
+        return guardedEncryptResponseMessage(itemId, "allocation-object");
+    }
+
+    private static byte[] guardedEncryptResponseMessage(byte[] itemId, String allocationIdentifier)
+            throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
         byte[] payload = structure(0x42007c,
-                item(0x420094, 7, "allocation-object".getBytes(StandardCharsets.UTF_8)),
+                item(0x420094, 7, allocationIdentifier.getBytes(StandardCharsets.UTF_8)),
                 item(0x4200c2, 8, "guarded-encrypt-result".getBytes(StandardCharsets.US_ASCII)));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x1f), item(0x420093, 8, itemId),
@@ -2040,6 +2105,12 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] mixedResponseMessage() throws Exception {
+        return mixedResponseMessage(List.of(uniqueBatchItemId(0), uniqueBatchItemId(1),
+                uniqueBatchItemId(2)), CORRELATION);
+    }
+
+    private static byte[] mixedResponseMessage(List<byte[]> fixtureItemIds, byte[] correlation)
+            throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
@@ -2049,16 +2120,16 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
         byte[] successfulItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
-                item(0x420093, 8, uniqueBatchItemId(0)),
+                item(0x420093, 8, fixtureItemIds.get(0)),
                 item(0x42007f, 5, integer(0)), responsePayload);
         byte[] pendingItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
-                item(0x420093, 8, uniqueBatchItemId(1)),
+                item(0x420093, 8, fixtureItemIds.get(1)),
                 item(0x42007f, 5, integer(2)),
-                item(0x420006, 8, CORRELATION), structure(0x42007c));
+                item(0x420006, 8, correlation), structure(0x42007c));
         byte[] failedItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
-                item(0x420093, 8, uniqueBatchItemId(2)),
+                item(0x420093, 8, fixtureItemIds.get(2)),
                 item(0x42007f, 5, integer(1)),
                 enumeration(0x42007e, 1));
         byte[] emptyItem = structure(0x42000f,
@@ -2412,6 +2483,15 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] uniqueBatchItemId(int index) {
         return ("item-" + index).getBytes(StandardCharsets.US_ASCII);
+    }
+
+    private static int resultStatusCode(String fixtureName) {
+        return switch (fixtureName) {
+            case "Success" -> 0;
+            case "Operation Pending" -> 2;
+            case "Operation Failed" -> 1;
+            default -> throw new AssertionError("unknown shared batch result status: " + fixtureName);
+        };
     }
 
     private static byte[] structure(int tag, byte[]... items) throws Exception {

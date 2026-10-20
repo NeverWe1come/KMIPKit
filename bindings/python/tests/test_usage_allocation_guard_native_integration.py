@@ -5,6 +5,7 @@ These tests are not official OASIS conformance cases.
 
 from __future__ import annotations
 
+import json
 import queue
 import socket
 import ssl
@@ -17,11 +18,21 @@ import pytest
 from kmipkit import client, errors, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
-_OBJECT_ID = b"guarded-python-key"
+_SHARED_FIXTURE = (
+    Path(__file__).resolve().parents[3]
+    / "tests/fixtures/api/shared-capability-parity.json"
+)
 _ALLOCATION_BATCH_ID = b"usage-allocation"
 _ENCRYPT_BATCH_ID = b"guarded-encrypt"
-_ALLOCATION_COUNT = 3
-_USAGE_UNIT = 0xFEDC_BA98
+
+
+def _usage_allocation_fixture() -> dict[str, object]:
+    corpus = json.loads(_SHARED_FIXTURE.read_text(encoding="utf-8"))
+    return next(
+        case
+        for case in corpus["cases"]
+        if case["id"] == "usage-allocation.guard-accounting.v1"
+    )
 
 
 def _ttlv_item(tag: int, item_type: int, value: bytes) -> bytes:
@@ -72,9 +83,9 @@ def _read_ttlv_frame(stream: ssl.SSLSocket) -> bytes:
     return header + _read_exact(stream, int.from_bytes(header[4:8], "big"))
 
 
-def _start_mtls_peer() -> tuple[
-    int, list[bytes], queue.Queue[Exception], threading.Thread
-]:
+def _start_mtls_peer(
+    allocation_identifier: bytes,
+) -> tuple[int, list[bytes], queue.Queue[Exception], threading.Thread]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
     listener.listen(2)
@@ -86,12 +97,12 @@ def _start_mtls_peer() -> tuple[
         _response_message(
             0x11,
             _ALLOCATION_BATCH_ID,
-            _ttlv_item(0x420094, 7, _OBJECT_ID),
+            _ttlv_item(0x420094, 7, allocation_identifier),
         ),
         _response_message(
             0x1F,
             _ENCRYPT_BATCH_ID,
-            _ttlv_item(0x420094, 7, _OBJECT_ID),
+            _ttlv_item(0x420094, 7, allocation_identifier),
             _ttlv_item(0x4200C2, 8, b"ciphertext"),
         ),
     )
@@ -152,7 +163,18 @@ def _transport(port: int) -> client.TransportConfig:
 def test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_transport() -> (
     None
 ):
-    port, received_requests, peer_failures, peer = _start_mtls_peer()
+    case = _usage_allocation_fixture()
+    request = case["input"]
+    expected = case["expectedOutput"]
+    allocation_identifier = request["allocationIdentifier"].encode("ascii")
+    allocation_count = request["allocationCount"]
+    usage_limits_unit = request["usageLimitsUnit"]
+    successful_cost = request["successfulCost"]
+    over_budget_cost = request["overBudgetCost"]
+    assert request["operation"] == "Encrypt"
+    port, received_requests, peer_failures, peer = _start_mtls_peer(
+        allocation_identifier
+    )
     registry = extensions.create_client_extension_registry(
         (), extensions.default_extension_registry_limits()
     )
@@ -171,24 +193,28 @@ def test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_tra
                 extensions.with_unique_batch_item_id(
                     extensions.client_batch_item_get_usage_allocation(
                         extensions.UniqueIdentifier.text_string(
-                            _OBJECT_ID.decode("ascii")
+                            allocation_identifier.decode("ascii")
                         ),
-                        _ALLOCATION_COUNT,
+                        allocation_count,
                     ),
                     _ALLOCATION_BATCH_ID,
                 )
             )
             allocation_result = kmip_client.execute(allocation, limits)
             context = allocation_result.items[0].create_usage_allocation_context(
-                _ALLOCATION_COUNT, _USAGE_UNIT
+                allocation_count, usage_limits_unit
             )
+            initial = expected["initial"]
+            assert context.allocated_units == initial["allocated"]
+            assert context.reserved_units == initial["reserved"]
+            assert context.available_units == initial["available"]
             allocation_result.close()
 
             data = ttlv.ttlv_value_byte_string(b"plaintext", limits)
             try:
                 encrypt_item = extensions.client_batch_item_encrypt(
                     unique_identifier=extensions.UniqueIdentifier.text_string(
-                        _OBJECT_ID.decode("ascii")
+                        allocation_identifier.decode("ascii")
                     ),
                     data=data,
                 )
@@ -198,29 +224,36 @@ def test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_tra
                 encrypt_item, _ENCRYPT_BATCH_ID
             )
             encrypt_result = kmip_client.execute_guarded_protection_item(
-                context, encrypt_item, 2, limits
+                context, encrypt_item, successful_cost, limits
             )
             assert len(encrypt_result.items) == 1
             assert encrypt_result.items[0].encrypt_response is not None
             assert encrypt_result.items[0].encrypt_response.data == b"ciphertext"
-            assert context.allocated_units == 3
-            assert context.reserved_units == 2
-            assert context.available_units == 1
+            after_success = expected["afterSuccessfulProtection"]
+            assert context.allocated_units == after_success["allocated"]
+            assert context.reserved_units == after_success["reserved"]
+            assert context.available_units == after_success["available"]
 
             excess_item = extensions.client_batch_item_encrypt(
                 unique_identifier=extensions.UniqueIdentifier.text_string(
-                    _OBJECT_ID.decode("ascii")
+                    allocation_identifier.decode("ascii")
                 )
             )
-            with pytest.raises(errors.ClientExecutionError):
+            with pytest.raises(errors.ClientExecutionError) as caught:
                 kmip_client.execute_guarded_protection_item(
-                    context, excess_item, 2, limits
+                    context, excess_item, over_budget_cost, limits
                 )
             assert excess_item.closed
-            assert context.reserved_units == 2
-            assert context.available_units == 1
+            assert caught.value.cause is errors.ClientErrorCause.INVALID_INPUT
+            assert case["errorCategory"] == "invalid_input"
+            assert expected["overBudgetAttempt"]["accepted"] is False
+            assert expected["overBudgetAttempt"]["stateUnchanged"] is True
+            assert context.allocated_units == after_success["allocated"]
+            assert context.reserved_units == after_success["reserved"]
+            assert context.available_units == after_success["available"]
+            assert expected["localOnlyAccounting"] is True
 
-        assert len(received_requests) == 2
+        assert len(received_requests) == expected["transportExchangeCount"]
         assert _ttlv_item(0x42005C, 5, struct.pack(">I", 0x11)) in received_requests[0]
         assert _ttlv_item(0x42005C, 5, struct.pack(">I", 0x1F)) in received_requests[1]
         assert peer_failures.empty()

@@ -213,7 +213,9 @@ def _structure_from_shared_ttlv_fixture(
     return structure
 
 
-def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle() -> None:
+def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifecycle() -> (
+    None
+):
     case = _parity_cases()["ttlv.open-values-and-child-order.v1"]
     structure_input = case["input"]["structure"]
     expected = case["expectedOutput"]
@@ -269,17 +271,26 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
                         )
                     )
                 else:
-                    raise AssertionError(f"unexpected shared TTLV item type: {item_type}")
+                    raise AssertionError(
+                        f"unexpected shared TTLV item type: {item_type}"
+                    )
             finally:
                 tag_view.close()
                 value_view.close()
                 item_view.close()
 
         assert observed_tags == expected["childTagsInOrder"]
-        assert observed_values == [
-            ("Enumeration", expected["enumerationValue"]),
-            ("ByteString", expected["byteStringHex"]),
-        ]
+        expected_values: list[tuple[str, object]] = []
+        for child in structure_input["children"]:
+            if child["type"] == "Enumeration":
+                expected_values.append((child["type"], expected["enumerationValue"]))
+            elif child["type"] == "ByteString":
+                expected_values.append((child["type"], expected["byteStringHex"]))
+            else:
+                raise AssertionError(
+                    f"unexpected shared TTLV item type: {child['type']}"
+                )
+        assert observed_values == expected_values
 
         view.close()
         view.close()
@@ -291,6 +302,64 @@ def test_generic_ttlv_shared_fixture_preserves_open_values_order_and_owner_lifec
             view.close()
         limits.close()
         _handles.lib = native_library
+
+
+def test_codec_limits_shared_fixture_matches_defaults_ranges_and_errors() -> None:
+    case = _parity_cases()["codec-limits.defaults-and-ranges.v1"]
+    request = case["input"]
+    expected = case["expectedOutput"]
+    assert request["defaults"] is True
+
+    defaults = ttlv.codec_limits_defaults()
+    configured = None
+    try:
+        assert (
+            ttlv.codec_limits_max_message_bytes(defaults)
+            == expected["defaults"]["maxMessageBytes"]
+        )
+        assert (
+            ttlv.codec_limits_max_structure_depth(defaults)
+            == expected["defaults"]["maxStructureDepth"]
+        )
+        assert (
+            ttlv.codec_limits_max_elements(defaults)
+            == expected["defaults"]["maxElements"]
+        )
+
+        configured_input = request["configured"]
+        configured = ttlv.codec_limits_create(
+            configured_input["maxMessageBytes"],
+            configured_input["maxStructureDepth"],
+            configured_input["maxElements"],
+        )
+        configured_expected = expected["configured"]
+        assert (
+            ttlv.codec_limits_max_message_bytes(configured)
+            == configured_expected["maxMessageBytes"]
+        )
+        assert (
+            ttlv.codec_limits_max_structure_depth(configured)
+            == configured_expected["maxStructureDepth"]
+        )
+        assert (
+            ttlv.codec_limits_max_elements(configured)
+            == configured_expected["maxElements"]
+        )
+
+        invalid = expected["invalidDepth"]
+        assert invalid["value"] == request["invalidDepth"]
+        assert invalid["accepted"] is False
+        with pytest.raises(errors.ResourceLimitError) as caught:
+            ttlv.codec_limits_create(
+                configured_input["maxMessageBytes"],
+                invalid["value"],
+                configured_input["maxElements"],
+            )
+        assert caught.value.category == invalid["errorCategory"]
+    finally:
+        if configured is not None:
+            configured.close()
+        defaults.close()
 
 
 @pytest.mark.parametrize(
