@@ -166,6 +166,11 @@ jobs:
           cargo test --locked -p kmipkit-protocol -p kmipkit-client
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Reject direct Rust PKCS#11 candidate cfg injection
+        id: reject-direct-rust-pkcs11-candidate-cfg-injection
+        if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+        run: python scripts/test_candidate_rustflags_gate.py
+
       - name: Build documentation
         id: build-documentation
         run: cargo doc --workspace --all-features --no-deps --locked
