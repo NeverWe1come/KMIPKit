@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.HexFormat;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -315,6 +316,30 @@ final class ClientFacadeTlsIntegrationTest {
         ClientBatchItemResult.Pkcs11Response pkcs11Response = result.pkcs11Response().orElseThrow();
         result.close();
         batchResponse.close();
+        String typedResponse = fixtureObject(fixture, "typedResponse");
+        assertTrue(pkcs11Response.interfaceTtlv().isEmpty(), "absent Interface stays absent");
+        assertArrayEquals(fixtureHexBytes(typedResponse, "hex"),
+                pkcs11Response.correlationValue().orElseThrow());
+        try (TtlvStructure functionTtlv = pkcs11Response.functionTtlv().orElseThrow();
+                TtlvStructureView functionView = functionTtlv.view();
+                TtlvItemView functionItem = functionView.itemAt(0);
+                TtlvValueView functionValue = functionItem.value()) {
+            assertEquals(0x42015a, tagAt(functionView, 0));
+            assertEquals(Math.toIntExact(fixtureLongField(typedResponse, "childValue")),
+                    functionValue.integer());
+        }
+        try (TtlvStructure outputTtlv = pkcs11Response.outputParametersTtlv().orElseThrow();
+                TtlvStructureView outputView = outputTtlv.view()) {
+            assertBytesAt(outputView, 0, 0x42015c,
+                    fixtureHexBytes(typedResponse, "childHex"));
+        }
+        try (TtlvStructure returnTtlv = pkcs11Response.returnCodeTtlv().orElseThrow();
+                TtlvStructureView returnView = returnTtlv.view();
+                TtlvItemView codeItem = returnView.itemAt(0);
+                TtlvValueView codeValue = codeItem.value()) {
+            assertEquals(0x42015d, tagAt(returnView, 0));
+            assertEquals(expectedReturnCode, codeValue.enumeration());
+        }
         try (pkcs11Response;
                 TtlvStructureView responseView = pkcs11Response.responseTtlv().view();
                 TtlvItemView payloadItem = responseView.itemAt(2);
@@ -2225,6 +2250,28 @@ final class ClientFacadeTlsIntegrationTest {
                 + "\\\"\\s*:\\s*(-?\\d+)").matcher(source);
         if (!field.find()) throw new AssertionError("PKCS#11 parity fixture is missing " + name);
         return Long.parseLong(field.group(1));
+    }
+
+    private static String fixtureObject(String source, String name) {
+        Matcher field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*\\{").matcher(source);
+        if (!field.find()) throw new AssertionError("PKCS#11 parity fixture is missing " + name);
+        int start = field.end() - 1;
+        int depth = 0;
+        for (int index = start; index < source.length(); index++) {
+            if (source.charAt(index) == '{') depth++;
+            if (source.charAt(index) == '}' && --depth == 0) {
+                return source.substring(start, index + 1);
+            }
+        }
+        throw new AssertionError("PKCS#11 parity fixture has an unterminated " + name);
+    }
+
+    private static byte[] fixtureHexBytes(String source, String name) {
+        Matcher field = Pattern.compile("\\\"" + Pattern.quote(name)
+                + "\\\"\\s*:\\s*\\\"([0-9a-fA-F]*)\\\"").matcher(source);
+        if (!field.find()) throw new AssertionError("PKCS#11 parity fixture is missing " + name);
+        return HexFormat.of().parseHex(field.group(1));
     }
 
     private static void assertEncodedInOrder(byte[] encoded, byte[]... expectedItems)

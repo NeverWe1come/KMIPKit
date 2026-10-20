@@ -236,6 +236,10 @@ def test_pkcs11_shared_fixture_declares_the_canonical_contract() -> None:
     assert set(fixture["consumerTests"]) == {"rust", "c", "java", "python"}
     assert fixture["expectedOutput"]["automaticRetry"] is False
     assert fixture["expectedOutput"]["automaticFollowUp"] is False
+    correlation_cases = fixture["expectedOutput"]["correlationValuePresenceCases"]
+    assert correlation_cases["absent"] == {"present": False}
+    assert correlation_cases["presentEmpty"] == {"present": True, "hex": ""}
+    assert bytes.fromhex(correlation_cases["presentEmpty"]["hex"]) == b""
     assert "profileSupport" not in fixture["expectedOutput"]
 
 
@@ -346,9 +350,52 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
         assert result.items[0].result_status == 0
         pkcs11_response = result.items[0].pkcs11_response
         assert pkcs11_response is not None
+        typed = expected["typedResponse"]
         response_ttlv = pkcs11_response.response_ttlv
         result.close()
         result = None
+        assert pkcs11_response.interface_ttlv is None
+        assert pkcs11_response.correlation_value == bytes.fromhex(
+            typed["correlationValue"]["hex"]
+        )
+        function_ttlv = pkcs11_response.function_ttlv
+        output_ttlv = pkcs11_response.output_parameters_ttlv
+        return_code_ttlv = pkcs11_response.return_code_ttlv
+        assert function_ttlv is not None
+        assert output_ttlv is not None
+        assert return_code_ttlv is not None
+        assert _structure_tags(function_ttlv) == [int(typed["function"]["childTag"], 16)]
+        assert _structure_tags(output_ttlv) == [
+            int(typed["outputParameters"]["childTag"], 16)
+        ]
+        assert _structure_tags(return_code_ttlv) == [
+            int(typed["returnCode"]["childTag"], 16)
+        ]
+        with ttlv.ttlv_structure_view(function_ttlv) as function_view:
+            assert ttlv.ttlv_structure_view_item_count(function_view) == 1
+            with ttlv.ttlv_structure_view_item_at(function_view, 0) as function_item:
+                assert ttlv.ttlv_item_view_type(function_item) is ttlv.ItemType.Integer
+                with ttlv.ttlv_item_view_value(function_item) as function_value:
+                    assert ttlv.ttlv_value_view_integer(function_value) == typed[
+                        "function"
+                    ]["childValue"]
+        with ttlv.ttlv_structure_view(output_ttlv) as output_view:
+            assert ttlv.ttlv_structure_view_item_count(output_view) == 1
+            with ttlv.ttlv_structure_view_item_at(output_view, 0) as output_item:
+                assert ttlv.ttlv_item_view_type(output_item) is ttlv.ItemType.ByteString
+                with ttlv.ttlv_item_view_value(output_item) as output_value:
+                    assert bytes(
+                        ttlv.ttlv_value_view_byte_at(output_value, index)
+                        for index in range(ttlv.ttlv_value_view_byte_length(output_value))
+                    ) == bytes.fromhex(typed["outputParameters"]["childHex"])
+        with ttlv.ttlv_structure_view(return_code_ttlv) as return_code_view:
+            assert ttlv.ttlv_structure_view_item_count(return_code_view) == 1
+            with ttlv.ttlv_structure_view_item_at(return_code_view, 0) as return_item:
+                assert ttlv.ttlv_item_view_type(return_item) is ttlv.ItemType.Enumeration
+                with ttlv.ttlv_item_view_value(return_item) as return_value:
+                    assert ttlv.ttlv_value_view_enumeration(return_value) == int(
+                        typed["returnCode"]["childValue"], 16
+                    )
 
         with ttlv.ttlv_structure_view(response_ttlv) as response_view:
             payload_view = None

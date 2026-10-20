@@ -974,9 +974,42 @@ cleanup:
 static int pkcs11_response_accessor_clears_invalid_outputs_from_c(void) {
     uint8_t present = UINT8_MAX;
     kmipkit_ttlv_structure_t *response_ttlv = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
-    const int32_t status = kmipkit_client_batch_item_response_pkcs11_ttlv(
+    int32_t status = kmipkit_client_batch_item_response_pkcs11_ttlv(
         0, &present, &response_ttlv);
-    return status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 || response_ttlv != 0) {
+        return 0;
+    }
+
+    kmipkit_ttlv_structure_t *structure = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    present = UINT8_MAX;
+    status = kmipkit_client_batch_item_response_pkcs11_interface_ttlv(
+        0, &present, &structure);
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 || structure != 0) return 0;
+
+    structure = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    present = UINT8_MAX;
+    status = kmipkit_client_batch_item_response_pkcs11_function_ttlv(
+        0, &present, &structure);
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 || structure != 0) return 0;
+
+    kmipkit_byte_span_v1_t correlation = {(const uint8_t *)(uintptr_t)1, UINT64_MAX};
+    present = UINT8_MAX;
+    status = kmipkit_client_batch_item_response_pkcs11_correlation_value(
+        0, &present, &correlation);
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 ||
+        correlation.data != 0 || correlation.length != 0) return 0;
+
+    structure = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    present = UINT8_MAX;
+    status = kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(
+        0, &present, &structure);
+    if (status != T076_ERROR_INVALID_INPUT || present != 0 || structure != 0) return 0;
+
+    structure = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    present = UINT8_MAX;
+    status = kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(
+        0, &present, &structure);
+    return status == T076_ERROR_INVALID_INPUT && present == 0 && structure == 0;
 }
 
 static int log_constructor_is_callable_from_c(void) {
@@ -3949,6 +3982,69 @@ cleanup:
     return result;
 }
 
+static int pkcs11_owned_scalar_matches(
+    kmipkit_ttlv_structure_t *structure,
+    uint32_t expected_tag,
+    uint8_t expected_type,
+    int32_t expected_integer,
+    uint32_t expected_enumeration) {
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint32_t actual_tag = 0;
+    uint8_t actual_type = 0;
+    int32_t actual_integer = 0;
+    uint32_t actual_enumeration = 0;
+    uint64_t count = 0;
+    int result = 0;
+    if (structure == 0 || kmipkit_ttlv_structure_view(structure, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &count) != 0 || count != 1 ||
+        kmipkit_ttlv_structure_view_item_at(view, 0, &item) != 0 ||
+        !pkcs11_view_item_tag(view, 0, &actual_tag) || actual_tag != expected_tag ||
+        kmipkit_ttlv_item_view_type(item, &actual_type) != 0 ||
+        actual_type != expected_type || kmipkit_ttlv_item_view_value(item, &value) != 0) {
+        goto cleanup;
+    }
+    if (expected_type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER) {
+        result = kmipkit_ttlv_value_view_integer(value, &actual_integer) == 0 &&
+            actual_integer == expected_integer;
+    } else if (expected_type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
+        result = kmipkit_ttlv_value_view_enumeration(value, &actual_enumeration) == 0 &&
+            actual_enumeration == expected_enumeration;
+    }
+cleanup:
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    kmipkit_ttlv_structure_view_release(view);
+    return result;
+}
+
+static int pkcs11_owned_bytes_match(
+    kmipkit_ttlv_structure_t *structure,
+    uint32_t expected_tag,
+    const uint8_t *expected,
+    uint64_t expected_length) {
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *item = 0;
+    kmipkit_ttlv_value_view_t *value = 0;
+    uint32_t actual_tag = 0;
+    int result = 0;
+    if (structure == 0 || kmipkit_ttlv_structure_view(structure, &view) != 0) {
+        goto cleanup;
+    }
+    if (!pkcs11_view_item_tag(view, 0, &actual_tag) || actual_tag != expected_tag ||
+        kmipkit_ttlv_structure_view_item_at(view, 0, &item) != 0 ||
+        kmipkit_ttlv_item_view_value(item, &value) != 0) {
+        goto cleanup;
+    }
+    result = pkcs11_bytes_match(value, expected, expected_length);
+cleanup:
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(item);
+    kmipkit_ttlv_structure_view_release(view);
+    return result;
+}
+
 static int pkcs11_response_matches_fixture(
     kmipkit_ttlv_structure_t *response_ttlv,
     const uint32_t *expected_tags,
@@ -4096,6 +4192,17 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
     kmipkit_ttlv_structure_t *interface_structure = 0;
     kmipkit_ttlv_structure_t *input_parameters = 0;
     kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_t *interface_ttlv = 0;
+    kmipkit_ttlv_structure_t *function_ttlv = 0;
+    kmipkit_ttlv_structure_t *output_parameters_ttlv = 0;
+    kmipkit_ttlv_structure_t *return_code_ttlv = 0;
+    kmipkit_byte_span_v1_t response_correlation = {0};
+    uint8_t correlation_copy[sizeof("pkcs11-response-correlation") - 1] = {0};
+    uint8_t interface_present = 0;
+    uint8_t function_present = 0;
+    uint8_t correlation_present = 0;
+    uint8_t output_parameters_present = 0;
+    uint8_t return_code_present = 0;
     kmipkit_ttlv_value_t *function_scalar = 0;
     kmipkit_ttlv_value_t *interface_scalar = 0;
     kmipkit_ttlv_value_t *input_scalar = 0;
@@ -4244,10 +4351,40 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
         response_present != 1 || response_ttlv == 0) {
         goto cleanup;
     }
+    if (kmipkit_client_batch_item_response_pkcs11_interface_ttlv(
+            response_item, &interface_present, &interface_ttlv) != 0 ||
+        kmipkit_client_batch_item_response_pkcs11_function_ttlv(
+            response_item, &function_present, &function_ttlv) != 0 ||
+        kmipkit_client_batch_item_response_pkcs11_correlation_value(
+            response_item, &correlation_present, &response_correlation) != 0 ||
+        kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(
+            response_item, &output_parameters_present, &output_parameters_ttlv) != 0 ||
+        kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(
+            response_item, &return_code_present, &return_code_ttlv) != 0 ||
+        interface_present != 0 || interface_ttlv != 0 || function_present != 1 ||
+        function_ttlv == 0 || correlation_present != 1 ||
+        response_correlation.length != (uint64_t)sizeof(correlation_copy) ||
+        response_correlation.data == 0 || output_parameters_present != 1 ||
+        output_parameters_ttlv == 0 || return_code_present != 1 || return_code_ttlv == 0) {
+        goto cleanup;
+    }
+    memcpy(correlation_copy, response_correlation.data, sizeof(correlation_copy));
     kmipkit_client_batch_item_response_release(response_item);
     response_item = 0;
     kmipkit_client_batch_response_release(response);
     response = 0;
+    if (memcmp(correlation_copy, "pkcs11-response-correlation", sizeof(correlation_copy)) != 0) {
+        goto cleanup;
+    }
+    if (!pkcs11_owned_scalar_matches(
+            function_ttlv, UINT32_C(0x42015a), KMIPKIT_TTLV_ITEM_TYPE_INTEGER,
+            -12345, 0) ||
+        !pkcs11_owned_bytes_match(output_parameters_ttlv, UINT32_C(0x42015c),
+            (const uint8_t *)"vendor-output", sizeof("vendor-output") - 1) ||
+        !pkcs11_owned_scalar_matches(return_code_ttlv, UINT32_C(0x42015d),
+            KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, 0, expected_return_code)) {
+        goto cleanup;
+    }
     if (!pkcs11_response_matches_fixture(
             response_ttlv, expected_tags, 5, expected_return_code, expected_vendor_tag,
             expected_vendor_value)) {
@@ -4260,6 +4397,10 @@ cleanup:
     kmipkit_ttlv_value_release(interface_scalar);
     kmipkit_ttlv_value_release(function_scalar);
     kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_ttlv_structure_release(return_code_ttlv);
+    kmipkit_ttlv_structure_release(output_parameters_ttlv);
+    kmipkit_ttlv_structure_release(function_ttlv);
+    kmipkit_ttlv_structure_release(interface_ttlv);
     kmipkit_client_batch_item_response_release(response_item);
     kmipkit_client_batch_response_release(response);
     kmipkit_client_batch_item_release(item);

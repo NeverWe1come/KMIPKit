@@ -141,6 +141,11 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             {
                 "kmipkit_client_batch_item_pkcs11",
                 "kmipkit_client_batch_item_response_pkcs11_ttlv",
+                "kmipkit_client_batch_item_response_pkcs11_interface_ttlv",
+                "kmipkit_client_batch_item_response_pkcs11_function_ttlv",
+                "kmipkit_client_batch_item_response_pkcs11_correlation_value",
+                "kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv",
+                "kmipkit_client_batch_item_response_pkcs11_return_code_ttlv",
             }
             <= public_declarations
         )
@@ -208,6 +213,28 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             binary = Path(directory) / "libkmipkit_jni.so"
             binary.touch()
             with patch.object(audit_module, "read_native_exports", return_value=expected):
+                self.assertEqual(0, audit_module.audit(binary))
+            unlisted_pkcs11_export = (
+                "Java_org_kmipkit_NativeExtensionRegistry_"
+                "clientBatchItemResponsePkcs11Candidate"
+            )
+            with (
+                patch.object(
+                    audit_module,
+                    "read_native_exports",
+                    return_value=expected | {unlisted_pkcs11_export},
+                ),
+                contextlib.redirect_stderr(io.StringIO()),
+            ):
+                self.assertEqual(1, audit_module.audit(binary))
+            approved_internal_export = (
+                "Java_org_kmipkit_NativeExtensionRegistry_releaseOwnedHandle"
+            )
+            with patch.object(
+                audit_module,
+                "read_native_exports",
+                return_value=expected | {approved_internal_export},
+            ):
                 self.assertEqual(0, audit_module.audit(binary))
             with (
                 patch.object(audit_module, "read_native_exports", return_value=[]),

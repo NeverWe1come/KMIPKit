@@ -70,3 +70,75 @@ fn pkcs11_response_ttlv_getter_clears_outputs_for_invalid_item() {
     assert_eq!(present, 0);
     assert!(response_ttlv.is_null());
 }
+
+#[test]
+fn pkcs11_typed_response_getters_clear_all_outputs_for_invalid_item() {
+    let mut present = u8::MAX;
+    let mut structure = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_interface_ttlv(
+            ptr::null_mut(),
+            &raw mut present,
+            &raw mut structure,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(structure.is_null());
+
+    present = u8::MAX;
+    structure = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_function_ttlv(
+            ptr::null_mut(),
+            &raw mut present,
+            &raw mut structure,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(structure.is_null());
+
+    let mut correlation = crate::kmipkit_byte_span_v1_t {
+        data: ptr::dangling(),
+        length: u64::MAX,
+    };
+    present = u8::MAX;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+            ptr::null_mut(),
+            &raw mut present,
+            &raw mut correlation,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(correlation.data.is_null());
+    assert_eq!(correlation.length, 0);
+
+    present = u8::MAX;
+    structure = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(
+            ptr::null_mut(),
+            &raw mut present,
+            &raw mut structure,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(structure.is_null());
+
+    present = u8::MAX;
+    structure = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(
+            ptr::null_mut(),
+            &raw mut present,
+            &raw mut structure,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(structure.is_null());
+}
