@@ -143,6 +143,18 @@
   ],
   "expectedOutput": {
     "preserveUnknownValuesAndOrder": true,
+    "responseTags": [
+      "0x0042015A",
+      "0x004200D6",
+      "0x0042015C",
+      "0x0042015D",
+      "0x00541234"
+    ],
+    "unknownReturnCode": "0xFFFF1234",
+    "vendorExtension": {
+      "tag": "0x00541234",
+      "integer": 7
+    },
     "preserveOptionalAbsence": true,
     "redactSensitiveValuesAndBodies": true,
     "automaticRetry": false,
