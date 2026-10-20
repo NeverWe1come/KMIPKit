@@ -1,4 +1,4 @@
-"""Require compiled JNI libraries to export manifest-backed public symbols."""
+"""Require compiled JNI libraries to export manifest-backed PKCS#11 symbols."""
 
 from __future__ import annotations
 
@@ -39,6 +39,27 @@ def audit(binary: Path) -> int:
         print(
             "JNI library is missing public manifest-backed symbols: "
             + ", ".join(missing),
+            file=sys.stderr,
+        )
+        return 1
+
+    # The full JNI library also exports methods for other, independently
+    # inventoried Java APIs and approved internal handle helpers. Keep this
+    # audit scoped to the PKCS#11 surface: an extra candidate or otherwise
+    # unlisted PKCS#11 JNI symbol is an accidental public API expansion.
+    expected_pkcs11 = {name for name in expected if "pkcs11" in name.casefold()}
+    observed_pkcs11 = {
+        name
+        for name in observed
+        if name.startswith("Java_org_kmipkit_") and "pkcs11" in name.casefold()
+    }
+    extra = sorted(observed_pkcs11 - expected_pkcs11)
+    candidate = sorted(name for name in observed if "candidate" in name.casefold())
+    if extra or candidate:
+        unexpected = sorted(set(extra) | set(candidate))
+        print(
+            "JNI library exports unlisted PKCS#11 or candidate symbols: "
+            + ", ".join(unexpected),
             file=sys.stderr,
         )
         return 1

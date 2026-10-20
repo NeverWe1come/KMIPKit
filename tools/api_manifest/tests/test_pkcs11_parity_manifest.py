@@ -227,6 +227,19 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
                 contextlib.redirect_stderr(io.StringIO()),
             ):
                 self.assertEqual(1, audit_module.audit(binary))
+            unlisted_pkcs11_export = (
+                "Java_org_kmipkit_NativeExtensionRegistry_"
+                "clientBatchItemResponsePkcs11Uninventoried"
+            )
+            with (
+                patch.object(
+                    audit_module,
+                    "read_native_exports",
+                    return_value=expected | {unlisted_pkcs11_export},
+                ),
+                contextlib.redirect_stderr(io.StringIO()),
+            ):
+                self.assertEqual(1, audit_module.audit(binary))
             approved_internal_export = (
                 "Java_org_kmipkit_NativeExtensionRegistry_releaseOwnedHandle"
             )

@@ -168,9 +168,10 @@ fn table_274_distinguishes_absent_from_present_empty_correlation_value() {
     assert_eq!(presence_cases["absent"]["present"], false);
     assert_eq!(presence_cases["presentEmpty"]["present"], true);
     let empty_hex = presence_cases["presentEmpty"]["hex"].as_str().unwrap();
-    let empty_value = empty_hex
-        .as_bytes()
-        .chunks_exact(2)
+    let (empty_hex_pairs, empty_hex_remainder) = empty_hex.as_bytes().as_chunks::<2>();
+    assert_eq!(empty_hex_remainder, &[] as &[u8]);
+    let empty_value = empty_hex_pairs
+        .iter()
         .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
         .collect::<Vec<_>>();
     let function_value = i32::try_from(typed["function"]["childValue"].as_i64().unwrap()).unwrap();
