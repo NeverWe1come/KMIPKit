@@ -511,8 +511,14 @@ fn generated_public_client_abi_consumer_compiles_and_runs() {
 }
 
 #[test]
-#[allow(clippy::too_many_lines)]
 fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
+    for correlation_case in ["nonempty", "absent", "presentEmpty"] {
+        compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case);
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+fn compiled_c_pkcs11_consumer_matches_correlation_case(correlation_case: &str) {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/fixtures/api/pkcs11-parity.json"
     ))
@@ -563,9 +569,13 @@ fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
             .expect("fixture function value is an integer"),
     )
     .expect("fixture function value fits the public C integer type");
-    let correlation_hex = typed["correlationValue"]["hex"]
-        .as_str()
-        .expect("fixture correlation value is hexadecimal");
+    let correlation_hex = match correlation_case {
+        "nonempty" => typed["correlationValue"]["hex"]
+            .as_str()
+            .expect("fixture correlation value is hexadecimal"),
+        "absent" | "presentEmpty" => "",
+        _ => panic!("the test selects a known correlation case"),
+    };
     let correlation_tag = fixture_hex_u32(&typed["correlationValue"]["tag"]);
     let output_tag = fixture_hex_u32(&typed["outputParameters"]["childTag"]);
     let output_hex = typed["outputParameters"]["childHex"]
@@ -592,7 +602,7 @@ fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
         .local_addr()
         .expect("listener has a local address")
         .port();
-    let response_bytes = pkcs11_success_response_message(expected);
+    let response_bytes = pkcs11_success_response_message(expected, correlation_case);
     let server_config = mtls_server_config(&pki);
     let exchange_count = Arc::new(AtomicU64::new(0));
     let peer_exchange_count = Arc::clone(&exchange_count);
@@ -1095,7 +1105,7 @@ fn c_request_matches_pkcs11_fixture(encoded: &[u8]) -> bool {
     })
 }
 
-fn pkcs11_success_response_message(fixture: &serde_json::Value) -> Vec<u8> {
+fn pkcs11_success_response_message(fixture: &serde_json::Value, correlation_case: &str) -> Vec<u8> {
     let expected = fixture;
     let typed = &expected["typedResponse"];
     let function = fixture_pkcs11_field_structure(&typed["function"]);
@@ -1138,6 +1148,9 @@ fn pkcs11_success_response_message(fixture: &serde_json::Value) -> Vec<u8> {
         .expect("shared fixture response tags are an array")
     {
         let tag = fixture_hex_u32(tag);
+        if tag == correlation_tag && correlation_case == "absent" {
+            continue;
+        }
         payload_items.push(match tag {
             value if value == function_tag => function.clone(),
             value if value == correlation_tag => {
