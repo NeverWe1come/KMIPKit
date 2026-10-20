@@ -118,6 +118,34 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
             for row in self.manifest["operations"]
             if row["operationId"] == OPERATION_ID
         ]
+
+    def test_pkcs11_public_api_is_verified_with_four_language_mappings(self) -> None:
+        self.assertEqual(1, len(self.operations))
+        operation = self.operations[0]
+        self.assertEqual("verified", operation["apiState"])
+        self.assertEqual("KMIPKIT-0040", operation["featureSpecId"])
+        self.assertEqual("approved", operation["ownerDependency"]["state"])
+        self.assertEqual("KMIPKIT-0040", operation["ownerDependency"]["specId"])
+        self.assertEqual(
+            "Approved",
+            operation["approvalEvidence"]["status"],
+            "implementation authorization must not be mislabeled as formal acceptance",
+        )
+        self.assertEqual(
+            {"rust", "c", "java", "python"}, set(operation["declarations"])
+        )
+        self.assertTrue(operation["parityEvidenceIds"])
+        for language, declaration_ids in operation["declarations"].items():
+            with self.subTest(language=language):
+                self.assertTrue(declaration_ids)
+                declarations = {
+                    row["declarationId"]: row
+                    for row in self.manifest["publicDeclarations"]
+                }
+                for declaration_id in declaration_ids:
+                    declaration = declarations[declaration_id]
+                    self.assertIn(language, declaration["languageMappings"])
+                    self.assertEqual("verified", declaration["declarationState"])
     def test_pkcs11_remains_blocked_without_formal_owner_acceptance(self) -> None:
         self.assertEqual(1, len(self.operations))
         operation = self.operations[0]
