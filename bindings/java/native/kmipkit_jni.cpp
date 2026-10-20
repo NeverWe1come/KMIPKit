@@ -1032,6 +1032,15 @@ void wipe_java_byte_array(JNIEnv* env, jbyteArray value) noexcept {
     }
 }
 
+struct WipeAndDeleteLocalByteArray final {
+    JNIEnv* env;
+
+    void operator()(jbyteArray value, bool wipe) const noexcept {
+        if (wipe) wipe_java_byte_array(env, value);
+        env->DeleteLocalRef(value);
+    }
+};
+
 class DelegatedLoginResponseCleanup final {
 public:
     explicit DelegatedLoginResponseCleanup(JNIEnv* env) : env_(env) {}
@@ -1092,7 +1101,11 @@ private:
 
 class Pkcs11ResponseCleanup final {
 public:
-    explicit Pkcs11ResponseCleanup(JNIEnv* env) : env_(env) {}
+    using CorrelationArrayScope = kmipkit::jni::ResponseSecretArrayScope<
+            jbyteArray, 1, WipeAndDeleteLocalByteArray>;
+
+    explicit Pkcs11ResponseCleanup(JNIEnv* env)
+            : correlation_scope_(WipeAndDeleteLocalByteArray{env}) {}
 
     Pkcs11ResponseCleanup(const Pkcs11ResponseCleanup&) = delete;
     Pkcs11ResponseCleanup& operator=(const Pkcs11ResponseCleanup&) = delete;
@@ -1101,14 +1114,15 @@ public:
         for (kmipkit_ttlv_structure_t* structure : structures_) {
             kmipkit_ttlv_structure_release(structure);
         }
-        if (correlation_ != nullptr) env_->DeleteLocalRef(correlation_);
     }
 
     void set_structure(size_t index, kmipkit_ttlv_structure_t* structure) noexcept {
         structures_[index] = structure;
     }
 
-    void set_correlation(jbyteArray correlation) noexcept { correlation_ = correlation; }
+    void set_correlation(jbyteArray correlation) noexcept {
+        static_cast<void>(correlation_scope_.add(correlation));
+    }
 
     kmipkit_ttlv_structure_t* structure(size_t index) const noexcept {
         return structures_[index];
@@ -1116,10 +1130,11 @@ public:
 
     void transfer_structures_to_java() noexcept { structures_.fill(nullptr); }
 
+    void transfer_correlation_to_java() noexcept { correlation_scope_.transfer_to_java(); }
+
 private:
-    JNIEnv* env_;
     std::array<kmipkit_ttlv_structure_t*, 5> structures_{};
-    jbyteArray correlation_ = nullptr;
+    CorrelationArrayScope correlation_scope_;
 };
 
 jbyteArray span_to_java_bytes(JNIEnv* env, uint8_t present, kmipkit_byte_span_v1_t span) {
@@ -5055,7 +5070,10 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
             return static_cast<jobjectArray>(nullptr);
         }
         jobjectArray result = make_object_array(env, {fields, correlation, handles});
-        if (result != nullptr) cleanup.transfer_structures_to_java();
+        if (result != nullptr) {
+            cleanup.transfer_structures_to_java();
+            cleanup.transfer_correlation_to_java();
+        }
         env->DeleteLocalRef(fields);
         env->DeleteLocalRef(handles);
         return result;
