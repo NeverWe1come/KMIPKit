@@ -55,6 +55,171 @@ pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_ttlv(
     })
 }
 
+/// Copies the optional PKCS#11 Interface Structure from a successful result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_interface_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_interface: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        *present = 0;
+        let interface = out_slot!(out_interface);
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let Some(pkcs11) = try_ffi!(pkcs11_response_from_handle(&item)) else {
+            return SUCCESS;
+        };
+        let Some(structure) = pkcs11.with_interface(|view| super::clone_structure_view(&view))
+        else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(structure);
+        *interface = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the optional PKCS#11 Function Structure from a successful result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_function_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_function: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        *present = 0;
+        let function = out_slot!(out_function);
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let Some(pkcs11) = try_ffi!(pkcs11_response_from_handle(&item)) else {
+            return SUCCESS;
+        };
+        let Some(structure) = pkcs11.with_function(|view| super::clone_structure_view(&view))
+        else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(structure);
+        *function = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Returns the exact Correlation Value bytes borrowed from `item`.
+///
+/// `out_value.data` remains valid only while the response item handle remains
+/// live. The caller must copy the span before releasing that handle. A present
+/// empty Byte String is reported as `out_present == 1` and a zero-length span;
+/// absence is `out_present == 0` with the same empty span.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_correlation_value(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_value: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        *present = 0;
+        if out_value.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: `out_value` is checked non-null and is the caller's writable output slot.
+        let value = unsafe { &mut *out_value };
+        *value = crate::kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        };
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let Some(pkcs11) = try_ffi!(pkcs11_response_from_handle(&item)) else {
+            return SUCCESS;
+        };
+        let Some(status) =
+            pkcs11.with_correlation_value(|bytes| set_borrowed_span(present, value, Some(bytes)))
+        else {
+            return SUCCESS;
+        };
+        try_ffi!(status);
+        SUCCESS
+    })
+}
+
+/// Copies the optional PKCS#11 Output Parameters Structure from a result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_output_parameters: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        *present = 0;
+        let output_parameters = out_slot!(out_output_parameters);
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let Some(pkcs11) = try_ffi!(pkcs11_response_from_handle(&item)) else {
+            return SUCCESS;
+        };
+        let Some(structure) =
+            pkcs11.with_output_parameters(|view| super::clone_structure_view(&view))
+        else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(structure);
+        *output_parameters = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the optional PKCS#11 Return Code Structure from a result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_return_code: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        *present = 0;
+        let return_code = out_slot!(out_return_code);
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let Some(pkcs11) = try_ffi!(pkcs11_response_from_handle(&item)) else {
+            return SUCCESS;
+        };
+        let Some(structure) = pkcs11.with_return_code(|view| super::clone_structure_view(&view))
+        else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(structure);
+        *return_code = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure),
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+fn pkcs11_response_from_handle(
+    handle: &Handle,
+) -> FfiResult<Option<&kmipkit_protocol::Pkcs11Response>> {
+    let HandleValue::ClientBatchItemResponse { response, index } = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let item = response.get(*index).ok_or(ERROR_INTERNAL)?;
+    Ok(item.outcome().response().pkcs11())
+}
+
 /// Copies the complete typed Interop response for Success, Failure, or Pending.
 ///
 /// The generic response is available only through the successful result handle;

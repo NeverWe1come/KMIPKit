@@ -9,6 +9,7 @@ import ssl
 import struct
 import threading
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -98,7 +99,47 @@ def _structure_with_text(tag_value: int, value_text: str) -> ttlv.Structure:
     return structure
 
 
-def _pkcs11_response_message() -> bytes:
+def _pkcs11_response_message(expected: dict[str, object]) -> bytes:
+    typed = expected["typedResponse"]
+    function = typed["function"]
+    correlation = typed["correlationValue"]
+    output_parameters = typed["outputParameters"]
+    return_code = typed["returnCode"]
+    vendor = expected["vendorExtension"]
+    fields = {
+        int(function["tag"], 16): _ttlv_structure(
+            int(function["tag"], 16),
+            _ttlv_item(
+                int(function["childTag"], 16),
+                2,
+                struct.pack(">i", function["childValue"]),
+            ),
+        ),
+        int(correlation["tag"], 16): _ttlv_item(
+            int(correlation["tag"], 16), 8, bytes.fromhex(correlation["hex"])
+        ),
+        int(output_parameters["tag"], 16): _ttlv_structure(
+            int(output_parameters["tag"], 16),
+            _ttlv_item(
+                int(output_parameters["childTag"], 16),
+                8,
+                bytes.fromhex(output_parameters["childHex"]),
+            ),
+        ),
+        int(return_code["tag"], 16): _ttlv_structure(
+            int(return_code["tag"], 16),
+            _ttlv_item(
+                int(return_code["childTag"], 16),
+                5,
+                struct.pack(">I", int(return_code["childValue"], 16)),
+            ),
+        ),
+        int(vendor["tag"], 16): _ttlv_item(
+            int(vendor["tag"], 16), 2, struct.pack(">i", vendor["integer"])
+        ),
+    }
+    response_tags = [int(tag, 16) for tag in expected["responseTags"]]
+    assert set(response_tags) == set(fields)
     version = _ttlv_structure(
         0x420069,
         _ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
@@ -110,14 +151,7 @@ def _pkcs11_response_message() -> bytes:
         _ttlv_item(0x420092, 9, struct.pack(">q", 1)),
         _ttlv_item(0x42000D, 2, struct.pack(">i", 1)),
     )
-    payload = _ttlv_structure(
-        0x42007C,
-        _ttlv_structure(0x42015A, _ttlv_item(0x42015A, 2, struct.pack(">i", -12345))),
-        _ttlv_item(0x4200D6, 8, b"pkcs11-response-correlation"),
-        _ttlv_structure(0x42015C, _ttlv_item(0x42015C, 8, b"vendor-output")),
-        _ttlv_structure(0x42015D, _ttlv_item(0x42015D, 5, struct.pack(">I", 0xFFFF1234))),
-        _ttlv_item(0x00541234, 2, struct.pack(">i", 7)),
-    )
+    payload = _ttlv_structure(0x42007C, *(fields[tag] for tag in response_tags))
     result = _ttlv_structure(
         0x42000F,
         _ttlv_item(0x42005C, 5, struct.pack(">I", 0x33)),
@@ -243,6 +277,34 @@ def test_pkcs11_shared_fixture_declares_the_canonical_contract() -> None:
     assert "profileSupport" not in fixture["expectedOutput"]
 
 
+def test_pkcs11_correlation_mapping_distinguishes_absent_from_present_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    cases = fixture["expectedOutput"]["correlationValuePresenceCases"]
+    item = SimpleNamespace(_pointer=lambda: client_ffi.NULL)
+
+    for name, expected in cases.items():
+        raw = bytes.fromhex(expected.get("hex", ""))
+        native_bytes = client_ffi.new("uint8_t[]", raw) if raw else client_ffi.NULL
+
+        def get_correlation(_item, present, output):
+            present[0] = int(expected["present"])
+            output[0].data = native_bytes
+            output[0].length = len(raw)
+            return 0
+
+        monkeypatch.setattr(
+            client,
+            "lib",
+            SimpleNamespace(
+                kmipkit_client_batch_item_response_pkcs11_correlation_value=get_correlation
+            ),
+        )
+        actual = client._pkcs11_correlation_value(item)
+        assert actual == (raw if expected["present"] else None), name
+
+
 def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
     """Check parity with OASIS KMIP v2.1 §6.1.37, Tables 273–275."""
     fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
@@ -275,7 +337,7 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values() -> None:
             accepted_sockets.append(raw)
             with raw, context.wrap_socket(raw, server_side=True) as stream:
                 received_requests.append(_read_ttlv_frame(stream))
-                stream.sendall(_pkcs11_response_message())
+                stream.sendall(_pkcs11_response_message(expected))
         except BaseException as failure:
             peer_failures.put(failure)
         finally:

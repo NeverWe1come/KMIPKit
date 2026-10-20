@@ -223,7 +223,11 @@ public final class ClientBatchItemResult implements AutoCloseable {
     public Optional<Pkcs11Response> pkcs11Response() {
         NativeExtensionRegistry.ensureLoaded();
         Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponsePkcs11);
-        return parsePkcs11Response(values);
+        try {
+            return parsePkcs11Response(values);
+        } finally {
+            cleanupResponseByteArrays(values);
+        }
     }
 
     /** Returns the complete typed Log result for Success, Failure, or Pending. */
@@ -687,20 +691,59 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public String toString() { return "InteropResponse[responseTtlv=redacted]"; }
     }
 
-    /** PKCS#11 response with its complete ordered generic TTLV copy. */
+    /** PKCS#11 response with independent TTLV field copies and exact correlation bytes. */
     public static final class Pkcs11Response implements AutoCloseable {
         private final TtlvStructure responseTtlv;
+        private final @Nullable TtlvStructure interfaceTtlv;
+        private final @Nullable TtlvStructure functionTtlv;
+        private final @Nullable byte[] correlationValue;
+        private final @Nullable TtlvStructure outputParametersTtlv;
+        private final @Nullable TtlvStructure returnCodeTtlv;
 
-        private Pkcs11Response(TtlvStructure responseTtlv) {
+        private Pkcs11Response(TtlvStructure responseTtlv,
+                @Nullable TtlvStructure interfaceTtlv,
+                @Nullable TtlvStructure functionTtlv,
+                @Nullable byte[] correlationValue,
+                @Nullable TtlvStructure outputParametersTtlv,
+                @Nullable TtlvStructure returnCodeTtlv) {
             this.responseTtlv = responseTtlv;
+            this.interfaceTtlv = interfaceTtlv;
+            this.functionTtlv = functionTtlv;
+            this.correlationValue = copyBytes(correlationValue);
+            this.outputParametersTtlv = outputParametersTtlv;
+            this.returnCodeTtlv = returnCodeTtlv;
         }
 
         /** Returns the full ordered response structure, including unknown fields. */
         public TtlvStructure responseTtlv() { return responseTtlv; }
 
-        @Override public void close() { responseTtlv.close(); }
+        /** Returns the optional complete Interface Structure copy. */
+        public Optional<TtlvStructure> interfaceTtlv() { return Optional.ofNullable(interfaceTtlv); }
 
-        @Override public String toString() { return "Pkcs11Response[responseTtlv=redacted]"; }
+        /** Returns the optional complete Function Structure copy. */
+        public Optional<TtlvStructure> functionTtlv() { return Optional.ofNullable(functionTtlv); }
+
+        /** Returns exact Correlation Value bytes, distinguishing absence from present-empty. */
+        public Optional<byte[]> correlationValue() { return copiedBytes(correlationValue); }
+
+        /** Returns the optional complete Output Parameters Structure copy. */
+        public Optional<TtlvStructure> outputParametersTtlv() {
+            return Optional.ofNullable(outputParametersTtlv);
+        }
+
+        /** Returns the optional complete Return Code Structure copy. */
+        public Optional<TtlvStructure> returnCodeTtlv() { return Optional.ofNullable(returnCodeTtlv); }
+
+        @Override public void close() {
+            if (interfaceTtlv != null) interfaceTtlv.close();
+            if (functionTtlv != null) functionTtlv.close();
+            if (outputParametersTtlv != null) outputParametersTtlv.close();
+            if (returnCodeTtlv != null) returnCodeTtlv.close();
+            responseTtlv.close();
+            wipe(correlationValue);
+        }
+
+        @Override public String toString() { return "Pkcs11Response[fields=redacted]"; }
     }
 
     /** Log response with its complete ordered generic TTLV for every valid result status. */
@@ -1712,20 +1755,73 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     static Optional<Pkcs11Response> parsePkcs11Response(Object[] values) {
-        Object[] tuple = requireTuple(values, 2, "native PKCS#11 response is invalid");
-        long[] fields = requireLongArray(tuple[0], 1, "native PKCS#11 response is invalid");
-        long[] handles = requireLongArray(tuple[1], 1, "native PKCS#11 response is invalid");
-        if (!responsePresent(fields)) {
-            if (handles[0] != 0) {
-                TtlvStructure.fromNative(handles[0], null).close();
-                throw new InvalidInputException("native absent PKCS#11 response contains fields");
+        long[] handles = null;
+        boolean[] transferred = new boolean[5];
+        try {
+            Object[] tuple = requireTuple(values, 3, "native PKCS#11 response is invalid");
+            long[] fields = requireLongArray(tuple[0], 6, "native PKCS#11 response is invalid");
+            handles = requireLongArray(tuple[2], 5, "native PKCS#11 response is invalid");
+            byte[] correlation = responseBytes(fields[2], tuple[1]);
+            for (int index = 0; index < fields.length; index++) {
+                if (fields[index] != 0 && fields[index] != 1) {
+                    throw new InvalidInputException("native PKCS#11 response presence is invalid");
+                }
             }
-            return Optional.empty();
+            if (fields[0] == 0) {
+                if (fields[1] != 0 || fields[2] != 0 || fields[3] != 0
+                        || fields[4] != 0 || fields[5] != 0 || correlation != null
+                        || Arrays.stream(handles).anyMatch(handle -> handle != 0)) {
+                    throw new InvalidInputException("native absent PKCS#11 response contains fields");
+                }
+                return Optional.empty();
+            }
+            for (int index = 0; index < handles.length; index++) {
+                long expectedPresent = switch (index) {
+                    case 0 -> fields[0];
+                    case 1 -> fields[1];
+                    case 2 -> fields[3];
+                    case 3 -> fields[4];
+                    default -> fields[5];
+                };
+                if ((expectedPresent == 1) != (handles[index] > 0)) {
+                    throw new InvalidInputException("native PKCS#11 response handle is invalid");
+                }
+            }
+            if (fields[2] == 1 && correlation == null) {
+                throw new InvalidInputException("native PKCS#11 correlation value is missing");
+            }
+            TtlvStructure[] owned = new TtlvStructure[5];
+            try {
+                for (int index = 0; index < handles.length; index++) {
+                    owned[index] = adoptPkcs11Handle(handles, index, transferred);
+                }
+                return Optional.of(new Pkcs11Response(owned[0], owned[1], owned[2],
+                        correlation, owned[3], owned[4]));
+            } catch (RuntimeException | Error exception) {
+                for (int index = 0; index < owned.length; index++) {
+                    if (owned[index] != null) {
+                        owned[index].close();
+                    }
+                }
+                throw exception;
+            }
+        } finally {
+            if (handles != null) {
+                for (int index = 0; index < handles.length; index++) {
+                    if (!transferred[index] && handles[index] > 0) {
+                        TtlvStructure.fromNative(handles[index], null).close();
+                    }
+                }
+            }
         }
-        if (handles[0] <= 0) {
-            throw new InvalidInputException("native PKCS#11 response is invalid");
-        }
-        return Optional.of(new Pkcs11Response(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    private static @Nullable TtlvStructure adoptPkcs11Handle(
+            long[] handles, int index, boolean[] transferred) {
+        if (handles[index] == 0) return null;
+        TtlvStructure structure = TtlvStructure.fromNative(handles[index], null);
+        transferred[index] = true;
+        return structure;
     }
 
     static Optional<LogResponse> parseLogResponse(Object[] values) {

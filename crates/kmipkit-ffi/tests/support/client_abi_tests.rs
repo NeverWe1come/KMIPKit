@@ -8116,3 +8116,24 @@ impl Read for PartialThenErrorReader {
         Ok(count)
     }
 }
+
+#[test]
+fn pkcs11_correlation_span_distinguishes_absence_from_present_empty() {
+    let mut present = u8::MAX;
+    let mut span = crate::kmipkit_byte_span_v1_t {
+        data: ptr::dangling(),
+        length: u64::MAX,
+    };
+
+    super::set_borrowed_span(&mut present, &mut span, None)
+        .expect("an absent correlation value clears its span");
+    assert_eq!(present, 0);
+    assert!(span.data.is_null());
+    assert_eq!(span.length, 0);
+
+    super::set_borrowed_span(&mut present, &mut span, Some(&[]))
+        .expect("a present empty correlation value has a valid span");
+    assert_eq!(present, 1);
+    assert!(span.data.is_null());
+    assert_eq!(span.length, 0);
+}

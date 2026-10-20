@@ -1,11 +1,13 @@
 package org.kmipkit.extensions;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ttlv.TtlvStructure;
 
 final class Pkcs11MappingTest {
@@ -51,5 +53,25 @@ final class Pkcs11MappingTest {
         assertThrows(InvalidInputException.class,
                 () -> ClientBatchItemResult.parsePkcs11Response(
                         new Object[] {new long[] {1}, new long[] {0}}));
+    }
+
+    @Test
+    void typedResponseParserDistinguishesAbsentFromPresentEmptyCorrelation() {
+        try (ClientBatchItemResult.Pkcs11Response absent = parseCorrelationResponse(false, null);
+                ClientBatchItemResult.Pkcs11Response presentEmpty =
+                        parseCorrelationResponse(true, new byte[0])) {
+            assertTrue(absent.correlationValue().isEmpty());
+            assertTrue(presentEmpty.correlationValue().isPresent());
+            assertArrayEquals(new byte[0], presentEmpty.correlationValue().orElseThrow());
+        }
+    }
+
+    private static ClientBatchItemResult.Pkcs11Response parseCorrelationResponse(
+            boolean present, byte[] correlation) {
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        long[] fields = {1, 0, present ? 1 : 0, 0, 0, 0};
+        long[] handles = {responseTtlv, 0, 0, 0, 0};
+        return ClientBatchItemResult.parsePkcs11Response(
+                new Object[] {fields, correlation, handles}).orElseThrow();
     }
 }

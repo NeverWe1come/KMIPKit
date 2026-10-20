@@ -555,6 +555,23 @@ fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
         .as_i64()
         .and_then(|value| i32::try_from(value).ok())
         .expect("fixture vendor integer fits the public C integer type");
+    let typed = &expected["typedResponse"];
+    let function_tag = fixture_hex_u32(&typed["function"]["childTag"]);
+    let function_value = i32::try_from(
+        typed["function"]["childValue"]
+            .as_i64()
+            .expect("fixture function value is an integer"),
+    )
+    .expect("fixture function value fits the public C integer type");
+    let correlation_hex = typed["correlationValue"]["hex"]
+        .as_str()
+        .expect("fixture correlation value is hexadecimal");
+    let correlation_tag = fixture_hex_u32(&typed["correlationValue"]["tag"]);
+    let output_tag = fixture_hex_u32(&typed["outputParameters"]["childTag"]);
+    let output_hex = typed["outputParameters"]["childHex"]
+        .as_str()
+        .expect("fixture output parameters are hexadecimal");
+    let return_code_tag = fixture_hex_u32(&typed["returnCode"]["childTag"]);
     assert_eq!(expected_tags.len(), 5);
     assert_eq!(expected["preserveUnknownValuesAndOrder"], true);
     assert_eq!(expected["preserveOptionalAbsence"], true);
@@ -626,6 +643,19 @@ fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
         .expect("fixture vendor tag has no NUL byte");
     let vendor_value = CString::new(expected_vendor_value.to_string())
         .expect("fixture vendor value has no NUL byte");
+    let function_tag = CString::new(format!("0x{function_tag:08X}"))
+        .expect("fixture function tag has no NUL byte");
+    let function_value =
+        CString::new(function_value.to_string()).expect("fixture function value has no NUL byte");
+    let correlation_hex =
+        CString::new(correlation_hex).expect("fixture correlation hexadecimal has no NUL byte");
+    let correlation_tag = CString::new(format!("0x{correlation_tag:08X}"))
+        .expect("fixture correlation tag has no NUL byte");
+    let output_tag =
+        CString::new(format!("0x{output_tag:08X}")).expect("fixture output tag has no NUL byte");
+    let output_hex = CString::new(output_hex).expect("fixture output hexadecimal has no NUL byte");
+    let return_code_tag = CString::new(format!("0x{return_code_tag:08X}"))
+        .expect("fixture return-code tag has no NUL byte");
     let mut arguments = vec![
         executable.as_ptr().cast_mut(),
         certificate.as_ptr().cast_mut(),
@@ -642,6 +672,13 @@ fn compiled_c_pkcs11_consumer_matches_shared_response_fixture_over_mtls() {
     arguments.push(return_code.as_ptr().cast_mut());
     arguments.push(vendor_tag.as_ptr().cast_mut());
     arguments.push(vendor_value.as_ptr().cast_mut());
+    arguments.push(function_tag.as_ptr().cast_mut());
+    arguments.push(function_value.as_ptr().cast_mut());
+    arguments.push(correlation_hex.as_ptr().cast_mut());
+    arguments.push(output_tag.as_ptr().cast_mut());
+    arguments.push(output_hex.as_ptr().cast_mut());
+    arguments.push(return_code_tag.as_ptr().cast_mut());
+    arguments.push(correlation_tag.as_ptr().cast_mut());
     let argument_count = i32::try_from(arguments.len()).expect("C argv count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot held through the synchronous C call.
@@ -1060,15 +1097,20 @@ fn c_request_matches_pkcs11_fixture(encoded: &[u8]) -> bool {
 
 fn pkcs11_success_response_message(fixture: &serde_json::Value) -> Vec<u8> {
     let expected = fixture;
-    let return_code = u32::from_str_radix(
-        expected["unknownReturnCode"]
+    let typed = &expected["typedResponse"];
+    let function = fixture_pkcs11_field_structure(&typed["function"]);
+    let output_parameters = fixture_pkcs11_field_structure(&typed["outputParameters"]);
+    let return_code = fixture_pkcs11_field_structure(&typed["returnCode"]);
+    let function_tag = fixture_hex_u32(&typed["function"]["tag"]);
+    let output_parameters_tag = fixture_hex_u32(&typed["outputParameters"]["tag"]);
+    let return_code_tag = fixture_hex_u32(&typed["returnCode"]["tag"]);
+    let correlation = &typed["correlationValue"];
+    let correlation_tag = fixture_hex_u32(&correlation["tag"]);
+    let correlation_bytes = decode_fixture_hex(
+        correlation["hex"]
             .as_str()
-            .expect("shared PKCS#11 fixture return code is text")
-            .strip_prefix("0x")
-            .expect("shared PKCS#11 fixture return code is hexadecimal"),
-        16,
-    )
-    .expect("shared PKCS#11 fixture return code is a valid enumeration");
+            .expect("shared PKCS#11 fixture correlation bytes are hexadecimal"),
+    );
     let vendor_tag = u32::from_str_radix(
         expected["vendorExtension"]["tag"]
             .as_str()
@@ -1090,19 +1132,24 @@ fn pkcs11_success_response_message(fixture: &serde_json::Value) -> Vec<u8> {
         0x0042_007a,
         [version, date_time(0x0042_0092, 1), integer(0x0042_000d, 1)],
     );
-    let payload = structure(
-        0x0042_007c,
-        [
-            structure(0x0042_015a, [integer(0x0042_015a, -12345)]),
-            ttlv_item(0x0042_00d6, 0x08, b"pkcs11-response-correlation"),
-            structure(
-                0x0042_015c,
-                [ttlv_item(0x0042_015c, 0x08, b"vendor-output")],
-            ),
-            structure(0x0042_015d, [enumeration(0x0042_015d, return_code)]),
-            integer(vendor_tag, vendor_value),
-        ],
-    );
+    let mut payload_items = Vec::new();
+    for tag in expected["responseTags"]
+        .as_array()
+        .expect("shared fixture response tags are an array")
+    {
+        let tag = fixture_hex_u32(tag);
+        payload_items.push(match tag {
+            value if value == function_tag => function.clone(),
+            value if value == correlation_tag => {
+                ttlv_item(correlation_tag, 0x08, &correlation_bytes)
+            }
+            value if value == output_parameters_tag => output_parameters.clone(),
+            value if value == return_code_tag => return_code.clone(),
+            value if value == vendor_tag => integer(vendor_tag, vendor_value),
+            _ => panic!("shared fixture contains an unmapped PKCS#11 response tag"),
+        });
+    }
+    let payload = structure(0x0042_007c, payload_items);
     let response_item = structure(
         0x0042_000f,
         [
@@ -1112,6 +1159,42 @@ fn pkcs11_success_response_message(fixture: &serde_json::Value) -> Vec<u8> {
         ],
     );
     structure(0x0042_007b, [header, response_item])
+}
+
+fn fixture_hex_u32(value: &serde_json::Value) -> u32 {
+    u32::from_str_radix(
+        value
+            .as_str()
+            .expect("shared fixture hexadecimal values are text")
+            .strip_prefix("0x")
+            .expect("shared fixture hexadecimal values have a prefix"),
+        16,
+    )
+    .expect("shared fixture hexadecimal value fits in u32")
+}
+
+fn fixture_pkcs11_field_structure(field: &serde_json::Value) -> Vec<u8> {
+    let tag = fixture_hex_u32(&field["tag"]);
+    let child_tag = fixture_hex_u32(&field["childTag"]);
+    let child = match field["childType"].as_str() {
+        Some("Integer") => integer(
+            child_tag,
+            i32::try_from(field["childValue"].as_i64().expect("Integer fixture value"))
+                .expect("Integer fixture value fits i32"),
+        ),
+        Some("Enumeration") => enumeration(child_tag, fixture_hex_u32(&field["childValue"])),
+        Some("ByteString") => ttlv_item(
+            child_tag,
+            0x08,
+            &decode_fixture_hex(
+                field["childHex"]
+                    .as_str()
+                    .expect("Byte String fixture value is hexadecimal"),
+            ),
+        ),
+        _ => panic!("shared fixture has an unsupported PKCS#11 child type"),
+    };
+    structure(tag, [child])
 }
 
 fn c_request_contains_exact_derivation_parameters(encoded: &[u8]) -> bool {

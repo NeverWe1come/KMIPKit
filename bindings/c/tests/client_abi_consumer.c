@@ -4045,15 +4045,46 @@ cleanup:
     return result;
 }
 
+static int pkcs11_hex_nibble(char value) {
+    if (value >= '0' && value <= '9') return value - '0';
+    if (value >= 'a' && value <= 'f') return value - 'a' + 10;
+    if (value >= 'A' && value <= 'F') return value - 'A' + 10;
+    return -1;
+}
+
+static int pkcs11_decode_hex(
+    const char *text, uint8_t *output, uint64_t output_capacity, uint64_t *output_length) {
+    const size_t text_length = text == 0 ? 0 : strlen(text);
+    if (text == 0 || output == 0 || output_length == 0 || text_length % 2 != 0 ||
+        (uint64_t)(text_length / 2) > output_capacity) {
+        return 0;
+    }
+    for (size_t index = 0; index < text_length; index += 2) {
+        const int high = pkcs11_hex_nibble(text[index]);
+        const int low = pkcs11_hex_nibble(text[index + 1]);
+        if (high < 0 || low < 0) return 0;
+        output[index / 2] = (uint8_t)((high << 4) | low);
+    }
+    *output_length = (uint64_t)(text_length / 2);
+    return 1;
+}
+
 static int pkcs11_response_matches_fixture(
     kmipkit_ttlv_structure_t *response_ttlv,
     const uint32_t *expected_tags,
     uint64_t expected_tag_count,
+    uint32_t expected_function_tag,
+    int32_t expected_function_value,
+    uint32_t expected_correlation_tag,
+    const uint8_t *expected_correlation,
+    uint64_t expected_correlation_length,
+    uint32_t expected_output_tag,
+    const uint8_t *expected_output,
+    uint64_t expected_output_length,
+    uint32_t expected_return_code_tag,
     uint32_t expected_return_code,
     uint32_t expected_vendor_tag,
     int32_t expected_vendor_value) {
-    static const uint8_t expected_correlation[] = "pkcs11-response-correlation";
-    static const uint8_t expected_output[] = "vendor-output";
     static const uint32_t response_tags[] = {
         UINT32_C(0x42005c), UINT32_C(0x42007f), UINT32_C(0x42007c)};
     kmipkit_ttlv_structure_view_t *response_view = 0;
@@ -4066,6 +4097,7 @@ static int pkcs11_response_matches_fixture(
     kmipkit_ttlv_structure_view_t *payload_view = 0;
     kmipkit_ttlv_item_view_t *correlation_item = 0;
     kmipkit_ttlv_value_view_t *correlation_value = 0;
+    kmipkit_tag_t *correlation_tag = 0;
     kmipkit_tag_t *payload_tag = 0;
     kmipkit_ttlv_item_view_t *return_item = 0;
     kmipkit_ttlv_value_view_t *return_value = 0;
@@ -4110,21 +4142,25 @@ static int pkcs11_response_matches_fixture(
         !check_view_tags(payload_view, expected_tags, expected_tag_count) ||
         pkcs11_view_contains_tag(payload_view, UINT32_C(0x420159)) ||
         pkcs11_view_contains_tag(payload_view, UINT32_C(0x42015b)) ||
-        !pkcs11_nested_integer_matches(payload_view, 0, UINT32_C(0x42015a), -12345) ||
-        !pkcs11_nested_bytes_match(payload_view, 2, UINT32_C(0x42015c), expected_output,
-            (uint64_t)(sizeof(expected_output) - 1)) ||
+        !pkcs11_nested_integer_matches(payload_view, 0, expected_function_tag,
+            expected_function_value) ||
+        !pkcs11_nested_bytes_match(payload_view, 2, expected_output_tag, expected_output,
+            expected_output_length) ||
         kmipkit_ttlv_structure_view_item_at(payload_view, 1, &correlation_item) != 0 ||
+        kmipkit_ttlv_item_view_tag(correlation_item, &correlation_tag) != 0 ||
+        kmipkit_ttlv_tag_value(correlation_tag, &actual_nested_tag) != 0 ||
+        actual_nested_tag != expected_correlation_tag ||
         kmipkit_ttlv_item_view_type(correlation_item, &actual_type) != 0 ||
         actual_type != KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING ||
         kmipkit_ttlv_item_view_value(correlation_item, &correlation_value) != 0 ||
         !pkcs11_bytes_match(correlation_value, expected_correlation,
-            (uint64_t)(sizeof(expected_correlation) - 1)) ||
+            expected_correlation_length) ||
         kmipkit_ttlv_structure_view_item_at(payload_view, 3, &return_item) != 0 ||
         kmipkit_ttlv_item_view_value(return_item, &return_value) != 0 ||
         kmipkit_ttlv_value_view_structure(return_value, &return_code_view) != 0 ||
         kmipkit_ttlv_structure_view_item_count(return_code_view, &nested_count) != 0 ||
         nested_count != 1 || !pkcs11_view_item_tag(return_code_view, 0, &actual_nested_tag) ||
-        actual_nested_tag != UINT32_C(0x42015d) ||
+        actual_nested_tag != expected_return_code_tag ||
         kmipkit_ttlv_structure_view_item_at(return_code_view, 0, &code_item) != 0 ||
         kmipkit_ttlv_item_view_type(code_item, &actual_type) != 0 ||
         actual_type != KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION ||
@@ -4154,6 +4190,7 @@ cleanup:
     kmipkit_ttlv_value_view_release(return_value);
     kmipkit_ttlv_item_view_release(return_item);
     kmipkit_ttlv_value_view_release(correlation_value);
+    kmipkit_tag_release(correlation_tag);
     kmipkit_ttlv_item_view_release(correlation_item);
     kmipkit_ttlv_structure_view_release(payload_view);
     kmipkit_ttlv_value_view_release(payload_value);
@@ -4197,7 +4234,9 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
     kmipkit_ttlv_structure_t *output_parameters_ttlv = 0;
     kmipkit_ttlv_structure_t *return_code_ttlv = 0;
     kmipkit_byte_span_v1_t response_correlation = {0};
-    uint8_t correlation_copy[sizeof("pkcs11-response-correlation") - 1] = {0};
+    uint8_t correlation_copy[4096] = {0};
+    uint8_t expected_correlation[4096] = {0};
+    uint8_t expected_output[4096] = {0};
     uint8_t interface_present = 0;
     uint8_t function_present = 0;
     uint8_t correlation_present = 0;
@@ -4210,13 +4249,19 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
     uint32_t expected_tags[5] = {0};
     uint32_t expected_return_code = 0;
     uint32_t expected_vendor_tag = 0;
+    uint32_t expected_function_tag = 0;
+    uint32_t expected_output_tag = 0;
+    uint32_t expected_return_code_tag = 0;
     int32_t expected_vendor_value = 0;
+    int32_t expected_function_value = 0;
+    uint64_t expected_correlation_length = 0;
+    uint64_t expected_output_length = 0;
     uint64_t response_count = 0;
     unsigned long port = 0;
     char *parse_end = 0;
     int result = 1;
 
-    if (argc != 14 || argv == 0 || limits == 0) {
+    if (argc != 21 || argv == 0 || limits == 0) {
         return 2;
     }
     for (int index = 1; index < argc; ++index) {
@@ -4251,6 +4296,40 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
         return 7;
     }
     expected_vendor_value = (int32_t)raw_vendor_value;
+    unsigned long raw_function_tag = strtoul(argv[14], &parse_end, 0);
+    if (parse_end == argv[14] || *parse_end != '\0' || raw_function_tag > UINT32_MAX) {
+        return 8;
+    }
+    expected_function_tag = (uint32_t)raw_function_tag;
+    long raw_function_value = strtol(argv[15], &parse_end, 10);
+    if (parse_end == argv[15] || *parse_end != '\0' || raw_function_value < INT32_MIN ||
+        raw_function_value > INT32_MAX) {
+        return 9;
+    }
+    expected_function_value = (int32_t)raw_function_value;
+    if (!pkcs11_decode_hex(argv[16], expected_correlation, sizeof(expected_correlation),
+            &expected_correlation_length)) {
+        return 10;
+    }
+    unsigned long raw_output_tag = strtoul(argv[17], &parse_end, 0);
+    if (parse_end == argv[17] || *parse_end != '\0' || raw_output_tag > UINT32_MAX) {
+        return 11;
+    }
+    expected_output_tag = (uint32_t)raw_output_tag;
+    if (!pkcs11_decode_hex(argv[18], expected_output, sizeof(expected_output),
+            &expected_output_length)) {
+        return 12;
+    }
+    unsigned long raw_return_code_tag = strtoul(argv[19], &parse_end, 0);
+    if (parse_end == argv[19] || *parse_end != '\0' || raw_return_code_tag > UINT32_MAX) {
+        return 13;
+    }
+    expected_return_code_tag = (uint32_t)raw_return_code_tag;
+    unsigned long raw_correlation_tag = strtoul(argv[20], &parse_end, 0);
+    if (parse_end == argv[20] || *parse_end != '\0' || raw_correlation_tag > UINT32_MAX) {
+        return 14;
+    }
+    const uint32_t expected_correlation_tag = (uint32_t)raw_correlation_tag;
 
     client_certificates[0].source_kind = 2;
     client_certificates[0].encoding = 2;
@@ -4363,30 +4442,34 @@ int kmipkit_client_abi_c_consumer_execute_pkcs11_tls(
             response_item, &return_code_present, &return_code_ttlv) != 0 ||
         interface_present != 0 || interface_ttlv != 0 || function_present != 1 ||
         function_ttlv == 0 || correlation_present != 1 ||
-        response_correlation.length != (uint64_t)sizeof(correlation_copy) ||
+        response_correlation.length != expected_correlation_length ||
+        response_correlation.length > (uint64_t)sizeof(correlation_copy) ||
         response_correlation.data == 0 || output_parameters_present != 1 ||
         output_parameters_ttlv == 0 || return_code_present != 1 || return_code_ttlv == 0) {
         goto cleanup;
     }
-    memcpy(correlation_copy, response_correlation.data, sizeof(correlation_copy));
+    memcpy(correlation_copy, response_correlation.data, (size_t)response_correlation.length);
     kmipkit_client_batch_item_response_release(response_item);
     response_item = 0;
     kmipkit_client_batch_response_release(response);
     response = 0;
-    if (memcmp(correlation_copy, "pkcs11-response-correlation", sizeof(correlation_copy)) != 0) {
+    if (memcmp(correlation_copy, expected_correlation, (size_t)expected_correlation_length) != 0) {
         goto cleanup;
     }
     if (!pkcs11_owned_scalar_matches(
-            function_ttlv, UINT32_C(0x42015a), KMIPKIT_TTLV_ITEM_TYPE_INTEGER,
-            -12345, 0) ||
-        !pkcs11_owned_bytes_match(output_parameters_ttlv, UINT32_C(0x42015c),
-            (const uint8_t *)"vendor-output", sizeof("vendor-output") - 1) ||
-        !pkcs11_owned_scalar_matches(return_code_ttlv, UINT32_C(0x42015d),
+            function_ttlv, expected_function_tag, KMIPKIT_TTLV_ITEM_TYPE_INTEGER,
+            expected_function_value, 0) ||
+        !pkcs11_owned_bytes_match(output_parameters_ttlv, expected_output_tag,
+            expected_output, expected_output_length) ||
+        !pkcs11_owned_scalar_matches(return_code_ttlv, expected_return_code_tag,
             KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, 0, expected_return_code)) {
         goto cleanup;
     }
     if (!pkcs11_response_matches_fixture(
-            response_ttlv, expected_tags, 5, expected_return_code, expected_vendor_tag,
+            response_ttlv, expected_tags, 5, expected_function_tag, expected_function_value,
+            expected_correlation_tag, expected_correlation, expected_correlation_length,
+            expected_output_tag, expected_output, expected_output_length,
+            expected_return_code_tag, expected_return_code, expected_vendor_tag,
             expected_vendor_value)) {
         goto cleanup;
     }

@@ -250,9 +250,16 @@ final class ClientFacadeTlsIntegrationTest {
     void pkcs11ResponseMatchesSharedFixtureThroughNativeJniOverMutualTls() throws Exception {
         String fixture = Files.readString(pkcs11ParityFixturePath(), StandardCharsets.UTF_8);
         List<Long> expectedTags = fixtureLongArray(fixture, "responseTags");
-        long expectedReturnCode = fixtureHexField(fixture, "unknownReturnCode");
-        long expectedVendorTag = fixtureHexField(fixture, "tag");
-        int expectedVendorValue = Math.toIntExact(fixtureLongField(fixture, "integer"));
+        String expectedOutput = fixtureObject(fixture, "expectedOutput");
+        String typedResponse = fixtureObject(expectedOutput, "typedResponse");
+        String expectedFunction = fixtureObject(typedResponse, "function");
+        String expectedCorrelation = fixtureObject(typedResponse, "correlationValue");
+        String expectedOutputParameters = fixtureObject(typedResponse, "outputParameters");
+        String expectedPkcs11ReturnCode = fixtureObject(typedResponse, "returnCode");
+        String vendorExtension = fixtureObject(expectedOutput, "vendorExtension");
+        long expectedReturnCode = fixtureHexField(expectedPkcs11ReturnCode, "childValue");
+        long expectedVendorTag = fixtureHexField(vendorExtension, "tag");
+        int expectedVendorValue = Math.toIntExact(fixtureLongField(vendorExtension, "integer"));
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
         byte[] clientCertificatePem = testFixture("client-cert.pem");
@@ -260,8 +267,7 @@ final class ClientFacadeTlsIntegrationTest {
         X509Certificate clientCertificate = testCertificate(clientCertificatePem);
         SSLServerSocket listener = deterministicMtlsListener(
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
-        byte[] responseMessage = pkcs11ResponseMessage(expectedReturnCode, expectedVendorTag,
-                expectedVendorValue);
+        byte[] responseMessage = pkcs11ResponseMessage(fixture);
         FutureTask<byte[]> peer = new FutureTask<>(
                 () -> serveOneResponse(listener, responseMessage));
         Thread peerThread = new Thread(peer, "kmipkit-java-pkcs11-tls-fixture");
@@ -316,28 +322,28 @@ final class ClientFacadeTlsIntegrationTest {
         ClientBatchItemResult.Pkcs11Response pkcs11Response = result.pkcs11Response().orElseThrow();
         result.close();
         batchResponse.close();
-        String typedResponse = fixtureObject(fixture, "typedResponse");
         assertTrue(pkcs11Response.interfaceTtlv().isEmpty(), "absent Interface stays absent");
-        assertArrayEquals(fixtureHexBytes(typedResponse, "hex"),
+        assertArrayEquals(fixtureHexBytes(expectedCorrelation, "hex"),
                 pkcs11Response.correlationValue().orElseThrow());
         try (TtlvStructure functionTtlv = pkcs11Response.functionTtlv().orElseThrow();
                 TtlvStructureView functionView = functionTtlv.view();
                 TtlvItemView functionItem = functionView.itemAt(0);
                 TtlvValueView functionValue = functionItem.value()) {
-            assertEquals(0x42015a, tagAt(functionView, 0));
-            assertEquals(Math.toIntExact(fixtureLongField(typedResponse, "childValue")),
+            assertEquals(fixtureHexField(expectedFunction, "childTag"), tagAt(functionView, 0));
+            assertEquals(Math.toIntExact(fixtureLongField(expectedFunction, "childValue")),
                     functionValue.integer());
         }
         try (TtlvStructure outputTtlv = pkcs11Response.outputParametersTtlv().orElseThrow();
                 TtlvStructureView outputView = outputTtlv.view()) {
-            assertBytesAt(outputView, 0, 0x42015c,
-                    fixtureHexBytes(typedResponse, "childHex"));
+            assertBytesAt(outputView, 0, fixtureHexField(expectedOutputParameters, "childTag"),
+                    fixtureHexBytes(expectedOutputParameters, "childHex"));
         }
         try (TtlvStructure returnTtlv = pkcs11Response.returnCodeTtlv().orElseThrow();
                 TtlvStructureView returnView = returnTtlv.view();
                 TtlvItemView codeItem = returnView.itemAt(0);
                 TtlvValueView codeValue = codeItem.value()) {
-            assertEquals(0x42015d, tagAt(returnView, 0));
+            assertEquals(fixtureHexField(expectedPkcs11ReturnCode, "childTag"),
+                    tagAt(returnView, 0));
             assertEquals(expectedReturnCode, codeValue.enumeration());
         }
         try (pkcs11Response;
@@ -350,16 +356,20 @@ final class ClientFacadeTlsIntegrationTest {
             assertTagOrder(payloadView, expectedTags.stream().mapToLong(Long::longValue).toArray());
             assertFalse(expectedTags.contains(0x420159L), "absent Interface remains absent");
             assertFalse(expectedTags.contains(0x42015bL), "absent Input Parameters remain absent");
-            assertNestedInteger(payloadView, 0, 0x42015a, -12345);
-            assertBytesAt(payloadView, 1, 0x4200d6,
-                    "pkcs11-response-correlation".getBytes(StandardCharsets.US_ASCII));
-            assertNestedBytes(payloadView, 2, 0x42015c, "vendor-output".getBytes(StandardCharsets.US_ASCII));
+            assertNestedInteger(payloadView, 0, fixtureHexField(expectedFunction, "tag"),
+                    Math.toIntExact(fixtureLongField(expectedFunction, "childValue")));
+            assertBytesAt(payloadView, 1, fixtureHexField(expectedCorrelation, "tag"),
+                    fixtureHexBytes(expectedCorrelation, "hex"));
+            assertNestedBytes(payloadView, 2,
+                    fixtureHexField(expectedOutputParameters, "tag"),
+                    fixtureHexBytes(expectedOutputParameters, "childHex"));
             try (TtlvItemView returnItem = payloadView.itemAt(3);
                     TtlvValueView returnValue = returnItem.value();
                     TtlvStructureView returnCode = returnValue.structure();
                     TtlvItemView codeItem = returnCode.itemAt(0);
                     TtlvValueView codeValue = codeItem.value()) {
-                assertEquals(0x42015d, tagAt(returnCode, 0));
+                assertEquals(fixtureHexField(expectedPkcs11ReturnCode, "childTag"),
+                        tagAt(returnCode, 0));
                 assertEquals(expectedReturnCode, codeValue.enumeration());
             }
             try (TtlvItemView vendorItem = payloadView.itemAt(4);
@@ -2190,18 +2200,41 @@ final class ClientFacadeTlsIntegrationTest {
         return usageAllocationResponseMessage(itemId, "allocation-object");
     }
 
-    private static byte[] pkcs11ResponseMessage(
-            long unknownReturnCode, long vendorTag, int vendorValue) throws Exception {
+    private static byte[] pkcs11ResponseMessage(String fixture) throws Exception {
+        String expectedOutput = fixtureObject(fixture, "expectedOutput");
+        String typedResponse = fixtureObject(expectedOutput, "typedResponse");
+        String function = fixtureObject(typedResponse, "function");
+        String correlationValue = fixtureObject(typedResponse, "correlationValue");
+        String outputParameters = fixtureObject(typedResponse, "outputParameters");
+        String returnCode = fixtureObject(typedResponse, "returnCode");
+        String vendorExtension = fixtureObject(expectedOutput, "vendorExtension");
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
-        byte[] payload = structure(0x42007c,
-                structure(0x42015a, item(0x42015a, 2, integer(-12345))),
-                item(0x4200d6, 8, "pkcs11-response-correlation".getBytes(StandardCharsets.US_ASCII)),
-                structure(0x42015c, item(0x42015c, 8, "vendor-output".getBytes(StandardCharsets.US_ASCII))),
-                structure(0x42015d, enumeration(0x42015d, (int) unknownReturnCode)),
-                item(Math.toIntExact(vendorTag), 2, integer(vendorValue)));
+        byte[] functionField = structure(Math.toIntExact(fixtureHexField(function, "tag")),
+                item(Math.toIntExact(fixtureHexField(function, "childTag")), 2,
+                        integer(Math.toIntExact(fixtureLongField(function, "childValue")))));
+        byte[] correlationField = item(Math.toIntExact(fixtureHexField(correlationValue, "tag")),
+                8, fixtureHexBytes(correlationValue, "hex"));
+        byte[] outputField = structure(Math.toIntExact(fixtureHexField(outputParameters, "tag")),
+                item(Math.toIntExact(fixtureHexField(outputParameters, "childTag")), 8,
+                        fixtureHexBytes(outputParameters, "childHex")));
+        byte[] returnCodeField = structure(Math.toIntExact(fixtureHexField(returnCode, "tag")),
+                enumeration(Math.toIntExact(fixtureHexField(returnCode, "childTag")),
+                        (int) fixtureHexField(returnCode, "childValue")));
+        byte[] vendorField = item(Math.toIntExact(fixtureHexField(vendorExtension, "tag")), 2,
+                integer(Math.toIntExact(fixtureLongField(vendorExtension, "integer"))));
+        List<byte[]> responseFields = new ArrayList<>();
+        for (long tag : fixtureLongArray(expectedOutput, "responseTags")) {
+            if (tag == fixtureHexField(function, "tag")) responseFields.add(functionField);
+            else if (tag == fixtureHexField(correlationValue, "tag")) responseFields.add(correlationField);
+            else if (tag == fixtureHexField(outputParameters, "tag")) responseFields.add(outputField);
+            else if (tag == fixtureHexField(returnCode, "tag")) responseFields.add(returnCodeField);
+            else if (tag == fixtureHexField(vendorExtension, "tag")) responseFields.add(vendorField);
+            else throw new AssertionError("fixture has an unmapped PKCS#11 response tag");
+        }
+        byte[] payload = structure(0x42007c, responseFields.toArray(byte[][]::new));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x33), enumeration(0x42007f, 0), payload);
         return structure(0x42007b, header, responseItem);

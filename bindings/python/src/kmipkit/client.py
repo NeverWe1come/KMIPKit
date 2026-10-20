@@ -1274,16 +1274,29 @@ class InteropResponse:
 
 @dataclass(frozen=True, slots=True, repr=False)
 class Pkcs11Response:
-    """PKCS#11 result with an owned complete generic TTLV for every result status."""
+    """PKCS#11 result with independent generic TTLV copies and exact correlation bytes."""
 
     response_ttlv: ttlv.Structure = field(repr=False)
+    interface_ttlv: ttlv.Structure | None = field(default=None, repr=False)
+    function_ttlv: ttlv.Structure | None = field(default=None, repr=False)
+    correlation_value: bytes | None = field(default=None, repr=False)
+    output_parameters_ttlv: ttlv.Structure | None = field(default=None, repr=False)
+    return_code_ttlv: ttlv.Structure | None = field(default=None, repr=False)
 
     def close(self) -> None:
-        """Release the caller-owned complete generic response structure."""
-        self.response_ttlv.close()
+        """Release all independently owned response TTLV copies."""
+        for value in (
+            self.interface_ttlv,
+            self.function_ttlv,
+            self.output_parameters_ttlv,
+            self.return_code_ttlv,
+            self.response_ttlv,
+        ):
+            if value is not None:
+                value.close()
 
     def __repr__(self) -> str:
-        return "Pkcs11Response(response_ttlv=redacted)"
+        return "Pkcs11Response(response_ttlv=redacted, fields=redacted)"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -2856,33 +2869,97 @@ def _interop_response(item: _ClientBatchItemResponse) -> InteropResponse | None:
     return InteropResponse(response_ttlv)
 
 
-def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
+def _pkcs11_owned_structure(
+    item: _ClientBatchItemResponse, symbol: str
+) -> ttlv.Structure | None:
     present = ffi.new("uint8_t *")
-    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
-    status = lib.kmipkit_client_batch_item_response_pkcs11_ttlv(
-        item._pointer(), present, response_ttlv_output
-    )
+    output = ffi.new("kmipkit_ttlv_structure_t **")
+    status = getattr(lib, symbol)(item._pointer(), present, output)
+    handle = output[0]
     if status != 0:
-        if response_ttlv_output[0] != ffi.NULL:
-            lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+        if handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(handle)
         _raise_abi_status(status)
-    response_ttlv_handle = response_ttlv_output[0]
-    if present[0] not in (0, 1) or (present[0] == 1) != (
-        response_ttlv_handle != ffi.NULL
-    ):
-        if response_ttlv_handle != ffi.NULL:
-            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+    if present[0] not in (0, 1) or (present[0] == 1) != (handle != ffi.NULL):
+        if handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(handle)
         errors.raise_for_status(4)
     if present[0] == 0:
         return None
     try:
-        response_ttlv = ttlv._structure_from_native_address(
-            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        return ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", handle))
         )
     except Exception:
-        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        lib.kmipkit_ttlv_structure_release(handle)
         raise
-    return Pkcs11Response(response_ttlv)
+
+
+def _pkcs11_correlation_value(
+    item: _ClientBatchItemResponse,
+) -> bytes | None:
+    present = ffi.new("uint8_t *")
+    output = ffi.new("kmipkit_byte_span_v1_t *")
+    status = lib.kmipkit_client_batch_item_response_pkcs11_correlation_value(
+        item._pointer(), present, output
+    )
+    if status != 0:
+        _raise_abi_status(status)
+    span = output[0]
+    if present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    if present[0] == 0:
+        if span.data != ffi.NULL or span.length != 0:
+            errors.raise_for_status(4)
+        return None
+    if span.length > sys.maxsize or (span.length > 0 and span.data == ffi.NULL):
+        errors.raise_for_status(4)
+    if span.length == 0:
+        return b""
+    return bytes(ffi.buffer(span.data, int(span.length)))
+
+
+def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
+    response_ttlv = _pkcs11_owned_structure(
+        item, "kmipkit_client_batch_item_response_pkcs11_ttlv"
+    )
+    if response_ttlv is None:
+        return None
+    owned = [response_ttlv]
+    try:
+        interface_ttlv = _pkcs11_owned_structure(
+            item, "kmipkit_client_batch_item_response_pkcs11_interface_ttlv"
+        )
+        if interface_ttlv is not None:
+            owned.append(interface_ttlv)
+        function_ttlv = _pkcs11_owned_structure(
+            item, "kmipkit_client_batch_item_response_pkcs11_function_ttlv"
+        )
+        if function_ttlv is not None:
+            owned.append(function_ttlv)
+        correlation_value = _pkcs11_correlation_value(item)
+        output_parameters_ttlv = _pkcs11_owned_structure(
+            item, "kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv"
+        )
+        if output_parameters_ttlv is not None:
+            owned.append(output_parameters_ttlv)
+        return_code_ttlv = _pkcs11_owned_structure(
+            item, "kmipkit_client_batch_item_response_pkcs11_return_code_ttlv"
+        )
+        if return_code_ttlv is not None:
+            owned.append(return_code_ttlv)
+        return Pkcs11Response(
+            response_ttlv,
+            interface_ttlv,
+            function_ttlv,
+            correlation_value,
+            output_parameters_ttlv,
+            return_code_ttlv,
+        )
+    except Exception:
+        for value in reversed(owned):
+            value.close()
+        raise
 
 
 def _log_response(item: _ClientBatchItemResponse) -> LogResponse | None:

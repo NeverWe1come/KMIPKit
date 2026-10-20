@@ -150,6 +150,7 @@
       },
       "correlationValue": {
         "present": true,
+        "tag": "0x004200D6",
         "hex": "706b637331312d726573706f6e73652d636f7272656c6174696f6e"
       },
       "outputParameters": {

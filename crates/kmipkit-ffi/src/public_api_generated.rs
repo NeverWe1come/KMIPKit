@@ -2328,6 +2328,31 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::Pkcs11Response",
     ),
     (
+        "rust-observed-1b7f748e4cc73aad03ea",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Pkcs11Response::with_correlation_value",
+    ),
+    (
+        "rust-observed-7916130343f0acc7a85e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Pkcs11Response::with_function",
+    ),
+    (
+        "rust-observed-21329c4806e85dc78db5",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Pkcs11Response::with_interface",
+    ),
+    (
+        "rust-observed-265f8c126b340ae6f10d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Pkcs11Response::with_output_parameters",
+    ),
+    (
+        "rust-observed-2d003c52cdebf066047f",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::Pkcs11Response::with_return_code",
+    ),
+    (
         "rust-observed-b80ab75df39c35b387e8",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::Pkcs11Response::with_ttlv",

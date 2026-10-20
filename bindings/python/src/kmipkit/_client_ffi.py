@@ -668,6 +668,26 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_pkcs11_interface_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_interface);
+    int32_t kmipkit_client_batch_item_response_pkcs11_function_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_function);
+    int32_t kmipkit_client_batch_item_response_pkcs11_correlation_value(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_byte_span_v1_t *out_value);
+    int32_t kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_output_parameters);
+    int32_t kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_return_code);
     int32_t kmipkit_client_batch_item_response_log_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
