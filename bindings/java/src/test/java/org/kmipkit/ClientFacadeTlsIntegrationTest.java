@@ -853,10 +853,12 @@ final class ClientFacadeTlsIntegrationTest {
 
         byte[] allocationItemId = uniqueBatchItemId(0);
         byte[] encryptionItemId = uniqueBatchItemId(1);
+        byte[] directGuardItemId = uniqueBatchItemId(2);
         CodecLimits limits = CodecLimits.defaults();
         FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
                 usageAllocationResponseMessage(allocationItemId, allocationIdentifier),
-                guardedEncryptResponseMessage(encryptionItemId, allocationIdentifier)));
+                guardedEncryptResponseMessage(encryptionItemId, allocationIdentifier),
+                guardedEncryptResponseMessage(directGuardItemId, allocationIdentifier)));
         Thread peerThread = new Thread(peer, "kmipkit-java-usage-allocation-guard-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -962,12 +964,31 @@ final class ClientFacadeTlsIntegrationTest {
                             context.availableUnits());
                     assertEquals("true", SharedCapabilityParityFixtureTest.stringOrBooleanField(
                             fixtureExpected, "localOnlyAccounting"));
+
+                    // Exercise the convenience overload in addition to the fixture's async-indicator path.
+                    try (TtlvStructure parameters = TtlvStructure.create();
+                            TtlvValue data = TtlvValue.ByteString(new byte[] {7, 8, 9}, limits);
+                            ClientBatchItem directGuard = ClientBatchItem.encrypt(
+                                            UniqueIdentifier.textString(allocationIdentifier),
+                                            parameters, data, null, null, null, null, null)
+                                    .withUniqueBatchItemId(directGuardItemId);
+                            ClientBatchResponse guarded = client.executeGuardedProtectionItem(
+                                    context, directGuard, successfulCost, limits);
+                            ClientBatchItemResult guardedItem = guarded.itemAt(0)) {
+                        assertEquals(0L, guardedItem.resultStatus());
+                        assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "reserved")
+                                        + successfulCost,
+                                context.reservedUnits());
+                        assertEquals(SharedCapabilityParityFixtureTest.numberField(afterSuccess, "available")
+                                        - successfulCost,
+                                context.availableUnits());
+                    }
                 }
             }
         } finally {
             listener.close();
         }
-        assertEquals(SharedCapabilityParityFixtureTest.numberField(fixtureExpected, "transportExchangeCount"),
+        assertEquals(SharedCapabilityParityFixtureTest.numberField(fixtureExpected, "transportExchangeCount") + 1,
                 peer.get(10, TimeUnit.SECONDS).size());
     }
 
