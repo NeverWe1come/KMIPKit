@@ -35,21 +35,24 @@ def main() -> int:
             "candidate cfg must be enabled only through the isolated build opt-in",
             {},
         ),
-        (
-            "direct cargo rustc arguments",
-            [
-                "cargo",
-                "rustc",
-                "--locked",
-                "-p",
-                "kmipkit-protocol",
-                "--lib",
-                "--",
-                "--cfg",
-                "kmipkit_pkcs11_candidate_test",
-            ],
-            "expected an array with a size of 8",
-            {"KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION": "isolated"},
+        *(
+            (
+                f"direct cargo rustc arguments ({package})",
+                [
+                    "cargo",
+                    "rustc",
+                    "--locked",
+                    "-p",
+                    package,
+                    "--lib",
+                    "--",
+                    "--cfg",
+                    "kmipkit_pkcs11_candidate_test",
+                ],
+                "expected an array with a size of 8",
+                {"KMIPKIT_PKCS11_CANDIDATE_CFG_AUTHORIZATION": "isolated"},
+            )
+            for package in ("kmipkit-client", "kmipkit-protocol", "kmipkit-ffi")
         ),
     )
     for name, command, expected_message, overrides in probes:
@@ -58,7 +61,12 @@ def main() -> int:
         environment.pop("CARGO_ENCODED_RUSTFLAGS", None)
         environment.pop("RUSTFLAGS", None)
         environment.update(overrides)
-        environment["CARGO_TARGET_DIR"] = str(TARGET_DIRECTORY / name.replace(" ", "-"))
+        target_name = (
+            "direct-cargo-rustc"
+            if name.startswith("direct cargo rustc arguments")
+            else name.replace(" ", "-")
+        )
+        environment["CARGO_TARGET_DIR"] = str(TARGET_DIRECTORY / target_name)
 
         result = subprocess.run(
             command,
