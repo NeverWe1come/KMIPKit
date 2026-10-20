@@ -1272,19 +1272,49 @@ class InteropResponse:
         return "InteropResponse(response_ttlv=redacted)"
 
 
-@dataclass(frozen=True, slots=True, repr=False)
+@dataclass(slots=True, init=False, eq=False, repr=False)
 class Pkcs11Response:
-    """PKCS#11 result with independent generic TTLV copies and exact correlation bytes."""
+    """PKCS#11 result with independent TTLV copies and wipeable correlation bytes."""
 
     response_ttlv: ttlv.Structure = field(repr=False)
     interface_ttlv: ttlv.Structure | None = field(default=None, repr=False)
     function_ttlv: ttlv.Structure | None = field(default=None, repr=False)
-    correlation_value: bytes | None = field(default=None, repr=False)
+    _correlation_value: _SecretBytes | None = field(default=None, repr=False)
     output_parameters_ttlv: ttlv.Structure | None = field(default=None, repr=False)
     return_code_ttlv: ttlv.Structure | None = field(default=None, repr=False)
+    _closed: bool = field(default=False, init=False, repr=False)
+
+    def __init__(
+        self,
+        response_ttlv: ttlv.Structure,
+        interface_ttlv: ttlv.Structure | None = None,
+        function_ttlv: ttlv.Structure | None = None,
+        correlation_value: bytes | _SecretBytes | None = None,
+        output_parameters_ttlv: ttlv.Structure | None = None,
+        return_code_ttlv: ttlv.Structure | None = None,
+    ) -> None:
+        self.response_ttlv = response_ttlv
+        self.interface_ttlv = interface_ttlv
+        self.function_ttlv = function_ttlv
+        self._correlation_value = _owned_secret_bytes(correlation_value)
+        self.output_parameters_ttlv = output_parameters_ttlv
+        self.return_code_ttlv = return_code_ttlv
+        self._closed = False
+
+    @property
+    def correlation_value(self) -> bytes | None:
+        """Return a caller-owned copy of the response correlation bytes."""
+        self._ensure_open()
+        return (
+            None
+            if self._correlation_value is None
+            else self._correlation_value.to_bytes()
+        )
 
     def close(self) -> None:
-        """Release all independently owned response TTLV copies."""
+        """Wipe owned correlation bytes and release all response TTLV copies."""
+        if self._closed:
+            return
         for value in (
             self.interface_ttlv,
             self.function_ttlv,
@@ -1294,6 +1324,14 @@ class Pkcs11Response:
         ):
             if value is not None:
                 value.close()
+        if self._correlation_value is not None:
+            self._correlation_value.wipe()
+            self._correlation_value = None
+        self._closed = True
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("PKCS#11 response is closed")
 
     def __repr__(self) -> str:
         return "Pkcs11Response(response_ttlv=redacted, fields=redacted)"
@@ -2897,7 +2935,7 @@ def _pkcs11_owned_structure(
 
 def _pkcs11_correlation_value(
     item: _ClientBatchItemResponse,
-) -> bytes | None:
+) -> _SecretBytes | None:
     present = ffi.new("uint8_t *")
     output = ffi.new("kmipkit_byte_span_v1_t *")
     status = lib.kmipkit_client_batch_item_response_pkcs11_correlation_value(
@@ -2915,8 +2953,8 @@ def _pkcs11_correlation_value(
     if span.length > sys.maxsize or (span.length > 0 and span.data == ffi.NULL):
         errors.raise_for_status(4)
     if span.length == 0:
-        return b""
-    return bytes(ffi.buffer(span.data, int(span.length)))
+        return _SecretBytes(memoryview(b""))
+    return _SecretBytes(ffi.buffer(span.data, int(span.length)))
 
 
 def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
@@ -2926,6 +2964,7 @@ def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
     if response_ttlv is None:
         return None
     owned = [response_ttlv]
+    correlation_value: _SecretBytes | None = None
     try:
         interface_ttlv = _pkcs11_owned_structure(
             item, "kmipkit_client_batch_item_response_pkcs11_interface_ttlv"
@@ -2957,6 +2996,8 @@ def _pkcs11_response(item: _ClientBatchItemResponse) -> Pkcs11Response | None:
             return_code_ttlv,
         )
     except Exception:
+        if correlation_value is not None:
+            correlation_value.wipe()
         for value in reversed(owned):
             value.close()
         raise
