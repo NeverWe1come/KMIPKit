@@ -294,6 +294,42 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         feature = generate._feature_directory(ROOT, "KMIPKIT-0036")
         self.assertEqual(feature.name, "022-object-lifecycle")
 
+    def test_pkcs11_dependency_matrix_preserves_implementation_only_approval(self) -> None:
+        matrix_path = (
+            ROOT
+            / "specs"
+            / "043-public-api-bindings"
+            / "contracts"
+            / "operation-dependencies.md"
+        )
+        matrix = matrix_path.read_text(encoding="utf-8")
+        pkcs11_row = next(
+            line
+            for line in matrix.splitlines()
+            if line.startswith("| §6.1.37 | PKCS#11 |")
+        )
+        owner_spec = (
+            ROOT / "specs" / "026-pkcs11" / "spec.md"
+        ).read_text(encoding="utf-8")
+        manifest = json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        pkcs11_operation = next(
+            operation
+            for operation in manifest["operations"]
+            if operation["section"] == "6.1.37"
+        )
+
+        self.assertIn("Approved for implementation", owner_spec)
+        self.assertIn("does not start implementation", owner_spec)
+        self.assertEqual(pkcs11_operation["apiState"], "blocked")
+        self.assertIn("has not formally accepted", pkcs11_operation["blockedReason"])
+        self.assertIn("Approved for implementation", pkcs11_row)
+        self.assertIn("not formal acceptance", pkcs11_row)
+        self.assertNotIn("Approved owner", pkcs11_row)
+
     def test_blocked_operation_records_only_candidate_and_reason(self) -> None:
         manifest = _contract_manifest()
         operation = manifest["operations"][0]
