@@ -315,6 +315,28 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Re-key request using the fields in KMIP 2.1 §6.1.46, Table 305. */
+    public static ClientBatchItem rekey(
+            @Nullable UniqueIdentifier uniqueIdentifier,
+            @Nullable Long offset,
+            @Nullable TtlvStructure attributes,
+            @Nullable TtlvStructure protectionStorageMasks) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            long offsetValue = offset == null ? 0 : offset;
+            if (offset != null) requireU32(offsetValue, "Offset");
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemRekey(
+                            identifierKind(uniqueIdentifier), identifierText,
+                            identifierNumber(uniqueIdentifier), offset != null, offsetValue,
+                            handleOrNull(attributes), handleOrNull(protectionStorageMasks)));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Check request with optional §6.1.7 Usage Limits Count, usage mask, and lease. */
     public static ClientBatchItem check(
             @Nullable UniqueIdentifier uniqueIdentifier,

@@ -44,9 +44,9 @@ use kmipkit_protocol::{
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    QueryFunction, QueryRequest, RecertifyRequest, RegisterRequest, SecretBytes, SecretText,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    Ticket, UniqueIdentifier,
+    QueryFunction, QueryRequest, RecertifyRequest, RegisterRequest, RekeyRequest, SecretBytes,
+    SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference,
+    StorageStatusMask, Ticket, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3366,6 +3366,44 @@ pub extern "C" fn kmipkit_client_batch_item_recertify(
             request = request.with_protection_storage_masks(masks);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::Recertify(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Re-key request using the fields in §6.1.46, Table 305.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_rekey(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    has_offset: u8,
+    offset: u32,
+    attributes: *mut kmipkit_ttlv_structure_t,
+    protection_storage_masks: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+        let offset = match has_offset {
+            0 => None,
+            1 => Some(offset),
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let attributes = try_ffi!(copy_structure_handle(attributes, false));
+        let masks = try_ffi!(copy_structure_handle(protection_storage_masks, false));
+        let mut request = RekeyRequest::new();
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(offset) = offset {
+            request = request.with_offset(offset);
+        }
+        if let Some(attributes) = attributes {
+            request = request.with_attributes(attributes);
+        }
+        if let Some(masks) = masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Rekey(request)));
         SUCCESS
     })
 }

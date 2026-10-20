@@ -1891,6 +1891,36 @@ def client_batch_item_recertify(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_rekey(
+    unique_identifier: UniqueIdentifier | None = None,
+    *,
+    offset: int | None = None,
+    attributes: ttlv.Structure | None = None,
+    protection_storage_masks: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create one typed Re-key item from KMIP 2.1 §6.1.46, Table 305."""
+    if offset is None:
+        has_offset = 0
+        raw_offset = 0
+    else:
+        has_offset = 1
+        raw_offset = _integer_range(offset, 0, 0xFFFF_FFFF)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_rekey",
+            (
+                identifier,
+                has_offset,
+                raw_offset,
+                _native_structure(attributes),
+                _native_structure(protection_storage_masks),
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_check(
     unique_identifier: UniqueIdentifier | None = None,
     *,
@@ -2706,6 +2736,7 @@ __all__ = [
     "client_batch_item_create_split_key",
     "client_batch_item_certify",
     "client_batch_item_recertify",
+    "client_batch_item_rekey",
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_interop",

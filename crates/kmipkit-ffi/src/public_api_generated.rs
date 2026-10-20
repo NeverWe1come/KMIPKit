@@ -1588,6 +1588,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::recertify",
     ),
     (
+        "rust-observed-b202ed7423a7d1d35f9f",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rekey",
+    ),
+    (
         "T046:response:rustVariant",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::DeriveKey",
@@ -1688,6 +1693,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::recertify_response",
     ),
     (
+        "rust-observed-8c8b0cc18d697d176281",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::rekey_response",
+    ),
+    (
         "rust-observed-ebae376c3db55930fe72",
         "rust-kmipkit-client",
         "kmipkit_client::ClientError::ProtocolResponse::response_ttlv",
@@ -1761,6 +1771,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-0d0bac2451886e74583a",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Recertify",
+    ),
+    (
+        "rust-observed-c04397047a73d2d560fd",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Rekey",
     ),
     (
         "rust-observed-1cc0c37b6e3da35277b2",
@@ -2406,6 +2421,26 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ab7fec008d9c62cd5adb",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RegisterRequest::new",
+    ),
+    (
+        "rust-observed-1c78da08f5f3972c0dbc",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyRequest",
+    ),
+    (
+        "rust-observed-c0eb363db75c8510e1eb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyResponse",
+    ),
+    (
+        "rust-observed-a7cacc429d8cf7069485",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyResponse::unique_identifier",
+    ),
+    (
+        "rust-observed-958624c4d24dba1be880",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RekeyResponse::with_ttlv",
     ),
     (
         "rust-observed-70317e0c491e0f267466",

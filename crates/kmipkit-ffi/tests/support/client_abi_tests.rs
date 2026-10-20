@@ -5489,7 +5489,10 @@ fn ffi_rekey_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
 #[test]
 fn ffi_rekey_accessors_leave_failure_results_absent() {
     let item = failed_cryptographic_item(
-        ClientRequest::Rekey(RekeyRequest::new()),
+        ClientRequest::Rekey(
+            RekeyRequest::new()
+                .with_unique_identifier(UniqueIdentifier::TextString("existing-key".to_owned())),
+        ),
         0x04,
         b"rekey-failure",
     );

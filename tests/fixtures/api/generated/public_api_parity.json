@@ -7608,6 +7608,162 @@
       "exportName": "kmipkit_protocol::RegisterRequest::validate_local_shape",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This cross-crate preflight helper supports client-side Register validation and is not a separate caller-facing API operation. Callers use the typed Register payload/client paths, which perform the preflight as part of the supported request flow."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekey",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify request factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRekey",
+      "packageId": "java-kmipkit",
+      "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify response factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The formatter returns only a constant redacted summary; the response type and typed identifier accessor remain separately inventoried and tested.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact Java formatter emits only a redacted summary of the replacement key identifier and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __dataclass_fields__.",
+      "exportName": "kmipkit.client.RekeyResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __dataclass_params__.",
+      "exportName": "kmipkit.client.RekeyResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __delattr__.",
+      "exportName": "kmipkit.client.RekeyResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __eq__.",
+      "exportName": "kmipkit.client.RekeyResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __hash__.",
+      "exportName": "kmipkit.client.RekeyResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __init__.",
+      "exportName": "kmipkit.client.RekeyResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __match_args__.",
+      "exportName": "kmipkit.client.RekeyResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __repr__.",
+      "exportName": "kmipkit.client.RekeyResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __setattr__.",
+      "exportName": "kmipkit.client.RekeyResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __slots__.",
+      "exportName": "kmipkit.client.RekeyResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability."
     }
   ],
   "capabilities": [
@@ -31761,6 +31917,359 @@
         "requestBoundary": "not-applicable",
         "returnType": "i32"
       }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Creates a typed Re-key item with optional Unique Identifier, Offset, Attributes, and Protection Storage Masks."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "input-value-pointer",
+            "name": "unique_identifier",
+            "ownership": "borrowed",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_offset",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "offset",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "handle",
+            "name": "attributes",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "protection_storage_masks",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_structure_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_rekey"
+      },
+      "id": "client_batch_item_rekey",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemRekey",
+        "method": "rekey",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "uniqueIdentifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "offset",
+            "type": "Long"
+          },
+          {
+            "name": "attributes",
+            "type": "TtlvStructure"
+          },
+          {
+            "name": "protectionStorageMasks",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_rekey",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.extensions.client_batch_item_rekey",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "unique_identifier",
+            "type": "UniqueIdentifier | None"
+          },
+          {
+            "name": "offset",
+            "type": "int | None"
+          },
+          {
+            "name": "attributes",
+            "type": "ttlv.Structure | None"
+          },
+          {
+            "name": "protection_storage_masks",
+            "type": "ttlv.Structure | None"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientRequest",
+        "name": "Rekey",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "request",
+            "type": "RekeyRequest"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientRequest"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns the replacement key Unique Identifier only for a successful Re-key result."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_unique_identifier",
+            "ownership": "none",
+            "type": "kmipkit_unique_identifier_v1_t *",
+            "valueType": "kmipkit_unique_identifier_v1_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_rekey"
+      },
+      "id": "client_batch_item_response_rekey",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseRekey",
+        "method": "rekeyResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "Optional<RekeyResponse>"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_rekey",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "function": "kmipkit.client.BatchItemResult.rekey_response",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "RekeyResponse | None"
+      },
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchOutcome",
+        "name": "rekey_response",
+        "owner": "client",
+        "parameters": [],
+        "requestBoundary": "not-applicable",
+        "returnType": "Option<&RekeyResponse>"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Re-key result. Unknown fields and their order are preserved.",
+          "For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_client_batch_item_response_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_response_ttlv",
+            "nullable": true,
+            "ownership": "library-owned",
+            "type": "kmipkit_ttlv_structure_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_response_rekey_ttlv"
+      },
+      "id": "client_batch_item_response_rekey_ttlv",
+      "java": {
+        "class": "ClientBatchItemResult",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseRekey",
+        "method": "rekeyResponse",
+        "package": "org.kmipkit.extensions",
+        "parameters": [],
+        "returnType": "TtlvStructure"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_response_rekey_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "function": "kmipkit.client.RekeyResponse.response_ttlv",
+        "module": "kmipkit.client",
+        "parameters": [],
+        "returnType": "ttlv.Structure"
+      },
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_rekey_ttlv",
+        "owner": "ffi",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_response_ttlv",
+            "type": "*mut *mut kmipkit_ttlv_structure_t"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "i32"
+      }
     }
   ],
   "languages": [
@@ -33590,6 +34099,65 @@
       ],
       "scope": "client_1_0",
       "section": "6.1.45"
+    },
+    {
+      "apiState": "verified",
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved for implementation — 2026-10-11",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "declarations": {
+        "c": [
+          "T059:rekey:constructor:c",
+          "T059:rekey:response-ttlv:c",
+          "T059:rekey:response:c"
+        ],
+        "java": [
+          "T059:rekey:constructor:java",
+          "T059:rekey:response:java",
+          "T059:rekey:result:type:java",
+          "T059:rekey:result:uniqueIdentifier:java",
+          "T059:rekey:response-ttlv:java",
+          "T059:rekey:response-close:java"
+        ],
+        "python": [
+          "T059:rekey:constructor:python",
+          "T059:rekey:response:python",
+          "T059:rekey:result:type:python",
+          "T059:rekey:result:uniqueIdentifier:python",
+          "T059:rekey:response-ttlv:python",
+          "T059:rekey:response-close:python"
+        ],
+        "rust": [
+          "rust-observed-b202ed7423a7d1d35f9f",
+          "rust-observed-c04397047a73d2d560fd",
+          "rust-observed-1c78da08f5f3972c0dbc",
+          "rust-observed-958624c4d24dba1be880",
+          "rust-observed-a7cacc429d8cf7069485",
+          "rust-observed-8c8b0cc18d697d176281",
+          "rust-observed-c0eb363db75c8510e1eb"
+        ]
+      },
+      "featureSpecId": "KMIPKIT-0036",
+      "name": "Re-key",
+      "operationId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "ownerDependency": {
+        "specId": "KMIPKIT-0036",
+        "state": "approved"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "scope": "client_1_0",
+      "section": "6.1.46"
     },
     {
       "apiState": "declared",
@@ -67541,6 +68109,73 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-b202ed7423a7d1d35f9f",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::Client::rekey",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rekey",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::rekey",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — 2026-10-11",
         "kind": "feature-specification",
         "path": "specs/023-key-material-transfer/spec.md",
@@ -68859,6 +69494,73 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-8c8b0cc18d697d176281",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientBatchOutcome::rekey_response",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.rekey_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::rekey_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
         "path": "specs/021-hash-mac-signature-operations/spec.md",
@@ -69823,6 +70525,73 @@
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-c04397047a73d2d560fd",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client::ClientRequest::Rekey",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rekey",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::Rekey",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
       ]
     },
     {
@@ -77971,6 +78740,274 @@
         "KMIPKIT-0044-FR-002",
         "KMIPKIT-0044-FR-006",
         "KMIPKIT-0044-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-1c78da08f5f3972c0dbc",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RekeyRequest",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-c0eb363db75c8510e1eb",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RekeyResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-a7cacc429d8cf7069485",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RekeyResponse::unique_identifier",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "rust-observed-958624c4d24dba1be880",
+      "declarationState": "verified",
+      "exportName": "kmipkit_protocol::RekeyResponse::with_ttlv",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
       ]
     },
     {
@@ -125680,6 +126717,1013 @@
         "KMIPKIT-REQ-SPEC-6.1.45-006-001",
         "KMIPKIT-REQ-SPEC-6.1.45-006-002",
         "KMIPKIT-REQ-SPEC-6.1.45-008"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:constructor:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_rekey",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rekey",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::rekey",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_rekey",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.rekey_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::rekey_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response-ttlv:c",
+      "declarationState": "verified",
+      "exportName": "kmipkit_client_batch_item_response_rekey_ttlv",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:constructor:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.rekey",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rekey",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::rekey",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.rekeyResponse",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.rekey_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::rekey_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:result:type:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:result:uniqueIdentifier:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.uniqueIdentifier",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response-ttlv:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.responseTtlv",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response-close:java",
+      "declarationState": "verified",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.close",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "java-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:constructor:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.extensions.client_batch_item_rekey",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.rekey",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.client_batch_item_rekey",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::rekey",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.BatchItemResult.rekey_response",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.rekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.BatchItemResult.rekey_response",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchOutcome::rekey_response",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:result:type:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.RekeyResponse",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:result:uniqueIdentifier:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.RekeyResponse.unique_identifier",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.uniqueIdentifier",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.unique_identifier",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse::unique_identifier",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response-ttlv:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.RekeyResponse.response_ttlv",
+      "kind": "field",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_response_rekey_ttlv",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.responseTtlv",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.response_ttlv",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse::with_ttlv",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+      "declarationId": "T059:rekey:response-close:python",
+      "declarationState": "verified",
+      "exportName": "kmipkit.client.RekeyResponse.close",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_ttlv_structure_release",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.close",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.RekeyResponse.close",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RekeyResponse",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "mappingSemantics": "native-handle-release",
+      "packageId": "python-kmipkit",
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_operation.py",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
+        "tools/api_manifest/tests/test_rekey_parity_manifest.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0036-FR-001",
+        "KMIPKIT-0036-FR-002",
+        "KMIPKIT-0036-FR-003",
+        "KMIPKIT-0036-FR-004",
+        "KMIPKIT-0036-FR-005",
+        "KMIPKIT-0036-FR-006",
+        "KMIPKIT-0036-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-004-002"
       ]
     }
   ],
