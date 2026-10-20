@@ -570,6 +570,34 @@ class PublicApiParityTests(unittest.TestCase):
         }
         self.assertEqual(parity, expected_parity)
 
+    def test_t029_shared_corpus_covers_defaults_ranges_and_usage_guard(self) -> None:
+        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+        cases = {case["id"]: case for case in fixtures["cases"]}
+        required_cases = {
+            "codec-limits.defaults-and-ranges.v1",
+            "usage-allocation.guard-accounting.v1",
+        }
+
+        self.assertTrue(required_cases.issubset(cases))
+        self.assertEqual(
+            cases["batch.ordered-completed-pending-failed.v1"]["expectedOutput"][
+                "transportExchangeCount"
+            ],
+            1,
+        )
+        self.assertNotIn(
+            "no-batch-or-transport-resource-created",
+            cases["batch.ordered-completed-pending-failed.v1"]["cleanup"],
+        )
+        for case in cases.values():
+            for language in SHARED_PARITY_LANGUAGES:
+                with self.subTest(fixture=case["id"], language=language):
+                    self.assertEqual(
+                        case["consumerTests"][language]["status"],
+                        "available",
+                        f"T029 requires an executable {language} consumer",
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()
