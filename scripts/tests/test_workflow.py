@@ -406,6 +406,47 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("audit_binding_exports.py", audit.group(1))
         self.assertIn("--c-only --c-binary", audit.group(1))
 
+    def test_default_java_native_bridge_excludes_candidate_entrypoints(self) -> None:
+        native = (REPOSITORY_ROOT / "bindings/java/native/kmipkit_jni.cpp").read_text(
+            encoding="utf-8"
+        )
+        candidate_guard = re.compile(
+            r"(?m)^#if defined\(KMIPKIT_PKCS11_CANDIDATE_TEST\)\s*$"
+        )
+        for symbol in (
+            'extern "C" int32_t kmipkit_client_batch_item_pkcs11(',
+            'extern "C" int32_t kmipkit_client_batch_item_response_pkcs11_ttlv(',
+            "Java_org_kmipkit_extensions_Pkcs11NativeBridge_createNative(",
+            "Java_org_kmipkit_extensions_Pkcs11NativeBridge_responseTtlvNative(",
+        ):
+            with self.subTest(symbol=symbol):
+                position = native.find(symbol)
+                self.assertGreaterEqual(position, 0, f"JNI bridge is missing {symbol}")
+                guards = [match for match in candidate_guard.finditer(native, 0, position)]
+                self.assertTrue(guards, f"{symbol} must be candidate-build-only")
+                closing_guard = native.find("#endif", position)
+                self.assertGreater(closing_guard, position, f"{symbol} guard must close")
+
+        powershell = (REPOSITORY_ROOT / "bindings/java/native/build.ps1").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            powershell,
+            r"(?s)if \(\$env:KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD -eq '1'\) \{\s*"
+            r"\$compiler \+= ' /DKMIPKIT_PKCS11_CANDIDATE_TEST'\s*\}",
+        )
+
+        shell = (REPOSITORY_ROOT / "bindings/java/native/build.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            shell,
+            r'(?s)if \[ "\$\{KMIPKIT_PKCS11_CANDIDATE_TEST_BUILD:-\}" = "1" \]; then\s*'
+            r'jni_candidate_define="-DKMIPKIT_PKCS11_CANDIDATE_TEST"\s*else\s*'
+            r'jni_candidate_define=""\s*fi',
+        )
+        self.assertIn("${jni_candidate_define:+$jni_candidate_define}", shell)
+
     def test_java_package_loader_smoke_runs_offline_on_every_platform(self) -> None:
         contents = self.require_workflow()
         java_job = self.require_job(contents, "language-java")
