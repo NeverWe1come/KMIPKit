@@ -26,7 +26,9 @@ API_REQUIREMENTS = {
 }
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+    "bindings/python/tests/test_rekey_native_integration.py",
     "bindings/python/tests/test_rekey_operation.py",
     "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -132,6 +134,25 @@ class RekeyParityManifestTests(unittest.TestCase):
         self.assertEqual(1, len(operations))
         self.assertEqual("verified", operations[0]["apiState"])
         self.assertEqual(LANGUAGES, set(operations[0]["declarations"]))
+
+    def test_rekey_c_abi_contract_is_documented_in_manifest_and_generated_header(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        request_docs = " ".join(functions["client_batch_item_rekey"]["c"]["documentation"])
+        response_docs = " ".join(
+            functions["client_batch_item_response_rekey"]["c"]["documentation"]
+        )
+        self.assertIn("copied during this call", request_docs)
+        self.assertIn("copy completes before this function returns", request_docs)
+        self.assertIn("borrowed from the response item", response_docs)
+        self.assertIn("invalid when the response item is released", response_docs)
+
+        header = (ROOT / "bindings" / "c" / "include" / "kmipkit.h").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("copied during this call", header)
+        self.assertIn("copy completes before this function returns", header)
+        self.assertIn("borrowed from the response item", header)
+        self.assertIn("invalid when the response item is released", header)
 
 
 if __name__ == "__main__":

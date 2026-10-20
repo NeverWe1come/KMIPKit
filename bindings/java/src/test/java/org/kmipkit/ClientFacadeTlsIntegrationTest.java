@@ -1573,6 +1573,98 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
+    void rekeyResponseUsesNativeJniBridgeAndRestrictsNonSuccessPayloads() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry("kmipkit-test-server", testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD, new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, rekeyResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-rekey-response-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        ClientBatchItemResult.RekeyResponse successful;
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(1);
+            batch.add(ClientBatchItem.rekey(UniqueIdentifier.textString("existing-success"),
+                    null, null, null).withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.rekey(UniqueIdentifier.textString("existing-failure"),
+                    null, null, null).withUniqueBatchItemId(uniqueBatchItemId(1)));
+            batch.add(ClientBatchItem.rekey(UniqueIdentifier.textString("existing-pending"),
+                    null, null, null).withUniqueBatchItemId(uniqueBatchItemId(2)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult success = response.itemAt(0);
+                    ClientBatchItemResult failure = response.itemAt(1);
+                    ClientBatchItemResult pending = response.itemAt(2)) {
+                assertEquals(3, response.itemCount());
+                assertEquals(0x04, success.operation());
+                assertEquals(0, success.resultStatus());
+                successful = success.rekeyResponse().orElseThrow();
+
+                assertEquals(0x04, failure.operation());
+                assertEquals(1, failure.resultStatus());
+                assertEquals(5, failure.resultReason().orElseThrow());
+                assertTrue(failure.rekeyResponse().isEmpty());
+
+                assertEquals(0x04, pending.operation());
+                assertEquals(2, pending.resultStatus());
+                assertTrue(pending.outcomeKind().isPending());
+                assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
+                assertTrue(pending.rekeyResponse().isEmpty());
+            }
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        try (successful; TtlvStructureView responseTtlv = successful.responseTtlv().view()) {
+            assertEquals(UniqueIdentifier.Kind.TEXT_STRING, successful.uniqueIdentifier().kind());
+            assertEquals("replacement-key", successful.uniqueIdentifier().text());
+            assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            try (TtlvItemView payload = responseTtlv.itemAt(3);
+                    TtlvValueView payloadValue = payload.value();
+                    TtlvStructureView payloadStructure = payloadValue.structure()) {
+                assertTagOrder(payloadStructure, 0x420094, 0x541234);
+                assertTrue(containsByteString(payloadStructure, 0x541234,
+                        new byte[] {0x01, 0x00, (byte) 0xff}));
+            }
+            assertFalse(successful.toString().contains("replacement-key"));
+        }
+        assertContains(request, enumeration(0x42005c, 0x04));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 0x04)));
+        assertTrue(peer.isDone());
+    }
+
+    @Test
     void obtainLeaseResponseUsesNativeJniBridgeAndRetainsOwnedTtlvOverTls() throws Exception {
         Path serverStorePath = temporaryDirectory.resolve("obtain-lease-server.p12");
         Path clientStorePath = temporaryDirectory.resolve("obtain-lease-client.p12");
@@ -2924,6 +3016,25 @@ final class ClientFacadeTlsIntegrationTest {
         return structure(0x42007b, header, responseItem);
     }
 
+    private static byte[] rekeyResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(3)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "replacement-key".getBytes(StandardCharsets.UTF_8)),
+                item(0x541234, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
+        byte[] success = structure(0x42000f, enumeration(0x42005c, 0x04),
+                item(0x420093, 8, uniqueBatchItemId(0)), enumeration(0x42007f, 0), payload);
+        byte[] failure = structure(0x42000f, enumeration(0x42005c, 0x04),
+                item(0x420093, 8, uniqueBatchItemId(1)), enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5));
+        byte[] pending = structure(0x42000f, enumeration(0x42005c, 0x04),
+                item(0x420093, 8, uniqueBatchItemId(2)), enumeration(0x42007f, 2),
+                item(0x420006, 8, CORRELATION), structure(0x42007c));
+        return structure(0x42007b, header, success, failure, pending);
+    }
+
     private static byte[] locateResponseMessage(int identifierCount) throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
@@ -2972,6 +3083,17 @@ final class ClientFacadeTlsIntegrationTest {
         output.write(value);
         output.write(new byte[(8 - value.length % 8) % 8]);
         return bytes.toByteArray();
+    }
+
+    private static int countOccurrences(byte[] actual, byte[] expected) {
+        int count = 0;
+        for (int offset = 0; offset <= actual.length - expected.length; offset++) {
+            if (Arrays.equals(expected, Arrays.copyOfRange(actual, offset, offset + expected.length))) {
+                count++;
+                offset += expected.length - 1;
+            }
+        }
+        return count;
     }
 
     private static byte[] integer(int value) {
