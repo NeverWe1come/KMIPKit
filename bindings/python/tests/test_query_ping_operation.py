@@ -161,6 +161,128 @@ def test_query_snapshot_uses_tuple_backing_and_string_contents(
     assert observed == [([1, 0xF123_4567], ["backing-value"])]
 
 
+def test_bounded_snapshot_maps_list_allocation_failure_to_resource_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class AllocationFailureTuple(tuple):
+        def __new__(cls, _values=()):
+            raise MemoryError
+
+    monkeypatch.setattr(extensions, "tuple", AllocationFailureTuple, raising=False)
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions._bounded_snapshot(["group"], 10)
+
+
+def test_bounded_snapshot_maps_tuple_allocation_failure_to_resource_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class AllocationFailureTuple(tuple):
+        fail = False
+
+        def __new__(cls, values=()):
+            if cls.fail:
+                raise MemoryError
+            return super().__new__(cls, values)
+
+    values = AllocationFailureTuple(("group",))
+    AllocationFailureTuple.fail = True
+    monkeypatch.setattr(extensions, "tuple", AllocationFailureTuple, raising=False)
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions._bounded_snapshot(values, 10)
+
+
+def test_query_preflight_rejects_object_group_span_count_overflow(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(extensions.sys, "maxsize", 4)
+    monkeypatch.setattr(
+        extensions,
+        "_client_ffi",
+        SimpleNamespace(
+            sizeof=lambda name: 1 if name == "uint32_t" else 8,
+        ),
+    )
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions.client_batch_item_query([1], ["group"])
+
+
+def test_query_preflight_rejects_function_count_overflow(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(extensions.sys, "maxsize", 0)
+    monkeypatch.setattr(
+        extensions,
+        "_client_ffi",
+        SimpleNamespace(sizeof=lambda _name: 1),
+    )
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions.client_batch_item_query([1], None)
+
+
+def test_query_rechecks_group_span_count_after_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(extensions.sys, "maxsize", 4)
+    monkeypatch.setattr(
+        extensions,
+        "_client_ffi",
+        SimpleNamespace(sizeof=lambda name: 1 if name == "uint32_t" else 8),
+    )
+    groups: list[str] = []
+
+    def changed_snapshot(values: object, _maximum: int) -> tuple[object, ...]:
+        return ("group",) if values is groups else tuple(values)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(extensions, "_bounded_snapshot", changed_snapshot)
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions.client_batch_item_query([1], groups)
+
+
+def test_query_rejects_encoded_byte_count_overflow_before_native_staging(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class MinimalFFI:
+        NULL = None
+
+        @staticmethod
+        def sizeof(_name: str) -> int:
+            return 1
+
+        @staticmethod
+        def new(c_type: str, value: object) -> object:
+            if c_type == "kmipkit_byte_span_v1_t[]":
+                return [SimpleNamespace(data=None, length=0) for _ in range(int(value))]
+            return object()
+
+    monkeypatch.setattr(extensions.sys, "maxsize", 3)
+    monkeypatch.setattr(extensions, "_client_ffi", MinimalFFI())
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions.client_batch_item_query([1], ["four"])
+
+
+def test_query_rechecks_element_limit_after_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    limits = ttlv.codec_limits_create(4096, 64, 3)
+    groups: list[str] = []
+
+    def changed_snapshot(values: object, _maximum: int) -> tuple[object, ...]:
+        return ("group-a", "group-b") if values is groups else tuple(values)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(extensions, "_bounded_snapshot", changed_snapshot)
+    try:
+        with pytest.raises(errors.ResourceLimitError):
+            extensions.client_batch_item_query_with_limits([1], groups, limits)
+    finally:
+        limits.close()
+
+
 def test_query_builder_rejects_group_text_when_character_count_exceeds_budget() -> None:
     limits = ttlv.codec_limits_create(32, 64, 100)
     try:

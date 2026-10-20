@@ -14,8 +14,8 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OperationData, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference,
-    StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
+    ObtainLeaseRequest, OperationData, Pkcs11Request, SecretBytes, SecretText, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -6293,6 +6293,203 @@ fn assert_crypto_result_getters_return_status(
         ),
         expected_status
     );
+
+    assert_symmetric_crypto_result_getters_return_status(item, expected_status);
+}
+
+fn assert_symmetric_crypto_result_getters_return_status(
+    item: *mut kmipkit_client_batch_item_response_t,
+    expected_status: i32,
+) {
+    let mut present = 0;
+    let mut correlation_present = 0;
+    let mut correlation = byte_span(&[]);
+    let mut output_identifier = empty_unique_identifier_output_v1();
+    let mut data_present = 0;
+    let mut data = byte_span(&[]);
+    let mut iv_present = 0;
+    let mut iv = byte_span(&[]);
+    let mut tag_present = 0;
+    let mut tag = byte_span(&[]);
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_encrypt(
+            item,
+            &raw mut present,
+            &raw mut output_identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut iv_present,
+            &raw mut iv,
+            &raw mut correlation_present,
+            &raw mut correlation,
+            &raw mut tag_present,
+            &raw mut tag,
+        ),
+        expected_status
+    );
+
+    output_identifier = empty_unique_identifier_output_v1();
+    data_present = 0;
+    data = byte_span(&[]);
+    correlation_present = 0;
+    correlation = byte_span(&[]);
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_decrypt(
+            item,
+            &raw mut present,
+            &raw mut output_identifier,
+            &raw mut data_present,
+            &raw mut data,
+            &raw mut correlation_present,
+            &raw mut correlation,
+        ),
+        expected_status
+    );
+}
+
+fn successful_pkcs11_response_item() -> *mut kmipkit_client_batch_item_response_t {
+    let mut request_function = Structure::new();
+    request_function
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_015A)
+                    .expect("PKCS#11 Function tag fits the KMIP tag field")
+                    .try_checked()
+                    .expect("PKCS#11 Function is allocated in KMIP 2.1"),
+                Value::enumeration(0xFFFF_1234),
+            )
+            .expect("the PKCS#11 Function item fits the test model"),
+        )
+        .expect("the PKCS#11 request Function fits the test structure");
+
+    let correlation = b"pkcs11-ffi-response-correlation";
+    successful_cryptographic_item(
+        ClientRequest::Pkcs11(Pkcs11Request::new(request_function)),
+        0x33,
+        b"pkcs11-ffi-response",
+        vec![
+            ttlv_structure(
+                0x0042_0159,
+                [ttlv_item(0x0054_1234, 0x08, b"opaque-interface")],
+            ),
+            ttlv_structure(0x0042_015A, [ttlv_enumeration(0x0042_015A, 0xFFFF_1234)]),
+            ttlv_item(0x0042_00D6, 0x08, correlation),
+            ttlv_structure(
+                0x0042_015C,
+                [ttlv_item(0x0054_1235, 0x08, b"opaque-output")],
+            ),
+            ttlv_structure(0x0042_015D, [ttlv_enumeration(0x0042_015D, 0x8FFF_1234)]),
+        ],
+    )
+}
+
+fn assert_present_pkcs11_structure(
+    getter: extern "C" fn(
+        *mut crate::kmipkit_client_batch_item_response_t,
+        *mut u8,
+        *mut *mut crate::kmipkit_ttlv_structure_t,
+    ) -> i32,
+    item: *mut crate::kmipkit_client_batch_item_response_t,
+) {
+    let mut present = 0;
+    let mut structure = ptr::null_mut();
+    assert_eq!(getter(item, &raw mut present, &raw mut structure), SUCCESS);
+    assert_eq!(present, 1);
+    assert!(!structure.is_null());
+    kmipkit_ttlv_structure_release(structure);
+}
+
+#[test]
+fn ffi_pkcs11_response_getters_copy_optional_values() {
+    let item = successful_pkcs11_response_item();
+    let correlation = b"pkcs11-ffi-response-correlation";
+
+    let mut present = u8::MAX;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_ttlv(
+            item,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+
+    assert_present_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_interface_ttlv,
+        item,
+    );
+    assert_present_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_function_ttlv,
+        item,
+    );
+    assert_present_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv,
+        item,
+    );
+    assert_present_pkcs11_structure(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_return_code_ttlv,
+        item,
+    );
+
+    let mut correlation_span = byte_span(&[]);
+    present = 0;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_correlation_value(
+            item,
+            &raw mut present,
+            &raw mut correlation_span,
+        ),
+        SUCCESS
+    );
+    assert_eq!(present, 1);
+    assert_response_span(correlation_span, correlation);
+
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_pkcs11_response_ttlv_rejects_mismatched_handle() {
+    let item = successful_pkcs11_response_item();
+    let handle = reference_handle(item, Kind::ClientBatchItemResponse)
+        .expect("the PKCS#11 item is registered");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &handle.value else {
+        panic!("the response item handle stores its response");
+    };
+    let mismatched = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchResponse(Arc::clone(response)),
+    );
+    let mut present = u8::MAX;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_ttlv(
+            mismatched,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+
+    let mut interface = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_pkcs11_interface_ttlv(
+            mismatched,
+            &raw mut present,
+            &raw mut interface,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(interface.is_null());
+
+    kmipkit_client_batch_item_response_release(mismatched);
+    kmipkit_client_batch_item_response_release(item);
 }
 
 #[test]

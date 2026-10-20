@@ -259,6 +259,16 @@ def test_pkcs11_cffi_constructor_accepts_optional_structures_and_bytes() -> None
         input_parameters.close()
 
 
+def test_pkcs11_cffi_constructor_accepts_absent_correlation_value() -> None:
+    function = ttlv.ttlv_structure_create()
+    item = extensions.client_batch_item_pkcs11(function)
+    try:
+        assert isinstance(item, extensions.ClientBatchItem)
+    finally:
+        item.close()
+        function.close()
+
+
 def test_pkcs11_cffi_response_accessor_clears_outputs_for_invalid_handle() -> None:
     present = client_ffi.new("uint8_t *", 0xFF)
     response = client_ffi.new(
@@ -329,8 +339,145 @@ def test_pkcs11_response_zeroizes_owned_correlation_when_closed() -> None:
     assert response.correlation_value == correlation
 
     response.close()
+    response.close()
 
     assert owned.buffer == bytearray(len(correlation))
+    assert "redacted" in repr(response)
+    with pytest.raises(RuntimeError, match="PKCS#11 response is closed"):
+        _ = response.correlation_value
+
+
+def test_pkcs11_owned_structure_releases_native_handles_on_invalid_results(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item = SimpleNamespace(_pointer=lambda: client_ffi.NULL)
+    handle = client_ffi.cast("kmipkit_ttlv_structure_t *", 1)
+    released: list[object] = []
+
+    def get_error(_item: object, _present: object, output: object) -> int:
+        output[0] = handle  # type: ignore[index]
+        return 4
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            response=get_error,
+            kmipkit_ttlv_structure_release=released.append,
+        ),
+    )
+    with pytest.raises(client.errors.InvalidInputError):
+        client._pkcs11_owned_structure(item, "response")
+    assert released == [handle]
+
+    released.clear()
+
+    def absent_with_handle(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(client, "lib", SimpleNamespace(
+        response=absent_with_handle,
+        kmipkit_ttlv_structure_release=released.append,
+    ))
+    with pytest.raises(client.errors.InvalidInputError):
+        client._pkcs11_owned_structure(item, "response")
+    assert released == [handle]
+
+
+def test_pkcs11_owned_structure_releases_handle_when_mapping_raises(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item = SimpleNamespace(_pointer=lambda: client_ffi.NULL)
+    handle = client_ffi.cast("kmipkit_ttlv_structure_t *", 1)
+    released: list[object] = []
+
+    def get_structure(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = handle  # type: ignore[index]
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            response=get_structure,
+            kmipkit_ttlv_structure_release=released.append,
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("mapping failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="mapping failed"):
+        client._pkcs11_owned_structure(item, "response")
+    assert released == [handle]
+
+
+@pytest.mark.parametrize(
+    ("status", "present_value", "span_address", "span_length"),
+    [
+        (4, 0, 0, 0),
+        (0, 2, 0, 0),
+        (0, 0, 1, 1),
+        (0, 1, 0, 1),
+    ],
+)
+def test_pkcs11_correlation_accessor_rejects_inconsistent_native_spans(
+    monkeypatch: pytest.MonkeyPatch,
+    status: int,
+    present_value: int,
+    span_address: int,
+    span_length: int,
+) -> None:
+    item = SimpleNamespace(_pointer=lambda: client_ffi.NULL)
+    span_data = (
+        client_ffi.cast("uint8_t *", span_address)
+        if span_address
+        else client_ffi.NULL
+    )
+
+    def get_span(_item: object, present: object, output: object) -> int:
+        present[0] = present_value  # type: ignore[index]
+        output[0].data = span_data  # type: ignore[index]
+        output[0].length = span_length  # type: ignore[index]
+        return status
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_pkcs11_correlation_value=get_span
+        ),
+    )
+
+    with pytest.raises(client.errors.InvalidInputError):
+        client._pkcs11_correlation_value(item)
+
+
+def test_pkcs11_response_mapping_handles_absent_response_and_optional_interface(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    item = SimpleNamespace()
+    monkeypatch.setattr(client, "_pkcs11_owned_structure", lambda *_args: None)
+    assert client._pkcs11_response(item) is None
+
+    response_ttlv = _structure_with_text(0x420159, "response")
+    interface_ttlv = _structure_with_text(0x420159, "interface")
+    structures = iter((response_ttlv, interface_ttlv, None, None, None))
+    monkeypatch.setattr(
+        client, "_pkcs11_owned_structure", lambda *_args: next(structures)
+    )
+    monkeypatch.setattr(client, "_pkcs11_correlation_value", lambda _item: None)
+
+    response = client._pkcs11_response(item)
+    assert response is not None
+    assert response.response_ttlv is response_ttlv
+    assert response.interface_ttlv is interface_ttlv
+    response.close()
 
 
 def test_pkcs11_response_wipes_correlation_if_later_mapping_fails(
