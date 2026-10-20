@@ -54,7 +54,11 @@ def audit(binary: Path) -> int:
         if name.startswith("Java_org_kmipkit_") and "pkcs11" in name.casefold()
     }
     extra = sorted(observed_pkcs11 - expected_pkcs11)
-    candidate = sorted(name for name in observed if "candidate" in name.casefold())
+    candidate = sorted(
+        name
+        for name in observed
+        if name.startswith("Java_org_kmipkit_") and "candidate" in name.casefold()
+    )
     if extra or candidate:
         unexpected = sorted(set(extra) | set(candidate))
         print(
