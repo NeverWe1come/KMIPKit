@@ -5,6 +5,8 @@ from __future__ import annotations
 import copy
 import json
 import re
+import shutil
+import tempfile
 import tomllib
 import unittest
 from pathlib import Path
@@ -319,6 +321,52 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         self.assertEqual(python["project"]["version"], expected)
         self.assertRegex(java_gradle, rf'(?m)^version = "{re.escape(expected)}"$')
         self.assertRegex(java_pom, rf"(?m)^\s*<version>{re.escape(expected)}</version>$")
+
+    def test_release_gate_requires_all_eight_package_families_to_use_release_line(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        generate._validate_release_package_versions(manifest, ROOT)
+
+        mutations = (
+            lambda value: value["publicPackages"].pop(),
+            lambda value: value["publicPackages"][-1].update({"id": "rust-kmipkit"}),
+            lambda value: value["publicPackages"][0].update({"versionSource": "1.0.0"}),
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate.__code__.co_firstlineno):
+                malformed = copy.deepcopy(self.checked_in_manifest)
+                mutate(malformed)
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(malformed, ROOT)
+
+    def test_release_gate_checks_rust_python_and_java_package_version_sources(self) -> None:
+        version_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in version_paths:
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination)
+            generate._validate_release_package_versions(self.checked_in_manifest, root)
+
+            python_metadata = root / "bindings/python/pyproject.toml"
+            python_metadata.write_text(
+                python_metadata.read_text(encoding="utf-8").replace(
+                    'version = "1.0.0"', 'version = "9.9.9"', 1
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaises(ManifestError):
+                generate._validate_release_package_versions(self.checked_in_manifest, root)
 
     def test_runtime_metadata_exports_are_inventoried_in_every_language(self) -> None:
         declarations = {

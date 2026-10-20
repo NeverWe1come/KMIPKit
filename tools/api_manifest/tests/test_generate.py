@@ -1547,6 +1547,30 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             self.assertEqual(stale_output.read_bytes(), sentinel)
             self.assertEqual(stale_output.stat().st_mtime_ns, expected_mtime_ns)
 
+    def test_require_complete_is_only_valid_with_check_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+
+            result = self._run_generator(root, "--write", "--require-complete")
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("--require-complete can only be used with --check", result.stderr)
+            self.assertFalse(any((root / path).exists() for path in V2_GENERATED_OUTPUTS))
+
+    def test_check_require_complete_runs_release_gate_on_checked_in_manifest(self) -> None:
+        output_before = (ROOT / V2_GENERATED_OUTPUTS[0]).read_bytes()
+
+        result = self._run_generator(
+            ROOT, "--repo-root", str(ROOT), "--check", "--require-complete"
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(
+            result.stderr,
+            "registry API generation failed: manifest or path validation failed\n",
+        )
+        self.assertEqual((ROOT / V2_GENERATED_OUTPUTS[0]).read_bytes(), output_before)
+
     def test_rejects_malformed_manifest_without_writing_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
