@@ -1,9 +1,11 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
@@ -91,6 +93,41 @@ final class ClientBatchItemPingQueryMappingTest {
         assertThrows(ResourceLimitException.class, () ->
                 NativeExtensionRegistry.clientBatchItemQueryWithLimits(
                         new int[] {1}, new byte[][] {null}, new long[] {1024, 3, 100}));
+    }
+
+    @Test
+    void queryJniBridgeAcceptsRawUtf8GroupsAndPreservesAbsentVersusEmptyGroups() {
+        byte[][] populatedGroups = {"grupo-ñ".getBytes(StandardCharsets.UTF_8), new byte[0]};
+        long populated = NativeExtensionRegistry.clientBatchItemQuery(
+                new int[] {1, 0xf123_4567}, populatedGroups);
+        long absentGroups = NativeExtensionRegistry.clientBatchItemQuery(new int[] {14}, null);
+        long emptyGroups = NativeExtensionRegistry.clientBatchItemQuery(new int[] {14}, new byte[0][]);
+        try {
+            assertNotEquals(0, populated);
+            assertNotEquals(0, absentGroups);
+            assertNotEquals(0, emptyGroups);
+            assertEquals(0, NativeExtensionRegistry.clientBatchItemExtensionCount(populated));
+            assertEquals(0, NativeExtensionRegistry.clientBatchItemExtensionCount(absentGroups));
+            assertEquals(0, NativeExtensionRegistry.clientBatchItemExtensionCount(emptyGroups));
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, populated);
+            NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, absentGroups);
+            NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, emptyGroups);
+        }
+    }
+
+    @Test
+    void queryJniBridgeRejectsNullAndEmptyFunctionArrays() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQuery(null, null));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQuery(new int[0], null));
+    }
+
+    @Test
+    void queryJniBridgeRejectsNullGroupBytesAfterLimitsPassPreflight() {
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                new int[] {1}, new byte[][] {null}, new long[] {1024, 4, 100}));
     }
 
     @Test

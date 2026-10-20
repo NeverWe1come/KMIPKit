@@ -163,6 +163,34 @@ final class ClientBatchNativeBoundaryTest {
     }
 
     @Test
+    void cryptoResponseJniRejectsNullNativeResponseHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseEncrypt(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseDecrypt(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseHash(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMac(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseMacVerify(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseSign(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseSignatureVerify(0));
+    }
+
+    @Test
+    void objectResponseJniRejectsNullNativeResponseHandles() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseImport(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseLocate(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey(0));
+    }
+
+    @Test
     void splitKeyFactoryMarshalsTextAndEnumerationIdentifiers() {
         try (TtlvStructure attributes = TtlvStructure.create();
                 ClientBatchItem textIdentifier = ClientBatchItem.createSplitKey(
