@@ -6,23 +6,24 @@ import copy
 import json
 import re
 import shutil
+import subprocess
 import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from jsonschema import Draft202012Validator
 
 from tools.api_manifest import generate
+from tools.api_manifest.audit_rust_exports import _canonical_export_name
 from tools.api_manifest.generate import (
     ManifestError,
     _validate_operation_inventory,
     _validate_references,
-    _validate_v2_readiness,
     _validate_schema,
+    _validate_v2_readiness,
 )
-from tools.api_manifest.audit_rust_exports import _canonical_export_name
-
 
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
@@ -43,6 +44,23 @@ EXPECTED_PACKAGES = {
     "python-kmipkit",
 }
 EXPECTED_LANGUAGES = ["rust", "c", "java", "python"]
+EXPECTED_RELEASE_SHARED_CAPABILITIES = {
+    "generic_ttlv_model",
+    "public_binding_surface",
+    "rust_transport_exchange",
+    "ttlv_wire_codec",
+    "vendor_extension_registry",
+    "ffi_runtime_metadata",
+    "discover_versions_request_item",
+    "opaque_register_context",
+    "client_batch_model",
+    "client_execution",
+    "production_transport",
+    "api_level_discovery",
+    "server_generated_creation",
+    "crypto_response_ttlv",
+    "usage_allocation_guard",
+}
 EXPECTED_API_LEVELS = ["high-level", "typed-protocol", "generic-ttlv"]
 EXPECTED_ROOT_FIELDS = {
     "formatVersion",
@@ -338,6 +356,45 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 with self.assertRaises(ManifestError):
                     generate._validate_release_package_versions(malformed, ROOT)
 
+    def test_release_gate_requires_the_complete_shared_capability_inventory(self) -> None:
+        operations = [
+            {"apiState": "verified"}
+            for _ in range(generate._EXPECTED_CLIENT_1_0_OPERATION_COUNT)
+        ]
+        capabilities = [
+            {"capabilityId": capability_id, "capabilityState": "verified"}
+            for capability_id in EXPECTED_RELEASE_SHARED_CAPABILITIES
+        ]
+        declarations = []
+        generate._require_complete_readiness(operations, capabilities, declarations)
+
+        with self.assertRaisesRegex(ManifestError, "capability inventory"):
+            generate._require_complete_readiness(
+                operations,
+                [row for row in capabilities if row["capabilityId"] != "usage_allocation_guard"],
+                declarations,
+            )
+
+    def test_release_gate_runs_all_export_audits_and_fails_closed(self) -> None:
+        with mock.patch(
+            "tools.api_manifest.generate.subprocess.run",
+            return_value=subprocess.CompletedProcess([], 0),
+        ) as run:
+            generate._validate_release_export_inventories(ROOT)
+
+        commands = [call.args[0] for call in run.call_args_list]
+        self.assertEqual(len(commands), 2)
+        self.assertTrue(all("--check" in command for command in commands))
+        self.assertTrue(any("audit_rust_exports.py" in command[1] for command in commands))
+        self.assertTrue(any("audit_binding_exports.py" in command[1] for command in commands))
+
+        with mock.patch(
+            "tools.api_manifest.generate.subprocess.run",
+            return_value=subprocess.CompletedProcess([], 1),
+        ):
+            with self.assertRaisesRegex(ManifestError, "export inventory"):
+                generate._validate_release_export_inventories(ROOT)
+
     def test_release_gate_checks_rust_python_and_java_package_version_sources(self) -> None:
         version_paths = (
             "Cargo.toml",
@@ -346,6 +403,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "crates/kmipkit-transport/Cargo.toml",
             "crates/kmipkit-client/Cargo.toml",
             "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
             "bindings/python/pyproject.toml",
             "bindings/java/build.gradle.kts",
             "bindings/java/pom.xml",
@@ -358,6 +416,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             ),
             (
                 "crates/kmipkit-client/Cargo.toml",
+                "version.workspace = true",
+                'version = "1.0.0"',
+            ),
+            (
+                "crates/kmipkit-ffi/Cargo.toml",
                 "version.workspace = true",
                 'version = "1.0.0"',
             ),
@@ -391,6 +454,33 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 source.write_text(mutated, encoding="utf-8")
                 with self.assertRaises(ManifestError):
                     generate._validate_release_package_versions(self.checked_in_manifest, root)
+
+    def test_release_gate_rejects_oversized_package_version_source(self) -> None:
+        version_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in version_paths:
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination)
+            oversized = root / "bindings/java/build.gradle.kts"
+            oversized.write_text(
+                'version = "1.0.0"\n' + (" " * (1024 * 1024 + 1)),
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(ManifestError):
+                generate._validate_release_package_versions(self.checked_in_manifest, root)
 
     def test_runtime_metadata_exports_are_inventoried_in_every_language(self) -> None:
         declarations = {
