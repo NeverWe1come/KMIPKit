@@ -4577,3 +4577,23 @@ does not mark T055 complete.
 
 Red, Green, and Refactor are separate DCO-signed commits. T084 and T055 remain
 open pending current-head CI and the selected-scope changed-code coverage gate.
+
+### T083 — JNI and changed-production coverage recovery (2026-10-20)
+
+The selected-scope gate showed that the JNI bridge had fallen below its 85%
+scope threshold after the additions in this branch. The correction adds
+semantic Java/JNI cases for optional crypto response fields, Query input
+preflight and group preservation, Import/Export/CreateSplitKey optional-value
+boundaries, and null native response handles. Production behavior and coverage
+thresholds are unchanged.
+
+| Stage | Commit | Command or evidence | Result |
+|---|---|---|---|
+| Red | `67451287` | Fresh Linux JNI collector before the final response-handle and Query-preflight cases; `mvn clean verify` | Expected Red: 343 tests passed (one skipped) and JaCoCo passed, but JNI was 4,291/5,060 executable lines (84.80%), below the unchanged 85% minimum. |
+| Green | `fd611046` | Focused Java/JNI boundary suite; fresh `scripts/collect_jni_coverage.sh` report | PASS: focused boundary and Query tests 39/39; full Java suite 346 tests, 0 failures, 1 skipped; JaCoCo passed; JNI is 4,306/5,060 (85.10%), above its 85% minimum. |
+| Refactor | This DCO-signed evidence commit | `python -B -m unittest discover -s scripts/tests -p test_workflow.py`; `python -B -m unittest discover -s scripts/tests -p test_coverage_gate.py`; `git diff --check` | PASS: workflow contracts 45/45; coverage-gate contracts 65 passed, 3 platform skips; no whitespace errors. Current-head multi-scope coverage aggregation and the full required CI remain pending. |
+
+The current Java/JNI changed-line subset is 4,734/5,181 (91.37%); this is not
+the all-language aggregate and does not satisfy or replace the required
+current-head 95% selected-scope CI gate. T083, T055, and T084 remain open
+until the complete current-head CI aggregate passes.
