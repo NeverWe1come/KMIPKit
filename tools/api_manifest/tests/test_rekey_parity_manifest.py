@@ -142,7 +142,7 @@ class RekeyParityManifestTests(unittest.TestCase):
             functions["client_batch_item_response_rekey"]["c"]["documentation"]
         )
         self.assertIn("copied during this call", request_docs)
-        self.assertIn("copy completes before this function returns", request_docs)
+        self.assertIn("both copies complete before this function returns", request_docs)
         self.assertIn("borrowed from the response item", response_docs)
         self.assertIn("invalid when the response item is released", response_docs)
 
@@ -150,7 +150,7 @@ class RekeyParityManifestTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("copied during this call", header)
-        self.assertIn("copy completes before this function returns", header)
+        self.assertIn("both copies complete before this function returns", header)
         self.assertIn("borrowed from the response item", header)
         self.assertIn("invalid when the response item is released", header)
 

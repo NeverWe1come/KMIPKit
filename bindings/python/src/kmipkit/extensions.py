@@ -92,6 +92,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_ping",
         "kmipkit_client_batch_item_query",
         "kmipkit_client_batch_item_query_with_limits",
+        "kmipkit_client_batch_item_rekey",
     }
 )
 
@@ -1907,15 +1908,29 @@ def client_batch_item_rekey(
         raw_offset = _integer_range(offset, 0, 0xFFFF_FFFF)
     with _staging_buffer_scope() as staging_buffers:
         identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+        client_identifier = _client_ffi.cast(
+            "kmipkit_unique_identifier_v1_t *",
+            int(ffi.cast("uintptr_t", identifier)),
+        )
+        attributes_pointer = _native_structure(attributes)
+        masks_pointer = _native_structure(protection_storage_masks)
+        client_attributes = _client_ffi.cast(
+            "kmipkit_ttlv_structure_t *",
+            int(ffi.cast("uintptr_t", attributes_pointer)),
+        )
+        client_masks = _client_ffi.cast(
+            "kmipkit_ttlv_structure_t *",
+            int(ffi.cast("uintptr_t", masks_pointer)),
+        )
         handle = _make_handle(
             "kmipkit_client_batch_item_t",
             "kmipkit_client_batch_item_rekey",
             (
-                identifier,
+                client_identifier,
                 has_offset,
                 raw_offset,
-                _native_structure(attributes),
-                _native_structure(protection_storage_masks),
+                client_attributes,
+                client_masks,
             ),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)

@@ -31921,7 +31921,8 @@
     {
       "c": {
         "documentation": [
-          "Creates a typed Re-key item with optional Unique Identifier, Offset, Attributes, and Protection Storage Masks."
+          "Creates a typed Re-key item with optional Unique Identifier, Offset, Attributes, and Protection Storage Masks.",
+          "Input Attributes and Protection Storage Masks are copied during this call; both copies complete before this function returns, and callers retain ownership of the input structures."
         ],
         "errorCategories": [
           "invalid_input",
@@ -32072,7 +32073,8 @@
     {
       "c": {
         "documentation": [
-          "Returns the replacement key Unique Identifier only for a successful Re-key result."
+          "Returns the replacement key Unique Identifier only for a successful Re-key result.",
+          "For a text Unique Identifier, out_unique_identifier.text_data is borrowed from the response item and becomes invalid when the response item is released; copy the text bytes before releasing it."
         ],
         "errorCategories": [
           "invalid_input",
@@ -34149,7 +34151,9 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -68140,7 +68144,9 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -69525,7 +69531,9 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -70560,7 +70568,9 @@
       "packageId": "rust-kmipkit-client",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -78775,7 +78785,9 @@
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -78842,7 +78854,9 @@
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -78909,7 +78923,9 @@
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -78976,7 +78992,9 @@
       "packageId": "rust-kmipkit-protocol",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -126752,7 +126770,9 @@
       "packageId": "c-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -126819,7 +126839,9 @@
       "packageId": "c-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -126886,7 +126908,9 @@
       "packageId": "c-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -126953,7 +126977,9 @@
       "packageId": "java-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127020,7 +127046,9 @@
       "packageId": "java-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127087,7 +127115,9 @@
       "packageId": "java-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127154,7 +127184,9 @@
       "packageId": "java-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127221,7 +127253,9 @@
       "packageId": "java-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127289,7 +127323,9 @@
       "packageId": "java-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127356,7 +127392,9 @@
       "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127423,7 +127461,9 @@
       "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127490,7 +127530,9 @@
       "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127557,7 +127599,9 @@
       "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127624,7 +127668,9 @@
       "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -127692,7 +127738,9 @@
       "packageId": "python-kmipkit",
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/RekeyMappingTest.java",
+        "bindings/python/tests/test_rekey_native_integration.py",
         "bindings/python/tests/test_rekey_operation.py",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",

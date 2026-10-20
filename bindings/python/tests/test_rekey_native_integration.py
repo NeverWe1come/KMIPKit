@@ -88,12 +88,16 @@ def _read_ttlv_frame(stream: ssl.SSLSocket) -> bytes:
 
 
 def _item_tags(structure: ttlv.Structure) -> tuple[int, ...]:
-    tags: list[int] = []
     with ttlv.ttlv_structure_view(structure) as view:
-        for index in range(ttlv.ttlv_structure_view_item_count(view)):
-            with ttlv.ttlv_structure_view_item_at(view, index) as item:
-                with ttlv.ttlv_item_view_tag(item) as tag:
-                    tags.append(ttlv.tag_value(tag))
+        return _view_item_tags(view)
+
+
+def _view_item_tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
+    tags: list[int] = []
+    for index in range(ttlv.ttlv_structure_view_item_count(view)):
+        with ttlv.ttlv_structure_view_item_at(view, index) as item:
+            with ttlv.ttlv_item_view_tag(item) as tag:
+                tags.append(ttlv.tag_value(tag))
     return tuple(tags)
 
 
@@ -208,7 +212,7 @@ def test_rekey_success_ttlv_outlives_source_and_failures_expose_no_success_resul
             with ttlv.ttlv_structure_view_item_at(response_view, 3) as payload_item:
                 with ttlv.ttlv_item_view_value(payload_item) as payload_value:
                     with ttlv.ttlv_value_view_structure(payload_value) as payload:
-                        assert _item_tags(payload) == (0x420094, 0x541234)
+                            assert _view_item_tags(payload) == (0x420094, 0x541234)
         assert "replacement-key" not in repr(rekey_response)
     finally:
         if rekey_response is not None:
