@@ -65,6 +65,98 @@ def report_catalog() -> dict[str, object]:
 
 
 class CoverageReportTests(unittest.TestCase):
+    @staticmethod
+    def _complete_profile_readiness_fixture() -> tuple[
+        dict[str, object],
+        dict[str, object],
+        dict[str, object],
+        list[dict[str, object]],
+        str,
+        str,
+    ]:
+        from scripts import ci_summary
+
+        catalog = report_catalog()
+        requirement = catalog["requirements"][0]
+        requirement["implementation_refs"] = ["crates/kmipkit-protocol/src/profile.rs"]
+        requirement["verification_refs"] = ["tools/normative_catalog/tests/test_report.py"]
+        requirement_id = requirement["requirement_id"]
+        clause_id = "KMIPKIT-CLAUSE-SPEC-8.1-001"
+        test_id = "KMIPKIT-TEST-SPEC-READINESS-001"
+        profile_a_id = "KMIPKIT-PROFILE-READINESS-A"
+        profile_b_id = "KMIPKIT-PROFILE-READINESS-B"
+        catalog["profiles"] = [
+            {
+                "profile_id": profile_a_id,
+                "name": "Readiness A",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "evidence_complete",
+                "source_clause_ids": [clause_id],
+                "requirement_ids": [requirement_id],
+                "test_case_ids": [test_id],
+                "dependency_profile_ids": [profile_b_id],
+            },
+            {
+                "profile_id": profile_b_id,
+                "name": "Readiness B",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "evidence_complete",
+                "source_clause_ids": [clause_id],
+                "requirement_ids": [requirement_id],
+                "test_case_ids": [test_id],
+                "dependency_profile_ids": [],
+            },
+        ]
+        catalog["test_cases"] = [
+            {
+                "test_id": test_id,
+                "source_id": "KMIPKIT-SRC-testcases",
+                "mandatory_status": "optional",
+                "fixture_availability": "available",
+            }
+        ]
+        mappings = [
+            {
+                "requirement_id": requirement_id,
+                "source_clause_id": clause_id,
+                "verification_category": "RequiredBehavior",
+                "evaluator_present": True,
+                "test_kind": "PositiveBehavior",
+                "test_id": "profile_validation::readiness_evidence_is_complete",
+            }
+        ]
+        context = {
+            "event_name": "push",
+            "repository": ci_summary.CANONICAL_REPOSITORY,
+            "ref": ci_summary.RELEASE_REF,
+            "ref_protected": True,
+            "sha": "a" * 40,
+            "workflow_ref": ci_summary.EXPECTED_WORKFLOW_REF,
+            "run_id": "123456789",
+            "run_attempt": "1",
+        }
+        needs = {job_id: {"result": "success"} for job_id in ci_summary.EVIDENCE_REQUIRED_JOB_IDS}
+        branch_protection = {
+            "protected": True,
+            "required_pull_request_reviews": {
+                "required_approving_review_count": 1,
+                "dismiss_stale_reviews": True,
+                "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []},
+            },
+            "enforce_admins": {"enabled": True},
+            "allow_force_pushes": {"enabled": False},
+            "allow_deletions": {"enabled": False},
+        }
+        manifest = ci_summary.build_evidence_manifest(
+            event_name="push",
+            context=context,
+            needs=needs,
+            branch_protection=branch_protection,
+        )
+        return catalog, manifest, context, mappings, profile_a_id, profile_b_id
+
     def test_confined_rust_path_accepts_a_resolved_repository_alias(self) -> None:
         from tools.normative_catalog.report import _confined_rust_path
 
@@ -1254,26 +1346,64 @@ mod unrelated {
         )
         self.assertIs(readiness["published_claim"], False)
 
-    def test_dependency_cycle_blocks_readiness_without_publishing_claim(self) -> None:
+    def test_dependency_cycle_downgrades_otherwise_complete_readiness(self) -> None:
         from tools.normative_catalog import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
-        profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
-        profile["claim_state"] = "evidence_complete"
-        profile["dependency_profile_ids"] = [profile_id]
-
-        readiness = report_module.evaluate_profile_readiness(
-            catalog,
-            profile_id,
-            selected_profile_ids={profile_id},
-            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
-            verification_manifest=None,
-            current_context=None,
+        catalog, manifest, context, mappings, profile_a_id, profile_b_id = (
+            self._complete_profile_readiness_fixture()
         )
 
-        self.assertIn(f"dependency cycle detected: {profile_id}", readiness["blockers"])
-        self.assertEqual("evidence_incomplete", readiness["effective_state"])
+        acyclic_readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_a_id,
+            selected_profile_ids={profile_a_id, profile_b_id},
+            typed_rule_mappings=mappings,
+            verification_manifest=manifest,
+            current_context=context,
+            current_head=context["sha"],
+        )
+        self.assertEqual("evidence_complete", acyclic_readiness["effective_state"])
+        self.assertEqual([], acyclic_readiness["blockers"])
+
+        profile_b = next(
+            row for row in catalog["profiles"] if row["profile_id"] == profile_b_id
+        )
+        profile_b["dependency_profile_ids"] = [profile_a_id]
+        cyclic_readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_a_id,
+            selected_profile_ids={profile_a_id, profile_b_id},
+            typed_rule_mappings=mappings,
+            verification_manifest=manifest,
+            current_context=context,
+            current_head=context["sha"],
+        )
+
+        self.assertTrue(
+            any(
+                f"dependency cycle detected: {profile_a_id}" in blocker
+                for blocker in cyclic_readiness["blockers"]
+            )
+        )
+        self.assertEqual("evidence_incomplete", cyclic_readiness["effective_state"])
+
+    def test_complete_profile_readiness_never_publishes_a_public_claim(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        catalog, manifest, context, mappings, profile_a_id, profile_b_id = (
+            self._complete_profile_readiness_fixture()
+        )
+        readiness = report_module.evaluate_profile_readiness(
+            catalog,
+            profile_a_id,
+            selected_profile_ids={profile_a_id, profile_b_id},
+            typed_rule_mappings=mappings,
+            verification_manifest=manifest,
+            current_context=context,
+            current_head=context["sha"],
+        )
+
+        self.assertEqual("evidence_complete", readiness["effective_state"])
         self.assertIs(readiness["published_claim"], False)
 
     def test_report_omits_secret_markers_from_untrusted_diagnostic_text(self) -> None:

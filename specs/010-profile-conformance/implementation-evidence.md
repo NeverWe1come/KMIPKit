@@ -4148,12 +4148,12 @@ The workflow already carries the exact protected release aggregate in this branc
 
 ### T026 independent review follow-up — report dependency-cycle regression
 
-Independent QA identified a missing evaluator-level regression for cyclic profile readiness. Added a self-dependency case to the report tests. It verifies the cycle blocker is emitted, an `evidence_complete` catalog state is downgraded to `evidence_incomplete`, and no public claim is published. The existing cycle guard passed; this test-only follow-up adds no catalog, generated-file, or runtime behavior change.
+Independent QA found that the first evaluator regression did not isolate the cycle because unrelated readiness gates already made the profile incomplete. Replaced it with a synthetic two-profile A→B fixture that supplies a valid in-memory protected-release-push manifest, successful required checks, complete requirement mappings and assignments, an official linked test, and available fixture evidence. The acyclic graph evaluates to `evidence_complete` with no blockers; adding B→A produces a cycle blocker and downgrades the same catalog claim to `evidence_incomplete`. A separate test keeps the no-public-claim invariant explicit even when readiness is otherwise complete. This test-only follow-up changes no catalog, generated file, or runtime behavior.
 
 | Verification | Command | Result |
 |---|---|---|
-| Focused cycle evaluator | `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_dependency_cycle_blocks_readiness_without_publishing_claim -v` | PASS: 1 test; cycle blocked, readiness downgraded, `published_claim` false. |
-| Serial report suite | `python -B -m unittest tools.normative_catalog.tests.test_report -q` | PASS: 47 tests, 1 skipped. |
-| Serial full validator suite | `python -B -m unittest tools.normative_catalog.tests.test_validate -q` | PASS: 284 tests, 1 skipped, completed in 267.565 seconds. |
+| Focused cycle and claim evaluators | `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_dependency_cycle_downgrades_otherwise_complete_readiness tools.normative_catalog.tests.test_report.CoverageReportTests.test_complete_profile_readiness_never_publishes_a_public_claim -v` | PASS: 2 tests; acyclic readiness is complete with zero blockers, cyclic readiness is incomplete with a cycle blocker, and a complete readiness result still publishes no claim. |
+| Serial report suite | `python -B -m unittest tools.normative_catalog.tests.test_report -q` | PASS: 48 tests, 1 skipped. |
+| Serial full validator suite | `python -B -m unittest tools.normative_catalog.tests.test_validate -q` | PASS: 284 tests, 1 skipped, completed in 268.035 seconds. |
 
-This local test evidence does not satisfy the external protected-release-push gate. No CI run ID, current-run evidence, secret, token, or protection response was persisted or inspected; T026 remains open.
+The test's fabricated run context and manifest remain in-memory test data and do not satisfy the external protected-release-push gate. No actual CI run ID, current-run evidence, secret, token, or protection response was persisted or inspected; T026 remains open.
