@@ -181,6 +181,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "PKCS#11",
                 "Query",
                 "Re-certify",
+                "Re-key",
             ],
         )
         self.assertEqual(
