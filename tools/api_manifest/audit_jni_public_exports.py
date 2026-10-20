@@ -12,12 +12,13 @@ from audit_binding_exports import read_native_exports
 
 ROOT = Path(__file__).resolve().parents[2]
 PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
+JNI_EXPORT_PREFIX = "Java_org_kmipkit_"
 
 
 def expected_exports() -> set[str]:
     fixture = json.loads(PARITY_FIXTURE.read_text(encoding="utf-8"))
     exports = set(fixture["publicNativeExports"]["javaJni"])
-    if not exports or any(not name.startswith("Java_org_kmipkit_") for name in exports):
+    if not exports or any(not name.startswith(JNI_EXPORT_PREFIX) for name in exports):
         raise ValueError("the fixture has no valid public KMIPKit JNI exports")
     return exports
 
@@ -51,13 +52,13 @@ def audit(binary: Path) -> int:
     observed_pkcs11 = {
         name
         for name in observed
-        if name.startswith("Java_org_kmipkit_") and "pkcs11" in name.casefold()
+        if name.startswith(JNI_EXPORT_PREFIX) and "pkcs11" in name.casefold()
     }
     extra = sorted(observed_pkcs11 - expected_pkcs11)
     candidate = sorted(
         name
         for name in observed
-        if name.startswith("Java_org_kmipkit_") and "candidate" in name.casefold()
+        if name.startswith(JNI_EXPORT_PREFIX) and "candidate" in name.casefold()
     )
     if extra or candidate:
         unexpected = sorted(set(extra) | set(candidate))
