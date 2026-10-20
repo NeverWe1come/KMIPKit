@@ -130,7 +130,7 @@ fn dependent_profile_readiness_includes_transitive_dependency_requirements() {
         .filter(|requirement_id| !dependent.requirement_ids.contains(requirement_id))
         .collect();
 
-    assert!(!missing_dependency_requirements.is_empty());
+    assert_ne!(missing_dependency_requirements.len(), 0);
     assert!(!readiness.requirement_records_complete());
     for requirement_id in missing_dependency_requirements {
         assert!(readiness.blockers().iter().any(|blocker| {

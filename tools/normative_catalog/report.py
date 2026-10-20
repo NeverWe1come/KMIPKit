@@ -1039,6 +1039,7 @@ def evaluate_profile_readiness(
     current_context: dict[str, Any] | None,
     current_head: str | None = None,
     repository_root: Path | None = None,
+    _dependency_path: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     """Evaluate stable catalog obligations against one current CI run, without publishing a claim."""
     profiles_by_id = {
@@ -1157,32 +1158,34 @@ def evaluate_profile_readiness(
     if not official_sources:
         blockers.append("profile has no linked official test case")
 
-    visited: set[str] = set()
-    resolved: dict[str, bool] = {}
-
-    def dependencies_ready(current_id: str) -> bool:
-        if current_id in resolved:
-            return resolved[current_id]
-        if current_id in visited:
-            blockers.append(f"dependency cycle detected: {current_id}")
-            return False
-        visited.add(current_id)
-        current = profiles_by_id.get(current_id)
-        if current is None:
-            blockers.append(f"unresolved dependency profile: {current_id}")
-            visited.remove(current_id)
-            resolved[current_id] = False
-            return False
-        ready = current.get("claim_state") == "evidence_complete"
-        for dependency_id in current.get("dependency_profile_ids", []):
-            if not isinstance(dependency_id, str) or not dependencies_ready(dependency_id):
-                ready = False
-                blockers.append(f"dependency profile is not evidence complete: {dependency_id}")
-        visited.remove(current_id)
-        resolved[current_id] = ready
-        return ready
-
-    dependencies_ready(profile_id)
+    dependency_path = (*_dependency_path, profile_id)
+    for dependency_id in profile.get("dependency_profile_ids", []):
+        if not isinstance(dependency_id, str):
+            blockers.append("profile contains a malformed dependency link")
+            continue
+        if dependency_id in dependency_path:
+            blockers.append(f"dependency cycle detected: {dependency_id}")
+            continue
+        dependency_readiness = evaluate_profile_readiness(
+            catalog,
+            dependency_id,
+            selected_profile_ids=selected_profile_ids,
+            typed_rule_mappings=typed_rule_mappings,
+            verification_manifest=verification_manifest,
+            current_context=current_context,
+            current_head=current_head,
+            repository_root=repository_root,
+            _dependency_path=dependency_path,
+        )
+        if (
+            dependency_readiness["effective_state"] != "evidence_complete"
+            or dependency_readiness["blockers"]
+        ):
+            blockers.append(f"dependency profile is not evidence complete: {dependency_id}")
+            blockers.extend(
+                f"dependency {dependency_id}: {dependency_blocker}"
+                for dependency_blocker in dependency_readiness["blockers"]
+            )
     runtime_available = runtime_by_profile.get(profile_id) is True
     if not runtime_available:
         blockers.append("runtime profile validation is unavailable")

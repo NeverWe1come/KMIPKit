@@ -1239,7 +1239,65 @@ def _check_semantics(
             )
             if any(not linked_ids for linked_ids in evidence_links):
                 _fail("profile evidence is incomplete without clauses, requirements, elements, and tests")
-            profile_test_cases = [test_cases[test_id] for test_id in profile["test_case_ids"]]
+            dependency_profiles: list[dict[str, Any]] = []
+            pending_profile_ids = [(profile["profile_id"], False)]
+            visited_profile_ids: set[str] = set()
+            active_profile_ids: set[str] = set()
+            while pending_profile_ids:
+                dependency_profile_id, exiting = pending_profile_ids.pop()
+                if exiting:
+                    active_profile_ids.remove(dependency_profile_id)
+                    continue
+                if dependency_profile_id in active_profile_ids:
+                    _fail("profile evidence is incomplete with a dependency cycle")
+                if dependency_profile_id in visited_profile_ids:
+                    continue
+                visited_profile_ids.add(dependency_profile_id)
+                dependency_profile = profiles.get(dependency_profile_id)
+                if dependency_profile is None:
+                    _fail("profile evidence is incomplete with an unresolved dependency profile")
+                active_profile_ids.add(dependency_profile_id)
+                dependency_profiles.append(dependency_profile)
+                pending_profile_ids.append((dependency_profile_id, True))
+                pending_profile_ids.extend(
+                    (nested_dependency_id, False)
+                    for nested_dependency_id in reversed(dependency_profile["dependency_profile_ids"])
+                )
+
+            dependency_requirement_ids = {
+                requirement_id
+                for dependency_profile in dependency_profiles
+                for requirement_id in dependency_profile["requirement_ids"]
+            }
+            if any(
+                dependency_profile["profile_id"] != profile["profile_id"]
+                and dependency_profile["claim_state"] != "evidence_complete"
+                for dependency_profile in dependency_profiles
+            ):
+                _fail("profile evidence is incomplete because dependency profile evidence is incomplete")
+
+            catalog_linked_test_ids = {
+                test_case["test_id"]
+                for test_case in catalog["test_cases"]
+                if profile["profile_id"] in test_case["profile_ids"]
+            }
+            if not catalog_linked_test_ids.issubset(profile["test_case_ids"]):
+                _fail("profile evidence is incomplete with missing catalog-linked test cases")
+            if not set(profile["test_case_ids"]).issubset(catalog_linked_test_ids):
+                _fail("profile evidence is incomplete with unlinked profile test cases")
+
+            linked_test_ids = {
+                test_id
+                for dependency_profile in dependency_profiles
+                for test_id in dependency_profile["test_case_ids"]
+            }
+            for requirement_id in dependency_requirement_ids:
+                linked_test_ids.update(requirements[requirement_id]["test_case_ids"])
+            profile_test_cases = [
+                test_cases[test_id]
+                for test_id in linked_test_ids
+                if test_id in test_cases
+            ]
             if not any(test_case["source_id"] == "KMIPKIT-SRC-testcases" for test_case in profile_test_cases):
                 _fail("profile evidence is incomplete without an official KMIP Test Case")
             if any(
@@ -1248,7 +1306,7 @@ def _check_semantics(
                 for test_case in profile_test_cases
             ):
                 _fail("profile evidence is incomplete with an unavailable mandatory fixture")
-            profile_requirements = [requirements[requirement_id] for requirement_id in profile["requirement_ids"]]
+            profile_requirements = [requirements[requirement_id] for requirement_id in dependency_requirement_ids]
             if any(
                 not requirement["implementation_refs"] or not requirement["verification_refs"]
                 for requirement in profile_requirements

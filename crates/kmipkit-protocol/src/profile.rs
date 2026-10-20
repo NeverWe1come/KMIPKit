@@ -471,6 +471,27 @@ fn reconcile_effective_state(
     effective_state.to_owned()
 }
 
+fn profile_dependency_closure(
+    profile_id: &'static str,
+) -> (Vec<&'static GeneratedClientProfile>, BTreeSet<&'static str>) {
+    let mut profiles = Vec::new();
+    let mut visited_profile_ids = BTreeSet::new();
+    let mut pending_profile_ids = vec![profile_id];
+    let mut unresolved_dependency_ids = BTreeSet::new();
+    while let Some(current_profile_id) = pending_profile_ids.pop() {
+        if !visited_profile_ids.insert(current_profile_id) {
+            continue;
+        }
+        let Some(current_profile) = find_profile(CLIENT_PROFILES, current_profile_id) else {
+            unresolved_dependency_ids.insert(current_profile_id);
+            continue;
+        };
+        profiles.push(current_profile);
+        pending_profile_ids.extend(current_profile.dependency_profile_ids.iter().copied());
+    }
+    (profiles, unresolved_dependency_ids)
+}
+
 impl ProfileReadiness {
     /// Evaluates local evidence records against a generated client profile.
     ///
@@ -480,7 +501,12 @@ impl ProfileReadiness {
     #[must_use]
     pub fn evaluate(profile_id: &str, records: &[ProfileEvidenceRecord]) -> Option<Self> {
         let profile = find_profile(CLIENT_PROFILES, profile_id)?;
-        let required_ids: BTreeSet<_> = profile.requirement_ids.iter().copied().collect();
+        let (profile_closure, unresolved_dependency_ids) =
+            profile_dependency_closure(profile.profile_id);
+        let required_ids: BTreeSet<_> = profile_closure
+            .iter()
+            .flat_map(|current_profile| current_profile.requirement_ids.iter().copied())
+            .collect();
         let mut evidence_by_requirement: HashMap<&str, Vec<bool>> = HashMap::new();
         let mut has_unexpected_requirement = false;
         for record in records {
@@ -495,19 +521,38 @@ impl ProfileReadiness {
         }
 
         let mut blockers = Vec::new();
-        blockers.extend(
-            profile
-                .unresolved_scope_obligations
-                .iter()
-                .map(
-                    |obligation| ProfileReadinessBlocker::UnresolvedRequirementScope {
-                        requirement_id: obligation.requirement_id,
-                        source_clause_id: obligation.source_clause_id,
-                    },
-                ),
-        );
+        for current_profile in &profile_closure {
+            blockers.extend(current_profile.unresolved_scope_obligations.iter().map(
+                |obligation| ProfileReadinessBlocker::UnresolvedRequirementScope {
+                    requirement_id: obligation.requirement_id,
+                    source_clause_id: obligation.source_clause_id,
+                },
+            ));
+            if current_profile.profile_id != profile_id
+                && current_profile.claim_state != "evidence_complete"
+            {
+                blockers.push(ProfileReadinessBlocker::DependencyEvidenceIncomplete {
+                    profile_id: current_profile.profile_id,
+                });
+            }
+            if current_profile.applicability == "conditional" {
+                blockers.push(ProfileReadinessBlocker::ConditionalProfileUnsatisfied);
+            } else if current_profile.applicability != "client_1_0" {
+                blockers.push(ProfileReadinessBlocker::ProfileUnavailable);
+            }
+            blockers.extend(current_profile.test_cases.iter().filter_map(|test_case| {
+                (test_case.mandatory_status == "mandatory"
+                    && test_case.fixture_availability != "available")
+                    .then_some(ProfileReadinessBlocker::MandatoryFixtureUnavailable {
+                        test_id: test_case.test_id,
+                    })
+            }));
+        }
+        blockers.extend(unresolved_dependency_ids.into_iter().map(|profile_id| {
+            ProfileReadinessBlocker::DependencyEvidenceIncomplete { profile_id }
+        }));
         let mut requirement_records_complete = true;
-        for requirement_id in profile.requirement_ids {
+        for requirement_id in &required_ids {
             match evidence_by_requirement.get(requirement_id) {
                 None => {
                     requirement_records_complete = false;
@@ -539,30 +584,6 @@ impl ProfileReadiness {
         if !runtime_validation_available {
             blockers.push(ProfileReadinessBlocker::RuntimeValidationUnavailable);
         }
-        if profile.applicability == "conditional" {
-            blockers.push(ProfileReadinessBlocker::ConditionalProfileUnsatisfied);
-        } else if profile.applicability != "client_1_0" {
-            blockers.push(ProfileReadinessBlocker::ProfileUnavailable);
-        }
-        blockers.extend(profile.test_cases.iter().filter_map(|test_case| {
-            (test_case.mandatory_status == "mandatory"
-                && test_case.fixture_availability != "available")
-                .then_some(ProfileReadinessBlocker::MandatoryFixtureUnavailable {
-                    test_id: test_case.test_id,
-                })
-        }));
-        blockers.extend(
-            profile
-                .dependency_profile_ids
-                .iter()
-                .filter_map(|dependency_id| {
-                    find_profile(CLIENT_PROFILES, dependency_id)
-                        .is_none_or(|dependency| dependency.claim_state != "evidence_complete")
-                        .then_some(ProfileReadinessBlocker::DependencyEvidenceIncomplete {
-                            profile_id: dependency_id,
-                        })
-                }),
-        );
         blockers.push(ProfileReadinessBlocker::VerificationManifestUnavailable);
 
         let effective_state = reconcile_effective_state(profile.claim_state, &mut blockers);
