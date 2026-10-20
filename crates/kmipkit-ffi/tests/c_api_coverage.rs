@@ -914,6 +914,10 @@ fn spawn_public_client_batch_peer(
         let request = read_ttlv_frame(&mut tls).expect("bounded request frame arrives");
         assert!(request.starts_with(&[0x42, 0x00, 0x78]));
         assert!(
+            c_request_contains_rekey_key_pair(&request),
+            "C ABI consumer must transmit the Re-key Key Pair fields over mTLS"
+        );
+        assert!(
             c_request_contains_large_query(&request),
             "C ABI consumer must transmit 100,001 Query Functions and Object Groups over mTLS"
         );
@@ -1021,6 +1025,40 @@ fn c_request_contains_large_query(encoded: &[u8]) -> bool {
                     })
             })
         })
+    })
+}
+
+fn c_request_contains_rekey_key_pair(encoded: &[u8]) -> bool {
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const REKEY_KEY_PAIR: u32 = 0x1D;
+
+    let Some(root) = decode_test_request(encoded) else {
+        return false;
+    };
+    root.with_value(|value| {
+        let ValueView::Structure(message) = value else {
+            return false;
+        };
+        message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .filter(|item| {
+                item.with_value(|value| {
+                    let ValueView::Structure(batch_item) = value else {
+                        return false;
+                    };
+                    batch_item.children().iter().any(|field| {
+                        field.tag().raw() == OPERATION
+                            && field.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(actual) if *actual == REKEY_KEY_PAIR)
+                            })
+                    })
+                })
+            })
+            .count()
+            == 1
     })
 }
 
