@@ -30,9 +30,11 @@ class CoverageReport(dict[str, dict[int, int]]):
         self,
         lines: dict[str, dict[int, int]],
         summary_uncovered_excess: dict[str, int],
+        documented_exclusions: dict[str, int] | None = None,
     ) -> None:
         super().__init__(lines)
         self.summary_uncovered_excess = summary_uncovered_excess
+        self.documented_exclusions = documented_exclusions or {}
 
 
 class InlineTestModuleError(CoverageDataError):
@@ -1146,6 +1148,44 @@ def _has_documented_coverage_exclusion(source: str, source_lines: tuple[str, ...
     return True
 
 
+def _exclude_documented_coverage_lines(
+    report: Mapping[str, Mapping[int, int]],
+    workspace_root: str | Path,
+) -> CoverageReport:
+    """Remove explicitly documented unreachable lines from source coverage totals."""
+    workspace = Path(workspace_root).resolve()
+    source_lines_cache: dict[str, tuple[str, ...]] = {}
+    filtered: dict[str, dict[int, int]] = {}
+    documented_exclusions: dict[str, int] = {}
+    for source, line_counts in report.items():
+        if source not in source_lines_cache:
+            try:
+                source_lines_cache[source] = (
+                    workspace / PurePosixPath(source)
+                ).read_text(encoding="utf-8", errors="strict").splitlines()
+            except (OSError, UnicodeError) as error:
+                raise CoverageDataError(
+                    f"Coverage source could not be read while applying exclusions: {source}."
+                ) from error
+        source_lines = source_lines_cache[source]
+        immutable_source_lines = tuple(source_lines)
+        excluded = {
+            line
+            for line, _, comment_text in _source_line_comments(source, immutable_source_lines)
+            if "COVERAGE-EXCLUDE:" in comment_text
+            and _has_documented_coverage_exclusion(source, immutable_source_lines, line)
+            and line_counts.get(line, 0) == 0
+        }
+        documented_exclusions[source] = len(excluded)
+        filtered[source] = {
+            line: count for line, count in line_counts.items() if line not in excluded
+        }
+    summary_uncovered_excess = (
+        report.summary_uncovered_excess if isinstance(report, CoverageReport) else {}
+    )
+    return CoverageReport(filtered, dict(summary_uncovered_excess), documented_exclusions)
+
+
 _RUST_RAW_STRING_START = re.compile(r"(?:br|cr|r)(?P<hashes>#*)\"")
 _RUST_LIFETIME_START = re.compile(r"'[A-Za-z_][A-Za-z0-9_]*")
 _CPP_RAW_STRING_START = re.compile(r'(?:u8|u|U|L)?R"([^ ()\\\t\r\n]{0,16})\(')
@@ -1525,9 +1565,10 @@ def _load_adapter_reports(
         if len(platform_reports) == 1:
             # Preserve parser metadata such as LLVM's summary-only uncovered
             # line counts; only multi-platform Java reports need a union.
-            parsed[scope] = next(iter(platform_reports.values()))
+            combined = next(iter(platform_reports.values()))
         else:
-            parsed[scope] = merge_coverage_reports(platform_reports)
+            combined = merge_coverage_reports(platform_reports)
+        parsed[scope] = _exclude_documented_coverage_lines(combined, workspace)
     return parsed
 
 
@@ -1714,8 +1755,9 @@ def _evaluate_coverage(
         if not meets_threshold(covered, total, threshold):
             raise CoverageDataError(f"{label} coverage {covered}/{total} is below {threshold}%.")
         percentage = covered * 100 / total
+        excluded = sum(report.documented_exclusions.values()) if isinstance(report, CoverageReport) else 0
         results.append(
-            f"{label} coverage: {covered}/{total} ({percentage:.2f}%) including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
+            f"{label} coverage: {covered}/{total} ({percentage:.2f}%), excluding {excluded} documented unreachable line(s) and including {summary_only} summary-only line(s) as uncovered ({threshold}% minimum)."
         )
 
     covered = sum(count > 0 for count in all_lines.values())
@@ -1882,8 +1924,9 @@ def _evaluate_scoped_coverage(
         total = len(line_map) + extra
         if not meets_threshold(covered, total, 85):
             raise CoverageDataError(f"{label} coverage {covered}/{total} is below 85%.")
+        excluded = sum(report.documented_exclusions.values()) if isinstance(report, CoverageReport) else 0
         results.append(
-            f"{label} coverage: {covered}/{total} ({covered * 100 / total:.2f}%) including {extra} summary-only line(s) as uncovered (85% minimum)."
+            f"{label} coverage: {covered}/{total} ({covered * 100 / total:.2f}%), excluding {excluded} documented unreachable line(s) and including {extra} summary-only line(s) as uncovered (85% minimum)."
         )
 
     changed = parse_added_production_lines(diff)

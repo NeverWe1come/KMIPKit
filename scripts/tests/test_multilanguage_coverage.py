@@ -587,14 +587,25 @@ class MultiLanguageCoverageTests(unittest.TestCase):
             root = Path(directory)
             source = root / source_relative
             source.parent.mkdir(parents=True)
-            source.write_text("int bridge() { return 1; }\n", encoding="utf-8")
+            unreachable_line = (
+                "    if (present > 1) return 0; "
+                "// COVERAGE-EXCLUDE: The C ABI normalizes presence to zero or one."
+            )
+            covered_line = "    return 1;"
+            source.write_text(
+                "int bridge(int present) {\n" + unreachable_line + "\n" + covered_line + "\n}\n",
+                encoding="utf-8",
+            )
             report_path = root / "coverage-jni" / "coverage.json"
             report_path.parent.mkdir(parents=True)
             report_path.write_text(
                 llvm_document(
-                    [[1, 1, 1, len("int bridge() { return 1; }") + 1, 1, 0, 0, 0]],
+                    [
+                        [2, 1, 2, len(unreachable_line) + 1, 0, 0, 0, 0],
+                        [3, 1, 3, len(covered_line) + 1, 1, 0, 0, 0],
+                    ],
                     filename=source_relative,
-                    summary_lines=2,
+                    summary_lines=3,
                 ),
                 encoding="utf-8",
             )
@@ -604,11 +615,16 @@ class MultiLanguageCoverageTests(unittest.TestCase):
         self.assertIsNotNone(parsed)
         assert parsed is not None
         jni_report = parsed["JNI bridge"]
-        self.assertEqual({source_relative: {1: 1}}, jni_report)
+        self.assertEqual({source_relative: {3: 1}}, jni_report)
         self.assertEqual(
             {source_relative: 1},
             jni_report.summary_uncovered_excess,
             "adapter loading must retain conservative summary-only JNI uncovered lines",
+        )
+        self.assertEqual(
+            {source_relative: 1},
+            jni_report.documented_exclusions,
+            "adapter loading must exclude documented and uncovered ABI-invariant lines",
         )
 
     def test_changed_production_diff_includes_java_python_and_jni_lines(self) -> None:
