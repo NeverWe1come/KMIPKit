@@ -5413,9 +5413,9 @@ The change is local Windows evidence; exact-head GitHub CI and final QA/security
 
 ### T069 Python dataclass export inventory follow-up (2026-10-21)
 
-Exact-head CI run `39671512237` on `f620ad35` failed `test_remaining_python_exports_are_mapped_or_exactly_excluded` on Ubuntu and Windows. The test reported ten generated `ValidateResponse` dataclass members as unclassified: `__dataclass_fields__`, `__dataclass_params__`, `__delattr__`, `__eq__`, `__hash__`, `__init__`, `__match_args__`, `__repr__`, `__setattr__`, and `__slots__`. Red commit `0c930571` made the audit contract enumerate the exact exclusions and was observed failing locally with those ten members.
+Exact-head CI run `39671512237` on `f620ad35` failed `test_remaining_python_exports_are_mapped_or_exactly_excluded` on Ubuntu and Windows. The test reported ten unclassified `ValidateResponse` exports: `__dataclass_fields__`, `__dataclass_params__`, `__delattr__`, `__eq__`, `__hash__`, `__init__`, `__match_args__`, `__repr__`, `__setattr__`, and `__slots__`. Red commit `0c930571` made the audit contract enumerate the exact exclusions and was observed failing locally with those ten exports.
 
-Green commit `364b7057` adds exact `approvedExclusions` records reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004. The typed `ValidateResponse`, its success-only accessors, and four-language operation mapping remain in the public manifest; only generated Python dataclass implementation mechanics are excluded. The pinned generator refreshed the affected parity fixtures.
+Green commit `364b7057` initially added exact `approvedExclusions` records. A follow-up security review found that `__repr__` is custom code (`repr=False` on the dataclass) whose purpose is to redact response TTLV, not generated dataclass machinery. Follow-up Red commit `d489302e` requires a separate redaction-specific exclusion backed by the existing sentinel regression. Green commit `14d87a8d` changes the manifest accordingly and refreshes the pinned generated parity fixtures. The typed `ValidateResponse`, its success-only accessors, and four-language operation mapping remain mapped; nine generated Python dataclass mechanics are excluded as generated, while the custom redacted `__repr__` has its own reviewed exclusion under KMIPKIT-0042-FR-005 and KMIPKIT-0043-FR-021.
 
 Post-fix local verification:
 
@@ -5425,5 +5425,14 @@ Post-fix local verification:
 | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs match. |
 | `python -B tools/extension_fixtures/generate.py --check` | Pass. |
 | `git diff --check` | Pass. |
+
+Follow-up Red/Green evidence:
+
+| Commit | Command or check | Result |
+|---|---|---|
+| Red `d489302e` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping -k remaining_python_exports_are_mapped_or_exactly_excluded -v` | Expected failure: the manifest incorrectly described the custom `__repr__` as generated instead of redacted. |
+| Green `14d87a8d` | Same focused test | Pass. |
+| Green `14d87a8d` | `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_validate_parity_manifest -q` | Pass, 72 tests. |
+| Green `14d87a8d` | API generator `--check`, extension fixture generator `--check`, and `git diff --check` | Pass; 12 API outputs verified. |
 
 The previous exact-head CI failure is explained and corrected locally. CI on the new code/evidence head and the complete final T069 gates remain pending; T069 stays open until they pass.
