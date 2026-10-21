@@ -4,8 +4,9 @@ Status: implementation snapshot and design baseline
 Scope: KMIPKit 1.0 architecture, including KMIPKIT-0005 TTLV, KMIPKIT-0007
 client execution, KMIPKIT-0013 production transport, the Rust lifecycle
 operation additions in KMIPKIT-0036, Register Opaque Object context in
-KMIPKIT-0044, and the four-language PKCS#11 API mapping in KMIPKIT-0043
-Last reviewed: 2026-10-20
+KMIPKIT-0044, and four-language operation mappings in KMIPKIT-0043, including
+PKCS#11 and Set Defaults (§6.1.53, T067).
+Last reviewed: 2026-10-21
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
 current executable controls from planned components. The repository includes
@@ -26,6 +27,14 @@ implementation**, and the direct implementation authorization dated
 mapping does not claim Profile support, complete KMIP conformance, or
 interoperability. Existing bounds, opaque parameter handling, zeroization,
 redaction, response ownership, and no-retry behavior apply to the new bindings.
+The Set Defaults mapping in KMIPKIT-0043 (T067) follows the approved
+KMIPKIT-0039 contract: omitted Defaults Information requests removal, while a
+present-empty structure remains distinct; only Success exposes complete
+response TTLV, and Failure/Pending retain common metadata without the response
+body. Existing parser bounds, redaction, ownership, correlation, and no-retry
+controls apply; this mapping adds no new trust boundary or profile-support
+claim. See the [approved operation contract](../../specs/025-policy-controls/spec.md)
+and [T067 traceability](../../specs/043-public-api-bindings/traceability.md#t067).
 Publication remains planned. Scenarios below remain hypotheses and security
 requirements unless a control is explicitly tied to executable evidence. The
 model must be revised as each executable boundary is introduced.

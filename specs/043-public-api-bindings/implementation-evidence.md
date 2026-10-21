@@ -5261,3 +5261,58 @@ but the focused test command exited successfully.
 
 T066 is checked in `tasks.md`. This final documentation-only commit triggers a new exact-head CI run;
 no protocol, production, ABI, binding, or generated behavior changes are included.
+
+### T067 Set Defaults — Red/Green/Refactor evidence (2026-10-21)
+
+T067 is owned by approved KMIPKIT-0039 and cites the immutable OASIS KMIP v2.1
+source at §6.1.53 Tables 328–330 and §7.11 Table 363. Stable owner traces are
+`KMIPKIT-025-T328-REQUEST`, `KMIPKIT-025-T329-RESPONSE`,
+`KMIPKIT-025-T330-ERROR`, `KMIPKIT-025-COMMON-RESULT`, and
+`KMIPKIT-025-COMMON-DELIVERY`. The exact OASIS source copies were not modified.
+
+The protocol success-only TTLV correction has Red `8eb825bf` and Green
+`c3581362`. The four-language mapping Red is `f8037c83`. A compatibility Red
+test `2b74ee99` caught the new Python result field shifting the established
+public positional dataclass fields; Green `8556a8d9` places the new field after
+all existing fields. The mapping Green commit also adds the C ABI, C consumer,
+Java/JNI, Python/CFFI, manifest, and regenerated outputs.
+
+The manifest parity test also records both public Java overloads. Red
+`f2214b5c` failed because `T067:constructor:java` omitted its exact signatures;
+Green `f83945f8` added the signatures to the source manifest and regenerated
+the checked-in Java parity fixture and JSON fixture. The focused manifest test
+and generator check passed afterward.
+
+The first expanded-mapping CI run, `39646882081` on `f83945f8`, identified two
+remaining Python inventory issues. The legacy positional-field assertion was
+updated in `402c89ac` to prove the new field follows every pre-existing field;
+`856f7f17` records that test as T067 manifest evidence. The generated-export
+audit then supplied a separate Red in `af6c6cad`; Green `eb2e553c` registers
+the ten exact dataclass-generated `SetDefaultsResponse` exclusions while
+keeping `response_ttlv` and `close` declared. The exact-set assertion added in
+the Refactor phase rejects any additional exclusion under that response class.
+
+Focused local verification passed:
+
+| Command or check | Result |
+|---|---|
+| `cargo test -p kmipkit-protocol -p kmipkit-client --lib set_defaults --no-fail-fast` | Pass, 12 protocol and 8 client tests. |
+| `cargo test -p kmipkit-ffi --lib --features coverage-c-consumer set_defaults --no-fail-fast` | Pass, 5 FFI tests, including a compiled C consumer, omitted/present-empty input, copied Success TTLV, and Failure metadata. |
+| `mvn -q -f bindings/java/pom.xml '-Dtest=SetDefaultsJavaFacadeTest,SetDefaultsResponseMappingTest' test` | Pass, 7 Java facade and response-mapping tests; JNI library compiled. |
+| `mvn -q -f bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#setDefaultsResponseUsesNativeJniBridgeAndExposesTtlvOnlyOnSuccess' test` | Pass, Java/JNI TLS 1.3 mTLS Success, Failure, Pending/correlation, input omission/presence, and independent response TTLV. |
+| Python 3.12 `pytest` for `bindings/python/tests/test_set_defaults_operation.py` | Pass, 6 tests including real TLS 1.3 mTLS Success, Failure, Pending, copied TTLV lifetime, and omitted/present-empty request mapping. |
+| Python 3.12 `pytest` for `test_batch_item_result_preserves_legacy_positional_field_order` | Pass after Green; the preceding Red failed because the new field had shifted the legacy position. |
+| `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_set_defaults_parity_manifest -v` | Pass, 55 tests including the exact ten-member SetDefaultsResponse exclusion assertion. |
+| `python -B -m unittest tools.api_manifest.tests.test_set_defaults_parity_manifest -v` | Pass; the approved owner, four-language declaration set, stable requirements, and evidence files resolve. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs match the manifest. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Pass. |
+| `cargo fmt --all --check` and `git diff --check` | Pass. |
+
+The Python result keeps the successful complete response TTLV in an owned
+wrapper with redacted representation; Failure and Pending retain only shared
+metadata. The Java wrapper and C output are caller-owned copies. Python/JVM
+materialized copies remain outside KMIPKit's memory-zeroization guarantees.
+These local checks are not OASIS conformance, interoperability, profile-support,
+or certification evidence. The initial scoped security review found no
+findings. The exact-head CI run and final independent QA/security follow-up
+remain release evidence gates before T067 is checked in `tasks.md`.

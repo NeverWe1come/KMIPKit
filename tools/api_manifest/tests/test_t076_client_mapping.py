@@ -2278,6 +2278,40 @@ class T076ClientMappingTests(unittest.TestCase):
                 else:
                     self.assertIn("dataclass", exclusion["reason"].lower())
 
+    def test_set_defaults_response_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
+        generated_members = (
+            "__dataclass_fields__",
+            "__dataclass_params__",
+            "__delattr__",
+            "__eq__",
+            "__hash__",
+            "__init__",
+            "__match_args__",
+            "__repr__",
+            "__setattr__",
+            "__slots__",
+        )
+        expected = {
+            f"kmipkit.client.SetDefaultsResponse.{member}" for member in generated_members
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.SetDefaultsResponse.")
+        }
+        self.assertEqual(expected, set(exclusions))
+        for member in generated_members:
+            with self.subTest(member=member):
+                exclusion = exclusions[f"kmipkit.client.SetDefaultsResponse.{member}"]
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0039-FR-001", exclusion["evidence"])
+                self.assertIn(member, exclusion["evidence"])
+
     def test_vendor_extension_native_handle_releases_map_to_all_four_languages(self) -> None:
         rust_types = {
             "ClientRequestMessageExtension": (
