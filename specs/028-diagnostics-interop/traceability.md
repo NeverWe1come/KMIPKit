@@ -148,3 +148,20 @@ The global common-rule catalog record remains unassigned for all-structure
 ownership; this feature supplies scoped implementation/evidence references
 through its Validate operation record and this trace. No local DER/trust or
 chain-connectivity policy is introduced. See Decision 6 in research.md.
+
+
+## Validate four-language parity (T069)
+
+The six request traces above are implemented by the approved Rust request model and mapped through the common C ABI to Java/JNI and Python/CFFI. They remain client input capabilities: these tests do not claim that a remote server accepts a chain or applies any certificate policy. The exact OASIS source remains immutable.
+
+| Surface | Evidence |
+|---|---|
+| Rust and C ABI | `validate_abi_tests::validate_constructor_preserves_identifier_and_optional_date`; `validate_abi_tests::validate_constructor_borrows_and_copies_payload_extensions`; `validate_abi_tests::validate_constructor_rejects_noncanonical_absent_date_and_clears_output` |
+| Compiled C consumer | `validate_constructor_is_callable_from_c`; `validate_constructor_copies_payload_extensions` in `bindings/c/tests/client_abi_consumer.c` |
+| Java and JNI | `ValidateJavaFacadeTest` covers identifier-only, omitted-date, input-list validation, and borrowed TTLV extension ownership; `ValidateResponseMappingTest` covers typed response mapping |
+| Python and CFFI | `test_validate_builder_accepts_identifier_only_chain_and_optional_date`; `test_validate_builder_rejects_missing_lists_and_out_of_range_date`; `test_validate_builder_copies_unknown_payload_extensions_and_preserves_input`; response mapping and cleanup tests in `test_validate_operation.py` |
+| Manifest and generated API | `test_validate_parity_manifest`; pinned generator `--check`; generated C/JNI/Python API declarations and parity fixtures |
+
+Unknown checked payload extensions preserve their caller order and are copied before the builder returns. C/JNI/Python apply the shared 100,000-input-item ceiling; the Rust FFI checks the aggregate encoded input budget and default item limits before cloning the supplied structures/items. The caller retains ownership of each input. Validity Date omission remains absent for server-side current-time evaluation. Success-only Validity Indicator and response TTLV accessors do not expose operation success values for Failure or Pending.
+
+The T069 input-limit follow-up also rejects overlap between any C input-array span and `out_item` before either region is written, and enforces one aggregate TTLV element ceiling across the Validate payload before cloning. Regression coverage: `validate_constructor_rejects_output_overlapping_payload_extension_array`, `validate_constructor_enforces_one_aggregate_ttlv_element_limit`, `builderRejectsOversizedExtensionListBeforeCopyingIt`, and `test_validate_builder_preflights_aggregate_identifier_bytes_before_copying`. JNI snapshots each text identifier once while enforcing the cumulative byte ceiling, so later copies cannot observe a replaced `byte[][]` entry.

@@ -5348,3 +5348,47 @@ The selected-scope gate reports changed-production coverage of `12653/13307`
 (`95.09%`, 95% minimum); all platform, adapter, sanitizer, traceability, and
 dependency checks passed. The run records no OASIS conformance, interoperability,
 profile-support, or certification claim.
+
+
+### T069 Validate API mapping — Red/Green/Refactor evidence (2026-10-21)
+
+T069 is owned by approved `KMIPKIT-0042` in `specs/028-diagnostics-interop/spec.md`. Its normative request scope is OASIS KMIP v2.1 §6.1.57 Tables 340–342; Certificate shape follows §2.1 Table 2. The six stable request traces are `KMIPKIT-REQ-SPEC-6.1.57-001`, `-002-001`, `-002-002`, `-004`, `-005`, and `-006`. Unknown checked payload extension preservation follows owner requirement `KMIPKIT-0042-FR-002`; no upstream OASIS source was changed.
+
+The four-language extension parity Red commit `35c983fd` added Rust FFI, compiled C, Java/JNI, and Python/CFFI cases. Red was observed as expected: Python rejected the missing `payload_extensions` keyword, Java could not compile the missing overload, and Rust reported the missing ABI parameters. Green commit `3baee4a8` adds the borrowed-and-copied C ABI extension array, Java overload/JNI handle-array bridge, Python CFFI mapping, typed response accessors, manifest contract, and generated outputs. Refactor commit `9e703a1a` isolates the FFI input-copying helpers and checks the aggregate encoded-input budget and item limits before copying. The prior response-handle cleanup regression has separate Red commit `9998c044`.
+
+Focused local verification after Refactor:
+
+| Command or check | Result |
+|---|---|
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib validate_constructor -- --nocapture` | Pass, 3 Validate FFI tests. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact` | Pass, compiled public C consumer. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Pass. |
+| `cargo fmt --all --check` and `git diff --check` | Pass. |
+| Java `gradlew test --rerun-tasks --tests org.kmipkit.ValidateJavaFacadeTest --tests org.kmipkit.extensions.ValidateResponseMappingTest` | Pass; Java facade, response mapping, and rebuilt JNI library. |
+| Python 3.12 `pytest bindings/python/tests/test_validate_operation.py -q` | Pass, 5 tests. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; 12 generated outputs match. |
+| `python -B -m unittest tools.api_manifest.tests.test_validate_parity_manifest` | Pass, 2 manifest contract tests. |
+
+The selected Ruff invocation reports four pre-existing lint findings in `extensions.py` (imports, an older `SplitKeyReference` declaration, and `__all__` ordering); the same findings reproduce against the parent file and none points to the T069 additions. Ruff is not configured as a repository CI check. Independent QA/security reviews, exact-head CI, and selected-scope coverage remain required before T069 is marked complete. These local tests do not claim OASIS conformance, interoperability, profile support, or certification.
+
+
+### T069 Validate input bounds follow-up (2026-10-21)
+
+Follow-up Red commit `bd64ca73` adds regression cases for `out_item` overlapping the payload-extension array, aggregate nested TTLV element limits, oversized Java extension lists, and Python aggregate identifier bytes. The Rust overlap and aggregate-element cases were observed failing against the prior implementation; the Java oversized-list case also failed before the count preflight. The Python runner initially could not use the repository virtual environment (`uv` could not remove its Windows `lib64` reparse point), so it was run after the Green change in an isolated Python 3.12 environment under `%TEMP%`.
+
+Green commit `b202f333` rejects overlapping C input/output spans before writing either, counts all Validate TTLV elements and encoded bytes before cloning, snapshots Java lists under a shared item ceiling, preflights Python UTF-8 aggregate size without allocating encoded copies, and copies each JNI identifier byte array once before passing its stable bytes to the ABI. API docs and generated fixtures describe the C overlap rule.
+
+Focused follow-up verification:
+
+| Command or check | Result |
+|---|---|
+| `cargo fmt --all --check` | Pass. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Pass. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib` | Pass, 267 tests including both new Rust regressions. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact` | Pass, compiled C consumer. |
+| Java `gradlew test --rerun-tasks --tests org.kmipkit.ValidateJavaFacadeTest` | Pass; JNI rebuilt from the updated C++ source. |
+| Python 3.12 `pytest tests/test_validate_operation.py -q` | Pass, 6 tests. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs match. |
+| `python -B -m unittest tools.api_manifest.tests.test_validate_parity_manifest` | Pass, 2 tests. |
+
+These results are local Windows evidence. The exact-head GitHub CI run, selected-scope coverage gate, and final independent QA/security reviews remain pending after the follow-up push; T069 remains open until those checks pass.
