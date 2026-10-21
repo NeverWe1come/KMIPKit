@@ -104,6 +104,9 @@ unsafe extern "C" {
         item: *mut kmipkit_client_batch_item_response_t,
         expected_present: u8,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_set_constraints_failure_metadata(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_reject_set_constraints_ttlv_output_overlap() -> i32;
 }
 
@@ -160,6 +163,20 @@ fn compiled_c_consumer_reads_owned_success_ttlv_and_hides_failure_ttlv() {
         unsafe { kmipkit_client_abi_c_consumer_validate_set_constraints_response_ttlv(pending, 0) },
         1
     );
+}
+
+#[test]
+fn compiled_c_consumer_reads_set_constraints_failure_metadata_without_ttlv() {
+    let request = || ClientRequest::set_constraints(SetConstraintsRequest::new(Structure::new()));
+    let failure = failed_cryptographic_item(request(), 0x37, b"set-constraints-failure");
+    // SAFETY: the compiled C caller borrows this live Failure item and does not release it.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_c_consumer_validate_set_constraints_failure_metadata(failure)
+        },
+        1
+    );
+    kmipkit_client_batch_item_response_release(failure);
 }
 
 #[test]
