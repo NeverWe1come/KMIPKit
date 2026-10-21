@@ -91,7 +91,7 @@ impl fmt::Debug for SetDefaultsRequest {
 /// A Set Defaults result from §6.1.53, Tables 329–330.
 pub struct SetDefaultsResponse {
     result: KmipOperationResult,
-    response_ttlv: OwnedResponseTtlv,
+    response_ttlv: Option<OwnedResponseTtlv>,
 }
 
 impl SetDefaultsResponse {
@@ -100,7 +100,8 @@ impl SetDefaultsResponse {
     /// On Success, Table 329 defines an empty operation-specific response
     /// payload. Structurally valid unknown fields are retained for forward and
     /// vendor compatibility; the complete response item is available through
-    /// [`Self::with_ttlv`].
+    /// [`Self::with_ttlv`]. Failure and Pending retain only common result
+    /// metadata and do not retain response-body TTLV.
     ///
     /// # Errors
     ///
@@ -118,11 +119,17 @@ impl SetDefaultsResponse {
         let result_message = item.with_result_message(|text| ResultMessage::new(text.to_owned()));
         let result = KmipOperationResult::new(status, item.result_reason(), result_message)
             .map_err(SetDefaultsError::InvalidOperationResult)?;
-        let response_ttlv = common::clone_response_item(item, "Set Defaults")
-            .map_err(|_| SetDefaultsError::MalformedResponseItem)?;
-        if status.raw() == SUCCESS && item.with_response_payload(|_| ()).is_none() {
-            return Err(SetDefaultsError::MissingSuccessPayload);
-        }
+        let response_ttlv = if status.raw() == SUCCESS {
+            if item.with_response_payload(|_| ()).is_none() {
+                return Err(SetDefaultsError::MissingSuccessPayload);
+            }
+            Some(
+                common::clone_response_item(item, "Set Defaults")
+                    .map_err(|_| SetDefaultsError::MalformedResponseItem)?,
+            )
+        } else {
+            None
+        };
 
         Ok(Self {
             result,
@@ -136,9 +143,12 @@ impl SetDefaultsResponse {
         &self.result
     }
 
-    /// Lends the complete ordered response item, including unknown fields.
-    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> R {
-        self.response_ttlv.with_ttlv(callback)
+    /// Lends the complete ordered response item, including unknown fields, on
+    /// Success. Failure and Pending expose common result metadata only.
+    pub fn with_ttlv<R>(&self, callback: impl for<'a> FnOnce(StructureView<'a>) -> R) -> Option<R> {
+        self.response_ttlv
+            .as_ref()
+            .map(|response_ttlv| response_ttlv.with_ttlv(callback))
     }
 }
 

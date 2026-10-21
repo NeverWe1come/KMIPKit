@@ -168,19 +168,23 @@ fn table_329_empty_success_retains_the_complete_ttlv_response() {
     let response = SetDefaultsResponse::try_from_response_item(response_item(&message))
         .expect("Table 329 empty success response is typed");
     assert_eq!(response.result().status().raw(), 0);
-    response.with_ttlv(|item| {
-        let payload = item
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_007C)
-            .expect("successful response retains Response Payload");
-        payload.with_value(|value| {
-            let ValueView::Structure(payload) = value else {
-                panic!("Response Payload is a Structure");
-            };
-            assert!(payload.children().is_empty());
-        });
-    });
+    assert!(
+        response
+            .with_ttlv(|item| {
+                let payload = item
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == 0x0042_007C)
+                    .expect("successful response retains Response Payload");
+                payload.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("Response Payload is a Structure");
+                    };
+                    assert!(payload.children().is_empty());
+                });
+            })
+            .is_some()
+    );
 }
 
 #[test]
@@ -194,23 +198,28 @@ fn table_329_retains_unknown_response_fields_without_rejecting_them() {
     );
     let response = SetDefaultsResponse::try_from_response_item(response_item(&message))
         .expect("unknown valid response extensions are retained");
-    response.with_ttlv(|item| {
-        let payload = item
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_007C)
-            .expect("Response Payload is retained");
-        payload.with_value(|value| {
-            let ValueView::Structure(payload) = value else {
-                panic!("Response Payload is a Structure");
-            };
-            assert_eq!(payload.children().len(), 1);
-            assert_eq!(payload.children()[0].tag().raw(), VENDOR_MEMBER);
-            assert!(
-                payload.children()[0].with_value(|value| matches!(value, ValueView::Integer(23)))
-            );
-        });
-    });
+    assert!(
+        response
+            .with_ttlv(|item| {
+                let payload = item
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == 0x0042_007C)
+                    .expect("Response Payload is retained");
+                payload.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("Response Payload is a Structure");
+                    };
+                    assert_eq!(payload.children().len(), 1);
+                    assert_eq!(payload.children()[0].tag().raw(), VENDOR_MEMBER);
+                    assert!(
+                        payload.children()[0]
+                            .with_value(|value| matches!(value, ValueView::Integer(23)))
+                    );
+                });
+            })
+            .is_some()
+    );
 }
 
 #[test]
@@ -293,23 +302,29 @@ fn response_retains_unknown_payload_after_source_message_is_dropped() {
             .expect("unknown Table 329 extension remains representable")
     };
 
-    response.with_ttlv(|item| {
-        let payload = item
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_007C)
-            .expect("owned response retains its payload");
-        payload.with_value(|value| {
-            let ValueView::Structure(payload) = value else {
-                panic!("Response Payload is a Structure");
-            };
-            assert_eq!(payload.children().len(), 1);
-            assert!(
-                payload.children()[0]
-                    .with_value(|value| matches!(value, ValueView::TextString(OPAQUE_VALUE)))
-            );
-        });
-    });
+    assert!(
+        response
+            .with_ttlv(|item| {
+                let payload = item
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == 0x0042_007C)
+                    .expect("owned response retains its payload");
+                payload.with_value(|value| {
+                    let ValueView::Structure(payload) = value else {
+                        panic!("Response Payload is a Structure");
+                    };
+                    assert_eq!(payload.children().len(), 1);
+                    assert!(
+                        payload.children()[0].with_value(|value| matches!(
+                            value,
+                            ValueView::TextString(OPAQUE_VALUE)
+                        ))
+                    );
+                });
+            })
+            .is_some()
+    );
 }
 
 #[test]
