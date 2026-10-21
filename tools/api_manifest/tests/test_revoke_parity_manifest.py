@@ -83,6 +83,16 @@ class RevokeParityManifestTests(unittest.TestCase):
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
 
+    def test_revoke_response_accessor_is_a_c_symbol(self) -> None:
+        declarations = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row["exportName"] == "kmipkit_client_batch_item_response_revoke"
+        ]
+        self.assertEqual(1, len(declarations))
+        self.assertEqual("c-symbol", declarations[0]["kind"])
+        self.assertEqual("T063:revoke:response:c", declarations[0]["declarationId"])
+
     def test_revoke_has_approved_four_language_mapping_and_traceability(self) -> None:
         self.assertEqual(1, len(self.operations))
         operation = self.operations[0]
