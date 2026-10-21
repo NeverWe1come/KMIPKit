@@ -5220,3 +5220,22 @@ below 95%). The following local checks passed after the correction:
 
 The corrected branch still requires exact-head CI to confirm the 95% changed-code
 gate. T066 remains open until that check and the scoped reviews pass.
+
+#### T066 compiled C Failure metadata follow-up (2026-10-21)
+
+Red commit `d23fb4b0` adds a compiled-C assertion for Set Constraints Failure metadata and
+success-only TTLV suppression. Before adding the C consumer implementation,
+`cargo test -p kmipkit-ffi --features coverage-c-consumer --lib set_constraints_ --no-fail-fast`
+failed at link time with the expected unresolved consumer symbol.
+
+Green commit `65f15190` implements the C consumer assertion. It checks the Set Constraints
+operation, completed Failure status, Operation Failed reason, absent Result Message, and
+absence of success-only response TTLV. The same focused command then passed all 8 Set
+Constraints FFI tests, including compiled C calls for request construction, owned Success
+TTLV, Failure metadata/redaction, Pending TTLV suppression, and overlapping outputs. The
+Windows build emitted existing aws-lc-sys compiler/NASM warnings but exited successfully.
+
+The Refactor documentation update refreshes the T066 traceability row with the compiled C
+Failure evidence and the existing Python Failure/Pending parity test.
+`git diff --check` passed. Exact-head CI and independent QA/security reviews remain pending;
+T066 stays open until those checks, including the selected changed-code coverage gate, pass.
