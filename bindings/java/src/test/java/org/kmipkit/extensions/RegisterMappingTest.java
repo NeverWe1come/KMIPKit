@@ -31,6 +31,20 @@ final class RegisterMappingTest {
     }
 
     @Test
+    void invalidPresenceFlagReleasesTheOwnedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(
+                InvalidInputException.class,
+                () -> ClientBatchItemResult.parseRegisterResponse(new Object[] {
+                    new long[] {2}, null, new long[] {responseTtlv}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
+    @Test
     void absentTypedResponseRejectsUnexpectedIdentifierAndTtlv() {
         assertTrue(ClientBatchItemResult.parseRegisterResponse(
                 new Object[] {new long[] {0}, null, new long[] {0}}).isEmpty());

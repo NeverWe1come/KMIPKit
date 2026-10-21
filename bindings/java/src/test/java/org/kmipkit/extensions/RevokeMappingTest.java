@@ -152,6 +152,17 @@ final class RevokeMappingTest {
     }
 
     @Test
+    void invalidPresenceFlagReleasesTheOwnedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseRevokeResponse(
+                new Object[] {new long[] {2}, null, new long[] {responseTtlv}}));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
+    @Test
     void responseBridgeRejectsInvalidNativeItemHandle() {
         NativeExtensionRegistry.ensureLoaded();
         assertThrows(
