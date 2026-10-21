@@ -5783,3 +5783,42 @@ cleanup:
     kmipkit_ttlv_structure_release(response_ttlv);
     return result;
 }
+
+int kmipkit_client_abi_c_consumer_rejects_register_output_aliases(
+    kmipkit_client_batch_item_response_t *item) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    union {
+        uint8_t flag;
+        kmipkit_ttlv_structure_t *handle;
+    } ttlv_alias;
+    kmipkit_unique_identifier_v1_t identifier_before;
+    uint8_t ttlv_alias_before[sizeof(ttlv_alias)];
+    int status;
+
+    if (item == 0) return 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = UINT32_C(9);
+    memcpy(&identifier_before, &identifier, sizeof(identifier));
+    status = kmipkit_client_batch_item_response_register(
+        item, (uint8_t *)(uintptr_t)&identifier.kind, &identifier);
+    if (status != T076_ERROR_INVALID_INPUT ||
+        memcmp(&identifier, &identifier_before, sizeof(identifier)) != 0) {
+        return 0;
+    }
+
+    memset(&ttlv_alias, 0, sizeof(ttlv_alias));
+    ttlv_alias.flag = 9;
+    memcpy(ttlv_alias_before, &ttlv_alias, sizeof(ttlv_alias));
+    status = kmipkit_client_batch_item_response_register_ttlv(
+        item, &ttlv_alias.flag, &ttlv_alias.handle);
+    if (status != T076_ERROR_INVALID_INPUT ||
+        memcmp(&ttlv_alias, ttlv_alias_before, sizeof(ttlv_alias)) != 0) {
+        if (status == 0 && ttlv_alias.handle != 0 &&
+            ttlv_alias.handle != (kmipkit_ttlv_structure_t *)(uintptr_t)9) {
+            kmipkit_ttlv_structure_release(ttlv_alias.handle);
+        }
+        return 0;
+    }
+    return 1;
+}

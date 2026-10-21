@@ -5775,6 +5775,9 @@ unsafe extern "C" {
         expected_identifier: *const u8,
         expected_identifier_length: u64,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_rejects_register_output_aliases(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -5983,6 +5986,25 @@ fn ffi_register_success_exposes_identifier_and_owned_ordered_ttlv_to_c() {
         result, 1,
         "C copies the successful identifier and ordered TTLV"
     );
+}
+
+#[test]
+fn ffi_register_c_consumer_rejects_overlapping_outputs_without_writes() {
+    let item = successful_cryptographic_item(
+        register_request_fixture(),
+        0x03,
+        b"register-overlap-check",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"registered-overlap"),
+            ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad]),
+        ],
+    );
+
+    // SAFETY: the compiled C consumer receives this live Register response item.
+    let result = unsafe { kmipkit_client_abi_c_consumer_rejects_register_output_aliases(item) };
+
+    assert_eq!(result, 1, "overlap rejection preserves each output region");
+    kmipkit_client_batch_item_response_release(item);
 }
 
 fn register_request_fixture() -> ClientRequest {
