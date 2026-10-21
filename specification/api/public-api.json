@@ -307178,6 +307178,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __slots__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__dataclass_fields__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __dataclass_fields__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__dataclass_params__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __dataclass_params__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__delattr__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __delattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__eq__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __eq__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__hash__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __hash__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__init__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __init__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__match_args__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __match_args__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__repr__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __repr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__setattr__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __setattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__slots__",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __slots__."
     }
   ],
   "apiLevels": [
