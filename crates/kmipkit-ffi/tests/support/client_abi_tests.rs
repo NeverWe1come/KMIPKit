@@ -5730,6 +5730,29 @@ fn ffi_reprovision_rejects_overlapping_scalar_outputs() {
 }
 
 #[test]
+fn ffi_reprovision_rejects_scalar_output_overlapping_identifier_struct() {
+    let item = successful_cryptographic_item(
+        ClientRequest::ReProvision(ReProvisionRequest::new()),
+        0x35,
+        b"reprovision-overlapping-identifier-output",
+        vec![ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad, 0x00, 0xff])],
+    );
+    let mut identifier = empty_unique_identifier_output_v1();
+    let mut identifier_present = 9;
+
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_response_reprovision(
+            item,
+            ptr::addr_of_mut!(identifier.kind).cast::<u8>(),
+            &raw mut identifier_present,
+            &raw mut identifier,
+        )
+    );
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
 fn ffi_reprovision_failure_exposes_neither_success_identifier_nor_ttlv() {
     let item = failed_cryptographic_item(
         ClientRequest::ReProvision(ReProvisionRequest::new()),
