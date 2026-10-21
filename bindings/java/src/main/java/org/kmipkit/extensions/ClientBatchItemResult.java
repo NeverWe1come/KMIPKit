@@ -278,6 +278,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseGetConstraintsResponse(values);
     }
 
+    /** Returns the successful Set Constraints response as an owned complete generic TTLV copy. */
+    public Optional<SetConstraintsResponse> setConstraintsResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseSetConstraints);
+        return parseSetConstraintsResponse(values);
+    }
+
     /** Returns the complete typed Interop result for Success, Failure, or Pending. */
     public Optional<InteropResponse> interopResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -937,6 +946,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "GetConstraintsResponse[fields=redacted]"; }
+    }
+
+    /** Successful Set Constraints response with its complete ordered generic TTLV copy. */
+    public static final class SetConstraintsResponse implements AutoCloseable {
+        private final TtlvStructure responseTtlv;
+
+        private SetConstraintsResponse(TtlvStructure responseTtlv) {
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the complete response, whose operation payload is empty on Success. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() { return "SetConstraintsResponse[fields=redacted]"; }
     }
 
     /** Interop response with its complete ordered generic TTLV for every valid result status. */
@@ -2239,6 +2264,25 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Get Constraints response is invalid");
         }
         return Optional.of(new GetConstraintsResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<SetConstraintsResponse> parseSetConstraintsResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 2, "native Set Constraints response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 1, "native Set Constraints response is invalid");
+        long[] handles = requireLongArray(
+                tuple[1], 1, "native Set Constraints response is invalid");
+        if (!responsePresent(fields)) {
+            if (handles[0] != 0) {
+                TtlvStructure.fromNative(handles[0], null).close();
+                throw new InvalidInputException("native absent response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (handles[0] <= 0) {
+            throw new InvalidInputException("native Set Constraints response is invalid");
+        }
+        return Optional.of(new SetConstraintsResponse(TtlvStructure.fromNative(handles[0], null)));
     }
 
     static Optional<Boolean> parsePingResponse(long[] values) {

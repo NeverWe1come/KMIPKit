@@ -647,6 +647,13 @@ ffi.cdef(
         uint32_t key_compression_type,
         kmipkit_ttlv_structure_t *key_wrapping_specification,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_set_constraints(
+        kmipkit_ttlv_structure_t *constraints,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_response_set_constraints_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_locate(
         uint8_t has_maximum_items,
         int32_t maximum_items,

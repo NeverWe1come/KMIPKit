@@ -97,6 +97,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_reprovision",
         "kmipkit_client_batch_item_rng_retrieve",
         "kmipkit_client_batch_item_rng_seed",
+        "kmipkit_client_batch_item_set_constraints",
     }
 )
 
@@ -1728,10 +1729,16 @@ def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -
     return value._pointer()
 
 
-def _client_native_structure(value: ttlv.Structure | None) -> Any:
+def _client_native_structure(
+    value: ttlv.Structure | None, *, required: bool = False
+) -> Any:
     """Cast a public TTLV handle into the private client ABI's CFFI context."""
     if value is None:
+        if required:
+            errors.raise_for_status(4)
         return _client_ffi.NULL
+    if not isinstance(value, ttlv.Structure):
+        errors.raise_for_status(4)
     pointer = _native_structure(value)
     address = int(ffi.cast("uintptr_t", pointer))
     return _client_ffi.cast("kmipkit_ttlv_structure_t *", address)
@@ -2210,6 +2217,17 @@ def client_batch_item_get_constraints() -> ClientBatchItem:
         "kmipkit_client_batch_item_t",
         "kmipkit_client_batch_item_get_constraints",
         (),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_set_constraints(constraints: ttlv.Structure) -> ClientBatchItem:
+    """Create a Set Constraints item from KMIP 2.1 §6.1.52, Table 325."""
+    native_constraints = _client_native_structure(constraints, required=True)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_set_constraints",
+        (native_constraints,),
     )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
@@ -2985,6 +3003,7 @@ __all__ = [
     "client_batch_item_rekey_key_pair",
     "client_batch_item_check",
     "client_batch_item_get_constraints",
+    "client_batch_item_set_constraints",
     "client_batch_item_interop",
     "client_batch_item_pkcs11",
     "client_batch_item_log",

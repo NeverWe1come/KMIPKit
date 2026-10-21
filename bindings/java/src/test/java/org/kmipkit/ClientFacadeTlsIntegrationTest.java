@@ -1815,6 +1815,87 @@ final class ClientFacadeTlsIntegrationTest {
         assertTrue(peer.isDone());
     }
 
+    // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.
+    @Test
+    void setConstraintsResponseUsesNativeJniBridgeAndExposesTtlvOnlyOnSuccess() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, setConstraintsResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-set-constraints-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        ClientBatchItemResult.SetConstraintsResponse successful;
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create();
+                TtlvStructure constraints = TtlvStructure.create()) {
+            batch.asynchronousIndicator(1);
+            batch.add(ClientBatchItem.setConstraints(constraints)
+                    .withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.setConstraints(constraints)
+                    .withUniqueBatchItemId(uniqueBatchItemId(1)));
+            batch.add(ClientBatchItem.setConstraints(constraints)
+                    .withUniqueBatchItemId(uniqueBatchItemId(2)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult success = response.itemAt(0);
+                    ClientBatchItemResult failure = response.itemAt(1);
+                    ClientBatchItemResult pending = response.itemAt(2)) {
+                assertEquals(3, response.itemCount());
+                assertEquals(0x37, success.operation());
+                assertEquals(0, success.resultStatus());
+                successful = success.setConstraintsResponse().orElseThrow();
+
+                assertEquals(0x37, failure.operation());
+                assertEquals(1, failure.resultStatus());
+                assertEquals(5, failure.resultReason().orElseThrow());
+                assertEquals(java.util.Optional.of("constraints rejected"), failure.resultMessage());
+                assertTrue(failure.setConstraintsResponse().isEmpty());
+
+                assertEquals(0x37, pending.operation());
+                assertEquals(2, pending.resultStatus());
+                assertTrue(pending.outcomeKind().isPending());
+                assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
+                assertTrue(pending.setConstraintsResponse().isEmpty());
+            }
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        try (successful; TtlvStructureView responseTtlv = successful.responseTtlv().view()) {
+            assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            try (TtlvItemView payload = responseTtlv.itemAt(3);
+                    TtlvValueView payloadValue = payload.value();
+                    TtlvStructureView payloadStructure = payloadValue.structure()) {
+                assertEquals(0, payloadStructure.itemCount());
+            }
+            assertFalse(successful.toString().contains("response_ttlv"));
+        }
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 0x37)));
+        assertContains(request, structure(0x420168));
+        assertTrue(peer.isDone());
+    }
+
     @Test
     void rekeyResponseUsesNativeJniBridgeAndRestrictsNonSuccessPayloads() throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
@@ -3770,6 +3851,30 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42007d, 7, "revoke rejected".getBytes(StandardCharsets.UTF_8)));
         byte[] pending = structure(0x42000f,
                 enumeration(0x42005c, 0x13),
+                item(0x420093, 8, uniqueBatchItemId(2)),
+                enumeration(0x42007f, 2),
+                item(0x420006, 8, CORRELATION),
+                structure(0x42007c));
+        return structure(0x42007b, header, success, failure, pending);
+    }
+
+    private static byte[] setConstraintsResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(3)));
+        byte[] success = structure(0x42000f,
+                enumeration(0x42005c, 0x37),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0), structure(0x42007c));
+        byte[] failure = structure(0x42000f,
+                enumeration(0x42005c, 0x37),
+                item(0x420093, 8, uniqueBatchItemId(1)),
+                enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5),
+                item(0x42007d, 7, "constraints rejected".getBytes(StandardCharsets.UTF_8)));
+        byte[] pending = structure(0x42000f,
+                enumeration(0x42005c, 0x37),
                 item(0x420093, 8, uniqueBatchItemId(2)),
                 enumeration(0x42007f, 2),
                 item(0x420006, 8, CORRELATION),

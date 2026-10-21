@@ -182,6 +182,7 @@ public final class NativeExtensionRegistry {
             boolean hasObjectGroupMember, long objectGroupMember,
             long attributes);
     public static native long clientBatchItemGetConstraints();
+    public static native long clientBatchItemSetConstraints(long constraints);
     public static native long clientBatchItemInterop(long interopFunction, byte[] interopIdentifier);
     public static native long clientBatchItemPkcs11(
             long function, long interfaceStructure, byte[] correlationValue, long inputParameters);
@@ -297,6 +298,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseGet(long itemResponse);
     public static native Object[] clientBatchItemResponseLocate(long itemResponse);
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
+    public static native Object[] clientBatchItemResponseSetConstraints(long itemResponse);
     public static native long[] clientBatchItemResponsePing(long itemResponse);
     public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);

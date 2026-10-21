@@ -660,6 +660,15 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates a Set Constraints request from the required Constraints structure. */
+    public static ClientBatchItem setConstraints(TtlvStructure constraints) {
+        requireStructure(constraints, "Set Constraints");
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientBatchItemSetConstraints(handleOrNull(constraints)));
+        return new ClientBatchItem(value, List.of());
+    }
+
     /** Creates an Interop item with an open Function Enumeration and required UTF-8 Identifier. */
     public static ClientBatchItem interop(long interopFunction, byte[] interopIdentifier) {
         requireU32(interopFunction, "Interop Function");

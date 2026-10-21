@@ -70,20 +70,10 @@ fn set_constraints_ttlv_getter_clears_outputs_for_an_invalid_item() {
 
 #[test]
 fn set_constraints_ttlv_getter_exposes_success_only() {
-    let request = || {
-        ClientRequest::set_constraints(SetConstraintsRequest::new(Structure::new()))
-    };
-    let success = successful_cryptographic_item(
-        request(),
-        0x37,
-        b"set-constraints-success",
-        Vec::new(),
-    );
-    let failed = failed_cryptographic_item(
-        request(),
-        0x37,
-        b"set-constraints-failure",
-    );
+    let request = || ClientRequest::set_constraints(SetConstraintsRequest::new(Structure::new()));
+    let success =
+        successful_cryptographic_item(request(), 0x37, b"set-constraints-success", Vec::new());
+    let failed = failed_cryptographic_item(request(), 0x37, b"set-constraints-failure");
 
     for (item, expected_present) in [(success, 1), (failed, 0)] {
         let mut present = 9;
@@ -120,9 +110,7 @@ unsafe extern "C" {
 fn compiled_c_consumer_builds_a_set_constraints_request_from_a_caller_structure() {
     let mut item = ptr::null_mut();
     assert_eq!(
-        unsafe {
-            kmipkit_client_abi_c_consumer_build_set_constraints_request(&raw mut item)
-        },
+        unsafe { kmipkit_client_abi_c_consumer_build_set_constraints_request(&raw mut item) },
         1
     );
     assert!(!item.is_null());
@@ -141,25 +129,15 @@ fn compiled_c_consumer_builds_a_set_constraints_request_from_a_caller_structure(
 
 #[test]
 fn compiled_c_consumer_reads_owned_success_ttlv_and_hides_failure_ttlv() {
-    let request = || {
-        ClientRequest::set_constraints(SetConstraintsRequest::new(Structure::new()))
-    };
-    let success = successful_cryptographic_item(
-        request(),
-        0x37,
-        b"set-constraints-success",
-        Vec::new(),
-    );
+    let request = || ClientRequest::set_constraints(SetConstraintsRequest::new(Structure::new()));
+    let success =
+        successful_cryptographic_item(request(), 0x37, b"set-constraints-success", Vec::new());
     assert_eq!(
         unsafe { kmipkit_client_abi_c_consumer_validate_set_constraints_response_ttlv(success, 1) },
         1
     );
 
-    let failure = failed_cryptographic_item(
-        request(),
-        0x37,
-        b"set-constraints-failure",
-    );
+    let failure = failed_cryptographic_item(request(), 0x37, b"set-constraints-failure");
     assert_eq!(
         unsafe { kmipkit_client_abi_c_consumer_validate_set_constraints_response_ttlv(failure, 0) },
         1

@@ -47,8 +47,9 @@ use kmipkit_protocol::{
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
     QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RegisterRequest,
     RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
-    RngSeedRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier,
+    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3850,6 +3851,24 @@ pub extern "C" fn kmipkit_client_batch_item_get_constraints(
         let out = out_slot!(out_item);
         *out = try_ffi!(batch_item_handle(ClientRequest::GetConstraints(
             GetConstraintsRequest::new(),
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates a Set Constraints request from the required KMIP 2.1 §6.1.52 Constraints structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_set_constraints(
+    constraints: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let Some(constraints) = try_ffi!(copy_structure_handle(constraints, true)) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::SetConstraints(
+            SetConstraintsRequest::new(constraints),
         )));
         SUCCESS
     })

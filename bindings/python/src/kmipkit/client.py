@@ -867,6 +867,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     derive_key_response: DeriveKeyResponse | None = field(default=None, repr=False)
     export_response: ExportResponse | None = field(default=None, repr=False)
     get_constraints_response: GetConstraintsResponse | None = field(default=None, repr=False)
+    set_constraints_response: SetConstraintsResponse | None = field(default=None, repr=False)
     _get_response: GetResponse | None = field(default=None, repr=False)
     _locate_response: LocateResponse | None = field(default=None, repr=False)
     import_response: ImportResponse | None = field(default=None, repr=False)
@@ -1363,6 +1364,17 @@ class LocateResponse:
 @dataclass(frozen=True, slots=True)
 class GetConstraintsResponse:
     """Successful Get Constraints response and its owned complete generic TTLV."""
+
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True)
+class SetConstraintsResponse:
+    """Successful Set Constraints response and its owned complete generic TTLV."""
 
     response_ttlv: ttlv.Structure = field(repr=False)
 
@@ -2077,6 +2089,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x38
                 ):
                     constraints_response = _get_constraints_response(item)
+                set_constraints_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x37
+                ):
+                    set_constraints_response = _set_constraints_response(item)
                 derive_key_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -2161,6 +2180,7 @@ def _batch_result(handle: Any) -> BatchResult:
                     derive_key_response,
                     export_response,
                     get_constraints_response=constraints_response,
+                    set_constraints_response=set_constraints_response,
                     _get_response=get_response,
                     _locate_response=locate_response,
                     import_response=import_response,
@@ -3328,6 +3348,31 @@ def _get_constraints_response(
     return GetConstraintsResponse(response_ttlv)
 
 
+def _set_constraints_response(
+    item: _ClientBatchItemResponse,
+) -> SetConstraintsResponse:
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_set_constraints_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return SetConstraintsResponse(response_ttlv)
+
+
 def _ping_response(item: _ClientBatchItemResponse) -> bool | None:
     present = ffi.new("uint8_t *")
     _raise_abi_status(
@@ -4167,6 +4212,7 @@ __all__ = [
     "InteropResponse",
     "LogResponse",
     "GetConstraintsResponse",
+    "SetConstraintsResponse",
     "GetResponse",
     "LocateResponse",
     "MacResponse",
