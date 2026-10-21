@@ -5845,6 +5845,102 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_build_set_defaults_requests(
+    kmipkit_client_batch_item_t **out_omitted,
+    kmipkit_client_batch_item_t **out_present_empty) {
+    kmipkit_ttlv_structure_t *defaults_information = 0;
+    kmipkit_client_batch_item_t *omitted = 0;
+    kmipkit_client_batch_item_t *present_empty = 0;
+
+    if (out_omitted == 0 || out_present_empty == 0 ||
+        out_omitted == (void *)out_present_empty) {
+        return 0;
+    }
+    *out_omitted = 0;
+    *out_present_empty = 0;
+    if (kmipkit_client_batch_item_set_defaults(0, &omitted) != 0 || omitted == 0 ||
+        kmipkit_ttlv_structure_create(&defaults_information) != 0 ||
+        defaults_information == 0 ||
+        kmipkit_client_batch_item_set_defaults(defaults_information, &present_empty) != 0 ||
+        present_empty == 0) {
+        goto cleanup;
+    }
+
+    /* Set Defaults copies a present Structure and never consumes the caller's handle. */
+    kmipkit_ttlv_structure_release(defaults_information);
+    defaults_information = 0;
+    *out_omitted = omitted;
+    *out_present_empty = present_empty;
+    return 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(defaults_information);
+    kmipkit_client_batch_item_release(omitted);
+    kmipkit_client_batch_item_release(present_empty);
+    return 0;
+}
+
+int kmipkit_client_abi_c_consumer_validate_set_defaults_response_ttlv(
+    kmipkit_client_batch_item_response_t *item, uint8_t expected_present) {
+    static const uint32_t response_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    uint8_t present = UINT8_C(9);
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    int result = 0;
+
+    if (item == 0 || expected_present > 1) goto cleanup;
+    if (kmipkit_client_batch_item_response_set_defaults_ttlv(
+            item, &present, &response_ttlv) != 0 ||
+        present != expected_present ||
+        (expected_present == 1 && response_ttlv == 0) ||
+        (expected_present == 0 && response_ttlv != 0)) {
+        goto cleanup;
+    }
+
+    /* The caller-owned copy remains valid after releasing its source response. */
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (expected_present == 1 &&
+        (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+         !check_view_tags(
+             view, response_tags,
+             (uint64_t)(sizeof(response_tags) / sizeof(response_tags[0]))))) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_validate_set_defaults_failure_metadata(
+    kmipkit_client_batch_item_response_t *item) {
+    kmipkit_client_batch_item_metadata_v2_t metadata = {0};
+    uint8_t ttlv_present = UINT8_C(9);
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+
+    if (item == 0) return 0;
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = 2;
+    if (kmipkit_client_batch_item_response_metadata_v2(item, &metadata) != 0 ||
+        metadata.operation != UINT32_C(0x36) || metadata.outcome_kind != 1 ||
+        metadata.result_status != 1 || metadata.has_result_reason != 1 ||
+        metadata.result_reason != 6 || metadata.has_result_message != 0 ||
+        metadata.result_message_data != 0 || metadata.result_message_length != 0 ||
+        kmipkit_client_batch_item_response_set_defaults_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 ||
+        ttlv_present != 0 || response_ttlv != 0) {
+        return 0;
+    }
+    return 1;
+}
+
 int kmipkit_client_abi_c_consumer_validate_set_constraints_response_ttlv(
     kmipkit_client_batch_item_response_t *item, uint8_t expected_present) {
     static const uint32_t response_tags[] = {
