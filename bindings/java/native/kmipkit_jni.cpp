@@ -1504,10 +1504,6 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             group_spans.reserve(static_cast<size_t>(group_count));
             for (jsize index = 0; index < group_count; ++index) {
                 jobject raw_group = env->GetObjectArrayElement(raw_object_groups, index);
-                if (raw_group == nullptr) {
-                    if (!env->ExceptionCheck()) throw_invalid_input(env);
-                    return static_cast<jlong>(0);
-                }
                 std::vector<uint8_t> bytes;
                 const bool copied = read_bytes(
                         env, reinterpret_cast<jbyteArray>(raw_group),
@@ -1567,10 +1563,6 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             group_spans.reserve(static_cast<size_t>(group_count));
             for (jsize index = 0; index < group_count; ++index) {
                 jobject raw_group = env->GetObjectArrayElement(raw_object_groups, index);
-                if (raw_group == nullptr) {
-                    if (!env->ExceptionCheck()) throw_invalid_input(env);
-                    return static_cast<jlong>(0);
-                }
                 std::vector<uint8_t> bytes;
                 const bool copied = read_bytes(
                         env, reinterpret_cast<jbyteArray>(raw_group),
