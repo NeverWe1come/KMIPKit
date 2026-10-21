@@ -329,6 +329,15 @@ def test_recertify_builder_maps_omitted_optional_type_and_offset(
     assert calls[0][1][5:7] == (0, 0)
 
 
+def test_recertify_builder_passes_typed_identifier_to_native_client_abi() -> None:
+    item = extensions.client_batch_item_recertify(
+        extensions.UniqueIdentifier.text_string("certificate-7"),
+        certificate_request_type=5,
+        certificate_request_value=b"certificate-request",
+    )
+    item.close()
+
+
 def test_recertify_round_trips_through_native_client_over_mtls_and_retains_ttlv(
 ) -> None:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
