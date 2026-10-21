@@ -513,3 +513,7 @@ review and fresh exact-head CI.
   branches, but the selected aggregate has not been recomputed at the new head.
   The exact 95% gate, security review, and controller review remain pending;
   this report does not mark T060 complete.
+
+### Exact-head CI resolution (2026-10-21)
+
+The previously pending aggregate gate completed in CI run [39529855398](https://github.com/NeverWe1come/KMIPKit/actions/runs/39529855398) on 14e486604e5ec58d9985788be63c6ff1d42f896b. All 34 required jobs passed, two schedule-only jobs were skipped, and there were no failures. Changed-production coverage is 11,245/11,833 (95.03%), above the unchanged 95% threshold; all other selected scope and workspace thresholds also passed. T060 is complete. The deferred manifest-minor remains recorded for final cumulative branch review; it does not block this task's acceptance criteria.
