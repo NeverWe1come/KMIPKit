@@ -1493,6 +1493,21 @@ class T076ClientMappingTests(unittest.TestCase):
         revocation_reason_repr_exclusion = {
             "kmipkit.extensions.RevocationReason.__repr__"
         }
+        set_defaults_response_dataclass_exclusions = {
+            f"kmipkit.client.SetDefaultsResponse.{member}"
+            for member in (
+                "__dataclass_fields__",
+                "__dataclass_params__",
+                "__delattr__",
+                "__eq__",
+                "__hash__",
+                "__init__",
+                "__match_args__",
+                "__repr__",
+                "__setattr__",
+                "__slots__",
+            )
+        }
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
@@ -1517,6 +1532,7 @@ class T076ClientMappingTests(unittest.TestCase):
             | revocation_reason_repr_exclusion
             | REVOKE_RESPONSE_EXCLUDED_EXPORTS
             | OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS
+            | set_defaults_response_dataclass_exclusions
             | {"kmipkit.metadata.Version.__init__"}
         )
         for path in sorted(exact_exclusions):
@@ -1560,6 +1576,10 @@ class T076ClientMappingTests(unittest.TestCase):
                         self.assertIn("dataclass-generated", exclusion["reason"])
                         self.assertIn("interpreter mechanics", exclusion["reason"])
                     self.assertIn("T056", exclusion["evidence"])
+                elif path in set_defaults_response_dataclass_exclusions:
+                    self.assertIn("dataclass-generated", exclusion["reason"])
+                    self.assertIn("not an independent cross-language product capability", exclusion["reason"])
+                    self.assertIn("T067", exclusion["evidence"])
                 elif path in log_response_repr_exclusion:
                     self.assertIn("redacted", exclusion["reason"])
                     self.assertIn("representation", exclusion["reason"])
