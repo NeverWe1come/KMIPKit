@@ -823,7 +823,11 @@ class Batch(_ClientHandle):
 
 
 class _BatchItemResultNativeState:
-    __slots__ = ("_native_usage_allocation_response",)
+    __slots__ = (
+        "_native_usage_allocation_response",
+        "_rng_retrieve_response",
+        "_rng_seed_response",
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -886,6 +890,8 @@ class BatchItemResult(_BatchItemResultNativeState):
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
+        object.__setattr__(self, "_rng_retrieve_response", None)
+        object.__setattr__(self, "_rng_seed_response", None)
 
     @property
     def metadata_v2(self) -> BatchItemMetadataV2:
@@ -930,6 +936,14 @@ class BatchItemResult(_BatchItemResultNativeState):
     def locate_response(self) -> LocateResponse | None:
         """Return Locate's optional count and identifiers in server order, when available."""
         return self._locate_response
+
+    def rng_retrieve_response(self) -> RngRetrieveResponse | None:
+        """Return successful RNG Retrieve output and its owned generic response TTLV."""
+        return self._rng_retrieve_response
+
+    def rng_seed_response(self) -> RngSeedResponse | None:
+        """Return successful RNG Seed Data Length and its owned generic response TTLV."""
+        return self._rng_seed_response
 
 
 @dataclass(slots=True, init=False, eq=False, repr=False)
@@ -1494,6 +1508,60 @@ class SignatureVerifyResponse:
     correlation_value: bytes | None = field(repr=False)
 
 
+@dataclass(slots=True, init=False, repr=False)
+class RngRetrieveResponse:
+    """Successful §6.1.49 output in wipeable storage plus complete generic response TTLV."""
+
+    _data: _SecretBytes | None = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+    _closed: bool = field(default=False, init=False, repr=False)
+
+    def __init__(self, data: _SecretBytes, response_ttlv: ttlv.Structure) -> None:
+        self._data = data
+        self.response_ttlv = response_ttlv
+        self._closed = False
+
+    @property
+    def data(self) -> bytes:
+        """Return a caller-owned random-data copy; Python cannot guarantee its zeroization."""
+        self._ensure_open()
+        if self._data is None:
+            errors.raise_for_status(4)
+        return self._data.to_bytes()
+
+    def close(self) -> None:
+        """Wipe the KMIPKit-owned data buffer and release the generic response TTLV copy."""
+        if self._closed:
+            return
+        if self._data is not None:
+            self._data.wipe()
+            self._data = None
+        self.response_ttlv.close()
+        self._closed = True
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("RNG Retrieve response is closed")
+
+    def __repr__(self) -> str:
+        return "RngRetrieveResponse(data=redacted, response_ttlv=preserved)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class RngSeedResponse:
+    """Successful §6.1.50 server-reported Data Length and complete generic response TTLV."""
+
+    data_length: int
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return f"RngSeedResponse(data_length={self.data_length}, response_ttlv=preserved)"
+
+
 class BatchResult(_ClientHandle):
     """Owns a native batch response and exposes copied, ordered outcome metadata."""
 
@@ -1916,6 +1984,20 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x35
                 ):
                     reprovision_response = _reprovision_response(item)
+                rng_retrieve_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x25
+                ):
+                    rng_retrieve_response = _rng_retrieve_response(item)
+                rng_seed_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x26
+                ):
+                    rng_seed_response = _rng_seed_response(item)
                 check_response = None
                 if int(metadata.operation) == 0x09:
                     check_response = _check_response(item)
@@ -2052,6 +2134,8 @@ def _batch_result(handle: Any) -> BatchResult:
                     rekey_key_pair_response=rekey_key_pair_response,
                     reprovision_response=reprovision_response,
                 )
+                object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
+                object.__setattr__(result, "_rng_seed_response", rng_seed_response)
                 items.append(result)
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -3535,6 +3619,78 @@ def _sign_response(item: _ClientBatchItemResponse) -> SignResponse | None:
     )
 
 
+def _successful_response_ttlv(
+    item: _ClientBatchItemResponse, function: Any
+) -> ttlv.Structure:
+    present = ffi.new("uint8_t *")
+    output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(function(item._pointer(), present, output))
+    handle = output[0]
+    if present[0] != 1 or handle == ffi.NULL:
+        if handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(handle)
+        errors.raise_for_status(4)
+    try:
+        return ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(handle)
+        raise
+
+
+def _rng_retrieve_response(
+    item: _ClientBatchItemResponse,
+) -> RngRetrieveResponse | None:
+    present = ffi.new("uint8_t *")
+    data_present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_rng_retrieve(
+            item._pointer(), present, data_present, data
+        )
+    )
+    if present[0] == 0:
+        if data_present[0] != 0:
+            errors.raise_for_status(4)
+        _optional_output_secret_span(data_present, data)
+        return None
+    if present[0] != 1 or data_present[0] != 1:
+        errors.raise_for_status(4)
+    secret_data = _optional_output_secret_span(data_present, data)
+    if secret_data is None:
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = _successful_response_ttlv(
+            item, lib.kmipkit_client_batch_item_response_rng_retrieve_ttlv
+        )
+    except Exception:
+        secret_data.wipe()
+        raise
+    return RngRetrieveResponse(secret_data, response_ttlv)
+
+
+def _rng_seed_response(item: _ClientBatchItemResponse) -> RngSeedResponse | None:
+    present = ffi.new("uint8_t *")
+    data_length_present = ffi.new("uint8_t *")
+    data_length = ffi.new("int32_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_rng_seed(
+            item._pointer(), present, data_length_present, data_length
+        )
+    )
+    if present[0] == 0:
+        if data_length_present[0] != 0 or data_length[0] != 0:
+            errors.raise_for_status(4)
+        return None
+    if present[0] != 1 or data_length_present[0] != 1:
+        errors.raise_for_status(4)
+    response_ttlv = _successful_response_ttlv(
+        item, lib.kmipkit_client_batch_item_response_rng_seed_ttlv
+    )
+    return RngSeedResponse(int(data_length[0]), response_ttlv)
+
+
 def _signature_verify_response(
     item: _ClientBatchItemResponse,
 ) -> SignatureVerifyResponse | None:
@@ -3885,6 +4041,8 @@ __all__ = [
     "MacVerifyResponse",
     "RequestOptions",
     "ReProvisionResponse",
+    "RngRetrieveResponse",
+    "RngSeedResponse",
     "SignResponse",
     "SignatureVerifyResponse",
     "TimeoutKind",

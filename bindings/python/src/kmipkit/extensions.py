@@ -95,6 +95,8 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_rekey",
         "kmipkit_client_batch_item_rekey_key_pair",
         "kmipkit_client_batch_item_reprovision",
+        "kmipkit_client_batch_item_rng_retrieve",
+        "kmipkit_client_batch_item_rng_seed",
     }
 )
 
@@ -1677,6 +1679,28 @@ def _native_optional_span(
     return span, data
 
 
+def _native_client_optional_span(
+    value: bytes | bytearray | memoryview | None,
+    staging_buffers: list[Any] | None = None,
+) -> tuple[Any, Any]:
+    """Create a byte span in the private client ABI's CFFI context."""
+    if value is None:
+        return _client_ffi.NULL, None
+    raw, data = _owned_bytes(value, _MAX_OPERATION_INPUT_BYTES)
+    if staging_buffers is not None:
+        staging_buffers.append(data)
+    native_data = (
+        _client_ffi.cast("const uint8_t *", int(ffi.cast("uintptr_t", data)))
+        if raw
+        else _client_ffi.NULL
+    )
+    span = _client_ffi.new(
+        "kmipkit_byte_span_v1_t *",
+        {"data": native_data, "length": len(raw)},
+    )
+    return span, data
+
+
 def _native_optional_indicator(value: bool | None) -> int:
     if value is None:
         return 0
@@ -1922,6 +1946,35 @@ def client_batch_item_reprovision(
             _client_native_structure(certificate),
         ),
     )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_rng_retrieve(data_length: int) -> ClientBatchItem:
+    """Create §6.1.49 RNG Retrieve with the caller's signed KMIP Integer length."""
+    length = _integer_range(data_length, -(1 << 31), (1 << 31) - 1)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_rng_retrieve",
+        (length,),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_rng_seed(
+    data: bytes | bytearray | memoryview,
+) -> ClientBatchItem:
+    """Create §6.1.50 RNG Seed from required seed bytes using a wiped staging buffer."""
+    if data is None:
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        seed_span, _ = _native_client_optional_span(data, staging_buffers)
+        if seed_span == _client_ffi.NULL:
+            errors.raise_for_status(4)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_rng_seed",
+            (seed_span,),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -2840,6 +2893,8 @@ __all__ = [
     "client_batch_item_certify",
     "client_batch_item_recertify",
     "client_batch_item_reprovision",
+    "client_batch_item_rng_retrieve",
+    "client_batch_item_rng_seed",
     "client_batch_item_rekey",
     "client_batch_item_rekey_key_pair",
     "client_batch_item_check",

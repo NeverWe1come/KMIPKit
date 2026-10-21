@@ -378,6 +378,23 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates a §6.1.49 RNG Retrieve request with the caller's signed Data Length. */
+    public static ClientBatchItem rngRetrieve(int dataLength) {
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(
+                () -> NativeExtensionRegistry.clientBatchItemRngRetrieve(dataLength));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a §6.1.50 RNG Seed request from required secret seed bytes. */
+    public static ClientBatchItem rngSeed(byte[] data) {
+        if (data == null) throw new InvalidInputException("RNG Seed Data is required");
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(
+                () -> NativeExtensionRegistry.clientBatchItemRngSeed(data));
+        return new ClientBatchItem(value, List.of());
+    }
+
     /** Creates a Check request with optional §6.1.7 Usage Limits Count, usage mask, and lease. */
     public static ClientBatchItem check(
             @Nullable UniqueIdentifier uniqueIdentifier,

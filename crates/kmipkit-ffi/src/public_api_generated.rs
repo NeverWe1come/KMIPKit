@@ -1608,6 +1608,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::reprovision_with_options",
     ),
     (
+        "rust-observed-ad3e9ae2e918544e7398",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rng_retrieve",
+    ),
+    (
+        "rust-observed-a2dfd7f303a11bb991d7",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rng_seed",
+    ),
+    (
         "T046:response:rustVariant",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::DeriveKey",
@@ -1723,6 +1733,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::reprovision_response",
     ),
     (
+        "rust-observed-37cc24e5ca63b7c10837",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::rng_retrieve_response",
+    ),
+    (
+        "rust-observed-910a28ad78ac72eff0ca",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::rng_seed_response",
+    ),
+    (
         "rust-observed-ebae376c3db55930fe72",
         "rust-kmipkit-client",
         "kmipkit_client::ClientError::ProtocolResponse::response_ttlv",
@@ -1813,6 +1833,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientRequest::RekeyKeyPair",
     ),
     (
+        "rust-observed-78417d6a93db022ae787",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rng_retrieve",
+    ),
+    (
+        "rust-observed-b49e37f21886f755e1e3",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rng_seed",
+    ),
+    (
         "rust-observed-1cc0c37b6e3da35277b2",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::check",
@@ -1841,6 +1871,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-62f5f2ac47be3ef58afc",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::reprovision",
+    ),
+    (
+        "rust-observed-ff657987e32f03b3a43d",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rng_retrieve",
+    ),
+    (
+        "rust-observed-4407b05d072d782dec68",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::rng_seed",
     ),
     (
         "rust-observed-28d98324cf31193d352c",
@@ -2541,6 +2581,56 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-958624c4d24dba1be880",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RekeyResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-0960b8952bd6dedbf0cb",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngRetrieveRequest",
+    ),
+    (
+        "rust-observed-1f043dc645780cf9987d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngRetrieveRequest::new",
+    ),
+    (
+        "rust-observed-1446ce9311402212e3ba",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngRetrieveResponse",
+    ),
+    (
+        "rust-observed-dbd0811dd058aab2dbf3",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngRetrieveResponse::data",
+    ),
+    (
+        "rust-observed-aebf377c87c7e247a237",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-d21e1394c64cf4c8a3d4",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngSeedRequest",
+    ),
+    (
+        "rust-observed-b0801b0a944e661dcba1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngSeedRequest::new",
+    ),
+    (
+        "rust-observed-d820c9bb846c9a8f7da4",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngSeedResponse",
+    ),
+    (
+        "rust-observed-0243b628c11675cab6f1",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngSeedResponse::data_length",
+    ),
+    (
+        "rust-observed-5b679d5d4eac72ea6264",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RngSeedResponse::with_ttlv",
     ),
     (
         "rust-observed-70317e0c491e0f267466",

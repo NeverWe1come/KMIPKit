@@ -15,9 +15,9 @@ OPERATIONS = {
         "name": "RNG Retrieve",
         "section": "6.1.49",
         "functions": {
-            "client_batch_item_rng_retrieve",
-            "client_batch_item_response_rng_retrieve",
-            "client_batch_item_response_rng_retrieve_ttlv",
+            "kmipkit_client_batch_item_rng_retrieve",
+            "kmipkit_client_batch_item_response_rng_retrieve",
+            "kmipkit_client_batch_item_response_rng_retrieve_ttlv",
         },
         "mappings": {
             "rust": {
@@ -49,9 +49,9 @@ OPERATIONS = {
         "name": "RNG Seed",
         "section": "6.1.50",
         "functions": {
-            "client_batch_item_rng_seed",
-            "client_batch_item_response_rng_seed",
-            "client_batch_item_response_rng_seed_ttlv",
+            "kmipkit_client_batch_item_rng_seed",
+            "kmipkit_client_batch_item_response_rng_seed",
+            "kmipkit_client_batch_item_response_rng_seed_ttlv",
         },
         "mappings": {
             "rust": {
@@ -152,9 +152,9 @@ class RngParityManifestTests(unittest.TestCase):
                 missing = expected["functions"] - self.functions.keys()
                 self.assertEqual(set(), missing)
                 request = self.functions[
-                    "client_batch_item_rng_retrieve"
+                    "kmipkit_client_batch_item_rng_retrieve"
                     if expected["name"] == "RNG Retrieve"
-                    else "client_batch_item_rng_seed"
+                    else "kmipkit_client_batch_item_rng_seed"
                 ]
                 self.assertTrue(
                     any(value.startswith("KMIPKIT-0041-FR-") for value in request["requirementIds"])
@@ -162,12 +162,12 @@ class RngParityManifestTests(unittest.TestCase):
                 self.assertIn("out_item", [item["name"] for item in request["c"]["parameters"]])
                 if expected["name"] == "RNG Seed":
                     data = request["c"]["parameters"][0]
-                    self.assertEqual("kmipkit_byte_span_v1_t *", data["type"])
+                    self.assertEqual("const kmipkit_byte_span_v1_t *", data["type"])
                     self.assertEqual("borrowed", data["ownership"])
                     self.assertIn("zeroiz", " ".join(request["c"]["documentation"]).lower())
 
                 response_ttlv = self.functions[
-                    f"client_batch_item_response_{'rng_retrieve' if expected['name'] == 'RNG Retrieve' else 'rng_seed'}_ttlv"
+                    f"kmipkit_client_batch_item_response_{'rng_retrieve' if expected['name'] == 'RNG Retrieve' else 'rng_seed'}_ttlv"
                 ]
                 self.assertTrue(
                     any(value.startswith("KMIPKIT-0041-FR-") for value in response_ttlv["requirementIds"])

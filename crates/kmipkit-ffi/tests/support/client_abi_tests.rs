@@ -665,7 +665,17 @@ fn ffi_rng_retrieve_response_exposes_success_data_and_generic_ttlv() {
     assert_eq!(ttlv_present, 1);
     assert!(!response_ttlv.is_null());
     kmipkit_ttlv_structure_release(response_ttlv);
-    kmipkit_client_batch_item_response_release(item);
+    assert_eq!(
+        1,
+        // SAFETY: the C consumer reads the live response and the known test bytes only.
+        unsafe {
+            kmipkit_client_abi_c_consumer_validate_rng_retrieve_response(
+                item,
+                secret.as_ptr(),
+                u64::try_from(secret.len()).expect("test secret length fits u64"),
+            )
+        }
+    );
 }
 
 #[test]
@@ -676,7 +686,7 @@ fn ffi_rng_seed_response_preserves_zero_data_length_and_generic_ttlv() {
         ))),
         0x26,
         b"rng-seed-success",
-        vec![ttlv_item(0x0042_00d5, 0x05, &0_i32.to_be_bytes())],
+        vec![ttlv_item(0x0042_00d5, 0x02, &0_i32.to_be_bytes())],
     );
     let mut present = 0;
     let mut data_length_present = 0;
@@ -705,7 +715,11 @@ fn ffi_rng_seed_response_preserves_zero_data_length_and_generic_ttlv() {
     assert_eq!(ttlv_present, 1);
     assert!(!response_ttlv.is_null());
     kmipkit_ttlv_structure_release(response_ttlv);
-    kmipkit_client_batch_item_response_release(item);
+    assert_eq!(
+        1,
+        // SAFETY: the C consumer reads the live response and preserves the explicit zero value.
+        unsafe { kmipkit_client_abi_c_consumer_validate_rng_seed_response(item, 0) }
+    );
 }
 
 fn assert_response_span(span: kmipkit_byte_span_v1_t, expected: &[u8]) {
@@ -5448,6 +5462,15 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_validate_rng_retrieve_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expected_data: *const u8,
+        expected_length: u64,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_rng_seed_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expected_data_length: i32,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_failed_check_response(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;

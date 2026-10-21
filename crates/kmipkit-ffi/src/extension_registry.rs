@@ -45,9 +45,9 @@ use kmipkit_protocol::{
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
     QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, SecretBytes, SecretText, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
-    UniqueIdentifier,
+    RekeyKeyPairRequest, RekeyRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
+    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    Ticket, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -4422,6 +4422,39 @@ pub extern "C" fn kmipkit_client_batch_item_sign(
         }
         request = with_cryptographic_framing(request, correlation, init_indicator, final_indicator);
         *out = try_ffi!(batch_item_handle(ClientRequest::Sign(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.49 RNG Retrieve request with the caller's signed Data Length.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_rng_retrieve(
+    data_length: i32,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        *out = try_ffi!(batch_item_handle(ClientRequest::rng_retrieve(
+            RngRetrieveRequest::new(data_length),
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates a KMIP 2.1 §6.1.50 RNG Seed request from required secret seed bytes.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_rng_seed(
+    data: *const crate::kmipkit_byte_span_v1_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let Some(data) = try_ffi!(copy_optional_secret_span(data)) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::rng_seed(
+            RngSeedRequest::new(data)
+        )));
         SUCCESS
     })
 }

@@ -107,6 +107,22 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseReProvisionResponse(values);
     }
 
+    /** Returns successful RNG Retrieve bytes in an owned, redacted response object. */
+    public Optional<RngRetrieveResponse> rngRetrieveResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseRngRetrieve);
+        return parseRngRetrieveResponse(values);
+    }
+
+    /** Returns successful RNG Seed Data Length, preserving a zero result. */
+    public Optional<RngSeedResponse> rngSeedResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseRngSeed);
+        return parseRngSeedResponse(values);
+    }
+
     /** Returns the typed Check result, including policy fields and generic TTLV on failure. */
     public Optional<CheckResponse> checkResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -580,6 +596,81 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return "ReProvisionResponse[uniqueIdentifier="
                     + (uniqueIdentifier.isPresent() ? "redacted" : "absent")
                     + ", responseTtlv=redacted]";
+        }
+    }
+
+    /** Successful RNG Retrieve bytes held in a wipeable Java-owned array and full response TTLV. */
+    public static final class RngRetrieveResponse implements AutoCloseable {
+        private @Nullable byte[] data;
+        private @Nullable TtlvStructure responseTtlv;
+
+        private RngRetrieveResponse(byte[] data, TtlvStructure responseTtlv) {
+            this.data = data.clone();
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns a caller-owned copy; Java cannot guarantee zeroization of external copies. */
+        public synchronized Optional<byte[]> data() {
+            ensureOpen();
+            return Optional.of(data.clone());
+        }
+
+        /** Returns the complete ordered response structure owned by this result. */
+        public synchronized Optional<TtlvStructure> responseTtlv() {
+            ensureOpen();
+            return Optional.of(responseTtlv);
+        }
+
+        @Override public synchronized void close() {
+            if (data != null) Arrays.fill(data, (byte) 0);
+            data = null;
+            if (responseTtlv != null) responseTtlv.close();
+            responseTtlv = null;
+        }
+
+        private void ensureOpen() {
+            if (data == null || responseTtlv == null) {
+                throw new IllegalStateException("RNG Retrieve response is closed");
+            }
+        }
+
+        @Override public String toString() {
+            return "RngRetrieveResponse[data=redacted, responseTtlv=preserved]";
+        }
+    }
+
+    /** Successful RNG Seed response with the server's signed Data Length and complete TTLV. */
+    public static final class RngSeedResponse implements AutoCloseable {
+        private final OptionalInt dataLength;
+        private @Nullable TtlvStructure responseTtlv;
+
+        private RngSeedResponse(int dataLength, TtlvStructure responseTtlv) {
+            this.dataLength = OptionalInt.of(dataLength);
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the server-reported Data Length, including an explicit zero. */
+        public OptionalInt dataLength() { return dataLength; }
+
+        /** Returns the complete ordered response structure owned by this result. */
+        public synchronized Optional<TtlvStructure> responseTtlv() {
+            ensureOpen();
+            return Optional.of(responseTtlv);
+        }
+
+        @Override public synchronized void close() {
+            if (responseTtlv != null) responseTtlv.close();
+            responseTtlv = null;
+        }
+
+        private void ensureOpen() {
+            if (responseTtlv == null) {
+                throw new IllegalStateException("RNG Seed response is closed");
+            }
+        }
+
+        @Override public String toString() {
+            return "RngSeedResponse[dataLength=" + dataLength + ", responseTtlv=preserved]";
         }
     }
 
@@ -1489,6 +1580,89 @@ public final class ClientBatchItemResult implements AutoCloseable {
         } catch (RuntimeException exception) {
             responseTtlv.close();
             throw exception;
+        }
+    }
+
+    static Optional<RngRetrieveResponse> parseRngRetrieveResponse(Object[] values) {
+        try {
+            Object[] tuple = requireTuple(values, 3, "native RNG Retrieve response is invalid");
+            long[] fields = requireLongArray(
+                    tuple[0], 2, "native RNG Retrieve response is invalid");
+            long[] responseTtlvHandle = requireLongArray(
+                    tuple[2], 1, "native RNG Retrieve response is invalid");
+            boolean present = responseFlag(fields[0]);
+            boolean dataPresent = responseFlag(fields[1]);
+            if (!present) {
+                if (dataPresent || tuple[1] != null || responseTtlvHandle[0] != 0) {
+                    throw new InvalidInputException(
+                            "native absent RNG Retrieve response contains fields");
+                }
+                return Optional.empty();
+            }
+            if (!dataPresent || tuple[1] == null || responseTtlvHandle[0] <= 0) {
+                throw new InvalidInputException("native RNG Retrieve response is invalid");
+            }
+            byte[] data = requireBytes(tuple[1]);
+            TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+            responseTtlvHandle[0] = 0;
+            try {
+                return Optional.of(new RngRetrieveResponse(data, responseTtlv));
+            } catch (RuntimeException exception) {
+                responseTtlv.close();
+                throw exception;
+            }
+        } finally {
+            cleanupRngResponseValues(values);
+        }
+    }
+
+    static Optional<RngSeedResponse> parseRngSeedResponse(Object[] values) {
+        try {
+            Object[] tuple = requireTuple(values, 2, "native RNG Seed response is invalid");
+            long[] fields = requireLongArray(tuple[0], 3, "native RNG Seed response is invalid");
+            long[] responseTtlvHandle = requireLongArray(
+                    tuple[1], 1, "native RNG Seed response is invalid");
+            boolean present = responseFlag(fields[0]);
+            boolean dataLengthPresent = responseFlag(fields[1]);
+            if (!present) {
+                if (dataLengthPresent || fields[2] != 0 || responseTtlvHandle[0] != 0) {
+                    throw new InvalidInputException("native absent RNG Seed response contains fields");
+                }
+                return Optional.empty();
+            }
+            if (!dataLengthPresent || fields[2] < Integer.MIN_VALUE
+                    || fields[2] > Integer.MAX_VALUE || responseTtlvHandle[0] <= 0) {
+                throw new InvalidInputException("native RNG Seed response is invalid");
+            }
+            TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+            responseTtlvHandle[0] = 0;
+            try {
+                return Optional.of(new RngSeedResponse((int) fields[2], responseTtlv));
+            } catch (RuntimeException exception) {
+                responseTtlv.close();
+                throw exception;
+            }
+        } finally {
+            cleanupRngResponseValues(values);
+        }
+    }
+
+    private static void cleanupRngResponseValues(@Nullable Object[] values) {
+        if (values == null) return;
+        if (values.length > 1 && values[1] instanceof byte[] data) {
+            Arrays.fill(data, (byte) 0);
+        }
+        if (values.length > 2 && values[2] instanceof long[] ttlvHandle
+                && ttlvHandle.length == 1 && ttlvHandle[0] > 0) {
+            long rawHandle = ttlvHandle[0];
+            ttlvHandle[0] = 0;
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
+        }
+        if (values.length > 1 && values[1] instanceof long[] ttlvHandle
+                && ttlvHandle.length == 1 && ttlvHandle[0] > 0) {
+            long rawHandle = ttlvHandle[0];
+            ttlvHandle[0] = 0;
+            NativeExtensionRegistry.release(NativeExtensionRegistry.TTLV_STRUCTURE, rawHandle);
         }
     }
 

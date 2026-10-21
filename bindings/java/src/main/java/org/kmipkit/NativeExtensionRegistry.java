@@ -143,6 +143,8 @@ public final class NativeExtensionRegistry {
             long commonProtectionStorageMasks, long privateProtectionStorageMasks,
             long publicProtectionStorageMasks);
     public static native long clientBatchItemReprovision(long certificateRequest, long certificate);
+    public static native long clientBatchItemRngRetrieve(int dataLength);
+    public static native long clientBatchItemRngSeed(@Nullable byte[] data);
     public static native long clientBatchItemCheck(int identifierKind, @Nullable byte[] identifierText,
             long identifierNumber, boolean hasUsageLimitsCount, long usageLimitsCount,
             boolean hasCryptographicUsageMask, int cryptographicUsageMask,
@@ -273,6 +275,8 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseRekeyKeyPair(long itemResponse);
     public static native Object[] clientBatchItemResponseReprovision(long itemResponse);
     public static native Object[] clientBatchItemResponseReprovisionTtlv(long itemResponse);
+    public static native Object[] clientBatchItemResponseRngRetrieve(long itemResponse);
+    public static native Object[] clientBatchItemResponseRngSeed(long itemResponse);
     public static native Object[] clientBatchItemResponseCheck(long itemResponse);
     public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
     public static native Object[] clientBatchItemResponseLogin(long itemResponse);

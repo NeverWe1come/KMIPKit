@@ -271,6 +271,24 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_rng_retrieve(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_data_present,
+        kmipkit_byte_span_v1_t *out_data);
+    int32_t kmipkit_client_batch_item_response_rng_retrieve_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_rng_seed(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint8_t *out_data_length_present,
+        int32_t *out_data_length);
+    int32_t kmipkit_client_batch_item_response_rng_seed_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_rekey(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -544,6 +562,12 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_reprovision(
         kmipkit_ttlv_structure_t *certificate_request,
         kmipkit_ttlv_structure_t *certificate,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_rng_retrieve(
+        int32_t data_length,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_rng_seed(
+        const kmipkit_byte_span_v1_t *data,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_rekey(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

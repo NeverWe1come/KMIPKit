@@ -3714,6 +3714,155 @@ pub extern "C" fn kmipkit_client_batch_item_response_sign(
     })
 }
 
+/// Reads successful RNG Retrieve output bytes borrowed from `item`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_data_present: *mut u8,
+    out_data: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let data_present = scalar_out!(out_data_present);
+        let data = scalar_out!(out_data);
+        *present = 0;
+        try_ffi!(set_borrowed_span(data_present, data, None));
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        let response_view = item.outcome().response();
+        let Some(rng_retrieve) = response_view.rng_retrieve() else {
+            return SUCCESS;
+        };
+        *present = 1;
+        if let Some(bytes) = rng_retrieve.data() {
+            let status =
+                bytes.with_bytes(|bytes| set_borrowed_span(data_present, data, Some(bytes)));
+            if let Err(status) = status {
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: usize lengths fit u64 on supported targets.
+            }
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic TTLV for a successful RNG Retrieve response.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        let response_view = item.outcome().response();
+        let Some(rng_retrieve) = response_view.rng_retrieve() else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(rng_retrieve.with_ttlv(|view| super::clone_structure_view(&view)));
+        *response_ttlv = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Reads successful RNG Seed's server-reported Data Length, preserving zero.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_rng_seed(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_data_length_present: *mut u8,
+    out_data_length: *mut i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let data_length_present = scalar_out!(out_data_length_present);
+        let data_length = scalar_out!(out_data_length);
+        *present = 0;
+        *data_length_present = 0;
+        *data_length = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        let response_view = item.outcome().response();
+        let Some(rng_seed) = response_view.rng_seed() else {
+            return SUCCESS;
+        };
+        let Some(value) = rng_seed.data_length() else {
+            return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: a successful parsed result has required Data Length.
+        };
+        *data_length = value;
+        *data_length_present = 1;
+        *present = 1;
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic TTLV for a successful RNG Seed response.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_rng_seed_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        let response_view = item.outcome().response();
+        let Some(rng_seed) = response_view.rng_seed() else {
+            return SUCCESS;
+        };
+        let structure = try_ffi!(rng_seed.with_ttlv(|view| super::clone_structure_view(&view)));
+        *response_ttlv = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(structure)
+        ));
+        *present = 1;
+        SUCCESS
+    })
+}
+
 /// Reads the typed Signature Verify result and preserves unknown indicator values.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_signature_verify(
