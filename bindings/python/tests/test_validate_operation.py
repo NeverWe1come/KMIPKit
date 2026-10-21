@@ -40,9 +40,18 @@ def test_validate_builder_rejects_missing_lists_and_out_of_range_date() -> None:
 def test_validate_response_preserves_open_indicator_and_redacts_generic_ttlv(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    sentinel = b"validate-response-private-sentinel"
     limits = ttlv.codec_limits_defaults()
-    structure = ttlv.ttlv_structure_create()
+    raw_tag = ttlv.raw_tag_from_raw(0x0054_1234)
+    tag = ttlv.raw_tag_try_checked(raw_tag)
+    value = ttlv.ttlv_value_text_string(sentinel, limits)
+    item = ttlv.ttlv_item_create(tag, value, limits)
+    structure = ttlv.ttlv_structure_with_item(ttlv.ttlv_structure_create(), item, limits)
     limits.close()
+    tag.close()
+    raw_tag.close()
+    value.close()
+    item.close()
     native_handle, owner = structure._take()
     assert owner is None
     address = int(ffi.cast("uintptr_t", native_handle))
@@ -70,7 +79,47 @@ def test_validate_response_preserves_open_indicator_and_redacts_generic_ttlv(
     assert isinstance(response, client.ValidateResponse)
     assert response.validity_indicator_raw == 0xF1234567
     with ttlv.ttlv_structure_view(response.response_ttlv) as view:
-        assert ttlv.ttlv_structure_view_item_count(view) == 0
-    assert "response_ttlv" not in repr(response)
+        assert ttlv.ttlv_structure_view_item_count(view) == 1
+    assert sentinel.decode() not in repr(response)
     response.close()
     assert response.response_ttlv.closed
+
+
+def test_validate_response_releases_owned_ttlv_when_second_abi_getter_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    structure = ttlv.ttlv_structure_create()
+    handle, owner = structure._take()
+    assert owner is None
+    address = int(ffi.cast("uintptr_t", handle))
+    released: list[int] = []
+    release_native = client.lib.kmipkit_ttlv_structure_release
+
+    def indicator(_item: object, present: object, raw: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        raw[0] = 1  # type: ignore[index]
+        return 0
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = client_ffi.cast("kmipkit_ttlv_structure_t *", address)  # type: ignore[index]
+        return 4
+
+    def release_owned(value: object) -> None:
+        released.append(int(ffi.cast("uintptr_t", value)))
+        release_native(value)
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_validate=indicator,
+            kmipkit_client_batch_item_response_validate_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=release_owned,
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._validate_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert released == [address]
