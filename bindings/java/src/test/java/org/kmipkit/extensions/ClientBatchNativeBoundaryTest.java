@@ -1,8 +1,15 @@
 package org.kmipkit.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
@@ -17,6 +24,24 @@ import org.kmipkit.ttlv.TtlvValue;
 
 /** Exercises fixed-width validation at the Java-to-JNI boundary. */
 final class ClientBatchNativeBoundaryTest {
+    @Test
+    void everyNativeResponseAccessorRejectsANullResponseHandle() {
+        var responseAccessors = Arrays.stream(NativeExtensionRegistry.class.getDeclaredMethods())
+                .filter(method -> Modifier.isNative(method.getModifiers()))
+                .filter(method -> method.getName().startsWith("clientBatchItemResponse"))
+                .filter(method -> Arrays.equals(method.getParameterTypes(), new Class<?>[] {long.class}))
+                .toList();
+
+        assertFalse(responseAccessors.isEmpty());
+        for (Method accessor : responseAccessors) {
+            InvocationTargetException failure = assertThrows(
+                    InvocationTargetException.class,
+                    () -> accessor.invoke(null, 0L),
+                    accessor.getName());
+            assertInstanceOf(InvalidInputException.class, failure.getCause(), accessor.getName());
+        }
+    }
+
     @Test
     void asynchronousIndicatorRejectsNullHandlesAndValuesOutsideUint32() {
         try (ClientBatch batch = ClientBatch.create()) {
