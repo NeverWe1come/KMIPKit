@@ -411,3 +411,105 @@ review, exact-head CI, and coverage.
   non-fatal AWS-LC/NASM probe and MSVC LNK4217 warnings.
 - `git diff --check`: PASS. This is test-harness cleanup only; no production
   code or ABI changed.
+
+## QA follow-up: delivery-state contract and selected-coverage deficit
+
+This follow-up corrects the T060 delivery-state evidence and adds semantic tests
+for reachable Re-key response branches in the already-approved shared mapping
+series. No production source, public API/ABI, manifest, generated output, or
+coverage threshold was changed. T060 remains open pending controller/security
+review and fresh exact-head CI.
+
+### Red
+
+- Exact-head CI run `39525103061` failed the selected changed-production gate:
+  11,235/11,833 lines (94.95%) against the required 11,242/11,833. The
+  shortfall is seven covered lines. The downloaded Python artifact at
+  `.superpowers/sdd/kmipkit-0043-t060-plan/coverage-ci-39525103061/coverage-python/coverage.xml`
+  attributes the missed reachable production branches to the existing shared
+  `bindings/python/src/kmipkit/client.py::_rekey_response` implementation:
+  lines 2418–2419 (absent response), 2421 (invalid presence), 2424 (missing
+  required identifier), 2434–2436 (mismatched TTLV presence and handle
+  release), and 2441–2443 (owned-wrapper failure cleanup). T060's pair response
+  parser was not the source of the remaining deficit.
+- The QA finding also identified that earlier wording implied delivery state
+  existed on completed Failure/Pending item results. The shared contract test
+  `crates/kmipkit-client/tests/error_contract.rs::complete_server_result_is_distinct_redacted_and_has_no_delivery_state`
+  confirms that completed result metadata intentionally has no delivery field;
+  delivery is available on client execution errors. The traceability and
+  implementation evidence now say this directly and identify the operation-
+  specific peer-close tests.
+
+### Green
+
+- DCO-signed commit `f50bf87f` (`test: cover rekey delivery and response branches`).
+- Added Java and Python T060 mTLS peer-close tests. Each peer receives the
+  Re-key Key Pair request and closes; the test verifies the exposed
+  `POSSIBLY_SENT`/state-2 execution error and the transmitted optional private
+  identifier. Existing loopbacks also assert `COMPLETED` for Success and
+  Failure and `PENDING` for Pending, without inventing a delivery field on
+  completed item results.
+- Added focused Python shared Re-key response tests for absent response with
+  empty identifier, unknown presence, missing success identifier, mismatched
+  TTLV presence with handle release, and wrapper-construction failure with
+  handle release. These assert returned values, raised public errors, skipped
+  or required ABI access, and released handle identity.
+- Python command, run from the worktree root with
+  `KMIPKIT_NATIVE_LIBRARY` set to the absolute `target/debug/kmipkit_ffi.dll`:
+  `bindings/python/.venv-candidate-win/Scripts/python.exe -B -m pytest -q bindings/python/tests/test_rekey_operation.py bindings/python/tests/test_rekey_key_pair_native_integration.py`.
+  Result: `9 passed in 0.25s`.
+- Focused coverage commands, run from `bindings/python` with
+  `$env:KMIPKIT_NATIVE_LIBRARY = (Resolve-Path '..\..\target\debug\kmipkit_ffi.dll').Path`,
+  `$covFile = Join-Path $env:TEMP 'kmipkit-t060-rekey.coverage'`, and
+  `$jsonFile = Join-Path $env:TEMP 'kmipkit-t060-rekey.json'`:
+  `& '.\.venv-candidate-win\Scripts\python.exe' -B -m coverage run --data-file=$covFile --source=kmipkit -m pytest -q tests/test_rekey_operation.py tests/test_rekey_key_pair_native_integration.py`,
+  then `& '.\.venv-candidate-win\Scripts\python.exe' -B -m coverage json --data-file=$covFile -o $jsonFile`.
+  The focused tests passed 9/9. The JSON report marks every target line listed
+  above as executed (10 production lines): 2418, 2419, 2421, 2424, 2434, 2435,
+  2436, 2441, 2442, and 2443; unexecuted target lines: none. The JSON summary
+  displays 43% whole-module coverage for this intentionally focused subset;
+  the report command returned status 2 because it is below the repository's
+  85% module floor. This is not the selected changed-production aggregate. The
+  ten exact line hits are
+  confirmed by parsing that generated JSON. They exceed the seven-line
+  shortfall by three lines in the focused attribution; only the exact-head
+  aggregate can confirm the final cross-scope denominator and pass.
+- Java command:
+  `mvn --batch-mode --file bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#rekeyKeyPairResponseUsesNativeJniBridgeAndPreservesBothIdentifiers+rekeyKeyPairPeerClosePreservesPossiblySentDeliveryState' test`.
+  Result: `Tests run: 2, Failures: 0, Errors: 0, Skipped: 0`; Maven `BUILD
+  SUCCESS`.
+
+### Refactor and final checks
+
+- Updated `specs/043-public-api-bindings/traceability.md` and
+  `specs/043-public-api-bindings/implementation-evidence.md` to separate
+  completed/pending result metadata from delivery-state-bearing execution
+  errors, cite both T060 peer-close tests, and cite the shared Rust result
+  contract test. Updated the SDD progress ledger with the CI Red and coverage
+  attribution. `tasks.md` remains unchanged pending exact-head CI and review.
+- Refactor/evidence commit: this separate DCO-signed commit contains the
+  traceability/evidence correction and this report update. It also tightens the
+  Python invalid-presence and missing-identifier assertions to verify the TTLV
+  accessor is not called before those validation errors.
+- After that test refinement, the focused Python command passed again:
+  `9 passed in 0.23s`. A fresh focused coverage run passed 9/9 and its parsed
+  JSON again showed the same ten lines executed and none unexecuted. The JSON
+  report's status 2 remains the expected package-wide 85% floor result for a
+  focused subset, as described above.
+- `uv tool run --from ruff ruff check bindings/python/tests/test_rekey_operation.py bindings/python/tests/test_rekey_key_pair_native_integration.py`:
+  PASS. `uv tool run --from ruff ruff format --check` on the same two files:
+  PASS (`2 files already formatted`). `git diff --check`: PASS.
+- The focused Maven build emitted existing AWS-LC `stdalign_check.c` and NASM
+  probe warnings; its JNI build and tests passed. No production or generated
+  files changed. Pre-existing untracked build/coverage artifacts were neither
+  cleaned nor staged.
+- Self-review: the added Python cases drive the existing public response
+  mapper and assert semantic outcomes and resource-release behavior. The two
+  peer-close tests exercise delivery on actual TLS requests, after peer receipt.
+  No delivery field was added to result models and no production code was
+  modified. A prior QA minor regarding distinct manifest declarations for
+  private/public identifiers remains deferred as directed.
+- Remaining concern: the focused line report covers all ten identified Python
+  branches, but the selected aggregate has not been recomputed at the new head.
+  The exact 95% gate, security review, and controller review remain pending;
+  this report does not mark T060 complete.

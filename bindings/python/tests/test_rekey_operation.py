@@ -167,13 +167,21 @@ def test_rekey_response_rejects_unknown_presence_and_missing_identifier(
     monkeypatch,
 ) -> None:
     item = SimpleNamespace(_pointer=lambda: object())
-    _stub_rekey_response(monkeypatch, present=2)
+    calls, released = _stub_rekey_response(
+        monkeypatch,
+        present=2,
+        identifier=b"existing-key",
+    )
     with pytest.raises(errors.InvalidInputError):
         client._rekey_response(item)
+    assert calls == ["typed"]
+    assert released == []
 
-    _stub_rekey_response(monkeypatch, present=1)
+    calls, released = _stub_rekey_response(monkeypatch, present=1)
     with pytest.raises(errors.InvalidInputError):
         client._rekey_response(item)
+    assert calls == ["typed"]
+    assert released == []
 
 
 def test_rekey_response_releases_ttlv_when_presence_disagrees(monkeypatch) -> None:
