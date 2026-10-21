@@ -5376,7 +5376,7 @@ The selected Ruff invocation reports four pre-existing lint findings in `extensi
 
 Follow-up Red commit `bd64ca73` adds regression cases for `out_item` overlapping the payload-extension array, aggregate nested TTLV element limits, oversized Java extension lists, and Python aggregate identifier bytes. The Rust overlap and aggregate-element cases were observed failing against the prior implementation; the Java oversized-list case also failed before the count preflight. The Python runner initially could not use the repository virtual environment (`uv` could not remove its Windows `lib64` reparse point), so it was run after the Green change in an isolated Python 3.12 environment under `%TEMP%`.
 
-Green commit `b202f333` rejects overlapping C input/output spans before writing either, counts all Validate TTLV elements and encoded bytes before cloning, snapshots Java lists under a shared item ceiling, preflights Python UTF-8 aggregate size without allocating encoded copies, and copies each JNI identifier byte array once before passing its stable bytes to the ABI. API docs and generated fixtures describe the C overlap rule.
+Green commit `b202f333` rejects overlapping C input/output spans before writing either, counts all Validate TTLV elements and encoded bytes before cloning, snapshots Java lists under a shared item ceiling, preflights Python UTF-8 aggregate size without allocating encoded copies, and copies each JNI identifier byte array once before passing its stable bytes to the ABI. API docs and generated fixtures describe the C overlap rule. The nested identifier text span follow-up is recorded below.
 
 Focused follow-up verification:
 
@@ -5392,3 +5392,21 @@ Focused follow-up verification:
 | `python -B -m unittest tools.api_manifest.tests.test_validate_parity_manifest` | Pass, 2 tests. |
 
 These results are local Windows evidence. The exact-head GitHub CI run, selected-scope coverage gate, and final independent QA/security reviews remain pending after the follow-up push; T069 remains open until those checks pass.
+
+
+### T069 Validate nested identifier/output alias follow-up (2026-10-21)
+
+The security review found that an identifier record array could be disjoint from `out_item` while its referenced `text_data` bytes overlapped the output slot. Red commit `bde66a2b` adds `validate_constructor_rejects_output_overlapping_identifier_text`; it was observed returning `SUCCESS` and changing the output slot against the pre-fix implementation. Green commit `92d4c2ca` checks each bounded text span before `out_slot!` writes and returns `ERROR_INVALID_INPUT` without mutating the output on overlap. The public API manifest and generated C header document the array and referenced-text non-overlap contract.
+
+Post-fix focused verification:
+
+| Command or check | Result |
+|---|---|
+| `cargo fmt --all --check` | Pass. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Pass. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib` | Pass, 268 tests. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact` | Pass, compiled C consumer. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs match. |
+| `python -B -m unittest tools.api_manifest.tests.test_validate_parity_manifest` | Pass, 2 tests. |
+
+The change is local Windows evidence; exact-head GitHub CI and final QA/security review remain pending after push. T069 remains open until those gates pass.
