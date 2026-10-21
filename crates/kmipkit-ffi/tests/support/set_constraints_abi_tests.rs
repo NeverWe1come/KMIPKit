@@ -104,6 +104,7 @@ unsafe extern "C" {
         item: *mut kmipkit_client_batch_item_response_t,
         expected_present: u8,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_reject_set_constraints_ttlv_output_overlap() -> i32;
 }
 
 #[test]
@@ -140,6 +141,33 @@ fn compiled_c_consumer_reads_owned_success_ttlv_and_hides_failure_ttlv() {
     let failure = failed_cryptographic_item(request(), 0x37, b"set-constraints-failure");
     assert_eq!(
         unsafe { kmipkit_client_abi_c_consumer_validate_set_constraints_response_ttlv(failure, 0) },
+        1
+    );
+
+    let correlation = b"set-constraints-pending-correlation";
+    let pending_id = b"set-constraints-pending";
+    let pending_response = execute_single_abi_response_with_async(
+        request(),
+        pending_id,
+        pending_response_for_operation(0x37, pending_id, correlation),
+        Some(1),
+    )
+    .expect("the explicitly asynchronous Set Constraints batch permits Pending");
+    let pending = client_batch_item_response_from(pending_response);
+    assert_pending_abi_item_metadata(pending, correlation);
+    // SAFETY: the C consumer receives a live item response and releases its owned handle.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_validate_set_constraints_response_ttlv(pending, 0) },
+        1
+    );
+}
+
+#[test]
+fn set_constraints_ttlv_getter_rejects_overlapping_c_outputs_without_writes() {
+    // SAFETY: the C consumer deliberately aliases the two writable output ranges to verify the
+    // ABI rejects overlap before creating Rust mutable references or writing either output.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_reject_set_constraints_ttlv_output_overlap() },
         1
     );
 }

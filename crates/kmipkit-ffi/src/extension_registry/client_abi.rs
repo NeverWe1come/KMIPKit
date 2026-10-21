@@ -2964,6 +2964,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_constraints_ttlv(
 }
 
 /// Copies the complete generic response only from a successful Set Constraints result.
+/// Output regions must be writable and must not overlap.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_set_constraints_ttlv(
     item: *mut kmipkit_client_batch_item_response_t,
@@ -2971,6 +2972,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_constraints_ttlv(
     out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;

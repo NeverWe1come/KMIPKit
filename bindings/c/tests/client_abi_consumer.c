@@ -5883,6 +5883,18 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_reject_set_constraints_ttlv_output_overlap(void) {
+    union {
+        kmipkit_ttlv_structure_t *response;
+        uint8_t bytes[sizeof(kmipkit_ttlv_structure_t *)];
+    } outputs;
+    outputs.response = (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+    const int32_t status = kmipkit_client_batch_item_response_set_constraints_ttlv(
+        0, outputs.bytes, &outputs.response);
+    return status == T076_ERROR_INVALID_INPUT &&
+        outputs.response == (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+}
+
 int kmipkit_client_abi_c_consumer_validate_revoke_response(
     kmipkit_client_batch_item_response_t *item,
     const uint8_t *expected_identifier,

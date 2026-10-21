@@ -13,7 +13,6 @@ import pytest
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
-
 _TLS_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _SET_CONSTRAINTS_ID = b"set-constraints-0"
 
@@ -36,7 +35,13 @@ def _tlv_enumeration(tag: int, value: int) -> bytes:
     return _tlv_item(tag, 5, struct.pack(">I", value))
 
 
-def _set_constraints_response_message() -> bytes:
+def _set_constraints_response_message(
+    *,
+    result_status: int = 0,
+    result_reason: int | None = None,
+    result_message: str | None = None,
+    pending_correlation_value: bytes | None = None,
+) -> bytes:
     version = _tlv_structure(
         0x420069,
         _tlv_item(0x42006A, 2, struct.pack(">i", 2)),
@@ -48,13 +53,20 @@ def _set_constraints_response_message() -> bytes:
         _tlv_item(0x420092, 9, struct.pack(">q", 1)),
         _tlv_item(0x42000D, 2, struct.pack(">i", 1)),
     )
-    response_item = _tlv_structure(
-        0x42000F,
+    response_fields = [
         _tlv_enumeration(0x42005C, 0x37),
         _tlv_item(0x420093, 8, _SET_CONSTRAINTS_ID),
-        _tlv_enumeration(0x42007F, 0),
-        _tlv_structure(0x42007C),
-    )
+        _tlv_enumeration(0x42007F, result_status),
+    ]
+    if result_reason is not None:
+        response_fields.append(_tlv_enumeration(0x42007E, result_reason))
+    if result_message is not None:
+        response_fields.append(_tlv_item(0x42007D, 7, result_message.encode()))
+    if pending_correlation_value is not None:
+        response_fields.append(_tlv_item(0x420006, 8, pending_correlation_value))
+    if result_status in (0, 2):
+        response_fields.append(_tlv_structure(0x42007C))
+    response_item = _tlv_structure(0x42000F, *response_fields)
     return _tlv_structure(0x42007B, header, response_item)
 
 
@@ -68,9 +80,9 @@ def _read_exact(stream: ssl.SSLSocket, size: int) -> bytes:
     return bytes(output)
 
 
-def _start_set_constraints_mtls_peer() -> tuple[
-    int, list[bytes], queue.Queue[Exception], threading.Thread
-]:
+def _start_set_constraints_mtls_peer(
+    response_message: bytes | None = None,
+) -> tuple[int, list[bytes], queue.Queue[Exception], threading.Thread]:
     listener = socket.socket()
     listener.bind(("127.0.0.1", 0))
     listener.listen(1)
@@ -83,7 +95,9 @@ def _start_set_constraints_mtls_peer() -> tuple[
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             context.minimum_version = ssl.TLSVersion.TLSv1_3
             context.maximum_version = ssl.TLSVersion.TLSv1_3
-            context.load_cert_chain(_TLS_FIXTURES / "server-cert.pem", _TLS_FIXTURES / "server-key.pem")
+            context.load_cert_chain(
+                _TLS_FIXTURES / "server-cert.pem", _TLS_FIXTURES / "server-key.pem"
+            )
             context.load_verify_locations(cafile=_TLS_FIXTURES / "client-cert.pem")
             context.verify_mode = ssl.CERT_REQUIRED
             raw, _ = listener.accept()
@@ -93,7 +107,11 @@ def _start_set_constraints_mtls_peer() -> tuple[
                 prefix = _read_exact(stream, 8)
                 message_length = int.from_bytes(prefix[4:8], "big")
                 received.append(prefix + _read_exact(stream, message_length))
-                stream.sendall(_set_constraints_response_message())
+                stream.sendall(
+                    _set_constraints_response_message()
+                    if response_message is None
+                    else response_message
+                )
         except Exception as error:  # noqa: BLE001 - report peer failures from the fixture thread.
             failures.put(error)
         finally:
@@ -107,15 +125,21 @@ def _start_set_constraints_mtls_peer() -> tuple[
 def _set_constraints_transport(port: int) -> client.TransportConfig:
     return client.TransportConfig(
         endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(client.TransportInput.file(
-            _TLS_FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-        ),),
+        client_certificates=(
+            client.TransportInput.file(
+                _TLS_FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
+            ),
+        ),
         client_private_key=client.TransportInput.file(
             _TLS_FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
         ),
-        trust=client.TrustSource.certificate_authorities((client.TransportInput.file(
-            _TLS_FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-        ),)),
+        trust=client.TrustSource.certificate_authorities(
+            (
+                client.TransportInput.file(
+                    _TLS_FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
+                ),
+            )
+        ),
         connect_timeout=client.TimeoutLimit.bounded(5),
         write_timeout=client.TimeoutLimit.bounded(5),
         read_timeout=client.TimeoutLimit.bounded(5),
@@ -142,9 +166,7 @@ def test_set_constraints_builder_passes_the_caller_structure_to_native_abi(
     monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
 
     assert extensions.client_batch_item_set_constraints(constraints) == 41
-    assert calls == [
-        ("kmipkit_client_batch_item_set_constraints", (structure_handle,))
-    ]
+    assert calls == [("kmipkit_client_batch_item_set_constraints", (structure_handle,))]
 
 
 def test_set_constraints_response_owns_generic_ttlv_and_redacts_repr(
@@ -168,11 +190,17 @@ def test_set_constraints_response_owns_generic_ttlv_and_redacts_repr(
     monkeypatch.setattr(
         client,
         "lib",
-        SimpleNamespace(kmipkit_client_batch_item_response_set_constraints_ttlv=response_ttlv),
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_set_constraints_ttlv=response_ttlv
+        ),
     )
-    monkeypatch.setattr(ttlv, "_structure_from_native_address", lambda _address: structure)
+    monkeypatch.setattr(
+        ttlv, "_structure_from_native_address", lambda _address: structure
+    )
 
-    result = client._set_constraints_response(SimpleNamespace(_pointer=lambda: object()))
+    result = client._set_constraints_response(
+        SimpleNamespace(_pointer=lambda: object())
+    )
 
     assert isinstance(result, client.SetConstraintsResponse)
     assert result.response_ttlv is structure
@@ -207,7 +235,9 @@ def test_set_constraints_response_releases_unexpected_native_handle(
     assert released == [native_handle]
 
 
-def test_set_constraints_native_mtls_response_is_owned_and_preserves_empty_success_payload() -> None:
+def test_set_constraints_native_mtls_response_is_owned_and_preserves_empty_success_payload() -> (
+    None
+):
     port, received, failures, peer = _start_set_constraints_mtls_peer()
     configuration = extensions.create_client_configuration(
         extensions.create_client_extension_registry(
@@ -220,7 +250,9 @@ def test_set_constraints_native_mtls_response_is_owned_and_preserves_empty_succe
     try:
         with (
             configuration,
-            client.Client.create(configuration, _set_constraints_transport(port)) as kmip,
+            client.Client.create(
+                configuration, _set_constraints_transport(port)
+            ) as kmip,
             ttlv.codec_limits_defaults() as limits,
         ):
             batch = client.Batch.create()
@@ -241,12 +273,14 @@ def test_set_constraints_native_mtls_response_is_owned_and_preserves_empty_succe
         response = item_result.set_constraints_response
         assert isinstance(response, client.SetConstraintsResponse)
         assert "response_ttlv" not in repr(response)
-        with ttlv.ttlv_structure_view(response.response_ttlv) as view:
+        with (
+            ttlv.ttlv_structure_view(response.response_ttlv) as view,
+            ttlv.ttlv_structure_view_item_at(view, 3) as payload,
+            ttlv.ttlv_item_view_value(payload) as payload_value,
+            ttlv.ttlv_value_view_structure(payload_value) as payload_view,
+        ):
             assert ttlv.ttlv_structure_view_item_count(view) == 4
-            with ttlv.ttlv_structure_view_item_at(view, 3) as payload:
-                with ttlv.ttlv_item_view_value(payload) as payload_value:
-                    with ttlv.ttlv_value_view_structure(payload_value) as payload_view:
-                        assert ttlv.ttlv_structure_view_item_count(payload_view) == 0
+            assert ttlv.ttlv_structure_view_item_count(payload_view) == 0
         result.close()
         with ttlv.ttlv_structure_view(response.response_ttlv) as view:
             assert ttlv.ttlv_structure_view_item_count(view) == 4
@@ -254,6 +288,79 @@ def test_set_constraints_native_mtls_response_is_owned_and_preserves_empty_succe
         constraints.close()
         if response is not None:
             response.close()
+        if result is not None:
+            result.close()
+        peer.join(timeout=4)
+
+
+@pytest.mark.parametrize(
+    ("status", "reason", "message", "correlation", "outcome"),
+    (
+        pytest.param(
+            1, 7, "constraint denied", None, client.BatchOutcome.COMPLETED, id="failure"
+        ),
+        pytest.param(
+            2,
+            None,
+            None,
+            b"set-constraints-pending-correlation",
+            client.BatchOutcome.PENDING,
+            id="pending",
+        ),
+    ),
+)
+def test_set_constraints_native_mtls_failure_and_pending_keep_common_metadata_only(
+    status: int,
+    reason: int | None,
+    message: str | None,
+    correlation: bytes | None,
+    outcome: client.BatchOutcome,
+) -> None:
+    response_message = _set_constraints_response_message(
+        result_status=status,
+        result_reason=reason,
+        result_message=message,
+        pending_correlation_value=correlation,
+    )
+    port, received, failures, peer = _start_set_constraints_mtls_peer(response_message)
+    configuration = extensions.create_client_configuration(
+        extensions.create_client_extension_registry(
+            (), extensions.default_extension_registry_limits()
+        )
+    )
+    result = None
+    constraints = ttlv.ttlv_structure_create()
+    try:
+        with (
+            configuration,
+            client.Client.create(
+                configuration, _set_constraints_transport(port)
+            ) as kmip,
+            ttlv.codec_limits_defaults() as limits,
+        ):
+            batch = client.Batch.create()
+            if status == 2:
+                batch.set_asynchronous_indicator(1)
+            item = extensions.client_batch_item_set_constraints(constraints)
+            constraints.close()
+            batch.add_item(
+                extensions.with_unique_batch_item_id(item, _SET_CONSTRAINTS_ID)
+            )
+            result = kmip.execute(batch, limits)
+
+        assert failures.empty(), "the loopback mTLS peer must complete its response"
+        assert len(received) == 1
+        assert result is not None and len(result.items) == 1
+        item_result = result.items[0]
+        assert item_result.operation == 0x37
+        assert item_result.outcome == outcome
+        assert item_result.result_status == status
+        assert item_result.result_reason == reason
+        assert item_result.result_message == message
+        assert item_result.pending_correlation_value == correlation
+        assert item_result.set_constraints_response is None
+    finally:
+        constraints.close()
         if result is not None:
             result.close()
         peer.join(timeout=4)

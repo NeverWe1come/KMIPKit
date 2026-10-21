@@ -13,6 +13,7 @@ use std::error::Error as _;
 
 const SET_CONSTRAINTS: u32 = 0x0000_0037;
 const CONSTRAINTS: u32 = 0x0042_0168;
+const CONSTRAINT: u32 = 0x0042_0169;
 const VENDOR_MEMBER: u32 = 0x0054_1234;
 const TABLE_327_DISTINCT_REASONS: [u32; 9] = [0x07, 0x30, 0x15, 0x14, 0x08, 0x04, 0x05, 0x0C, 0x02];
 
@@ -25,14 +26,8 @@ fn response_item(message: &ResponseMessage) -> crate::ResponseBatchItemView<'_> 
 
 fn constraints() -> Structure {
     structure([
-        item(VENDOR_MEMBER, Value::integer(17)),
-        item(
-            VENDOR_MEMBER,
-            Value::structure(structure([item(
-                VENDOR_MEMBER,
-                Value::text_string("opaque nested constraint".to_owned()),
-            )])),
-        ),
+        item(CONSTRAINT, Value::structure(Structure::new())),
+        item(CONSTRAINT, Value::structure(Structure::new())),
     ])
 }
 
@@ -41,7 +36,8 @@ fn table_325_requires_and_preserves_the_ordered_constraints_structure() {
     let requested = SetConstraintsRequest::new(constraints());
     let constraint_view = requested.constraints();
     assert_eq!(constraint_view.children().len(), 2);
-    assert_eq!(constraint_view.children()[0].tag().raw(), VENDOR_MEMBER);
+    assert_eq!(constraint_view.children()[0].tag().raw(), CONSTRAINT);
+    assert_eq!(constraint_view.children()[1].tag().raw(), CONSTRAINT);
     let payload = requested
         .to_ttlv_payload()
         .expect("Table 325 Constraints Structure is representable");
@@ -55,19 +51,36 @@ fn table_325_requires_and_preserves_the_ordered_constraints_structure() {
             panic!("Constraints is a Structure");
         };
         assert_eq!(returned.children().len(), 2);
+        assert!(returned.children().iter().all(|child| {
+            child.tag().raw() == CONSTRAINT
+                && child.with_value(|value| {
+                    matches!(value, ValueView::Structure(constraint) if constraint.children().is_empty())
+                })
+        }));
+    });
+}
+
+#[test]
+fn table_325_preserves_unknown_constraint_children_and_values() {
+    let requested = SetConstraintsRequest::new(structure([item(
+        VENDOR_MEMBER,
+        Value::text_string("opaque nested constraint".to_owned()),
+    )]));
+    let payload = requested
+        .to_ttlv_payload()
+        .expect("unknown structurally valid constraint fields remain representable");
+    let payload_view = payload.view();
+    let fields = payload_view.children();
+    fields[0].with_value(|value| {
+        let ValueView::Structure(returned) = value else {
+            panic!("Constraints is a Structure");
+        };
+        assert_eq!(returned.children().len(), 1);
         assert_eq!(returned.children()[0].tag().raw(), VENDOR_MEMBER);
-        assert_eq!(returned.children()[1].tag().raw(), VENDOR_MEMBER);
-        assert!(returned.children()[0].with_value(|value| matches!(value, ValueView::Integer(17))));
-        returned.children()[1].with_value(|value| {
-            let ValueView::Structure(nested) = value else {
-                panic!("second constraint child is a Structure");
-            };
-            assert_eq!(nested.children().len(), 1);
-            assert!(nested.children()[0].with_value(|value| matches!(
-                value,
-                ValueView::TextString("opaque nested constraint")
-            )));
-        });
+        assert!(returned.children()[0].with_value(|value| matches!(
+            value,
+            ValueView::TextString("opaque nested constraint")
+        )));
     });
 }
 
