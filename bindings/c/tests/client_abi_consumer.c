@@ -239,6 +239,10 @@ static int rekey_key_pair_constructor_is_callable_from_c(void) {
             0, 0, 0, 0, 0, 0, 0, 0, 0, &item) != 0 || item == 0) goto cleanup;
     kmipkit_client_batch_item_release(item);
     item = 0;
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_rekey_key_pair(
+            0, 2, UINT32_C(86400), 0, 0, 0, 0, 0, 0, &item) != T076_ERROR_INVALID_INPUT ||
+        item != 0) goto cleanup;
     for (size_t index = 0; index < 6; ++index) {
         if (kmipkit_ttlv_structure_create(&structures[index]) != 0 || structures[index] == 0) goto cleanup;
     }
@@ -251,6 +255,49 @@ cleanup:
     kmipkit_client_batch_item_release(item);
     for (size_t index = 0; index < 6; ++index) kmipkit_ttlv_structure_release(structures[index]);
     return result;
+}
+
+static int rekey_key_pair_response_rejects_invalid_output_records_from_c(void) {
+    static const uint8_t private_sentinel[] = "private-output-sentinel";
+    static const uint8_t public_sentinel[] = "public-output-sentinel";
+    kmipkit_unique_identifier_v1_t private_identifier = {0};
+    kmipkit_unique_identifier_v1_t public_identifier = {0};
+    uint8_t present = 9;
+
+    private_identifier.struct_size = (uint32_t)sizeof(private_identifier) - 1;
+    private_identifier.abi_version = 1;
+    private_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    private_identifier.text_data = private_sentinel;
+    private_identifier.text_length = sizeof(private_sentinel) - 1;
+    public_identifier.struct_size = (uint32_t)sizeof(public_identifier);
+    public_identifier.abi_version = 1;
+    public_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    public_identifier.text_data = public_sentinel;
+    public_identifier.text_length = sizeof(public_sentinel) - 1;
+    if (kmipkit_client_batch_item_response_rekey_key_pair(
+            0, &present, &private_identifier, &public_identifier) != T076_ERROR_INVALID_INPUT ||
+        present != 9 || private_identifier.struct_size != sizeof(private_identifier) - 1 ||
+        private_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        private_identifier.text_data != private_sentinel ||
+        private_identifier.text_length != sizeof(private_sentinel) - 1 ||
+        public_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        public_identifier.text_data != public_sentinel ||
+        public_identifier.text_length != sizeof(public_sentinel) - 1) return 0;
+
+    private_identifier.struct_size = (uint32_t)sizeof(private_identifier);
+    private_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    private_identifier.text_data = private_sentinel;
+    private_identifier.text_length = sizeof(private_sentinel) - 1;
+    public_identifier.struct_size = (uint32_t)sizeof(public_identifier) - 1;
+    if (kmipkit_client_batch_item_response_rekey_key_pair(
+            0, &present, &private_identifier, &public_identifier) != T076_ERROR_INVALID_INPUT ||
+        present != 9 || private_identifier.kind != 0 || private_identifier.text_data != 0 ||
+        private_identifier.text_length != 0 ||
+        public_identifier.struct_size != sizeof(public_identifier) - 1 ||
+        public_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        public_identifier.text_data != public_sentinel ||
+        public_identifier.text_length != sizeof(public_sentinel) - 1) return 0;
+    return 1;
 }
 
 static int rekey_key_pair_response_accessors_clear_outputs_from_c(void) {
@@ -5115,6 +5162,7 @@ int main(int argc, char **argv) {
     if (!creation_create_matches_shared_fixture() ||
         !rekey_constructor_is_callable_from_c() ||
         !rekey_key_pair_constructor_is_callable_from_c() ||
+        !rekey_key_pair_response_rejects_invalid_output_records_from_c() ||
         !rekey_key_pair_response_accessors_clear_outputs_from_c() ||
         !rekey_response_accessors_clear_outputs_from_c() ||
         !recertify_constructor_is_callable_from_c() ||
