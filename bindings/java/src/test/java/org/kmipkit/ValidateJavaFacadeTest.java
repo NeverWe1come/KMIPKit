@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientBatchItem;
@@ -40,6 +41,58 @@ final class ValidateJavaFacadeTest {
                 () -> ClientBatchItem.validate(null, List.of(), null));
         assertThrows(InvalidInputException.class,
                 () -> ClientBatchItem.validate(List.of(), null, null));
+    }
+
+    @Test
+    void builderRejectsNullChainEntriesAndAggregateIdentifierBytes() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.validate(Arrays.asList((TtlvStructure) null), List.of(), null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.validate(List.of(), Arrays.asList((UniqueIdentifier) null), null));
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItem.validate(
+                        List.of(), List.of(), null, Arrays.asList((TtlvItem) null)));
+
+        UniqueIdentifier first = UniqueIdentifier.textString("a".repeat(8 * 1024 * 1024));
+        UniqueIdentifier second = UniqueIdentifier.textString("b".repeat(8 * 1024 * 1024 + 1));
+        assertThrows(ResourceLimitException.class,
+                () -> ClientBatchItem.validate(List.of(), List.of(first, second), null));
+    }
+
+    @Test
+    void builderRejectsValidateIteratorThatExceedsItsReportedSize() {
+        List<UniqueIdentifier> inconsistent = new AbstractList<>() {
+            @Override
+            public UniqueIdentifier get(int index) {
+                throw new AssertionError("snapshot must use the provided iterator");
+            }
+
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public java.util.Iterator<UniqueIdentifier> iterator() {
+                return new java.util.Iterator<>() {
+                    private int emitted;
+
+                    @Override
+                    public boolean hasNext() {
+                        return emitted <= 100_000;
+                    }
+
+                    @Override
+                    public UniqueIdentifier next() {
+                        emitted++;
+                        return UniqueIdentifier.integer(7);
+                    }
+                };
+            }
+        };
+
+        assertThrows(ResourceLimitException.class,
+                () -> ClientBatchItem.validate(List.of(), inconsistent, null));
     }
 
     @Test

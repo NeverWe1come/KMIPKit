@@ -37,6 +37,17 @@ def test_validate_builder_rejects_missing_lists_and_out_of_range_date() -> None:
         extensions.client_batch_item_validate((), (), validity_date=1 << 63)
 
 
+def test_validate_builder_rejects_values_of_the_wrong_entry_types() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        extensions.client_batch_item_validate((object(),), ())  # type: ignore[arg-type]
+
+    with pytest.raises(errors.InvalidInputError):
+        extensions.client_batch_item_validate((), (None,))  # type: ignore[arg-type]
+
+    with pytest.raises(errors.InvalidInputError):
+        extensions.client_batch_item_validate((), (), payload_extensions=(object(),))  # type: ignore[arg-type]
+
+
 def test_validate_builder_preflights_aggregate_identifier_bytes_before_copying(
     monkeypatch: Any,
 ) -> None:

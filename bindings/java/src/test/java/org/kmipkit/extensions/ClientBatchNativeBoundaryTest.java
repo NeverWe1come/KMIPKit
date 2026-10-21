@@ -298,6 +298,8 @@ final class ClientBatchNativeBoundaryTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchResponseItemAt(0, 0));
         assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchResponseItemAt(0, -1));
+        assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseMetadata(0));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(0));
