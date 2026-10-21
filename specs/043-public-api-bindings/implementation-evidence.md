@@ -4981,7 +4981,8 @@ Focused local command results on the Green commit:
 | Command | Result |
 |---|---|
 | `cargo fmt --all --check` | Pass; no output. |
-| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_register_ --no-fail-fast` | Pass, 2 tests/0 failures. Builds and calls the compiled C consumer. Rust emitted non-fatal AWS-LC Windows `stdalign_check.c` and NASM warnings. |
+| `cargo clippy --workspace --all-targets --all-features -- -D warnings` | Pass after splitting the focused FFI Failure/Pending checks. AWS-LC emitted non-fatal Windows `stdalign_check.c` and NASM warnings. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_register_ --no-fail-fast` | Pass, 3 tests/0 failures: compiled C Success consumer, Failure common metadata/no success fields, and Pending exact correlation/no success fields. AWS-LC emitted non-fatal Windows `stdalign_check.c` and NASM warnings. |
 | `mvn -q -f bindings/java/pom.xml '-Dtest=RegisterMappingTest,ClientFacadeTlsIntegrationTest#registerResponseUsesNativeJniBridgeAndPreservesOwnedOrderedTtlv' test` | Pass; JNI DLL compiled, focused mapping and TLS 1.3 mTLS integration tests passed. AWS-LC toolchain warnings were non-fatal. |
 | `python -m pytest bindings/python/tests/test_register_operation.py -q` | Pass, 4 tests. Used the external temporary Python 3.12 environment/wheel; the existing `.venv` was not touched. Includes TLS 1.3 mTLS native CFFI mapping and owner-close behavior. |
 | `python tools/api_manifest/generate.py --write` | Pass; generated 12 output files from the authored manifest. |
