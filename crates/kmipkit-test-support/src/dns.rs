@@ -211,29 +211,58 @@ impl LocalDnsFixture {
 }
 
 fn bind_local_dns_sockets() -> io::Result<(UdpSocket, TcpListener)> {
-    bind_local_dns_sockets_with(UdpSocket::bind, UdpSocket::local_addr, TcpListener::bind)
+    bind_local_dns_sockets_with(
+        UdpSocket::bind,
+        UdpSocket::local_addr,
+        TcpListener::bind,
+        TcpListener::local_addr,
+    )
 }
 
 fn bind_local_dns_sockets_with<Udp, Tcp>(
     mut bind_udp: impl FnMut(SocketAddr) -> io::Result<Udp>,
     udp_local_addr: impl Fn(&Udp) -> io::Result<SocketAddr>,
     mut bind_tcp: impl FnMut(SocketAddr) -> io::Result<Tcp>,
+    tcp_local_addr: impl Fn(&Tcp) -> io::Result<SocketAddr>,
 ) -> io::Result<(Udp, Tcp)> {
     let udp_bind_address = SocketAddr::from((Ipv4Addr::LOCALHOST, 0));
+    let tcp_bind_address = SocketAddr::from((Ipv4Addr::LOCALHOST, 0));
+    let mut bind_tcp_first = false;
 
     for attempt in 1..=MAX_SOCKET_PAIR_BIND_ATTEMPTS {
-        let udp_socket = match bind_udp(udp_bind_address) {
-            Ok(socket) => socket,
-            Err(source) => {
-                retry_dns_socket_pair_bind("UDP", udp_bind_address, attempt, source)?;
-                continue;
+        if bind_tcp_first {
+            let tcp_listener = match bind_tcp(tcp_bind_address) {
+                Ok(listener) => listener,
+                Err(source) => {
+                    retry_dns_socket_pair_bind("TCP", tcp_bind_address, attempt, source)?;
+                    bind_tcp_first = false;
+                    continue;
+                }
+            };
+            let local_addr = tcp_local_addr(&tcp_listener)?;
+            match bind_udp(local_addr) {
+                Ok(udp_socket) => return Ok((udp_socket, tcp_listener)),
+                Err(source) => {
+                    retry_dns_socket_pair_bind("UDP", local_addr, attempt, source)?;
+                    bind_tcp_first = false;
+                }
             }
-        };
-        let local_addr = udp_local_addr(&udp_socket)?;
-        match bind_tcp(local_addr) {
-            Ok(listener) => return Ok((udp_socket, listener)),
-            Err(source) => {
-                retry_dns_socket_pair_bind("TCP", local_addr, attempt, source)?;
+        } else {
+            let udp_socket = match bind_udp(udp_bind_address) {
+                Ok(socket) => socket,
+                Err(source) => {
+                    retry_dns_socket_pair_bind("UDP", udp_bind_address, attempt, source)?;
+                    bind_tcp_first = true;
+                    continue;
+                }
+            };
+            let local_addr = udp_local_addr(&udp_socket)?;
+            match bind_tcp(local_addr) {
+                Ok(listener) => return Ok((udp_socket, listener)),
+                Err(source) => {
+                    retry_dns_socket_pair_bind("TCP", local_addr, attempt, source)?;
+                    bind_tcp_first = true;
+                }
             }
         }
     }
