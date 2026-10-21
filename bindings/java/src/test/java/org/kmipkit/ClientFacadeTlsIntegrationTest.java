@@ -1989,8 +1989,11 @@ final class ClientFacadeTlsIntegrationTest {
         SSLServerSocket listener = deterministicMtlsListener(
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
         long rawValidityIndicator = 0xf123_4567L;
+        byte[] responseSentinel =
+                "validate-response-secret-sentinel".getBytes(StandardCharsets.UTF_8);
         FutureTask<byte[]> peer = new FutureTask<>(
-                () -> serveOneResponse(listener, validateResponseMessage(rawValidityIndicator)));
+                () -> serveOneResponse(
+                        listener, validateResponseMessage(rawValidityIndicator, responseSentinel)));
         Thread peerThread = new Thread(peer, "kmipkit-java-validate-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -2024,7 +2027,8 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0, result.resultStatus());
                 assertEquals(rawValidityIndicator, validateResponse.validityIndicatorRaw());
                 assertTrue(responseTtlv.itemCount() > 0);
-                assertFalse(validateResponse.toString().contains("validate-target"));
+                assertTrue(containsByteString(responseTtlv, 0x541234, responseSentinel));
+                assertFalse(validateResponse.toString().contains("validate-response-secret-sentinel"));
             }
             request = peer.get(12, TimeUnit.SECONDS);
         } finally {
@@ -4065,13 +4069,15 @@ final class ClientFacadeTlsIntegrationTest {
         return structure(0x42007b, header, responseWithIdentifier, responseWithoutIdentifier);
     }
 
-    private static byte[] validateResponseMessage(long validityIndicator) throws Exception {
+    private static byte[] validateResponseMessage(long validityIndicator, byte[] responseSentinel)
+            throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(1)));
         byte[] payload = structure(0x42007c,
-                enumeration(0x42009b, (int) validityIndicator));
+                enumeration(0x42009b, (int) validityIndicator),
+                item(0x541234, 8, responseSentinel));
         byte[] responseItem = structure(0x42000f,
                 enumeration(0x42005c, 0x17),
                 item(0x420093, 8, uniqueBatchItemId(0)),

@@ -94,15 +94,17 @@ final class ValidateJavaFacadeTest {
 
     @Test
     void nativeBridgeRejectsOversizedAggregateItemCountBeforeReadingEntries() {
-        int excessiveCount = 100_001;
+        int certificateCount = 40_000;
+        int identifierCount = 40_000;
+        int payloadExtensionCount = 20_001;
 
         assertThrows(ResourceLimitException.class,
                 () -> NativeExtensionRegistry.clientBatchItemValidate(
-                        null,
-                        new int[excessiveCount],
-                        new byte[excessiveCount][],
-                        new long[excessiveCount],
-                        new long[0],
+                        new long[certificateCount],
+                        new int[identifierCount],
+                        new byte[identifierCount][],
+                        new long[identifierCount],
+                        new long[payloadExtensionCount],
                         false,
                         0));
     }
@@ -133,6 +135,19 @@ final class ValidateJavaFacadeTest {
                         new int[] {1},
                         new byte[][] {new byte[16 * 1024 * 1024 + 1]},
                         new long[] {0},
+                        new long[0],
+                        false,
+                        0));
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null,
+                        new int[] {1, 1, 1},
+                        new byte[][] {
+                            new byte[8 * 1024 * 1024],
+                            new byte[8 * 1024 * 1024],
+                            new byte[] {1}
+                        },
+                        new long[] {0, 0, 0},
                         new long[0],
                         false,
                         0));
