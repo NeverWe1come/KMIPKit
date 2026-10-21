@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import ast
 import unittest
 from pathlib import Path
 
@@ -164,6 +165,39 @@ class RngParityManifestTests(unittest.TestCase):
                     any(value.startswith("KMIPKIT-REQ-SPEC-") for value in response_ttlv["requirementIds"])
                 )
                 self.assertIn("caller-owned copy", response_ttlv["c"]["documentation"][0])
+
+    def test_python_rng_public_symbols_exist_in_handwritten_binding_sources(self) -> None:
+        extensions_path = ROOT / "bindings/python/src/kmipkit/extensions.py"
+        client_path = ROOT / "bindings/python/src/kmipkit/client.py"
+        extensions_tree = ast.parse(extensions_path.read_text(encoding="utf-8"))
+        client_tree = ast.parse(client_path.read_text(encoding="utf-8"))
+        extension_functions = {
+            node.name for node in extensions_tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        client_classes = {
+            node.name: node
+            for node in client_tree.body
+            if isinstance(node, ast.ClassDef)
+        }
+        self.assertTrue(
+            {
+                "client_batch_item_rng_retrieve",
+                "client_batch_item_rng_seed",
+            }.issubset(extension_functions)
+        )
+        for class_name, methods in {
+            "BatchItemResult": {"rng_retrieve_response", "rng_seed_response"},
+            "RngRetrieveResponse": {"data", "response_ttlv", "close"},
+            "RngSeedResponse": {"data_length", "response_ttlv", "close"},
+        }.items():
+            with self.subTest(class_name=class_name):
+                self.assertIn(class_name, client_classes)
+                declared = {
+                    node.name
+                    for node in client_classes[class_name].body
+                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                }
+                self.assertTrue(methods.issubset(declared), methods - declared)
 
 
 if __name__ == "__main__":
