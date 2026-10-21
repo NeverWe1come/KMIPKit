@@ -5410,3 +5410,20 @@ Post-fix focused verification:
 | `python -B -m unittest tools.api_manifest.tests.test_validate_parity_manifest` | Pass, 2 tests. |
 
 The change is local Windows evidence; exact-head GitHub CI and final QA/security review remain pending after push. T069 remains open until those gates pass.
+
+### T069 Python dataclass export inventory follow-up (2026-10-21)
+
+Exact-head CI run `39671512237` on `f620ad35` failed `test_remaining_python_exports_are_mapped_or_exactly_excluded` on Ubuntu and Windows. The test reported ten generated `ValidateResponse` dataclass members as unclassified: `__dataclass_fields__`, `__dataclass_params__`, `__delattr__`, `__eq__`, `__hash__`, `__init__`, `__match_args__`, `__repr__`, `__setattr__`, and `__slots__`. Red commit `0c930571` made the audit contract enumerate the exact exclusions and was observed failing locally with those ten members.
+
+Green commit `364b7057` adds exact `approvedExclusions` records reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004. The typed `ValidateResponse`, its success-only accessors, and four-language operation mapping remain in the public manifest; only generated Python dataclass implementation mechanics are excluded. The pinned generator refreshed the affected parity fixtures.
+
+Post-fix local verification:
+
+| Command or check | Result |
+|---|---|
+| `python -B -m unittest tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_validate_parity_manifest -q` | Pass, 72 tests. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs match. |
+| `python -B tools/extension_fixtures/generate.py --check` | Pass. |
+| `git diff --check` | Pass. |
+
+The previous exact-head CI failure is explained and corrected locally. CI on the new code/evidence head and the complete final T069 gates remain pending; T069 stays open until they pass.
