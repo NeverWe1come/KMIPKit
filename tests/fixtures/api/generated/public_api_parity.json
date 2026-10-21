@@ -7616,10 +7616,10 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __repr__ and is not an independent cross-language product capability.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-005 for T069; bindings/python/tests/test_validate_operation.py::test_validate_response_preserves_open_indicator_and_redacts_generic_ttlv verifies that the response TTLV sentinel is absent from repr(response). The typed response and caller-owned TTLV remain inventoried.",
       "exportName": "kmipkit.client.ValidateResponse.__repr__",
       "packageId": "python-kmipkit",
-      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+      "reason": "This exact ValidateResponse member is a custom redacted representation that prevents response TTLV content from appearing in diagnostics; its security behavior is covered by the T069 regression test."
     },
     {
       "approvalSource": {
