@@ -320,7 +320,9 @@ review, exact-head CI, and coverage.
 
 - The exact synthetic merge `6fce6cbf592ed82cb0b5dcecae111a802f54fc5c`
   failed the selected changed-production coverage gate: 11,218 of 11,833
-  executable lines (94.8%), below the required 95% / 11,242 lines.
+  gated lines (94.8%), below the required 95% / 11,242 lines. The denominator
+  consists of 11,811 executable changed lines plus 22 summary-only uncovered
+  lines attributed to `bindings/java/native/kmipkit_jni.cpp` by the gate.
 - Artifact attribution confirmed the Python hits map to
   `bindings/python/src/kmipkit/client.py`; this is not a source-path or
   instrumentation mismatch. `%TEMP%\kmipkit-pr104-39518177296-allcov\coverage-python\coverage.xml`
@@ -333,6 +335,11 @@ review, exact-head CI, and coverage.
 - This coverage failure is the Red evidence for the follow-up. No new failing
   behavior test was manufactured because the target defensive behaviors are
   already implemented and correct.
+- The same run's manifest-parity test also raised `KeyError: 'jniSymbol'` for
+  `client_batch_item_response_rekey_key_pair_ttlv`. Its generated Java binding
+  is intentionally served through the aggregate JNI symbol; commit `c53b21b8`
+  classifies it with the aggregate-only accessors and asserts its aggregate
+  symbol is present. The focused parity suite subsequently passed 15 tests.
 
 ### Green
 
@@ -357,7 +364,11 @@ review, exact-head CI, and coverage.
 - Compiled C consumer command:
   `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact`.
   Passed: 1 test, 0 failures, 10 filtered out. This retains the C API boundary
-  and wire-capture evidence recorded above.
+  and wire-capture evidence recorded above. The compiled consumer also asserts
+  that offset-presence value `2` returns `T076_ERROR_INVALID_INPUT` and clears
+  the output handle. New response-record cases assert that invalid `struct_size`
+  values are rejected without changing the invalid record, while a valid output
+  record is cleared before the error is returned.
 
 ### Refactor and final checks
 
@@ -378,10 +389,11 @@ review, exact-head CI, and coverage.
   whitespace check for this C test-only change.
 - Existing non-fatal build diagnostics included AWS-LC `stdalign_check.c` and
   NASM probe warnings and MSVC linker LNK4217 warnings.
-- Self-review: follow-up changes are limited to Python and Java tests plus this
-  evidence report. No production implementation, public API/ABI, manifest,
-  generated output, or normative source changed. Untracked local build and
-  coverage artifacts were not staged or cleaned.
+- Self-review: follow-up changes are limited to C, Python, and Java tests, the
+  manifest-parity contract test, and this evidence report. No production
+  implementation, public API/ABI, manifest, generated output, or normative
+  source changed. Untracked local build and coverage artifacts were not staged
+  or cleaned.
 - Remaining limits: this focused run does not recompute the selected changed-
   production coverage aggregate. Controller review, security review, exact-
   head CI and the final coverage gate remain pending; T060 is not marked
@@ -398,4 +410,4 @@ review, exact-head CI, and coverage.
   passed: 1 test, 0 failures, 10 filtered out. The C build emitted the existing
   non-fatal AWS-LC/NASM probe and MSVC LNK4217 warnings.
 - `git diff --check`: PASS. This is test-harness cleanup only; no production
-  code or ABI changed. No push was performed.
+  code or ABI changed.
