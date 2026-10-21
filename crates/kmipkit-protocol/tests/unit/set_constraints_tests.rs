@@ -204,6 +204,29 @@ fn table_327_preserves_all_distinct_reasons_and_open_unknown_reason() {
 }
 
 #[test]
+fn failure_and_pending_do_not_expose_generic_response_ttlv() {
+    let failure = response_message(SET_CONSTRAINTS, 1, Some(0x07), None, None);
+    let pending = response_message(
+        SET_CONSTRAINTS,
+        2,
+        None,
+        Some(b"pending-id"),
+        Some(Structure::new()),
+    );
+
+    for message in [&failure, &pending] {
+        let response = SetConstraintsResponse::try_from_response_item(response_item(message))
+            .expect("complete Failure and Pending results remain typed");
+        let mut callback_called = false;
+        response.with_ttlv(|_| {
+            callback_called = true;
+        });
+
+        assert!(!callback_called);
+    }
+}
+
+#[test]
 fn response_retains_unknown_payload_after_source_message_is_dropped() {
     const OPAQUE_VALUE: &str = "opaque response field survives source drop";
     let response = {
