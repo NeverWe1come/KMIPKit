@@ -3,6 +3,7 @@ package org.kmipkit;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.AbstractList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientBatchItem;
@@ -60,5 +61,23 @@ final class ValidateJavaFacadeTest {
             assertNotNull(item);
             org.junit.jupiter.api.Assertions.assertEquals(1, view.itemCount());
         }
+    }
+
+    @Test
+    void builderRejectsOversizedExtensionListBeforeCopyingIt() {
+        List<TtlvItem> oversized = new AbstractList<>() {
+            @Override
+            public TtlvItem get(int index) {
+                throw new AssertionError("oversized list entries must not be copied");
+            }
+
+            @Override
+            public int size() {
+                return 100_001;
+            }
+        };
+
+        assertThrows(ResourceLimitException.class,
+                () -> ClientBatchItem.validate(List.of(), List.of(), null, oversized));
     }
 }

@@ -37,6 +37,24 @@ def test_validate_builder_rejects_missing_lists_and_out_of_range_date() -> None:
         extensions.client_batch_item_validate((), (), validity_date=1 << 63)
 
 
+def test_validate_builder_preflights_aggregate_identifier_bytes_before_copying(
+    monkeypatch: Any,
+) -> None:
+    identifiers = [
+        extensions.UniqueIdentifier.text_string("12345"),
+        extensions.UniqueIdentifier.text_string("67890"),
+    ]
+
+    def reject_copy(*_arguments: object, **_keywords: object) -> tuple[bytes, object]:
+        raise AssertionError("Validate must reject aggregate bytes before allocating copies")
+
+    monkeypatch.setattr(extensions, "_MAX_OPERATION_INPUT_BYTES", 8)
+    monkeypatch.setattr(extensions, "_owned_bytes", reject_copy)
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions.client_batch_item_validate((), identifiers)
+
+
 def test_validate_builder_copies_unknown_payload_extensions_and_preserves_input(
     monkeypatch: Any,
 ) -> None:
