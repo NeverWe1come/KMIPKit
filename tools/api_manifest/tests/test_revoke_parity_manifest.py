@@ -93,6 +93,23 @@ class RevokeParityManifestTests(unittest.TestCase):
         self.assertEqual("c-symbol", declarations[0]["kind"])
         self.assertEqual("T063:revoke:response:c", declarations[0]["declarationId"])
 
+    def test_revoke_c_identifier_documents_borrowed_lifetime(self) -> None:
+        function = next(
+            row
+            for row in self.manifest["functions"]
+            if row["id"] == "client_batch_item_response_revoke"
+        )
+        documentation = " ".join(function["c"].get("documentation", []))
+        self.assertIn("Text identifier bytes are borrowed from the response-item handle", documentation)
+        self.assertIn("remain valid until that handle is released", documentation)
+
+        header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
+        signature = "int32_t kmipkit_client_batch_item_response_revoke("
+        signature_index = header.index(signature)
+        preceding = header[max(0, signature_index - 1200):signature_index]
+        self.assertIn("Text identifier bytes are borrowed from the response-item handle", preceding)
+        self.assertIn("remain valid until that handle is released", preceding)
+
     def test_revoke_has_approved_four_language_mapping_and_traceability(self) -> None:
         self.assertEqual(1, len(self.operations))
         operation = self.operations[0]
