@@ -297596,6 +297596,126 @@
     },
     {
       "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__dataclass_fields__",
+      "reason": "This exact RegisterResponse member is generated Python dataclass introspection metadata, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __dataclass_fields__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__dataclass_params__",
+      "reason": "This exact RegisterResponse member is generated Python dataclass introspection metadata, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __dataclass_params__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__delattr__",
+      "reason": "This exact RegisterResponse member is frozen dataclass mutation machinery, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __delattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__eq__",
+      "reason": "This exact RegisterResponse member is generated Python dataclass comparison machinery, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __eq__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__hash__",
+      "reason": "This exact RegisterResponse member is generated Python dataclass comparison machinery, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __hash__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__init__",
+      "reason": "This exact RegisterResponse member is a generated Python dataclass constructor, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __init__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__match_args__",
+      "reason": "This exact RegisterResponse member is generated Python dataclass pattern-matching metadata, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __match_args__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__repr__",
+      "reason": "This exact RegisterResponse formatter is redacted Python diagnostic presentation, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. RegisterResponse repr redacts the identifier and preserves response TTLV only through its owned accessor; this exact exclusion covers only member __repr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__setattr__",
+      "reason": "This exact RegisterResponse member is frozen dataclass mutation machinery, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __setattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RegisterResponse.__slots__",
+      "reason": "This exact RegisterResponse member is generated dataclass storage metadata, not an independent cross-language API capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T062. The approved RegisterResponse type, required Unique Identifier, and owned response TTLV remain mapped across Rust, C, Java, and Python. This exact exclusion covers only generated member __slots__."
+    },
+    {
+      "packageId": "python-kmipkit",
       "exportName": "kmipkit.client.RekeyKeyPairResponse.__dataclass_fields__",
       "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
       "approvalSource": {

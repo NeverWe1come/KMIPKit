@@ -5018,3 +5018,49 @@ closes the QA finding about stable table-row traces; independent QA approved
 the correction against the pinned OASIS source. The change does not alter
 protocol behavior or claim OASIS conformance. Independent security review of
 the Register output-aliasing fix found no additional findings.
+
+#### CI #39579074169 follow-up (2026-10-21)
+
+CI run `39579074169` failed at `f9d57210` on Python API contract expectations:
+Ping's query result omitted the new final `register_response` field from its
+positional-order assertion; parity treated
+`client_batch_item_response_register_ttlv` as a direct JNI symbol instead of
+the aggregate alias; T076 assertions still expected `declared` for the three
+Register request mappings promoted by T062; and the ten generated
+`RegisterResponse` dataclass exports lacked exact approved exclusions. Red
+commits `3a9290b7` and `aa70acf6` capture those assertions and the stale
+Register inventory count/readiness expectations; Green records their
+reconciliation with the approved manifest. The count assertions now match 702
+Java and 674 Python declarations, and the Register request-release lifecycle
+declarations are asserted as `verified`.
+
+The source manifest adds only the ten exact `RegisterResponse` Python
+dataclass exclusions. `python tools/api_manifest/generate.py --write`
+regenerated the 12 checked-in outputs; generated changes are limited to those
+ten exclusion records. The JNI parity classifier now requires the aggregate
+owner and rejects a direct `jniSymbol` for the Register response-TTLV alias.
+
+CI-relevant and focused checks on the correction:
+
+| Command | Result |
+|---|---|
+| `python -B -m unittest tools.api_manifest.tests.test_register_parity_manifest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping -v` | Pass, 69 tests. |
+| `uv run --offline --no-project --with jsonschema --python 3.12 -- python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_all_java_public_access_paths tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_checked_in_manifest_inventories_python_exports_and_lifecycle tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_opaque_register_binding_support_exports_are_inventoried -v` | Pass, 3 tests. |
+| `python -B -m unittest discover -s scripts/tests -p 'test_*.py' -v` | Pass, 298 tests; 26 skipped because optional pinned tools or Windows symlink privileges were unavailable. |
+| `uv run --offline --no-project --with jsonschema --python 3.12 -- python -B -m unittest discover -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v` | Pass, 17 tests; 1 Windows symlink privilege skip. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current. |
+| External Python 3.12 wheel environment: `uv run --offline --no-project --with 'C:/Users/ramp1953/AppData/Local/Temp/kmipkit-t062-wheels/kmipkit-1.0.0-py3-none-win_amd64.whl' --with pytest --with cffi --with coverage --python 3.12 -- python -m coverage run --rcfile bindings/python/pyproject.toml --data-file C:/Users/ramp1953/AppData/Local/Temp/kmipkit-ci39579074169-t062-python-final.coverage -m pytest -q -p no:cacheprovider bindings/python/tests` | Pass, 709 tests and 100 subtests; wheel smoke and vendor-extension subprocess tests included. `uv run --offline --no-project --with 'C:/Users/ramp1953/AppData/Local/Temp/kmipkit-t062-wheels/kmipkit-1.0.0-py3-none-win_amd64.whl' --with pytest --with cffi --with coverage --python 3.12 -- python -m coverage report --rcfile bindings/python/pyproject.toml --data-file C:/Users/ramp1953/AppData/Local/Temp/kmipkit-ci39579074169-t062-python-final.coverage --fail-under=85` reports 99% total (4,183 statements, 40 missed). The existing `.venv` was not touched; `CARGO_TARGET_DIR` and coverage data were outside the worktree. |
+
+For diagnosis, a full `tools/api_manifest/tests` discovery was also run with
+external `jsonschema` dependencies before the Register count/readiness test
+corrections: 467 tests, 8 failures, 3 skips. Five failures were those stale
+Register assertions corrected above. The remaining three are outside T062:
+the Java native-registry exclusion inventory omits eight existing Re-key/RNG
+symbols; the Re-key parity test lacks its existing evidence IDs; and the T030
+bilingual capability summary does not list already verified Register,
+Re-Provision, and RNG operations. The protecting CI script-contract job runs
+the script suite, extension-fixture tests, `test_parity`, `test_t076`, and the
+generator check; it does not discover the full `tools/api_manifest/tests`
+suite or run those three failing contracts. Those unrelated findings remain
+reported for their owning specs; no unrelated contracts or behavior were
+changed here.
