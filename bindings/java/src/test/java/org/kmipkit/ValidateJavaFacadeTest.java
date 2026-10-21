@@ -1,5 +1,6 @@
 package org.kmipkit;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -79,5 +80,86 @@ final class ValidateJavaFacadeTest {
 
         assertThrows(ResourceLimitException.class,
                 () -> ClientBatchItem.validate(List.of(), List.of(), null, oversized));
+    }
+
+    @Test
+    void nativeBridgeRejectsMismatchedIdentifierArraysAndNoncanonicalAbsentDate() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[] {1}, new byte[0][], new long[] {0}, new long[0], false, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[0], new byte[0][], new long[0], new long[0], false, 1));
+    }
+
+    @Test
+    void nativeBridgeRejectsOversizedAggregateItemCountBeforeReadingEntries() {
+        int excessiveCount = 100_001;
+
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null,
+                        new int[excessiveCount],
+                        new byte[excessiveCount][],
+                        new long[excessiveCount],
+                        new long[0],
+                        false,
+                        0));
+    }
+
+    @Test
+    void nativeBridgeRejectsMalformedAndOverLimitIdentifierRecords() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[] {1}, new byte[][] {null}, new long[] {0}, new long[0], false, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[] {2}, new byte[][] {new byte[] {1}}, new long[] {1},
+                        new long[0], false, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[] {2}, new byte[][] {null}, new long[] {0x1_0000_0000L},
+                        new long[0], false, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[] {3}, new byte[][] {null}, new long[] {(long) Integer.MAX_VALUE + 1},
+                        new long[0], false, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[] {99}, new byte[][] {null}, new long[] {0}, new long[0], false, 0));
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null,
+                        new int[] {1},
+                        new byte[][] {new byte[16 * 1024 * 1024 + 1]},
+                        new long[] {0},
+                        new long[0],
+                        false,
+                        0));
+    }
+
+    @Test
+    void nativeBridgeAcceptsOpenEnumerationAndSignedIntegerIdentifiers() {
+        long item = NativeExtensionRegistry.clientBatchItemValidate(
+                null,
+                new int[] {2, 3},
+                new byte[][] {null, null},
+                new long[] {0xffff_ffffL, -17},
+                new long[0],
+                false,
+                0);
+
+        try {
+            assertNotEquals(0, item);
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, item);
+        }
+    }
+
+    @Test
+    void nativeBridgeRejectsInvalidPayloadExtensionHandle() {
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemValidate(
+                        null, new int[0], new byte[0][], new long[0], new long[] {0}, false, 0));
     }
 }
