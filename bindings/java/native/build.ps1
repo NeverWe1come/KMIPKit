@@ -72,6 +72,24 @@ if ($LASTEXITCODE -ne 0) {
     throw "JNI client batch item transfer test failed with exit code $LASTEXITCODE."
 }
 
+$nativeHandleTransferTestSource = Join-Path $PSScriptRoot 'tests\native_handle_transfer_test.cpp'
+$nativeHandleTransferTestObject = Join-Path $nativeOutput 'native_handle_transfer_test.obj'
+$nativeHandleTransferTestExecutable = Join-Path $nativeOutput 'native_handle_transfer_test.exe'
+$nativeHandleTransferTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'
+$nativeHandleTransferTestCompiler += ' /Fo' + '"' + $nativeHandleTransferTestObject + '"'
+$nativeHandleTransferTestCompiler += ' ' + '"' + $nativeHandleTransferTestSource + '"'
+$nativeHandleTransferTestCompiler += ' /Fe:' + '"' + $nativeHandleTransferTestExecutable + '"'
+$nativeHandleTransferTestCommand = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && '
+$nativeHandleTransferTestCommand += $nativeHandleTransferTestCompiler
+& $env:ComSpec /d /s /c $nativeHandleTransferTestCommand
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI native handle transfer test compile failed with exit code $LASTEXITCODE."
+}
+& $nativeHandleTransferTestExecutable
+if ($LASTEXITCODE -ne 0) {
+    throw "JNI native handle transfer test failed with exit code $LASTEXITCODE."
+}
+
 $responseIdentifierTestObject = Join-Path $nativeOutput 'response_identifier_validation_test.obj'
 $responseIdentifierTestExecutable = Join-Path $nativeOutput 'response_identifier_validation_test.exe'
 $responseIdentifierTestCompiler = 'cl.exe /nologo /std:c++17 /EHsc /MD'

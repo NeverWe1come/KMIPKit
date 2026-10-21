@@ -1,6 +1,7 @@
 #include <jni.h>
 #include "kmipkit_internal.h"
 #include "client_batch_item_transfer_guard.hpp"
+#include "native_handle_transfer_guard.hpp"
 #include "response_identifier_validation.hpp"
 #include "response_byte_span_validation.hpp"
 #include "response_array_conversion.hpp"
@@ -2475,13 +2476,15 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_revokeRequestCr
         jlong compromise_date) {
     return guarded<jlong>(env, 0, [&] {
         auto* reason = from_java_handle<kmipkit_revocation_reason_t>(raw_reason);
+        kmipkit::jni::NativeHandleTransferGuard<
+                kmipkit_revocation_reason_t*, decltype(&kmipkit_revocation_reason_release)>
+                reason_transfer(reason, kmipkit_revocation_reason_release);
         kmipkit_unique_identifier_v1_t identifier{};
         std::vector<uint8_t> identifier_text;
         bool identifier_present = false;
         if (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
                     raw_identifier_number, &identifier, identifier_text, &identifier_present)
                 || (has_compromise_date != JNI_FALSE && has_compromise_date != JNI_TRUE)) {
-            kmipkit_revocation_reason_release(reason);
             if (!env->ExceptionCheck()) throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
@@ -2489,7 +2492,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_revokeRequestCr
                 identifier_present ? &identifier : nullptr;
         return return_handle<kmipkit_revoke_request_t>(env, [&](auto output) {
             return kmipkit_revoke_request_create(
-                    identifier_pointer, reason,
+                    identifier_pointer, reason_transfer.transfer_to_consumer(),
                     static_cast<uint8_t>(has_compromise_date == JNI_TRUE),
                     static_cast<int64_t>(compromise_date), output);
         });
