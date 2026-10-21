@@ -271,6 +271,30 @@ class RngParityManifestTests(unittest.TestCase):
                 }
                 self.assertEqual(set(), missing)
 
+        if all(("java-kmipkit", name) in exclusions for name in java_bridge):
+            for name in java_bridge:
+                exclusion = exclusions[("java-kmipkit", name)]
+                self.assertIn("raw-handle JNI bridge", exclusion["reason"])
+                self.assertIn("typed", exclusion["evidence"].lower())
+                self.assertIn("docs/architecture/ffi-and-bindings.md", exclusion["evidence"])
+        if all(("java-kmipkit", name) in exclusions for name in java_formatters):
+            for name in java_formatters:
+                exclusion = exclusions[("java-kmipkit", name)]
+                self.assertIn("formatter", exclusion["reason"].lower())
+                self.assertIn("redact", exclusion["evidence"].lower())
+        if all(("python-kmipkit", name) in exclusions for name in python_generated):
+            for name in python_generated:
+                exclusion = exclusions[("python-kmipkit", name)]
+                self.assertIn("not a separate", exclusion["reason"].lower())
+                self.assertIn("specs/043-public-api-bindings/spec.md", exclusion["evidence"])
+            self.assertIn(
+                "redact",
+                exclusions[(
+                    "python-kmipkit",
+                    "kmipkit.client.RngRetrieveResponse.__repr__",
+                )]["evidence"].lower(),
+            )
+
         declarations = {
             row["exportName"]: row for row in self.manifest["publicDeclarations"]
         }
