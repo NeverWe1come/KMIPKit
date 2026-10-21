@@ -5144,3 +5144,46 @@ are claimed.
 #### T076 exact-head CI and coverage confirmation (2026-10-21)
 
 CI run [39614692989](https://github.com/NeverWe1come/KMIPKit/actions/runs/39614692989) completed successfully on exact PR head `a599300b8d39c859820b67de5215acaae1701486`. All required cross-platform Rust, C, Java/JNI, Python, traceability, generated-output, and selected-scope coverage checks passed; two scheduled or informational checks were skipped and none failed. The coverage gate passed. Its check output does not expose the exact changed-production ratio, so no ratio is inferred here. This confirms the gate on this head; it does not close the remaining KMIPKIT-0043 tasks or claim KMIP conformance, certification, or interoperability.
+
+### T066 Set Constraints — Red/Green/Refactor evidence (2026-10-21)
+
+TDD commits: manifest parity Red `f3443af0`, language binding Red `40fc7419`,
+and implementation Green `8e29294de0fa557d6e9e1a29669a4504868181f3`. This
+traceability and evidence update is the separate Refactor/evidence commit.
+
+T066 is owned by approved KMIPKIT-0039 and cites the immutable OASIS KMIP v2.1
+source at §6.1.52 Tables 325–327 and §7.7 Table 358. The stable owner traces
+are KMIPKIT-025-T325-REQUEST, KMIPKIT-025-T326-RESPONSE,
+KMIPKIT-025-T327-ERROR, KMIPKIT-025-COMMON-RESULT, and
+KMIPKIT-025-COMMON-DELIVERY. The exact source copies were not modified.
+
+Red was committed before implementation:
+
+| Command | Expected Red result |
+|---|---|
+| `python -B -m unittest tools.api_manifest.tests.test_set_constraints_parity_manifest -v` | The manifest did not yet expose Set Constraints as a verified four-language capability. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage set_constraints_ --no-fail-fast` | The C consumer could not link the missing Set Constraints ABI symbols. |
+| `.gradlew.bat --rerun-tasks test --tests org.kmipkit.SetConstraintsJavaFacadeTest --tests org.kmipkit.extensions.SetConstraintsResponseMappingTest` | Java compilation/tests failed before facade and result mapping were implemented. |
+| `uv run --offline --no-project --with pytest --with cffi --python 3.12 -- python -m pytest -q tests/test_set_constraints_operation.py` | Python builder and response mapping tests failed before implementation. |
+
+Green focused evidence:
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib set_constraints_ --no-fail-fast` | Pass, 6 tests, including the compiled C consumer, request input ownership, and success-only response TTLV. |
+| `.gradlew.bat --rerun-tasks test --tests org.kmipkit.SetConstraintsJavaFacadeTest --tests org.kmipkit.extensions.SetConstraintsResponseMappingTest --tests 'org.kmipkit.ClientFacadeTlsIntegrationTest.setConstraintsResponseUsesNativeJniBridgeAndExposesTtlvOnlyOnSuccess'` | Pass, 5 tests, including native JNI mTLS Success, Failure, and Pending mapping. |
+| `uv run --offline --no-project --with 'maturin>=1.8,<2.0' --with 'cffi>=1.15' --python 3.12 -- maturin build --target-dir ../../target --out <temporary-wheel-directory>` | Pass; rebuilt the isolated Python wheel and CFFI bindings from the current native library. |
+| `uv run --offline --no-project --with <rebuilt-wheel> --with pytest --with cffi --python 3.12 -- python -m pytest -q tests/test_set_constraints_operation.py` | Pass, 4 tests, including a real TLS 1.3 mutual-TLS loopback exchange and response lifetime after closing the source result. |
+| `python -B -m unittest tools.api_manifest.tests.test_set_constraints_parity_manifest -v` | Pass, 4 manifest/parity tests. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; all 12 pinned generated outputs are current. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Pass. |
+| `cargo fmt --all --check` and `git diff --check` | Pass after formatting the touched Rust files; final diff check recorded with the Refactor/evidence commit. |
+
+During the Python mTLS check, the first built wheel exposed the missing private
+client CFFI declarations and incorrect pointer-context conversion. The fix adds
+the exact C ABI declarations and routes the borrowed TTLV pointer through the
+client CFFI context; the rebuilt wheel then passed all four tests. The selected
+checks above are local evidence only. Full workspace validation, exact-head CI,
+independent scoped security/QA review, official OASIS test cases, two-server
+interoperability, conformance/profile claims, and certification remain outside
+this T066 local verification record.
