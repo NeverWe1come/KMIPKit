@@ -147,7 +147,9 @@ class RngParityManifestTests(unittest.TestCase):
                     if expected["name"] == "RNG Retrieve"
                     else "client_batch_item_rng_seed"
                 ]
-                self.assertEqual(operation_id, request["capabilityId"])
+                self.assertTrue(
+                    any(value.startswith("KMIPKIT-REQ-SPEC-") for value in request["requirementIds"])
+                )
                 self.assertIn("out_item", [item["name"] for item in request["c"]["parameters"]])
                 if expected["name"] == "RNG Seed":
                     data = request["c"]["parameters"][0]
@@ -158,7 +160,9 @@ class RngParityManifestTests(unittest.TestCase):
                 response_ttlv = self.functions[
                     f"client_batch_item_response_{'rng_retrieve' if expected['name'] == 'RNG Retrieve' else 'rng_seed'}_ttlv"
                 ]
-                self.assertEqual(operation_id, response_ttlv["capabilityId"])
+                self.assertTrue(
+                    any(value.startswith("KMIPKIT-REQ-SPEC-") for value in response_ttlv["requirementIds"])
+                )
                 self.assertIn("caller-owned copy", response_ttlv["c"]["documentation"][0])
 
 

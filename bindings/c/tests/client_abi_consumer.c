@@ -266,6 +266,38 @@ static int reprovision_constructor_is_callable_from_c(void) {
     kmipkit_ttlv_structure_release(certificate);
     return rejected_both;
 }
+
+static int rng_request_builders_are_callable_from_c(void) {
+    static const uint8_t seed[] = {0x00, 0x81, 0xff};
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_byte_span_v1_t seed_span = {seed, (uint64_t)sizeof(seed)};
+    if (kmipkit_client_batch_item_rng_retrieve(-17, &item) != 0 || item == 0) {
+        kmipkit_client_batch_item_release(item);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    if (kmipkit_client_batch_item_rng_seed(&seed_span, &item) != 0 || item == 0) {
+        kmipkit_client_batch_item_release(item);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    seed_span.data = 0;
+    seed_span.length = 0;
+    if (kmipkit_client_batch_item_rng_seed(&seed_span, &item) != 0 || item == 0) {
+        kmipkit_client_batch_item_release(item);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
+    if (kmipkit_client_batch_item_rng_seed(0, &item) != T076_ERROR_INVALID_INPUT || item != 0) {
+        kmipkit_client_batch_item_release(item);
+        return 0;
+    }
+    return 1;
+}
+
 static int rekey_key_pair_constructor_is_callable_from_c(void) {
     static const uint8_t identifier_bytes[] = "existing-private-key";
     kmipkit_unique_identifier_v1_t identifier = {0};
@@ -5292,6 +5324,7 @@ int main(int argc, char **argv) {
     if (!creation_create_matches_shared_fixture() ||
         !rekey_constructor_is_callable_from_c() ||
         !reprovision_constructor_is_callable_from_c() ||
+        !rng_request_builders_are_callable_from_c() ||
         !rekey_key_pair_constructor_is_callable_from_c() ||
         !rekey_key_pair_response_rejects_invalid_output_records_from_c() ||
         !rekey_key_pair_response_accessors_clear_outputs_from_c() ||

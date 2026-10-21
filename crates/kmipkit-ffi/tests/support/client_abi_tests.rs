@@ -15,8 +15,8 @@ use kmipkit_protocol::{
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OperationData, Pkcs11Request, ReProvisionRequest, RecertifyRequest,
-    RekeyKeyPairRequest, RekeyRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference,
-    StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
+    RekeyKeyPairRequest, RekeyRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
+    SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -586,6 +586,126 @@ fn successful_cryptographic_item(
     );
     kmipkit_client_batch_response_release(response_handle);
     item
+}
+
+#[test]
+fn ffi_rng_request_builders_preserve_signed_length_and_required_seed_presence() {
+    let mut retrieve = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_rng_retrieve(-17, &raw mut retrieve)
+    );
+    assert!(!retrieve.is_null());
+    kmipkit_client_batch_item_release(retrieve);
+
+    let seed = [0x00, 0x81, 0xff];
+    let mut seed_span = byte_span(&seed);
+    let mut seed_item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_rng_seed(&raw const seed_span, &raw mut seed_item)
+    );
+    assert!(!seed_item.is_null());
+    kmipkit_client_batch_item_release(seed_item);
+
+    seed_span = byte_span(&[]);
+    let mut empty_seed_item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_rng_seed(&raw const seed_span, &raw mut empty_seed_item)
+    );
+    assert!(!empty_seed_item.is_null());
+    kmipkit_client_batch_item_release(empty_seed_item);
+
+    let mut omitted_seed_item = ptr::dangling_mut();
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_rng_seed(ptr::null(), &raw mut omitted_seed_item)
+    );
+    assert!(omitted_seed_item.is_null());
+}
+
+#[test]
+fn ffi_rng_retrieve_response_exposes_success_data_and_generic_ttlv() {
+    let secret = b"KMIP_RNG_RETRIEVE_SECRET_SENTINEL";
+    let item = successful_cryptographic_item(
+        ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),
+        0x25,
+        b"rng-retrieve-success",
+        vec![ttlv_item(0x0042_00c2, 0x08, secret)],
+    );
+    let mut present = 0;
+    let mut data_present = 0;
+    let mut data = kmipkit_byte_span_v1_t {
+        data: ptr::null(),
+        length: 0,
+    };
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rng_retrieve(
+            item,
+            &raw mut present,
+            &raw mut data_present,
+            &raw mut data,
+        )
+    );
+    assert_eq!((present, data_present), (1, 1));
+    assert_response_span(data, secret);
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rng_retrieve_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_rng_seed_response_preserves_zero_data_length_and_generic_ttlv() {
+    let item = successful_cryptographic_item(
+        ClientRequest::RngSeed(RngSeedRequest::new(SecretBytes::new(
+            b"rng-seed-request".to_vec(),
+        ))),
+        0x26,
+        b"rng-seed-success",
+        vec![ttlv_item(0x0042_00d5, 0x05, &0_i32.to_be_bytes())],
+    );
+    let mut present = 0;
+    let mut data_length_present = 0;
+    let mut data_length = -1;
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rng_seed(
+            item,
+            &raw mut present,
+            &raw mut data_length_present,
+            &raw mut data_length,
+        )
+    );
+    assert_eq!((present, data_length_present, data_length), (1, 1, 0));
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_rng_seed_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
 }
 
 fn assert_response_span(span: kmipkit_byte_span_v1_t, expected: &[u8]) {
