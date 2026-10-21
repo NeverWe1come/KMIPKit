@@ -3112,6 +3112,25 @@ class T076ClientMappingTests(unittest.TestCase):
         self.assertIn("reason_transfer.transfer_to_consumer()", revoke_function)
         self.assertNotIn("kmipkit_revocation_reason_release(reason)", revoke_function)
 
+    def test_revoke_manifest_uses_the_distinct_native_jni_entrypoints(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        expected_symbols = {
+            "revocation_reason_create": (
+                "Java_org_kmipkit_NativeExtensionRegistry_revocationReasonCreate"
+            ),
+            "revoke_request_create": (
+                "Java_org_kmipkit_NativeExtensionRegistry_revokeRequestCreate"
+            ),
+        }
+        jni_source = (ROOT / "bindings" / "java" / "native" / "kmipkit_jni.cpp").read_text(
+            encoding="utf-8"
+        )
+
+        for function_id, symbol in expected_symbols.items():
+            with self.subTest(function=function_id):
+                self.assertEqual(functions[function_id]["java"]["jniSymbol"], symbol)
+                self.assertIn(f"JNIEXPORT jlong JNICALL {symbol}(", jni_source)
+
     def test_public_python_instance_fields_are_mapped_or_exactly_excluded(self) -> None:
         semantic_fields = {
             "kmipkit.errors.ClientExecutionError.status",
