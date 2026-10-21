@@ -145,3 +145,75 @@ fn set_defaults_ttlv_getter_clears_outputs_for_invalid_item() {
     assert_eq!(present, 0);
     assert!(response_ttlv.is_null());
 }
+
+#[test]
+fn set_defaults_ttlv_getter_rejects_missing_output_slot_without_writes() {
+    let mut present = 9;
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_set_defaults_ttlv(
+            ptr::null_mut(),
+            &raw mut present,
+            ptr::null_mut(),
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 9);
+}
+
+#[test]
+fn set_defaults_ttlv_getter_rejects_inconsistent_payload_variant() {
+    let wrong_variant = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::Structure(Structure::new()),
+    );
+    let mut present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_set_defaults_ttlv(
+            wrong_variant,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    release(wrong_variant, Kind::ClientBatchItemResponse);
+}
+
+#[test]
+fn set_defaults_ttlv_getter_rejects_out_of_range_internal_index() {
+    let item = successful_cryptographic_item(
+        ClientRequest::set_defaults(SetDefaultsRequest::new()),
+        0x36,
+        b"set-defaults-invalid-index",
+        Vec::new(),
+    );
+    let item_handle = reference_handle(item, Kind::ClientBatchItemResponse)
+        .expect("the successful Set Defaults item remains registered");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &item_handle.value else {
+        panic!("the Set Defaults response stores its batch response and item index");
+    };
+    let invalid_index = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(response),
+            index: usize::MAX,
+        },
+    );
+    let mut present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_batch_item_response_set_defaults_ttlv(
+            invalid_index,
+            &raw mut present,
+            &raw mut response_ttlv,
+        ),
+        ERROR_INTERNAL
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
+    release(invalid_index, Kind::ClientBatchItemResponse);
+    drop(item_handle);
+    kmipkit_client_batch_item_response_release(item);
+}

@@ -3038,7 +3038,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_defaults_ttlv(
         if let kmipkit_client::ClientBatchOutcome::SetDefaults(defaults) = item.outcome() {
             let Some(structure) = defaults.with_ttlv(|view| super::clone_structure_view(&view))
             else {
-                return record_ffi_error(ERROR_INTERNAL);
+                return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: KMIP validation requires the successful Set Defaults payload and retains its TTLV in the typed outcome.
             };
             let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(

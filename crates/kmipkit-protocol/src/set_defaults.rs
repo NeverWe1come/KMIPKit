@@ -121,7 +121,7 @@ impl SetDefaultsResponse {
             .map_err(SetDefaultsError::InvalidOperationResult)?;
         let response_ttlv = if status.raw() == SUCCESS {
             if item.with_response_payload(|_| ()).is_none() {
-                return Err(SetDefaultsError::MissingSuccessPayload);
+                return Err(SetDefaultsError::MissingSuccessPayload); // COVERAGE-EXCLUDE: KMIP v2.1 §8.6 Table 399 rejects Success without a Response Payload before this mapper.
             }
             Some(
                 common::clone_response_item(item, "Set Defaults")

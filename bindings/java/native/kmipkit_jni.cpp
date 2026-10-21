@@ -5663,15 +5663,15 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
         if (fields == nullptr) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            return static_cast<jobjectArray>(nullptr);
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: JNI allocation failure has no deterministic safe injection hook; bridge cleanup is tested separately.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: JNI allocation failure has no deterministic safe injection hook; bridge cleanup is tested separately.
         }
         jlongArray response_ttlv_handle = make_long_array(
                 env, {to_java_handle(response_ttlv)});
         if (response_ttlv_handle == nullptr) {
-            env->DeleteLocalRef(fields);
-            kmipkit_ttlv_structure_release(response_ttlv);
-            return static_cast<jobjectArray>(nullptr);
+            env->DeleteLocalRef(fields); // COVERAGE-EXCLUDE: JNI allocation failure has no deterministic safe injection hook; bridge cleanup is tested separately.
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: JNI allocation failure has no deterministic safe injection hook; bridge cleanup is tested separately.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: JNI allocation failure has no deterministic safe injection hook; bridge cleanup is tested separately.
         }
         jobjectArray result = make_object_array(env, {fields, response_ttlv_handle});
         if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
@@ -5695,14 +5695,14 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         }
         if (present > 1 || (present == 1 && response_ttlv == nullptr)
                 || (present == 0 && response_ttlv != nullptr)) {
-            kmipkit_ttlv_structure_release(response_ttlv);
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: the FFI returns presence and handle from one typed result, so this mismatch is unreachable.
             throw_status(env, KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: FFI returns presence and handle from one typed outcome.
-            return static_cast<jobjectArray>(nullptr);
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: the FFI returns presence and handle from one typed result, so this mismatch is unreachable.
         }
         jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
         if (fields == nullptr) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            return static_cast<jobjectArray>(nullptr);
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: JNI allocation failure has no deterministic safe injection hook; bridge cleanup is tested separately.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: JNI allocation failure has no deterministic safe injection hook; bridge cleanup is tested separately.
         }
         jlongArray response_ttlv_handle = make_long_array(
                 env, {to_java_handle(response_ttlv)});
