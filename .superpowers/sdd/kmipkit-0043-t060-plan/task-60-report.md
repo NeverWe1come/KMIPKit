@@ -333,3 +333,56 @@ review, exact-head CI, and coverage.
 - This coverage failure is the Red evidence for the follow-up. No new failing
   behavior test was manufactured because the target defensive behaviors are
   already implemented and correct.
+
+### Green
+
+- Commit: `d8d0dfc5bd6b0e637b411a8c7ec5c82ce5247028`
+  (`test: cover Re-key Key Pair response cleanup branches`), DCO signed.
+- Java command: `mvn -q -f bindings/java/pom.xml -Dtest=RekeyKeyPairMappingTest test`.
+  Surefire passed: 6 tests, 0 failures, 0 errors, 0 skipped. The added malformed
+  success case supplies a real native TTLV handle, a valid private identifier,
+  and malformed public identifier data; it asserts the public parser rejects
+  the response and verifies the native structure handle has been released.
+- Python command:
+  `python.exe -m pytest -q bindings/python/tests/test_rekey_key_pair_operation.py`
+  with `PYTHONPATH=bindings/python/src` and `KMIPKIT_NATIVE_LIBRARY` set to the
+  built native DLL. Passed: 7 tests. The new absent, invalid-presence, missing
+  identifier, TTLV presence mismatch, and wrapper-construction error cases
+  verify behavior and release actual native handles.
+- Focused Python coverage command:
+  `python.exe -m coverage run --data-file=%TEMP%\kmipkit-t060-python-focused-20261021.coverage --source=kmipkit.client -m pytest -q bindings/python/tests/test_rekey_key_pair_operation.py`,
+  followed by `coverage json`. Passed: 7 tests; no executable lines from
+  `_rekey_key_pair_response` at `client.py:2458-2484` were missing in the
+  focused report.
+- Compiled C consumer command:
+  `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact`.
+  Passed: 1 test, 0 failures, 10 filtered out. This retains the C API boundary
+  and wire-capture evidence recorded above.
+
+### Refactor and final checks
+
+- Refactor commit: this report update and a small Python test-only extraction
+  of the repeated native-release tracker into `_tracked_native_release`; the
+  real native release and registry invalidation assertions remain in place.
+- Python lint/format commands:
+  `uv tool run --from ruff ruff check bindings/python/tests/test_rekey_key_pair_operation.py`
+  and `uv tool run --from ruff ruff format --check bindings/python/tests/test_rekey_key_pair_operation.py`.
+  Both passed. Ruff initially reported an import-order issue and formatting
+  changes; those were applied, then both final checks passed.
+- After the test helper refactor, Python focused pytest passed again: 7 tests.
+  A fresh isolated coverage file also showed no missing executable lines in
+  `client.py:2458-2484`.
+- `cargo fmt --all --check`: PASS. `git diff --check`: PASS.
+- The Java Maven run has no configured source formatter task; focused Java
+  compilation and tests passed. C formatting is covered by the repository's
+  whitespace check for this C test-only change.
+- Existing non-fatal build diagnostics included AWS-LC `stdalign_check.c` and
+  NASM probe warnings and MSVC linker LNK4217 warnings.
+- Self-review: follow-up changes are limited to Python and Java tests plus this
+  evidence report. No production implementation, public API/ABI, manifest,
+  generated output, or normative source changed. Untracked local build and
+  coverage artifacts were not staged or cleaned.
+- Remaining limits: this focused run does not recompute the selected changed-
+  production coverage aggregate. Controller review, security review, exact-
+  head CI and the final coverage gate remain pending; T060 is not marked
+  complete.

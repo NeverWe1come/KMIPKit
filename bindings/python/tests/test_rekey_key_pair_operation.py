@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from types import SimpleNamespace
 
 import pytest
@@ -64,6 +65,17 @@ def _assert_native_structure_released(address: int) -> None:
             ttlv.ttlv_structure_view(probe)
     finally:
         probe.close()
+
+
+def _tracked_native_release() -> tuple[Callable[[object], None], list[object]]:
+    release = client.lib.kmipkit_ttlv_structure_release
+    released_arguments: list[object] = []
+
+    def release_and_record(handle: object) -> None:
+        released_arguments.append(handle)
+        release(handle)
+
+    return release_and_record, released_arguments
 
 
 def test_pair_request_preserves_omitted_identifier_and_all_optional_fields(
@@ -241,12 +253,7 @@ def test_pair_response_rejects_invalid_presence_and_missing_identifier(
 
 def test_pair_response_releases_native_ttlv_on_presence_mismatch(monkeypatch) -> None:
     native_ttlv, address = _transferred_structure()
-    release = client.lib.kmipkit_ttlv_structure_release
-    released_arguments: list[object] = []
-
-    def release_and_record(handle: object) -> None:
-        released_arguments.append(handle)
-        release(handle)
+    release_and_record, released_arguments = _tracked_native_release()
 
     def get_ttlv(_item: object, present: object, output: object) -> int:
         present[0] = 0
@@ -274,13 +281,8 @@ def test_pair_response_releases_native_ttlv_if_wrapper_creation_raises(
     monkeypatch,
 ) -> None:
     native_ttlv, address = _transferred_structure()
-    release = client.lib.kmipkit_ttlv_structure_release
-    released_arguments: list[object] = []
+    release_and_record, released_arguments = _tracked_native_release()
     structure_factory = ttlv._structure_from_native_address
-
-    def release_and_record(handle: object) -> None:
-        released_arguments.append(handle)
-        release(handle)
 
     def get_ttlv(_item: object, present: object, output: object) -> int:
         present[0] = 1
