@@ -174,6 +174,43 @@ class RegisterParityManifestTests(unittest.TestCase):
                 self.assertIn(evidence["implementation"], t062_row)
                 self.assertIn(evidence["test"], t062_row)
 
+    def test_register_response_python_dataclass_artifacts_are_exactly_excluded(self) -> None:
+        generated_members = (
+            "__dataclass_fields__",
+            "__dataclass_params__",
+            "__delattr__",
+            "__eq__",
+            "__hash__",
+            "__init__",
+            "__match_args__",
+            "__repr__",
+            "__setattr__",
+            "__slots__",
+        )
+        expected = {
+            f"kmipkit.client.RegisterResponse.{member}" for member in generated_members
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.RegisterResponse.")
+        }
+
+        self.assertEqual(expected, set(exclusions))
+        for path, exclusion in exclusions.items():
+            with self.subTest(excluded_export=path):
+                self.assertEqual(path, exclusion["exportName"])
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+                if path.endswith(".__repr__"):
+                    self.assertIn("redacted", exclusion["reason"].lower())
+                else:
+                    self.assertIn("dataclass", exclusion["reason"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()

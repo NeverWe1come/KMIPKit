@@ -1303,7 +1303,12 @@ class T076ClientMappingTests(unittest.TestCase):
             with self.subTest(wrapper=wrapper):
                 declaration = declarations[wrapper]
                 self.assertEqual("type", declaration["kind"])
-                self.assertEqual("declared", declaration["declarationState"])
+                expected_state = (
+                    "verified"
+                    if wrapper == "kmipkit.extensions.RegisterRequest"
+                    else "declared"
+                )
+                self.assertEqual(expected_state, declaration["declarationState"])
                 self.assertEqual(
                     {"rust", "c", "java", "python"},
                     set(declaration["languageMappings"]),
@@ -1329,10 +1334,16 @@ class T076ClientMappingTests(unittest.TestCase):
             "kmipkit.ttlv.ttlv_value_integer",
             "kmipkit.ttlv.ttlv_item_create",
         }
+        verified_factories = {
+            "kmipkit.extensions.RegisterRequest",
+            "kmipkit.extensions.RegisterRequest.create",
+            "kmipkit.extensions.client_batch_item_register",
+        }
         for path in factories:
             with self.subTest(factory=path):
                 declaration = declarations[path]
-                self.assertEqual("declared", declaration["declarationState"])
+                expected_state = "verified" if path in verified_factories else "declared"
+                self.assertEqual(expected_state, declaration["declarationState"])
                 self.assertEqual(
                     {"rust", "c", "java", "python"},
                     set(declaration["languageMappings"]),

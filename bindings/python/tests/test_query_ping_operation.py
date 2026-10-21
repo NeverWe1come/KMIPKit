@@ -14,7 +14,7 @@ from kmipkit._client_ffi import ffi
 def test_ping_query_result_fields_follow_existing_positional_fields() -> None:
     result_fields = tuple(field.name for field in fields(client.BatchItemResult))
 
-    assert result_fields[-9:] == (
+    assert result_fields[-10:] == (
         "encrypt_response",
         "decrypt_response",
         "ping_response",
@@ -24,6 +24,7 @@ def test_ping_query_result_fields_follow_existing_positional_fields() -> None:
         "rekey_response",
         "rekey_key_pair_response",
         "reprovision_response",
+        "register_response",
     )
 
 
