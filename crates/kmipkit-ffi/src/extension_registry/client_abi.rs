@@ -2985,8 +2985,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_constraints_ttlv(
             return SUCCESS;
         }
         if let kmipkit_client::ClientBatchOutcome::SetConstraints(constraints) = item.outcome() {
-            let structure =
-                try_ffi!(constraints.with_ttlv(|view| super::clone_structure_view(&view)));
+            let Some(structure) = constraints.with_ttlv(|view| super::clone_structure_view(&view))
+            else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            let structure = try_ffi!(structure);
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure),

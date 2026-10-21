@@ -124,19 +124,21 @@ fn table_326_success_has_empty_operation_payload_and_retains_complete_response()
     let response = SetConstraintsResponse::try_from_response_item(response_item(&message))
         .expect("Table 326 empty success response is typed");
     assert_eq!(response.result().status().raw(), 0);
-    response.with_ttlv(|item| {
-        let fields = item.children();
-        let payload = fields
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_007C)
-            .expect("Table 326 success carries an empty Response Payload");
-        payload.with_value(|value| {
-            let ValueView::Structure(payload) = value else {
-                panic!("Response Payload is a Structure");
-            };
-            assert!(payload.children().is_empty());
-        });
-    });
+    response
+        .with_ttlv(|item| {
+            let fields = item.children();
+            let payload = fields
+                .iter()
+                .find(|field| field.tag().raw() == 0x0042_007C)
+                .expect("Table 326 success carries an empty Response Payload");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("Response Payload is a Structure");
+                };
+                assert!(payload.children().is_empty());
+            });
+        })
+        .expect("successful Set Constraints exposes its complete response TTLV");
 }
 
 #[test]
@@ -169,23 +171,26 @@ fn table_326_retains_unknown_success_payload_fields() {
     let message = response_message(SET_CONSTRAINTS, 0, None, None, Some(vendor_payload));
     let response = SetConstraintsResponse::try_from_response_item(response_item(&message))
         .expect("unknown structurally valid response fields are retained");
-    response.with_ttlv(|item| {
-        let fields = item.children();
-        let payload = fields
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_007C)
-            .expect("Response Payload remains present");
-        payload.with_value(|value| {
-            let ValueView::Structure(payload) = value else {
-                panic!("Response Payload is a Structure");
-            };
-            assert_eq!(payload.children().len(), 1);
-            assert_eq!(payload.children()[0].tag().raw(), VENDOR_MEMBER);
-            assert!(
-                payload.children()[0].with_value(|value| matches!(value, ValueView::Integer(1)))
-            );
-        });
-    });
+    response
+        .with_ttlv(|item| {
+            let fields = item.children();
+            let payload = fields
+                .iter()
+                .find(|field| field.tag().raw() == 0x0042_007C)
+                .expect("Response Payload remains present");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("Response Payload is a Structure");
+                };
+                assert_eq!(payload.children().len(), 1);
+                assert_eq!(payload.children()[0].tag().raw(), VENDOR_MEMBER);
+                assert!(
+                    payload.children()[0]
+                        .with_value(|value| matches!(value, ValueView::Integer(1)))
+                );
+            });
+        })
+        .expect("successful Set Constraints exposes unknown response fields");
 }
 
 #[test]
@@ -218,10 +223,11 @@ fn failure_and_pending_do_not_expose_generic_response_ttlv() {
         let response = SetConstraintsResponse::try_from_response_item(response_item(message))
             .expect("complete Failure and Pending results remain typed");
         let mut callback_called = false;
-        response.with_ttlv(|_| {
+        let exposed = response.with_ttlv(|_| {
             callback_called = true;
         });
 
+        assert!(exposed.is_none());
         assert!(!callback_called);
     }
 }
@@ -239,23 +245,25 @@ fn response_retains_unknown_payload_after_source_message_is_dropped() {
             .expect("unknown Table 326 extension remains representable")
     };
 
-    response.with_ttlv(|item| {
-        let payload = item
-            .children()
-            .iter()
-            .find(|field| field.tag().raw() == 0x0042_007C)
-            .expect("owned response retains its payload");
-        payload.with_value(|value| {
-            let ValueView::Structure(payload) = value else {
-                panic!("Response Payload is a Structure");
-            };
-            assert_eq!(payload.children().len(), 1);
-            assert!(
-                payload.children()[0]
-                    .with_value(|value| matches!(value, ValueView::TextString(OPAQUE_VALUE)))
-            );
-        });
-    });
+    response
+        .with_ttlv(|item| {
+            let payload = item
+                .children()
+                .iter()
+                .find(|field| field.tag().raw() == 0x0042_007C)
+                .expect("owned response retains its payload");
+            payload.with_value(|value| {
+                let ValueView::Structure(payload) = value else {
+                    panic!("Response Payload is a Structure");
+                };
+                assert_eq!(payload.children().len(), 1);
+                assert!(
+                    payload.children()[0]
+                        .with_value(|value| matches!(value, ValueView::TextString(OPAQUE_VALUE)))
+                );
+            });
+        })
+        .expect("successful Set Constraints owns its response after source drop");
 }
 
 #[test]

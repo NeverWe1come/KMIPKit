@@ -2893,11 +2893,17 @@ fn copy_structure_handle(
             Ok(None)
         };
     }
+    copy_required_structure_handle(structure).map(Some)
+}
+
+fn copy_required_structure_handle(
+    structure: *mut kmipkit_ttlv_structure_t,
+) -> FfiResult<Structure> {
     let handle = reference_handle(structure, Kind::Structure)?;
     let HandleValue::Structure(source) = &handle.value else {
         return Err(ERROR_INVALID_INPUT);
     };
-    source.view().try_clone().map(Some).map_err(model_status)
+    source.view().try_clone().map_err(model_status)
 }
 
 fn copy_attribute_set_handle(
@@ -3864,9 +3870,7 @@ pub extern "C" fn kmipkit_client_batch_item_set_constraints(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let Some(constraints) = try_ffi!(copy_structure_handle(constraints, true)) else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
+        let constraints = try_ffi!(copy_required_structure_handle(constraints));
         *out = try_ffi!(batch_item_handle(ClientRequest::SetConstraints(
             SetConstraintsRequest::new(constraints),
         )));
