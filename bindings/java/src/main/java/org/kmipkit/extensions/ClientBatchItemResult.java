@@ -107,6 +107,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseReProvisionResponse(values);
     }
 
+    /** Returns the required identifier and owned TTLV only for a successful Register. */
+    public Optional<RegisterResponse> registerResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseRegister);
+        return parseRegisterResponse(values);
+    }
+
     /** Returns successful RNG Retrieve bytes in an owned, redacted response object. */
     public Optional<RngRetrieveResponse> rngRetrieveResponse() {
         if (resultStatus() != 0) return Optional.empty();
@@ -596,6 +605,25 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return "ReProvisionResponse[uniqueIdentifier="
                     + (uniqueIdentifier.isPresent() ? "redacted" : "absent")
                     + ", responseTtlv=redacted]";
+        }
+    }
+
+    /** Successful §6.1.43 response with its required returned identifier and complete TTLV. */
+    public static final class RegisterResponse implements AutoCloseable {
+        private final UniqueIdentifier uniqueIdentifier;
+        private final TtlvStructure responseTtlv;
+
+        private RegisterResponse(UniqueIdentifier uniqueIdentifier, TtlvStructure responseTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.responseTtlv = responseTtlv;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() {
+            return "RegisterResponse[uniqueIdentifier=redacted, responseTtlv=preserved]";
         }
     }
 
@@ -1577,6 +1605,39 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 identifier = Optional.empty();
             }
             return Optional.of(new ReProvisionResponse(identifier, responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    static Optional<RegisterResponse> parseRegisterResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 3, "native Register response is invalid");
+        long[] responseFields = requireLongArray(
+                tuple[0], 1, "native Register response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[2], 1, "native Register response is invalid");
+        boolean present;
+        try {
+            present = responsePresent(responseFields);
+        } catch (RuntimeException exception) {
+            closeReProvisionTtlv(responseTtlvHandle[0]);
+            throw exception;
+        }
+        if (!present) {
+            boolean hasUnexpectedFields = tuple[1] != null || responseTtlvHandle[0] != 0;
+            closeReProvisionTtlv(responseTtlvHandle[0]);
+            if (hasUnexpectedFields) {
+                throw new InvalidInputException("native absent Register response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (responseTtlvHandle[0] <= 0) {
+            throw new InvalidInputException("native Register response is invalid");
+        }
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            return Optional.of(new RegisterResponse(identifierRecord(tuple[1]), responseTtlv));
         } catch (RuntimeException exception) {
             responseTtlv.close();
             throw exception;

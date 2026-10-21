@@ -1588,6 +1588,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::recertify",
     ),
     (
+        "rust-observed-b19b78dcfccf22f4947c",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::register",
+    ),
+    (
         "rust-observed-b202ed7423a7d1d35f9f",
         "rust-kmipkit-client",
         "kmipkit_client::Client::rekey",
@@ -1718,6 +1723,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::recertify_response",
     ),
     (
+        "rust-observed-ea785d1fd4a9a87950a0",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::register_response",
+    ),
+    (
         "rust-observed-28e4f9dec1c7c47da0c3",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::rekey_key_pair_response",
@@ -1821,6 +1831,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-0d0bac2451886e74583a",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::Recertify",
+    ),
+    (
+        "rust-observed-3e8cb4486c0a6d525092",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Register",
     ),
     (
         "rust-observed-c04397047a73d2d560fd",
@@ -2536,6 +2551,21 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ab7fec008d9c62cd5adb",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RegisterRequest::new",
+    ),
+    (
+        "rust-observed-29dd201a735ff1169a8d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RegisterResponse",
+    ),
+    (
+        "rust-observed-2bbc9390376546c8da65",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RegisterResponse::unique_identifier",
+    ),
+    (
+        "rust-observed-5539fc05235622cdf5bc",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RegisterResponse::with_ttlv",
     ),
     (
         "rust-observed-f89901b2baab877ba993",

@@ -35,6 +35,9 @@ PARITY_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
     "tools/api_manifest/tests/test_register_parity_manifest.py",
 }
+NATIVE_INTEGRATION_EVIDENCE = (
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
+)
 EXPECTED_MAPPINGS = {
     "rust": {
         "kmipkit_client::Client::register",
@@ -94,6 +97,8 @@ class RegisterParityManifestTests(unittest.TestCase):
         self.assertNotIn("blockedReason", operation)
         self.assertEqual(LANGUAGES, set(operation["declarations"]))
         self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
+        self.assertIn(NATIVE_INTEGRATION_EVIDENCE, operation["parityEvidenceIds"])
+        self.assertTrue((ROOT / NATIVE_INTEGRATION_EVIDENCE).is_file())
         for evidence in PARITY_EVIDENCE:
             self.assertTrue((ROOT / evidence).is_file(), evidence)
 

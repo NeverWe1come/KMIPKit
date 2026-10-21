@@ -5952,11 +5952,7 @@ fn ffi_register_success_exposes_identifier_and_owned_ordered_ttlv_to_c() {
     let mut identifier = empty_unique_identifier_output_v1();
     assert_eq!(
         SUCCESS,
-        kmipkit_client_batch_item_response_register(
-            item,
-            &raw mut present,
-            &raw mut identifier,
-        )
+        kmipkit_client_batch_item_response_register(item, &raw mut present, &raw mut identifier,)
     );
     assert_eq!(present, 1);
     assert_response_identifier(&identifier, identifier_value);
@@ -5983,7 +5979,128 @@ fn ffi_register_success_exposes_identifier_and_owned_ordered_ttlv_to_c() {
             u64::try_from(identifier_value.len()).expect("test identifier fits the ABI"),
         )
     };
-    assert_eq!(result, 1, "C copies the successful identifier and ordered TTLV");
+    assert_eq!(
+        result, 1,
+        "C copies the successful identifier and ordered TTLV"
+    );
+}
+
+#[test]
+fn ffi_register_failure_and_pending_have_no_success_fields_and_keep_pending_correlation() {
+    let register_request = || {
+        let mut opaque_fields = Structure::new();
+        opaque_fields
+            .try_push(
+                Item::new(
+                    RawTag::new(0x0042_0059)
+                        .expect("Opaque Data Type tag fits")
+                        .try_checked()
+                        .expect("Opaque Data Type is allocated"),
+                    Value::enumeration(0x8000_0001),
+                )
+                .expect("Opaque Data Type item is valid"),
+            )
+            .expect("Opaque Data Type fits the structure");
+        opaque_fields
+            .try_push(
+                Item::new(
+                    RawTag::new(0x0042_005a)
+                        .expect("Opaque Data Value tag fits")
+                        .try_checked()
+                        .expect("Opaque Data Value is allocated"),
+                    Value::byte_string(b"register-request-secret".to_vec()),
+                )
+                .expect("Opaque Data Value item is valid"),
+            )
+            .expect("Opaque Data Value fits the structure");
+        ClientRequest::Register(RegisterRequest::new(
+            ObjectType::from_raw(8),
+            AttributeSet::try_new([]).expect("generic Opaque Object needs no attributes"),
+            Item::new(
+                RawTag::new(0x0042_005b)
+                    .expect("Opaque Object tag fits")
+                    .try_checked()
+                    .expect("Opaque Object is allocated"),
+                Value::structure(opaque_fields),
+            )
+            .expect("Opaque Object item is valid"),
+        ))
+    };
+
+    let failure = failed_cryptographic_item(register_request(), 0x03, b"register-failure");
+    let mut failure_metadata = kmipkit_client_batch_item_metadata_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_client_batch_item_metadata_v1_t>())
+            .expect("metadata size fits ABI field"),
+        abi_version: 1,
+        outcome_kind: 0,
+        result_status: 0,
+        has_result_reason: 0,
+        result_reason: 0,
+    };
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_metadata_v1(failure, &raw mut failure_metadata)
+    );
+    assert_eq!(failure_metadata.outcome_kind, BATCH_OUTCOME_COMPLETED);
+    assert_eq!(failure_metadata.result_status, 1);
+    assert_eq!(failure_metadata.has_result_reason, 1);
+    assert_eq!(failure_metadata.result_reason, 6);
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_register(failure, &raw mut present, &raw mut identifier,)
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_register_ttlv(
+            failure,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(failure);
+
+    let correlation = b"register-pending-correlation";
+    let pending_id = b"register-pending";
+    let pending_response = execute_single_abi_response_with_async(
+        register_request(),
+        pending_id,
+        pending_response_for_operation(0x03, pending_id, correlation),
+        Some(1),
+    )
+    .expect("the explicitly asynchronous Register batch permits Pending");
+    let pending = client_batch_item_response_from(pending_response);
+    assert_pending_abi_item_metadata(pending, correlation);
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_register(pending, &raw mut present, &raw mut identifier,)
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_register_ttlv(
+            pending,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(pending);
 }
 
 #[test]
