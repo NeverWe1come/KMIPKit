@@ -71,4 +71,11 @@ final class ReProvisionMappingTest {
                         new Object[] {new long[] {0}, new long[] {1},
                             new Object(), new long[] {0}}));
     }
+
+    @Test
+    void ttlvResponseBridgeRejectsAnInvalidNativeItemHandle() {
+        NativeExtensionRegistry.ensureLoaded();
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseReprovisionTtlv(0));
+    }
 }

@@ -1574,7 +1574,7 @@ final class ClientFacadeTlsIntegrationTest {
 
     // OASIS KMIP Specification v2.1 §6.1.48, Tables 313–315.
     @Test
-    void parameterlessReprovisionAcceptsSuccessWithoutIdentifierAndDoesNotPoll() throws Exception {
+    void parameterlessReprovisionPreservesOptionalIdentifierAndDoesNotPoll() throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
         byte[] clientCertificatePem = testFixture("client-cert.pem");
@@ -1583,11 +1583,12 @@ final class ClientFacadeTlsIntegrationTest {
         SSLServerSocket listener = deterministicMtlsListener(
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
         FutureTask<byte[]> peer = new FutureTask<>(
-                () -> serveOneResponse(listener, reprovisionResponseWithoutIdentifierMessage()));
+                () -> serveOneResponse(listener, reprovisionResponseWithOptionalIdentifiersMessage()));
         Thread peerThread = new Thread(peer, "kmipkit-java-reprovision-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
 
+        ClientBatchItemResult.ReProvisionResponse withIdentifier;
         ClientBatchItemResult.ReProvisionResponse reprovisioned;
         byte[] request;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
@@ -1604,23 +1605,37 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(extensions, transport);
                 ClientBatch batch = ClientBatch.create();
-                ClientBatchItem item = ClientBatchItem.reprovision(null, null)
-                        .withUniqueBatchItemId(uniqueBatchItemId(0))) {
-            batch.add(item);
+                ClientBatchItem firstItem = ClientBatchItem.reprovision(null, null)
+                        .withUniqueBatchItemId(uniqueBatchItemId(0));
+                ClientBatchItem secondItem = ClientBatchItem.reprovision(null, null)
+                        .withUniqueBatchItemId(uniqueBatchItemId(1))) {
+            batch.add(firstItem);
+            batch.add(secondItem);
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
-                    ClientBatchItemResult result = response.itemAt(0)) {
-                assertEquals(1, response.itemCount());
-                assertEquals(0x35, result.operation());
-                assertEquals(0, result.resultStatus());
-                reprovisioned = result.reprovisionResponse().orElseThrow();
+                    ClientBatchItemResult resultWithIdentifier = response.itemAt(0);
+                    ClientBatchItemResult resultWithoutIdentifier = response.itemAt(1)) {
+                assertEquals(2, response.itemCount());
+                assertEquals(0x35, resultWithIdentifier.operation());
+                assertEquals(0, resultWithIdentifier.resultStatus());
+                assertEquals(0x35, resultWithoutIdentifier.operation());
+                assertEquals(0, resultWithoutIdentifier.resultStatus());
+                assertNativeReprovisionTtlvBridge(resultWithIdentifier, true);
+                assertNativeReprovisionTtlvBridge(resultWithoutIdentifier, true);
+                withIdentifier = resultWithIdentifier.reprovisionResponse().orElseThrow();
+                reprovisioned = resultWithoutIdentifier.reprovisionResponse().orElseThrow();
             }
             request = peer.get(15, TimeUnit.SECONDS);
         } finally {
             listener.close();
         }
 
-        try (reprovisioned; TtlvStructureView responseTtlv = reprovisioned.responseTtlv().view()) {
+        try (withIdentifier;
+                TtlvStructureView identifierTtlv = withIdentifier.responseTtlv().view();
+                reprovisioned; TtlvStructureView responseTtlv = reprovisioned.responseTtlv().view()) {
+            assertEquals(
+                    "server-created-certificate", withIdentifier.uniqueIdentifier().orElseThrow().text());
             assertTrue(reprovisioned.uniqueIdentifier().isEmpty());
+            assertTagOrder(identifierTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
             assertEquals(4, responseTtlv.itemCount());
             assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
             try (TtlvItemView payload = responseTtlv.itemAt(3);
@@ -1630,7 +1645,7 @@ final class ClientFacadeTlsIntegrationTest {
             }
             assertTrue(reprovisioned.toString().contains("uniqueIdentifier=absent"));
         }
-        assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x35)));
+        assertEquals(2, countOccurrences(request, enumeration(0x42005c, 0x35)));
         assertEquals(0, countOccurrences(request, enumeration(0x42005c, 0x20)));
         assertTrue(peer.isDone());
     }
@@ -1691,11 +1706,13 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(3, response.itemCount());
                 assertEquals(0x04, success.operation());
                 assertEquals(0, success.resultStatus());
+                assertNativeReprovisionTtlvBridge(success, false);
                 successful = success.rekeyResponse().orElseThrow();
 
                 assertEquals(0x04, failure.operation());
                 assertEquals(1, failure.resultStatus());
                 assertEquals(5, failure.resultReason().orElseThrow());
+                assertNativeReprovisionTtlvBridge(failure, false);
                 assertTrue(failure.rekeyResponse().isEmpty());
 
                 assertEquals(0x04, pending.operation());
@@ -2450,6 +2467,32 @@ final class ClientFacadeTlsIntegrationTest {
         assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientExecuteWithOptions(
                 handle.get(), nativeBatch, NativeExtensionRegistry.codecLimitValues(CodecLimits.defaults()),
                 requestTimeouts));
+    }
+
+    private static void assertNativeReprovisionTtlvBridge(
+            ClientBatchItemResult result, boolean expectedPresent)
+            throws ReflectiveOperationException {
+        Field resultHandleField = ClientBatchItemResult.class.getDeclaredField("handle");
+        if (!resultHandleField.trySetAccessible()) {
+            throw new AssertionError(
+                    "batch item result handle must remain accessible to JNI bridge tests");
+        }
+        NativeHandle handle = (NativeHandle) resultHandleField.get(result);
+        Object[] tuple = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseReprovisionTtlv);
+        assertEquals(2, tuple.length);
+        long[] fields = (long[]) tuple[0];
+        long[] ttlvHandle = (long[]) tuple[1];
+        try {
+            assertEquals(expectedPresent ? 1 : 0, fields[0]);
+            if (expectedPresent) {
+                assertTrue(ttlvHandle[0] > 0);
+            } else {
+                assertEquals(0, ttlvHandle[0]);
+            }
+        } finally {
+            if (ttlvHandle[0] > 0) TtlvStructure.fromNative(ttlvHandle[0], null).close();
+        }
     }
 
     private static ClientBatchItem cryptoOperationItem(Object operation) throws Exception {
@@ -3321,16 +3364,22 @@ final class ClientFacadeTlsIntegrationTest {
         return structure(0x42007b, header, responseItem);
     }
 
-    private static byte[] reprovisionResponseWithoutIdentifierMessage() throws Exception {
+    private static byte[] reprovisionResponseWithOptionalIdentifiersMessage() throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
-                item(0x42000d, 2, integer(1)));
-        byte[] responseItem = structure(0x42000f,
+                item(0x42000d, 2, integer(2)));
+        byte[] identifierPayload = structure(0x42007c,
+                item(0x420094, 7, "server-created-certificate".getBytes(StandardCharsets.UTF_8)));
+        byte[] responseWithIdentifier = structure(0x42000f,
                 enumeration(0x42005c, 0x35),
                 item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0), identifierPayload);
+        byte[] responseWithoutIdentifier = structure(0x42000f,
+                enumeration(0x42005c, 0x35),
+                item(0x420093, 8, uniqueBatchItemId(1)),
                 enumeration(0x42007f, 0), structure(0x42007c));
-        return structure(0x42007b, header, responseItem);
+        return structure(0x42007b, header, responseWithIdentifier, responseWithoutIdentifier);
     }
 
     private static byte[] rekeyResponseMessage() throws Exception {
