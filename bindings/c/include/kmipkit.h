@@ -1039,7 +1039,7 @@ int32_t kmipkit_client_batch_item_set_defaults(kmipkit_ttlv_structure_t * defaul
 int32_t kmipkit_client_batch_item_response_set_defaults_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Creates one KMIP 2.1 §6.1.57 Validate request. Certificate structures, Unique Identifier records, and payload extensions are borrowed and copied.
  * Certificate, identifier, and extension order is preserved within each list. Null arrays are accepted only with zero counts; an omitted Validity Date remains absent.
- * Input array storage must not overlap out_item. Such overlap is rejected with InvalidInput before either region is written.
+ * Input array storage and referenced identifier text bytes must not overlap out_item. Such overlap is rejected with InvalidInput before either region is written.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return

@@ -2890,7 +2890,8 @@ pub extern "C" fn kmipkit_client_batch_item_log(
 ///
 /// Certificate structures and identifier records are borrowed and copied. A zero count accepts
 /// a null array, and omission of the validity date is preserved for server-side evaluation.
-/// Input array storage must not overlap `out_item`; overlapping ranges are rejected before writing.
+/// Input array storage and referenced identifier text bytes must not overlap `out_item`.
+/// Overlapping ranges are rejected before either region is written.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_validate(
     certificates: *mut *mut kmipkit_ttlv_structure_t,
@@ -2904,29 +2905,17 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
     out_item: *mut *mut kmipkit_client_batch_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if out_item.is_null()
-            || validate_input_overlaps_output(out_item, certificates, certificate_count)
-            || validate_input_overlaps_output(out_item, identifiers, identifier_count)
-            || validate_input_overlaps_output(out_item, payload_extensions, payload_extension_count)
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
+        try_ffi!(validate_validate_input_aliases(
+            out_item,
+            certificates,
+            certificate_count,
+            identifiers,
+            identifier_count,
+            payload_extensions,
+            payload_extension_count,
+        ));
         let out = out_slot!(out_item);
-        let Some(total_count) = certificate_count
-            .checked_add(identifier_count)
-            .and_then(|count| count.checked_add(payload_extension_count))
-        else {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        };
-        if total_count > MAX_VALIDATE_INPUT_ITEMS {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        }
-        if (certificate_count > 0 && certificates.is_null())
-            || (identifier_count > 0 && identifiers.is_null())
-            || (payload_extension_count > 0 && payload_extensions.is_null())
-            || has_validity_date > 1
-            || (has_validity_date == 0 && validity_date != 0)
-        {
+        if has_validity_date > 1 || (has_validity_date == 0 && validity_date != 0) {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         let Ok(certificate_count) = usize::try_from(certificate_count) else {
@@ -2938,17 +2927,17 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
         let Ok(payload_extension_count) = usize::try_from(payload_extension_count) else {
             return record_ffi_error(ERROR_RESOURCE_LIMIT);
         };
+        // SAFETY: the preflight checked the array pointer/count and rejected output overlap.
+        let identifier_records = if identifier_count == 0 {
+            &[][..]
+        } else {
+            unsafe { std::slice::from_raw_parts(identifiers, identifier_count) }
+        };
         // SAFETY: non-null arrays are checked above and both counts are capped before reading.
         let certificate_handles = if certificate_count == 0 {
             &[][..]
         } else {
             unsafe { std::slice::from_raw_parts(certificates, certificate_count) }
-        };
-        // SAFETY: non-null arrays are checked above and both counts are capped before reading.
-        let identifier_records = if identifier_count == 0 {
-            &[][..]
-        } else {
-            unsafe { std::slice::from_raw_parts(identifiers, identifier_count) }
         };
         // SAFETY: non-null arrays are checked above and the combined count is capped before reading.
         let extension_handles = if payload_extension_count == 0 {
@@ -3016,6 +3005,73 @@ fn validate_input_overlaps_output<T>(
         return true;
     };
     let Some(input_bytes) = input_count.checked_mul(std::mem::size_of::<T>()) else {
+        return true;
+    };
+    if input_bytes == 0 {
+        return false;
+    }
+    let output_start = output.cast::<u8>() as usize;
+    let input_start = input.cast::<u8>() as usize;
+    let Some(output_end) =
+        output_start.checked_add(std::mem::size_of::<*mut kmipkit_client_batch_item_t>())
+    else {
+        return true;
+    };
+    let Some(input_end) = input_start.checked_add(input_bytes) else {
+        return true;
+    };
+    output_start < input_end && input_start < output_end
+}
+
+fn validate_validate_input_aliases(
+    output: *mut *mut kmipkit_client_batch_item_t,
+    certificates: *const *mut kmipkit_ttlv_structure_t,
+    certificate_count: u64,
+    identifiers: *const kmipkit_unique_identifier_v1_t,
+    identifier_count: u64,
+    payload_extensions: *const *mut kmipkit_ttlv_item_t,
+    payload_extension_count: u64,
+) -> FfiResult<()> {
+    if output.is_null()
+        || validate_input_overlaps_output(output, certificates, certificate_count)
+        || validate_input_overlaps_output(output, identifiers, identifier_count)
+        || validate_input_overlaps_output(output, payload_extensions, payload_extension_count)
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let total_count = certificate_count
+        .checked_add(identifier_count)
+        .and_then(|count| count.checked_add(payload_extension_count))
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+    if total_count > MAX_VALIDATE_INPUT_ITEMS {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    if (certificate_count > 0 && certificates.is_null())
+        || (identifier_count > 0 && identifiers.is_null())
+        || (payload_extension_count > 0 && payload_extensions.is_null())
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let identifier_records = input_array(identifiers, identifier_count, MAX_VALIDATE_INPUT_ITEMS)?;
+    if identifier_records.iter().any(|identifier| {
+        identifier.kind == crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+            && validate_input_bytes_overlap_output(
+                output,
+                identifier.text_data,
+                identifier.text_length,
+            )
+    }) {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    Ok(())
+}
+
+fn validate_input_bytes_overlap_output(
+    output: *mut *mut kmipkit_client_batch_item_t,
+    input: *const u8,
+    input_length: u64,
+) -> bool {
+    let Ok(input_bytes) = usize::try_from(input_length) else {
         return true;
     };
     if input_bytes == 0 {
