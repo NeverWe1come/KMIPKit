@@ -588,6 +588,22 @@ fn successful_cryptographic_item(
     item
 }
 
+fn client_batch_item_response_from(
+    response: ClientBatchResponse,
+) -> *mut kmipkit_client_batch_item_response_t {
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item)
+    );
+    kmipkit_client_batch_response_release(response_handle);
+    item
+}
+
 #[test]
 fn ffi_rng_request_builders_preserve_signed_length_and_required_seed_presence() {
     let mut retrieve = ptr::null_mut();
@@ -749,6 +765,52 @@ fn ffi_rng_response_c_consumer_rejects_overlapping_output_regions() {
     });
     kmipkit_client_batch_item_response_release(retrieve_item);
     kmipkit_client_batch_item_response_release(seed_item);
+}
+
+#[test]
+fn ffi_rng_response_c_consumer_hides_failure_and_pending_success_fields() {
+    let failure_retrieve = failed_cryptographic_item(
+        ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),
+        0x25,
+        b"rng-retrieve-failure",
+    );
+    let failure_seed = failed_cryptographic_item(
+        ClientRequest::RngSeed(RngSeedRequest::new(SecretBytes::new(b"seed".to_vec()))),
+        0x26,
+        b"rng-seed-failure",
+    );
+    let retrieve_correlation = b"retrieve-pending-correlation";
+    let seed_correlation = b"seed-pending-correlation";
+    let pending_retrieve_response = execute_single_abi_response_with_async(
+        ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),
+        b"rng-retrieve-pending",
+        pending_response_for_operation(0x25, b"rng-retrieve-pending", retrieve_correlation),
+        Some(1),
+    )
+    .expect("the asynchronous RNG Retrieve batch permits Pending");
+    let pending_seed_response = execute_single_abi_response_with_async(
+        ClientRequest::RngSeed(RngSeedRequest::new(SecretBytes::new(b"seed".to_vec()))),
+        b"rng-seed-pending",
+        pending_response_for_operation(0x26, b"rng-seed-pending", seed_correlation),
+        Some(1),
+    )
+    .expect("the asynchronous RNG Seed batch permits Pending");
+    let pending_retrieve = client_batch_item_response_from(pending_retrieve_response);
+    let pending_seed = client_batch_item_response_from(pending_seed_response);
+
+    for item in [
+        failure_retrieve,
+        pending_retrieve,
+        failure_seed,
+        pending_seed,
+    ] {
+        // SAFETY: the compiled C consumer receives a live response handle and only checks that
+        // failure/Pending calls return empty success-only output records.
+        assert_eq!(1, unsafe {
+            kmipkit_client_abi_c_consumer_validates_absent_rng_success_fields(item)
+        });
+        kmipkit_client_batch_item_response_release(item);
+    }
 }
 
 fn assert_response_span(span: kmipkit_byte_span_v1_t, expected: &[u8]) {
@@ -5501,6 +5563,9 @@ unsafe extern "C" {
         expected_data_length: i32,
     ) -> i32;
     fn kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validates_absent_rng_success_fields(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_failed_check_response(
