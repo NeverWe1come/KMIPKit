@@ -5784,6 +5784,102 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_build_revoke_request(void)
+{
+    static const uint8_t audit_message[] = "C revoke audit";
+    kmipkit_revocation_reason_t *reason = 0;
+    kmipkit_revoke_request_t *request = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+
+    if (kmipkit_revocation_reason_create(
+            UINT32_MAX, 1, audit_message,
+            (uint64_t)(sizeof(audit_message) - 1), &reason) != 0 ||
+        reason == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_revoke_request_create(0, reason, 0, 0, &request) != 0 ||
+        request == 0) {
+        reason = 0;
+        goto cleanup;
+    }
+    reason = 0;
+    if (kmipkit_client_batch_item_revoke(request, &item) != 0 || item == 0) {
+        request = 0;
+        goto cleanup;
+    }
+    request = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_revoke_request_release(request);
+    kmipkit_revocation_reason_release(reason);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_validate_revoke_response(
+    kmipkit_client_batch_item_response_t *item,
+    const uint8_t *expected_identifier,
+    uint64_t expected_identifier_length) {
+    static const uint32_t response_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    static const uint32_t payload_tags[] = {UINT32_C(0x420094), UINT32_C(0x541234)};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = 0;
+    uint8_t ttlv_present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *payload_item = 0;
+    kmipkit_ttlv_value_view_t *payload_value = 0;
+    kmipkit_ttlv_structure_view_t *payload_view = 0;
+    uint8_t payload_type = 0;
+    int result = 0;
+
+    if (item == 0 || expected_identifier == 0) {
+        goto cleanup;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_revoke(
+            item, &present, &identifier) != 0 || present != 1 ||
+        !response_identifier_matches(
+            &identifier, expected_identifier, expected_identifier_length) ||
+        kmipkit_client_batch_item_response_revoke_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 ||
+        ttlv_present != 1 || response_ttlv == 0) {
+        goto cleanup;
+    }
+
+    /* The complete TTLV copy remains valid after its response-item owner closes. */
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+        !check_view_tags(
+            view, response_tags,
+            (uint64_t)(sizeof(response_tags) / sizeof(response_tags[0]))) ||
+        kmipkit_ttlv_structure_view_item_at(view, 3, &payload_item) != 0 ||
+        kmipkit_ttlv_item_view_value(payload_item, &payload_value) != 0 ||
+        kmipkit_ttlv_value_view_type(payload_value, &payload_type) != 0 ||
+        payload_type != KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ||
+        kmipkit_ttlv_value_view_structure(payload_value, &payload_view) != 0 ||
+        !check_view_tags(
+            payload_view, payload_tags,
+            (uint64_t)(sizeof(payload_tags) / sizeof(payload_tags[0]))) ) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_view_release(payload_view);
+    kmipkit_ttlv_value_view_release(payload_value);
+    kmipkit_ttlv_item_view_release(payload_item);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_rejects_register_output_aliases(
     kmipkit_client_batch_item_response_t *item) {
     kmipkit_unique_identifier_v1_t identifier = {0};

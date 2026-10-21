@@ -15,9 +15,9 @@ use kmipkit_protocol::{
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OperationData, Pkcs11Request, ReProvisionRequest, RecertifyRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RngRetrieveRequest, RngSeedRequest,
-    SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
-    TicketType, UniqueIdentifier,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference,
+    StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -5802,6 +5802,12 @@ unsafe extern "C" {
         expected_identifier: *const u8,
         expected_identifier_length: u64,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_build_revoke_request() -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_revoke_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expected_identifier: *const u8,
+        expected_identifier_length: u64,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_rejects_register_output_aliases(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -6047,6 +6053,134 @@ fn ffi_register_c_consumer_rejects_overlapping_outputs_without_writes() {
 
     assert_eq!(result, 1, "overlap rejection preserves each output region");
     kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_revoke_request_and_response_are_available_to_compiled_c_consumer() {
+    // SAFETY: the compiled public-header consumer creates, transfers, and releases its own handles.
+    assert_eq!(1, unsafe {
+        kmipkit_client_abi_c_consumer_build_revoke_request()
+    });
+
+    let identifier = b"c-revoke-success";
+    let item = successful_cryptographic_item(
+        ClientRequest::Revoke(RevokeRequest::new(RevocationReason::from_raw(2))),
+        0x13,
+        b"revoke-response-item",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, identifier),
+            ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad]),
+        ],
+    );
+    // SAFETY: the C consumer borrows this valid success result, copies its TTLV, then releases it.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_validate_revoke_response(
+            item,
+            identifier.as_ptr(),
+            u64::try_from(identifier.len()).expect("identifier length fits u64"),
+        )
+    };
+    assert_eq!(
+        1, result,
+        "the compiled C consumer observes typed Revoke success"
+    );
+}
+
+#[test]
+fn ffi_revoke_request_preserves_raw_reason_nested_message_and_optional_fields() {
+    let message = b"revoke audit marker";
+    let mut reason = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_revocation_reason_create(
+            u32::MAX,
+            1,
+            message.as_ptr(),
+            u64::try_from(message.len()).expect("message length fits u64"),
+            &raw mut reason,
+        )
+    );
+    let mut request = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_revoke_request_create(ptr::null(), reason, 0, 0, &raw mut request)
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_revoke(request, &raw mut item)
+    );
+
+    let handle = reference_handle(item, Kind::BatchItem)
+        .expect("the typed Revoke request returns a batch-item handle");
+    let HandleValue::BatchItem(item_value) = &handle.value else {
+        panic!("the C ABI returns a typed batch item");
+    };
+    let ClientRequest::Revoke(request_value) = item_value.request() else {
+        panic!("the batch item contains the Revoke request");
+    };
+    assert_eq!(request_value.revocation_reason().raw(), u32::MAX);
+    assert_eq!(
+        request_value.revocation_message(),
+        Some("revoke audit marker")
+    );
+    assert_eq!(request_value.unique_identifier(), None);
+    assert_eq!(request_value.compromise_occurrence_date(), None);
+    kmipkit_client_batch_item_release(item);
+
+    let mut compromise_reason = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_revocation_reason_create(2, 0, ptr::null(), 0, &raw mut compromise_reason)
+    );
+    let identifier = import_test_identifier(b"key-to-revoke");
+    let mut dated_request = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_revoke_request_create(
+            &raw const identifier,
+            compromise_reason,
+            1,
+            -1,
+            &raw mut dated_request,
+        )
+    );
+    let mut dated_item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_revoke(dated_request, &raw mut dated_item)
+    );
+    let dated_handle = reference_handle(dated_item, Kind::BatchItem)
+        .expect("the key-compromise request accepts the optional date");
+    let HandleValue::BatchItem(dated_value) = &dated_handle.value else {
+        panic!("the dated request remains a typed batch item");
+    };
+    let ClientRequest::Revoke(dated_request) = dated_value.request() else {
+        panic!("the dated batch item contains Revoke");
+    };
+    assert_eq!(
+        dated_request.unique_identifier(),
+        Some(&UniqueIdentifier::TextString("key-to-revoke".to_owned()))
+    );
+    assert_eq!(dated_request.compromise_occurrence_date(), Some(-1));
+    kmipkit_client_batch_item_release(dated_item);
+
+    let mut invalid_reason = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_revocation_reason_create(4, 0, ptr::null(), 0, &raw mut invalid_reason)
+    );
+    let mut invalid_request = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_revoke_request_create(ptr::null(), invalid_reason, 1, 1, &raw mut invalid_request)
+    );
+    let mut invalid_item = ptr::null_mut();
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_revoke(invalid_request, &raw mut invalid_item)
+    );
+    assert!(invalid_item.is_null());
 }
 
 fn register_request_fixture() -> ClientRequest {
