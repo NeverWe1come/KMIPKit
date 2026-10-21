@@ -14,9 +14,9 @@ use kmipkit_protocol::{
     DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OperationData, Pkcs11Request, RecertifyRequest, RekeyKeyPairRequest,
-    RekeyRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    Ticket, TicketType, UniqueIdentifier,
+    ObtainLeaseRequest, OperationData, Pkcs11Request, ReProvisionRequest, RecertifyRequest,
+    RekeyKeyPairRequest, RekeyRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference,
+    StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -5596,6 +5596,198 @@ fn ffi_rekey_accessors_leave_failure_results_absent() {
     assert_eq!(
         SUCCESS,
         kmipkit_client_batch_item_response_rekey_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(item);
+}
+
+// OASIS KMIP Specification v2.1 §6.1.48, Tables 313–315.
+#[test]
+fn ffi_reprovision_preserves_optional_success_identifier_and_owned_ttlv() {
+    let unknown = [0xde, 0xad, 0x00, 0xff];
+    let item = successful_cryptographic_item(
+        ClientRequest::ReProvision(ReProvisionRequest::new()),
+        0x35,
+        b"reprovision-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, b"replacement-certificate"),
+            ttlv_item(0x0054_1234, 0x08, &unknown),
+        ],
+    );
+
+    let mut present = 0;
+    let mut identifier_present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision(
+            item,
+            &raw mut present,
+            &raw mut identifier_present,
+            &raw mut identifier,
+        )
+    );
+    assert_eq!(present, 1);
+    assert_eq!(identifier_present, 1);
+    assert_response_identifier(&identifier, b"replacement-certificate");
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    let mut response_view = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_structure_view(response_ttlv, &raw mut response_view)
+    );
+    let mut item_count = 0;
+    assert_eq!(
+        SUCCESS,
+        kmipkit_ttlv_structure_view_item_count(response_view, &raw mut item_count)
+    );
+    assert_eq!(item_count, 4, "the copy includes common response metadata");
+    kmipkit_ttlv_structure_view_release(response_view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_reprovision_keeps_success_present_when_optional_identifier_is_absent() {
+    let item = successful_cryptographic_item(
+        ClientRequest::ReProvision(ReProvisionRequest::new()),
+        0x35,
+        b"reprovision-without-identifier",
+        vec![ttlv_item(0x0054_1234, 0x08, &[0xde, 0xad, 0x00, 0xff])],
+    );
+
+    let mut present = 0;
+    let mut identifier_present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision(
+            item,
+            &raw mut present,
+            &raw mut identifier_present,
+            &raw mut identifier,
+        )
+    );
+    assert_eq!(present, 1);
+    assert_eq!(identifier_present, 0);
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_reprovision_failure_exposes_neither_success_identifier_nor_ttlv() {
+    let item = failed_cryptographic_item(
+        ClientRequest::ReProvision(ReProvisionRequest::new()),
+        0x35,
+        b"reprovision-failure",
+    );
+
+    let mut present = 9;
+    let mut identifier_present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision(
+            item,
+            &raw mut present,
+            &raw mut identifier_present,
+            &raw mut identifier,
+        )
+    );
+    assert_eq!((present, identifier_present), (0, 0));
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 0);
+    assert!(response_ttlv.is_null());
+    kmipkit_client_batch_item_response_release(item);
+}
+
+#[test]
+fn ffi_reprovision_pending_exposes_neither_success_identifier_nor_ttlv() {
+    let batch_item_id = b"reprovision-pending";
+    let correlation = [0x00, 0xff, 0x80, 0x7f];
+    let response = execute_single_abi_response_with_async(
+        ClientRequest::ReProvision(ReProvisionRequest::new()),
+        batch_item_id,
+        pending_response_for_operation(0x35, batch_item_id, &correlation),
+        Some(1),
+    )
+    .expect("the async Re-Provision request permits a Pending response");
+    let response_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(response)),
+    );
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_response_item_at(response_handle, 0, &raw mut item)
+    );
+    kmipkit_client_batch_response_release(response_handle);
+
+    let mut present = 9;
+    let mut identifier_present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision(
+            item,
+            &raw mut present,
+            &raw mut identifier_present,
+            &raw mut identifier,
+        )
+    );
+    assert_eq!((present, identifier_present), (0, 0));
+    assert_eq!(identifier.kind, 0);
+    assert!(identifier.text_data.is_null());
+
+    let mut ttlv_present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_reprovision_ttlv(
             item,
             &raw mut ttlv_present,
             &raw mut response_ttlv,
