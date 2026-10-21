@@ -5835,8 +5835,25 @@ int kmipkit_client_abi_c_consumer_validate_revoke_response(
     kmipkit_ttlv_structure_view_t *payload_view = 0;
     uint8_t payload_type = 0;
     int result = 0;
+    union {
+        uint8_t present;
+        kmipkit_unique_identifier_v1_t identifier;
+    } overlapping_output = {0};
 
     if (item == 0 || expected_identifier == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_response_revoke(
+            item, 0, &identifier) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_revoke(
+            0, &present, &identifier) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_revoke(
+            item, &overlapping_output.present, &overlapping_output.identifier) !=
+            T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_revoke_ttlv(
+            item, 0, &response_ttlv) != T076_ERROR_INVALID_INPUT ||
+        kmipkit_client_batch_item_response_revoke_ttlv(
+            0, &ttlv_present, &response_ttlv) != T076_ERROR_INVALID_INPUT) {
         goto cleanup;
     }
     identifier.struct_size = (uint32_t)sizeof(identifier);

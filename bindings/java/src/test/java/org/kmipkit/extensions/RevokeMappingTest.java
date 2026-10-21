@@ -36,12 +36,26 @@ final class RevokeMappingTest {
         try (var reason = RevocationReason.create(0xffff_ffffL, "operator audit")) {
             assertEquals(0xffff_ffffL, reason.rawCode());
             assertEquals(Optional.of("operator audit"), reason.message());
+            assertTrue(reason.toString().contains("redacted"));
+            assertFalse(reason.toString().contains("operator audit"));
             try (var request = RevokeRequest.create(
                     UniqueIdentifier.textString("object-to-revoke"), reason, null);
                     var item = ClientBatchItem.revoke(request)) {
                 assertNotNull(item);
             }
         }
+    }
+
+    @Test
+    void rejectsInvalidNativeReasonCodesAndMissingRequiredReason() {
+        NativeExtensionRegistry.ensureLoaded();
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.revocationReasonCreate(-1, null));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.revocationReasonCreate(0x1_0000_0000L, null));
+        assertThrows(InvalidInputException.class,
+                () -> RevokeRequest.create(null, null, null));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItem.revoke(null));
     }
 
     @Test
@@ -96,6 +110,28 @@ final class RevokeMappingTest {
                 InvalidInputException.class,
                 () -> ClientBatchItemResult.parseRevokeResponse(
                         new Object[] {new long[] {0}, new Object(), new long[] {0}}));
+    }
+
+    @Test
+    void malformedRevokeSuccessReleasesItsOwnedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseRevokeResponse(
+                new Object[] {new long[] {1}, new Object(), new long[] {responseTtlv}}));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
+    @Test
+    void absentRevokeResponseRejectsAndReleasesUnexpectedOwnedTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseRevokeResponse(
+                new Object[] {new long[] {0}, null, new long[] {responseTtlv}}));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
     }
 
     @Test

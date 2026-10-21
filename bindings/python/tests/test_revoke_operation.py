@@ -220,6 +220,130 @@ def test_revoke_success_response_preserves_identifier_and_owned_ttlv(monkeypatch
     assert owned.closed
 
 
+def test_revoke_absent_response_requires_absent_identifier(monkeypatch) -> None:
+    def typed(_item: object, present: object, output: object) -> int:
+        present[0] = 0
+        output.kind = 0
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_revoke=typed),
+    )
+    assert client._revoke_response(SimpleNamespace(_pointer=lambda: object())) is None
+
+    def inconsistent(_item: object, present: object, output: object) -> int:
+        present[0] = 0
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_revoke=inconsistent),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._revoke_response(SimpleNamespace(_pointer=lambda: object()))
+
+
+def test_revoke_response_rejects_invalid_presence_and_missing_identifier(monkeypatch) -> None:
+    def invalid_presence(_item: object, present: object, _output: object) -> int:
+        present[0] = 2
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_revoke=invalid_presence),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._revoke_response(SimpleNamespace(_pointer=lambda: object()))
+
+    def missing_identifier(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output.kind = 0
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_revoke=missing_identifier),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._revoke_response(SimpleNamespace(_pointer=lambda: object()))
+
+
+def test_revoke_response_releases_malformed_ttlv_handle(monkeypatch) -> None:
+    identifier = b"revoke-response"
+    identifier_buffer = ffi.new("uint8_t[]", identifier)
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 43)
+    released: list[object] = []
+
+    def typed(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        output.text_data = identifier_buffer
+        output.text_length = len(identifier)
+        return 0
+
+    def mismatched_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0
+        output[0] = native_ttlv
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_revoke=typed,
+            kmipkit_client_batch_item_response_revoke_ttlv=mismatched_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._revoke_response(SimpleNamespace(_pointer=lambda: object()))
+    assert released == [native_ttlv]
+
+
+def test_revoke_response_releases_handle_when_ttlv_wrapper_fails(monkeypatch) -> None:
+    identifier = b"revoke-response"
+    identifier_buffer = ffi.new("uint8_t[]", identifier)
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 44)
+    released: list[object] = []
+
+    def typed(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        output.text_data = identifier_buffer
+        output.text_length = len(identifier)
+        return 0
+
+    def get_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output[0] = native_ttlv
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_revoke=typed,
+            kmipkit_client_batch_item_response_revoke_ttlv=get_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("invalid native handle")),
+    )
+
+    with pytest.raises(RuntimeError, match="invalid native handle"):
+        client._revoke_response(SimpleNamespace(_pointer=lambda: object()))
+    assert released == [native_ttlv]
+
+
 def test_revoke_native_mtls_preserves_nested_request_and_success_response() -> None:
     port, received, failures, peer = _start_revoke_mtls_peer()
     configuration = extensions.create_client_configuration(
