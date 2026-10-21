@@ -145909,6 +145909,10 @@
       "declarationId": "T067:constructor:java",
       "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem setDefaults()",
+        "public static org.kmipkit.extensions.ClientBatchItem setDefaults(org.kmipkit.ttlv.TtlvStructure)"
+      ],
       "kind": "java-member",
       "languageMappings": {
         "c": {

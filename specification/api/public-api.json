@@ -297773,6 +297773,10 @@
         "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
         "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem setDefaults()",
+        "public static org.kmipkit.extensions.ClientBatchItem setDefaults(org.kmipkit.ttlv.TtlvStructure)"
       ]
     },
     {
