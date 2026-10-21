@@ -59,6 +59,7 @@ def test_batch_item_result_preserves_legacy_positional_field_order() -> None:
     assert result.check_response is check_response
     assert result.obtain_lease_response is None
     field_order = client.BatchItemResult.__match_args__
+    assert field_order.index("revoke_response") < field_order.index("set_defaults_response")
     assert field_order.index("obtain_lease_response") < field_order.index("encrypt_response")
     assert field_order.index("encrypt_response") < field_order.index("decrypt_response")
 
