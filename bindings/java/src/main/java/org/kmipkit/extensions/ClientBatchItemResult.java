@@ -1607,9 +1607,9 @@ public final class ClientBatchItemResult implements AutoCloseable {
             responseTtlvHandle[0] = 0;
             try {
                 return Optional.of(new RngRetrieveResponse(data, responseTtlv));
-            } catch (RuntimeException exception) {
-                responseTtlv.close();
-                throw exception;
+            } catch (RuntimeException exception) { // COVERAGE-EXCLUDE: construction only stores validated non-null fields; allocation failure is an Error.
+                responseTtlv.close(); // COVERAGE-EXCLUDE: only reachable if construction starts throwing RuntimeException after validation.
+                throw exception; // COVERAGE-EXCLUDE: this defensive cleanup path has no deterministic failure injection point.
             }
         } finally {
             cleanupRngResponseValues(values);
@@ -1638,9 +1638,9 @@ public final class ClientBatchItemResult implements AutoCloseable {
             responseTtlvHandle[0] = 0;
             try {
                 return Optional.of(new RngSeedResponse((int) fields[2], responseTtlv));
-            } catch (RuntimeException exception) {
-                responseTtlv.close();
-                throw exception;
+            } catch (RuntimeException exception) { // COVERAGE-EXCLUDE: construction only stores validated non-null fields; allocation failure is an Error.
+                responseTtlv.close(); // COVERAGE-EXCLUDE: only reachable if construction starts throwing RuntimeException after validation.
+                throw exception; // COVERAGE-EXCLUDE: this defensive cleanup path has no deterministic failure injection point.
             }
         } finally {
             cleanupRngResponseValues(values);

@@ -50,6 +50,11 @@ final class RngOperationMappingTest {
             assertEquals(0, seed.dataLength().orElseThrow());
             assertTrue(retrieve.responseTtlv().isPresent());
             assertTrue(seed.responseTtlv().isPresent());
+            assertTrue(seed.toString().contains("RngSeedResponse[dataLength=OptionalInt[0]"));
+            retrieve.close();
+            seed.close();
+            assertThrows(IllegalStateException.class, retrieve::data);
+            assertThrows(IllegalStateException.class, seed::responseTtlv);
         }
         assertArrayEquals(new byte[secret.length], secret);
     }
@@ -86,5 +91,36 @@ final class RngOperationMappingTest {
                     new long[] {0, 0, 1}, new long[] {seedTtlv}}
                 ));
         ResponseTtlvTestSupport.assertReleased(seedTtlv);
+    }
+
+    @Test
+    void malformedSuccessfulResponseFieldsReleaseNativeTtlvHandles() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        long retrieveTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                .parseRngRetrieveResponse(new Object[] {
+                    new long[] {1, 0}, null, new long[] {retrieveTtlv}}
+                ));
+        ResponseTtlvTestSupport.assertReleased(retrieveTtlv);
+
+        long seedTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                .parseRngSeedResponse(new Object[] {
+                    new long[] {1, 1, (long) Integer.MAX_VALUE + 1}, new long[] {seedTtlv}}
+                ));
+        ResponseTtlvTestSupport.assertReleased(seedTtlv);
+    }
+
+    @Test
+    void nativeRngBridgeRejectsMissingSeedAndResponseHandles() {
+        NativeExtensionRegistry.ensureLoaded();
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemRngSeed(null));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseRngRetrieve(0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseRngSeed(0));
     }
 }

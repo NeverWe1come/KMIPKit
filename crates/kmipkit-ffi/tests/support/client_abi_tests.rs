@@ -739,6 +739,185 @@ fn ffi_rng_seed_response_preserves_zero_data_length_and_generic_ttlv() {
 }
 
 #[test]
+fn ffi_rng_response_getters_fail_closed_for_mismatched_handles_and_operations() {
+    let wrong_variant = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::Structure(Structure::new()),
+    );
+    let retrieve_item = successful_cryptographic_item(
+        ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),
+        0x25,
+        b"rng-retrieve-getter-mismatch",
+        vec![ttlv_item(0x0042_00c2, 0x08, b"retrieve")],
+    );
+    let retrieve_owner = reference_handle(retrieve_item, Kind::ClientBatchItemResponse)
+        .expect("successful RNG Retrieve response remains registered");
+    let HandleValue::ClientBatchItemResponse { response, .. } = &retrieve_owner.value else {
+        panic!("the RNG Retrieve handle stores a batch response and item index");
+    };
+    let invalid_index = make_handle(
+        Kind::ClientBatchItemResponse,
+        HandleValue::ClientBatchItemResponse {
+            response: Arc::clone(response),
+            index: usize::MAX,
+        },
+    );
+
+    for (item, expected_status) in [
+        (wrong_variant, ERROR_INVALID_INPUT),
+        (invalid_index, ERROR_INTERNAL),
+    ] {
+        let mut present = 9;
+        let mut data_present = 9;
+        let mut data = byte_span(b"sentinel");
+        assert_eq!(
+            expected_status,
+            kmipkit_client_batch_item_response_rng_retrieve(
+                item,
+                &raw mut present,
+                &raw mut data_present,
+                &raw mut data,
+            )
+        );
+        assert_eq!((present, data_present), (0, 0));
+        assert!(data.data.is_null());
+        assert_eq!(data.length, 0);
+
+        let mut ttlv_present = 9;
+        let mut response_ttlv = ptr::dangling_mut();
+        assert_eq!(
+            expected_status,
+            kmipkit_client_batch_item_response_rng_retrieve_ttlv(
+                item,
+                &raw mut ttlv_present,
+                &raw mut response_ttlv,
+            )
+        );
+        assert_eq!(ttlv_present, 0);
+        assert!(response_ttlv.is_null());
+
+        let mut seed_present = 9;
+        let mut data_length_present = 9;
+        let mut data_length = -1;
+        assert_eq!(
+            expected_status,
+            kmipkit_client_batch_item_response_rng_seed(
+                item,
+                &raw mut seed_present,
+                &raw mut data_length_present,
+                &raw mut data_length,
+            )
+        );
+        assert_eq!((seed_present, data_length_present, data_length), (0, 0, 0));
+
+        let mut seed_ttlv_present = 9;
+        let mut seed_ttlv = ptr::dangling_mut();
+        assert_eq!(
+            expected_status,
+            kmipkit_client_batch_item_response_rng_seed_ttlv(
+                item,
+                &raw mut seed_ttlv_present,
+                &raw mut seed_ttlv,
+            )
+        );
+        assert_eq!(seed_ttlv_present, 0);
+        assert!(seed_ttlv.is_null());
+        kmipkit_client_batch_item_response_release(item);
+    }
+}
+
+#[test]
+fn ffi_rng_response_getters_hide_fields_from_the_other_operation() {
+    let retrieve_item = successful_cryptographic_item(
+        ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),
+        0x25,
+        b"rng-retrieve-getter-cross-operation",
+        vec![ttlv_item(0x0042_00c2, 0x08, b"retrieve")],
+    );
+    let seed_item = successful_cryptographic_item(
+        ClientRequest::RngSeed(RngSeedRequest::new(SecretBytes::new(b"seed".to_vec()))),
+        0x26,
+        b"rng-seed-getter-cross-operation",
+        vec![ttlv_item(0x0042_00d5, 0x02, &0_i32.to_be_bytes())],
+    );
+    for (item, expect_retrieve) in [(retrieve_item, true), (seed_item, false)] {
+        let mut present = 9;
+        let mut data_present = 9;
+        let mut data = byte_span(b"sentinel");
+        assert_eq!(
+            SUCCESS,
+            kmipkit_client_batch_item_response_rng_retrieve(
+                item,
+                &raw mut present,
+                &raw mut data_present,
+                &raw mut data,
+            )
+        );
+        assert_eq!(present, u8::from(expect_retrieve));
+        assert_eq!(data_present, u8::from(expect_retrieve));
+        if expect_retrieve {
+            assert_response_span(data, b"retrieve");
+        } else {
+            assert!(data.data.is_null());
+            assert_eq!(data.length, 0);
+        }
+
+        let mut ttlv_present = 9;
+        let mut response_ttlv = ptr::null_mut();
+        assert_eq!(
+            SUCCESS,
+            kmipkit_client_batch_item_response_rng_retrieve_ttlv(
+                item,
+                &raw mut ttlv_present,
+                &raw mut response_ttlv,
+            )
+        );
+        assert_eq!(ttlv_present, u8::from(expect_retrieve));
+        if response_ttlv.is_null() {
+            assert!(!expect_retrieve);
+        } else {
+            assert!(expect_retrieve);
+            kmipkit_ttlv_structure_release(response_ttlv);
+        }
+
+        let mut seed_present = 9;
+        let mut data_length_present = 9;
+        let mut data_length = -1;
+        assert_eq!(
+            SUCCESS,
+            kmipkit_client_batch_item_response_rng_seed(
+                item,
+                &raw mut seed_present,
+                &raw mut data_length_present,
+                &raw mut data_length,
+            )
+        );
+        assert_eq!(seed_present, u8::from(!expect_retrieve));
+        assert_eq!(data_length_present, u8::from(!expect_retrieve));
+        assert_eq!(data_length, 0);
+
+        let mut seed_ttlv_present = 9;
+        let mut seed_ttlv = ptr::null_mut();
+        assert_eq!(
+            SUCCESS,
+            kmipkit_client_batch_item_response_rng_seed_ttlv(
+                item,
+                &raw mut seed_ttlv_present,
+                &raw mut seed_ttlv,
+            )
+        );
+        assert_eq!(seed_ttlv_present, u8::from(!expect_retrieve));
+        if seed_ttlv.is_null() {
+            assert!(expect_retrieve);
+        } else {
+            assert!(!expect_retrieve);
+            kmipkit_ttlv_structure_release(seed_ttlv);
+        }
+        kmipkit_client_batch_item_response_release(item);
+    }
+}
+
+#[test]
 fn ffi_rng_response_c_consumer_rejects_overlapping_output_regions() {
     let retrieve_item = successful_cryptographic_item(
         ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),

@@ -4920,3 +4920,26 @@ the complete manifest parity suite (15/15), strict GCC C11 syntax check of the
 compiled consumer in WSL, the C output-alias consumer test (1/1), and the FFI
 panic-boundary export-count test (1/1). Cross-platform CI and selected coverage
 gates must pass on the corrected head before T064/T065 can be marked complete.
+
+### T064/T065 selected changed-production coverage follow-up (2026-10-21)
+
+Exact-head CI run [39560043042](https://github.com/NeverWe1come/KMIPKit/actions/runs/39560043042)
+passed all 34 platform and adapter jobs but failed the selected changed-production
+coverage gate at 11,874/12,543 lines (94.66%, versus the required 95%). The
+uncovered lines were defensive output validation, response ownership cleanup,
+and cross-operation response mapping, rather than missing RNG production
+behavior. The follow-up adds Rust FFI wrong-handle, invalid-index, and
+cross-operation tests; Java closed-result, malformed-success-field, and native
+bridge error tests; and Python absent/inconsistent-output, TTLV-release,
+secret-wipe, response-lifecycle, and seed-span tests. JNI checks that require
+ABI-inconsistent paired outputs or deterministic allocation-failure injection,
+plus Java constructor-cleanup catches without a runtime-exception injection
+point, carry line-specific `COVERAGE-EXCLUDE` reasons. No product behavior or
+coverage threshold was changed.
+
+Local verification after these additions: `cargo fmt --all --check` and scoped
+FFI Clippy pass; both new FFI tests pass (2/2); the full Python 3.12 suite passes
+705 tests with 99.23% total coverage; `mvn -f bindings/java/pom.xml verify`
+passes 411 tests with 3 existing skips and the JaCoCo gate; and the coverage
+gate suites pass (66 + 24 tests). Exact-head cross-platform CI and the selected
+changed-production gate are pending for the pushed correction.

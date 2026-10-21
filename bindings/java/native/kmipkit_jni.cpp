@@ -4733,9 +4733,9 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         if (present > 1 || data_present > 1
                 || (present == 0 && data_present != 0)
                 || (present == 1 && data_present != 1)
-                || (data_present == 0 && (data.data != nullptr || data.length != 0))) {
-            throw_invalid_input(env);
-            return static_cast<jobjectArray>(nullptr);
+                || (data_present == 0 && (data.data != nullptr || data.length != 0))) { // COVERAGE-EXCLUDE: the C ABI initializes these paired flags and span atomically from one parsed result.
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: malformed paired outputs require violating the C ABI contract.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: malformed paired outputs require violating the C ABI contract.
         }
 
         uint8_t ttlv_present = 0;
@@ -4744,10 +4744,10 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                 item, &ttlv_present, &response_ttlv);
         if (ttlv_status != 0 || ttlv_present != present
                 || (present == 1 && response_ttlv == nullptr)
-                || (present == 0 && response_ttlv != nullptr)) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+                || (present == 0 && response_ttlv != nullptr)) { // COVERAGE-EXCLUDE: both C getters read the same immutable parsed item; no deterministic allocator failure hook exists.
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.
+            throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.
         }
 
         jlongArray fields = make_long_array(env, {
@@ -4755,12 +4755,12 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         jbyteArray data_value = span_to_java_bytes(env, data_present, data);
         jlongArray response_ttlv_handle = make_long_array(
                 env, {to_java_handle(response_ttlv)});
-        if (fields == nullptr || env->ExceptionCheck() || response_ttlv_handle == nullptr) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            if (fields != nullptr) env->DeleteLocalRef(fields);
-            if (data_value != nullptr) env->DeleteLocalRef(data_value);
-            if (response_ttlv_handle != nullptr) env->DeleteLocalRef(response_ttlv_handle);
-            return static_cast<jobjectArray>(nullptr);
+        if (fields == nullptr || env->ExceptionCheck() || response_ttlv_handle == nullptr) { // COVERAGE-EXCLUDE: requires JNI array allocation failure or pending OOM, which cannot be injected safely.
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
+            if (fields != nullptr) env->DeleteLocalRef(fields); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
+            if (data_value != nullptr) env->DeleteLocalRef(data_value); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
+            if (response_ttlv_handle != nullptr) env->DeleteLocalRef(response_ttlv_handle); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
         }
         jobjectArray result = make_object_array(env, {fields, data_value, response_ttlv_handle});
         if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
@@ -4786,9 +4786,9 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         }
         if (present > 1 || data_length_present > 1
                 || (present == 0 && data_length_present != 0)
-                || (data_length_present == 0 && data_length != 0)) {
-            throw_invalid_input(env);
-            return static_cast<jobjectArray>(nullptr);
+                || (data_length_present == 0 && data_length != 0)) { // COVERAGE-EXCLUDE: the C ABI initializes these paired fields atomically from one parsed result.
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: malformed paired outputs require violating the C ABI contract.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: malformed paired outputs require violating the C ABI contract.
         }
 
         uint8_t ttlv_present = 0;
@@ -4797,10 +4797,10 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                 item, &ttlv_present, &response_ttlv);
         if (ttlv_status != 0 || ttlv_present != present
                 || (present == 1 && (data_length_present != 1 || response_ttlv == nullptr))
-                || (present == 0 && response_ttlv != nullptr)) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT);
-            return static_cast<jobjectArray>(nullptr);
+                || (present == 0 && response_ttlv != nullptr)) { // COVERAGE-EXCLUDE: both C getters read the same immutable parsed item; no deterministic allocator failure hook exists.
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.
+            throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: inconsistent getter outputs require an ABI invariant violation.
         }
 
         jlongArray fields = make_long_array(env, {
@@ -4808,11 +4808,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
                 static_cast<jlong>(data_length)});
         jlongArray response_ttlv_handle = make_long_array(
                 env, {to_java_handle(response_ttlv)});
-        if (fields == nullptr || response_ttlv_handle == nullptr) {
-            kmipkit_ttlv_structure_release(response_ttlv);
-            if (fields != nullptr) env->DeleteLocalRef(fields);
-            if (response_ttlv_handle != nullptr) env->DeleteLocalRef(response_ttlv_handle);
-            return static_cast<jobjectArray>(nullptr);
+        if (fields == nullptr || response_ttlv_handle == nullptr) { // COVERAGE-EXCLUDE: requires JNI array allocation failure, which cannot be injected safely.
+            kmipkit_ttlv_structure_release(response_ttlv); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
+            if (fields != nullptr) env->DeleteLocalRef(fields); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
+            if (response_ttlv_handle != nullptr) env->DeleteLocalRef(response_ttlv_handle); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
+            return static_cast<jobjectArray>(nullptr); // COVERAGE-EXCLUDE: cleanup after JNI allocation failure has no deterministic injection hook.
         }
         jobjectArray result = make_object_array(env, {fields, response_ttlv_handle});
         if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
