@@ -215,6 +215,73 @@ class RngParityManifestTests(unittest.TestCase):
                 )
                 self.assertTrue(methods.issubset(declared), methods - declared)
 
+    def test_rng_binding_audit_artifacts_are_accounted_for(self) -> None:
+        exclusions = {
+            (row["packageId"], row["exportName"]): row
+            for row in self.manifest["approvedExclusions"]
+        }
+        java_bridge = {
+            f"org.kmipkit.NativeExtensionRegistry.{name}"
+            for name in (
+                "clientBatchItemRngRetrieve",
+                "clientBatchItemRngSeed",
+                "clientBatchItemResponseRngRetrieve",
+                "clientBatchItemResponseRngSeed",
+            )
+        }
+        java_formatters = {
+            "org.kmipkit.extensions.ClientBatchItemResult.RngRetrieveResponse.toString",
+            "org.kmipkit.extensions.ClientBatchItemResult.RngSeedResponse.toString",
+        }
+        python_generated = {
+            f"kmipkit.client.{class_name}.{member}"
+            for class_name, members in {
+                "RngRetrieveResponse": {
+                    "__dataclass_fields__",
+                    "__dataclass_params__",
+                    "__eq__",
+                    "__hash__",
+                    "__init__",
+                    "__match_args__",
+                    "__repr__",
+                    "__slots__",
+                },
+                "RngSeedResponse": {
+                    "__dataclass_fields__",
+                    "__dataclass_params__",
+                    "__delattr__",
+                    "__eq__",
+                    "__hash__",
+                    "__init__",
+                    "__match_args__",
+                    "__repr__",
+                    "__setattr__",
+                    "__slots__",
+                },
+            }.items()
+            for member in members
+        }
+        for package_id, names in (
+            ("java-kmipkit", java_bridge | java_formatters),
+            ("python-kmipkit", python_generated),
+        ):
+            with self.subTest(package=package_id):
+                missing = {
+                    name for name in names if (package_id, name) not in exclusions
+                }
+                self.assertEqual(set(), missing)
+
+        declarations = {
+            row["exportName"]: row for row in self.manifest["publicDeclarations"]
+        }
+        for name in (
+            "kmipkit.client.BatchItemResult.rng_retrieve_response",
+            "kmipkit.client.BatchItemResult.rng_seed_response",
+            "kmipkit.client.RngRetrieveResponse.data",
+        ):
+            with self.subTest(python_kind=name):
+                self.assertEqual("python-export", declarations[name]["kind"])
+
 
 if __name__ == "__main__":
     unittest.main()
