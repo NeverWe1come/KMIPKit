@@ -185,3 +185,55 @@ def test_rng_seed_response_preserves_zero_length_and_ttlv(monkeypatch) -> None:
     assert response.response_ttlv is owned_ttlv
     response.close()
     assert owned_ttlv.closed
+
+
+@pytest.mark.parametrize(
+    ("present_value", "data_present_value", "data_value", "length"),
+    [
+        (2, 0, ffi.NULL, 0),
+        (0, 0, ffi.new("uint8_t[]", b"x"), 1),
+        (1, 1, ffi.NULL, 1),
+        (1, 0, ffi.NULL, 0),
+    ],
+)
+def test_rng_retrieve_rejects_malformed_native_output(
+    monkeypatch, present_value, data_present_value, data_value, length
+) -> None:
+    def typed(_item, present, data_present, data):
+        present[0] = present_value
+        data_present[0] = data_present_value
+        data.data = data_value
+        data.length = length
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_rng_retrieve=typed),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._rng_retrieve_response(_response_item())
+
+
+@pytest.mark.parametrize(
+    ("present_value", "length_present_value", "data_length_value"),
+    [(2, 0, 0), (0, 0, 1), (1, 2, 0)],
+)
+def test_rng_seed_rejects_malformed_native_output(
+    monkeypatch, present_value, length_present_value, data_length_value
+) -> None:
+    def typed(_item, present, length_present, data_length):
+        present[0] = present_value
+        length_present[0] = length_present_value
+        data_length[0] = data_length_value
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_rng_seed=typed),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._rng_seed_response(_response_item())

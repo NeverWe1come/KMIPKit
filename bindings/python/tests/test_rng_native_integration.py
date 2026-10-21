@@ -14,8 +14,10 @@ from kmipkit import client, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _BATCH_IDS = (b"item-0", b"item-1")
+_ASYNC_BATCH_IDS = (b"item-0", b"item-1", b"item-2", b"item-3")
 _SEED = b"\x00\x81\xff"
 _RETRIEVED = b"KMIP_RNG_RETRIEVE_SECRET_SENTINEL"
+_CORRELATION = b"\x00\xa1\x7f"
 
 
 def _ttlv_item(tag: int, item_type: int, value: bytes) -> bytes:
@@ -60,6 +62,53 @@ def _rng_response_message() -> bytes:
     return _ttlv_structure(0x42007B, header, retrieve, seed)
 
 
+def _rng_failure_pending_response_message() -> bytes:
+    version = _ttlv_structure(
+        0x420069,
+        _ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
+        _ttlv_item(0x42006B, 2, struct.pack(">i", 1)),
+    )
+    header = _ttlv_structure(
+        0x42007A,
+        version,
+        _ttlv_item(0x420092, 9, struct.pack(">q", 1)),
+        _ttlv_item(0x42000D, 2, struct.pack(">i", 4)),
+    )
+    retrieve_failure = _ttlv_structure(
+        0x42000F,
+        _enumeration(0x42005C, 0x25),
+        _ttlv_item(0x420093, 8, _ASYNC_BATCH_IDS[0]),
+        _enumeration(0x42007F, 1),
+        _enumeration(0x42007E, 5),
+    )
+    retrieve_pending = _ttlv_structure(
+        0x42000F,
+        _enumeration(0x42005C, 0x25),
+        _ttlv_item(0x420093, 8, _ASYNC_BATCH_IDS[1]),
+        _enumeration(0x42007F, 2),
+        _ttlv_item(0x420006, 8, _CORRELATION),
+        _ttlv_structure(0x42007C),
+    )
+    seed_failure = _ttlv_structure(
+        0x42000F,
+        _enumeration(0x42005C, 0x26),
+        _ttlv_item(0x420093, 8, _ASYNC_BATCH_IDS[2]),
+        _enumeration(0x42007F, 1),
+        _enumeration(0x42007E, 5),
+    )
+    seed_pending = _ttlv_structure(
+        0x42000F,
+        _enumeration(0x42005C, 0x26),
+        _ttlv_item(0x420093, 8, _ASYNC_BATCH_IDS[3]),
+        _enumeration(0x42007F, 2),
+        _ttlv_item(0x420006, 8, _CORRELATION),
+        _ttlv_structure(0x42007C),
+    )
+    return _ttlv_structure(
+        0x42007B, header, retrieve_failure, retrieve_pending, seed_failure, seed_pending
+    )
+
+
 def _read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
     output = bytearray()
     while len(output) < length:
@@ -92,7 +141,9 @@ def _contains_bytes(actual: bytes, expected: bytes) -> bool:
     )
 
 
-def _start_mtls_peer() -> tuple[int, list[bytes], queue.Queue[BaseException], threading.Thread, socket.socket]:
+def _start_mtls_peer(
+    response_message: bytes | None = None,
+) -> tuple[int, list[bytes], queue.Queue[BaseException], threading.Thread, socket.socket]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
     listener.listen(1)
@@ -114,7 +165,7 @@ def _start_mtls_peer() -> tuple[int, list[bytes], queue.Queue[BaseException], th
                 assert stream.version() == "TLSv1.3"
                 assert stream.getpeercert(binary_form=True)
                 received_requests.append(_read_ttlv_frame(stream))
-                stream.sendall(_rng_response_message())
+                stream.sendall(response_message or _rng_response_message())
         except OSError as failure:
             if listener.fileno() != -1:
                 peer_failures.put(failure)
@@ -217,6 +268,61 @@ def test_rng_operations_cross_native_cffi_over_mutual_tls() -> None:
             retrieve_response.close()
         if seed_response is not None:
             seed_response.close()
+        if batch_result is not None:
+            batch_result.close()
+        listener.close()
+        peer.join(timeout=10)
+        if peer.is_alive():
+            raise AssertionError("the loopback mTLS peer did not finish")
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
+def test_rng_failure_and_pending_cross_native_cffi_without_success_values() -> None:
+    port, received_requests, peer_failures, peer, listener = _start_mtls_peer(
+        _rng_failure_pending_response_message()
+    )
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    batch_result: client.BatchResult | None = None
+    try:
+        with configuration, client.Client.create(configuration, _transport(port)) as kmip_client:
+            batch = client.Batch.create()
+            batch.set_asynchronous_indicator(1)
+            batch.add_item(extensions.with_unique_batch_item_id(
+                extensions.client_batch_item_rng_retrieve(8), _ASYNC_BATCH_IDS[0]
+            ))
+            batch.add_item(extensions.with_unique_batch_item_id(
+                extensions.client_batch_item_rng_retrieve(8), _ASYNC_BATCH_IDS[1]
+            ))
+            batch.add_item(extensions.with_unique_batch_item_id(
+                extensions.client_batch_item_rng_seed(b"\x00\xff"), _ASYNC_BATCH_IDS[2]
+            ))
+            batch.add_item(extensions.with_unique_batch_item_id(
+                extensions.client_batch_item_rng_seed(b"\x01"), _ASYNC_BATCH_IDS[3]
+            ))
+            with ttlv.codec_limits_defaults() as limits:
+                batch_result = kmip_client.execute(batch, limits)
+
+        assert len(received_requests) == 1
+        assert peer_failures.empty()
+        assert batch_result is not None and len(batch_result.items) == 4
+        retrieve_failure, retrieve_pending, seed_failure, seed_pending = batch_result.items
+        assert retrieve_failure.operation == 0x25 and retrieve_failure.result_status == 1
+        assert retrieve_failure.result_reason == 5
+        assert retrieve_failure.rng_retrieve_response() is None
+        assert retrieve_pending.operation == 0x25 and retrieve_pending.result_status == 2
+        assert retrieve_pending.pending_correlation_value == _CORRELATION
+        assert retrieve_pending.rng_retrieve_response() is None
+        assert seed_failure.operation == 0x26 and seed_failure.result_status == 1
+        assert seed_failure.result_reason == 5
+        assert seed_failure.rng_seed_response() is None
+        assert seed_pending.operation == 0x26 and seed_pending.result_status == 2
+        assert seed_pending.pending_correlation_value == _CORRELATION
+        assert seed_pending.rng_seed_response() is None
+    finally:
         if batch_result is not None:
             batch_result.close()
         listener.close()

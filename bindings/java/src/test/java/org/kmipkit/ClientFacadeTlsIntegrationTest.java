@@ -1833,6 +1833,90 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
+    void rngFailureAndPendingResponsesCrossNativeJniBridgeWithoutTypedValues() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry("kmipkit-test-server", testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD, new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, rngFailurePendingResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-rng-failure-pending-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(1);
+            batch.add(ClientBatchItem.rngRetrieve(8).withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.rngRetrieve(8).withUniqueBatchItemId(uniqueBatchItemId(1)));
+            batch.add(ClientBatchItem.rngSeed(new byte[] {0x00, (byte) 0xff})
+                    .withUniqueBatchItemId(uniqueBatchItemId(2)));
+            batch.add(ClientBatchItem.rngSeed(new byte[] {0x01})
+                    .withUniqueBatchItemId(uniqueBatchItemId(3)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult retrieveFailure = response.itemAt(0);
+                    ClientBatchItemResult retrievePending = response.itemAt(1);
+                    ClientBatchItemResult seedFailure = response.itemAt(2);
+                    ClientBatchItemResult seedPending = response.itemAt(3)) {
+                assertEquals(4, response.itemCount());
+                assertEquals(0x25, retrieveFailure.operation());
+                assertEquals(1, retrieveFailure.resultStatus());
+                assertTrue(retrieveFailure.outcomeKind().isCompleted());
+                assertEquals(5, retrieveFailure.resultReason().orElseThrow());
+                assertTrue(retrieveFailure.rngRetrieveResponse().isEmpty());
+
+                assertEquals(0x25, retrievePending.operation());
+                assertEquals(2, retrievePending.resultStatus());
+                assertTrue(retrievePending.outcomeKind().isPending());
+                assertArrayEquals(CORRELATION,
+                        retrievePending.pendingCorrelationValue().orElseThrow());
+                assertTrue(retrievePending.rngRetrieveResponse().isEmpty());
+
+                assertEquals(0x26, seedFailure.operation());
+                assertEquals(1, seedFailure.resultStatus());
+                assertTrue(seedFailure.outcomeKind().isCompleted());
+                assertEquals(5, seedFailure.resultReason().orElseThrow());
+                assertTrue(seedFailure.rngSeedResponse().isEmpty());
+
+                assertEquals(0x26, seedPending.operation());
+                assertEquals(2, seedPending.resultStatus());
+                assertTrue(seedPending.outcomeKind().isPending());
+                assertArrayEquals(CORRELATION, seedPending.pendingCorrelationValue().orElseThrow());
+                assertTrue(seedPending.rngSeedResponse().isEmpty());
+            }
+            assertTrue(peer.get(12, TimeUnit.SECONDS).length > 0);
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test
     void rekeyKeyPairResponseUsesNativeJniBridgeAndPreservesBothIdentifiers() throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
@@ -3503,6 +3587,27 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] seed = structure(0x42000f, enumeration(0x42005c, 0x26),
                 item(0x420093, 8, uniqueBatchItemId(1)), enumeration(0x42007f, 0), seedPayload);
         return structure(0x42007b, header, retrieve, seed);
+    }
+
+    private static byte[] rngFailurePendingResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(4)));
+        byte[] retrieveFailure = structure(0x42000f, enumeration(0x42005c, 0x25),
+                item(0x420093, 8, uniqueBatchItemId(0)), enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5));
+        byte[] retrievePending = structure(0x42000f, enumeration(0x42005c, 0x25),
+                item(0x420093, 8, uniqueBatchItemId(1)), enumeration(0x42007f, 2),
+                item(0x420006, 8, CORRELATION), structure(0x42007c));
+        byte[] seedFailure = structure(0x42000f, enumeration(0x42005c, 0x26),
+                item(0x420093, 8, uniqueBatchItemId(2)), enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5));
+        byte[] seedPending = structure(0x42000f, enumeration(0x42005c, 0x26),
+                item(0x420093, 8, uniqueBatchItemId(3)), enumeration(0x42007f, 2),
+                item(0x420006, 8, CORRELATION), structure(0x42007c));
+        return structure(0x42007b, header, retrieveFailure, retrievePending,
+                seedFailure, seedPending);
     }
 
     private static byte[] rekeyKeyPairResponseMessage() throws Exception {

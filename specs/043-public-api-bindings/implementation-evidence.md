@@ -4859,3 +4859,35 @@ Windows builds emit existing optional AWS-LC `stdalign_check.c` and NASM probe w
 - GitHub Actions run [39548406302](https://github.com/NeverWe1come/KMIPKit/actions/runs/39548406302) completed successfully on exact head `eca851e50a565c8f3d85ad8c99eaeb0023286432`.
 - All 34 required checks passed, including selected-scope coverage, cross-platform Rust/C/Java/Python checks, documentation traceability, dependency policy, and parser fuzz smoke. Two schedule-only checks were skipped as expected.
 - This closes T061's pending exact-head CI and coverage condition. No conformance, interoperability, profile-support, or certification claim is made.
+
+## T064/T065 — RNG Retrieve and RNG Seed API parity (2026-10-21)
+
+T064 maps OASIS KMIP 2.1 §6.1.49, Tables 316–318; T065 maps §6.1.50,
+Tables 319–321, under the approved KMIPKIT-0041 contract. Rust, C, Java/JNI,
+and Python/CFFI expose both request constructors and typed success responses,
+including complete ordered generic response TTLV. Retrieve preserves signed
+Data Length and returns secret bytes through owned, redacted response storage.
+Seed requires a present Data field, preserves arbitrary bytes, wipes
+KMIPKit-owned request staging memory, and accepts a server Data Length of
+zero. Failure and Pending retain common result/correlation metadata without
+success-only values, implicit polling, or retries. The Python RNG Seed path
+uses a private client-CFFI span helper; the shared span helper retains its
+legacy CFFI context so existing Re-Certify callers remain compatible. Caller-
+owned Python `bytes` and Java byte arrays remain runtime-managed copies and
+cannot be guaranteed zeroized by KMIPKit.
+
+| Stage | Commit | Verification | Result |
+|---|---|---|---|
+| Red | `0b736281`, `1e2ec4db`, `53eb571b`, `08f0f0dc`, `8695ba83`, `706fb1e2`, `66094c20`, `c4b3ca4d`, `e32d0f6e` | RNG manifest/parity contracts, generated C consumer contracts, Java/JNI and Python/CFFI integration cases, Re-Certify context regression, explicit Java/Python audit-artifact coverage, and C output-alias consumer cases | Expected failures established missing four-language declarations and mapping, missing JNI/CFFI execution paths, the CFFI record-context mismatch, missing Java/Python manifest accounting, and alias acceptance in the four C output getters before the overlap guard. |
+| Green | `1056c3c9`, `b9f16033`, `14b322f0` | Rust protocol/client/FFI RNG suites; compiled C consumer; Java JNI and Python CFFI paths; generated manifest audit reconciliation; output-alias guard before mutable output references | PASS locally on Windows: protocol 7+8, client 4+4, four focused FFI cases and compiled C consumer; the four RNG Java/JNI and Python/CFFI declarations match the public manifest, and the C output accessors reject overlapping regions before writes. Export audit still reports four pre-existing Re-Provision/T061 Java misses outside this task. |
+| Refactor / evidence | This commit | `cargo fmt --all --check`; `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings`; `python -B -m unittest tools.api_manifest.tests.test_rng_parity_manifest -v`; `python tools/api_manifest/generate.py --check`; `git diff --check`; Maven `RngOperationMappingTest` and complete `ClientFacadeTlsIntegrationTest`; Python RNG unit and native integration tests using `KMIPKIT_NATIVE_LIBRARY=target/debug/kmipkit_ffi.dll` | PASS locally on Windows: Rust formatting and scoped Clippy; manifest tests 4/4 and all 12 generated outputs; Java mapping 4/4 and TLS 1.3/mTLS integration class 26/26; Python RNG operation plus native mTLS tests 15/15. The current debug DLL contains the RNG Retrieve export; stale wheel-build DLL copies do not and must not be used for this focused run. The export audit's remaining four Re-Provision/T061 Java rows are unchanged baseline misses. Independent final QA/security re-review, exact-head cross-platform CI, and selected coverage gates remain pending. |
+
+The Re-Certify regression test verifies that the existing shared CFFI path is
+unchanged while the new Seed path uses its matching private ABI context. This
+is an adapter-boundary compatibility correction only; T058's operation
+contract and task status are unchanged. The approved RNG specification has no
+direct official OASIS test-case IDs. These results are table-derived API
+parity evidence, not official-vector, interoperability, profile-support,
+formal-conformance, certification, or FIPS evidence. KMIPKIT-0041 T031 remains
+gated until the 0043 mapping is integrated; required two-server interoperability
+and full release gates remain outstanding.

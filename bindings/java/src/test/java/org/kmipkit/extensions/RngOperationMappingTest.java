@@ -53,4 +53,38 @@ final class RngOperationMappingTest {
         }
         assertArrayEquals(new byte[secret.length], secret);
     }
+
+    @Test
+    void malformedNativeResponseTuplesAreRejectedAndOwnedOutputsAreReleased() {
+        NativeExtensionRegistry.ensureLoaded();
+        assertTrue(ClientBatchItemResult.parseRngRetrieveResponse(
+                new Object[] {new long[] {0, 0}, null, new long[] {0}}).isEmpty());
+        assertTrue(ClientBatchItemResult.parseRngSeedResponse(
+                new Object[] {new long[] {0, 0, 0}, new long[] {0}}).isEmpty());
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                .parseRngRetrieveResponse(new Object[] {
+                    new long[] {2, 0}, null, new long[] {0}}
+                ));
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                .parseRngSeedResponse(new Object[] {
+                    new long[] {1, 2, 0}, new long[] {0}}
+                ));
+
+        byte[] unexpectedSecret = SECRET_SENTINEL.getBytes(StandardCharsets.UTF_8);
+        long retrieveTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                .parseRngRetrieveResponse(new Object[] {
+                    new long[] {0, 0}, unexpectedSecret, new long[] {retrieveTtlv}}
+                ));
+        assertArrayEquals(new byte[unexpectedSecret.length], unexpectedSecret);
+        ResponseTtlvTestSupport.assertReleased(retrieveTtlv);
+
+        long seedTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
+                .parseRngSeedResponse(new Object[] {
+                    new long[] {0, 0, 1}, new long[] {seedTtlv}}
+                ));
+        ResponseTtlvTestSupport.assertReleased(seedTtlv);
+    }
 }
