@@ -3723,6 +3723,15 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve(
     out_data: *mut crate::kmipkit_byte_span_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_data_present.is_null()
+            || out_data.is_null()
+            || ffi_output_ranges_overlap(out_present, out_data_present)
+            || ffi_output_ranges_overlap(out_present, out_data)
+            || ffi_output_ranges_overlap(out_data_present, out_data)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let present = scalar_out!(out_present);
         let data_present = scalar_out!(out_data_present);
         let data = scalar_out!(out_data);
@@ -3762,6 +3771,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_retrieve_ttlv(
     out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;
@@ -3798,6 +3813,15 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_seed(
     out_data_length: *mut i32,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_data_length_present.is_null()
+            || out_data_length.is_null()
+            || ffi_output_ranges_overlap(out_present, out_data_length_present)
+            || ffi_output_ranges_overlap(out_present, out_data_length)
+            || ffi_output_ranges_overlap(out_data_length_present, out_data_length)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let present = scalar_out!(out_present);
         let data_length_present = scalar_out!(out_data_length_present);
         let data_length = scalar_out!(out_data_length);
@@ -3836,6 +3860,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_rng_seed_ttlv(
     out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;

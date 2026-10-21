@@ -739,10 +739,14 @@ fn ffi_rng_response_c_consumer_rejects_overlapping_output_regions() {
 
     // SAFETY: the compiled C consumer receives live, independently owned handles and only uses
     // valid object addresses plus deliberately aliased output regions.
-    assert_eq!(1, unsafe { kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(retrieve_item) });
+    assert_eq!(1, unsafe {
+        kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(retrieve_item)
+    });
     // SAFETY: the compiled C consumer receives live, independently owned handles and only uses
     // valid object addresses plus deliberately aliased output regions.
-    assert_eq!(1, unsafe { kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(seed_item) });
+    assert_eq!(1, unsafe {
+        kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(seed_item)
+    });
     kmipkit_client_batch_item_response_release(retrieve_item);
     kmipkit_client_batch_item_response_release(seed_item);
 }
