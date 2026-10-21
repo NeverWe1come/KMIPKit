@@ -72,16 +72,16 @@ changes to this table.
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 | `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
 
-Of the **56** KMIP `client_1_0` operation rows, **23 / 56** remain `blocked`.
+Of the **56** KMIP `client_1_0` operation rows, **22 / 56** remain `blocked`.
 Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
 Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
 request and response mappings are recorded; `declared` is not evidence of
 complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Twenty-four operation mappings
+or implementation code elsewhere in the repository. Twenty-five operation mappings
 are `verified`: Certify, Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get,
 Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key, and
-Re-key Key Pair. Logout sends the caller-supplied
+Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key,
+Re-key Key Pair, and Re-Provision. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;
 see [credential sessions](credential-sessions.md). The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
@@ -132,7 +132,18 @@ C's typed text spans are borrowed until the response item is released, while
 caller-owned copy. Failure and Pending retain shared status, reason,
 correlation, and delivery metadata without successful pair fields or automatic
 follow-up. This mapping does not claim conformance, interoperability, profile
-support, or certification. Log preserves its request message and exposes the complete response
+support, or certification. Re-Provision maps §6.1.48 Tables 313–315. Java uses
+`ClientBatchItem.reprovision(...)`; Python uses
+`extensions.client_batch_item_reprovision(...)`; and C uses
+`kmipkit_client_batch_item_reprovision`. The optional Certificate Request and
+Certificate are mutually exclusive, and omitting both leaves credential
+creation to the server. A successful result exposes the optional Unique
+Identifier and complete ordered response TTLV; Java and Python callers close
+the owned response, while C's identifier span is borrowed until the response
+item is released and its TTLV accessor returns a caller-owned copy. Failure and
+Pending expose only common result metadata, without success fields, raw bodies,
+or automatic follow-up. This is API mapping evidence, not a conformance claim.
+Log preserves its request message and exposes the complete response
 TTLV through its typed result in all four languages. Login maps the optional
 Table 253 fields and exposes the raw Ticket Type, Ticket Value, and ordered
 generic Ticket TTLV from a successful response. C's

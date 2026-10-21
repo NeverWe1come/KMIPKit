@@ -76,15 +76,15 @@ tabla.
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **23 / 56** siguen en
+De las **56** filas de operaciones KMIP `client_1_0`, **22 / 56** siguen en
 estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
 Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
 Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Veinticuatro mapeos de operación están `verified`: Certify,
+parte del repositorio. Veinticinco mapeos de operación están `verified`: Certify,
 Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get, Get Constraints, Get Usage
-Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key y Re-key Key Pair. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
+Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key, Re-key Key Pair y Re-Provision. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. Ping mapea la petición y la respuesta correcta
@@ -137,7 +137,18 @@ devuelve una copia independiente propiedad del llamador. Failure y Pending
 conservan el estado, el motivo, la correlación y los metadatos de entrega
 comunes, sin campos de éxito del par ni seguimientos automáticos. Este mapeo
 no afirma conformidad, interoperabilidad, compatibilidad con perfiles ni
-certificación. Log conserva el mensaje
+certificación. Re-Provision mapea §6.1.48, Tablas 313–315. Java usa
+`ClientBatchItem.reprovision(...)`; Python usa
+`extensions.client_batch_item_reprovision(...)`; y C usa
+`kmipkit_client_batch_item_reprovision`. Certificate Request y Certificate
+son opcionales y mutuamente excluyentes; si se omiten ambos, el servidor crea
+la credencial. Una respuesta correcta expone el Unique Identifier opcional y
+el TTLV completo y ordenado. Los llamadores de Java y Python cierran la
+respuesta propia; en C, el span del identificador es prestado hasta liberar el
+elemento de respuesta y el accessor TTLV devuelve una copia propiedad del
+llamador. Failure y Pending exponen solo los metadatos comunes, sin campos de
+éxito, cuerpos sin procesar ni seguimientos automáticos. Es evidencia del
+mapeo de API, no una afirmación de conformidad. Log conserva el mensaje
 de solicitud y expone el TTLV completo de respuesta mediante el resultado tipado
 en los cuatro lenguajes. Login mapea los campos opcionales de la Tabla 253 y
 expone el Ticket Type raw, el Ticket Value y el TTLV genérico ordenado de una
