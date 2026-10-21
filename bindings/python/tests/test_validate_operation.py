@@ -37,6 +37,39 @@ def test_validate_builder_rejects_missing_lists_and_out_of_range_date() -> None:
         extensions.client_batch_item_validate((), (), validity_date=1 << 63)
 
 
+def test_validate_builder_copies_unknown_payload_extensions_and_preserves_input(
+    monkeypatch: Any,
+) -> None:
+    calls: list[tuple[str, tuple[object, ...]]] = []
+
+    def make_handle(_kind: str, symbol: str, arguments: tuple[object, ...]) -> int:
+        calls.append((symbol, arguments))
+        return 73
+
+    monkeypatch.setattr(extensions, "_make_handle", make_handle)
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+    limits = ttlv.codec_limits_defaults()
+    raw_tag = ttlv.raw_tag_from_raw(0x0054_1234)
+    tag = ttlv.raw_tag_try_checked(raw_tag)
+    value = ttlv.ttlv_value_text_string(b"validate-extension-sentinel", limits)
+    extension = ttlv.ttlv_item_create(tag, value, limits)
+
+    assert extensions.client_batch_item_validate(
+        (), (), payload_extensions=(extension,)
+    ) == 73
+    assert calls[0][0] == "kmipkit_client_batch_item_validate"
+    assert calls[0][1][5] == 1
+    retained = ttlv.ttlv_structure_with_item(ttlv.ttlv_structure_create(), extension, limits)
+    with ttlv.ttlv_structure_view(retained) as view:
+        assert ttlv.ttlv_structure_view_item_count(view) == 1
+
+    retained.close()
+    limits.close()
+    tag.close()
+    raw_tag.close()
+    value.close()
+
+
 def test_validate_response_preserves_open_indicator_and_redacts_generic_ttlv(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

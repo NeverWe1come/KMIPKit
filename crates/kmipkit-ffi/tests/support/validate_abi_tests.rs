@@ -46,6 +46,45 @@ fn validate_constructor_preserves_identifier_and_optional_date() {
 }
 
 #[test]
+fn validate_constructor_borrows_and_copies_payload_extensions() {
+    let extension = make_handle(
+        Kind::Item,
+        HandleValue::Item(
+            Item::new(
+                RawTag::new(0x0054_1234)
+                    .expect("vendor extension tag fits the raw tag field")
+                    .try_checked()
+                    .expect("vendor extension tag is allocated"),
+                Value::text_string("validate-extension-sentinel".to_owned()),
+            )
+            .expect("valid text extension forms a TTLV item"),
+        ),
+    );
+    let extension_handles = [extension];
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_validate(
+            ptr::null_mut(),
+            0,
+            ptr::null(),
+            0,
+            extension_handles.as_ptr(),
+            extension_handles.len() as u64,
+            0,
+            0,
+            &raw mut item,
+        ),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+    assert!(reference_handle(extension, Kind::Item).is_ok());
+
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_item_release(extension);
+}
+
+#[test]
 fn validate_constructor_rejects_noncanonical_absent_date_and_clears_output() {
     let mut item = ptr::dangling_mut();
 

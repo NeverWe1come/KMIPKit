@@ -1544,6 +1544,41 @@ static int validate_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int validate_constructor_copies_payload_extensions(void) {
+    static const uint8_t extension_text[] = "validate-extension-sentinel";
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_raw_tag_t *raw_tag = 0;
+    kmipkit_tag_t *tag = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_ttlv_item_t *extension = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    kmipkit_ttlv_item_t *extensions[] = {0};
+    int result = 0;
+
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x00541234), &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
+        kmipkit_ttlv_value_text_string(
+            limits, extension_text, sizeof(extension_text) - 1, &value) != 0 ||
+        kmipkit_ttlv_item_create(tag, value, limits, &extension) != 0) {
+        goto cleanup;
+    }
+    extensions[0] = extension;
+    if (kmipkit_client_batch_item_validate(
+            0, 0, 0, 0, extensions, 1, 0, 0, &item) != 0 || item == 0) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_item_release(extension);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
 static int validate_response_accessors_clear_invalid_outputs_from_c(void) {
     uint8_t present = UINT8_MAX;
     uint32_t indicator = UINT32_MAX;
@@ -5635,6 +5670,7 @@ int main(int argc, char **argv) {
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
         !validate_constructor_is_callable_from_c() ||
+        !validate_constructor_copies_payload_extensions() ||
         !validate_response_accessors_clear_invalid_outputs_from_c() ||
         !log_constructor_is_callable_from_c() ||
         !interop_response_accessor_clears_invalid_outputs_from_c() ||
