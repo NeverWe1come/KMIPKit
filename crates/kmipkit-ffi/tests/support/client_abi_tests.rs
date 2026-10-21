@@ -5266,6 +5266,13 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_rekey_key_pair_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_reprovision_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expect_success: u8,
+        expected_identifier_present: u8,
+        expected_identifier: *const u8,
+        expected_identifier_length: u64,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -5661,7 +5668,20 @@ fn ffi_reprovision_preserves_optional_success_identifier_and_owned_ttlv() {
     assert_eq!(item_count, 4, "the copy includes common response metadata");
     kmipkit_ttlv_structure_view_release(response_view);
     kmipkit_ttlv_structure_release(response_ttlv);
-    kmipkit_client_batch_item_response_release(item);
+    // SAFETY: the compiled C caller receives this live item and consumes it after copying TTLV.
+    let c_result = unsafe {
+        kmipkit_client_abi_c_consumer_validate_reprovision_response(
+            item,
+            1,
+            1,
+            b"replacement-certificate".as_ptr(),
+            b"replacement-certificate".len() as u64,
+        )
+    };
+    assert_eq!(
+        c_result, 1,
+        "compiled C can copy and release the successful result"
+    );
 }
 
 #[test]
@@ -5703,7 +5723,14 @@ fn ffi_reprovision_keeps_success_present_when_optional_identifier_is_absent() {
     assert_eq!(ttlv_present, 1);
     assert!(!response_ttlv.is_null());
     kmipkit_ttlv_structure_release(response_ttlv);
-    kmipkit_client_batch_item_response_release(item);
+    // SAFETY: the compiled C caller receives this live item and consumes it after copying TTLV.
+    let c_result = unsafe {
+        kmipkit_client_abi_c_consumer_validate_reprovision_response(item, 1, 0, ptr::null(), 0)
+    };
+    assert_eq!(
+        c_result, 1,
+        "compiled C preserves successful absence of the identifier"
+    );
 }
 
 #[test]
@@ -5788,7 +5815,14 @@ fn ffi_reprovision_failure_exposes_neither_success_identifier_nor_ttlv() {
     );
     assert_eq!(ttlv_present, 0);
     assert!(response_ttlv.is_null());
-    kmipkit_client_batch_item_response_release(item);
+    // SAFETY: the compiled C caller receives this live Failure item and releases it.
+    let c_result = unsafe {
+        kmipkit_client_abi_c_consumer_validate_reprovision_response(item, 0, 0, ptr::null(), 0)
+    };
+    assert_eq!(
+        c_result, 1,
+        "compiled C exposes neither typed data nor TTLV on Failure"
+    );
 }
 
 #[test]
@@ -5841,7 +5875,14 @@ fn ffi_reprovision_pending_exposes_neither_success_identifier_nor_ttlv() {
     );
     assert_eq!(ttlv_present, 0);
     assert!(response_ttlv.is_null());
-    kmipkit_client_batch_item_response_release(item);
+    // SAFETY: the compiled C caller receives this live Pending item and releases it.
+    let c_result = unsafe {
+        kmipkit_client_abi_c_consumer_validate_reprovision_response(item, 0, 0, ptr::null(), 0)
+    };
+    assert_eq!(
+        c_result, 1,
+        "compiled C exposes neither typed data nor TTLV on Pending"
+    );
 }
 
 #[test]

@@ -4245,6 +4245,79 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_validate_reprovision_response(
+    kmipkit_client_batch_item_response_t *item,
+    uint8_t expect_success,
+    uint8_t expected_identifier_present,
+    const uint8_t *expected_identifier,
+    uint64_t expected_identifier_length) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = 0;
+    uint8_t identifier_present = 0;
+    uint8_t ttlv_present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    uint64_t item_count = 0;
+    int result = 0;
+
+    if (item == 0 || expect_success > 1 || expected_identifier_present > 1 ||
+        (!expect_success && expected_identifier_present != 0) ||
+        (expected_identifier_present != 0 && expected_identifier == 0) ||
+        (expected_identifier_present == 0 &&
+            (expected_identifier != 0 || expected_identifier_length != 0))) {
+        goto cleanup;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_reprovision(
+            item, &present, &identifier_present, &identifier) != 0) {
+        goto cleanup;
+    }
+    if (expect_success == 0) {
+        if (present != 0 || identifier_present != 0 || identifier.kind != 0 ||
+            identifier.text_data != 0 || identifier.text_length != 0 ||
+            identifier.enumeration_value != 0 || identifier.integer_value != 0 ||
+            kmipkit_client_batch_item_response_reprovision_ttlv(
+                item, &ttlv_present, &response_ttlv) != 0 ||
+            ttlv_present != 0 || response_ttlv != 0) {
+            goto cleanup;
+        }
+        result = 1;
+        goto cleanup;
+    }
+    if (present != 1 || identifier_present != expected_identifier_present) {
+        goto cleanup;
+    }
+    if (expected_identifier_present != 0) {
+        if (!response_identifier_matches(
+                &identifier, expected_identifier, expected_identifier_length)) {
+            goto cleanup;
+        }
+    } else if (identifier.kind != 0 || identifier.text_data != 0 ||
+        identifier.text_length != 0 || identifier.enumeration_value != 0 ||
+        identifier.integer_value != 0) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_response_reprovision_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 ||
+        ttlv_present != 1 || response_ttlv == 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &item_count) != 0 || item_count != 4) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_join_split_key_response_ttlv(
     kmipkit_client_batch_item_response_t *item) {
     static const uint8_t expected_identifier[] = "joined-id";
