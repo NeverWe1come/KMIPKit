@@ -128,6 +128,52 @@ class RegisterParityManifestTests(unittest.TestCase):
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
         self.assertTrue(linked_ids)
 
+    def test_register_table_291_and_293_rows_have_stable_traces_and_evidence(self) -> None:
+        row_traces = {
+            "KMIPKIT-022-T291-ANY-OBJECT": {
+                "field": "Any Object",
+                "normative": "Table 291",
+                "implementation": "crates/kmipkit-protocol/src/register.rs",
+                "test": (
+                    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+                    "request_emits_table_291_fields_in_order_and_preserves_object_item"
+                ),
+            },
+            "KMIPKIT-022-T293-CERTIFICATE-LENGTH": {
+                "field": "Certificate Length",
+                "normative": "Table 293",
+                "implementation": "crates/kmipkit-protocol/src/register.rs",
+                "test": (
+                    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
+                    "request_requires_certificate_length_and_allows_embedded_signature_algorithm"
+                ),
+            },
+        }
+        owner_spec = (ROOT / OWNER_SPEC).read_text(encoding="utf-8")
+        owner_traceability = (ROOT / "specs/022-object-lifecycle/traceability.md").read_text(
+            encoding="utf-8"
+        )
+        mapping_traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+            encoding="utf-8"
+        )
+        t062_row = next(
+            line for line in mapping_traceability.splitlines() if line.startswith("| T062 |")
+        )
+
+        for trace_id, evidence in row_traces.items():
+            with self.subTest(trace_id=trace_id):
+                self.assertIn(trace_id, owner_spec, f"missing approved trace {trace_id} in owner spec")
+                self.assertIn(evidence["normative"], owner_spec, f"missing OASIS {evidence['normative']}")
+                self.assertIn(evidence["field"], owner_spec, f"missing field {evidence['field']}")
+                owner_row = next(
+                    line for line in owner_traceability.splitlines() if trace_id in line
+                )
+                self.assertIn(evidence["implementation"], owner_row)
+                self.assertIn(evidence["test"], owner_row)
+                self.assertIn(trace_id, t062_row)
+                self.assertIn(evidence["implementation"], t062_row)
+                self.assertIn(evidence["test"], t062_row)
+
 
 if __name__ == "__main__":
     unittest.main()
