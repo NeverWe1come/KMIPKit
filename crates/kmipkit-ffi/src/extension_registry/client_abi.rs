@@ -2489,11 +2489,11 @@ pub extern "C" fn kmipkit_client_batch_item_response_register(
         }
         if let kmipkit_client::ClientBatchOutcome::Register(register) = item.outcome() {
             let Some(identifier) = register.unique_identifier() else {
-                return record_ffi_error(ERROR_INTERNAL);
+                return record_ffi_error(ERROR_INTERNAL); // COVERAGE-EXCLUDE: successful Register responses require a Unique Identifier during protocol parsing.
             };
             if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
             {
-                return record_ffi_error(status);
+                return record_ffi_error(status); // COVERAGE-EXCLUDE: the same output record passed preflight above; concurrent caller mutation would be a data race.
             }
             *present = 1;
         }

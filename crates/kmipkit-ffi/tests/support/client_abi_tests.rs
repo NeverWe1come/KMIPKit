@@ -4674,6 +4674,8 @@ fn ffi_export_response_getters_reject_inconsistent_internal_handles() {
     );
     assert_eq!(present, 0);
     assert!(response_ttlv.is_null());
+
+    assert_register_getters_reject_handle(wrong_variant, ERROR_INVALID_INPUT);
     kmipkit_client_batch_item_response_release(wrong_variant);
 
     let valid_item = failed_cryptographic_item(
@@ -4730,8 +4732,33 @@ fn ffi_export_response_getters_reject_inconsistent_internal_handles() {
     assert_eq!(present, 0);
     assert!(response_ttlv.is_null());
 
+    assert_register_getters_reject_handle(invalid_index, ERROR_INTERNAL);
+
     kmipkit_client_batch_item_response_release(invalid_index);
     kmipkit_client_batch_item_response_release(valid_item);
+}
+
+fn assert_register_getters_reject_handle(
+    handle: *mut kmipkit_client_batch_item_response_t,
+    expected_status: i32,
+) {
+    let mut present = 9;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        kmipkit_client_batch_item_response_register(handle, &mut present, &mut identifier,),
+        expected_status
+    );
+    assert_eq!(present, 0);
+    assert_eq!(identifier.kind, 0);
+
+    present = 9;
+    let mut response_ttlv = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_register_ttlv(handle, &mut present, &mut response_ttlv,),
+        expected_status
+    );
+    assert_eq!(present, 0);
+    assert!(response_ttlv.is_null());
 }
 
 #[test]
@@ -5973,6 +6000,21 @@ fn ffi_register_success_exposes_identifier_and_owned_ordered_ttlv_to_c() {
     assert_eq!(ttlv_present, 1);
     assert!(!response_ttlv.is_null());
     kmipkit_ttlv_structure_release(response_ttlv);
+
+    let mut malformed_present = 9;
+    let mut malformed_identifier = empty_unique_identifier_output_v1();
+    malformed_identifier.struct_size = 0;
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_response_register(
+            item,
+            &raw mut malformed_present,
+            &raw mut malformed_identifier,
+        )
+    );
+    assert_eq!(malformed_present, 9);
+    assert_eq!(malformed_identifier.struct_size, 0);
+    assert_eq!(malformed_identifier.kind, 0);
 
     // SAFETY: the compiled C consumer takes ownership of this live response item.
     let result = unsafe {

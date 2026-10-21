@@ -1,4 +1,5 @@
 use super::*;
+use std::collections::BTreeSet;
 
 const ERROR_NONE: u32 = 0;
 const ERROR_CATEGORY_VALIDATION: u32 = 1;
@@ -320,28 +321,90 @@ fn panic_boundary_records_internal_error_for_void_exports() {
 
 #[test]
 fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
+    const BLOCKED_C_SYMBOLS: [&str; 1] = ["kmipkit_validated_extension_value_value_at"];
+    const INTERNAL_C_SYMBOLS: [&str; 6] = [
+        "kmipkit_client_batch_item_response_metadata_v1",
+        "kmipkit_client_batch_item_response_release",
+        "kmipkit_client_execute_with_options_and_error_ttlv_v1",
+        "kmipkit_last_error_clear",
+        "kmipkit_transport_config_create_v1",
+        "kmipkit_transport_config_release",
+    ];
+    let manifest: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../specification/api/public-api.json"
+    ))
+    .expect("the approved public API manifest is valid JSON");
+    let declarations = manifest["publicDeclarations"]
+        .as_array()
+        .expect("the approved manifest lists public declarations");
+    let manifest_symbols: BTreeSet<&str> = declarations
+        .iter()
+        .filter(|declaration| {
+            declaration["packageId"] == "c-kmipkit"
+                && declaration["kind"] == "c-symbol"
+                && declaration["declarationState"] != "blocked"
+        })
+        .filter_map(|declaration| declaration["exportName"].as_str())
+        .collect();
+    let blocked_symbols: BTreeSet<&str> = declarations
+        .iter()
+        .filter(|declaration| {
+            declaration["packageId"] == "c-kmipkit"
+                && declaration["kind"] == "c-symbol"
+                && declaration["declarationState"] == "blocked"
+        })
+        .filter_map(|declaration| declaration["exportName"].as_str())
+        .collect();
+    assert_eq!(
+        blocked_symbols,
+        BLOCKED_C_SYMBOLS.into_iter().collect(),
+        "review blocked C symbols when their manifest state changes"
+    );
+
     let sources = [
         include_str!("../../src/extension_registry.rs"),
         include_str!("../../src/extension_registry/client_abi.rs"),
     ];
-    let exports: Vec<bool> = sources
+    let exports: Vec<(String, bool)> = sources
         .into_iter()
         .flat_map(|source| source.split("#[unsafe(no_mangle)]"))
         .filter_map(|declaration| {
             let function_start = declaration.find("pub extern \"C\" fn")?;
             let function = &declaration[function_start..];
+            let symbol = function
+                .split("pub extern \"C\" fn ")
+                .nth(1)?
+                .split('(')
+                .next()?
+                .to_owned();
             let body_start = function.find('{')?;
-            Some(
+            Some((
+                symbol,
                 function[body_start + 1..]
                     .trim_start()
                     .starts_with("ffi_entrypoint(||"),
-            )
+            ))
         })
         .collect();
 
-    assert_eq!(exports.len(), 265, "update the count when adding C exports");
+    let source_symbols: BTreeSet<&str> =
+        exports.iter().map(|(symbol, _)| symbol.as_str()).collect();
+    let expected_symbols: BTreeSet<&str> = manifest_symbols
+        .into_iter()
+        .chain(blocked_symbols)
+        .chain(INTERNAL_C_SYMBOLS)
+        .collect();
+    assert_eq!(
+        source_symbols, expected_symbols,
+        "Rust C exports must match approved manifest symbols and the explicit blocked/internal lists"
+    );
+    assert_eq!(
+        exports.len(),
+        source_symbols.len(),
+        "duplicate C export symbol"
+    );
     assert!(
-        exports.iter().all(|uses_boundary| *uses_boundary),
+        exports.iter().all(|(_, uses_boundary)| *uses_boundary),
         "every exported C function must enter the shared panic boundary first"
     );
 }

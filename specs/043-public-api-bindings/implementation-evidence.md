@@ -4972,9 +4972,9 @@ gates.
 ### T062 Register mapping — local Red/Green evidence (2026-10-21)
 
 TDD commits: Red `3469ae2b`, `1cfee92c`, and `4104add9`; Green
-`83c82fe2`. Each is DCO-signed. Refactor documentation and final report are
-being recorded separately; T062 remains open until independent QA/security,
-current-head CI, and selected-scope coverage pass.
+`83c82fe2`; aliasing follow-up Red `1fbb2b7e` and Green `95ca8f85`. Each is
+DCO-signed. T062 remains open until independent QA/security and exact-head
+cross-language CI and coverage pass.
 
 Focused local command results on the Green commit:
 
@@ -4982,7 +4982,7 @@ Focused local command results on the Green commit:
 |---|---|
 | `cargo fmt --all --check` | Pass; no output. |
 | `cargo clippy --workspace --all-targets --all-features -- -D warnings` | Pass after splitting the focused FFI Failure/Pending checks. AWS-LC emitted non-fatal Windows `stdalign_check.c` and NASM warnings. |
-| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_register_ --no-fail-fast` | Pass, 3 tests/0 failures: compiled C Success consumer, Failure common metadata/no success fields, and Pending exact correlation/no success fields. AWS-LC emitted non-fatal Windows `stdalign_check.c` and NASM warnings. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_register_ --no-fail-fast` | Pass, 4 tests/0 failures after aliasing Green: compiled C Success consumer, output alias rejection, Failure common metadata/no success fields, and Pending exact correlation/no success fields. AWS-LC emitted non-fatal Windows `stdalign_check.c` and NASM warnings. |
 | `mvn -q -f bindings/java/pom.xml '-Dtest=RegisterMappingTest,ClientFacadeTlsIntegrationTest#registerResponseUsesNativeJniBridgeAndPreservesOwnedOrderedTtlv' test` | Pass; JNI DLL compiled, focused mapping and TLS 1.3 mTLS integration tests passed. AWS-LC toolchain warnings were non-fatal. |
 | `python -m pytest bindings/python/tests/test_register_operation.py -q` | Pass, 4 tests. Used the external temporary Python 3.12 environment/wheel; the existing `.venv` was not touched. Includes TLS 1.3 mTLS native CFFI mapping and owner-close behavior. |
 | `python tools/api_manifest/generate.py --write` | Pass; generated 12 output files from the authored manifest. |
@@ -4990,12 +4990,19 @@ Focused local command results on the Green commit:
 | `python -m unittest tools.api_manifest.tests.test_register_parity_manifest -v` | Pass, 1 test. |
 | `python scripts/test_user_guide_examples.py` | Pass; compiled 20 marked Rust user-guide examples. |
 | `git diff --check` | Pass; only Git's existing CRLF-to-LF normalization warnings appeared for source manifest/traceability files. |
+| `cargo test --workspace --all-features` | Pass after replacing the stale hard-coded C ABI count with exact manifest-derived public symbols plus the documented internal/blocked sets; expected current export count is 267. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_export_response_getters_reject_inconsistent_internal_handles --no-fail-fast` | Pass; exercises wrong-variant and invalid-index defensive paths in both Register getters. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_register_success_exposes_identifier_and_owned_ordered_ttlv_to_c --no-fail-fast` | Pass; additionally verifies an invalid output ABI record is rejected without changing either output. |
+| `cargo llvm-cov --workspace --all-features --locked --json --output-path <temporary-file>` | Pass; instrumented workspace tests completed and normalized LLVM export was produced outside the repository. |
+| `scripts/coverage_gate.py` changed-line projection for Rust (`3da51b86..95ca8f85`) | Pass: 46/46 executable changed Rust production lines covered (100.00%). Two explicitly documented `COVERAGE-EXCLUDE` lines are outside the denominator: a successful Register response without a UID is rejected by protocol parsing, and the second output-record validation can fail only if the caller races/mutates the same record after preflight. |
+| `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `python tools/api_manifest/generate.py --check` | Pass on the final local changes. AWS-LC Windows toolchain warnings remain non-fatal. |
 
-The focused FFI test verifies Success exposes the returned identifier and
+The focused FFI tests verify Success exposes the returned identifier and
 caller-owned ordered TTLV copy to compiled C; Failure and Pending expose
-neither. It also verifies common Failure metadata and exact Pending correlation.
-The Java/JNI and Python/CFFI loopbacks each execute one TLS 1.3 mTLS Register
-exchange and check response ownership/redaction. These are local API-mapping
-tests, not official OASIS test cases or conformance evidence. Final Refactor
-head, independent review, cross-platform CI, and selected-scope coverage remain
-pending.
+neither. They also cover C output overlap rejection, malformed output ABI
+metadata, and defensive handle/index errors. The Java/JNI and Python/CFFI
+loopbacks each execute one TLS 1.3 mTLS Register exchange and check response
+ownership/redaction. These are local API-mapping tests, not official OASIS test
+cases or conformance evidence. Rust changed-line coverage passes locally;
+Java/Python/C/JNI selected-scope aggregate coverage and independent QA/security
+remain for exact-head CI/review. The T062 task checkbox remains open.
