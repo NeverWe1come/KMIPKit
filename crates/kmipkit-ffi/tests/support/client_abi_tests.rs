@@ -15,8 +15,9 @@ use kmipkit_protocol::{
     GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OperationData, Pkcs11Request, ReProvisionRequest, RecertifyRequest,
-    RekeyKeyPairRequest, RekeyRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
-    SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RngRetrieveRequest, RngSeedRequest,
+    SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
+    TicketType, UniqueIdentifier,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -5769,6 +5770,11 @@ unsafe extern "C" {
         expected_identifier: *const u8,
         expected_identifier_length: u64,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_register_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expected_identifier: *const u8,
+        expected_identifier_length: u64,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_usage_allocation_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -5888,6 +5894,96 @@ fn ffi_recertify_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
         result, 1,
         "C reads the replacement identifier and complete ordered TTLV after releasing the source item"
     );
+}
+
+// OASIS KMIP Specification v2.1 §6.1.43, Tables 292 and 294.
+#[test]
+fn ffi_register_success_exposes_identifier_and_owned_ordered_ttlv_to_c() {
+    let identifier_value = b"registered-opaque";
+    let unknown_value = [0xde, 0xad, 0x00, 0xff];
+    let mut opaque_fields = Structure::new();
+    opaque_fields
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0059)
+                    .expect("Opaque Data Type tag fits")
+                    .try_checked()
+                    .expect("Opaque Data Type is allocated"),
+                Value::enumeration(0x8000_0001),
+            )
+            .expect("Opaque Data Type item is valid"),
+        )
+        .expect("Opaque Data Type fits the structure");
+    opaque_fields
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_005a)
+                    .expect("Opaque Data Value tag fits")
+                    .try_checked()
+                    .expect("Opaque Data Value is allocated"),
+                Value::byte_string(b"register-request-secret".to_vec()),
+            )
+            .expect("Opaque Data Value item is valid"),
+        )
+        .expect("Opaque Data Value fits the structure");
+    let request = ClientRequest::Register(RegisterRequest::new(
+        ObjectType::from_raw(8),
+        AttributeSet::try_new([]).expect("generic Opaque Object has no mandatory attributes"),
+        Item::new(
+            RawTag::new(0x0042_005b)
+                .expect("Opaque Object tag fits")
+                .try_checked()
+                .expect("Opaque Object is allocated"),
+            Value::structure(opaque_fields),
+        )
+        .expect("Opaque Object item is valid"),
+    ));
+    let item = successful_cryptographic_item(
+        request,
+        0x03,
+        b"register-success",
+        vec![
+            ttlv_item(0x0042_0094, 0x07, identifier_value),
+            ttlv_item(0x0054_1234, 0x08, &unknown_value),
+        ],
+    );
+
+    let mut present = 0;
+    let mut identifier = empty_unique_identifier_output_v1();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_register(
+            item,
+            &raw mut present,
+            &raw mut identifier,
+        )
+    );
+    assert_eq!(present, 1);
+    assert_response_identifier(&identifier, identifier_value);
+
+    let mut ttlv_present = 0;
+    let mut response_ttlv = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_client_batch_item_response_register_ttlv(
+            item,
+            &raw mut ttlv_present,
+            &raw mut response_ttlv,
+        )
+    );
+    assert_eq!(ttlv_present, 1);
+    assert!(!response_ttlv.is_null());
+    kmipkit_ttlv_structure_release(response_ttlv);
+
+    // SAFETY: the compiled C consumer takes ownership of this live response item.
+    let result = unsafe {
+        kmipkit_client_abi_c_consumer_validate_register_response(
+            item,
+            identifier_value.as_ptr(),
+            u64::try_from(identifier_value.len()).expect("test identifier fits the ABI"),
+        )
+    };
+    assert_eq!(result, 1, "C copies the successful identifier and ordered TTLV");
 }
 
 #[test]

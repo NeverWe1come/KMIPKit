@@ -5721,3 +5721,65 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
+
+int kmipkit_client_abi_c_consumer_validate_register_response(
+    kmipkit_client_batch_item_response_t *item,
+    const uint8_t *expected_identifier,
+    uint64_t expected_identifier_length) {
+    static const uint32_t response_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    static const uint32_t payload_tags[] = {UINT32_C(0x420094), UINT32_C(0x541234)};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = 0;
+    uint8_t ttlv_present = 0;
+    kmipkit_ttlv_structure_t *response_ttlv = 0;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_ttlv_item_view_t *payload_item = 0;
+    kmipkit_ttlv_value_view_t *payload_value = 0;
+    kmipkit_ttlv_structure_view_t *payload_view = 0;
+    uint8_t payload_type = 0;
+    int result = 0;
+
+    if (item == 0 || expected_identifier == 0) {
+        goto cleanup;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    if (kmipkit_client_batch_item_response_register(
+            item, &present, &identifier) != 0 || present != 1 ||
+        !response_identifier_matches(
+            &identifier, expected_identifier, expected_identifier_length) ||
+        kmipkit_client_batch_item_response_register_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 ||
+        ttlv_present != 1 || response_ttlv == 0) {
+        goto cleanup;
+    }
+
+    /* The TTLV copy must outlive the response-item handle that produced it. */
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+        !check_view_tags(
+            view, response_tags,
+            (uint64_t)(sizeof(response_tags) / sizeof(response_tags[0]))) ||
+        kmipkit_ttlv_structure_view_item_at(view, 3, &payload_item) != 0 ||
+        kmipkit_ttlv_item_view_type(payload_item, &payload_type) != 0 ||
+        payload_type != KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ||
+        kmipkit_ttlv_item_view_value(payload_item, &payload_value) != 0 ||
+        kmipkit_ttlv_value_view_structure(payload_value, &payload_view) != 0 ||
+        !check_view_tags(
+            payload_view, payload_tags,
+            (uint64_t)(sizeof(payload_tags) / sizeof(payload_tags[0])))) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_ttlv_structure_view_release(payload_view);
+    kmipkit_ttlv_value_view_release(payload_value);
+    kmipkit_ttlv_item_view_release(payload_item);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    return result;
+}
