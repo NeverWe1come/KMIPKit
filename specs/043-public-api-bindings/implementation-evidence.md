@@ -5218,8 +5218,8 @@ below 95%). The following local checks passed after the correction:
 | `python -B -m unittest tools.api_manifest.tests.test_set_constraints_parity_manifest -v` and `python -B tools/api_manifest/generate.py --check` | Pass, 4 manifest tests and all 12 generated outputs. |
 | `cargo fmt --all --check` and `git diff --check` | Pass. |
 
-The corrected branch still requires exact-head CI to confirm the 95% changed-code
-gate. T066 remains open until that check and the scoped reviews pass.
+At this earlier evidence checkpoint, exact-head CI was still needed to confirm the 95% changed-code
+gate; the completed exact-head result and scoped reviews are recorded below.
 
 #### T066 compiled C Failure metadata follow-up (2026-10-21)
 
@@ -5237,5 +5237,27 @@ Windows build emitted existing aws-lc-sys compiler/NASM warnings but exited succ
 
 The Refactor documentation update refreshes the T066 traceability row with the compiled C
 Failure evidence and the existing Python Failure/Pending parity test.
-`git diff --check` passed. Exact-head CI and independent QA/security reviews remain pending;
-T066 stays open until those checks, including the selected changed-code coverage gate, pass.
+`git diff --check` passed. The exact-head CI and scoped reviews completed successfully;
+the final results are recorded below.
+
+#### T066 final verification (2026-10-21)
+
+GitHub Actions run [39639530152](https://github.com/NeverWe1come/KMIPKit/actions/runs/39639530152)
+completed successfully on code head `3939b141fbd8b1e5aa9433eaa338c45511230b43`: all required checks passed.
+The run completed 36 jobs: 34 succeeded and the two informational/active-release jobs were skipped.
+The selected-scope coverage gate passed, along with the Rust 1.94/stable platform matrix, C consumer and
+sanitizer jobs, Java/JNI and Python bindings, normative inventory, source immutability, traceability,
+dependency policy, fuzz smoke, and documentation contracts.
+
+Independent QA confirmed no remaining T066 acceptance or traceability gaps on `3939b141`; the
+security review found no new findings. The only change after the review of `8d0af3da` was the
+rustfmt-only adjustment in `3939b141`, which both reviewers confirmed did not alter test behavior.
+
+Fresh local checks on this code head passed: `cargo fmt --all --check`; `cargo test -p kmipkit-ffi
+--features coverage-c-consumer --lib set_constraints_ --no-fail-fast` (8 tests); `python -B tools/api_manifest/generate.py
+--check` (12 outputs); `python -B -m unittest tools.api_manifest.tests.test_set_constraints_parity_manifest -v`
+(4 tests); and `git diff --check`. The Windows Rust build emitted aws-lc-sys compiler/NASM warnings,
+but the focused test command exited successfully.
+
+T066 is checked in `tasks.md`. This final documentation-only commit triggers a new exact-head CI run;
+no protocol, production, ABI, binding, or generated behavior changes are included.

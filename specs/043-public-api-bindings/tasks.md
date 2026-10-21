@@ -135,7 +135,7 @@ T024 implementation checkpoint: the Python client facade exposes the shared clie
 - [x] T063 [US2] Add four-language API mapping and parity evidence for Revoke after its approved contract exists; cite §6.1.44. Red `27614f43`, `5d10177f`; Green `7276d807`; Refactor/evidence in `implementation-evidence.md`. Focused Rust/compiled C consumer, Java/JNI mapping and TLS 1.3 mTLS Success/Failure/Pending, Python/CFFI mTLS, manifest parity, generator, formatting, and scoped Clippy checks pass locally. No OASIS conformance, interoperability, profile-support, or certification claim is made.
 - [x] T064 [US2] Add four-language API mapping and parity evidence for RNG Retrieve after its approved contract exists; cite §6.1.49.
 - [x] T065 [US2] Add four-language API mapping and parity evidence for RNG Seed after its approved contract exists; cite §6.1.50.
-- [ ] T066 [US2] Add four-language API mapping and parity evidence for Set Constraints after its approved contract exists; cite §6.1.52.
+- [x] T066 [US2] Add four-language API mapping and parity evidence for Set Constraints after its approved contract exists; cite §6.1.52.
 - [ ] T067 [US2] Add four-language API mapping and parity evidence for Set Defaults after its approved contract exists; cite §6.1.53.
 - [X] T068 [US2] Resolve Set Endpoint Role (§6.1.54) as explicitly deferred to 1.1 by the normative catalog and approved specification 025; keep it out of the 1.0 API while generic TTLV preserves its open Operation enumeration value.
 - [ ] T069 [US2] Add four-language API mapping and parity evidence for Validate after its approved contract exists; cite §6.1.57.
