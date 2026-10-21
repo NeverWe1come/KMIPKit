@@ -103,6 +103,18 @@ class SetDefaultsParityManifestTests(unittest.TestCase):
 
         for language, expected in EXPECTED_MAPPINGS.items():
             self.assertTrue(expected <= actual_mappings[language], language)
+        java_constructor = next(
+            self.declarations[declaration_id]
+            for declaration_id in operation["declarations"]["java"]
+            if declaration_id == "T067:constructor:java"
+        )
+        self.assertEqual(
+            {
+                "public static org.kmipkit.extensions.ClientBatchItem setDefaults()",
+                "public static org.kmipkit.extensions.ClientBatchItem setDefaults(org.kmipkit.ttlv.TtlvStructure)",
+            },
+            set(java_constructor["javaSignatures"]),
+        )
         self.assertTrue(REQUIREMENTS <= linked_requirements)
 
 
