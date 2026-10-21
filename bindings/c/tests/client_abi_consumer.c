@@ -224,6 +224,15 @@ cleanup:
     return result;
 }
 
+static int reprovision_constructor_is_callable_from_c(void) {
+    kmipkit_client_batch_item_t *item = 0;
+    if (kmipkit_client_batch_item_reprovision(0, 0, &item) != 0 || item == 0) {
+        if (item != 0) kmipkit_client_batch_item_release(item);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    return 1;
+}
 static int rekey_key_pair_constructor_is_callable_from_c(void) {
     static const uint8_t identifier_bytes[] = "existing-private-key";
     kmipkit_unique_identifier_v1_t identifier = {0};
@@ -5166,6 +5175,7 @@ int main(int argc, char **argv) {
     }
     if (!creation_create_matches_shared_fixture() ||
         !rekey_constructor_is_callable_from_c() ||
+        !reprovision_constructor_is_callable_from_c() ||
         !rekey_key_pair_constructor_is_callable_from_c() ||
         !rekey_key_pair_response_rejects_invalid_output_records_from_c() ||
         !rekey_key_pair_response_accessors_clear_outputs_from_c() ||
