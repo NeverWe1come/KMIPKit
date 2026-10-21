@@ -964,11 +964,13 @@ int32_t kmipkit_client_batch_item_response_reprovision_ttlv(kmipkit_client_batch
 int32_t kmipkit_client_batch_item_rng_retrieve(int32_t data_length, kmipkit_client_batch_item_t ** out_item);
 /* Reads Data from a successful RNG Retrieve result; the response bytes are secret and borrowed while the batch response item is alive.
  * Failed and Pending results expose no typed success fields.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
  */
 /* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_rng_retrieve(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_data_present, kmipkit_byte_span_v1_t * out_data);
 /* Returns a caller-owned copy of the complete ordered RNG Retrieve response TTLV only for Success. Unknown fields and their order are preserved.
  * For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
  */
 /* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_client_batch_item_response_rng_retrieve_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
@@ -979,11 +981,13 @@ int32_t kmipkit_client_batch_item_response_rng_retrieve_ttlv(kmipkit_client_batc
 int32_t kmipkit_client_batch_item_rng_seed(const kmipkit_byte_span_v1_t * data, kmipkit_client_batch_item_t ** out_item);
 /* Reads the server-reported Data Length from successful RNG Seed results, preserving zero and signed Integer values.
  * Failed and Pending results expose no typed success fields.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
  */
 /* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.50-001 */
 int32_t kmipkit_client_batch_item_response_rng_seed(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint8_t * out_data_length_present, int32_t * out_data_length);
 /* Returns a caller-owned copy of the complete ordered RNG Seed response TTLV only for Success. Unknown fields and their order are preserved.
  * For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.
+ * All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written.
  */
 /* KMIPKIT-0041-FR-001, KMIPKIT-0041-FR-002, KMIPKIT-0041-FR-003, KMIPKIT-0041-FR-004, KMIPKIT-0041-FR-005, KMIPKIT-0041-FR-006, KMIPKIT-0041-FR-007, KMIPKIT-0041-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.50-001 */
 int32_t kmipkit_client_batch_item_response_rng_seed_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);

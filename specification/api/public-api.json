@@ -25489,7 +25489,8 @@
         ],
         "documentation": [
           "Reads Data from a successful RNG Retrieve result; the response bytes are secret and borrowed while the batch response item is alive.",
-          "Failed and Pending results expose no typed success fields."
+          "Failed and Pending results expose no typed success fields.",
+          "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
       "java": {
@@ -25582,7 +25583,8 @@
         ],
         "documentation": [
           "Returns a caller-owned copy of the complete ordered RNG Retrieve response TTLV only for Success. Unknown fields and their order are preserved.",
-          "For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+          "For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.",
+          "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
       "java": {
@@ -25789,7 +25791,8 @@
         ],
         "documentation": [
           "Reads the server-reported Data Length from successful RNG Seed results, preserving zero and signed Integer values.",
-          "Failed and Pending results expose no typed success fields."
+          "Failed and Pending results expose no typed success fields.",
+          "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
       "java": {
@@ -25883,7 +25886,8 @@
         ],
         "documentation": [
           "Returns a caller-owned copy of the complete ordered RNG Seed response TTLV only for Success. Unknown fields and their order are preserved.",
-          "For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+          "For failed and Pending results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.",
+          "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
       "java": {
@@ -288549,7 +288553,7 @@
     {
       "declarationId": "T064:rng-retrieve:response:python",
       "packageId": "python-kmipkit",
-      "kind": "field",
+      "kind": "python-export",
       "exportName": "kmipkit.client.BatchItemResult.rng_retrieve_response",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "requirementIds": [
@@ -288679,7 +288683,7 @@
     {
       "declarationId": "T064:rng-retrieve:result:data:python",
       "packageId": "python-kmipkit",
-      "kind": "field",
+      "kind": "python-export",
       "exportName": "kmipkit.client.RngRetrieveResponse.data",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
       "requirementIds": [
@@ -289536,7 +289540,7 @@
     {
       "declarationId": "T065:rng-seed:response:python",
       "packageId": "python-kmipkit",
-      "kind": "field",
+      "kind": "python-export",
       "exportName": "kmipkit.client.BatchItemResult.rng_seed_response",
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
       "requirementIds": [
@@ -291058,6 +291062,30 @@
     },
     {
       "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekey",
+      "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify request factory and response accessor provide the product-level capability; the bridge member has no independent Java product API.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekeyKeyPair",
+      "reason": "This public static native member is a raw-handle JNI bridge entry point; the typed ClientBatchItem.rekeyKeyPair factory is the product API.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
+    },
+    {
+      "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCertify",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Certify factory and response accessor provide the product-level capability; the bridge member has no independent Java product API.",
       "approvalSource": {
@@ -291442,6 +291470,54 @@
     },
     {
       "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRekey",
+      "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify response factory and response accessor provide the product-level capability; the bridge member has no independent Java product API.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRekeyKeyPair",
+      "reason": "This public static native member is a raw-handle JNI bridge entry point; the typed ClientBatchItemResult accessor is the product API.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRngRetrieve",
+      "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRngSeed",
+      "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried."
+    },
+    {
+      "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSign",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API.",
       "approvalSource": {
@@ -291475,6 +291551,30 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRngRetrieve",
+      "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRngSeed",
+      "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried."
     },
     {
       "packageId": "java-kmipkit",
@@ -292099,6 +292199,54 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T058. The formatter returns only a constant redacted summary; the response type and typed identifier accessor remain separately inventoried and tested."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyKeyPairResponse.toString",
+      "reason": "This exact Java formatter emits only a redacted summary and is not an independent KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060. The formatter is tested to omit both replacement key identifiers; the response type and typed identifier accessors remain separately inventoried."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.toString",
+      "reason": "This exact Java formatter emits only a redacted summary of the replacement key identifier and is not an independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The formatter returns only a constant redacted summary; the response type and typed identifier accessor remain separately inventoried and tested."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RngRetrieveResponse.toString",
+      "reason": "This exact Java formatter is redacted presentation behavior for a typed RNG response, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the T064/T065 Java response declarations. The formatter does not emit response TTLV or random material; RNG Retrieve explicitly prints data=redacted, while the typed fields remain separately mapped."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RngSeedResponse.toString",
+      "reason": "This exact Java formatter is redacted presentation behavior for a typed RNG response, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the T064/T065 Java response declarations. The formatter does not emit response TTLV or random material; RNG Retrieve explicitly prints data=redacted, while the typed fields remain separately mapped."
     },
     {
       "packageId": "java-kmipkit",
@@ -295354,6 +295502,126 @@
     },
     {
       "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__dataclass_fields__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__dataclass_params__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__delattr__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__eq__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__hash__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__init__",
+      "reason": "This exact constructor creates a response wrapper from an already-owned native result and is not an independent KMIP operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061. Callers obtain response wrappers through BatchItemResult.reprovision_response; the constructor does not send requests or perform protocol work."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__match_args__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__repr__",
+      "reason": "This exact formatter is part of the response wrapper implementation, not an independent KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the formatter redacts the identifier and preserves response TTLV without formatting its contents."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__setattr__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ReProvisionResponse.__slots__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
       "exportName": "kmipkit.client.RecertifyResponse.__dataclass_fields__",
       "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
       "approvalSource": {
@@ -295474,6 +295742,246 @@
     },
     {
       "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__dataclass_fields__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__dataclass_params__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__delattr__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__eq__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__hash__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__init__",
+      "reason": "This exact implementation constructor creates a response wrapper from already-owned native results and is not an independent KMIP operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060. Callers obtain response wrappers through BatchItemResult.rekey_key_pair_response; the constructor does not send requests or perform protocol work."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__match_args__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__repr__",
+      "reason": "This exact formatter is part of the response wrapper implementation, not an independent KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060. The formatter is tested to redact both replacement identifiers; callers obtain result data through typed accessors."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__setattr__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyKeyPairResponse.__slots__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__dataclass_fields__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __dataclass_fields__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__dataclass_params__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __dataclass_params__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__delattr__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __delattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__eq__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __eq__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__hash__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __hash__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__init__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __init__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__match_args__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __match_args__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__repr__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __repr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__setattr__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __setattr__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RekeyResponse.__slots__",
+      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/022-object-lifecycle/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __slots__."
+    },
+    {
+      "packageId": "python-kmipkit",
       "exportName": "kmipkit.client.RequestOptions.__dataclass_fields__",
       "reason": "This exact member is Python dataclass introspection or storage metadata generated from the class declaration, not an independent cross-language product capability.",
       "approvalSource": {
@@ -295579,6 +296087,222 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "KMIPKIT-0043-FR-021 inventories source/API declarations; this exact artifact is generated by the frozen, slotted RequestOptions dataclass and adds no timeout behavior beyond its declared fields and constructor."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__dataclass_fields__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __dataclass_fields__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__dataclass_params__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __dataclass_params__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__eq__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __eq__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__hash__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __hash__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__init__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __init__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__match_args__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __match_args__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__repr__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __repr__ from bindings/python/src/kmipkit/client.py. The representation does not disclose response TTLV; RNG Retrieve data is explicitly redacted. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngRetrieveResponse.__slots__",
+      "reason": "This exact RngRetrieveResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __slots__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__dataclass_fields__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __dataclass_fields__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__dataclass_params__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __dataclass_params__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__delattr__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __delattr__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__eq__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __eq__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__hash__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __hash__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__init__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __init__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__match_args__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __match_args__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__repr__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __repr__ from bindings/python/src/kmipkit/client.py. The representation does not disclose response TTLV; RNG Retrieve data is explicitly redacted. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__setattr__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __setattr__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RngSeedResponse.__slots__",
+      "reason": "This exact RngSeedResponse member is generated Python dataclass construction, introspection, comparison, storage, or presentation behavior, not a separate cross-language product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngSeedResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __slots__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md."
     },
     {
       "packageId": "python-kmipkit",
@@ -297451,438 +298175,6 @@
         "evidence": "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
       },
       "evidence": "KMIPKIT-0044-FR-003 through FR-006 specify local validation as part of Register construction/execution behavior. The helper is consumed by the client implementation; the approved feature does not require a standalone validation method in the public facade inventory."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekey",
-      "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify request factory and response accessor provide the product-level capability; the bridge member has no independent Java product API.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRekey",
-      "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify response factory and response accessor provide the product-level capability; the bridge member has no independent Java product API.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyResponse.toString",
-      "reason": "This exact Java formatter emits only a redacted summary of the replacement key identifier and is not an independent KMIPKit capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The formatter returns only a constant redacted summary; the response type and typed identifier accessor remain separately inventoried and tested."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__dataclass_fields__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __dataclass_fields__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__dataclass_params__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __dataclass_params__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__delattr__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __delattr__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__eq__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __eq__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__hash__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __hash__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__init__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __init__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__match_args__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __match_args__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__repr__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __repr__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__setattr__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __setattr__."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyResponse.__slots__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T059. The RekeyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __slots__."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekeyKeyPair",
-      "reason": "This public static native member is a raw-handle JNI bridge entry point; the typed ClientBatchItem.rekeyKeyPair factory is the product API.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRekeyKeyPair",
-      "reason": "This public static native member is a raw-handle JNI bridge entry point; the typed ClientBatchItemResult accessor is the product API.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RekeyKeyPairResponse.toString",
-      "reason": "This exact Java formatter emits only a redacted summary and is not an independent KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060. The formatter is tested to omit both replacement key identifiers; the response type and typed identifier accessors remain separately inventoried."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__dataclass_fields__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__dataclass_params__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__delattr__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__eq__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__hash__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__init__",
-      "reason": "This exact constructor creates a response wrapper from an already-owned native result and is not an independent KMIP operation.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061. Callers obtain response wrappers through BatchItemResult.reprovision_response; the constructor does not send requests or perform protocol work."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__match_args__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__repr__",
-      "reason": "This exact formatter is part of the response wrapper implementation, not an independent KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the formatter redacts the identifier and preserves response TTLV without formatting its contents."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__setattr__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.ReProvisionResponse.__slots__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T061; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__dataclass_fields__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__dataclass_params__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__delattr__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__eq__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__hash__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__init__",
-      "reason": "This exact implementation constructor creates a response wrapper from already-owned native results and is not an independent KMIP operation.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060. Callers obtain response wrappers through BatchItemResult.rekey_key_pair_response; the constructor does not send requests or perform protocol work."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__match_args__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__repr__",
-      "reason": "This exact formatter is part of the response wrapper implementation, not an independent KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060. The formatter is tested to redact both replacement identifiers; callers obtain result data through typed accessors."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__setattr__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
-    },
-    {
-      "packageId": "python-kmipkit",
-      "exportName": "kmipkit.client.RekeyKeyPairResponse.__slots__",
-      "reason": "This exact member is generated Python dataclass behavior, not a separate KMIP capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/022-object-lifecycle/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation"
-      },
-      "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T060; the response type and its fields are inventoried separately."
     }
   ],
   "apiLevels": [
