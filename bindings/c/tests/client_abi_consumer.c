@@ -1523,6 +1523,44 @@ static int interop_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int validate_constructor_is_callable_from_c(void) {
+    static const uint8_t identifier_text[] = "validate-chain-private-sentinel";
+    const kmipkit_unique_identifier_v1_t identifier = {
+        (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        UINT32_C(1),
+        KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        UINT32_C(0),
+        identifier_text,
+        sizeof(identifier_text) - 1,
+        UINT32_C(0),
+        INT32_C(0)};
+    kmipkit_client_batch_item_t *item = 0;
+    if (kmipkit_client_batch_item_validate(
+            0, 0, &identifier, 1, 1, INT64_MIN, &item) != 0) {
+        return 0;
+    }
+    const int result = item != 0;
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
+static int validate_response_accessors_clear_invalid_outputs_from_c(void) {
+    uint8_t present = UINT8_MAX;
+    uint32_t indicator = UINT32_MAX;
+    const int32_t indicator_status = kmipkit_client_batch_item_response_validate(
+        0, &present, &indicator);
+    if (indicator_status != T076_ERROR_INVALID_INPUT || present != 0 || indicator != 0) {
+        return 0;
+    }
+
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    present = UINT8_MAX;
+    const int32_t ttlv_status = kmipkit_client_batch_item_response_validate_ttlv(
+        0, &present, &response_ttlv);
+    return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
+}
+
 static int pkcs11_constructor_is_callable_from_c(void) {
     kmipkit_ttlv_structure_t *function = 0;
     kmipkit_client_batch_item_t *item = 0;
@@ -5596,6 +5634,8 @@ int main(int argc, char **argv) {
         !check_response_accessors_clear_outputs_from_c() ||
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
+        !validate_constructor_is_callable_from_c() ||
+        !validate_response_accessors_clear_invalid_outputs_from_c() ||
         !log_constructor_is_callable_from_c() ||
         !interop_response_accessor_clears_invalid_outputs_from_c() ||
         !get_constraints_response_accessor_clears_outputs_from_c() ||
