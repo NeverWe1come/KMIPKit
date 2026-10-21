@@ -19,6 +19,7 @@ final class ClientBatchItemPingQueryMappingTest {
     void pingFactoryCreatesAnOwnedBatchItem() {
         try (ClientBatchItem item = ClientBatchItem.ping()) {
             assertEquals(0, item.extensionCount());
+            assertTrue(item.extensions().isEmpty());
         }
     }
 

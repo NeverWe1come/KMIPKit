@@ -73,6 +73,50 @@ final class Pkcs11MappingTest {
         }
     }
 
+    @Test
+    void responseParserRejectsNonBooleanPresenceFlags() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parsePkcs11Response(new Object[] {
+                    new long[] {2, 0, 0, 0, 0, 0}, null, new long[] {0, 0, 0, 0, 0}
+                }));
+    }
+
+    @Test
+    void absentResponseRejectsUnexpectedFieldPresence() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parsePkcs11Response(new Object[] {
+                    new long[] {0, 1, 0, 0, 0, 0}, null, new long[] {0, 0, 0, 0, 0}
+                }));
+    }
+
+    @Test
+    void responseParserRejectsAHandleThatDoesNotMatchItsPresenceFlag() {
+        NativeExtensionRegistry.ensureLoaded();
+        long unexpectedInterfaceTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parsePkcs11Response(new Object[] {
+                    new long[] {1, 0, 0, 0, 0, 0}, null,
+                    new long[] {0, unexpectedInterfaceTtlv, 0, 0, 0}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(unexpectedInterfaceTtlv);
+    }
+
+    @Test
+    void missingPresentCorrelationReleasesTheUnadoptedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parsePkcs11Response(new Object[] {
+                    new long[] {1, 0, 1, 0, 0, 0}, null,
+                    new long[] {responseTtlv, 0, 0, 0, 0}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
     private static ClientBatchItemResult.Pkcs11Response parseCorrelationResponse(
             boolean present, byte[] correlation) {
         long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();

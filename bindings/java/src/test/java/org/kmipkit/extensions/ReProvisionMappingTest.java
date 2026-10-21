@@ -73,6 +73,66 @@ final class ReProvisionMappingTest {
     }
 
     @Test
+    void invalidPresenceFlagsReleaseTheOwnedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseReProvisionResponse(new Object[] {
+                    new long[] {2}, new long[] {0}, null, new long[] {responseTtlv}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
+    @Test
+    void presentResponseRequiresAnOwnedTtlv() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseReProvisionResponse(new Object[] {
+                    new long[] {1}, new long[] {0}, null, new long[] {0}
+                }));
+    }
+
+    @Test
+    void absentResponseReleasesAnUnexpectedOwnedTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseReProvisionResponse(new Object[] {
+                    new long[] {0}, new long[] {0}, null, new long[] {responseTtlv}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
+    @Test
+    void malformedPresentIdentifierReleasesTheOwnedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseReProvisionResponse(new Object[] {
+                    new long[] {1}, new long[] {1}, new Object(), new long[] {responseTtlv}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
+    @Test
+    void absentIdentifierRejectsUnexpectedDataAndReleasesTheOwnedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseReProvisionResponse(new Object[] {
+                    new long[] {1}, new long[] {0}, new Object(), new long[] {responseTtlv}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
+
+    @Test
     void ttlvResponseBridgeRejectsAnInvalidNativeItemHandle() {
         NativeExtensionRegistry.ensureLoaded();
         assertThrows(InvalidInputException.class,

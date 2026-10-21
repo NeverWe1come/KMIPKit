@@ -3410,6 +3410,33 @@ fn ffi_derive_key_constructor_rejects_absent_source_identifier() {
     assert_eq!(
         kmipkit_client_batch_item_derive_key(
             7,
+            ptr::null(),
+            0,
+            1,
+            parameters,
+            attributes,
+            &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+    assert_eq!(
+        kmipkit_client_batch_item_derive_key(
+            7,
+            ptr::null(),
+            1,
+            1,
+            parameters,
+            attributes,
+            &mut item,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(item.is_null());
+
+    assert_eq!(
+        kmipkit_client_batch_item_derive_key(
+            7,
             &raw const identifier,
             1,
             1,
@@ -3446,6 +3473,52 @@ fn ffi_derive_key_constructor_requires_attributes() {
     );
     assert!(item.is_null());
     release(parameters, Kind::Structure);
+}
+
+#[test]
+fn ffi_rekey_constructor_preserves_optional_fields_and_rejects_invalid_offset_flag() {
+    let attributes = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let masks = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut rejected = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
+
+    assert_eq!(
+        kmipkit_client_batch_item_rekey(
+            ptr::null(),
+            2,
+            0,
+            attributes,
+            masks,
+            &mut rejected,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(rejected.is_null());
+
+    let mut item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_rekey(
+            ptr::null(),
+            1,
+            u32::MAX,
+            attributes,
+            masks,
+            &mut item,
+        ),
+        SUCCESS
+    );
+    let handle = reference_handle(item, Kind::BatchItem).expect("Re-key item handle is registered");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("the constructor returns a batch item");
+    };
+    let ClientRequest::Rekey(request) = batch_item.request() else {
+        panic!("the constructor returns a Re-key request");
+    };
+    assert!(format!("{request:?}").contains("has_attributes: true"));
+    assert!(format!("{request:?}").contains("has_protection_storage_masks: true"));
+
+    kmipkit_client_batch_item_release(item);
+    release(masks, Kind::Structure);
+    release(attributes, Kind::Structure);
 }
 
 fn import_test_object() -> Item {
@@ -3852,6 +3925,24 @@ fn ffi_locate_constructor_rejects_non_boolean_flags_and_preserves_omitted_option
         );
         assert!(item.is_null());
     }
+
+    let mut missing_attributes = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_locate(
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            ptr::null_mut(),
+            &raw mut missing_attributes,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(missing_attributes.is_null());
 
     let mut item = ptr::null_mut();
     assert_eq!(
@@ -5460,6 +5551,19 @@ fn ffi_rekey_ttlv_is_a_complete_ordered_caller_owned_copy_from_c() {
         ],
     );
 
+    let mut invalid_identifier = empty_unique_identifier_output_v1();
+    invalid_identifier.struct_size -= 1;
+    let mut invalid_present = 9;
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_response_rekey(
+            item,
+            &raw mut invalid_present,
+            &raw mut invalid_identifier,
+        )
+    );
+    assert_eq!(invalid_present, 9);
+
     let mut identifier_present = 0;
     let mut identifier = empty_unique_identifier_output_v1();
     assert_eq!(
@@ -5626,6 +5730,21 @@ fn ffi_reprovision_preserves_optional_success_identifier_and_owned_ttlv() {
             ttlv_item(0x0054_1234, 0x08, &unknown),
         ],
     );
+
+    let mut invalid_present = 9;
+    let mut invalid_identifier_present = 9;
+    let mut invalid_identifier = empty_unique_identifier_output_v1();
+    invalid_identifier.struct_size -= 1;
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_client_batch_item_response_reprovision(
+            item,
+            &raw mut invalid_present,
+            &raw mut invalid_identifier_present,
+            &raw mut invalid_identifier,
+        )
+    );
+    assert_eq!((invalid_present, invalid_identifier_present), (0, 0));
 
     let mut present = 0;
     let mut identifier_present = 0;

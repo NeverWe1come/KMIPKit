@@ -62,4 +62,24 @@ final class RekeyMappingTest {
                 ));
         ResponseTtlvTestSupport.assertReleased(unexpectedTtlv);
     }
+
+    @Test
+    void presentResponseRequiresAnOwnedTtlv() {
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseRekeyResponse(
+                        new Object[] {new long[] {1}, null, new long[] {0}}));
+    }
+
+    @Test
+    void malformedPresentIdentifierReleasesTheOwnedResponseTtlv() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+
+        assertThrows(InvalidInputException.class,
+                () -> ClientBatchItemResult.parseRekeyResponse(new Object[] {
+                    new long[] {1}, new Object(), new long[] {responseTtlv}
+                }));
+
+        ResponseTtlvTestSupport.assertReleased(responseTtlv);
+    }
 }

@@ -198,6 +198,35 @@ def test_reprovision_success_without_identifier_is_not_treated_as_absent_respons
     response.close()
 
 
+def test_reprovision_releases_ttlv_when_native_wrapper_creation_fails(monkeypatch) -> None:
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 45)
+    released: list[object] = []
+
+    def get_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output[0] = native_ttlv
+        return 0
+
+    def reject_wrapper(_address: int) -> object:
+        raise RuntimeError("invalid native handle")
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_reprovision=_typed_response(1, 0),
+            kmipkit_client_batch_item_response_reprovision_ttlv=get_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(ttlv, "_structure_from_native_address", reject_wrapper)
+
+    with pytest.raises(RuntimeError, match="invalid native handle"):
+        client._reprovision_response(_response_item())
+
+    assert released == [native_ttlv]
+
+
 def test_reprovision_response_rejects_identifier_presence_mismatches(monkeypatch) -> None:
     monkeypatch.setattr(
         client,
