@@ -4973,8 +4973,10 @@ gates.
 
 TDD commits: Red `3469ae2b`, `1cfee92c`, and `4104add9`; Green
 `83c82fe2`; aliasing follow-up Red `1fbb2b7e` and Green `95ca8f85`. Each is
-DCO-signed. T062 remains open until independent QA/security and exact-head
-cross-language CI and coverage pass.
+DCO-signed. Traceability follow-up Red `67d24e7c` and Green `662e3fc5` add
+stable rows for Table 291 Any Object and Table 293 Certificate Length without
+changing request behavior. T062 remains open until independent QA/security and
+exact-head cross-language CI and coverage pass.
 
 Focused local command results on the Green commit:
 
@@ -4996,6 +4998,7 @@ Focused local command results on the Green commit:
 | `cargo llvm-cov --workspace --all-features --locked --json --output-path <temporary-file>` | Pass; instrumented workspace tests completed and normalized LLVM export was produced outside the repository. |
 | `scripts/coverage_gate.py` changed-line projection for Rust (`3da51b86..95ca8f85`) | Pass: 46/46 executable changed Rust production lines covered (100.00%). Two explicitly documented `COVERAGE-EXCLUDE` lines are outside the denominator: a successful Register response without a UID is rejected by protocol parsing, and the second output-record validation can fail only if the caller races/mutates the same record after preflight. |
 | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features -- -D warnings`; `python tools/api_manifest/generate.py --check` | Pass on the final local changes. AWS-LC Windows toolchain warnings remain non-fatal. |
+| Register table-row traceability follow-up (`67d24e7c` Red; `662e3fc5` Green) | Pass: parity manifest tests (2), object-lifecycle traceability tests (2), requirement traceability tests (2), and `git diff --check`. The Red regression failed as expected for both absent IDs. |
 
 The focused FFI tests verify Success exposes the returned identifier and
 caller-owned ordered TTLV copy to compiled C; Failure and Pending expose
@@ -5006,3 +5009,12 @@ ownership/redaction. These are local API-mapping tests, not official OASIS test
 cases or conformance evidence. Rust changed-line coverage passes locally;
 Java/Python/C/JNI selected-scope aggregate coverage and independent QA/security
 remain for exact-head CI/review. The T062 task checkbox remains open.
+
+The traceability follow-up adds `KMIPKIT-022-T291-ANY-OBJECT` for the required
+Table 291 object and `KMIPKIT-022-T293-CERTIFICATE-LENGTH` for Certificate
+Length's Certificate-only requirement. Both IDs link the exact Register source
+and protocol test in the approved owner traceability and T062 mapping. This
+closes the QA finding about stable table-row traces; independent QA approved
+the correction against the pinned OASIS source. The change does not alter
+protocol behavior or claim OASIS conformance. Independent security review of
+the Register output-aliasing fix found no additional findings.
