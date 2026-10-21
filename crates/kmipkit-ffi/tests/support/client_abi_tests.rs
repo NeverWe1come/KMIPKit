@@ -17,7 +17,7 @@ use kmipkit_protocol::{
     ObtainLeaseRequest, OperationData, Pkcs11Request, ReProvisionRequest, RecertifyRequest,
     RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
     RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference,
-    StorageStatusMask, Ticket, TicketType, UniqueIdentifier,
+    StorageStatusMask, Ticket, TicketType, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_transport::{
@@ -407,6 +407,67 @@ fn successful_check_response() -> Vec<u8> {
                     ttlv_item(0x0042_0093, 0x08, b"check-success"),
                     ttlv_enumeration(0x0042_007f, 0),
                     payload,
+                ],
+            ),
+        ],
+    )
+}
+
+fn successful_validate_response() -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    let payload = ttlv_structure(0x0042_007c, [ttlv_enumeration(0x0042_009b, 0xf123_4567)]);
+    ttlv_structure(
+        0x0042_007b,
+        [
+            header,
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x17),
+                    ttlv_item(0x0042_0093, 0x08, b"validate-success"),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    payload,
+                ],
+            ),
+        ],
+    )
+}
+
+fn failed_validate_response() -> Vec<u8> {
+    let protocol_version = ttlv_structure(
+        0x0042_0069,
+        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+    );
+    let header = ttlv_structure(
+        0x0042_007a,
+        [
+            protocol_version,
+            ttlv_datetime(0x0042_0092, 1),
+            ttlv_integer(0x0042_000d, 1),
+        ],
+    );
+    ttlv_structure(
+        0x0042_007b,
+        [
+            header,
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 0x17),
+                    ttlv_item(0x0042_0093, 0x08, b"validate-failure"),
+                    ttlv_enumeration(0x0042_007f, 1),
+                    ttlv_enumeration(0x0042_007e, 6),
                 ],
             ),
         ],
@@ -2422,6 +2483,59 @@ fn ffi_failed_check_keeps_policy_fields_and_complete_ttlv_available_to_c() {
     let result =
         unsafe { kmipkit_client_abi_c_consumer_validate_failed_check_response(response_item) };
     assert_eq!(result, 1);
+}
+
+#[test]
+fn ffi_validate_response_accessors_are_available_to_c() {
+    let success = execute_single_abi_response(
+        ClientRequest::Validate(ValidateRequest::new().with_unique_identifier(
+            UniqueIdentifier::TextString("validate-success-object".to_owned()),
+        )),
+        b"validate-success",
+        successful_validate_response(),
+    )
+    .expect("successful Validate response maps to a typed result");
+    let success_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(success)),
+    );
+    let mut success_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(success_handle, 0, &mut success_item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(success_handle);
+    // SAFETY: the C consumer owns and releases the response-item handle after checking both accessors.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_abi_c_consumer_validate_validate_response(success_item, 1, 0xf123_4567)
+        },
+        1
+    );
+
+    let failure = execute_single_abi_response(
+        ClientRequest::Validate(ValidateRequest::new().with_unique_identifier(
+            UniqueIdentifier::TextString("validate-failure-object".to_owned()),
+        )),
+        b"validate-failure",
+        failed_validate_response(),
+    )
+    .expect("failed Validate response remains available as a typed batch result");
+    let failure_handle = make_handle(
+        Kind::ClientBatchResponse,
+        HandleValue::ClientBatchResponse(Arc::new(failure)),
+    );
+    let mut failure_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_response_item_at(failure_handle, 0, &mut failure_item),
+        SUCCESS
+    );
+    kmipkit_client_batch_response_release(failure_handle);
+    // SAFETY: the C consumer owns and releases the response-item handle after checking absent outputs.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_validate_validate_response(failure_item, 0, 0) },
+        1
+    );
 }
 
 fn successful_check_client_response() -> Arc<ClientBatchResponse> {
@@ -5781,6 +5895,11 @@ unsafe extern "C" {
     ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_failed_check_response(
         item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_validate_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+        expected_present: u8,
+        expected_indicator: u32,
     ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_certify_response_ttlv(
         item: *mut kmipkit_client_batch_item_response_t,
