@@ -1681,6 +1681,27 @@ class T076ClientMappingTests(unittest.TestCase):
                 self.assertIn("T058", exclusion["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
 
+    def test_revoke_response_generated_exports_have_exact_t063_exclusions(self) -> None:
+        actual = {
+            row["exportName"]
+            for row in self.manifest["approvedExclusions"]
+            if row["packageId"] == "python-kmipkit"
+            and row["exportName"].startswith("kmipkit.client.RevokeResponse.")
+        }
+        self.assertEqual(REVOKE_RESPONSE_EXCLUDED_EXPORTS, actual)
+        for export_name in sorted(actual):
+            with self.subTest(export=export_name):
+                exclusion = next(
+                    row for row in self.manifest["approvedExclusions"]
+                    if row["exportName"] == export_name
+                )
+                self.assertEqual(
+                    "specs/043-public-api-bindings/spec.md",
+                    exclusion["approvalSource"]["path"],
+                )
+                self.assertIn("T063", exclusion["evidence"])
+                self.assertIn("KMIPKIT-0043-FR-021", exclusion["evidence"])
+
     def test_python_export_inventory_and_facade_mappings_are_exactly_classified(self) -> None:
         semantic_exports = {
             "kmipkit.client.BatchItemResult.operation",
