@@ -4880,7 +4880,7 @@ cannot be guaranteed zeroized by KMIPKit.
 |---|---|---|---|
 | Red | `0b736281`, `1e2ec4db`, `53eb571b`, `08f0f0dc`, `8695ba83`, `706fb1e2`, `66094c20`, `c4b3ca4d`, `e32d0f6e` | RNG manifest/parity contracts, generated C consumer contracts, Java/JNI and Python/CFFI integration cases, Re-Certify context regression, explicit Java/Python audit-artifact coverage, and C output-alias consumer cases | Expected failures established missing four-language declarations and mapping, missing JNI/CFFI execution paths, the CFFI record-context mismatch, missing Java/Python manifest accounting, and alias acceptance in the four C output getters before the overlap guard. |
 | Green | `1056c3c9`, `b9f16033`, `14b322f0` | Rust protocol/client/FFI RNG suites; compiled C consumer; Java JNI and Python CFFI paths; generated manifest audit reconciliation; output-alias guard before mutable output references | PASS locally on Windows: protocol 7+8, client 4+4, four focused FFI cases and compiled C consumer; the four RNG Java/JNI and Python/CFFI declarations match the public manifest, and the C output accessors reject overlapping regions before writes. Export audit still reports four pre-existing Re-Provision/T061 Java misses outside this task. |
-| Refactor / evidence | This commit | `cargo fmt --all --check`; `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings`; `python -B -m unittest tools.api_manifest.tests.test_rng_parity_manifest -v`; `python tools/api_manifest/generate.py --check`; `git diff --check`; Maven `RngOperationMappingTest` and complete `ClientFacadeTlsIntegrationTest`; Python RNG unit and native integration tests using `KMIPKIT_NATIVE_LIBRARY=target/debug/kmipkit_ffi.dll` | PASS locally on Windows: Rust formatting and scoped Clippy; manifest tests 4/4 and all 12 generated outputs; Java mapping 4/4 and TLS 1.3/mTLS integration class 26/26; Python RNG operation plus native mTLS tests 15/15. The current debug DLL contains the RNG Retrieve export; stale wheel-build DLL copies do not and must not be used for this focused run. The export audit's remaining four Re-Provision/T061 Java rows are unchanged baseline misses. Independent final QA/security re-review, exact-head cross-platform CI, and selected coverage gates remain pending. |
+| Refactor / evidence | `e7a6b825`, `7d28c4f9` | `cargo fmt --all --check`; `cargo clippy --locked -p kmipkit-ffi --all-targets --all-features -- -D warnings`; `python -B -m unittest tools.api_manifest.tests.test_rng_parity_manifest -v`; `python tools/api_manifest/generate.py --check`; `git diff --check`; Maven `RngOperationMappingTest` and complete `ClientFacadeTlsIntegrationTest`; Python RNG unit and native integration tests using `KMIPKIT_NATIVE_LIBRARY=target/debug/kmipkit_ffi.dll` | PASS locally on Windows: Rust formatting and scoped Clippy; manifest tests 4/4 and all 12 generated outputs; Java mapping 4/4 and TLS 1.3/mTLS integration class 26/26; Python RNG operation plus native mTLS tests 15/15. The current debug DLL contains the RNG Retrieve export; stale wheel-build DLL copies do not and must not be used for this focused run. The export audit's remaining four Re-Provision/T061 Java rows are unchanged baseline misses. Independent QA and security re-reviews passed without blocking findings; exact-head cross-platform CI and selected coverage gates remain pending. |
 
 The Re-Certify regression test verifies that the existing shared CFFI path is
 unchanged while the new Seed path uses its matching private ABI context. This
@@ -4902,6 +4902,21 @@ that all non-aliased sentinels and aliased memory remain unchanged on rejection.
 ffi_rng_response_c_consumer_rejects_overlapping_output_regions` passes (1/1).
 The production overlap guard is unchanged; all four accessors already preflight
 every pair before creating mutable references. QA re-review of `e7a6b825` passed
-with no blocking finding; the security re-review of this final test-only delta
-and QA confirmation are pending. Exact-head cross-platform CI and coverage
-gates remain outstanding.
+with no blocking finding; QA also confirmed that the final test-only delta does
+not change its PASS. Exact-head cross-platform CI and coverage gates remain
+outstanding.
+
+### Exact-head CI correction (2026-10-21)
+
+Exact-head CI run [39558723450](https://github.com/NeverWe1come/KMIPKit/actions/runs/39558723450)
+failed on three test-maintenance issues, not on RNG production behavior: the
+manifest parity test did not classify the two RNG TTLV accessors as using their
+aggregate JNI symbols; the compiled C consumer called `check_view_tags` before
+its static declaration; and the FFI panic-boundary test still expected 259 C
+exports instead of the observed 265. The C declaration error also caused the
+dependent Clippy, workspace-build, and coverage jobs to fail. Corrections are
+committed as `148d9cd2`, `035c2288`, and `737b663a`. Local verification passes:
+the complete manifest parity suite (15/15), strict GCC C11 syntax check of the
+compiled consumer in WSL, the C output-alias consumer test (1/1), and the FFI
+panic-boundary export-count test (1/1). Cross-platform CI and selected coverage
+gates must pass on the corrected head before T064/T065 can be marked complete.
