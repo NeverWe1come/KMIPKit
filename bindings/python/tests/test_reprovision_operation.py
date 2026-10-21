@@ -227,6 +227,25 @@ def test_reprovision_releases_ttlv_when_native_wrapper_creation_fails(monkeypatc
     assert released == [native_ttlv]
 
 
+def test_reprovision_rejects_present_ttlv_without_native_handle(monkeypatch) -> None:
+    def omit_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output[0] = ffi.NULL
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_reprovision=_typed_response(1, 0),
+            kmipkit_client_batch_item_response_reprovision_ttlv=omit_ttlv,
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._reprovision_response(_response_item())
+
+
 def test_reprovision_response_rejects_identifier_presence_mismatches(monkeypatch) -> None:
     monkeypatch.setattr(
         client,

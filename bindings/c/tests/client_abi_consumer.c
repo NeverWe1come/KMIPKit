@@ -4267,6 +4267,16 @@ int kmipkit_client_abi_c_consumer_validate_reprovision_response(
             (expected_identifier != 0 || expected_identifier_length != 0))) {
         goto cleanup;
     }
+    if (kmipkit_client_batch_item_response_reprovision(
+            item, (uint8_t *)(uintptr_t)UINTPTR_MAX, &identifier_present, &identifier) !=
+        T076_ERROR_INVALID_INPUT) {
+        goto cleanup;
+    }
+    if (kmipkit_client_batch_item_response_reprovision(
+            item, &present, (uint8_t *)(uintptr_t)UINTPTR_MAX, &identifier) !=
+        T076_ERROR_INVALID_INPUT) {
+        goto cleanup;
+    }
     identifier.struct_size = (uint32_t)sizeof(identifier);
     identifier.abi_version = UINT32_C(1);
     if (kmipkit_client_batch_item_response_reprovision(
