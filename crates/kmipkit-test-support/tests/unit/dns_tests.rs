@@ -236,6 +236,75 @@ fn retries_dns_fixture_tcp_bind_when_ephemeral_port_is_reserved() {
 }
 
 #[test]
+fn retries_cross_protocol_excluded_ephemeral_ports_with_the_other_allocator() {
+    let udp_ephemeral_attempts = std::cell::Cell::new(0_u16);
+    let tcp_ephemeral_attempts = std::cell::Cell::new(0_u16);
+    let bind_calls = std::cell::RefCell::new(Vec::new());
+    let result = super::bind_local_dns_sockets_with(
+        |address| {
+            bind_calls.borrow_mut().push(('U', address.port()));
+            if address.port() == 0 {
+                let attempt = udp_ephemeral_attempts.get() + 1;
+                udp_ephemeral_attempts.set(attempt);
+                let port = match attempt {
+                    1 => 54_001,
+                    2 => 54_003,
+                    _ => 54_005,
+                };
+                Ok(fake_dns_socket(fake_dns_address(port)))
+            } else {
+                assert_eq!(address, fake_dns_address(54_002));
+                Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "simulated UDP-excluded TCP ephemeral port",
+                ))
+            }
+        },
+        fake_dns_local_addr,
+        |address| {
+            bind_calls.borrow_mut().push(('T', address.port()));
+            if address.port() == 0 {
+                tcp_ephemeral_attempts.set(tcp_ephemeral_attempts.get() + 1);
+                Ok(fake_dns_socket(fake_dns_address(54_002)))
+            } else if address == fake_dns_address(54_001) {
+                Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "simulated TCP-excluded UDP ephemeral port",
+                ))
+            } else if address == fake_dns_address(54_003)
+                && tcp_ephemeral_attempts.get() == 1
+            {
+                Ok(fake_dns_socket(address))
+            } else {
+                Err(io::Error::new(
+                    io::ErrorKind::PermissionDenied,
+                    "simulated TCP-excluded UDP ephemeral port",
+                ))
+            }
+        },
+    );
+
+    assert_eq!(
+        result
+            .expect("socket pairing should alternate allocators across protocol exclusions")
+            .0
+            .local_addr,
+        fake_dns_address(54_003)
+    );
+    assert_eq!(
+        *bind_calls.borrow(),
+        [
+            ('U', 0),
+            ('T', 54_001),
+            ('T', 0),
+            ('U', 54_002),
+            ('U', 0),
+            ('T', 54_003),
+        ]
+    );
+}
+
+#[test]
 fn stops_retrying_dns_fixture_udp_bind_after_the_attempt_limit() {
     let mut udp_attempts = 0;
     let mut tcp_attempts = 0;
