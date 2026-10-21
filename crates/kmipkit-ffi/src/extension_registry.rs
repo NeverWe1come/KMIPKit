@@ -2951,80 +2951,31 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
 
         let default_limits = CodecLimits::defaults();
         let mut total_encoded_input_bytes = 0_u64;
+        let mut total_identifier_bytes = 0_u64;
+        let certificates = try_ffi!(copy_validate_certificates(
+            certificate_handles,
+            &default_limits,
+            &mut total_encoded_input_bytes,
+        ));
+        let identifiers = try_ffi!(copy_validate_identifiers(
+            identifier_records,
+            &mut total_identifier_bytes,
+            &mut total_encoded_input_bytes,
+        ));
+        let extensions = try_ffi!(copy_validate_extensions(
+            extension_handles,
+            &default_limits,
+            &mut total_encoded_input_bytes,
+        ));
         let mut request = ValidateRequest::new();
-        for certificate_handle in certificate_handles {
-            let handle = try_ffi!(reference_handle(*certificate_handle, Kind::Structure));
-            let HandleValue::Structure(source) = &handle.value else {
-                return record_ffi_error(ERROR_INVALID_INPUT);
-            };
-            try_ffi!(check_structure_limits(source, &default_limits));
-            let (value_bytes, _, _) = try_ffi!(structure_measure(&source.view()));
-            let padded_value_bytes = try_ffi!(padded_length(value_bytes));
-            let encoded_size = try_ffi!(
-                8_u64
-                    .checked_add(padded_value_bytes)
-                    .ok_or(ERROR_RESOURCE_LIMIT)
-            );
-            try_ffi!(accumulate_validate_input_bytes(
-                &mut total_encoded_input_bytes,
-                encoded_size,
-            ));
-            let certificate = try_ffi!(source.view().try_clone().map_err(model_status));
+        for certificate in certificates {
             request = request.with_certificate(certificate);
         }
-        let mut total_identifier_bytes = 0_u64;
-        for identifier_record in identifier_records {
-            let encoded_size = match identifier_record.kind {
-                crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING => {
-                    let padded_text_length = try_ffi!(padded_length(identifier_record.text_length));
-                    try_ffi!(
-                        8_u64
-                            .checked_add(padded_text_length)
-                            .ok_or(ERROR_RESOURCE_LIMIT)
-                    )
-                }
-                crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION
-                | crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => 16,
-                _ => return record_ffi_error(ERROR_INVALID_INPUT),
-            };
-            try_ffi!(accumulate_validate_input_bytes(
-                &mut total_encoded_input_bytes,
-                encoded_size,
-            ));
-            let Some(identifier) =
-                try_ffi!(copy_unique_identifier(ptr::from_ref(identifier_record)))
-            else {
-                return record_ffi_error(ERROR_INVALID_INPUT);
-            };
-            if let UniqueIdentifier::TextString(text) = &identifier {
-                let Ok(length) = u64::try_from(text.len()) else {
-                    return record_ffi_error(ERROR_RESOURCE_LIMIT);
-                };
-                total_identifier_bytes = match total_identifier_bytes.checked_add(length) {
-                    Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
-                    _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
-                };
-            }
+        for identifier in identifiers {
             request = request.with_unique_identifier(identifier);
         }
-        for extension_handle in extension_handles {
-            let handle = try_ffi!(reference_handle(*extension_handle, Kind::Item));
-            let HandleValue::Item(extension) = &handle.value else {
-                return record_ffi_error(ERROR_INVALID_INPUT);
-            };
-            try_ffi!(check_item_limits(extension, &default_limits));
-            let (value_bytes, _, _) = try_ffi!(extension.with_value(measure_value));
-            let padded_value_bytes = try_ffi!(padded_length(value_bytes));
-            let encoded_size = try_ffi!(
-                8_u64
-                    .checked_add(padded_value_bytes)
-                    .ok_or(ERROR_RESOURCE_LIMIT)
-            );
-            try_ffi!(accumulate_validate_input_bytes(
-                &mut total_encoded_input_bytes,
-                encoded_size,
-            ));
-            request = request.with_extension(try_ffi!(clone_item(extension)));
+        for extension in extensions {
+            request = request.with_extension(extension);
         }
         if has_validity_date == 1 {
             try_ffi!(accumulate_validate_input_bytes(
@@ -3036,6 +2987,90 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
         *out = try_ffi!(batch_item_handle(ClientRequest::Validate(request)));
         SUCCESS
     })
+}
+
+fn copy_validate_certificates(
+    handles: &[*mut kmipkit_ttlv_structure_t],
+    limits: &CodecLimits,
+    total_encoded_bytes: &mut u64,
+) -> FfiResult<Vec<Structure>> {
+    let mut certificates = Vec::new();
+    certificates
+        .try_reserve_exact(handles.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for handle in handles {
+        let handle = reference_handle(*handle, Kind::Structure)?;
+        let HandleValue::Structure(source) = &handle.value else {
+            return Err(ERROR_INVALID_INPUT);
+        };
+        check_structure_limits(source, limits)?;
+        let (value_bytes, _, _) = structure_measure(&source.view())?;
+        let encoded_size = 8_u64
+            .checked_add(padded_length(value_bytes)?)
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        accumulate_validate_input_bytes(total_encoded_bytes, encoded_size)?;
+        certificates.push(source.view().try_clone().map_err(model_status)?);
+    }
+    Ok(certificates)
+}
+
+fn copy_validate_identifiers(
+    records: &[kmipkit_unique_identifier_v1_t],
+    total_identifier_bytes: &mut u64,
+    total_encoded_bytes: &mut u64,
+) -> FfiResult<Vec<UniqueIdentifier>> {
+    let mut identifiers = Vec::new();
+    identifiers
+        .try_reserve_exact(records.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for record in records {
+        let encoded_size = match record.kind {
+            crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING => 8_u64
+                .checked_add(padded_length(record.text_length)?)
+                .ok_or(ERROR_RESOURCE_LIMIT)?,
+            crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION
+            | crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => 16,
+            _ => return Err(ERROR_INVALID_INPUT),
+        };
+        accumulate_validate_input_bytes(total_encoded_bytes, encoded_size)?;
+        let Some(identifier) = copy_unique_identifier(ptr::from_ref(record))? else {
+            return Err(ERROR_INVALID_INPUT);
+        };
+        if let UniqueIdentifier::TextString(text) = &identifier {
+            let length = u64::try_from(text.len()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+            *total_identifier_bytes = total_identifier_bytes
+                .checked_add(length)
+                .filter(|total| *total <= MAX_FFI_INPUT_BYTES)
+                .ok_or(ERROR_RESOURCE_LIMIT)?;
+        }
+        identifiers.push(identifier);
+    }
+    Ok(identifiers)
+}
+
+fn copy_validate_extensions(
+    handles: &[*mut kmipkit_ttlv_item_t],
+    limits: &CodecLimits,
+    total_encoded_bytes: &mut u64,
+) -> FfiResult<Vec<Item>> {
+    let mut extensions = Vec::new();
+    extensions
+        .try_reserve_exact(handles.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for handle in handles {
+        let handle = reference_handle(*handle, Kind::Item)?;
+        let HandleValue::Item(extension) = &handle.value else {
+            return Err(ERROR_INVALID_INPUT);
+        };
+        check_item_limits(extension, limits)?;
+        let (value_bytes, _, _) = extension.with_value(measure_value)?;
+        let encoded_size = 8_u64
+            .checked_add(padded_length(value_bytes)?)
+            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        accumulate_validate_input_bytes(total_encoded_bytes, encoded_size)?;
+        extensions.push(clone_item(extension)?);
+    }
+    Ok(extensions)
 }
 
 fn accumulate_validate_input_bytes(total: &mut u64, added: u64) -> FfiResult<()> {
