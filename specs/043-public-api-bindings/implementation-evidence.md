@@ -4891,3 +4891,17 @@ parity evidence, not official-vector, interoperability, profile-support,
 formal-conformance, certification, or FIPS evidence. KMIPKIT-0041 T031 remains
 gated until the 0043 mapping is integrated; required two-server interoperability
 and full release gates remain outstanding.
+
+### Security-review follow-up: complete pairwise C output alias coverage
+
+The independent review of `e7a6b825` found that the compiled C consumer did not
+exercise the second-flag/output pair in the three-output Retrieve and Seed
+getters. The C consumer now checks those final pairwise overlaps and verifies
+that all non-aliased sentinels and aliased memory remain unchanged on rejection.
+`cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --lib
+ffi_rng_response_c_consumer_rejects_overlapping_output_regions` passes (1/1).
+The production overlap guard is unchanged; all four accessors already preflight
+every pair before creating mutable references. QA re-review of `e7a6b825` passed
+with no blocking finding; the security re-review of this final test-only delta
+and QA confirmation are pending. Exact-head cross-platform CI and coverage
+gates remain outstanding.

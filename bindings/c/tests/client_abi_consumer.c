@@ -464,6 +464,16 @@ int kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(
         distinct_flag != 7 ||
         memcmp(before, &retrieve_span_alias, sizeof(retrieve_span_alias)) != 0) return 0;
 
+    shared_flag = 9;
+    distinct_flag = 7;
+    memset(&retrieve_span_alias, 0x5a, sizeof(retrieve_span_alias));
+    memcpy(before, &retrieve_span_alias, sizeof(retrieve_span_alias));
+    if (kmipkit_client_batch_item_response_rng_retrieve(
+            item, &shared_flag, &retrieve_span_alias.flag,
+            &retrieve_span_alias.span) != T076_ERROR_INVALID_INPUT ||
+        shared_flag != 9 ||
+        memcmp(before, &retrieve_span_alias, sizeof(retrieve_span_alias)) != 0) return 0;
+
     retrieve_ttlv_alias.handle = (kmipkit_ttlv_structure_t *)(uintptr_t)0x1234;
     memcpy(before, &retrieve_ttlv_alias, sizeof(retrieve_ttlv_alias));
     if (kmipkit_client_batch_item_response_rng_retrieve_ttlv(
@@ -483,6 +493,16 @@ int kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(
             item, &seed_length_alias.flag, &distinct_flag,
             &seed_length_alias.length) != T076_ERROR_INVALID_INPUT ||
         distinct_flag != 7 ||
+        memcmp(before, &seed_length_alias, sizeof(seed_length_alias)) != 0) return 0;
+
+    shared_flag = 9;
+    distinct_flag = 7;
+    seed_length_alias.length = INT32_C(0x23456789);
+    memcpy(before, &seed_length_alias, sizeof(seed_length_alias));
+    if (kmipkit_client_batch_item_response_rng_seed(
+            item, &shared_flag, &seed_length_alias.flag,
+            &seed_length_alias.length) != T076_ERROR_INVALID_INPUT ||
+        shared_flag != 9 ||
         memcmp(before, &seed_length_alias, sizeof(seed_length_alias)) != 0) return 0;
 
     seed_ttlv_alias.handle = (kmipkit_ttlv_structure_t *)(uintptr_t)0x5678;
