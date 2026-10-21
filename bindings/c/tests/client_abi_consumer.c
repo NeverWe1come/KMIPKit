@@ -6,6 +6,9 @@
 
 #define T076_ERROR_INVALID_INPUT ((int32_t)4)
 
+static int check_view_tags(
+    kmipkit_ttlv_structure_view_t *view, const uint32_t *expected, uint64_t expected_count);
+
 static int execute_with_options_and_error_ttlv_clears_outputs(void) {
     kmipkit_client_batch_response_t *response = (kmipkit_client_batch_response_t *)(uintptr_t)1;
     kmipkit_ttlv_structure_t *error_response = (kmipkit_ttlv_structure_t *)(uintptr_t)1;
