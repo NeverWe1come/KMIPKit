@@ -386,3 +386,16 @@ review, exact-head CI, and coverage.
   production coverage aggregate. Controller review, security review, exact-
   head CI and the final coverage gate remain pending; T060 is not marked
   complete.
+
+## Final QA C test cleanup
+
+- Updated `rekey_key_pair_constructor_is_callable_from_c` to release an
+  unexpected non-null constructor output when it differs from the live
+  sentinel handle. The sentinel remains restored to the shared cleanup path,
+  preventing both a leak for a distinct output and a double-free for an alias.
+- Command:
+  `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact`
+  passed: 1 test, 0 failures, 10 filtered out. The C build emitted the existing
+  non-fatal AWS-LC/NASM probe and MSVC LNK4217 warnings.
+- `git diff --check`: PASS. This is test-harness cleanup only; no production
+  code or ABI changed. No push was performed.

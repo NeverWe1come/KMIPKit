@@ -242,6 +242,9 @@ static int rekey_key_pair_constructor_is_callable_from_c(void) {
             0, 2, UINT32_C(86400), 0, 0, 0, 0, 0, 0, &item);
     kmipkit_client_batch_item_t *invalid_offset_output = item;
     item = sentinel_item;
+    if (invalid_offset_output != 0 && invalid_offset_output != sentinel_item) {
+        kmipkit_client_batch_item_release(invalid_offset_output);
+    }
     if (invalid_offset_status != T076_ERROR_INVALID_INPUT || invalid_offset_output != 0) goto cleanup;
     kmipkit_client_batch_item_release(item);
     item = 0;
