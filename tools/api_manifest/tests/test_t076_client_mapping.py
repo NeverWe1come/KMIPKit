@@ -54,6 +54,20 @@ RECERTIFY_RESPONSE_EXCLUDED_EXPORTS = frozenset(
         "__slots__",
     )
 )
+REVOKE_RESPONSE_EXCLUDED_EXPORTS = frozenset(
+    f"kmipkit.client.RevokeResponse.{member}"
+    for member in (
+        "__dataclass_fields__",
+        "__dataclass_params__",
+        "__delattr__",
+        "__eq__",
+        "__hash__",
+        "__init__",
+        "__match_args__",
+        "__setattr__",
+        "__slots__",
+    )
+) | {"kmipkit.client.RevokeResponse.__repr__"}
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 T076_SYMBOLS = {
     "kmipkit_client_batch_add_error_continuation_value",
@@ -1467,6 +1481,18 @@ class T076ClientMappingTests(unittest.TestCase):
             "kmipkit.client.UsageAllocationContext.__enter__",
             "kmipkit.client.UsageAllocationContext.__exit__",
         }
+        revoke_handle_constructor_exclusions = {
+            "kmipkit.extensions.RevocationReason.__init__",
+            "kmipkit.extensions.RevokeRequest.__init__",
+        }
+        revoke_handle_lifecycle_exclusions = {
+            f"kmipkit.extensions.{wrapper}.{member}"
+            for wrapper in ("RevocationReason", "RevokeRequest")
+            for member in ("closed", "__enter__", "__exit__")
+        }
+        revocation_reason_repr_exclusion = {
+            "kmipkit.extensions.RevocationReason.__repr__"
+        }
         exact_exclusions = (
             context_manager_exclusions
             | exception_constructor_exclusions
@@ -1486,6 +1512,10 @@ class T076ClientMappingTests(unittest.TestCase):
             | split_key_reference_storage_exclusion
             | usage_allocation_context_constructor_exclusion
             | usage_allocation_context_lifecycle_exclusions
+            | revoke_handle_constructor_exclusions
+            | revoke_handle_lifecycle_exclusions
+            | revocation_reason_repr_exclusion
+            | REVOKE_RESPONSE_EXCLUDED_EXPORTS
             | OBTAIN_LEASE_RESPONSE_EXCLUDED_EXPORTS
             | {"kmipkit.metadata.Version.__init__"}
         )
@@ -1493,6 +1523,7 @@ class T076ClientMappingTests(unittest.TestCase):
             with self.subTest(excluded_export=path):
                 self.assertIn(path, observed)
                 self.assertNotIn(path, declarations)
+                self.assertIn(path, exclusions, "exact approved export exclusion")
                 exclusion = exclusions[path]
                 self.assertEqual(path, exclusion["exportName"])
                 self.assertEqual(
@@ -1582,6 +1613,26 @@ class T076ClientMappingTests(unittest.TestCase):
                     self.assertIn("local lifecycle convenience", exclusion["reason"])
                     self.assertIn("close lifecycle", exclusion["reason"])
                     self.assertIn("T078", exclusion["evidence"])
+                elif path in revoke_handle_constructor_exclusions:
+                    self.assertIn("private identity token", exclusion["reason"])
+                    self.assertIn("_wrap_owned_handle", exclusion["reason"])
+                    self.assertIn("T063", exclusion["evidence"])
+                elif path in revoke_handle_lifecycle_exclusions:
+                    self.assertIn("local lifecycle convenience", exclusion["reason"])
+                    self.assertIn("close lifecycle", exclusion["reason"])
+                    self.assertIn("T063", exclusion["evidence"])
+                elif path in REVOKE_RESPONSE_EXCLUDED_EXPORTS:
+                    if path.endswith(".__repr__"):
+                        self.assertIn("redacted", exclusion["reason"])
+                        self.assertIn("representation", exclusion["reason"])
+                    else:
+                        self.assertIn("dataclass-generated", exclusion["reason"])
+                        self.assertIn("interpreter mechanics", exclusion["reason"])
+                    self.assertIn("T063", exclusion["evidence"])
+                elif path in revocation_reason_repr_exclusion:
+                    self.assertIn("redacted", exclusion["reason"])
+                    self.assertIn("representation", exclusion["reason"])
+                    self.assertIn("T063", exclusion["evidence"])
                 elif path in exception_constructor_exclusions:
                     self.assertIn("exception constructor", exclusion["reason"])
                     self.assertIn("local", exclusion["reason"])
