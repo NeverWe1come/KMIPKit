@@ -1736,12 +1736,14 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0, created.resultStatus());
                 assertEquals(0x1d, success.operation());
                 assertEquals(0, success.resultStatus());
+                assertTrue(success.outcomeKind().isCompleted());
                 successful = success.rekeyKeyPairResponse().orElseThrow();
                 assertEquals("replacement-private", successful.privateKeyUniqueIdentifier().text());
                 assertEquals("replacement-public", successful.publicKeyUniqueIdentifier().text());
 
                 assertEquals(0x1d, failure.operation());
                 assertEquals(1, failure.resultStatus());
+                assertTrue(failure.outcomeKind().isCompleted());
                 assertEquals(5, failure.resultReason().orElseThrow());
                 assertTrue(failure.rekeyKeyPairResponse().isEmpty());
 
@@ -1775,6 +1777,60 @@ final class ClientFacadeTlsIntegrationTest {
         assertEquals(3, countOccurrences(request, enumeration(0x42005c, 0x1d)));
         assertEquals(0, countOccurrences(request, new byte[] {0x42, 0x00, 0x66}));
         assertTrue(peer.isDone());
+    }
+
+    @Test
+    void rekeyKeyPairPeerClosePreservesPossiblySentDeliveryState() throws Exception {
+        Path serverStorePath = temporaryDirectory.resolve("rekey-pair-close-server.p12");
+        Path clientStorePath = temporaryDirectory.resolve("rekey-pair-close-client.p12");
+        createKeyStore(serverStorePath, "server");
+        createKeyStore(clientStorePath, "client");
+
+        KeyStore serverStore = loadKeyStore(serverStorePath);
+        KeyStore clientStore = loadKeyStore(clientStorePath);
+        X509Certificate serverCertificate = certificate(serverStore, "server");
+        X509Certificate clientCertificate = certificate(clientStore, "client");
+        PrivateKey clientKey = (PrivateKey) clientStore.getKey("client", STORE_PASSWORD);
+
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = peerThatClosesAfterOneRequest(listener);
+        Thread peerThread = new Thread(peer, "kmipkit-java-rekey-key-pair-close-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityDer(new byte[][] {clientCertificate.getEncoded()}, clientKey.getEncoded())
+                        .trustCertificatesDer(new byte[][] {serverCertificate.getEncoded()})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.rekeyKeyPair(UniqueIdentifier.textString("delivery-key"),
+                    null, null, null, null, null, null, null));
+
+            TransportException failure = assertThrows(
+                    TransportException.class, () -> client.execute(batch, CodecLimits.defaults()));
+            assertEquals(9, failure.statusCode());
+            assertEquals(3, failure.categoryCode());
+            assertEquals(2, failure.deliveryStateCode());
+            byte[] request = peer.get(12, TimeUnit.SECONDS);
+            assertContains(request, enumeration(0x42005c, 0x1d));
+            assertContains(request, item(0x420066, 7, "delivery-key".getBytes(StandardCharsets.US_ASCII)));
+        } finally {
+            listener.close();
+        }
     }
 
     @Test

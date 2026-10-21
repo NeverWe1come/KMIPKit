@@ -8,7 +8,8 @@ import threading
 from pathlib import Path
 from typing import NamedTuple
 
-from kmipkit import client, extensions, ttlv
+import pytest
+from kmipkit import client, errors, extensions, ttlv
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _BATCH_IDS = (b"create-0", b"pair-0", b"pair-1", b"pair-2")
@@ -108,6 +109,69 @@ def _read_exact(stream: ssl.SSLSocket, size: int) -> bytes:
 def _read_frame(stream: ssl.SSLSocket) -> bytes:
     header = _read_exact(stream, 8)
     return header + _read_exact(stream, int.from_bytes(header[4:8], "big"))
+
+
+def _start_mtls_peer(
+    response: bytes | None,
+) -> tuple[int, list[bytes], queue.Queue[Exception], threading.Thread]:
+    listener = socket.socket()
+    listener.bind(("127.0.0.1", 0))
+    listener.listen(1)
+    listener.settimeout(10)
+    port = listener.getsockname()[1]
+    received: list[bytes] = []
+    failures: queue.Queue[Exception] = queue.Queue()
+
+    def serve() -> None:
+        try:
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.minimum_version = ssl.TLSVersion.TLSv1_3
+            context.maximum_version = ssl.TLSVersion.TLSv1_3
+            context.load_cert_chain(
+                _FIXTURES / "server-cert.pem", _FIXTURES / "server-key.pem"
+            )
+            context.load_verify_locations(cafile=_FIXTURES / "client-cert.pem")
+            context.verify_mode = ssl.CERT_REQUIRED
+            raw, _ = listener.accept()
+            with raw, context.wrap_socket(raw, server_side=True) as stream:
+                assert stream.version() == "TLSv1.3"
+                assert stream.getpeercert(binary_form=True)
+                received.append(_read_frame(stream))
+                if response is not None:
+                    stream.sendall(response)
+        except Exception as error:  # noqa: BLE001 - propagate peer errors to the test thread.
+            failures.put(error)
+        finally:
+            listener.close()
+
+    peer = threading.Thread(target=serve, daemon=True)
+    peer.start()
+    return port, received, failures, peer
+
+
+def _transport(port: int) -> client.TransportConfig:
+    return client.TransportConfig(
+        endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
+        client_certificates=(
+            client.TransportInput.file(
+                _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
+            ),
+        ),
+        client_private_key=client.TransportInput.file(
+            _FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
+        ),
+        trust=client.TrustSource.certificate_authorities(
+            (
+                client.TransportInput.file(
+                    _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
+                ),
+            )
+        ),
+        connect_timeout=client.TimeoutLimit.bounded(5),
+        write_timeout=client.TimeoutLimit.bounded(5),
+        read_timeout=client.TimeoutLimit.bounded(5),
+        total_timeout=client.TimeoutLimit.bounded(8),
+    )
 
 
 def _tags(value: ttlv.Structure) -> tuple[int, ...]:
@@ -375,6 +439,9 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
         assert failures.empty() and result is not None
         created, success, failure, pending = result.items
         assert created.operation == 1 and created.result_status == 0
+        assert success.outcome is client.BatchOutcome.COMPLETED
+        assert failure.outcome is client.BatchOutcome.COMPLETED
+        assert pending.outcome is client.BatchOutcome.PENDING
         pair = success.rekey_key_pair_response
         assert pair is not None
         assert (
@@ -414,6 +481,40 @@ def test_pair_rekey_cffi_preserves_both_ids_failure_pending_and_owned_response()
         if result is not None:
             result.close()
         listener.close()
+        peer.join(timeout=10)
+        if peer.is_alive():
+            raise AssertionError("mTLS peer did not finish")
+        if not failures.empty():
+            raise failures.get()
+
+
+def test_pair_rekey_transport_error_preserves_delivery_state() -> None:
+    port, received, failures, peer = _start_mtls_peer(None)
+    config = extensions.create_client_configuration(
+        extensions.create_client_extension_registry(
+            (), extensions.default_extension_registry_limits()
+        )
+    )
+    try:
+        with (
+            config,
+            client.Client.create(config, _transport(port)) as kmip,
+            ttlv.codec_limits_defaults() as limits,
+        ):
+            batch = client.Batch.create()
+            item = extensions.client_batch_item_rekey_key_pair(
+                extensions.UniqueIdentifier.text_string("delivery-key")
+            )
+            batch.add_item(extensions.with_unique_batch_item_id(item, _BATCH_IDS[1]))
+            with pytest.raises(errors.ClientExecutionError) as failure:
+                kmip.execute(batch, limits)
+
+        assert failure.value.delivery is errors.DeliveryState.POSSIBLY_SENT
+        assert failure.value.response_ttlv is None
+        assert len(received) == 1
+        assert _item(0x42005C, 5, struct.pack(">I", 0x1D)) in received[0]
+        assert _item(0x420066, 7, b"delivery-key") in received[0]
+    finally:
         peer.join(timeout=10)
         if peer.is_alive():
             raise AssertionError("mTLS peer did not finish")
