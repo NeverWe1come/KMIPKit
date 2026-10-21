@@ -38,6 +38,8 @@ use crate::kmipkit_byte_span_v1_t;
 
 #[path = "query_ping_abi_tests.rs"]
 mod query_ping_abi_tests;
+#[path = "set_constraints_abi_tests.rs"]
+mod set_constraints_abi_tests;
 
 const INPUT_MEMORY: u32 = 1;
 const INPUT_FILE: u32 = 2;

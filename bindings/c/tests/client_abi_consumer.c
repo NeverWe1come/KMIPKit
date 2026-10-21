@@ -5818,6 +5818,71 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_build_set_constraints_request(
+    kmipkit_client_batch_item_t **out_item) {
+    kmipkit_ttlv_structure_t *constraints = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    int result = 0;
+
+    if (out_item == 0) return 0;
+    *out_item = 0;
+    if (kmipkit_ttlv_structure_create(&constraints) != 0 || constraints == 0 ||
+        kmipkit_client_batch_item_set_constraints(constraints, &item) != 0 ||
+        item == 0) {
+        goto cleanup;
+    }
+
+    /* The request owns its copy after the caller releases the input structure. */
+    kmipkit_ttlv_structure_release(constraints);
+    constraints = 0;
+    *out_item = item;
+    item = 0;
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(constraints);
+    kmipkit_client_batch_item_release(item);
+    return result;
+}
+
+int kmipkit_client_abi_c_consumer_validate_set_constraints_response_ttlv(
+    kmipkit_client_batch_item_response_t *item, uint8_t expected_present) {
+    static const uint32_t response_tags[] = {
+        UINT32_C(0x42005c), UINT32_C(0x420093), UINT32_C(0x42007f), UINT32_C(0x42007c)};
+    uint8_t present = UINT8_C(9);
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+    kmipkit_ttlv_structure_view_t *view = 0;
+    int result = 0;
+
+    if (item == 0 || expected_present > 1) goto cleanup;
+    if (kmipkit_client_batch_item_response_set_constraints_ttlv(
+            item, &present, &response_ttlv) != 0 ||
+        present != expected_present ||
+        (expected_present == 1 && response_ttlv == 0) ||
+        (expected_present == 0 && response_ttlv != 0)) {
+        goto cleanup;
+    }
+
+    /* Verify that the copied response survives release of its originating item. */
+    kmipkit_client_batch_item_response_release(item);
+    item = 0;
+    if (expected_present == 1 &&
+        (kmipkit_ttlv_structure_view(response_ttlv, &view) != 0 ||
+         !check_view_tags(
+             view, response_tags,
+             (uint64_t)(sizeof(response_tags) / sizeof(response_tags[0]))))) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_revoke_response(
     kmipkit_client_batch_item_response_t *item,
     const uint8_t *expected_identifier,
