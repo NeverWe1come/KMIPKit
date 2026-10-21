@@ -49,7 +49,7 @@ use kmipkit_protocol::{
     RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
     RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
     SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    Ticket, UniqueIdentifier,
+    Ticket, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -73,9 +73,6 @@ mod get_usage_allocation_abi_tests;
 #[path = "../tests/support/interop_abi_tests.rs"]
 mod interop_abi_tests;
 #[cfg(test)]
-#[path = "../tests/support/validate_abi_tests.rs"]
-mod validate_abi_tests;
-#[cfg(test)]
 #[path = "../tests/support/log_abi_tests.rs"]
 mod log_abi_tests;
 #[cfg(test)]
@@ -93,6 +90,9 @@ mod registry_preflight_tests;
 #[cfg(test)]
 #[path = "../tests/support/test_handle_helpers.rs"]
 mod test_handle_helpers;
+#[cfg(test)]
+#[path = "../tests/support/validate_abi_tests.rs"]
+mod validate_abi_tests;
 #[cfg(test)]
 #[path = "../tests/support/view_ownership_tests.rs"]
 mod view_ownership_tests;
@@ -145,6 +145,7 @@ const MAX_TRANSPORT_TEXT_BYTES: u64 = 4_096;
 // Facade-local allocation guard; KMIPKIT-0013 does not set a material size cap.
 const MAX_FFI_INPUT_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_DERIVE_KEY_SOURCE_IDENTIFIERS: u64 = 100_000;
+const MAX_VALIDATE_INPUT_ITEMS: u64 = 100_000;
 const MAX_TRANSPORT_MATERIAL_BYTES: u64 = MAX_FFI_INPUT_BYTES;
 const TRANSPORT_ENDPOINT_RAW_TLS: u32 = 1;
 const TRANSPORT_ENDPOINT_HTTPS: u32 = 2;
@@ -2883,6 +2884,166 @@ pub extern "C" fn kmipkit_client_batch_item_log(
         ));
         SUCCESS
     })
+}
+
+/// Creates a KMIP 2.1 §6.1.57 Validate request from ordered certificate and identifier lists.
+///
+/// Certificate structures and identifier records are borrowed and copied. A zero count accepts
+/// a null array, and omission of the validity date is preserved for server-side evaluation.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_validate(
+    certificates: *mut *mut kmipkit_ttlv_structure_t,
+    certificate_count: u64,
+    identifiers: *const kmipkit_unique_identifier_v1_t,
+    identifier_count: u64,
+    payload_extensions: *mut *mut kmipkit_ttlv_item_t,
+    payload_extension_count: u64,
+    has_validity_date: u8,
+    validity_date: i64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let Some(total_count) = certificate_count
+            .checked_add(identifier_count)
+            .and_then(|count| count.checked_add(payload_extension_count))
+        else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
+        if total_count > MAX_VALIDATE_INPUT_ITEMS {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        if (certificate_count > 0 && certificates.is_null())
+            || (identifier_count > 0 && identifiers.is_null())
+            || (payload_extension_count > 0 && payload_extensions.is_null())
+            || has_validity_date > 1
+            || (has_validity_date == 0 && validity_date != 0)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let Ok(certificate_count) = usize::try_from(certificate_count) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
+        let Ok(identifier_count) = usize::try_from(identifier_count) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
+        let Ok(payload_extension_count) = usize::try_from(payload_extension_count) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        };
+        // SAFETY: non-null arrays are checked above and both counts are capped before reading.
+        let certificate_handles = if certificate_count == 0 {
+            &[][..]
+        } else {
+            unsafe { std::slice::from_raw_parts(certificates, certificate_count) }
+        };
+        // SAFETY: non-null arrays are checked above and both counts are capped before reading.
+        let identifier_records = if identifier_count == 0 {
+            &[][..]
+        } else {
+            unsafe { std::slice::from_raw_parts(identifiers, identifier_count) }
+        };
+        // SAFETY: non-null arrays are checked above and the combined count is capped before reading.
+        let extension_handles = if payload_extension_count == 0 {
+            &[][..]
+        } else {
+            unsafe { std::slice::from_raw_parts(payload_extensions, payload_extension_count) }
+        };
+
+        let default_limits = CodecLimits::defaults();
+        let mut total_encoded_input_bytes = 0_u64;
+        let mut request = ValidateRequest::new();
+        for certificate_handle in certificate_handles {
+            let handle = try_ffi!(reference_handle(*certificate_handle, Kind::Structure));
+            let HandleValue::Structure(source) = &handle.value else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            try_ffi!(check_structure_limits(source, &default_limits));
+            let (value_bytes, _, _) = try_ffi!(structure_measure(&source.view()));
+            let padded_value_bytes = try_ffi!(padded_length(value_bytes));
+            let encoded_size = try_ffi!(
+                8_u64
+                    .checked_add(padded_value_bytes)
+                    .ok_or(ERROR_RESOURCE_LIMIT)
+            );
+            try_ffi!(accumulate_validate_input_bytes(
+                &mut total_encoded_input_bytes,
+                encoded_size,
+            ));
+            let certificate = try_ffi!(source.view().try_clone().map_err(model_status));
+            request = request.with_certificate(certificate);
+        }
+        let mut total_identifier_bytes = 0_u64;
+        for identifier_record in identifier_records {
+            let encoded_size = match identifier_record.kind {
+                crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING => {
+                    let padded_text_length = try_ffi!(padded_length(identifier_record.text_length));
+                    try_ffi!(
+                        8_u64
+                            .checked_add(padded_text_length)
+                            .ok_or(ERROR_RESOURCE_LIMIT)
+                    )
+                }
+                crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION
+                | crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => 16,
+                _ => return record_ffi_error(ERROR_INVALID_INPUT),
+            };
+            try_ffi!(accumulate_validate_input_bytes(
+                &mut total_encoded_input_bytes,
+                encoded_size,
+            ));
+            let Some(identifier) =
+                try_ffi!(copy_unique_identifier(ptr::from_ref(identifier_record)))
+            else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            if let UniqueIdentifier::TextString(text) = &identifier {
+                let Ok(length) = u64::try_from(text.len()) else {
+                    return record_ffi_error(ERROR_RESOURCE_LIMIT);
+                };
+                total_identifier_bytes = match total_identifier_bytes.checked_add(length) {
+                    Some(total) if total <= MAX_FFI_INPUT_BYTES => total,
+                    _ => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+                };
+            }
+            request = request.with_unique_identifier(identifier);
+        }
+        for extension_handle in extension_handles {
+            let handle = try_ffi!(reference_handle(*extension_handle, Kind::Item));
+            let HandleValue::Item(extension) = &handle.value else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            try_ffi!(check_item_limits(extension, &default_limits));
+            let (value_bytes, _, _) = try_ffi!(extension.with_value(measure_value));
+            let padded_value_bytes = try_ffi!(padded_length(value_bytes));
+            let encoded_size = try_ffi!(
+                8_u64
+                    .checked_add(padded_value_bytes)
+                    .ok_or(ERROR_RESOURCE_LIMIT)
+            );
+            try_ffi!(accumulate_validate_input_bytes(
+                &mut total_encoded_input_bytes,
+                encoded_size,
+            ));
+            request = request.with_extension(try_ffi!(clone_item(extension)));
+        }
+        if has_validity_date == 1 {
+            try_ffi!(accumulate_validate_input_bytes(
+                &mut total_encoded_input_bytes,
+                16,
+            ));
+            request = request.with_validity_date(validity_date);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Validate(request)));
+        SUCCESS
+    })
+}
+
+fn accumulate_validate_input_bytes(total: &mut u64, added: u64) -> FfiResult<()> {
+    *total = total
+        .checked_add(added)
+        .filter(|value| *value <= MAX_FFI_INPUT_BYTES)
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+    Ok(())
 }
 
 fn copy_structure_handle(

@@ -3051,6 +3051,83 @@ pub extern "C" fn kmipkit_client_batch_item_response_set_defaults_ttlv(
     })
 }
 
+/// Returns the open §6.1.57 Validity Indicator only for a successful Validate result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_validate(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_validity_indicator: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_validity_indicator.is_null()
+            || ffi_output_ranges_overlap(out_present, out_validity_indicator)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let validity_indicator = scalar_out!(out_validity_indicator);
+        *present = 0;
+        *validity_indicator = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::Validate(validate) = item.outcome()
+            && let Some(indicator) = validate.validity_indicator()
+        {
+            *validity_indicator = indicator.raw();
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete ordered response TTLV only for successful Validate results.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_validate_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::Validate(validate) = item.outcome() {
+            let structure = try_ffi!(validate.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Borrows the derived object identifier from a successful Derive Key response.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_derive_key(

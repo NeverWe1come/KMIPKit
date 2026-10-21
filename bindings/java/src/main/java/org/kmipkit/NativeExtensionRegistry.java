@@ -188,6 +188,10 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemPkcs11(
             long function, long interfaceStructure, byte[] correlationValue, long inputParameters);
     public static native long clientBatchItemLog(byte[] logMessage);
+    public static native long clientBatchItemValidate(long[] certificates,
+            int[] identifierKinds, byte[][] identifierTexts, long[] identifierNumbers,
+            long[] payloadExtensions,
+            boolean hasValidityDate, long validityDate);
     public static native long clientBatchItemExport(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber,
             boolean hasKeyFormatType, long keyFormatType,
@@ -301,6 +305,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseGetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseSetConstraints(long itemResponse);
     public static native Object[] clientBatchItemResponseSetDefaults(long itemResponse);
+    public static native Object[] clientBatchItemResponseValidate(long itemResponse);
     public static native long[] clientBatchItemResponsePing(long itemResponse);
     public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);

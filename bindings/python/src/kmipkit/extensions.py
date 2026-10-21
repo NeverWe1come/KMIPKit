@@ -99,6 +99,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_rng_seed",
         "kmipkit_client_batch_item_set_constraints",
         "kmipkit_client_batch_item_set_defaults",
+        "kmipkit_client_batch_item_validate",
     }
 )
 
@@ -2333,6 +2334,91 @@ def client_batch_item_log(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_validate(
+    certificates: Iterable[ttlv.Structure],
+    unique_identifiers: Iterable[UniqueIdentifier],
+    *,
+    validity_date: int | None = None,
+    payload_extensions: Iterable[ttlv.TtlvItem] = (),
+) -> ClientBatchItem:
+    """Create one §6.1.57 Validate request with ordered certificate and identifier lists."""
+    certificate_values = _bounded_snapshot(certificates, 100_000)
+    identifier_values = _bounded_snapshot(unique_identifiers, 100_000)
+    extension_values = _bounded_snapshot(payload_extensions, 100_000)
+    if len(certificate_values) + len(identifier_values) + len(extension_values) > 100_000:
+        errors.raise_for_status(6)
+    if any(not isinstance(certificate, ttlv.Structure) for certificate in certificate_values):
+        errors.raise_for_status(4)
+    if any(not isinstance(identifier, UniqueIdentifier) for identifier in identifier_values):
+        errors.raise_for_status(4)
+    if any(not isinstance(extension, ttlv.TtlvItem) for extension in extension_values):
+        errors.raise_for_status(4)
+    if validity_date is not None:
+        validity_date = _integer_range(validity_date, -(1 << 63), (1 << 63) - 1)
+
+    with _staging_buffer_scope() as staging_buffers:
+        native_certificates = _client_ffi.new(
+            "kmipkit_ttlv_structure_t *[]", len(certificate_values)
+        )
+        for index, certificate in enumerate(certificate_values):
+            native_certificates[index] = _client_native_structure(certificate, required=True)
+
+        native_identifiers = _client_ffi.new(
+            "kmipkit_unique_identifier_v1_t[]", len(identifier_values)
+        )
+        total_text_bytes = 0
+        for index, identifier in enumerate(identifier_values):
+            record = native_identifiers[index]
+            record.struct_size = _client_ffi.sizeof("kmipkit_unique_identifier_v1_t")
+            record.abi_version = 1
+            record.reserved = 0
+            record.kind = int(identifier.kind)
+            record.text_data = _client_ffi.NULL
+            record.text_length = 0
+            record.enumeration_value = 0
+            record.integer_value = 0
+            if identifier.kind is UniqueIdentifierKind.TEXT_STRING:
+                raw, owner = _owned_bytes(identifier.text, _MAX_OPERATION_INPUT_BYTES)
+                staging_buffers.append(owner)
+                total_text_bytes += len(raw)
+                if total_text_bytes > _MAX_OPERATION_INPUT_BYTES:
+                    errors.raise_for_status(6)
+                if raw:
+                    record.text_data = _client_ffi.cast(
+                        "const uint8_t *", int(ffi.cast("uintptr_t", owner))
+                    )
+                record.text_length = len(raw)
+            elif identifier.kind is UniqueIdentifierKind.ENUMERATION:
+                record.enumeration_value = int(identifier.number)
+            else:
+                record.integer_value = int(identifier.number)
+
+        native_extensions = _client_ffi.new(
+            "kmipkit_ttlv_item_t *[]", len(extension_values)
+        )
+        for index, extension in enumerate(extension_values):
+            pointer = extension._pointer()
+            address = int(ffi.cast("uintptr_t", pointer))
+            native_extensions[index] = _client_ffi.cast("kmipkit_ttlv_item_t *", address)
+
+        native_date = 0 if validity_date is None else validity_date
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_validate",
+            (
+                native_certificates,
+                len(certificate_values),
+                native_identifiers,
+                len(identifier_values),
+                native_extensions,
+                len(extension_values),
+                int(validity_date is not None),
+                native_date,
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_delegated_login(
     rights: ttlv.Structure,
     *,
@@ -3025,6 +3111,7 @@ __all__ = [
     "client_batch_item_interop",
     "client_batch_item_pkcs11",
     "client_batch_item_log",
+    "client_batch_item_validate",
     "client_batch_item_delegated_login",
     "client_batch_item_login",
     "client_batch_item_logout",

@@ -5,7 +5,8 @@ use crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
 fn validate_constructor_preserves_identifier_and_optional_date() {
     let identifier_text = b"validate-chain-private-sentinel";
     let identifier = kmipkit_unique_identifier_v1_t {
-        struct_size: std::mem::size_of::<kmipkit_unique_identifier_v1_t>() as u32,
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("versioned identifier record size fits u32"),
         abi_version: 1,
         kind: KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
         reserved: 0,
@@ -20,8 +21,10 @@ fn validate_constructor_preserves_identifier_and_optional_date() {
         kmipkit_client_batch_item_validate(
             ptr::null_mut(),
             0,
-            &identifier,
+            &raw const identifier,
             1,
+            ptr::null_mut(),
+            0,
             1,
             i64::MIN,
             &raw mut item,
@@ -60,7 +63,7 @@ fn validate_constructor_borrows_and_copies_payload_extensions() {
             .expect("valid text extension forms a TTLV item"),
         ),
     );
-    let extension_handles = [extension];
+    let mut extension_handles = [extension];
     let mut item = ptr::null_mut();
 
     assert_eq!(
@@ -69,7 +72,7 @@ fn validate_constructor_borrows_and_copies_payload_extensions() {
             0,
             ptr::null(),
             0,
-            extension_handles.as_ptr(),
+            extension_handles.as_mut_ptr(),
             extension_handles.len() as u64,
             0,
             0,
@@ -93,6 +96,8 @@ fn validate_constructor_rejects_noncanonical_absent_date_and_clears_output() {
             ptr::null_mut(),
             0,
             ptr::null(),
+            0,
+            ptr::null_mut(),
             0,
             0,
             1,

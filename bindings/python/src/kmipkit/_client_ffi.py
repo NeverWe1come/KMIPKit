@@ -653,11 +653,29 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_set_defaults(
         kmipkit_ttlv_structure_t *defaults_information,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_validate(
+        kmipkit_ttlv_structure_t **certificates,
+        uint64_t certificate_count,
+        const kmipkit_unique_identifier_v1_t *identifiers,
+        uint64_t identifier_count,
+        kmipkit_ttlv_item_t **payload_extensions,
+        uint64_t payload_extension_count,
+        uint8_t has_validity_date,
+        int64_t validity_date,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_response_set_constraints_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
     int32_t kmipkit_client_batch_item_response_set_defaults_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_validate(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        uint32_t *out_validity_indicator);
+    int32_t kmipkit_client_batch_item_response_validate_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);

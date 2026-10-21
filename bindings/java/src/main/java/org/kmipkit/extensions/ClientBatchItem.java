@@ -14,6 +14,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.jspecify.annotations.Nullable;
@@ -24,6 +25,7 @@ public final class ClientBatchItem implements AutoCloseable {
     private static final int MAX_UNIQUE_BATCH_ITEM_ID_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
     private static final int MAX_OPERATION_INPUT_BYTES = MAX_NATIVE_INPUT_ARRAY_BYTES;
     private static final int MAX_DERIVE_KEY_SOURCE_IDENTIFIERS = 100_000;
+    private static final int MAX_VALIDATE_INPUT_ITEMS = 100_000;
     private static final int MAX_SPLIT_KEY_REFERENCES = 100_000;
     private static final long MAX_TTLV_ITEM_LENGTH = 0xffff_ffffL;
 
@@ -737,6 +739,90 @@ public final class ClientBatchItem implements AutoCloseable {
             return new ClientBatchItem(value, List.of());
         } finally {
             clearNativeCopies(messageCopy);
+        }
+    }
+
+    /**
+     * Creates a KMIP 2.1 §6.1.57 Validate item. The ordered certificate and identifier lists
+     * form one chain; a null validity date preserves the server's current-time default.
+     */
+    public static ClientBatchItem validate(
+            List<TtlvStructure> certificates,
+            List<UniqueIdentifier> identifiers,
+            @Nullable Long validityDate) {
+        return validate(certificates, identifiers, validityDate, List.of());
+    }
+
+    /**
+     * Creates a Validate item with caller-ordered unknown payload fields. Each extension is
+     * copied into the request; the caller retains ownership of every supplied TTLV item.
+     */
+    public static ClientBatchItem validate(
+            List<TtlvStructure> certificates,
+            List<UniqueIdentifier> identifiers,
+            @Nullable Long validityDate,
+            List<TtlvItem> payloadExtensions) {
+        if (certificates == null || identifiers == null || payloadExtensions == null) {
+            throw new InvalidInputException("Validate chain lists are required");
+        }
+        List<TtlvItem> extensionSnapshot = new ArrayList<>(payloadExtensions);
+        long totalCount = (long) certificates.size() + identifiers.size() + extensionSnapshot.size();
+        if (totalCount > MAX_VALIDATE_INPUT_ITEMS) {
+            throw new ResourceLimitException("Validate chain entry count exceeds the configured limit");
+        }
+        for (TtlvStructure certificate : certificates) {
+            requireStructure(certificate, "Certificate");
+        }
+        long totalTextBytes = 0;
+        for (UniqueIdentifier identifier : identifiers) {
+            if (identifier == null) {
+                throw new InvalidInputException("Validate Unique Identifier is invalid");
+            }
+            if (identifier.kind() == UniqueIdentifier.Kind.TEXT_STRING) {
+                totalTextBytes += utf8Length(identifier.text());
+                if (totalTextBytes > MAX_OPERATION_INPUT_BYTES) {
+                    throw new ResourceLimitException("Validate identifier bytes exceed the configured limit");
+                }
+            }
+        }
+        for (TtlvItem extension : extensionSnapshot) {
+            if (extension == null) {
+                throw new InvalidInputException("Validate payload extension is invalid");
+            }
+        }
+
+        int count = identifiers.size();
+        int[] kinds = new int[count];
+        byte[][] texts = new byte[count][];
+        long[] numbers = new long[count];
+        try {
+            for (int index = 0; index < count; index++) {
+                UniqueIdentifier identifier = identifiers.get(index);
+                kinds[index] = identifier.nativeKind();
+                texts[index] = identifier.nativeText();
+                numbers[index] = identifier.nativeNumber();
+            }
+            long[] certificateHandles = new long[certificates.size()];
+            long[] payloadExtensionHandles = new long[extensionSnapshot.size()];
+            long nativeDate = validityDate == null ? 0 : validityDate;
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() -> {
+                for (int index = 0; index < certificates.size(); index++) {
+                    certificateHandles[index] = certificates.get(index).handle();
+                }
+                for (int index = 0; index < extensionSnapshot.size(); index++) {
+                    payloadExtensionHandles[index] = extensionSnapshot.get(index)
+                            .nativeHandleOwner().get();
+                }
+                return NativeExtensionRegistry.clientBatchItemValidate(
+                        certificateHandles, kinds, texts, numbers, payloadExtensionHandles,
+                        validityDate != null, nativeDate);
+            });
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            for (byte[] text : texts) {
+                clearNativeCopies(text);
+            }
         }
     }
 

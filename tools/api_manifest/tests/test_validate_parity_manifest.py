@@ -26,9 +26,6 @@ REQUIREMENTS = {
 }
 EXPECTED_MAPPINGS = {
     "rust": {
-        "kmipkit_client::Client::validate",
-        "kmipkit_client::ClientRequest::Validate",
-        "kmipkit_client::ClientBatchOutcome::Validate",
         "kmipkit_protocol::ValidateRequest",
         "kmipkit_protocol::ValidateRequest::with_certificate",
         "kmipkit_protocol::ValidateRequest::with_unique_identifier",

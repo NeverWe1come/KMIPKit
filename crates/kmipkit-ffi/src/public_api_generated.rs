@@ -2893,6 +2893,46 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_protocol::TicketType::raw",
     ),
     (
+        "rust-observed-c6d5a2a2438c70d00bfe",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateRequest",
+    ),
+    (
+        "rust-observed-1e634f9cd9eac9110207",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateRequest::new",
+    ),
+    (
+        "rust-observed-db4f6cb1a59892a6dd3a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateRequest::with_certificate",
+    ),
+    (
+        "rust-observed-911eae3fefb51f67a59a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateRequest::with_unique_identifier",
+    ),
+    (
+        "rust-observed-11f6e278264087534c0c",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateRequest::with_validity_date",
+    ),
+    (
+        "rust-observed-7c82a8bdcde548099bce",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateResponse",
+    ),
+    (
+        "rust-observed-597a5c16d935221fe522",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateResponse::validity_indicator",
+    ),
+    (
+        "rust-observed-34d8761766fcc164a06f",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::ValidateResponse::with_ttlv",
+    ),
+    (
         "rust-observed-4c6d6a9625864ba8b0a4",
         "rust-kmipkit-transport",
         "<kmipkit_transport::RequestOptions as core::default::Default>::default",

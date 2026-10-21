@@ -296,6 +296,15 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseSetDefaultsResponse(values);
     }
 
+    /** Returns the typed validity result and complete generic TTLV on Success only. */
+    public Optional<ValidateResponse> validateResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseValidate);
+        return parseValidateResponse(values);
+    }
+
     /** Returns the complete typed Interop result for Success, Failure, or Pending. */
     public Optional<InteropResponse> interopResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -987,6 +996,30 @@ public final class ClientBatchItemResult implements AutoCloseable {
         @Override public void close() { responseTtlv.close(); }
 
         @Override public String toString() { return "SetDefaultsResponse[fields=redacted]"; }
+    }
+
+    /** Successful §6.1.57 Validate response with its open indicator and complete ordered TTLV. */
+    public static final class ValidateResponse implements AutoCloseable {
+        private final long validityIndicatorRaw;
+        private final TtlvStructure responseTtlv;
+
+        private ValidateResponse(long validityIndicatorRaw, TtlvStructure responseTtlv) {
+            this.validityIndicatorRaw = validityIndicatorRaw;
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the raw unsigned Validity Indicator, preserving unknown server values. */
+        public long validityIndicatorRaw() { return validityIndicatorRaw; }
+
+        /** Returns the complete ordered response owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() {
+            return "ValidateResponse[validityIndicatorRaw=" + validityIndicatorRaw
+                    + ", responseTtlv=redacted]";
+        }
     }
 
     /** Interop response with its complete ordered generic TTLV for every valid result status. */
@@ -2327,6 +2360,36 @@ public final class ClientBatchItemResult implements AutoCloseable {
             throw new InvalidInputException("native Set Defaults response is invalid");
         }
         return Optional.of(new SetDefaultsResponse(TtlvStructure.fromNative(handles[0], null)));
+    }
+
+    static Optional<ValidateResponse> parseValidateResponse(Object[] values) {
+        long ownedHandle = 0;
+        boolean transferred = false;
+        try {
+            Object[] tuple = requireTuple(values, 2, "native Validate response is invalid");
+            long[] fields = requireLongArray(
+                    tuple[0], 2, "native Validate response is invalid");
+            long[] handles = requireLongArray(
+                    tuple[1], 1, "native Validate response is invalid");
+            ownedHandle = handles[0] > 0 ? handles[0] : 0;
+            if (fields[0] == 0) {
+                if (fields[1] != 0 || handles[0] != 0) {
+                    throw new InvalidInputException("native absent Validate response contains fields");
+                }
+                return Optional.empty();
+            }
+            if (fields[0] != 1 || fields[1] < 0 || fields[1] > 0xffff_ffffL
+                    || handles[0] <= 0) {
+                throw new InvalidInputException("native Validate response is invalid");
+            }
+            TtlvStructure responseTtlv = TtlvStructure.fromNative(handles[0], null);
+            transferred = true;
+            return Optional.of(new ValidateResponse(fields[1], responseTtlv));
+        } finally {
+            if (!transferred && ownedHandle > 0) {
+                TtlvStructure.fromNative(ownedHandle, null).close();
+            }
+        }
     }
 
     static Optional<Boolean> parsePingResponse(long[] values) {

@@ -874,6 +874,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     join_split_key_response: JoinSplitKeyResponse | None = field(default=None, repr=False)
     interop_response: InteropResponse | None = field(default=None, repr=False)
     log_response: LogResponse | None = field(default=None, repr=False)
+    validate_response: ValidateResponse | None = field(default=None, repr=False)
     login_response: LoginResponse | None = field(default=None, repr=False)
     logout_response: bool | None = None
     obtain_lease_response: ObtainLeaseResponse | None = field(default=None, repr=False)
@@ -1393,6 +1394,24 @@ class SetDefaultsResponse:
     def close(self) -> None:
         """Release the caller-owned complete generic response structure."""
         self.response_ttlv.close()
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ValidateResponse:
+    """Successful Validate result with the raw open indicator and owned generic TTLV."""
+
+    validity_indicator_raw: int
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return (
+            "ValidateResponse(validity_indicator_raw="
+            f"{self.validity_indicator_raw}, response_ttlv=redacted)"
+        )
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -2153,6 +2172,13 @@ def _batch_result(handle: Any) -> BatchResult:
                 log_response = None
                 if int(metadata.operation) == 0x2C:
                     log_response = _log_response(item)
+                validate_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x17
+                ):
+                    validate_response = _validate_response(item)
                 ping_response = None
                 if int(metadata.operation) == 0x3B:
                     ping_response = _ping_response(item)
@@ -2208,6 +2234,7 @@ def _batch_result(handle: Any) -> BatchResult:
                     interop_response=interop_response,
                     pkcs11_response=pkcs11_response,
                     log_response=log_response,
+                    validate_response=validate_response,
                     login_response=login_response,
                     logout_response=logout_response,
                     obtain_lease_response=obtain_lease_response,
@@ -3617,6 +3644,40 @@ def _log_response(item: _ClientBatchItemResponse) -> LogResponse | None:
     return LogResponse(response_ttlv)
 
 
+def _validate_response(item: _ClientBatchItemResponse) -> ValidateResponse:
+    present = ffi.new("uint8_t *")
+    validity_indicator = ffi.new("uint32_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_validate(
+            item._pointer(), present, validity_indicator
+        )
+    )
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    status = lib.kmipkit_client_batch_item_response_validate_ttlv(
+        item._pointer(), response_ttlv_present, response_ttlv_output
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if status != 0:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        _raise_abi_status(status)
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    address = int(ffi.cast("uintptr_t", response_ttlv_handle))
+    try:
+        response_ttlv = ttlv._structure_from_native_address(address)
+    except Exception:
+        if response_ttlv_output[0] != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_output[0])
+        raise
+    return ValidateResponse(int(validity_indicator[0]), response_ttlv)
+
+
 def _derive_key_response(
     item: _ClientBatchItemResponse,
 ) -> DeriveKeyResponse:
@@ -4259,6 +4320,7 @@ __all__ = [
     "GetConstraintsResponse",
     "SetConstraintsResponse",
     "SetDefaultsResponse",
+    "ValidateResponse",
     "GetResponse",
     "LocateResponse",
     "MacResponse",

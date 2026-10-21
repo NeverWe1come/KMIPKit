@@ -1536,7 +1536,7 @@ static int validate_constructor_is_callable_from_c(void) {
         INT32_C(0)};
     kmipkit_client_batch_item_t *item = 0;
     if (kmipkit_client_batch_item_validate(
-            0, 0, &identifier, 1, 1, INT64_MIN, &item) != 0) {
+            0, 0, &identifier, 1, 0, 0, 1, INT64_MIN, &item) != 0) {
         return 0;
     }
     const int result = item != 0;

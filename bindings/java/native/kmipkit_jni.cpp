@@ -2197,6 +2197,154 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemValidate(
+        JNIEnv* env, jclass, jlongArray raw_certificates, jintArray raw_identifier_kinds,
+        jobjectArray raw_identifier_texts, jlongArray raw_identifier_numbers,
+        jlongArray raw_payload_extensions,
+        jboolean raw_has_validity_date, jlong raw_validity_date) {
+    return guarded<jlong>(env, 0, [&] {
+        if ((raw_has_validity_date != JNI_TRUE && raw_has_validity_date != JNI_FALSE)
+                || (raw_has_validity_date == JNI_FALSE && raw_validity_date != 0)
+                || raw_identifier_kinds == nullptr || raw_identifier_texts == nullptr
+                || raw_identifier_numbers == nullptr || raw_payload_extensions == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const jsize certificate_count = raw_certificates == nullptr
+                ? 0 : env->GetArrayLength(raw_certificates);
+        const jsize identifier_count = env->GetArrayLength(raw_identifier_kinds);
+        const jsize payload_extension_count = env->GetArrayLength(raw_payload_extensions);
+        if (env->ExceptionCheck()) return static_cast<jlong>(0);
+        if (identifier_count < 0 || certificate_count < 0 || payload_extension_count < 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        if (static_cast<uint64_t>(certificate_count)
+                        + static_cast<uint64_t>(identifier_count)
+                        + static_cast<uint64_t>(payload_extension_count)
+                > kMaximumNativeInputArrayElements) {
+            throw_java(env, "org/kmipkit/ResourceLimitException",
+                    "Validate input count exceeds the bridge limit");
+            return static_cast<jlong>(0);
+        }
+        if (env->GetArrayLength(raw_identifier_texts) != identifier_count
+                || env->GetArrayLength(raw_identifier_numbers) != identifier_count) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+
+        std::vector<jlong> raw_certificate_handles(static_cast<size_t>(certificate_count));
+        if (certificate_count != 0) {
+            env->GetLongArrayRegion(raw_certificates, 0, certificate_count,
+                    raw_certificate_handles.data());
+            if (env->ExceptionCheck()) return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_ttlv_structure_t*> certificate_handles;
+        certificate_handles.reserve(static_cast<size_t>(certificate_count));
+        for (jlong handle : raw_certificate_handles) {
+            certificate_handles.push_back(from_java_handle<kmipkit_ttlv_structure_t>(handle));
+        }
+        std::vector<kmipkit_ttlv_item_t*> payload_extension_handles;
+        if (!read_handle_array(env, raw_payload_extensions, payload_extension_handles)) {
+            return static_cast<jlong>(0);
+        }
+
+        std::vector<jint> kinds(static_cast<size_t>(identifier_count));
+        std::vector<jlong> numbers(static_cast<size_t>(identifier_count));
+        if (identifier_count != 0) {
+            env->GetIntArrayRegion(raw_identifier_kinds, 0, identifier_count, kinds.data());
+            if (env->ExceptionCheck()) return static_cast<jlong>(0);
+            env->GetLongArrayRegion(raw_identifier_numbers, 0, identifier_count, numbers.data());
+            if (env->ExceptionCheck()) return static_cast<jlong>(0);
+        }
+        uint64_t total_text_bytes = 0;
+        for (jsize index = 0; index < identifier_count; ++index) {
+            auto text = static_cast<jbyteArray>(
+                    env->GetObjectArrayElement(raw_identifier_texts, index));
+            if (env->ExceptionCheck()) return static_cast<jlong>(0);
+            const jint kind = kinds[static_cast<size_t>(index)];
+            const jlong number = numbers[static_cast<size_t>(index)];
+            if (kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+                if (text == nullptr || number != 0) {
+                    if (text != nullptr) env->DeleteLocalRef(text);
+                    throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+                const jsize length = env->GetArrayLength(text);
+                if (length < 0 || static_cast<uint64_t>(length) > kMaximumTransportInputBytes
+                        || total_text_bytes > kMaximumTransportInputBytes
+                                - static_cast<uint64_t>(length)) {
+                    env->DeleteLocalRef(text);
+                    throw_java(env, "org/kmipkit/ResourceLimitException",
+                            "Validate identifier bytes exceed the configured limit");
+                    return static_cast<jlong>(0);
+                }
+                total_text_bytes += static_cast<uint64_t>(length);
+            } else if (kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
+                if (text != nullptr || number < 0 || static_cast<uint64_t>(number) > UINT32_MAX) {
+                    if (text != nullptr) env->DeleteLocalRef(text);
+                    throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+            } else if (kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER) {
+                if (text != nullptr || number < INT32_MIN || number > INT32_MAX) {
+                    if (text != nullptr) env->DeleteLocalRef(text);
+                    throw_invalid_input(env);
+                    return static_cast<jlong>(0);
+                }
+            } else {
+                if (text != nullptr) env->DeleteLocalRef(text);
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+            if (text != nullptr) env->DeleteLocalRef(text);
+        }
+
+        std::vector<std::vector<uint8_t>> identifier_texts;
+        ByteVectorListWiper text_wiper(identifier_texts);
+        std::vector<kmipkit_unique_identifier_v1_t> identifiers;
+        identifier_texts.reserve(static_cast<size_t>(identifier_count));
+        identifiers.reserve(static_cast<size_t>(identifier_count));
+        for (jsize index = 0; index < identifier_count; ++index) {
+            const size_t position = static_cast<size_t>(index);
+            kmipkit_unique_identifier_v1_t identifier{};
+            identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+            identifier.abi_version = 1;
+            identifier.kind = static_cast<kmipkit_unique_identifier_kind_t>(kinds[position]);
+            if (kinds[position] == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+                auto text = static_cast<jbyteArray>(
+                        env->GetObjectArrayElement(raw_identifier_texts, index));
+                if (env->ExceptionCheck()) return static_cast<jlong>(0);
+                identifier_texts.emplace_back();
+                const bool copied = read_bytes(env, text, kMaximumTransportInputBytes,
+                        identifier_texts.back());
+                env->DeleteLocalRef(text);
+                if (!copied) return static_cast<jlong>(0);
+                identifier.text_data = identifier_texts.back().empty()
+                        ? nullptr : identifier_texts.back().data();
+                identifier.text_length = static_cast<uint64_t>(identifier_texts.back().size());
+            } else if (kinds[position] == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
+                identifier.enumeration_value = static_cast<uint32_t>(numbers[position]);
+            } else {
+                identifier.integer_value = static_cast<int32_t>(numbers[position]);
+            }
+            identifiers.push_back(identifier);
+        }
+
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_validate(
+                    certificate_handles.empty() ? nullptr : certificate_handles.data(),
+                    static_cast<uint64_t>(certificate_handles.size()),
+                    identifiers.empty() ? nullptr : identifiers.data(),
+                    static_cast<uint64_t>(identifiers.size()),
+                    payload_extension_handles.empty() ? nullptr : payload_extension_handles.data(),
+                    static_cast<uint64_t>(payload_extension_handles.size()),
+                    raw_has_validity_date == JNI_TRUE ? 1 : 0,
+                    static_cast<int64_t>(raw_validity_date), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemExport(
         JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
         jlong raw_identifier_number, jboolean raw_has_key_format_type, jlong raw_key_format_type,
@@ -5715,6 +5863,53 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
         env->DeleteLocalRef(fields);
         env->DeleteLocalRef(response_ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseValidate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint32_t validity_indicator = 0;
+        auto* item = from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
+        const int32_t status = kmipkit_client_batch_item_response_validate(
+                item, &present, &validity_indicator);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || (present == 0 && validity_indicator != 0)) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        uint8_t ttlv_present = 0;
+        const int32_t ttlv_status = kmipkit_client_batch_item_response_validate_ttlv(
+                item, &ttlv_present, &response_ttlv);
+        if (ttlv_status != 0 || ttlv_present != present
+                || (present == 1 && response_ttlv == nullptr)
+                || (present == 0 && response_ttlv != nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {
+                static_cast<jlong>(present), static_cast<jlong>(validity_indicator)});
+        if (fields == nullptr) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray handles = make_long_array(env, {to_java_handle(response_ttlv)});
+        if (handles == nullptr) {
+            env->DeleteLocalRef(fields);
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, handles});
+        if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        env->DeleteLocalRef(fields);
+        env->DeleteLocalRef(handles);
         return result;
     });
 }
