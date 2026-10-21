@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from kmipkit import client, extensions, ttlv
+import pytest
+from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
 
@@ -20,6 +21,49 @@ def _sentinel_structure(
             return ttlv.ttlv_structure_with_item(structure, item, limits)
         finally:
             structure.close()
+
+
+def _typed_pair_response(
+    present_value: int,
+    private_value: bytes | None = b"replacement-private",
+    public_value: bytes | None = b"replacement-public",
+):
+    buffers: list[object] = []
+
+    def typed(_item: object, present: object, private: object, public: object) -> int:
+        present[0] = present_value
+        for record, value in ((private, private_value), (public, public_value)):
+            if value is None:
+                continue
+            buffer = ffi.new("uint8_t[]", value)
+            buffers.append(buffer)
+            record.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+            record.text_data = buffer
+            record.text_length = len(value)
+        return 0
+
+    return typed
+
+
+def _response_item() -> SimpleNamespace:
+    return SimpleNamespace(_pointer=lambda: object())
+
+
+def _transferred_structure() -> tuple[object, int]:
+    structure = ttlv.ttlv_structure_create()
+    handle, _owner = structure._take()
+    address = int(ttlv.ffi.cast("uintptr_t", handle))
+    assert structure.closed
+    return ffi.cast("kmipkit_ttlv_structure_t *", address), address
+
+
+def _assert_native_structure_released(address: int) -> None:
+    probe = ttlv._structure_from_native_address(address)
+    try:
+        with pytest.raises(errors.InvalidInputError):
+            ttlv.ttlv_structure_view(probe)
+    finally:
+        probe.close()
 
 
 def test_pair_request_preserves_omitted_identifier_and_all_optional_fields(
@@ -151,3 +195,116 @@ def test_pair_response_maps_both_ids_owned_ttlv_and_redaction(monkeypatch) -> No
     ) and "replacement-public" not in repr(response)
     response.close()
     assert closed == [True]
+
+
+def test_pair_response_returns_none_for_an_absent_native_response(monkeypatch) -> None:
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_rekey_key_pair=_typed_pair_response(
+                0, None, None
+            )
+        ),
+    )
+
+    assert client._rekey_key_pair_response(_response_item()) is None
+
+
+def test_pair_response_rejects_invalid_presence_and_missing_identifier(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_rekey_key_pair=_typed_pair_response(
+                2, None, None
+            )
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._rekey_key_pair_response(_response_item())
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_rekey_key_pair=_typed_pair_response(
+                1, b"replacement-private", None
+            )
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._rekey_key_pair_response(_response_item())
+
+
+def test_pair_response_releases_native_ttlv_on_presence_mismatch(monkeypatch) -> None:
+    native_ttlv, address = _transferred_structure()
+    release = client.lib.kmipkit_ttlv_structure_release
+    released_arguments: list[object] = []
+
+    def release_and_record(handle: object) -> None:
+        released_arguments.append(handle)
+        release(handle)
+
+    def get_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0
+        output[0] = native_ttlv
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_rekey_key_pair=_typed_pair_response(1),
+            kmipkit_client_batch_item_response_rekey_key_pair_ttlv=get_ttlv,
+            kmipkit_ttlv_structure_release=release_and_record,
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._rekey_key_pair_response(_response_item())
+
+    assert released_arguments == [native_ttlv]
+    _assert_native_structure_released(address)
+
+
+def test_pair_response_releases_native_ttlv_if_wrapper_creation_raises(
+    monkeypatch,
+) -> None:
+    native_ttlv, address = _transferred_structure()
+    release = client.lib.kmipkit_ttlv_structure_release
+    released_arguments: list[object] = []
+    structure_factory = ttlv._structure_from_native_address
+
+    def release_and_record(handle: object) -> None:
+        released_arguments.append(handle)
+        release(handle)
+
+    def get_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output[0] = native_ttlv
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_rekey_key_pair=_typed_pair_response(1),
+            kmipkit_client_batch_item_response_rekey_key_pair_ttlv=get_ttlv,
+            kmipkit_ttlv_structure_release=release_and_record,
+        ),
+    )
+    monkeypatch.setattr(
+        ttlv,
+        "_structure_from_native_address",
+        lambda _address: (_ for _ in ()).throw(RuntimeError("wrapper creation failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="wrapper creation failed"):
+        client._rekey_key_pair_response(_response_item())
+
+    assert released_arguments == [native_ttlv]
+    monkeypatch.setattr(ttlv, "_structure_from_native_address", structure_factory)
+    _assert_native_structure_released(address)

@@ -100,4 +100,19 @@ final class RekeyKeyPairMappingTest {
         assertThrows(InvalidInputException.class, () -> ClientBatchItemResult
                 .parseRekeyKeyPairResponse(new Object[] {new long[] {0}, new Object(), null, new long[] {0}}));
     }
+
+    @Test
+    void malformedSuccessClosesOwnedTtlvWhenAnIdentifierIsInvalid() {
+        NativeExtensionRegistry.ensureLoaded();
+        long malformedResponseTtlv = NativeExtensionRegistry.ttlvStructureCreate();
+        Object[] validPrivateIdentifier = {
+            new long[] {1, 1, 0, 0}, "replacement-private".getBytes(StandardCharsets.UTF_8)
+        };
+
+        assertThrows(InvalidInputException.class, () -> ClientBatchItemResult.parseRekeyKeyPairResponse(
+                new Object[] {new long[] {1}, validPrivateIdentifier, new Object(),
+                    new long[] {malformedResponseTtlv}}));
+
+        ResponseTtlvTestSupport.assertReleased(malformedResponseTtlv);
+    }
 }
