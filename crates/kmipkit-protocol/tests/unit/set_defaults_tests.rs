@@ -254,6 +254,33 @@ fn table_330_preserves_all_distinct_reasons_and_open_unknown_reason() {
 }
 
 #[test]
+fn failure_and_pending_do_not_expose_generic_response_ttlv() {
+    let failure_message = response_message(
+        SET_DEFAULTS,
+        1,
+        Some(0x07),
+        Some(b"defaults update was rejected"),
+        None,
+    );
+    let failure = SetDefaultsResponse::try_from_response_item(response_item(&failure_message))
+        .expect("Table 330 Failure uses the common result contract");
+    assert_eq!(failure.result().status().raw(), 1);
+    assert!(failure.with_ttlv(|_| ()).is_none());
+
+    let pending_message = response_message(
+        SET_DEFAULTS,
+        2,
+        None,
+        Some(b"set-defaults-pending"),
+        Some(Structure::new()),
+    );
+    let pending = SetDefaultsResponse::try_from_response_item(response_item(&pending_message))
+        .expect("Pending uses the common result contract");
+    assert_eq!(pending.result().status().raw(), 2);
+    assert!(pending.with_ttlv(|_| ()).is_none());
+}
+
+#[test]
 fn response_retains_unknown_payload_after_source_message_is_dropped() {
     const OPAQUE_VALUE: &str = "opaque defaults response survives source drop";
     let response = {
