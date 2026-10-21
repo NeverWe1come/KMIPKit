@@ -94,6 +94,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_query_with_limits",
         "kmipkit_client_batch_item_rekey",
         "kmipkit_client_batch_item_rekey_key_pair",
+        "kmipkit_client_batch_item_reprovision",
     }
 )
 
@@ -1642,6 +1643,15 @@ def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -
     return value._pointer()
 
 
+def _client_native_structure(value: ttlv.Structure | None) -> Any:
+    """Cast a public TTLV handle into the private client ABI's CFFI context."""
+    if value is None:
+        return _client_ffi.NULL
+    pointer = _native_structure(value)
+    address = int(ffi.cast("uintptr_t", pointer))
+    return _client_ffi.cast("kmipkit_ttlv_structure_t *", address)
+
+
 def _native_value(value: ttlv.Value | None) -> Any:
     if value is None:
         return ffi.NULL
@@ -1890,6 +1900,28 @@ def client_batch_item_recertify(
                 _native_structure(protection_storage_masks),
             ),
         )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_reprovision(
+    certificate_request: ttlv.Structure | None = None,
+    certificate: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.48 Re-Provision item from Table 313.
+
+    Supply at most one of Certificate Request and Certificate. When neither is
+    supplied, the server may create the replacement credential.
+    """
+    if certificate_request is not None and certificate is not None:
+        errors.raise_for_status(4)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_reprovision",
+        (
+            _client_native_structure(certificate_request),
+            _client_native_structure(certificate),
+        ),
+    )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -2807,6 +2839,7 @@ __all__ = [
     "client_batch_item_create_split_key",
     "client_batch_item_certify",
     "client_batch_item_recertify",
+    "client_batch_item_reprovision",
     "client_batch_item_rekey",
     "client_batch_item_rekey_key_pair",
     "client_batch_item_check",

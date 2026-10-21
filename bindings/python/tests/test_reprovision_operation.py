@@ -1,3 +1,5 @@
+"""Derived Python binding checks for KMIP 2.1 §6.1.48, Tables 313–315."""
+
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -50,6 +52,56 @@ def test_reprovision_builder_forwards_each_optional_object(monkeypatch) -> None:
     assert calls[0][0] == "kmipkit_client_batch_item_reprovision"
     assert int(ttlv.ffi.cast("uintptr_t", calls[0][1][0])) == expected
     assert calls[0][1][1] == ffi.NULL
+
+
+def test_reprovision_builder_rejects_both_objects_before_native_call(monkeypatch) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(
+        extensions,
+        "_make_handle",
+        lambda _kind, symbol, _args: (calls.append(symbol), 41)[1],
+    )
+    with ttlv.ttlv_structure_create() as certificate_request:
+        with ttlv.ttlv_structure_create() as certificate:
+            with pytest.raises(errors.InvalidInputError):
+                extensions.client_batch_item_reprovision(
+                    certificate_request=certificate_request,
+                    certificate=certificate,
+                )
+    assert calls == []
+
+
+def test_reprovision_builder_allows_no_optional_object(monkeypatch) -> None:
+    calls: list[tuple[str, tuple[object, ...]]] = []
+    monkeypatch.setattr(
+        extensions,
+        "_make_handle",
+        lambda _kind, symbol, args: (calls.append((symbol, args)), 41)[1],
+    )
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    item = extensions.client_batch_item_reprovision()
+
+    assert item == 41
+    assert calls[0][1] == (ffi.NULL, ffi.NULL)
+
+
+def test_reprovision_builder_forwards_certificate(monkeypatch) -> None:
+    calls: list[tuple[str, tuple[object, ...]]] = []
+    monkeypatch.setattr(
+        extensions,
+        "_make_handle",
+        lambda _kind, symbol, args: (calls.append((symbol, args)), 41)[1],
+    )
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+    with ttlv.ttlv_structure_create() as certificate:
+        item = extensions.client_batch_item_reprovision(certificate=certificate)
+        expected = int(ttlv.ffi.cast("uintptr_t", certificate._pointer()))
+
+    assert item == 41
+    assert calls[0][0] == "kmipkit_client_batch_item_reprovision"
+    assert calls[0][1][0] == ffi.NULL
+    assert int(ttlv.ffi.cast("uintptr_t", calls[0][1][1])) == expected
 
 
 def test_reprovision_response_preserves_optional_identifier_and_ttlv(monkeypatch) -> None:
@@ -156,7 +208,6 @@ def test_reprovision_response_rejects_identifier_presence_mismatches(monkeypatch
     )
     with pytest.raises(errors.InvalidInputError):
         client._reprovision_response(_response_item())
-
     monkeypatch.setattr(
         client,
         "lib",
@@ -164,5 +215,44 @@ def test_reprovision_response_rejects_identifier_presence_mismatches(monkeypatch
             kmipkit_client_batch_item_response_reprovision=_typed_response(1, 1),
         ),
     )
+    with pytest.raises(errors.InvalidInputError):
+        client._reprovision_response(_response_item())
+
+
+def test_reprovision_absent_response_rejects_present_identifier(monkeypatch) -> None:
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_reprovision=_typed_response(0, 1),
+        ),
+    )
+    with pytest.raises(errors.InvalidInputError):
+        client._reprovision_response(_response_item())
+
+
+def test_reprovision_absent_response_returns_none_without_ttlv(monkeypatch) -> None:
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_reprovision=_typed_response(0, 0),
+        ),
+    )
+
+    assert client._reprovision_response(_response_item()) is None
+
+
+def test_reprovision_absent_identifier_rejects_unflagged_output(monkeypatch) -> None:
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_reprovision=_typed_response(
+                1, 0, b"unflagged-identifier"
+            ),
+        ),
+    )
+
     with pytest.raises(errors.InvalidInputError):
         client._reprovision_response(_response_item())

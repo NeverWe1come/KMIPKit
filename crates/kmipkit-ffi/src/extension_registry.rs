@@ -44,9 +44,10 @@ use kmipkit_protocol::{
     JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    QueryFunction, QueryRequest, RecertifyRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier,
+    QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, SecretBytes, SecretText, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
+    UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3473,6 +3474,35 @@ pub extern "C" fn kmipkit_client_batch_item_rekey(
             request = request.with_protection_storage_masks(masks);
         }
         *out = try_ffi!(batch_item_handle(ClientRequest::Rekey(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Re-Provision request from KMIP 2.1 §6.1.48, Table 313.
+///
+/// The optional Certificate Request and Certificate inputs are copied before this call returns.
+/// At most one may be supplied; neither may be supplied when the server creates credentials.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_reprovision(
+    certificate_request: *mut kmipkit_ttlv_structure_t,
+    certificate: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        if !certificate_request.is_null() && !certificate.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let certificate_request = try_ffi!(copy_structure_handle(certificate_request, false));
+        let certificate = try_ffi!(copy_structure_handle(certificate, false));
+        let mut request = ReProvisionRequest::new();
+        if let Some(value) = certificate_request {
+            request = request.with_certificate_request(value);
+        }
+        if let Some(value) = certificate {
+            request = request.with_certificate(value);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::ReProvision(request)));
         SUCCESS
     })
 }

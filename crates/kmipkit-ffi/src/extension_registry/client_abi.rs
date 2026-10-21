@@ -1885,6 +1885,71 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_key_pair(
     })
 }
 
+/// Copies the optional Re-Provision identifier only from a successful Table 314 result.
+///
+/// A successful typed response is present even when its optional Unique Identifier is absent.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_reprovision(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_identifier_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_identifier_present.is_null()
+            || out_unique_identifier.is_null()
+            || ffi_output_ranges_overlap(out_present, out_identifier_present)
+            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+            || ffi_output_ranges_overlap(out_identifier_present, out_unique_identifier)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let identifier_present = scalar_out!(out_identifier_present);
+        *present = 0;
+        *identifier_present = 0;
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(reprovision) = item.outcome().reprovision_response() {
+            if let Some(identifier) = reprovision.unique_identifier() {
+                if let Err(status) =
+                    write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+                {
+                    return record_ffi_error(status);
+                }
+                *identifier_present = 1;
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+fn ffi_output_ranges_overlap<T, U>(first: *mut T, second: *mut U) -> bool {
+    let first_start = first.cast::<u8>() as usize;
+    let second_start = second.cast::<u8>() as usize;
+    let Some(first_end) = first_start.checked_add(std::mem::size_of::<T>()) else {
+        return true;
+    };
+    let Some(second_end) = second_start.checked_add(std::mem::size_of::<U>()) else {
+        return true;
+    };
+    first_start < second_end && second_start < first_end
+}
+
 /// Copies typed Check fields, preserving policy values on failure and hiding any failure identifier.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_check(
@@ -2351,6 +2416,40 @@ pub extern "C" fn kmipkit_client_batch_item_response_rekey_key_pair_ttlv(
             *response_ttlv = try_ffi!(try_make_handle(
                 Kind::Structure,
                 HandleValue::Structure(structure)
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete generic TTLV only from a successful Re-Provision result.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_reprovision_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let Some(reprovision) = item.outcome().reprovision_response() {
+            let structure =
+                try_ffi!(reprovision.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
             ));
             *present = 1;
         }

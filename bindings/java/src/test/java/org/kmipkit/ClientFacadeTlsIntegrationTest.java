@@ -1572,6 +1572,69 @@ final class ClientFacadeTlsIntegrationTest {
         assertTrue(peer.get(12, TimeUnit.SECONDS).length >= 8);
     }
 
+    // OASIS KMIP Specification v2.1 §6.1.48, Tables 313–315.
+    @Test
+    void parameterlessReprovisionAcceptsSuccessWithoutIdentifierAndDoesNotPoll() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, reprovisionResponseWithoutIdentifierMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-reprovision-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        ClientBatchItemResult.ReProvisionResponse reprovisioned;
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem item = ClientBatchItem.reprovision(null, null)
+                        .withUniqueBatchItemId(uniqueBatchItemId(0))) {
+            batch.add(item);
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(1, response.itemCount());
+                assertEquals(0x35, result.operation());
+                assertEquals(0, result.resultStatus());
+                reprovisioned = result.reprovisionResponse().orElseThrow();
+            }
+            request = peer.get(15, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        try (reprovisioned; TtlvStructureView responseTtlv = reprovisioned.responseTtlv().view()) {
+            assertTrue(reprovisioned.uniqueIdentifier().isEmpty());
+            assertEquals(4, responseTtlv.itemCount());
+            assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            try (TtlvItemView payload = responseTtlv.itemAt(3);
+                    TtlvValueView payloadValue = payload.value();
+                    TtlvStructureView payloadStructure = payloadValue.structure()) {
+                assertEquals(0, payloadStructure.itemCount());
+            }
+            assertTrue(reprovisioned.toString().contains("uniqueIdentifier=absent"));
+        }
+        assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x35)));
+        assertEquals(0, countOccurrences(request, enumeration(0x42005c, 0x20)));
+        assertTrue(peer.isDone());
+    }
+
     @Test
     void rekeyResponseUsesNativeJniBridgeAndRestrictsNonSuccessPayloads() throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
@@ -3255,6 +3318,18 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x42005c, 5, integer(0x07)),
                 item(0x420093, 8, uniqueBatchItemId(0)),
                 item(0x42007f, 5, integer(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] reprovisionResponseWithoutIdentifierMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(1)));
+        byte[] responseItem = structure(0x42000f,
+                enumeration(0x42005c, 0x35),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0), structure(0x42007c));
         return structure(0x42007b, header, responseItem);
     }
 

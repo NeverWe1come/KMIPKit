@@ -99,6 +99,14 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseRekeyKeyPairResponse(values);
     }
 
+    /** Returns the successful Re-Provision response, with its optional identifier and owned TTLV. */
+    public Optional<ReProvisionResponse> reprovisionResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(NativeExtensionRegistry::clientBatchItemResponseReprovision);
+        return parseReProvisionResponse(values);
+    }
+
     /** Returns the typed Check result, including policy fields and generic TTLV on failure. */
     public Optional<CheckResponse> checkResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -547,6 +555,32 @@ public final class ClientBatchItemResult implements AutoCloseable {
         public TtlvStructure responseTtlv() { return responseTtlv; }
         @Override public void close() { responseTtlv.close(); }
         @Override public String toString() { return "RekeyKeyPairResponse[identifiers=redacted]"; }
+    }
+
+    /** Successful Re-Provision result with its optional identifier and owned complete response TTLV. */
+    public static final class ReProvisionResponse implements AutoCloseable {
+        private final Optional<UniqueIdentifier> uniqueIdentifier;
+        private final TtlvStructure responseTtlv;
+
+        private ReProvisionResponse(Optional<UniqueIdentifier> uniqueIdentifier,
+                TtlvStructure responseTtlv) {
+            this.uniqueIdentifier = uniqueIdentifier;
+            this.responseTtlv = responseTtlv;
+        }
+
+        /** Returns the optional identifier reported by the server. */
+        public Optional<UniqueIdentifier> uniqueIdentifier() { return uniqueIdentifier; }
+
+        /** Returns the complete response structure owned by this result. */
+        public TtlvStructure responseTtlv() { return responseTtlv; }
+
+        @Override public void close() { responseTtlv.close(); }
+
+        @Override public String toString() {
+            return "ReProvisionResponse[uniqueIdentifier="
+                    + (uniqueIdentifier.isPresent() ? "redacted" : "absent")
+                    + ", responseTtlv=redacted]";
+        }
     }
 
     /** Typed Check fields with the caller-owned complete ordered response TTLV. */
@@ -1404,6 +1438,62 @@ public final class ClientBatchItemResult implements AutoCloseable {
             ttlv.close();
             throw exception;
         }
+    }
+
+    static Optional<ReProvisionResponse> parseReProvisionResponse(Object[] values) {
+        Object[] tuple = requireTuple(values, 4, "native Re-Provision response is invalid");
+        long[] responseFields = requireLongArray(
+                tuple[0], 1, "native Re-Provision response is invalid");
+        long[] identifierFields = requireLongArray(
+                tuple[1], 1, "native Re-Provision response is invalid");
+        long[] responseTtlvHandle = requireLongArray(
+                tuple[3], 1, "native Re-Provision response is invalid");
+
+        boolean present;
+        boolean identifierPresent;
+        try {
+            present = responsePresent(responseFields);
+            identifierPresent = responsePresent(identifierFields);
+        } catch (RuntimeException exception) {
+            closeReProvisionTtlv(responseTtlvHandle[0]);
+            throw exception;
+        }
+
+        if (!present) {
+            boolean hasUnexpectedFields = identifierPresent || tuple[2] != null
+                    || responseTtlvHandle[0] != 0;
+            closeReProvisionTtlv(responseTtlvHandle[0]);
+            if (hasUnexpectedFields) {
+                throw new InvalidInputException(
+                        "native absent Re-Provision response contains fields");
+            }
+            return Optional.empty();
+        }
+        if (responseTtlvHandle[0] <= 0) {
+            throw new InvalidInputException("native Re-Provision response is invalid");
+        }
+
+        TtlvStructure responseTtlv = TtlvStructure.fromNative(responseTtlvHandle[0], null);
+        try {
+            Optional<UniqueIdentifier> identifier;
+            if (identifierPresent) {
+                identifier = Optional.of(identifierRecord(tuple[2]));
+            } else {
+                if (tuple[2] != null) {
+                    throw new InvalidInputException(
+                            "native absent Re-Provision identifier contains fields");
+                }
+                identifier = Optional.empty();
+            }
+            return Optional.of(new ReProvisionResponse(identifier, responseTtlv));
+        } catch (RuntimeException exception) {
+            responseTtlv.close();
+            throw exception;
+        }
+    }
+
+    private static void closeReProvisionTtlv(long handle) {
+        if (handle > 0) TtlvStructure.fromNative(handle, null).close();
     }
 
     static Optional<CheckResponse> parseCheckResponse(Object[] values) {

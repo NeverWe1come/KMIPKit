@@ -364,6 +364,20 @@ public final class ClientBatchItem implements AutoCloseable {
         }
     }
 
+    /** Creates a Re-Provision request using KMIP 2.1 §6.1.48, Tables 313–315. */
+    public static ClientBatchItem reprovision(
+            @Nullable TtlvStructure certificateRequest,
+            @Nullable TtlvStructure certificate) {
+        if (certificateRequest != null && certificate != null) {
+            throw new InvalidInputException(
+                    "Re-Provision accepts at most one Certificate Request or Certificate");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() -> NativeExtensionRegistry.clientBatchItemReprovision(
+                handleOrNull(certificateRequest), handleOrNull(certificate)));
+        return new ClientBatchItem(value, List.of());
+    }
+
     /** Creates a Check request with optional §6.1.7 Usage Limits Count, usage mask, and lease. */
     public static ClientBatchItem check(
             @Nullable UniqueIdentifier uniqueIdentifier,

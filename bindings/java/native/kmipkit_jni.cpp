@@ -1783,6 +1783,17 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemReprovision(
+        JNIEnv* env, jclass, jlong raw_certificate_request, jlong raw_certificate) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_reprovision(
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_certificate_request),
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_certificate), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCheck(
         JNIEnv* env, jclass, jint raw_identifier_kind, jbyteArray raw_identifier_text,
         jlong raw_identifier_number, jboolean raw_has_usage_limits_count,
@@ -4575,6 +4586,108 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBa
         if (private_record != nullptr) env->DeleteLocalRef(private_record);
         if (public_record != nullptr) env->DeleteLocalRef(public_record);
         env->DeleteLocalRef(ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReprovision(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        uint8_t identifier_present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        auto* item = from_java_handle<kmipkit_client_batch_item_response_t>(raw_item);
+        const int32_t status = kmipkit_client_batch_item_response_reprovision(
+                item, &present, &identifier_present, &identifier);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || identifier_present > 1
+                || (present == 0 && identifier_present != 0)
+                || (identifier_present == 1 && identifier.kind == 0)
+                || (identifier_present == 0 && identifier.kind != 0)) {
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+
+        uint8_t ttlv_present = 0;
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        const int32_t ttlv_status = kmipkit_client_batch_item_response_reprovision_ttlv(
+                item, &ttlv_present, &response_ttlv);
+        if (ttlv_status != 0 || ttlv_present != present
+                || (present == 1 && response_ttlv == nullptr)
+                || (present == 0 && response_ttlv != nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, ttlv_status != 0 ? ttlv_status : KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+
+        jlongArray response_fields = make_long_array(env, {static_cast<jlong>(present)});
+        jlongArray identifier_fields = make_long_array(
+                env, {static_cast<jlong>(identifier_present)});
+        jobject identifier_record = identifier_present == 1
+                ? identifier_to_java(env, identifier, 1) : nullptr;
+        jlongArray response_ttlv_handle = make_long_array(
+                env, {to_java_handle(response_ttlv)});
+        if (response_fields == nullptr || identifier_fields == nullptr
+                || response_ttlv_handle == nullptr
+                || (identifier_present == 1 && identifier_record == nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            if (response_fields != nullptr) env->DeleteLocalRef(response_fields);
+            if (identifier_fields != nullptr) env->DeleteLocalRef(identifier_fields);
+            if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
+            if (response_ttlv_handle != nullptr) env->DeleteLocalRef(response_ttlv_handle);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(
+                env, {response_fields, identifier_fields, identifier_record, response_ttlv_handle});
+        if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        env->DeleteLocalRef(response_fields);
+        env->DeleteLocalRef(identifier_fields);
+        if (identifier_record != nullptr) env->DeleteLocalRef(identifier_record);
+        env->DeleteLocalRef(response_ttlv_handle);
+        return result;
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReprovisionTtlv(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_ttlv_structure_t* response_ttlv = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_reprovision_ttlv(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &response_ttlv);
+        if (status != 0) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1 || (present == 1 && response_ttlv == nullptr)
+                || (present == 0 && response_ttlv != nullptr)) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            throw_status(env, KMIPKIT_ERROR_INVALID_INPUT);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        if (fields == nullptr) {
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray response_ttlv_handle = make_long_array(
+                env, {to_java_handle(response_ttlv)});
+        if (response_ttlv_handle == nullptr) {
+            env->DeleteLocalRef(fields);
+            kmipkit_ttlv_structure_release(response_ttlv);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, response_ttlv_handle});
+        if (result == nullptr) kmipkit_ttlv_structure_release(response_ttlv);
+        env->DeleteLocalRef(fields);
+        env->DeleteLocalRef(response_ttlv_handle);
         return result;
     });
 }

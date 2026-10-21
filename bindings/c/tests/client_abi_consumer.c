@@ -231,7 +231,40 @@ static int reprovision_constructor_is_callable_from_c(void) {
         return 0;
     }
     kmipkit_client_batch_item_release(item);
-    return 1;
+    item = 0;
+    kmipkit_ttlv_structure_t *certificate_request = 0;
+    kmipkit_ttlv_structure_t *certificate = 0;
+    if (kmipkit_ttlv_structure_create(&certificate_request) != 0 ||
+        kmipkit_ttlv_structure_create(&certificate) != 0 ||
+        certificate_request == 0 || certificate == 0) {
+        if (certificate_request != 0) kmipkit_ttlv_structure_release(certificate_request);
+        if (certificate != 0) kmipkit_ttlv_structure_release(certificate);
+        return 0;
+    }
+    if (kmipkit_client_batch_item_reprovision(certificate_request, 0, &item) != 0 ||
+        item == 0) {
+        if (item != 0) kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_structure_release(certificate_request);
+        kmipkit_ttlv_structure_release(certificate);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    if (kmipkit_client_batch_item_reprovision(0, certificate, &item) != 0 ||
+        item == 0) {
+        if (item != 0) kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_structure_release(certificate_request);
+        kmipkit_ttlv_structure_release(certificate);
+        return 0;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = 0;
+    int rejected_both = kmipkit_client_batch_item_reprovision(
+        certificate_request, certificate, &item) != 0 && item == 0;
+    if (item != 0) kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(certificate_request);
+    kmipkit_ttlv_structure_release(certificate);
+    return rejected_both;
 }
 static int rekey_key_pair_constructor_is_callable_from_c(void) {
     static const uint8_t identifier_bytes[] = "existing-private-key";

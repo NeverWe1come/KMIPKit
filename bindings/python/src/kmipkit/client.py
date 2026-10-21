@@ -882,6 +882,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     rekey_key_pair_response: RekeyKeyPairResponse | None = field(
         default=None, repr=False
     )
+    reprovision_response: ReProvisionResponse | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1112,6 +1113,21 @@ class RekeyResponse:
 
     def __repr__(self) -> str:
         return "RekeyResponse(unique_identifier=redacted, response_ttlv=preserved)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ReProvisionResponse:
+    """Successful §6.1.48 result with its owned generic response TTLV."""
+
+    unique_identifier: extensions.UniqueIdentifier | None = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return "ReProvisionResponse(unique_identifier=redacted, response_ttlv=preserved)"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -1893,6 +1909,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x1D
                 ):
                     rekey_key_pair_response = _rekey_key_pair_response(item)
+                reprovision_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x35
+                ):
+                    reprovision_response = _reprovision_response(item)
                 check_response = None
                 if int(metadata.operation) == 0x09:
                     check_response = _check_response(item)
@@ -2027,6 +2050,7 @@ def _batch_result(handle: Any) -> BatchResult:
                     recertify_response=recertify_response,
                     rekey_response=rekey_response,
                     rekey_key_pair_response=rekey_key_pair_response,
+                    reprovision_response=reprovision_response,
                 )
                 items.append(result)
                 if (
@@ -2228,6 +2252,20 @@ def _optional_output_identifier(value: Any) -> extensions.UniqueIdentifier | Non
     return _read_unique_identifier(value)
 
 
+def _require_absent_unique_identifier(value: Any) -> None:
+    if (
+        value.struct_size != ffi.sizeof("kmipkit_unique_identifier_v1_t")
+        or value.abi_version != 1
+        or value.reserved != 0
+        or value.kind != 0
+        or value.text_data != ffi.NULL
+        or value.text_length != 0
+        or value.enumeration_value != 0
+        or value.integer_value != 0
+    ):
+        errors.raise_for_status(4)
+
+
 def _hash_response(item: _ClientBatchItemResponse) -> HashResponse | None:
     present = ffi.new("uint8_t *")
     data_present = ffi.new("uint8_t *")
@@ -2402,6 +2440,52 @@ def _recertify_response(item: _ClientBatchItemResponse) -> RecertifyResponse | N
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return RecertifyResponse(unique_identifier, response_ttlv)
+
+
+def _reprovision_response(
+    item: _ClientBatchItemResponse,
+) -> ReProvisionResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier_present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_reprovision(
+            item._pointer(), present, identifier_present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier_present[0] != 0:
+            errors.raise_for_status(4)
+        _require_absent_unique_identifier(identifier)
+        return None
+    if present[0] != 1 or identifier_present[0] not in (0, 1):
+        errors.raise_for_status(4)
+    if identifier_present[0] == 1:
+        unique_identifier = _read_unique_identifier(identifier)
+    else:
+        _require_absent_unique_identifier(identifier)
+        unique_identifier = None
+
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_reprovision_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return ReProvisionResponse(unique_identifier, response_ttlv)
 
 
 def _rekey_response(item: _ClientBatchItemResponse) -> RekeyResponse | None:
@@ -3800,6 +3884,7 @@ __all__ = [
     "MacResponse",
     "MacVerifyResponse",
     "RequestOptions",
+    "ReProvisionResponse",
     "SignResponse",
     "SignatureVerifyResponse",
     "TimeoutKind",
