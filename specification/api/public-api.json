@@ -25194,7 +25194,7 @@
         "class": "ClientBatchItemResult",
         "method": "reprovisionResponse",
         "parameters": [],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReProvision",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReprovision",
         "errorCategories": [
           "invalid_input",
           "internal"
@@ -25294,7 +25294,7 @@
           "internal"
         ],
         "returnType": "TtlvStructure",
-        "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReProvision"
+        "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReprovision"
       },
       "python": {
         "module": "kmipkit.client",

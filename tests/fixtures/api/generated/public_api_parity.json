@@ -33136,7 +33136,7 @@
           "invalid_input",
           "internal"
         ],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReProvision",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReprovision",
         "method": "reprovisionResponse",
         "package": "org.kmipkit.extensions",
         "parameters": [],
@@ -33231,7 +33231,7 @@
           "invalid_input",
           "internal"
         ],
-        "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReProvision",
+        "jniAggregateSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseReprovision",
         "method": "reprovisionResponse",
         "package": "org.kmipkit.extensions",
         "parameters": [],
