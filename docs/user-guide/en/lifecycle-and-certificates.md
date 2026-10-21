@@ -331,6 +331,26 @@ These rules trace to OASIS KMIP 2.1 §2.3/Table 4, §6.1.43/Tables 291 and 293,
 and §11.34/Table 468 (`KMIPKIT-REQ-SPEC-2.3-002` and
 `KMIPKIT-REQ-SPEC-2.3-003`).
 
+### Register response mapping
+
+After Success, the typed response exposes the required returned Unique
+Identifier and complete ordered response TTLV. Rust exposes
+`RegisterResponse::unique_identifier` and `with_ttlv`; C uses
+`kmipkit_client_batch_item_response_register` and
+`kmipkit_client_batch_item_response_register_ttlv`; Java uses
+`ClientBatchItemResult.registerResponse()` and its `uniqueIdentifier()` and
+`responseTtlv()` accessors; Python uses `BatchItemResult.register_response`
+with `unique_identifier` and `response_ttlv`. The C TTLV result is a caller-owned
+copy. Java and Python response objects own their TTLV copy and must be closed;
+closing the batch result does not invalidate that independent response copy.
+
+Failure and Pending keep shared result status, reason/message where present,
+and Pending correlation metadata. They do not expose Register's success
+identifier or response TTLV. Delivery state describes a failed client exchange,
+not a completed item result. Errors never include raw response TTLV. The caller
+chooses whether to request asynchronous behavior; KMIPKit does not retry, issue
+Poll, or send a follow-up request automatically.
+
 ## Revoke
 
 Revoke sends an explicit reason. The optional message is for audit logging;

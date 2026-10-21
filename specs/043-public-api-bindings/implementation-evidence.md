@@ -4968,3 +4968,33 @@ The selected-scope coverage gate passed with the following measured results:
 Thus the coverage blocker is resolved and T064/T065 are complete. This evidence
 does not close the remaining KMIPKit-0043 tasks or release/interoperability
 gates.
+
+### T062 Register mapping — local Red/Green evidence (2026-10-21)
+
+TDD commits: Red `3469ae2b`, `1cfee92c`, and `4104add9`; Green
+`83c82fe2`. Each is DCO-signed. Refactor documentation and final report are
+being recorded separately; T062 remains open until independent QA/security,
+current-head CI, and selected-scope coverage pass.
+
+Focused local command results on the Green commit:
+
+| Command | Result |
+|---|---|
+| `cargo fmt --all --check` | Pass; no output. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer ffi_register_ --no-fail-fast` | Pass, 2 tests/0 failures. Builds and calls the compiled C consumer. Rust emitted non-fatal AWS-LC Windows `stdalign_check.c` and NASM warnings. |
+| `mvn -q -f bindings/java/pom.xml '-Dtest=RegisterMappingTest,ClientFacadeTlsIntegrationTest#registerResponseUsesNativeJniBridgeAndPreservesOwnedOrderedTtlv' test` | Pass; JNI DLL compiled, focused mapping and TLS 1.3 mTLS integration tests passed. AWS-LC toolchain warnings were non-fatal. |
+| `python -m pytest bindings/python/tests/test_register_operation.py -q` | Pass, 4 tests. Used the external temporary Python 3.12 environment/wheel; the existing `.venv` was not touched. Includes TLS 1.3 mTLS native CFFI mapping and owner-close behavior. |
+| `python tools/api_manifest/generate.py --write` | Pass; generated 12 output files from the authored manifest. |
+| `python tools/api_manifest/generate.py --check` | Pass; all 12 generated files verified current. |
+| `python -m unittest tools.api_manifest.tests.test_register_parity_manifest -v` | Pass, 1 test. |
+| `python scripts/test_user_guide_examples.py` | Pass; compiled 20 marked Rust user-guide examples. |
+| `git diff --check` | Pass; only Git's existing CRLF-to-LF normalization warnings appeared for source manifest/traceability files. |
+
+The focused FFI test verifies Success exposes the returned identifier and
+caller-owned ordered TTLV copy to compiled C; Failure and Pending expose
+neither. It also verifies common Failure metadata and exact Pending correlation.
+The Java/JNI and Python/CFFI loopbacks each execute one TLS 1.3 mTLS Register
+exchange and check response ownership/redaction. These are local API-mapping
+tests, not official OASIS test cases or conformance evidence. Final Refactor
+head, independent review, cross-platform CI, and selected-scope coverage remain
+pending.
