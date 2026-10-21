@@ -156,6 +156,14 @@ final class NativeBridgeCoverageTest {
     }
 
     @Test
+    void nativeQueryWithLimitsEnforcesElementBudgetBeforeAllocation() {
+        long[] limitsBelowMinimumQuerySize = {16_777_216, 64, 1};
+        assertThrows(ResourceLimitException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                        new int[] {1}, null, limitsBelowMinimumQuerySize));
+    }
+
+    @Test
     void nativeValidationBridgesRejectMalformedBoundaryInputs() {
         byte[][] nullObjectGroups = new byte[1][];
         assertThrows(InvalidInputException.class,
