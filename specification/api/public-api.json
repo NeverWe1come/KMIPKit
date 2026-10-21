@@ -26586,6 +26586,10 @@
         "errorCategories": [
           "invalid_input",
           "internal"
+        ],
+        "documentation": [
+          "Returns the required Unique Identifier only from a successful Revoke result. For Text String identifiers, text_data points into response-owned storage and is borrowed; it remains valid only until the response item is released. Copy the bytes before releasing the item.",
+          "For non-success results, sets present to 0 and clears the identifier output. All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ]
       },
       "java": {

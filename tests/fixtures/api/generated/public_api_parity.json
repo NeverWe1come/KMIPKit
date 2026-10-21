@@ -6368,6 +6368,126 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact representation is diagnostic presentation.",
+      "exportName": "kmipkit.client.RevokeResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact formatter emits a constant redacted Python diagnostic representation; it is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. RevokeResponse's required identifier, complete response TTLV, and explicit close lifecycle are separately mapped and tested; this exact generated record member is not a protocol capability.",
+      "exportName": "kmipkit.client.RevokeResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact dataclass-generated Python dunder member is interpreter mechanics for the RevokeResponse record and has no independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0041 for T064/T065; the typed RngRetrieveResponse response and semantic fields are separately inventoried. This exclusion applies only to generated member __dataclass_fields__ from bindings/python/src/kmipkit/client.py. The approved manifest exclusion policy and typed API surface are defined in specs/043-public-api-bindings/spec.md.",
       "exportName": "kmipkit.client.RngRetrieveResponse.__dataclass_fields__",
       "packageId": "python-kmipkit",
@@ -7692,6 +7812,114 @@
       "exportName": "kmipkit.extensions.RegisteredExtensionValue.__init__",
       "packageId": "python-kmipkit",
       "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private factory; it is ownership plumbing, not a product constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The explicit owned-handle close operation is mapped across all four languages; this exact convenience is local lifecycle syntax.",
+      "exportName": "kmipkit.extensions.RevocationReason.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The explicit owned-handle close operation is mapped across all four languages; this exact convenience is local lifecycle syntax.",
+      "exportName": "kmipkit.extensions.RevocationReason.__exit__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The owned create and close operations are separately mapped and tested; this exact initializer is ownership plumbing, not a product constructor.",
+      "exportName": "kmipkit.extensions.RevocationReason.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private _wrap_owned_handle factory; the public create() factory is the supported constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The open reason code and optional audit message are separately mapped and tested; this formatter redacts the optional message.",
+      "exportName": "kmipkit.extensions.RevocationReason.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact formatter emits a redacted Python representation and does not expose the optional audit message; it is not a separate KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The explicit owned-handle close operation is mapped across all four languages; this exact convenience is local lifecycle syntax.",
+      "exportName": "kmipkit.extensions.RevocationReason.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The explicit owned-handle close operation is mapped across all four languages; this exact convenience is local lifecycle syntax.",
+      "exportName": "kmipkit.extensions.RevokeRequest.__enter__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The explicit owned-handle close operation is mapped across all four languages; this exact convenience is local lifecycle syntax.",
+      "exportName": "kmipkit.extensions.RevokeRequest.__exit__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The owned create and close operations are separately mapped and tested; this exact initializer is ownership plumbing, not a product constructor.",
+      "exportName": "kmipkit.extensions.RevokeRequest.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python native-handle initializer requires KMIPKit's private identity token and is used only by the private _wrap_owned_handle factory; the public create() factory is the supported constructor."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T063. The explicit owned-handle close operation is mapped across all four languages; this exact convenience is local lifecycle syntax.",
+      "exportName": "kmipkit.extensions.RevokeRequest.closed",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python local lifecycle convenience reports or uses the already mapped close lifecycle; it is not a separate cross-language product capability."
     },
     {
       "approvalSource": {
@@ -34810,6 +35038,10 @@
     },
     {
       "c": {
+        "documentation": [
+          "Returns the required Unique Identifier only from a successful Revoke result. For Text String identifiers, text_data points into response-owned storage and is borrowed; it remains valid only until the response item is released. Copy the bytes before releasing the item.",
+          "For non-success results, sets present to 0 and clears the identifier output. All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
+        ],
         "errorCategories": [
           "invalid_input",
           "internal"
@@ -36872,7 +37104,7 @@
           "T063:revoke:response-ttlv:c",
           "T063:revoke:response-ttlv:java",
           "T063:revoke:response-ttlv:python",
-          "T063:revoke:response-type:c",
+          "T063:revoke:response:c",
           "T063:revoke:response-type:java",
           "T063:revoke:response-type:python",
           "T063:revoke:response-uid:java",
@@ -36926,7 +37158,7 @@
           "T063:revoke:response-ttlv:c",
           "T063:revoke:response-ttlv:java",
           "T063:revoke:response-ttlv:python",
-          "T063:revoke:response-type:c",
+          "T063:revoke:response:c",
           "T063:revoke:response-type:java",
           "T063:revoke:response-type:python",
           "T063:revoke:response-uid:java",
@@ -36980,7 +37212,7 @@
           "T063:revoke:response-ttlv:c",
           "T063:revoke:response-ttlv:java",
           "T063:revoke:response-ttlv:python",
-          "T063:revoke:response-type:c",
+          "T063:revoke:response:c",
           "T063:revoke:response-type:java",
           "T063:revoke:response-type:python",
           "T063:revoke:response-uid:java",
@@ -37034,7 +37266,7 @@
           "T063:revoke:response-ttlv:c",
           "T063:revoke:response-ttlv:java",
           "T063:revoke:response-ttlv:python",
-          "T063:revoke:response-type:c",
+          "T063:revoke:response:c",
           "T063:revoke:response-type:java",
           "T063:revoke:response-type:python",
           "T063:revoke:response-uid:java",
@@ -141440,10 +141672,10 @@
         "status": "Approved"
       },
       "capabilityId": "KMIPKIT-ELEM-OP-C2S-REVOKE",
-      "declarationId": "T063:revoke:response-type:c",
+      "declarationId": "T063:revoke:response:c",
       "declarationState": "verified",
       "exportName": "kmipkit_client_batch_item_response_revoke",
-      "kind": "type",
+      "kind": "c-symbol",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_revoke",

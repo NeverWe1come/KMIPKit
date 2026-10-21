@@ -100,15 +100,15 @@ class RevokeParityManifestTests(unittest.TestCase):
             if row["id"] == "client_batch_item_response_revoke"
         )
         documentation = " ".join(function["c"].get("documentation", []))
-        self.assertIn("Text identifier bytes are borrowed from the response-item handle", documentation)
-        self.assertIn("remain valid until that handle is released", documentation)
+        self.assertIn("text_data points into response-owned storage and is borrowed", documentation)
+        self.assertIn("valid only until the response item is released", documentation)
 
         header = (ROOT / "bindings/c/include/kmipkit.h").read_text(encoding="utf-8")
         signature = "int32_t kmipkit_client_batch_item_response_revoke("
         signature_index = header.index(signature)
         preceding = header[max(0, signature_index - 1200):signature_index]
-        self.assertIn("Text identifier bytes are borrowed from the response-item handle", preceding)
-        self.assertIn("remain valid until that handle is released", preceding)
+        self.assertIn("text_data points into response-owned storage and is borrowed", preceding)
+        self.assertIn("valid only until the response item is released", preceding)
 
     def test_revoke_has_approved_four_language_mapping_and_traceability(self) -> None:
         self.assertEqual(1, len(self.operations))
