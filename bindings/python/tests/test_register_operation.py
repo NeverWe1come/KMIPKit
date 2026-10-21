@@ -11,9 +11,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
-
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _REGISTER_ID = b"register-0"
@@ -74,7 +74,9 @@ def _register_response_message() -> bytes:
     return _ttlv_structure(0x42007B, header, item)
 
 
-def _start_register_mtls_peer() -> tuple[int, list[bytes], queue.Queue[Exception], threading.Thread]:
+def _start_register_mtls_peer() -> tuple[
+    int, list[bytes], queue.Queue[Exception], threading.Thread
+]:
     listener = socket.socket()
     listener.bind(("127.0.0.1", 0))
     listener.listen(1)
@@ -87,7 +89,9 @@ def _start_register_mtls_peer() -> tuple[int, list[bytes], queue.Queue[Exception
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             context.minimum_version = ssl.TLSVersion.TLSv1_3
             context.maximum_version = ssl.TLSVersion.TLSv1_3
-            context.load_cert_chain(_FIXTURES / "server-cert.pem", _FIXTURES / "server-key.pem")
+            context.load_cert_chain(
+                _FIXTURES / "server-cert.pem", _FIXTURES / "server-key.pem"
+            )
             context.load_verify_locations(cafile=_FIXTURES / "client-cert.pem")
             context.verify_mode = ssl.CERT_REQUIRED
             raw, _ = listener.accept()
@@ -111,15 +115,21 @@ def _start_register_mtls_peer() -> tuple[int, list[bytes], queue.Queue[Exception
 def _register_transport(port: int) -> client.TransportConfig:
     return client.TransportConfig(
         endpoint=client.Endpoint.raw_tls("127.0.0.1", port),
-        client_certificates=(client.TransportInput.file(
-            _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
-        ),),
+        client_certificates=(
+            client.TransportInput.file(
+                _FIXTURES / "client-cert.pem", client.CredentialEncoding.PEM
+            ),
+        ),
         client_private_key=client.TransportInput.file(
             _FIXTURES / "client-key.pem", client.CredentialEncoding.PEM
         ),
-        trust=client.TrustSource.certificate_authorities((client.TransportInput.file(
-            _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
-        ),)),
+        trust=client.TrustSource.certificate_authorities(
+            (
+                client.TransportInput.file(
+                    _FIXTURES / "server-cert.pem", client.CredentialEncoding.PEM
+                ),
+            )
+        ),
         connect_timeout=client.TimeoutLimit.bounded(5),
         write_timeout=client.TimeoutLimit.bounded(5),
         read_timeout=client.TimeoutLimit.bounded(5),
@@ -137,15 +147,22 @@ def _register_opaque_object(limits: ttlv.CodecLimits) -> ttlv.TtlvItem:
     fields = ttlv.ttlv_structure_with_item(
         fields,
         _typed_ttlv_item(
-            0x42005A, ttlv.ttlv_value_byte_string(b"register-object-fixture", limits), limits
+            0x42005A,
+            ttlv.ttlv_value_byte_string(b"register-object-fixture", limits),
+            limits,
         ),
         limits,
     )
     return _typed_ttlv_item(0x42005B, ttlv.ttlv_value_structure(fields, limits), limits)
 
 
-def _typed_ttlv_item(tag_number: int, value: ttlv.Value, limits: ttlv.CodecLimits) -> ttlv.TtlvItem:
-    with ttlv.raw_tag_from_raw(tag_number) as raw_tag, ttlv.raw_tag_try_checked(raw_tag) as tag:
+def _typed_ttlv_item(
+    tag_number: int, value: ttlv.Value, limits: ttlv.CodecLimits
+) -> ttlv.TtlvItem:
+    with (
+        ttlv.raw_tag_from_raw(tag_number) as raw_tag,
+        ttlv.raw_tag_try_checked(raw_tag) as tag,
+    ):
         return ttlv.ttlv_item_create(tag, value, limits)
 
 
@@ -153,7 +170,9 @@ def _response_item() -> SimpleNamespace:
     return SimpleNamespace(_pointer=lambda: object())
 
 
-def test_register_success_response_preserves_identifier_and_owned_ttlv(monkeypatch) -> None:
+def test_register_success_response_preserves_identifier_and_owned_ttlv(
+    monkeypatch,
+) -> None:
     identifier = b"registered-object"
     identifier_buffer = ffi.new("uint8_t[]", identifier)
     native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 42)
@@ -254,6 +273,115 @@ def test_register_success_requires_a_required_identifier(monkeypatch) -> None:
     with pytest.raises(errors.InvalidInputError):
         client._register_response(_response_item())
     assert released == []
+
+
+def test_register_rejects_invalid_response_presence_flag(monkeypatch) -> None:
+    def invalid_presence(_item: object, present: object, _output: object) -> int:
+        present[0] = 2
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(kmipkit_client_batch_item_response_register=invalid_presence),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._register_response(_response_item())
+
+
+def test_register_rejects_identifier_on_absent_response(monkeypatch) -> None:
+    def inconsistent_absence(_item: object, present: object, output: object) -> int:
+        present[0] = 0
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        output.text_data = ffi.NULL
+        output.text_length = 0
+        output.enumeration_value = 0
+        output.integer_value = 0
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_register=inconsistent_absence,
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._register_response(_response_item())
+
+
+def test_register_releases_unflagged_native_ttlv_handle(monkeypatch) -> None:
+    identifier = b"register-object"
+    identifier_buffer = ffi.new("uint8_t[]", identifier)
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 44)
+    released: list[object] = []
+
+    def typed(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        output.text_data = identifier_buffer
+        output.text_length = len(identifier)
+        return 0
+
+    def unflagged_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0
+        output[0] = native_ttlv
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_register=typed,
+            kmipkit_client_batch_item_response_register_ttlv=unflagged_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._register_response(_response_item())
+
+    assert released == [native_ttlv]
+
+
+def test_register_releases_native_ttlv_when_wrapper_creation_fails(monkeypatch) -> None:
+    identifier = b"register-object"
+    identifier_buffer = ffi.new("uint8_t[]", identifier)
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 45)
+    released: list[object] = []
+
+    def typed(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output.kind = int(extensions.UniqueIdentifierKind.TEXT_STRING)
+        output.text_data = identifier_buffer
+        output.text_length = len(identifier)
+        return 0
+
+    def get_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1
+        output[0] = native_ttlv
+        return 0
+
+    def reject_wrapper(_address: int) -> object:
+        raise RuntimeError("invalid native handle")
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_register=typed,
+            kmipkit_client_batch_item_response_register_ttlv=get_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(ttlv, "_structure_from_native_address", reject_wrapper)
+
+    with pytest.raises(RuntimeError, match="invalid native handle"):
+        client._register_response(_response_item())
+
+    assert released == [native_ttlv]
 
 
 def test_register_native_mtls_response_is_owned_and_preserves_ordered_ttlv() -> None:

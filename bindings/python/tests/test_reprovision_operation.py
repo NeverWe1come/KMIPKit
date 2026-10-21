@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+
 from kmipkit import client, errors, extensions, ttlv
 from kmipkit._client_ffi import ffi
 
@@ -54,20 +55,24 @@ def test_reprovision_builder_forwards_each_optional_object(monkeypatch) -> None:
     assert calls[0][1][1] == ffi.NULL
 
 
-def test_reprovision_builder_rejects_both_objects_before_native_call(monkeypatch) -> None:
+def test_reprovision_builder_rejects_both_objects_before_native_call(
+    monkeypatch,
+) -> None:
     calls: list[str] = []
     monkeypatch.setattr(
         extensions,
         "_make_handle",
         lambda _kind, symbol, _args: (calls.append(symbol), 41)[1],
     )
-    with ttlv.ttlv_structure_create() as certificate_request:
-        with ttlv.ttlv_structure_create() as certificate:
-            with pytest.raises(errors.InvalidInputError):
-                extensions.client_batch_item_reprovision(
-                    certificate_request=certificate_request,
-                    certificate=certificate,
-                )
+    with (
+        ttlv.ttlv_structure_create() as certificate_request,
+        ttlv.ttlv_structure_create() as certificate,
+        pytest.raises(errors.InvalidInputError),
+    ):
+        extensions.client_batch_item_reprovision(
+            certificate_request=certificate_request,
+            certificate=certificate,
+        )
     assert calls == []
 
 
@@ -104,7 +109,9 @@ def test_reprovision_builder_forwards_certificate(monkeypatch) -> None:
     assert int(ttlv.ffi.cast("uintptr_t", calls[0][1][1])) == expected
 
 
-def test_reprovision_response_preserves_optional_identifier_and_ttlv(monkeypatch) -> None:
+def test_reprovision_response_preserves_optional_identifier_and_ttlv(
+    monkeypatch,
+) -> None:
     identifier = b"reprovisioned-certificate"
     identifier_buffer = ffi.new("uint8_t[]", identifier)
     native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 42)
@@ -198,7 +205,9 @@ def test_reprovision_success_without_identifier_is_not_treated_as_absent_respons
     response.close()
 
 
-def test_reprovision_releases_ttlv_when_native_wrapper_creation_fails(monkeypatch) -> None:
+def test_reprovision_releases_ttlv_when_native_wrapper_creation_fails(
+    monkeypatch,
+) -> None:
     native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 45)
     released: list[object] = []
 
@@ -246,7 +255,9 @@ def test_reprovision_rejects_present_ttlv_without_native_handle(monkeypatch) -> 
         client._reprovision_response(_response_item())
 
 
-def test_reprovision_response_rejects_identifier_presence_mismatches(monkeypatch) -> None:
+def test_reprovision_response_rejects_identifier_presence_mismatches(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(
         client,
         "lib",
@@ -304,3 +315,28 @@ def test_reprovision_absent_identifier_rejects_unflagged_output(monkeypatch) -> 
 
     with pytest.raises(errors.InvalidInputError):
         client._reprovision_response(_response_item())
+
+
+def test_reprovision_releases_unflagged_native_ttlv_handle(monkeypatch) -> None:
+    native_ttlv = ffi.cast("kmipkit_ttlv_structure_t *", 46)
+    released: list[object] = []
+
+    def get_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 0
+        output[0] = native_ttlv
+        return 0
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_reprovision=_typed_response(1, 0),
+            kmipkit_client_batch_item_response_reprovision_ttlv=get_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+
+    with pytest.raises(errors.InvalidInputError):
+        client._reprovision_response(_response_item())
+
+    assert released == [native_ttlv]
