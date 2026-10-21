@@ -4975,8 +4975,9 @@ TDD commits: Red `3469ae2b`, `1cfee92c`, and `4104add9`; Green
 `83c82fe2`; aliasing follow-up Red `1fbb2b7e` and Green `95ca8f85`. Each is
 DCO-signed. Traceability follow-up Red `67d24e7c` and Green `662e3fc5` add
 stable rows for Table 291 Any Object and Table 293 Certificate Length without
-changing request behavior. T062 remains open until independent QA/security and
-exact-head cross-language CI and coverage pass.
+changing request behavior. At this checkpoint T062 remained open pending
+independent QA/security and exact-head cross-language CI and coverage; those
+gates subsequently passed as recorded below.
 
 Focused local command results on the Green commit:
 
@@ -5006,9 +5007,9 @@ neither. They also cover C output overlap rejection, malformed output ABI
 metadata, and defensive handle/index errors. The Java/JNI and Python/CFFI
 loopbacks each execute one TLS 1.3 mTLS Register exchange and check response
 ownership/redaction. These are local API-mapping tests, not official OASIS test
-cases or conformance evidence. Rust changed-line coverage passes locally;
+cases or conformance evidence. Rust changed-line coverage passes locally.
 Java/Python/C/JNI selected-scope aggregate coverage and independent QA/security
-remain for exact-head CI/review. The T062 task checkbox remains open.
+were still pending at this checkpoint and are recorded in the final CI follow-up.
 
 The traceability follow-up adds `KMIPKIT-022-T291-ANY-OBJECT` for the required
 Table 291 object and `KMIPKIT-022-T293-CERTIFICATE-LENGTH` for Certificate
@@ -5064,3 +5065,15 @@ generator check; it does not discover the full `tools/api_manifest/tests`
 suite or run those three failing contracts. Those unrelated findings remain
 reported for their owning specs; no unrelated contracts or behavior were
 changed here.
+
+#### Final T062 verification (2026-10-21)
+
+Independent QA approved the Register mapping, API inventory, traceability, and
+the final CI correction. Independent security review found no issue in the C
+output-aliasing guard. Exact-head CI run
+[`39584957034`](https://github.com/NeverWe1come/KMIPKit/actions/runs/39584957034)
+completed successfully on `dfeca5e52f91b28f719c6e360a49e911627a2085`: all 36
+jobs completed, 34 succeeded, 2 scheduled/informational jobs were skipped, and
+none failed. This includes cross-platform Rust, C, Java/JNI, and Python jobs,
+the selected-scope coverage gate, generated-file checks, and normative source
+checks. No OASIS certification or server interoperability claim is made.
