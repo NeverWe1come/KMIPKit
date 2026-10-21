@@ -1596,6 +1596,47 @@ static int validate_response_accessors_clear_invalid_outputs_from_c(void) {
     return ttlv_status == T076_ERROR_INVALID_INPUT && present == 0 && response_ttlv == 0;
 }
 
+int kmipkit_client_abi_c_consumer_validate_validate_response(
+    kmipkit_client_batch_item_response_t *item,
+    uint8_t expected_present,
+    uint32_t expected_indicator) {
+    static const uint32_t response_tags[] = {
+        UINT32_C(0x0042005c), UINT32_C(0x00420093), UINT32_C(0x0042007f),
+        UINT32_C(0x0042007c)};
+    uint8_t present = UINT8_MAX;
+    uint32_t indicator = UINT32_MAX;
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)1;
+    kmipkit_ttlv_structure_view_t *response_view = 0;
+    int result = 0;
+
+    if (kmipkit_client_batch_item_response_validate(item, &present, &indicator) != 0 ||
+        present != expected_present || indicator != expected_indicator) {
+        goto cleanup;
+    }
+    present = UINT8_MAX;
+    if (kmipkit_client_batch_item_response_validate_ttlv(item, &present, &response_ttlv) != 0 ||
+        present != expected_present ||
+        ((expected_present != 0) != (response_ttlv != 0))) {
+        goto cleanup;
+    }
+    if (expected_present != 0 &&
+        (kmipkit_ttlv_structure_view(response_ttlv, &response_view) != 0 ||
+            response_view == 0 ||
+            !check_view_tags(
+                response_view,
+                response_tags,
+                (uint64_t)(sizeof(response_tags) / sizeof(response_tags[0]))))) {
+        goto cleanup;
+    }
+    result = 1;
+cleanup:
+    kmipkit_ttlv_structure_view_release(response_view);
+    kmipkit_ttlv_structure_release(response_ttlv);
+    kmipkit_client_batch_item_response_release(item);
+    return result;
+}
+
 static int pkcs11_constructor_is_callable_from_c(void) {
     kmipkit_ttlv_structure_t *function = 0;
     kmipkit_client_batch_item_t *item = 0;
