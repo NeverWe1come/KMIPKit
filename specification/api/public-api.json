@@ -26915,6 +26915,222 @@
         "returnType": "ttlv.Structure"
       },
       "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_set_defaults",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry",
+        "name": "client_batch_item_set_defaults",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "defaults_information",
+            "type": "*mut kmipkit_ttlv_structure_t"
+          },
+          {
+            "name": "out_item",
+            "type": "*mut *mut kmipkit_client_batch_item_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_set_defaults",
+        "parameters": [
+          {
+            "name": "defaults_information",
+            "kind": "handle",
+            "type": "kmipkit_ttlv_structure_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_item",
+            "kind": "output",
+            "type": "kmipkit_client_batch_item_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Creates a KMIP v2.1 §6.1.53 Table 328 Set Defaults request. A null Defaults Information pointer omits the field; an empty Structure pointer preserves explicit presence."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItem",
+        "method": "setDefaults",
+        "parameters": [
+          {
+            "name": "defaultsInformation",
+            "type": "TtlvStructure",
+            "nullable": true
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemSetDefaults",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "python": {
+        "module": "kmipkit.extensions",
+        "function": "kmipkit.extensions.client_batch_item_set_defaults",
+        "parameters": [
+          {
+            "name": "defaults_information",
+            "type": "ttlv.Structure | None"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_set_defaults",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable"
+    },
+    {
+      "id": "client_batch_item_response_set_defaults_ttlv",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "client_batch_item_response_set_defaults_ttlv",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "out_present",
+            "type": "*mut u8"
+          },
+          {
+            "name": "out_response_ttlv",
+            "type": "*mut *mut kmipkit_ttlv_structure_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_set_defaults_ttlv",
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_present",
+            "kind": "output-scalar-pointer",
+            "type": "uint8_t *",
+            "valueType": "uint8_t",
+            "ownership": "none"
+          },
+          {
+            "name": "out_response_ttlv",
+            "kind": "output",
+            "type": "kmipkit_ttlv_structure_t **",
+            "ownership": "library-owned",
+            "nullable": true
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "documentation": [
+          "Returns a caller-owned complete generic TTLV copy only for successful Set Defaults. KMIP 2.1 §6.1.53 Table 329 defines an empty Success operation payload.",
+          "For Failure or Pending, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "setDefaultsResponse",
+        "parameters": [],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseSetDefaults",
+        "errorCategories": [
+          "invalid_input",
+          "internal"
+        ],
+        "returnType": "Optional<SetDefaultsResponse>"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.SetDefaultsResponse.response_ttlv",
+        "parameters": [],
+        "cffiSymbol": "kmipkit_client_batch_item_response_set_defaults_ttlv",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "ttlv.Structure"
+      },
+      "ordering": "not-applicable"
     }
   ],
   "errorCategories": [
@@ -122387,14 +122603,69 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::Client::set_defaults",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::set_defaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-41b6ca198ada73397c03",
@@ -124083,14 +124354,69 @@
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ClientBatchOutcome::SetDefaults",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::SetDefaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.setDefaultsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.set_defaults_response"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-6058e475947ebf60e051",
@@ -128043,14 +128369,69 @@
       "packageId": "rust-kmipkit-client",
       "kind": "variant",
       "exportName": "kmipkit_client::ClientRequest::SetDefaults",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0007",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientRequest::SetDefaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-826c4fc328ce8c351762",
@@ -228033,42 +228414,207 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::SetDefaultsRequest",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsRequest"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-a8c286965fc30cd6db90",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::SetDefaultsRequest::defaults_information",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsRequest::defaults_information"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-6a95d173c982e7ce23f9",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::SetDefaultsRequest::new",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsRequest::new"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-d3c9f0f386e25d092f21",
@@ -228089,42 +228635,207 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::SetDefaultsRequest::with_defaults_information",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsRequest::with_defaults_information"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-db1758b21c44cc36f30e",
       "packageId": "rust-kmipkit-protocol",
       "kind": "type",
       "exportName": "kmipkit_protocol::SetDefaultsResponse",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-3524b30e90e7905c9cae",
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::SetDefaultsResponse::result",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse::result"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.setDefaultsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.set_defaults_response"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-7dd5ec89374050e73f7e",
@@ -228145,14 +228856,69 @@
       "packageId": "rust-kmipkit-protocol",
       "kind": "associated-item",
       "exportName": "kmipkit_protocol::SetDefaultsResponse::with_ttlv",
-      "capabilityId": "public_binding_surface",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
       "requirementIds": [
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0043",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse::with_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.responseTtlv"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse.response_ttlv"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-58794afffb002267d763",
@@ -296801,6 +297567,836 @@
         "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs"
       ],
       "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "T067:constructor:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_set_defaults",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::set_defaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:result:responseTtlv:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_set_defaults_ttlv",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse::with_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.responseTtlv"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse.response_ttlv"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:constructor:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.setDefaults",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::set_defaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:response:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.setDefaultsResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::SetDefaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.setDefaultsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.set_defaults_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:result:type:java",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:result:responseTtlv:java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.responseTtlv",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse::with_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.responseTtlv"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse.response_ttlv"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:result:responseTtlv:javaClose",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.close",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse.close"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "mappingSemantics": "native-handle-release"
+    },
+    {
+      "declarationId": "T067:constructor:python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.extensions.client_batch_item_set_defaults",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::Client::set_defaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_set_defaults"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItem.setDefaults"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.extensions.client_batch_item_set_defaults"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:response:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.BatchItemResult.set_defaults_response",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchOutcome::SetDefaults"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.setDefaultsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.set_defaults_response"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:result:type:python",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.client.SetDefaultsResponse",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:result:responseTtlv:python",
+      "packageId": "python-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit.client.SetDefaultsResponse.response_ttlv",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse::with_ttlv"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_set_defaults_ttlv"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.responseTtlv"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse.response_ttlv"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
+    },
+    {
+      "declarationId": "T067:result:responseTtlv:pythonClose",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.SetDefaultsResponse.close",
+      "capabilityId": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+      "requirementIds": [
+        "KMIPKIT-0039-FR-001",
+        "KMIPKIT-0039-FR-002",
+        "KMIPKIT-0039-FR-003",
+        "KMIPKIT-0039-FR-004",
+        "KMIPKIT-0039-FR-005",
+        "KMIPKIT-0039-FR-006",
+        "KMIPKIT-0039-FR-008",
+        "KMIPKIT-0043-FR-004",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-006",
+        "KMIPKIT-0043-FR-007",
+        "KMIPKIT-0043-FR-008",
+        "KMIPKIT-0043-FR-009",
+        "KMIPKIT-0043-FR-010",
+        "KMIPKIT-0043-FR-011",
+        "KMIPKIT-0043-FR-012",
+        "KMIPKIT-0043-FR-013",
+        "KMIPKIT-0043-FR-015",
+        "KMIPKIT-0043-FR-017",
+        "KMIPKIT-0043-FR-018",
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-protocol",
+          "name": "kmipkit_protocol::SetDefaultsResponse"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_ttlv_structure_release"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.close"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.SetDefaultsResponse.close"
+        }
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ],
+      "mappingSemantics": "native-handle-release"
     }
   ],
   "approvedExclusions": [
@@ -308176,12 +309772,62 @@
       "name": "Set Defaults",
       "section": "6.1.53",
       "scope": "client_1_0",
-      "apiState": "blocked",
-      "blockedReason": "The owner specification is approved, but the canonical Rust API and four-language parity evidence are not complete.",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0039"
-      }
+      },
+      "featureSpecId": "KMIPKIT-0039",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/025-policy-controls/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation — 2026-10-11"
+      },
+      "declarations": {
+        "rust": [
+          "rust-observed-a0651221bd844b958e24",
+          "rust-observed-867763c25321166b9ea2",
+          "rust-observed-4d1210647d305501dc77",
+          "rust-observed-de4e9b0a25d0be982e2b",
+          "rust-observed-6a95d173c982e7ce23f9",
+          "rust-observed-a8c286965fc30cd6db90",
+          "rust-observed-b96ee3941ac8daaadc8e",
+          "rust-observed-db1758b21c44cc36f30e",
+          "rust-observed-3524b30e90e7905c9cae",
+          "rust-observed-527f86d5bc61966ee357"
+        ],
+        "c": [
+          "T067:constructor:c",
+          "T067:result:responseTtlv:c"
+        ],
+        "java": [
+          "T067:constructor:java",
+          "T067:response:java",
+          "T067:result:type:java",
+          "T067:result:responseTtlv:java",
+          "T067:result:responseTtlv:javaClose"
+        ],
+        "python": [
+          "T067:constructor:python",
+          "T067:response:python",
+          "T067:result:type:python",
+          "T067:result:responseTtlv:python",
+          "T067:result:responseTtlv:pythonClose"
+        ]
+      },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+        "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
+        "bindings/python/tests/test_set_defaults_operation.py",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
+        "tools/api_manifest/tests/test_set_defaults_parity_manifest.py"
+      ]
     },
     {
       "operationId": "KMIPKIT-ELEM-OP-C2S-SIGN",

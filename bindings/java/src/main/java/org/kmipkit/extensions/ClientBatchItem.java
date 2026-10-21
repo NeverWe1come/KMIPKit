@@ -669,6 +669,20 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
+    /** Creates a KMIP 2.1 §6.1.53 Set Defaults request with omitted Defaults Information. */
+    public static ClientBatchItem setDefaults() {
+        return setDefaults(null);
+    }
+
+    /** Creates Set Defaults; null omits Defaults Information and an empty structure is present-empty. */
+    public static ClientBatchItem setDefaults(@Nullable TtlvStructure defaultsInformation) {
+        if (defaultsInformation != null) requireStructure(defaultsInformation, "Defaults Information");
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() ->
+                NativeExtensionRegistry.clientBatchItemSetDefaults(handleOrNull(defaultsInformation)));
+        return new ClientBatchItem(value, List.of());
+    }
+
     /** Creates an Interop item with an open Function Enumeration and required UTF-8 Identifier. */
     public static ClientBatchItem interop(long interopFunction, byte[] interopIdentifier) {
         requireU32(interopFunction, "Interop Function");

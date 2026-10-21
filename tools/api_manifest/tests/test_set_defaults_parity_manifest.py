@@ -46,11 +46,14 @@ PARITY_EVIDENCE = {
     "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs",
     "crates/kmipkit-ffi/tests/support/set_defaults_abi_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
+    "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
     "bindings/python/tests/test_set_defaults_operation.py",
 }
 REQUIREMENTS = {
-    *(f"KMIPKIT-0039-FR-{number:03}" for number in range(1, 9)),
+    *(f"KMIPKIT-0039-FR-{number:03}" for number in range(1, 7)),
+    "KMIPKIT-0039-FR-008",
     *(f"KMIPKIT-0043-FR-{number:03}" for number in range(4, 14)),
     "KMIPKIT-0043-FR-015",
     "KMIPKIT-0043-FR-017",

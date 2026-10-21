@@ -21,7 +21,7 @@ final class SetDefaultsJavaFacadeTest {
     @Test
     void nativeRequestBridgeRejectsAnInvalidDefaultsHandle() {
         assertThrows(InvalidInputException.class,
-                () -> NativeExtensionRegistry.clientBatchItemSetDefaults(0));
+                () -> NativeExtensionRegistry.clientBatchItemSetDefaults(1));
     }
 
     @Test

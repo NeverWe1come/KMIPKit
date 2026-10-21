@@ -47,9 +47,9 @@ use kmipkit_protocol::{
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
     QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RegisterRequest,
     RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
-    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask, Ticket,
-    UniqueIdentifier,
+    RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
+    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
+    Ticket, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -3874,6 +3874,25 @@ pub extern "C" fn kmipkit_client_batch_item_set_constraints(
         *out = try_ffi!(batch_item_handle(ClientRequest::SetConstraints(
             SetConstraintsRequest::new(constraints),
         )));
+        SUCCESS
+    })
+}
+
+/// Creates a Set Defaults request from optional KMIP 2.1 §6.1.53 Table 328 Defaults Information.
+/// A null structure omits the field; a valid empty structure remains explicitly present.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_set_defaults(
+    defaults_information: *mut kmipkit_ttlv_structure_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let defaults_information = try_ffi!(copy_structure_handle(defaults_information, false));
+        let mut request = SetDefaultsRequest::new();
+        if let Some(defaults_information) = defaults_information {
+            request = request.with_defaults_information(defaults_information);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::SetDefaults(request)));
         SUCCESS
     })
 }

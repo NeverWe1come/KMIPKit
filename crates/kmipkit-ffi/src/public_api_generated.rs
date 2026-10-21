@@ -1638,6 +1638,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::set_constraints",
     ),
     (
+        "rust-observed-a0651221bd844b958e24",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::set_defaults",
+    ),
+    (
         "T046:response:rustVariant",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::DeriveKey",
@@ -1696,6 +1701,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-dafdbc59fc336cf55b3d",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::SetConstraints",
+    ),
+    (
+        "rust-observed-867763c25321166b9ea2",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::SetDefaults",
     ),
     (
         "rust-observed-33d82d2c459bc6c85f9c",
@@ -1891,6 +1901,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-90b2c6e4ae3e1b8d3298",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::SetConstraints",
+    ),
+    (
+        "rust-observed-4d1210647d305501dc77",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::SetDefaults",
     ),
     (
         "rust-observed-1cc0c37b6e3da35277b2",
@@ -2786,6 +2801,41 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-145da8210ae0efbe5f1e",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::SetConstraintsResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-de4e9b0a25d0be982e2b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsRequest",
+    ),
+    (
+        "rust-observed-a8c286965fc30cd6db90",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsRequest::defaults_information",
+    ),
+    (
+        "rust-observed-6a95d173c982e7ce23f9",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsRequest::new",
+    ),
+    (
+        "rust-observed-b96ee3941ac8daaadc8e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsRequest::with_defaults_information",
+    ),
+    (
+        "rust-observed-db1758b21c44cc36f30e",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsResponse",
+    ),
+    (
+        "rust-observed-3524b30e90e7905c9cae",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsResponse::result",
+    ),
+    (
+        "rust-observed-527f86d5bc61966ee357",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::SetDefaultsResponse::with_ttlv",
     ),
     (
         "rust-observed-70317e0c491e0f267466",

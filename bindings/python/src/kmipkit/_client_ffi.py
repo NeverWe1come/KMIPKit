@@ -650,7 +650,14 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_set_constraints(
         kmipkit_ttlv_structure_t *constraints,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_set_defaults(
+        kmipkit_ttlv_structure_t *defaults_information,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_response_set_constraints_ttlv(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_set_defaults_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);

@@ -98,6 +98,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_rng_retrieve",
         "kmipkit_client_batch_item_rng_seed",
         "kmipkit_client_batch_item_set_constraints",
+        "kmipkit_client_batch_item_set_defaults",
     }
 )
 
@@ -2232,6 +2233,22 @@ def client_batch_item_set_constraints(constraints: ttlv.Structure) -> ClientBatc
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_set_defaults(
+    defaults_information: ttlv.Structure | None = None,
+) -> ClientBatchItem:
+    """Create Set Defaults from KMIP 2.1 §6.1.53, Table 328.
+
+    ``None`` omits Defaults Information; an empty structure remains present.
+    """
+    native_information = _client_native_structure(defaults_information, required=False)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_set_defaults",
+        (native_information,),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def client_batch_item_interop(
     interop_function: int,
     interop_identifier: str | bytes | bytearray | memoryview,
@@ -3004,6 +3021,7 @@ __all__ = [
     "client_batch_item_check",
     "client_batch_item_get_constraints",
     "client_batch_item_set_constraints",
+    "client_batch_item_set_defaults",
     "client_batch_item_interop",
     "client_batch_item_pkcs11",
     "client_batch_item_log",
