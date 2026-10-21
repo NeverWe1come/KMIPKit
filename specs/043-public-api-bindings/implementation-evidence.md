@@ -5314,5 +5314,37 @@ metadata. The Java wrapper and C output are caller-owned copies. Python/JVM
 materialized copies remain outside KMIPKit's memory-zeroization guarantees.
 These local checks are not OASIS conformance, interoperability, profile-support,
 or certification evidence. The initial scoped security review found no
-findings. The exact-head CI run and final independent QA/security follow-up
-remain release evidence gates before T067 is checked in `tasks.md`.
+findings. The exact-head CI and independent QA/security follow-ups are recorded
+below. T067 is complete; the broader 0043 PR remains a draft while later tasks
+remain open. No OASIS conformance, interoperability, profile-support, or
+certification claim is made.
+
+### T067 exact-head coverage follow-up (2026-10-21)
+
+The preceding CI run `39649901264` exposed a changed-production line-coverage
+shortfall at `12647/13318`, providing the Red coverage evidence. Commit
+`0712009f` adds a Python regression proving that an exception while wrapping a
+native success TTLV propagates and releases the native handle exactly once.
+Commit `83f6cef1` adds FFI tests for an invalid output slot, a mismatched
+internal handle variant, and an out-of-range response index. It also documents
+only the unreachable successful-payload guards and JNI allocation-failure or
+inconsistent-output branches that have no valid or deterministic injection
+path. These are coverage-only follow-ups; they do not alter runtime behavior or
+the coverage thresholds.
+
+Local verification on the follow-up:
+
+| Command or check | Result |
+|---|---|
+| `cargo fmt --all --check` | Pass. |
+| `cargo test --locked -p kmipkit-ffi --features coverage-c-consumer set_defaults` | Pass, 8 matching FFI tests. |
+| `cargo test --locked -p kmipkit-protocol set_defaults` | Pass, 12 protocol tests. |
+| Python 3.12 `pytest bindings/python/tests --cov=kmipkit` | Pass, 735 tests; 99.07% total Python coverage. |
+| `pytest scripts/tests/test_coverage_gate.py scripts/tests/test_multilanguage_coverage.py` | Pass, 87 tests and 3 skips. |
+
+Exact-head CI run [39655678533](https://github.com/NeverWe1come/KMIPKit/actions/runs/39655678533)
+passed every required check on `83f6cef162ab6986eabe9c1517e7f05bba3846f0`.
+The selected-scope gate reports changed-production coverage of `12653/13307`
+(`95.09%`, 95% minimum); all platform, adapter, sanitizer, traceability, and
+dependency checks passed. The run records no OASIS conformance, interoperability,
+profile-support, or certification claim.
