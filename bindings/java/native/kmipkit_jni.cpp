@@ -1,7 +1,7 @@
 #include <jni.h>
 #include "kmipkit_internal.h"
-#include "client_batch_item_transfer_guard.hpp"
 #include "native_handle_transfer_guard.hpp"
+#include "unique_batch_item_id_validation.hpp"
 #include "response_identifier_validation.hpp"
 #include "response_byte_span_validation.hpp"
 #include "response_array_conversion.hpp"
@@ -3296,7 +3296,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        kmipkit::jni::ClientBatchItemTransferGuard<
+        kmipkit::jni::NativeHandleTransferGuard<
                 kmipkit_client_batch_item_t*,
                 decltype(&kmipkit_client_batch_item_release)> item_transfer(
                         from_java_handle<kmipkit_client_batch_item_t>(raw_item),
@@ -4261,7 +4261,7 @@ jlong execute_guarded_protection_item(JNIEnv* env, jlong raw_client, jlong raw_c
         return 0;
     }
 
-    kmipkit::jni::ClientBatchItemTransferGuard<
+    kmipkit::jni::NativeHandleTransferGuard<
             kmipkit_client_batch_item_t*,
             decltype(&kmipkit_client_batch_item_release)> item_guard(
                     item, kmipkit_client_batch_item_release);
