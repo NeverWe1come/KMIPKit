@@ -5808,6 +5808,9 @@ unsafe extern "C" {
         expected_identifier: *const u8,
         expected_identifier_length: u64,
     ) -> i32;
+    fn kmipkit_client_abi_c_consumer_validate_absent_revoke_response(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_rejects_register_output_aliases(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
@@ -6088,6 +6091,34 @@ fn ffi_revoke_request_and_response_are_available_to_compiled_c_consumer() {
         1, result,
         "the compiled C consumer observes typed Revoke success"
     );
+}
+
+#[test]
+fn ffi_revoke_c_consumer_clears_outputs_for_failure_and_other_operations() {
+    let failed = failed_cryptographic_item(
+        ClientRequest::Revoke(
+            RevokeRequest::new(RevocationReason::from_raw(2))
+                .with_unique_identifier(UniqueIdentifier::TextString("failed-revoke".to_owned())),
+        ),
+        0x13,
+        b"failed-revoke-item",
+    );
+    // SAFETY: the C consumer borrows this live failed Revoke response item.
+    let result = unsafe { kmipkit_client_abi_c_consumer_validate_absent_revoke_response(failed) };
+    assert_eq!(1, result, "a failed Revoke exposes no success fields");
+    kmipkit_client_batch_item_response_release(failed);
+
+    let other_operation = successful_cryptographic_item(
+        register_request_fixture(),
+        0x03,
+        b"register-for-revoke-absence",
+        vec![ttlv_item(0x0042_0094, 0x07, b"registered-object")],
+    );
+    // SAFETY: the C consumer borrows this live successful Register response item.
+    let result =
+        unsafe { kmipkit_client_abi_c_consumer_validate_absent_revoke_response(other_operation) };
+    assert_eq!(1, result, "a different operation has no Revoke response");
+    kmipkit_client_batch_item_response_release(other_operation);
 }
 
 #[test]

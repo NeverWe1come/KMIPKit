@@ -5897,6 +5897,37 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_validate_absent_revoke_response(
+    kmipkit_client_batch_item_response_t *item) {
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint8_t present = UINT8_C(9);
+    uint8_t ttlv_present = UINT8_C(9);
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+
+    if (item == 0) return 0;
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = UINT32_C(9);
+    identifier.reserved = UINT32_C(9);
+    identifier.text_data = (const uint8_t *)(uintptr_t)9;
+    identifier.text_length = UINT64_C(9);
+    identifier.enumeration_value = UINT32_C(9);
+    identifier.integer_value = INT64_C(9);
+
+    if (kmipkit_client_batch_item_response_revoke(
+            item, &present, &identifier) != 0 || present != 0 ||
+        identifier.kind != 0 || identifier.reserved != 0 ||
+        identifier.text_data != 0 || identifier.text_length != 0 ||
+        identifier.enumeration_value != 0 || identifier.integer_value != 0 ||
+        kmipkit_client_batch_item_response_revoke_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 ||
+        ttlv_present != 0 || response_ttlv != 0) {
+        return 0;
+    }
+    return 1;
+}
+
 int kmipkit_client_abi_c_consumer_rejects_register_output_aliases(
     kmipkit_client_batch_item_response_t *item) {
     kmipkit_unique_identifier_v1_t identifier = {0};

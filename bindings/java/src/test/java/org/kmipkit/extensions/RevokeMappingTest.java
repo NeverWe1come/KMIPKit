@@ -53,9 +53,22 @@ final class RevokeMappingTest {
                 () -> NativeExtensionRegistry.revocationReasonCreate(-1, null));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.revocationReasonCreate(0x1_0000_0000L, null));
+        assertThrows(InvalidInputException.class, () -> RevocationReason.create(-1, null));
+        assertThrows(InvalidInputException.class,
+                () -> RevocationReason.create(0x1_0000_0000L, null));
         assertThrows(InvalidInputException.class,
                 () -> RevokeRequest.create(null, null, null));
         assertThrows(InvalidInputException.class, () -> ClientBatchItem.revoke(null));
+    }
+
+    @Test
+    void invalidNativeIdentifierIsRejectedByNativeRequestFactory() {
+        NativeExtensionRegistry.ensureLoaded();
+        long reason = NativeExtensionRegistry.revocationReasonCreate(3, null);
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.revokeRequestCreate(
+                        99, null, 0, reason, false, 0));
     }
 
     @Test
@@ -110,6 +123,10 @@ final class RevokeMappingTest {
                 InvalidInputException.class,
                 () -> ClientBatchItemResult.parseRevokeResponse(
                         new Object[] {new long[] {0}, new Object(), new long[] {0}}));
+        assertThrows(
+                InvalidInputException.class,
+                () -> ClientBatchItemResult.parseRevokeResponse(
+                        new Object[] {new long[] {1}, null, new long[] {0}}));
     }
 
     @Test
