@@ -613,6 +613,31 @@ def _bounded_snapshot(values: object, maximum: int | None) -> tuple[Any, ...]:
     errors.raise_for_status(4)
 
 
+def _bounded_utf8_length(value: str, maximum: int) -> int:
+    """Count UTF-8 bytes without allocating an encoded copy."""
+    if not isinstance(value, str):
+        errors.raise_for_status(4)
+    if str.__len__(value) > maximum:
+        errors.raise_for_status(6)
+    byte_length = 0
+    for character in str.__iter__(value):
+        codepoint = ord(character)
+        if 0xD800 <= codepoint <= 0xDFFF:
+            errors.raise_for_status(4)
+        byte_length += (
+            1
+            if codepoint <= 0x7F
+            else 2
+            if codepoint <= 0x7FF
+            else 3
+            if codepoint <= 0xFFFF
+            else 4
+        )
+        if byte_length > maximum:
+            errors.raise_for_status(6)
+    return byte_length
+
+
 def _sequence_length(values: list[Any] | tuple[Any, ...]) -> int:
     """Read the backing list or tuple length without invoking subclass overrides."""
     if isinstance(values, list):
@@ -2356,6 +2381,21 @@ def client_batch_item_validate(
     if validity_date is not None:
         validity_date = _integer_range(validity_date, -(1 << 63), (1 << 63) - 1)
 
+    total_text_bytes = 0
+    identifier_texts: list[str | None] = []
+    for identifier in identifier_values:
+        if identifier.kind is UniqueIdentifierKind.TEXT_STRING:
+            text = identifier.text
+            if text is None:
+                errors.raise_for_status(4)
+            text_length = _bounded_utf8_length(text, _MAX_OPERATION_INPUT_BYTES)
+            if total_text_bytes > _MAX_OPERATION_INPUT_BYTES - text_length:
+                errors.raise_for_status(6)
+            total_text_bytes += text_length
+            identifier_texts.append(text)
+        else:
+            identifier_texts.append(None)
+
     with _staging_buffer_scope() as staging_buffers:
         native_certificates = _client_ffi.new(
             "kmipkit_ttlv_structure_t *[]", len(certificate_values)
@@ -2366,7 +2406,6 @@ def client_batch_item_validate(
         native_identifiers = _client_ffi.new(
             "kmipkit_unique_identifier_v1_t[]", len(identifier_values)
         )
-        total_text_bytes = 0
         for index, identifier in enumerate(identifier_values):
             record = native_identifiers[index]
             record.struct_size = _client_ffi.sizeof("kmipkit_unique_identifier_v1_t")
@@ -2378,11 +2417,11 @@ def client_batch_item_validate(
             record.enumeration_value = 0
             record.integer_value = 0
             if identifier.kind is UniqueIdentifierKind.TEXT_STRING:
-                raw, owner = _owned_bytes(identifier.text, _MAX_OPERATION_INPUT_BYTES)
+                text = identifier_texts[index]
+                if text is None:
+                    errors.raise_for_status(4)
+                raw, owner = _owned_bytes(text, _MAX_OPERATION_INPUT_BYTES)
                 staging_buffers.append(owner)
-                total_text_bytes += len(raw)
-                if total_text_bytes > _MAX_OPERATION_INPUT_BYTES:
-                    errors.raise_for_status(6)
                 if raw:
                     record.text_data = _client_ffi.cast(
                         "const uint8_t *", int(ffi.cast("uintptr_t", owner))

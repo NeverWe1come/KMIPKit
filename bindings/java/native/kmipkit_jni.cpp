@@ -2257,6 +2257,9 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             env->GetLongArrayRegion(raw_identifier_numbers, 0, identifier_count, numbers.data());
             if (env->ExceptionCheck()) return static_cast<jlong>(0);
         }
+        std::vector<std::vector<uint8_t>> identifier_texts(
+                static_cast<size_t>(identifier_count));
+        ByteVectorListWiper text_wiper(identifier_texts);
         uint64_t total_text_bytes = 0;
         for (jsize index = 0; index < identifier_count; ++index) {
             auto text = static_cast<jbyteArray>(
@@ -2280,6 +2283,11 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
                     return static_cast<jlong>(0);
                 }
                 total_text_bytes += static_cast<uint64_t>(length);
+                if (!read_bytes(env, text, kMaximumTransportInputBytes,
+                        identifier_texts[static_cast<size_t>(index)])) {
+                    env->DeleteLocalRef(text);
+                    return static_cast<jlong>(0);
+                }
             } else if (kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
                 if (text != nullptr || number < 0 || static_cast<uint64_t>(number) > UINT32_MAX) {
                     if (text != nullptr) env->DeleteLocalRef(text);
@@ -2300,10 +2308,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             if (text != nullptr) env->DeleteLocalRef(text);
         }
 
-        std::vector<std::vector<uint8_t>> identifier_texts;
-        ByteVectorListWiper text_wiper(identifier_texts);
         std::vector<kmipkit_unique_identifier_v1_t> identifiers;
-        identifier_texts.reserve(static_cast<size_t>(identifier_count));
         identifiers.reserve(static_cast<size_t>(identifier_count));
         for (jsize index = 0; index < identifier_count; ++index) {
             const size_t position = static_cast<size_t>(index);
@@ -2312,17 +2317,9 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
             identifier.abi_version = 1;
             identifier.kind = static_cast<kmipkit_unique_identifier_kind_t>(kinds[position]);
             if (kinds[position] == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
-                auto text = static_cast<jbyteArray>(
-                        env->GetObjectArrayElement(raw_identifier_texts, index));
-                if (env->ExceptionCheck()) return static_cast<jlong>(0);
-                identifier_texts.emplace_back();
-                const bool copied = read_bytes(env, text, kMaximumTransportInputBytes,
-                        identifier_texts.back());
-                env->DeleteLocalRef(text);
-                if (!copied) return static_cast<jlong>(0);
-                identifier.text_data = identifier_texts.back().empty()
-                        ? nullptr : identifier_texts.back().data();
-                identifier.text_length = static_cast<uint64_t>(identifier_texts.back().size());
+                const auto& text = identifier_texts[position];
+                identifier.text_data = text.empty() ? nullptr : text.data();
+                identifier.text_length = static_cast<uint64_t>(text.size());
             } else if (kinds[position] == KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION) {
                 identifier.enumeration_value = static_cast<uint32_t>(numbers[position]);
             } else {

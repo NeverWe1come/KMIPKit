@@ -765,16 +765,21 @@ public final class ClientBatchItem implements AutoCloseable {
         if (certificates == null || identifiers == null || payloadExtensions == null) {
             throw new InvalidInputException("Validate chain lists are required");
         }
-        List<TtlvItem> extensionSnapshot = new ArrayList<>(payloadExtensions);
-        long totalCount = (long) certificates.size() + identifiers.size() + extensionSnapshot.size();
+        long totalCount = (long) certificates.size() + identifiers.size() + payloadExtensions.size();
         if (totalCount > MAX_VALIDATE_INPUT_ITEMS) {
             throw new ResourceLimitException("Validate chain entry count exceeds the configured limit");
         }
-        for (TtlvStructure certificate : certificates) {
+        List<TtlvStructure> certificateSnapshot = boundedSnapshot(certificates, MAX_VALIDATE_INPUT_ITEMS);
+        List<UniqueIdentifier> identifierSnapshot = boundedSnapshot(
+                identifiers, MAX_VALIDATE_INPUT_ITEMS - certificateSnapshot.size());
+        List<TtlvItem> extensionSnapshot = boundedSnapshot(
+                payloadExtensions,
+                MAX_VALIDATE_INPUT_ITEMS - certificateSnapshot.size() - identifierSnapshot.size());
+        for (TtlvStructure certificate : certificateSnapshot) {
             requireStructure(certificate, "Certificate");
         }
         long totalTextBytes = 0;
-        for (UniqueIdentifier identifier : identifiers) {
+        for (UniqueIdentifier identifier : identifierSnapshot) {
             if (identifier == null) {
                 throw new InvalidInputException("Validate Unique Identifier is invalid");
             }
@@ -791,24 +796,24 @@ public final class ClientBatchItem implements AutoCloseable {
             }
         }
 
-        int count = identifiers.size();
+        int count = identifierSnapshot.size();
         int[] kinds = new int[count];
         byte[][] texts = new byte[count][];
         long[] numbers = new long[count];
         try {
             for (int index = 0; index < count; index++) {
-                UniqueIdentifier identifier = identifiers.get(index);
+                UniqueIdentifier identifier = identifierSnapshot.get(index);
                 kinds[index] = identifier.nativeKind();
                 texts[index] = identifier.nativeText();
                 numbers[index] = identifier.nativeNumber();
             }
-            long[] certificateHandles = new long[certificates.size()];
+            long[] certificateHandles = new long[certificateSnapshot.size()];
             long[] payloadExtensionHandles = new long[extensionSnapshot.size()];
             long nativeDate = validityDate == null ? 0 : validityDate;
             NativeExtensionRegistry.ensureLoaded();
             long value = NativeHandle.withNativeHandles(() -> {
-                for (int index = 0; index < certificates.size(); index++) {
-                    certificateHandles[index] = certificates.get(index).handle();
+                for (int index = 0; index < certificateSnapshot.size(); index++) {
+                    certificateHandles[index] = certificateSnapshot.get(index).handle();
                 }
                 for (int index = 0; index < extensionSnapshot.size(); index++) {
                     payloadExtensionHandles[index] = extensionSnapshot.get(index)
@@ -824,6 +829,21 @@ public final class ClientBatchItem implements AutoCloseable {
                 clearNativeCopies(text);
             }
         }
+    }
+
+    private static <T> List<T> boundedSnapshot(List<T> values, int maximum) {
+        int declaredSize = values.size();
+        if (declaredSize > maximum) {
+            throw new ResourceLimitException("Validate chain entry count exceeds the configured limit");
+        }
+        List<T> snapshot = new ArrayList<>(declaredSize);
+        for (T value : values) {
+            if (snapshot.size() == maximum) {
+                throw new ResourceLimitException("Validate chain entry count exceeds the configured limit");
+            }
+            snapshot.add(value);
+        }
+        return snapshot;
     }
 
     /** Creates an Export request, preserving unknown Table 217 selector values. */

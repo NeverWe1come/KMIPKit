@@ -27285,7 +27285,8 @@
         ],
         "documentation": [
           "Creates one KMIP 2.1 §6.1.57 Validate request. Certificate structures, Unique Identifier records, and payload extensions are borrowed and copied.",
-          "Certificate, identifier, and extension order is preserved within each list. Null arrays are accepted only with zero counts; an omitted Validity Date remains absent."
+          "Certificate, identifier, and extension order is preserved within each list. Null arrays are accepted only with zero counts; an omitted Validity Date remains absent.",
+          "Input array storage must not overlap out_item. Such overlap is rejected with InvalidInput before either region is written."
         ]
       },
       "java": {

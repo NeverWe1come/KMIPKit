@@ -2890,6 +2890,7 @@ pub extern "C" fn kmipkit_client_batch_item_log(
 ///
 /// Certificate structures and identifier records are borrowed and copied. A zero count accepts
 /// a null array, and omission of the validity date is preserved for server-side evaluation.
+/// Input array storage must not overlap `out_item`; overlapping ranges are rejected before writing.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_validate(
     certificates: *mut *mut kmipkit_ttlv_structure_t,
@@ -2903,6 +2904,13 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
     out_item: *mut *mut kmipkit_client_batch_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_item.is_null()
+            || validate_input_overlaps_output(out_item, certificates, certificate_count)
+            || validate_input_overlaps_output(out_item, identifiers, identifier_count)
+            || validate_input_overlaps_output(out_item, payload_extensions, payload_extension_count)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let out = out_slot!(out_item);
         let Some(total_count) = certificate_count
             .checked_add(identifier_count)
@@ -2951,21 +2959,26 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
 
         let default_limits = CodecLimits::defaults();
         let mut total_encoded_input_bytes = 0_u64;
+        let mut total_input_elements = 1_u64;
         let mut total_identifier_bytes = 0_u64;
         let certificates = try_ffi!(copy_validate_certificates(
             certificate_handles,
             &default_limits,
             &mut total_encoded_input_bytes,
+            &mut total_input_elements,
         ));
         let identifiers = try_ffi!(copy_validate_identifiers(
             identifier_records,
+            &default_limits,
             &mut total_identifier_bytes,
             &mut total_encoded_input_bytes,
+            &mut total_input_elements,
         ));
         let extensions = try_ffi!(copy_validate_extensions(
             extension_handles,
             &default_limits,
             &mut total_encoded_input_bytes,
+            &mut total_input_elements,
         ));
         let mut request = ValidateRequest::new();
         for certificate in certificates {
@@ -2978,6 +2991,11 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
             request = request.with_extension(extension);
         }
         if has_validity_date == 1 {
+            try_ffi!(accumulate_validate_input_elements(
+                &mut total_input_elements,
+                1,
+                &default_limits,
+            ));
             try_ffi!(accumulate_validate_input_bytes(
                 &mut total_encoded_input_bytes,
                 16,
@@ -2989,10 +3007,38 @@ pub extern "C" fn kmipkit_client_batch_item_validate(
     })
 }
 
+fn validate_input_overlaps_output<T>(
+    output: *mut *mut kmipkit_client_batch_item_t,
+    input: *const T,
+    input_count: u64,
+) -> bool {
+    let Ok(input_count) = usize::try_from(input_count) else {
+        return true;
+    };
+    let Some(input_bytes) = input_count.checked_mul(std::mem::size_of::<T>()) else {
+        return true;
+    };
+    if input_bytes == 0 {
+        return false;
+    }
+    let output_start = output.cast::<u8>() as usize;
+    let input_start = input.cast::<u8>() as usize;
+    let Some(output_end) =
+        output_start.checked_add(std::mem::size_of::<*mut kmipkit_client_batch_item_t>())
+    else {
+        return true;
+    };
+    let Some(input_end) = input_start.checked_add(input_bytes) else {
+        return true;
+    };
+    output_start < input_end && input_start < output_end
+}
+
 fn copy_validate_certificates(
     handles: &[*mut kmipkit_ttlv_structure_t],
     limits: &CodecLimits,
     total_encoded_bytes: &mut u64,
+    total_elements: &mut u64,
 ) -> FfiResult<Vec<Structure>> {
     let mut certificates = Vec::new();
     certificates
@@ -3003,11 +3049,8 @@ fn copy_validate_certificates(
         let HandleValue::Structure(source) = &handle.value else {
             return Err(ERROR_INVALID_INPUT);
         };
-        check_structure_limits(source, limits)?;
-        let (value_bytes, _, _) = structure_measure(&source.view())?;
-        let encoded_size = 8_u64
-            .checked_add(padded_length(value_bytes)?)
-            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        let (encoded_size, elements) = check_structure_limits(source, limits)?;
+        accumulate_validate_input_elements(total_elements, elements, limits)?;
         accumulate_validate_input_bytes(total_encoded_bytes, encoded_size)?;
         certificates.push(source.view().try_clone().map_err(model_status)?);
     }
@@ -3016,8 +3059,10 @@ fn copy_validate_certificates(
 
 fn copy_validate_identifiers(
     records: &[kmipkit_unique_identifier_v1_t],
+    limits: &CodecLimits,
     total_identifier_bytes: &mut u64,
     total_encoded_bytes: &mut u64,
+    total_elements: &mut u64,
 ) -> FfiResult<Vec<UniqueIdentifier>> {
     let mut identifiers = Vec::new();
     identifiers
@@ -3032,6 +3077,7 @@ fn copy_validate_identifiers(
             | crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => 16,
             _ => return Err(ERROR_INVALID_INPUT),
         };
+        accumulate_validate_input_elements(total_elements, 1, limits)?;
         accumulate_validate_input_bytes(total_encoded_bytes, encoded_size)?;
         let Some(identifier) = copy_unique_identifier(ptr::from_ref(record))? else {
             return Err(ERROR_INVALID_INPUT);
@@ -3052,6 +3098,7 @@ fn copy_validate_extensions(
     handles: &[*mut kmipkit_ttlv_item_t],
     limits: &CodecLimits,
     total_encoded_bytes: &mut u64,
+    total_elements: &mut u64,
 ) -> FfiResult<Vec<Item>> {
     let mut extensions = Vec::new();
     extensions
@@ -3062,11 +3109,8 @@ fn copy_validate_extensions(
         let HandleValue::Item(extension) = &handle.value else {
             return Err(ERROR_INVALID_INPUT);
         };
-        check_item_limits(extension, limits)?;
-        let (value_bytes, _, _) = extension.with_value(measure_value)?;
-        let encoded_size = 8_u64
-            .checked_add(padded_length(value_bytes)?)
-            .ok_or(ERROR_RESOURCE_LIMIT)?;
+        let (encoded_size, elements) = check_item_limits(extension, limits)?;
+        accumulate_validate_input_elements(total_elements, elements, limits)?;
         accumulate_validate_input_bytes(total_encoded_bytes, encoded_size)?;
         extensions.push(clone_item(extension)?);
     }
@@ -3077,6 +3121,19 @@ fn accumulate_validate_input_bytes(total: &mut u64, added: u64) -> FfiResult<()>
     *total = total
         .checked_add(added)
         .filter(|value| *value <= MAX_FFI_INPUT_BYTES)
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+    Ok(())
+}
+
+fn accumulate_validate_input_elements(
+    total: &mut u64,
+    added: u64,
+    limits: &CodecLimits,
+) -> FfiResult<()> {
+    let maximum = u64::try_from(limits.max_elements()).map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    *total = total
+        .checked_add(added)
+        .filter(|value| *value <= maximum)
         .ok_or(ERROR_RESOURCE_LIMIT)?;
     Ok(())
 }
@@ -5573,7 +5630,7 @@ fn measure_value(value: ValueView<'_>) -> FfiResult<(u64, u64, u64)> {
     }
 }
 
-fn check_structure_limits(structure: &Structure, limits: &CodecLimits) -> FfiResult<()> {
+fn check_structure_limits(structure: &Structure, limits: &CodecLimits) -> FfiResult<(u64, u64)> {
     let (payload_bytes, nested_elements, depth) = structure_measure(&structure.view())?;
     let encoded_size = 8_u64
         .checked_add(payload_bytes)
@@ -5588,10 +5645,10 @@ fn check_structure_limits(structure: &Structure, limits: &CodecLimits) -> FfiRes
     {
         return Err(ERROR_RESOURCE_LIMIT);
     }
-    Ok(())
+    Ok((encoded_size, total_elements))
 }
 
-fn check_item_limits(item: &Item, limits: &CodecLimits) -> FfiResult<()> {
+fn check_item_limits(item: &Item, limits: &CodecLimits) -> FfiResult<(u64, u64)> {
     let (payload_bytes, nested_elements, depth) = item.with_value(measure_value)?;
     let encoded_size = 8_u64
         .checked_add(padded_length(payload_bytes)?)
@@ -5606,7 +5663,7 @@ fn check_item_limits(item: &Item, limits: &CodecLimits) -> FfiResult<()> {
     {
         return Err(ERROR_RESOURCE_LIMIT);
     }
-    Ok(())
+    Ok((encoded_size, total_elements))
 }
 
 fn codec_limits_from_handle(pointer: *mut kmipkit_codec_limits_t) -> FfiResult<Arc<CodecLimits>> {
