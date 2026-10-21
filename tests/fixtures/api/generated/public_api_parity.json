@@ -7532,6 +7532,126 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __dataclass_fields__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __dataclass_params__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __delattr__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __eq__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __hash__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __init__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __match_args__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __repr__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __setattr__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __slots__ and is not an independent cross-language product capability.",
+      "exportName": "kmipkit.client.ValidateResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and T024 for this exact export path. The mandatory identity token is checked before wrapper initialization and supplied only by the private _wrap_owned_handle factory. Public wrapper types and their factory operations remain declared and mapped; direct raw-pointer adoption and duplicate handle ownership are not product capabilities.",
       "exportName": "kmipkit.extensions.ClientBatchItem.__init__",
       "packageId": "python-kmipkit",
