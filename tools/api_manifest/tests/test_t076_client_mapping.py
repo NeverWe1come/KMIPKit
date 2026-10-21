@@ -3096,6 +3096,22 @@ class T076ClientMappingTests(unittest.TestCase):
         for line in function["c"]["documentation"]:
             self.assertIn(line, header)
 
+    def test_java_revoke_reason_transfer_is_guarded_until_ffi_consumes_it(self) -> None:
+        source = (ROOT / "bindings" / "java" / "native" / "kmipkit_jni.cpp").read_text(
+            encoding="utf-8"
+        )
+        revoke_function = source.split(
+            "JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_revokeRequestCreate(",
+            1,
+        )[1].split("JNIEXPORT", 1)[0]
+
+        self.assertRegex(
+            revoke_function,
+            r"NativeHandleTransferGuard\s*<\s*kmipkit_revocation_reason_t\*",
+        )
+        self.assertIn("reason_transfer.transfer_to_consumer()", revoke_function)
+        self.assertNotIn("kmipkit_revocation_reason_release(reason)", revoke_function)
+
     def test_public_python_instance_fields_are_mapped_or_exactly_excluded(self) -> None:
         semantic_fields = {
             "kmipkit.errors.ClientExecutionError.status",
