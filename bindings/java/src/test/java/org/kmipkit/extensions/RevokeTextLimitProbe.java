@@ -31,8 +31,10 @@ public final class RevokeTextLimitProbe {
 
         try {
             switch (inputKind) {
-                case "identifier" -> UniqueIdentifier.encodeNativeText(oversized);
-                case "message" -> RevocationReason.create(1, oversized);
+                case "identifier" -> ExtensionText.encodeUtf8(
+                        oversized, UniqueIdentifier.MAX_NATIVE_TEXT_BYTES, "Unique Identifier");
+                case "message" -> ExtensionText.encodeUtf8(
+                        oversized, UniqueIdentifier.MAX_NATIVE_TEXT_BYTES, "Revocation Message");
                 default -> throw new IllegalArgumentException("unknown probe input kind");
             }
             Reference.reachabilityFence(heapPressure);

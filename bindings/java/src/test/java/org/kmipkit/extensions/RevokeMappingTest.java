@@ -20,14 +20,14 @@ import org.junit.jupiter.api.Test;
 final class RevokeMappingTest {
     @Test
     void utf8LengthPreflightCountsAllScalarWidthsAndRejectsMalformedText() {
-        assertEquals(1, UniqueIdentifier.checkedUtf8Length("A", 4, "test"));
-        assertEquals(2, UniqueIdentifier.checkedUtf8Length("é", 4, "test"));
-        assertEquals(3, UniqueIdentifier.checkedUtf8Length("三", 4, "test"));
-        assertEquals(4, UniqueIdentifier.checkedUtf8Length("🔐", 4, "test"));
+        assertEquals(1, ExtensionText.checkedUtf8Length("A", 4, "test"));
+        assertEquals(2, ExtensionText.checkedUtf8Length("é", 4, "test"));
+        assertEquals(3, ExtensionText.checkedUtf8Length("三", 4, "test"));
+        assertEquals(4, ExtensionText.checkedUtf8Length("🔐", 4, "test"));
         assertThrows(ResourceLimitException.class,
-                () -> UniqueIdentifier.checkedUtf8Length("é", 1, "test"));
+                () -> ExtensionText.checkedUtf8Length("é", 1, "test"));
         assertThrows(InvalidInputException.class,
-                () -> UniqueIdentifier.checkedUtf8Length(String.valueOf((char) 0xd800), 4, "test"));
+                () -> ExtensionText.checkedUtf8Length(String.valueOf((char) 0xd800), 4, "test"));
     }
 
     @Test

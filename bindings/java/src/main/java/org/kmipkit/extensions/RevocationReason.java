@@ -1,6 +1,5 @@
 package org.kmipkit.extensions;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -54,8 +53,7 @@ public final class RevocationReason implements AutoCloseable {
     }
 
     private static byte[] encodeMessage(String value) {
-        UniqueIdentifier.checkedUtf8Length(value, MAX_MESSAGE_BYTES, "Revocation Message");
-        return value.getBytes(StandardCharsets.UTF_8);
+        return ExtensionText.encodeUtf8(value, MAX_MESSAGE_BYTES, "Revocation Message");
     }
 
     @Override
