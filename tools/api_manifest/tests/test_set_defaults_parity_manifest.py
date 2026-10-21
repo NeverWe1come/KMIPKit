@@ -50,6 +50,7 @@ PARITY_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/SetDefaultsJavaFacadeTest.java",
     "bindings/java/src/test/java/org/kmipkit/extensions/SetDefaultsResponseMappingTest.java",
     "bindings/python/tests/test_set_defaults_operation.py",
+    "bindings/python/tests/test_query_ping_operation.py",
 }
 REQUIREMENTS = {
     *(f"KMIPKIT-0039-FR-{number:03}" for number in range(1, 7)),
