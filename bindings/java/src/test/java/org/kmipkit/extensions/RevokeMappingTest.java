@@ -7,7 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ttlv.TtlvStructure;
@@ -26,6 +28,25 @@ final class RevokeMappingTest {
                     var item = ClientBatchItem.revoke(request)) {
                 assertNotNull(item);
             }
+        }
+    }
+
+    @Test
+    void rejectsOversizedIdentifierAndMessageBeforeAllocatingEncodedCopies() throws Exception {
+        String javaExecutable = Path.of(System.getProperty("java.home"), "bin", "java").toString();
+        String classpath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+        for (String inputKind : new String[] {"identifier", "message"}) {
+            Process process = new ProcessBuilder(javaExecutable, "-Xmx48m", "-cp", classpath,
+                    RevokeTextLimitProbe.class.getName(), inputKind, "24000000")
+                    .redirectErrorStream(true)
+                    .start();
+            if (!process.waitFor(30, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                throw new AssertionError("bounded-heap Revoke text-limit probe did not finish");
+            }
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+            assertEquals(0, process.exitValue(), inputKind + ": " + output);
+            assertEquals("resource-limit", output, inputKind);
         }
     }
 
