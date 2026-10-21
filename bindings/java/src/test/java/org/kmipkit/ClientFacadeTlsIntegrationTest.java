@@ -79,6 +79,7 @@ import org.kmipkit.ttlv.TtlvValueView;
 final class ClientFacadeTlsIntegrationTest {
     private static final char[] STORE_PASSWORD = "kmipkit-test".toCharArray();
     private static final byte[] CORRELATION = {0, (byte) 0xa1, 0x7f};
+    private static final String RNG_RETRIEVED_SENTINEL = "KMIP_RNG_RETRIEVE_SECRET_SENTINEL";
     private static final int LARGE_RESPONSE_DATA_BYTES = 16 * 1024 * 1024 + 1;
 
     @TempDir
@@ -1745,6 +1746,93 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     @Test
+    void rngRetrieveAndSeedResponsesCrossNativeJniBridge() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate serverCertificate = testCertificate(serverCertificatePem);
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        byte[] seed = {0x00, (byte) 0x81, (byte) 0xff};
+
+        KeyStore serverStore = KeyStore.getInstance("PKCS12");
+        serverStore.load(null, STORE_PASSWORD);
+        serverStore.setKeyEntry("kmipkit-test-server", testPrivateKey(serverPrivateKeyPem),
+                STORE_PASSWORD, new Certificate[] {serverCertificate});
+        SSLServerSocket listener = (SSLServerSocket) serverContext(serverStore, clientCertificate)
+                .getServerSocketFactory()
+                .createServerSocket(0, 1, InetAddress.getByName("127.0.0.1"));
+        listener.setEnabledProtocols(new String[] {"TLSv1.3"});
+        listener.setNeedClientAuth(true);
+        listener.setSoTimeout(10_000);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, rngOperationResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-rng-response-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        ClientBatchItemResult.RngRetrieveResponse retrieveResponse;
+        ClientBatchItemResult.RngSeedResponse seedResponse;
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.rngRetrieve(-17).withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.rngSeed(seed).withUniqueBatchItemId(uniqueBatchItemId(1)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult retrieve = response.itemAt(0);
+                    ClientBatchItemResult seedResult = response.itemAt(1)) {
+                assertEquals(2, response.itemCount());
+                assertEquals(0x25, retrieve.operation());
+                assertEquals(0, retrieve.resultStatus());
+                retrieveResponse = retrieve.rngRetrieveResponse().orElseThrow();
+                assertEquals(0x26, seedResult.operation());
+                assertEquals(0, seedResult.resultStatus());
+                seedResponse = seedResult.rngSeedResponse().orElseThrow();
+            }
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        try (retrieveResponse; seedResponse;
+                TtlvStructureView retrieveTtlv = retrieveResponse.responseTtlv().orElseThrow().view();
+                TtlvStructureView seedTtlv = seedResponse.responseTtlv().orElseThrow().view()) {
+            byte[] returned = retrieveResponse.data().orElseThrow();
+            try {
+            assertTrue(Arrays.equals(
+                    RNG_RETRIEVED_SENTINEL.getBytes(StandardCharsets.US_ASCII), returned),
+                        "RNG Retrieve must preserve returned bytes");
+            } finally {
+                Arrays.fill(returned, (byte) 0);
+            }
+            assertFalse(retrieveResponse.toString().contains(RNG_RETRIEVED_SENTINEL));
+            assertEquals(0, seedResponse.dataLength().orElseThrow());
+            assertTagOrder(retrieveTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            assertTagOrder(seedTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            assertTrue(peer.isDone());
+        }
+
+        assertContains(request, enumeration(0x42005c, 0x25));
+        assertContains(request, item(0x4200d5, 2, integer(-17)));
+        assertContains(request, enumeration(0x42005c, 0x26));
+        assertTrue(containsTtlvItem(request, item(0x4200c2, 8, seed)),
+                "RNG Seed must preserve caller-supplied bytes");
+    }
+
+    @Test
     void rekeyKeyPairResponseUsesNativeJniBridgeAndPreservesBothIdentifiers() throws Exception {
         byte[] serverCertificatePem = testFixture("server-cert.pem");
         byte[] serverPrivateKeyPem = testFixture("server-key.pem");
@@ -3401,6 +3489,22 @@ final class ClientFacadeTlsIntegrationTest {
         return structure(0x42007b, header, success, failure, pending);
     }
 
+    private static byte[] rngOperationResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(2)));
+        byte[] retrievePayload = structure(0x42007c,
+                item(0x4200c2, 8, RNG_RETRIEVED_SENTINEL.getBytes(StandardCharsets.US_ASCII)));
+        byte[] retrieve = structure(0x42000f, enumeration(0x42005c, 0x25),
+                item(0x420093, 8, uniqueBatchItemId(0)), enumeration(0x42007f, 0),
+                retrievePayload);
+        byte[] seedPayload = structure(0x42007c, item(0x4200d5, 2, integer(0)));
+        byte[] seed = structure(0x42000f, enumeration(0x42005c, 0x26),
+                item(0x420093, 8, uniqueBatchItemId(1)), enumeration(0x42007f, 0), seedPayload);
+        return structure(0x42007b, header, retrieve, seed);
+    }
+
     private static byte[] rekeyKeyPairResponseMessage() throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
@@ -3501,6 +3605,15 @@ final class ClientFacadeTlsIntegrationTest {
             }
         }
         assertTrue(false, "request did not contain the expected encoded TTLV item");
+    }
+
+    private static boolean containsTtlvItem(byte[] actual, byte[] expected) {
+        for (int offset = 0; offset <= actual.length - expected.length; offset++) {
+            if (Arrays.equals(expected, Arrays.copyOfRange(actual, offset, offset + expected.length))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static byte[] longInteger(long value) {
