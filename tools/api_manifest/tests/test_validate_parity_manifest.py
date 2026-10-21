@@ -119,6 +119,9 @@ class ValidateParityManifestTests(unittest.TestCase):
         self.assertTrue(TRACEABILITY_IDS <= linked_requirements)
         self.assertTrue(REQUIREMENTS <= linked_requirements)
 
+    def test_validate_traceability_requirements_are_registered_at_manifest_root(self) -> None:
+        self.assertTrue(TRACEABILITY_IDS <= set(self.manifest["requirementIds"]))
+
 
 if __name__ == "__main__":
     unittest.main()
