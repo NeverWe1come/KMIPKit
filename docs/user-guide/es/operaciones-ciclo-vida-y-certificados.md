@@ -347,6 +347,8 @@ y `responseTtlv()`; Python usa `BatchItemResult.register_response` con
 `unique_identifier` y `response_ttlv`. El TTLV de C es una copia propiedad del
 llamador. Las respuestas Java y Python poseen su copia TTLV y deben cerrarse;
 cerrar el resultado del lote no invalida esa copia independiente.
+En ambos getters de C, las regiones de salida deben ser escribibles y no deben
+solaparse; si se solapan, se devuelve `InvalidInput` antes de escribirlas.
 
 Failure y Pending conservan el estado compartido del resultado, el motivo o
 mensaje cuando existe y los metadatos de correlación de Pending. No exponen el

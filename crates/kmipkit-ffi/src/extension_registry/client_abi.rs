@@ -2458,6 +2458,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_reprovision_ttlv(
 }
 
 /// Copies the required returned Unique Identifier only from a successful Register result.
+/// Output regions must be writable and must not overlap.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_register(
     item: *mut kmipkit_client_batch_item_response_t,
@@ -2465,6 +2466,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_register(
     out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_unique_identifier.is_null()
+            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let present = scalar_out!(out_present);
         if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
             return record_ffi_error(status);
@@ -2495,6 +2502,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_register(
 }
 
 /// Copies the complete ordered response TTLV only from successful Register results.
+/// Output regions must be writable and must not overlap.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_register_ttlv(
     item: *mut kmipkit_client_batch_item_response_t,
@@ -2502,6 +2510,12 @@ pub extern "C" fn kmipkit_client_batch_item_response_register_ttlv(
     out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
         let present = scalar_out!(out_present);
         let response_ttlv = out_slot!(out_response_ttlv);
         *present = 0;

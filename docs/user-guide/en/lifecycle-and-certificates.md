@@ -343,6 +343,8 @@ Identifier and complete ordered response TTLV. Rust exposes
 with `unique_identifier` and `response_ttlv`. The C TTLV result is a caller-owned
 copy. Java and Python response objects own their TTLV copy and must be closed;
 closing the batch result does not invalidate that independent response copy.
+For both C getters, output regions must be writable and must not overlap;
+overlapping outputs return `InvalidInput` before any output is written.
 
 Failure and Pending keep shared result status, reason/message where present,
 and Pending correlation metadata. They do not expose Register's success

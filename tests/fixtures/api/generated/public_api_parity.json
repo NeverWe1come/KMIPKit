@@ -34173,7 +34173,8 @@
     {
       "c": {
         "documentation": [
-          "Copies the required returned Unique Identifier only from a successful Register result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released."
+          "Copies the required returned Unique Identifier only from a successful Register result. Text identifier bytes are borrowed from the response-item handle and remain valid until that handle is released.",
+          "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ],
         "errorCategories": [
           "invalid_input",
@@ -34265,7 +34266,8 @@
       "c": {
         "documentation": [
           "Returns a caller-owned copy of the complete ordered generic TTLV response only for a successful Register result. Unknown fields and their order are preserved.",
-          "For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release."
+          "For non-success results, sets present to 0 and the output handle to NULL. Release a non-NULL handle with kmipkit_ttlv_structure_release.",
+          "All output regions must be writable and must not overlap; overlapping output pointers are rejected with InvalidInput before any output is written."
         ],
         "errorCategories": [
           "invalid_input",
