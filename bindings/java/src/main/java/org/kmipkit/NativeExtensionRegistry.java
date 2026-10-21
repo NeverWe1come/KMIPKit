@@ -47,6 +47,8 @@ public final class NativeExtensionRegistry {
     public static final int REGISTER_REQUEST = 32;
     public static final int SPLIT_KEY_REFERENCE = 33;
     public static final int USAGE_ALLOCATION_CONTEXT = 34;
+    public static final int REVOCATION_REASON = 35;
+    public static final int REVOKE_REQUEST = 36;
 
     private static volatile boolean loaded;
 
@@ -226,6 +228,11 @@ public final class NativeExtensionRegistry {
     public static native long registerRequestCreate(int objectType, long attributes, long object);
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long clientBatchItemRegister(long request);
+    public static native long revocationReasonCreate(long rawCode, @Nullable byte[] message);
+    public static native long revokeRequestCreate(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber, long reason,
+            boolean hasCompromiseOccurrenceDate, long compromiseOccurrenceDate);
+    public static native long clientBatchItemRevoke(long request);
     public static native long clientBatchItemWithUniqueBatchItemId(long item, byte[] id);
     public static native long clientBatchItemExtensionCount(long item);
     public static native long clientBatchItemExtensionIdentityAt(long item, long index);
@@ -276,6 +283,7 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseReprovision(long itemResponse);
     public static native Object[] clientBatchItemResponseReprovisionTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseRegister(long itemResponse);
+    public static native Object[] clientBatchItemResponseRevoke(long itemResponse);
     public static native Object[] clientBatchItemResponseRngRetrieve(long itemResponse);
     public static native Object[] clientBatchItemResponseRngSeed(long itemResponse);
     public static native Object[] clientBatchItemResponseCheck(long itemResponse);

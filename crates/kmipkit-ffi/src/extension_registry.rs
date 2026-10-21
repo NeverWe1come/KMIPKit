@@ -21,9 +21,10 @@ use crate::{
     kmipkit_extension_recognition_t, kmipkit_extension_registry_limits_v1_t,
     kmipkit_extension_schema_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
     kmipkit_registered_extension_value_t, kmipkit_request_options_v1_t,
-    kmipkit_split_key_reference_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
-    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_request_t, kmipkit_split_key_reference_t,
+    kmipkit_tag_t, kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t,
+    kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
     kmipkit_validated_extension_value_t,
@@ -45,9 +46,9 @@ use kmipkit_protocol::{
     LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
     ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
     QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
-    Ticket, UniqueIdentifier,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
+    RngSeedRequest, SecretBytes, SecretText, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, StorageStatusMask, Ticket, UniqueIdentifier,
 };
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
@@ -324,6 +325,8 @@ enum Kind {
     ClientBatchItemResponse,
     UsageAllocationContext,
     SplitKeyReference,
+    RevocationReason,
+    RevokeRequest,
 }
 
 enum HandleValue {
@@ -347,6 +350,11 @@ enum HandleValue {
     Structure(Structure),
     BatchItem(Box<ClientBatchItem>),
     RegisterRequest(Box<RegisterRequest>),
+    RevocationReason {
+        reason: RevocationReason,
+        message: Option<String>,
+    },
+    RevokeRequest(Box<RevokeRequest>),
     ChildRule(Box<extension::ExtensionChildRule>),
     OrderConstraint(extension::ExtensionOrderConstraint),
     Value(Value),
@@ -1471,6 +1479,20 @@ pub extern "C" fn kmipkit_client_request_message_extension_release(
 pub extern "C" fn kmipkit_register_request_release(handle: *mut kmipkit_register_request_t) {
     ffi_entrypoint(|| {
         release(handle, Kind::RegisterRequest);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_revocation_reason_release(handle: *mut kmipkit_revocation_reason_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::RevocationReason);
+    });
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_revoke_request_release(handle: *mut kmipkit_revoke_request_t) {
+    ffi_entrypoint(|| {
+        release(handle, Kind::RevokeRequest);
     });
 }
 
@@ -4689,6 +4711,86 @@ pub extern "C" fn kmipkit_register_request_create(
     })
 }
 
+/// Creates a raw-preserving Revocation Reason from KMIP 2.1 §11.48, Table 481.
+///
+/// `message_data` is the optional audit message nested inside Revocation Reason;
+/// it is not a Request Payload sibling. The input bytes are copied.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_revocation_reason_create(
+    raw_code: u32,
+    has_message: u8,
+    message_data: *const u8,
+    message_length: u64,
+    out_reason: *mut *mut kmipkit_revocation_reason_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_reason);
+        let message = try_ffi!(copy_optional_bytes(
+            message_data,
+            message_length,
+            has_message
+        ));
+        let message = match message {
+            Some(bytes) => match String::from_utf8(bytes) {
+                Ok(message) => Some(message),
+                Err(_error) => return record_ffi_error(ERROR_INVALID_INPUT),
+            },
+            None => None,
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::RevocationReason,
+            HandleValue::RevocationReason {
+                reason: RevocationReason::from_raw(raw_code),
+                message,
+            },
+        ));
+        SUCCESS
+    })
+}
+
+/// Creates a typed Revoke request from KMIP 2.1 §6.1.44, Table 295.
+///
+/// The `reason` handle is transferred to this call. An absent identifier leaves
+/// ID Placeholder use explicit; an optional date is checked when making the batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_revoke_request_create(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    reason: *mut kmipkit_revocation_reason_t,
+    has_compromise_occurrence_date: u8,
+    compromise_occurrence_date: i64,
+    out_request: *mut *mut kmipkit_revoke_request_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_request);
+        let _ = read_handle!(reason, RevocationReason);
+        let reason = try_ffi!(owned_payload(reason, Kind::RevocationReason));
+        let identifier = try_ffi!(copy_unique_identifier(unique_identifier));
+        let has_date = match has_compromise_occurrence_date {
+            0 => false,
+            1 => true,
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
+        };
+        let HandleValue::RevocationReason { reason, message } = reason else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let mut request = RevokeRequest::new(reason);
+        if let Some(identifier) = identifier {
+            request = request.with_unique_identifier(identifier);
+        }
+        if let Some(message) = message {
+            request = request.with_revocation_message(message);
+        }
+        if has_date {
+            request = request.with_compromise_occurrence_date(compromise_occurrence_date);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::RevokeRequest,
+            HandleValue::RevokeRequest(Box::new(request)),
+        ));
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_register_request_with_opaque_object_context(
     request: *mut kmipkit_register_request_t,
@@ -4734,6 +4836,33 @@ pub extern "C" fn kmipkit_client_batch_item_register(
         *out = try_ffi!(try_make_handle(
             Kind::BatchItem,
             HandleValue::BatchItem(Box::new(item))
+        ));
+        SUCCESS
+    })
+}
+
+/// Consumes a Revoke request and validates its SHALL NOT date constraint.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_revoke(
+    request: *mut kmipkit_revoke_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = try_ffi!(owned_payload(request, Kind::RevokeRequest));
+        let HandleValue::RevokeRequest(request) = request else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if request.compromise_occurrence_date().is_some()
+            && !matches!(request.revocation_reason().raw(), 2 | 3)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::Revoke(
+                *request,
+            )))),
         ));
         SUCCESS
     })

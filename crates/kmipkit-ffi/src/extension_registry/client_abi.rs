@@ -2541,6 +2541,90 @@ pub extern "C" fn kmipkit_client_batch_item_response_register_ttlv(
     })
 }
 
+/// Copies the required returned Unique Identifier only from a successful Revoke result.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_revoke(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_unique_identifier.is_null()
+            || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+            return record_ffi_error(status);
+        }
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::Revoke(revoke) = item.outcome() {
+            let Some(identifier) = revoke.unique_identifier() else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            if let Err(status) = write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+            {
+                return record_ffi_error(status);
+            }
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
+/// Copies the complete ordered response TTLV only from successful Revoke results.
+/// Output regions must be writable and must not overlap.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_revoke_ttlv(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_present: *mut u8,
+    out_response_ttlv: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if out_present.is_null()
+            || out_response_ttlv.is_null()
+            || ffi_output_ranges_overlap(out_present, out_response_ttlv)
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let present = scalar_out!(out_present);
+        let response_ttlv = out_slot!(out_response_ttlv);
+        *present = 0;
+        let item = read_handle!(item, ClientBatchItemResponse);
+        let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Some(item) = response.get(*index) else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if item.outcome().result().status().raw() != 0 {
+            return SUCCESS;
+        }
+        if let kmipkit_client::ClientBatchOutcome::Revoke(revoke) = item.outcome() {
+            let structure = try_ffi!(revoke.with_ttlv(|view| super::clone_structure_view(&view)));
+            *response_ttlv = try_ffi!(try_make_handle(
+                Kind::Structure,
+                HandleValue::Structure(structure),
+            ));
+            *present = 1;
+        }
+        SUCCESS
+    })
+}
+
 /// Borrows the resolved identifier from a successful Get Usage Allocation response item.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_get_usage_allocation(

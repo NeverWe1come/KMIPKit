@@ -66,6 +66,8 @@ typedef struct kmipkit_unique_identifier_v1_t kmipkit_unique_identifier_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v2_t kmipkit_client_batch_item_metadata_v2_t;
 typedef struct kmipkit_split_key_reference_t kmipkit_split_key_reference_t;
 typedef struct kmipkit_usage_allocation_context_t kmipkit_usage_allocation_context_t;
+typedef struct kmipkit_revocation_reason_t kmipkit_revocation_reason_t;
+typedef struct kmipkit_revoke_request_t kmipkit_revoke_request_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -230,6 +232,8 @@ void kmipkit_client_batch_item_response_release(kmipkit_client_batch_item_respon
 void kmipkit_register_request_release(kmipkit_register_request_t *handle);
 void kmipkit_split_key_reference_release(kmipkit_split_key_reference_t *handle);
 void kmipkit_usage_allocation_context_release(kmipkit_usage_allocation_context_t *handle);
+void kmipkit_revocation_reason_release(kmipkit_revocation_reason_t *handle);
+void kmipkit_revoke_request_release(kmipkit_revoke_request_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -1022,6 +1026,16 @@ int32_t kmipkit_client_batch_item_response_register(kmipkit_client_batch_item_re
  */
 /* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.43-001, KMIPKIT-REQ-SPEC-6.1.43-005, KMIPKIT-REQ-SPEC-6.1.43-007, KMIPKIT-REQ-SPEC-6.1.43-009-001, KMIPKIT-REQ-SPEC-6.1.43-009-002, KMIPKIT-REQ-SPEC-6.1.43-010-001, KMIPKIT-REQ-SPEC-6.1.43-010-002, KMIPKIT-REQ-SPEC-6.1.43-011 */
 int32_t kmipkit_client_batch_item_response_register_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_revocation_reason_create(uint32_t raw_code, uint8_t has_message, const uint8_t * message_data, uint64_t message_length, kmipkit_revocation_reason_t ** out_reason);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_revoke_request_create(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_revocation_reason_t * reason, uint8_t has_compromise_occurrence_date, int64_t compromise_occurrence_date, kmipkit_revoke_request_t ** out_request);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_client_batch_item_revoke(kmipkit_revoke_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_client_batch_item_response_revoke(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_unique_identifier_v1_t * out_unique_identifier);
+/* KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-REQ-SPEC-6.1.44-001, KMIPKIT-REQ-SPEC-6.1.44-003-001, KMIPKIT-REQ-SPEC-6.1.44-003-002 */
+int32_t kmipkit_client_batch_item_response_revoke_ttlv(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, kmipkit_ttlv_structure_t ** out_response_ttlv);
 /* Approved exact C-only exclusion: kmipkit_client_batch_item_response_metadata_v1 */
 int32_t kmipkit_client_batch_item_response_metadata_v1(kmipkit_client_batch_item_response_t * item, kmipkit_client_batch_item_metadata_v1_t * out_metadata);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.

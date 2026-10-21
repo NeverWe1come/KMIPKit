@@ -888,6 +888,7 @@ class BatchItemResult(_BatchItemResultNativeState):
     )
     reprovision_response: ReProvisionResponse | None = field(default=None, repr=False)
     register_response: RegisterResponse | None = field(default=None, repr=False)
+    revoke_response: RevokeResponse | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1158,6 +1159,21 @@ class RegisterResponse:
 
     def __repr__(self) -> str:
         return "RegisterResponse(unique_identifier=redacted, response_ttlv=preserved)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class RevokeResponse:
+    """Successful §6.1.44 result with its required identifier and complete response TTLV."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+    response_ttlv: ttlv.Structure = field(repr=False)
+
+    def close(self) -> None:
+        """Release the caller-owned complete generic response structure."""
+        self.response_ttlv.close()
+
+    def __repr__(self) -> str:
+        return "RevokeResponse(unique_identifier=redacted, response_ttlv=preserved)"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -2007,6 +2023,13 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x03
                 ):
                     register_response = _register_response(item)
+                revoke_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x13
+                ):
+                    revoke_response = _revoke_response(item)
                 rng_retrieve_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -2157,6 +2180,7 @@ def _batch_result(handle: Any) -> BatchResult:
                     rekey_key_pair_response=rekey_key_pair_response,
                     reprovision_response=reprovision_response,
                     register_response=register_response,
+                    revoke_response=revoke_response,
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
@@ -2637,6 +2661,47 @@ def _register_response(
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return RegisterResponse(unique_identifier, response_ttlv)
+
+
+def _revoke_response(item: _ClientBatchItemResponse) -> RevokeResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_revoke(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+
+    response_ttlv_present = ffi.new("uint8_t *")
+    response_ttlv_output = ffi.new("kmipkit_ttlv_structure_t **")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_revoke_ttlv(
+            item._pointer(), response_ttlv_present, response_ttlv_output
+        )
+    )
+    response_ttlv_handle = response_ttlv_output[0]
+    if response_ttlv_present[0] != 1 or response_ttlv_handle == ffi.NULL:
+        if response_ttlv_handle != ffi.NULL:
+            lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        errors.raise_for_status(4)
+    try:
+        response_ttlv = ttlv._structure_from_native_address(
+            int(ffi.cast("uintptr_t", response_ttlv_handle))
+        )
+    except Exception:
+        lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
+        raise
+    return RevokeResponse(unique_identifier, response_ttlv)
 
 
 def _rekey_response(item: _ClientBatchItemResponse) -> RekeyResponse | None:

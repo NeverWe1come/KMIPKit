@@ -290,6 +290,76 @@ class ClientBatchItem(NativeHandle):
     _release_name = "kmipkit_client_batch_item_release"
 
 
+class RevocationReason(NativeHandle):
+    """Owned raw-preserving Revocation Reason Code and optional audit message."""
+
+    _release_name = "kmipkit_revocation_reason_release"
+
+    def __init__(
+        self, handle: Any, raw_code: int, message: str | None, *, _token: object
+    ) -> None:
+        super().__init__(handle, _token=_token)
+        self.raw_code = raw_code
+        self.message = message
+
+    @classmethod
+    def create(cls, raw_code: int, message: str | None = None) -> RevocationReason:
+        raw = _integer_range(raw_code, 0, 0xFFFF_FFFF)
+        if message is not None and not isinstance(message, str):
+            errors.raise_for_status(4)
+        if message is None:
+            encoded = b""
+            buffer = ffi.NULL
+        else:
+            encoded, buffer = _owned_bytes(message, _MAX_OPERATION_INPUT_BYTES)
+        try:
+            handle = _make_handle(
+                "kmipkit_revocation_reason_t",
+                "kmipkit_revocation_reason_create",
+                (raw, int(message is not None), buffer, len(encoded)),
+            )
+        finally:
+            _wipe_staging_buffer(buffer)
+        return _wrap_owned_handle(cls, handle, raw, message)
+
+    def __repr__(self) -> str:
+        return (
+            f"RevocationReason(raw_code={self.raw_code}, "
+            f"message={'redacted' if self.message is not None else 'None'})"
+        )
+
+
+class RevokeRequest(NativeHandle):
+    """Owned typed Revoke request with optional identifier and compromise date."""
+
+    _release_name = "kmipkit_revoke_request_release"
+
+    @classmethod
+    def create(
+        cls,
+        unique_identifier: UniqueIdentifier | None,
+        reason: RevocationReason,
+        compromise_occurrence_date: int | None,
+    ) -> RevokeRequest:
+        if not isinstance(reason, RevocationReason):
+            errors.raise_for_status(4)
+        if compromise_occurrence_date is None:
+            has_date = 0
+            date = 0
+        else:
+            has_date = 1
+            date = _integer_range(compromise_occurrence_date, -(1 << 63), (1 << 63) - 1)
+        with _staging_buffer_scope() as staging_buffers:
+            identifier, _ = _native_unique_identifier(unique_identifier, staging_buffers)
+            handle = _make_handle(
+                "kmipkit_revoke_request_t",
+                "kmipkit_revoke_request_create",
+                (identifier, reason, has_date, date),
+                consumed_indices=(1,),
+            )
+        return _wrap_owned_handle(cls, handle)
+
+
 class OpaqueObjectContext(IntEnum):
     """Local Register attribute-handling context for an Opaque Object."""
 
@@ -1635,6 +1705,19 @@ def client_batch_item_register(request: RegisterRequest) -> ClientBatchItem:
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def client_batch_item_revoke(request: RevokeRequest) -> ClientBatchItem:
+    """Create a Revoke batch item and consume the owned request."""
+    if not isinstance(request, RevokeRequest):
+        errors.raise_for_status(4)
+    handle = _make_handle(
+        "kmipkit_client_batch_item_t",
+        "kmipkit_client_batch_item_revoke",
+        (request,),
+        consumed_indices=(0,),
+    )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -> Any:
     if value is None:
         if required:
@@ -2870,6 +2953,8 @@ __all__ = [
     "OpaqueObjectContext",
     "RegisteredExtensionValue",
     "RegisterRequest",
+    "RevocationReason",
+    "RevokeRequest",
     "SplitKeyReference",
     "UniqueIdentifier",
     "UniqueIdentifierKind",
@@ -2887,6 +2972,7 @@ __all__ = [
     "client_batch_item_sign",
     "client_batch_item_signature_verify",
     "client_batch_item_register",
+    "client_batch_item_revoke",
     "client_batch_item_create",
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",

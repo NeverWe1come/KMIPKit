@@ -197,6 +197,16 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemRegister(consumed), List.of());
     }
 
+    /** Creates a Revoke request batch item and consumes the request handle. */
+    public static ClientBatchItem revoke(RevokeRequest request) {
+        NativeExtensionRegistry.ensureLoaded();
+        if (request == null) {
+            throw new InvalidInputException("Revoke request is invalid");
+        }
+        long consumed = NativeHandle.transferAll(request.nativeHandleOwner())[0];
+        return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemRevoke(consumed), List.of());
+    }
+
     /** Creates a Create request while borrowing and copying the supplied TTLV structures. */
     public static ClientBatchItem create(
             long objectType, TtlvStructure attributes, TtlvStructure protectionStorageMasks) {

@@ -1613,6 +1613,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::Client::reprovision_with_options",
     ),
     (
+        "rust-observed-90ee747dcccb18edf767",
+        "rust-kmipkit-client",
+        "kmipkit_client::Client::revoke",
+    ),
+    (
         "rust-observed-ad3e9ae2e918544e7398",
         "rust-kmipkit-client",
         "kmipkit_client::Client::rng_retrieve",
@@ -1743,6 +1748,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::ClientBatchOutcome::reprovision_response",
     ),
     (
+        "rust-observed-921f1da8953ae97303d3",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchOutcome::revoke_response",
+    ),
+    (
         "rust-observed-37cc24e5ca63b7c10837",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchOutcome::rng_retrieve_response",
@@ -1846,6 +1856,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-ea621624ffc08446e4eb",
         "rust-kmipkit-client",
         "kmipkit_client::ClientRequest::RekeyKeyPair",
+    ),
+    (
+        "rust-observed-0e315a6510ccb54d69ef",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientRequest::Revoke",
     ),
     (
         "rust-observed-78417d6a93db022ae787",
@@ -2611,6 +2626,66 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-958624c4d24dba1be880",
         "rust-kmipkit-protocol",
         "kmipkit_protocol::RekeyResponse::with_ttlv",
+    ),
+    (
+        "rust-observed-18d86ecb9ab9ed87a9cd",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason",
+    ),
+    (
+        "rust-observed-002ee42045fd471388d0",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::from_raw",
+    ),
+    (
+        "rust-observed-b15cd62f7e7250aff1c7",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevocationReason::raw",
+    ),
+    (
+        "rust-observed-08c6a76592138d4a6084",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest",
+    ),
+    (
+        "rust-observed-e132783701cd4df7cbc2",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::new",
+    ),
+    (
+        "rust-observed-32ec0e264a5dbefa4869",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::revocation_message",
+    ),
+    (
+        "rust-observed-d14ce26fbd9f064c6f09",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date",
+    ),
+    (
+        "rust-observed-8637cff5425353922dc5",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::with_revocation_message",
+    ),
+    (
+        "rust-observed-0a769b5ca9f4794ee359",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeRequest::with_unique_identifier",
+    ),
+    (
+        "rust-observed-99a5266b4cffcf5e0a50",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeResponse",
+    ),
+    (
+        "rust-observed-b336c6087c9618deb2cc",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeResponse::unique_identifier",
+    ),
+    (
+        "rust-observed-f19f81aab2684aa6250a",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::RevokeResponse::with_ttlv",
     ),
     (
         "rust-observed-0960b8952bd6dedbf0cb",
