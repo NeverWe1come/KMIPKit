@@ -10,15 +10,17 @@ public final class RevokeTextLimitProbe {
     private RevokeTextLimitProbe() {}
 
     /** Runs one Revoke text conversion with a bounded heap and a value beyond 16 MiB. */
-    public static void main(String[] arguments) {
+    public static void main(String[] arguments) throws ClassNotFoundException {
         String inputKind = arguments[0];
         String oversized;
         List<byte[]> heapPressure = new ArrayList<>();
         try {
             oversized = "x".repeat(Integer.parseInt(arguments[1]));
+            Class.forName(UniqueIdentifier.class.getName());
+            Class.forName(RevocationReason.class.getName());
             Runtime runtime = Runtime.getRuntime();
-            long minimumHeadroom = 17 * 1024 * 1024L;
-            while (remainingHeapCapacity(runtime) > minimumHeadroom) {
+            long minimumHeadroom = 21 * 1024 * 1024L;
+            while (remainingHeapCapacity(runtime) > minimumHeadroom + 1024 * 1024L) {
                 heapPressure.add(new byte[1024 * 1024]);
             }
         } catch (OutOfMemoryError error) {
@@ -29,7 +31,7 @@ public final class RevokeTextLimitProbe {
 
         try {
             switch (inputKind) {
-                case "identifier" -> UniqueIdentifier.textString(oversized).nativeText();
+                case "identifier" -> UniqueIdentifier.encodeNativeText(oversized);
                 case "message" -> RevocationReason.create(1, oversized);
                 default -> throw new IllegalArgumentException("unknown probe input kind");
             }

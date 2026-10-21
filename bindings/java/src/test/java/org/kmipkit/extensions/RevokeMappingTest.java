@@ -12,11 +12,24 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.ResourceLimitException;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.junit.jupiter.api.Test;
 
 /** Revoke binding tests derived from OASIS KMIP 2.1 §§4.47, 6.1.44, and 11.48. */
 final class RevokeMappingTest {
+    @Test
+    void utf8LengthPreflightCountsAllScalarWidthsAndRejectsMalformedText() {
+        assertEquals(1, UniqueIdentifier.checkedUtf8Length("A", 4, "test"));
+        assertEquals(2, UniqueIdentifier.checkedUtf8Length("é", 4, "test"));
+        assertEquals(3, UniqueIdentifier.checkedUtf8Length("三", 4, "test"));
+        assertEquals(4, UniqueIdentifier.checkedUtf8Length("🔐", 4, "test"));
+        assertThrows(ResourceLimitException.class,
+                () -> UniqueIdentifier.checkedUtf8Length("é", 1, "test"));
+        assertThrows(InvalidInputException.class,
+                () -> UniqueIdentifier.checkedUtf8Length(String.valueOf((char) 0xd800), 4, "test"));
+    }
+
     @Test
     void requestRetainsUnsignedUnknownReasonAndNestedAuditMessage() {
         NativeExtensionRegistry.ensureLoaded();

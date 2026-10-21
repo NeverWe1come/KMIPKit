@@ -1,22 +1,17 @@
 package org.kmipkit.extensions;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
-import org.kmipkit.ResourceLimitException;
 import org.kmipkit.internal.NativeHandle;
 import org.jspecify.annotations.Nullable;
 
 /** Raw-preserving KMIP 2.1 Revocation Reason Code and optional audit message. */
 public final class RevocationReason implements AutoCloseable {
-    private static final int MAX_MESSAGE_BYTES = 16 * 1024 * 1024;
+    private static final int MAX_MESSAGE_BYTES = UniqueIdentifier.MAX_NATIVE_TEXT_BYTES;
 
     private final NativeHandle handle;
     private final long rawCode;
@@ -59,20 +54,8 @@ public final class RevocationReason implements AutoCloseable {
     }
 
     private static byte[] encodeMessage(String value) {
-        try {
-            ByteBuffer encoded = StandardCharsets.UTF_8.newEncoder()
-                    .onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT)
-                    .encode(CharBuffer.wrap(value));
-            if (encoded.remaining() > MAX_MESSAGE_BYTES) {
-                throw new ResourceLimitException("Revocation Message exceeds the configured limit");
-            }
-            byte[] bytes = new byte[encoded.remaining()];
-            encoded.get(bytes);
-            return bytes;
-        } catch (CharacterCodingException exception) {
-            throw new InvalidInputException("Revocation Message is not valid Unicode");
-        }
+        UniqueIdentifier.checkedUtf8Length(value, MAX_MESSAGE_BYTES, "Revocation Message");
+        return value.getBytes(StandardCharsets.UTF_8);
     }
 
     @Override

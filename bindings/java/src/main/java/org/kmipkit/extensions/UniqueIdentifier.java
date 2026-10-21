@@ -7,9 +7,12 @@ import java.nio.charset.CodingErrorAction;
 import java.util.Objects;
 
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.ResourceLimitException;
 
 /** Exact KMIP Unique Identifier wire value, including its TTLV type. */
 public final class UniqueIdentifier {
+    static final int MAX_NATIVE_TEXT_BYTES = 16 * 1024 * 1024;
+
     public enum Kind {
         TEXT_STRING(1),
         ENUMERATION(2),
@@ -90,7 +93,42 @@ public final class UniqueIdentifier {
     }
 
     byte[] nativeText() {
-        return kind == Kind.TEXT_STRING ? text.getBytes(StandardCharsets.UTF_8) : null;
+        if (kind != Kind.TEXT_STRING) {
+            return null;
+        }
+        return encodeNativeText(text);
+    }
+
+    static byte[] encodeNativeText(String text) {
+        checkedUtf8Length(text, MAX_NATIVE_TEXT_BYTES, "Unique Identifier");
+        return text.getBytes(StandardCharsets.UTF_8);
+    }
+
+    static int checkedUtf8Length(String value, int maximumBytes, String inputName) {
+        long byteCount = 0;
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            if (character <= 0x7f) {
+                byteCount++;
+            } else if (character <= 0x7ff) {
+                byteCount += 2;
+            } else if (Character.isHighSurrogate(character)) {
+                if (index + 1 >= value.length()
+                        || !Character.isLowSurrogate(value.charAt(index + 1))) {
+                    throw new InvalidInputException(inputName + " is not valid Unicode");
+                }
+                byteCount += 4;
+                index++;
+            } else if (Character.isLowSurrogate(character)) {
+                throw new InvalidInputException(inputName + " is not valid Unicode");
+            } else {
+                byteCount += 3;
+            }
+            if (byteCount > maximumBytes) {
+                throw new ResourceLimitException(inputName + " exceeds the UTF-8 byte limit");
+            }
+        }
+        return (int) byteCount;
     }
 
     long nativeNumber() {

@@ -24,9 +24,9 @@ public final class RevokeRequest implements AutoCloseable {
         if (reason == null) {
             throw new InvalidInputException("Revoke request reason is required");
         }
-        NativeExtensionRegistry.ensureLoaded();
         byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
         try {
+            NativeExtensionRegistry.ensureLoaded();
             long consumedReason = NativeHandle.transferAll(reason.nativeHandleOwner())[0];
             return new RevokeRequest(NativeExtensionRegistry.revokeRequestCreate(
                     uniqueIdentifier == null ? 0 : uniqueIdentifier.nativeKind(),
