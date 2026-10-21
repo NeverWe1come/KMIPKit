@@ -126,6 +126,42 @@ fn validate_constructor_rejects_output_overlapping_payload_extension_array() {
 }
 
 #[test]
+fn validate_constructor_rejects_output_overlapping_identifier_text() {
+    let mut item: *mut kmipkit_client_batch_item_t = ptr::dangling_mut();
+    let original_item = item;
+    let mut identifiers = [kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("versioned identifier record size fits u32"),
+        abi_version: 1,
+        kind: KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: (&raw mut item).cast(),
+        text_length: u64::try_from(std::mem::size_of::<*mut kmipkit_client_batch_item_t>())
+            .expect("output pointer size fits u64"),
+        enumeration_value: 0,
+        integer_value: 0,
+    }];
+
+    let status = kmipkit_client_batch_item_validate(
+        ptr::null_mut(),
+        0,
+        identifiers.as_mut_ptr(),
+        identifiers.len() as u64,
+        ptr::null_mut(),
+        0,
+        0,
+        0,
+        &raw mut item,
+    );
+    if status == SUCCESS && !item.is_null() {
+        kmipkit_client_batch_item_release(item);
+    }
+
+    assert_eq!(status, ERROR_INVALID_INPUT);
+    assert_eq!(item, original_item);
+}
+
+#[test]
 fn validate_constructor_enforces_one_aggregate_ttlv_element_limit() {
     let tag = RawTag::new(0x0054_1234)
         .expect("vendor tag fits the raw tag field")
