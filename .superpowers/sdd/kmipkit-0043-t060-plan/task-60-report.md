@@ -313,3 +313,23 @@ review, exact-head CI, and coverage.
   was edited.
 - Remaining limits: security review, controller review, exact-head CI, and
   selected-scope coverage remain pending. T060 is not marked complete.
+
+## CI coverage follow-up (run 39518177296)
+
+### Red
+
+- The exact synthetic merge `6fce6cbf592ed82cb0b5dcecae111a802f54fc5c`
+  failed the selected changed-production coverage gate: 11,218 of 11,833
+  executable lines (94.8%), below the required 95% / 11,242 lines.
+- Artifact attribution confirmed the Python hits map to
+  `bindings/python/src/kmipkit/client.py`; this is not a source-path or
+  instrumentation mismatch. `%TEMP%\kmipkit-pr104-39518177296-allcov\coverage-python\coverage.xml`
+  marks the defensive branches in `_rekey_key_pair_response` at lines
+  2459–2461, 2463, 2467, 2477–2479, and 2482–2484 as zero-hit. The baseline
+  artifact had only the existing success-path operation test for this helper.
+- The same artifact identified uncovered Java cleanup lines in the Re-key Key
+  Pair response parser. The existing code already implements cleanup; missing
+  semantic tests, rather than a production defect, caused these coverage gaps.
+- This coverage failure is the Red evidence for the follow-up. No new failing
+  behavior test was manufactured because the target defensive behaviors are
+  already implemented and correct.
