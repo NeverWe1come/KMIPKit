@@ -156,6 +156,37 @@ final class NativeBridgeCoverageTest {
     }
 
     @Test
+    void nativeValidationBridgesRejectMalformedBoundaryInputs() {
+        byte[][] nullObjectGroups = new byte[1][];
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQuery(new int[] {1}, nullObjectGroups));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemQueryWithLimits(
+                        new int[] {1}, nullObjectGroups, CODEC_LIMITS));
+
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.splitKeyReferenceCreate(0, null, 0, 1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemJoinSplitKey(
+                        -1, new long[] {1}, false, 0, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemJoinSplitKey(
+                        1, new long[0], false, 0, 0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemJoinSplitKey(
+                        1, new long[] {0}, false, 0, 0, 0));
+
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvValueEnumeration(-1));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.ttlvValueInterval(-1));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientCreate(0, 0));
+        assertThrows(InvalidInputException.class, () -> NativeExtensionRegistry.clientBatchAddItem(0, 0));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchResponseItemAt(0, -1));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.usageAllocationContextCreate(0, 1, 0));
+    }
+
+    @Test
     void nativePkcs11BridgeRejectsMissingTtlvInputs() {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemPkcs11(0, 0, null, 0));
