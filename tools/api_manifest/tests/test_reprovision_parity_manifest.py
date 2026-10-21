@@ -151,6 +151,33 @@ class ReProvisionParityManifestTests(unittest.TestCase):
         self.assertIn("KMIPKIT-DEC-014", owner_text)
         self.assertIn("allow absence for all three forms", owner_text.lower())
 
+    def test_response_jni_mappings_match_the_declared_native_export(self) -> None:
+        native_method = "clientBatchItemResponseReprovision"
+        native_symbol = f"Java_org_kmipkit_NativeExtensionRegistry_{native_method}"
+        java_source = (
+            ROOT / "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java"
+        ).read_text(encoding="utf-8")
+        cpp_source = (ROOT / "bindings/java/native/kmipkit_jni.cpp").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            java_source,
+            rf"public static native Object\[\] {native_method}\(",
+        )
+        self.assertIn(f"JNIEXPORT jobjectArray JNICALL {native_symbol}(", cpp_source)
+
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        self.assertEqual(
+            native_symbol,
+            functions["client_batch_item_response_reprovision"]["java"]["jniSymbol"],
+        )
+        self.assertEqual(
+            native_symbol,
+            functions["client_batch_item_response_reprovision_ttlv"]["java"][
+                "jniAggregateSymbol"
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
