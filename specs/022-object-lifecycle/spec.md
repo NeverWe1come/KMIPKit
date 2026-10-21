@@ -271,7 +271,7 @@ As a KMIPKit caller, I can send the §6.1.43 Register request and inspect the ty
 3. Given a Table 294 failure, malformed payload, or transport error, when the call completes, then status/reason or error and delivery state remain available without retry.
 4. Given Pending in a caller-enabled typed batch, when the response arrives, then Pending and the exact correlation bytes remain available without an implicit Poll.
 
-**Specific rules**: Require type, attributes, and object; apply conditional algorithm, length, and signature-attribute rules from §6.1.43.
+**Specific rules**: Require type, attributes, and object; apply conditional algorithm, length, and signature-attribute rules from §6.1.43. Table 291 requires Any Object (`KMIPKIT-022-T291-ANY-OBJECT`). Table 293 requires Certificate Length only for Certificates (`KMIPKIT-022-T293-CERTIFICATE-LENGTH`). Both traces link to `crates/kmipkit-protocol/src/register.rs` and the exact protocol tests recorded in `traceability.md`.
 
 **Payload schema** (OASIS Specification v2.1 §6.1.43, Tables 291–292):
 
