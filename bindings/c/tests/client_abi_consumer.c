@@ -237,12 +237,14 @@ static int rekey_key_pair_constructor_is_callable_from_c(void) {
     identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1);
     if (kmipkit_client_batch_item_rekey_key_pair(
             0, 0, 0, 0, 0, 0, 0, 0, 0, &item) != 0 || item == 0) goto cleanup;
+    kmipkit_client_batch_item_t *sentinel_item = item;
+    const int32_t invalid_offset_status = kmipkit_client_batch_item_rekey_key_pair(
+            0, 2, UINT32_C(86400), 0, 0, 0, 0, 0, 0, &item);
+    kmipkit_client_batch_item_t *invalid_offset_output = item;
+    item = sentinel_item;
+    if (invalid_offset_status != T076_ERROR_INVALID_INPUT || invalid_offset_output != 0) goto cleanup;
     kmipkit_client_batch_item_release(item);
     item = 0;
-    item = (kmipkit_client_batch_item_t *)(uintptr_t)1;
-    if (kmipkit_client_batch_item_rekey_key_pair(
-            0, 2, UINT32_C(86400), 0, 0, 0, 0, 0, 0, &item) != T076_ERROR_INVALID_INPUT ||
-        item != 0) goto cleanup;
     for (size_t index = 0; index < 6; ++index) {
         if (kmipkit_ttlv_structure_create(&structures[index]) != 0 || structures[index] == 0) goto cleanup;
     }
