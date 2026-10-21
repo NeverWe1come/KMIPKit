@@ -238,6 +238,38 @@ def test_set_defaults_response_releases_unexpected_native_handle(
     assert released == [native_handle]
 
 
+def test_set_defaults_response_releases_native_handle_when_wrapping_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    native_handle = ffi.cast("kmipkit_ttlv_structure_t *", 123)
+    released: list[object] = []
+    conversion_error = RuntimeError("conversion failed")
+
+    def response_ttlv(_item: object, present: object, output: object) -> int:
+        present[0] = 1  # type: ignore[index]
+        output[0] = native_handle  # type: ignore[index]
+        return 0
+
+    def fail_conversion(_address: int) -> object:
+        raise conversion_error
+
+    monkeypatch.setattr(
+        client,
+        "lib",
+        SimpleNamespace(
+            kmipkit_client_batch_item_response_set_defaults_ttlv=response_ttlv,
+            kmipkit_ttlv_structure_release=lambda value: released.append(value),
+        ),
+    )
+    monkeypatch.setattr(ttlv, "_structure_from_native_address", fail_conversion)
+
+    with pytest.raises(RuntimeError) as captured:
+        client._set_defaults_response(SimpleNamespace(_pointer=lambda: object()))
+
+    assert captured.value is conversion_error
+    assert released == [native_handle]
+
+
 def test_set_defaults_native_mtls_response_is_owned_and_preserves_empty_success_payload() -> (
     None
 ):
