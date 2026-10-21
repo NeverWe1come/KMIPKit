@@ -171,9 +171,7 @@ fn compiled_c_consumer_reads_set_constraints_failure_metadata_without_ttlv() {
     let failure = failed_cryptographic_item(request(), 0x37, b"set-constraints-failure");
     // SAFETY: the compiled C caller borrows this live Failure item and does not release it.
     assert_eq!(
-        unsafe {
-            kmipkit_client_abi_c_consumer_validate_set_constraints_failure_metadata(failure)
-        },
+        unsafe { kmipkit_client_abi_c_consumer_validate_set_constraints_failure_metadata(failure) },
         1
     );
     kmipkit_client_batch_item_response_release(failure);
