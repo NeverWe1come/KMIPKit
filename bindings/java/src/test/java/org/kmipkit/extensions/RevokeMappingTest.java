@@ -63,4 +63,12 @@ final class RevokeMappingTest {
                 () -> ClientBatchItemResult.parseRevokeResponse(
                         new Object[] {new long[] {0}, new Object(), new long[] {0}}));
     }
+
+    @Test
+    void responseBridgeRejectsInvalidNativeItemHandle() {
+        NativeExtensionRegistry.ensureLoaded();
+        assertThrows(
+                InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientBatchItemResponseRevoke(0));
+    }
 }

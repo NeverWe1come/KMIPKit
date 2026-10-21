@@ -4750,8 +4750,9 @@ pub extern "C" fn kmipkit_revocation_reason_create(
 
 /// Creates a typed Revoke request from KMIP 2.1 §6.1.44, Table 295.
 ///
-/// The `reason` handle is transferred to this call. An absent identifier leaves
-/// ID Placeholder use explicit; an optional date is checked when making the batch item.
+/// The `reason` handle is consumed at function entry, including if later identifier
+/// copying or date-flag validation fails. An absent identifier leaves ID Placeholder
+/// use explicit; an optional date is checked when making the batch item.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_revoke_request_create(
     unique_identifier: *const kmipkit_unique_identifier_v1_t,

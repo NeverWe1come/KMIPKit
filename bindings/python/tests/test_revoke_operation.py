@@ -17,6 +17,7 @@ from kmipkit._client_ffi import ffi
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 _REVOKE_ID = b"revoke-item"
+_REVOKE_TARGET = b"revoke-target"
 _COMPROMISE_DATE = 1_700_000_000
 
 
@@ -128,6 +129,31 @@ def _transport(port: int) -> client.TransportConfig:
     )
 
 
+def _view_tags(view: ttlv.TtlvStructureView) -> tuple[int, ...]:
+    tags = []
+    for index in range(ttlv.ttlv_structure_view_item_count(view)):
+        with (
+            ttlv.ttlv_structure_view_item_at(view, index) as item,
+            ttlv.ttlv_item_view_tag(item) as tag,
+        ):
+            tags.append(ttlv.tag_value(tag))
+    return tuple(tags)
+
+
+def _byte_string_at(
+    view: ttlv.TtlvStructureView, index: int, expected_tag: int
+) -> bytes:
+    with ttlv.ttlv_structure_view_item_at(view, index) as item:
+        with ttlv.ttlv_item_view_tag(item) as tag:
+            assert ttlv.tag_value(tag) == expected_tag
+        assert ttlv.ttlv_item_view_type(item) == ttlv.ItemType.ByteString
+        with ttlv.ttlv_item_view_value(item) as value:
+            length = ttlv.ttlv_value_view_byte_length(value)
+            return bytes(
+                ttlv.ttlv_value_view_byte_at(value, byte) for byte in range(length)
+            )
+
+
 def test_revoke_request_retains_unsigned_unknown_reason_and_nested_message() -> None:
     reason = extensions.RevocationReason.create(0xFFFF_FFFF, "operator audit")
     assert reason.raw_code == 0xFFFF_FFFF
@@ -210,7 +236,11 @@ def test_revoke_native_mtls_preserves_nested_request_and_success_response() -> N
             ttlv.codec_limits_defaults() as limits,
         ):
             reason = extensions.RevocationReason.create(2, "operator audit")
-            request = extensions.RevokeRequest.create(None, reason, _COMPROMISE_DATE)
+            request = extensions.RevokeRequest.create(
+                extensions.UniqueIdentifier.text_string(_REVOKE_TARGET.decode()),
+                reason,
+                _COMPROMISE_DATE,
+            )
             item = extensions.client_batch_item_revoke(request)
             batch = client.Batch.create()
             batch.add_item(extensions.with_unique_batch_item_id(item, _REVOKE_ID))
@@ -224,8 +254,9 @@ def test_revoke_native_mtls_preserves_nested_request_and_success_response() -> N
             _ttlv_item(0x420080, 7, b"operator audit"),
         ) in received[0]
         assert _ttlv_item(
-            0x420021, 10, struct.pack(">q", _COMPROMISE_DATE)
+            0x420021, 9, struct.pack(">q", _COMPROMISE_DATE)
         ) in received[0]
+        assert _ttlv_item(0x420094, 7, _REVOKE_TARGET) in received[0]
         assert _ttlv_item(0x420094, 7, b"object") not in received[0]
         assert result is not None and len(result.items) == 1
         item_result = result.items[0]
@@ -236,10 +267,24 @@ def test_revoke_native_mtls_preserves_nested_request_and_success_response() -> N
             "revoked-server-id"
         )
         with ttlv.ttlv_structure_view(response.response_ttlv) as view:
-            assert ttlv.ttlv_structure_view_item_count(view) == 2
+            assert _view_tags(view) == (0x42005C, 0x420093, 0x42007F, 0x42007C)
+            with (
+                ttlv.ttlv_structure_view_item_at(view, 3) as payload_item,
+                ttlv.ttlv_item_view_value(payload_item) as payload_value,
+                ttlv.ttlv_value_view_structure(payload_value) as payload,
+            ):
+                assert _view_tags(payload) == (0x420094, 0x541234)
+                assert _byte_string_at(payload, 1, 0x541234) == b"\x01\x00\xff"
         result.close()
         with ttlv.ttlv_structure_view(response.response_ttlv) as view:
-            assert ttlv.ttlv_structure_view_item_count(view) == 2
+            assert _view_tags(view) == (0x42005C, 0x420093, 0x42007F, 0x42007C)
+            with (
+                ttlv.ttlv_structure_view_item_at(view, 3) as payload_item,
+                ttlv.ttlv_item_view_value(payload_item) as payload_value,
+                ttlv.ttlv_value_view_structure(payload_value) as payload,
+            ):
+                assert _view_tags(payload) == (0x420094, 0x541234)
+                assert _byte_string_at(payload, 1, 0x541234) == b"\x01\x00\xff"
     finally:
         if response is not None:
             response.close()

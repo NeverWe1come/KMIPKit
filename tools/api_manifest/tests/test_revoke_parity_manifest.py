@@ -23,6 +23,7 @@ API_REQUIREMENTS = {
 }
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/java/src/test/java/org/kmipkit/extensions/RevokeMappingTest.java",
     "bindings/python/tests/test_revoke_operation.py",
     "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs",

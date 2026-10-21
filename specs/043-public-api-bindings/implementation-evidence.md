@@ -5077,3 +5077,66 @@ jobs completed, 34 succeeded, 2 scheduled/informational jobs were skipped, and
 none failed. This includes cross-platform Rust, C, Java/JNI, and Python jobs,
 the selected-scope coverage gate, generated-file checks, and normative source
 checks. No OASIS certification or server interoperability claim is made.
+
+#### T062 exact-head CI confirmation (2026-10-21)
+
+The maintainer confirmed that CI run `39586553110` also completed successfully
+for the exact PR head `e9b988a0d695eb37f9322e7e4ea137f3e1c24865`. All required
+jobs passed, including the selected-scope coverage gate; two scheduled or
+informational checks were skipped. This records the final status without
+changing T062 source or scope.
+
+### T063 Revoke mapping — Red/Green/Refactor evidence (2026-10-21)
+
+TDD commits: manifest contract Red `27614f43853ec39edd3730dada53bf785ca4e721`,
+runtime binding Red `5d10177fae9ef6654793c774cce10893b94ab5aa`, and Green
+`7276d807db7695f4228ee3fa045c401ca3981143`. This final Refactor/evidence
+commit contains cross-language runtime fixtures, stable traceability, manifest
+parity evidence, regenerated outputs, task state, and this record. Exact OASIS
+sources are the immutable pinned KMIP v2.1 document: §6.1.44 Tables 295–297,
+§4.47 Table 123, and §11.48 Table 481. The Revoke operation manifest record
+was promoted narrowly; unrelated entries containing “revoke” were not changed.
+
+Red was captured before production changes:
+
+| Command | Expected Red result |
+|---|---|
+| `python -B -m unittest tools.api_manifest.tests.test_revoke_parity_manifest -v` | 2 failures: operation readiness was `blocked`, and no T063 traceability row existed. |
+| `cargo test -p kmipkit-ffi --lib ffi_revoke_request -- --nocapture` | Compilation failed with unresolved `kmipkit_revocation_reason_create`, `kmipkit_revoke_request_create`, and `kmipkit_client_batch_item_revoke` symbols (9 errors total). |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact` | C compilation failed because Revoke public types and constructor/response accessors were undeclared (`C2065`); this confirms a missing public ABI, not a runtime transport failure. |
+| `mvn -B -f bindings/java/pom.xml -Dtest=RevokeMappingTest test` | `COMPILATION ERROR`: missing `RevocationReason`, `RevokeRequest`, and `parseRevokeResponse`. |
+| `uv run --offline --no-project --with pytest --with cffi --python 3.12 -- python -m pytest -q bindings/python/tests/test_revoke_operation.py` with `PYTHONPATH` set to `bindings/python/src` and `KMIPKIT_NATIVE_LIBRARY` set to the existing Windows DLL | 4 expected failures: public `RevocationReason` and client `_revoke_response` were missing. The ordinary project runner was separately diagnosed as unable to clean an existing Linux `.venv` reparse point on Windows; `.venv` was left untouched. |
+
+Green and final focused results:
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib ffi_revoke_request -- --nocapture` | Pass, 3 tests. Includes the C consumer compiled and run against request construction, successful typed response, owned complete TTLV, and consumption of the reason handle when later request validation fails. AWS-LC `stdalign_check.c`/NASM messages were non-fatal Windows toolchain warnings. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Pass; only the same non-fatal AWS-LC build warnings. |
+| `mvn -B -f bindings/java/pom.xml -Dtest=RevokeMappingTest test` | Pass, 5 tests. |
+| `mvn -B -f bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#revokeResponseUsesNativeJniBridgeAndPreservesSuccessFailureAndPending' test` | Pass, 1 TLS 1.3 mTLS integration test. Exercises JNI with Revoke Success, Failure reason/message, Pending correlation, request nesting/date, and success-only response data. |
+| `uv run --offline --no-project --with pytest --with C:\Users\ramp1953\AppData\Local\Temp\kmipkit-t063-wheel-green-584364ab7db34efd8db47d690609e45b\kmipkit-1.0.0-py3-none-win_amd64.whl --python 3.12 -- python -m pytest -q tests/test_revoke_operation.py` from `bindings/python` | Pass, 4 tests. The isolated wheel environment avoids mutation of `.venv`; mTLS covers nested request fields, success UID, complete owned response TTLV, unknown extension preservation, and post-result-close lifetime. |
+| `python -B -m unittest tools.api_manifest.tests.test_revoke_parity_manifest -v` | Pass, 2 tests. Java's TLS integration path is included in the T063 parity evidence. |
+| `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs verified current. Generation was run with `python tools/api_manifest/generate.py --write`; generated files were not edited manually. |
+| `cargo fmt --all --check` | Pass, no output. |
+| `git diff --check` | Pass; source manifest and traceability emitted only the existing CRLF-to-LF normalization warning. |
+
+The isolated Python wheel was built with `uv run --offline --no-project --with
+'maturin>=1.8,<2.0' --with 'cffi>=1.15' --python 3.12 -- maturin build --out
+<temporary-wheel-directory>`. For diagnosis, the first Python fixture omitted
+the request UID and correctly returned local `NotSent` validation; the mTLS
+fixture was corrected to include an explicit target UID, while another request
+test retains absent-UID coverage. Subsequent test assertions were aligned with
+the normative TTLV Date-Time type 9 and the complete ordered Response Batch Item
+TTLV root.
+
+The three language paths are not identical in fixture scope: Java/JNI's TLS
+integration covers all three result states; C's compiled consumer exercises the
+public constructor and successful response accessors; Python/CFFI's native
+mTLS path exercises Success while shared outcome tests cover common Failure,
+Pending, and correlation behavior. `cargo test --workspace --all-features`,
+full API-manifest discovery, workspace Clippy, the full Python suite, Java full
+suite, CI, and selected-scope coverage were not run for T063. Existing unrelated
+full manifest failures remain assigned to their owning operations. No official
+OASIS vectors, conformance, profile support, interoperability, or certification
+are claimed.

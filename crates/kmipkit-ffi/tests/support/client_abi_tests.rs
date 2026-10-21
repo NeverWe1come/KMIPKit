@@ -6064,7 +6064,11 @@ fn ffi_revoke_request_and_response_are_available_to_compiled_c_consumer() {
 
     let identifier = b"c-revoke-success";
     let item = successful_cryptographic_item(
-        ClientRequest::Revoke(RevokeRequest::new(RevocationReason::from_raw(2))),
+        ClientRequest::Revoke(
+            RevokeRequest::new(RevocationReason::from_raw(2)).with_unique_identifier(
+                UniqueIdentifier::TextString("revoke-request-id".to_owned()),
+            ),
+        ),
         0x13,
         b"revoke-response-item",
         vec![
@@ -6181,6 +6185,23 @@ fn ffi_revoke_request_preserves_raw_reason_nested_message_and_optional_fields() 
         kmipkit_client_batch_item_revoke(invalid_request, &raw mut invalid_item)
     );
     assert!(invalid_item.is_null());
+}
+
+#[test]
+fn ffi_revoke_request_consumes_reason_when_later_argument_is_invalid() {
+    let mut reason = ptr::null_mut();
+    assert_eq!(
+        SUCCESS,
+        kmipkit_revocation_reason_create(2, 0, ptr::null(), 0, &raw mut reason)
+    );
+
+    let mut request = ptr::dangling_mut();
+    assert_eq!(
+        ERROR_INVALID_INPUT,
+        kmipkit_revoke_request_create(ptr::null(), reason, 2, 0, &raw mut request)
+    );
+    assert!(request.is_null());
+    assert!(reference_handle(reason, Kind::RevocationReason).is_err());
 }
 
 fn register_request_fixture() -> ClientRequest {

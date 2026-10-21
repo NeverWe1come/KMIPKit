@@ -59,6 +59,8 @@ import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.RegisterRequest;
+import org.kmipkit.extensions.RevocationReason;
+import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.SplitKeyReference;
 import org.kmipkit.extensions.TransportConfiguration;
@@ -1715,6 +1717,101 @@ final class ClientFacadeTlsIntegrationTest {
         }
         assertEquals(1, countOccurrences(request, enumeration(0x42005c, 0x03)));
         assertEquals(0, countOccurrences(request, enumeration(0x42005c, 0x20)));
+        assertTrue(peer.isDone());
+    }
+
+    // OASIS KMIP Specification v2.1 §§4.47, 6.1.44, and 11.48.
+    @Test
+    void revokeResponseUsesNativeJniBridgeAndPreservesSuccessFailureAndPending() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, revokeResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-revoke-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        ClientBatchItemResult.RevokeResponse successful;
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(1);
+            batch.add(ClientBatchItem.revoke(RevokeRequest.create(
+                    UniqueIdentifier.textString("existing-revoke-target"),
+                    RevocationReason.create(2, "operator audit"),
+                    1_700_000_000L)).withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.revoke(RevokeRequest.create(
+                    UniqueIdentifier.textString("missing-revoke-target"),
+                    RevocationReason.create(4, null), null))
+                    .withUniqueBatchItemId(uniqueBatchItemId(1)));
+            batch.add(ClientBatchItem.revoke(RevokeRequest.create(
+                    UniqueIdentifier.textString("pending-revoke-target"),
+                    RevocationReason.create(3, null), null))
+                    .withUniqueBatchItemId(uniqueBatchItemId(2)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult success = response.itemAt(0);
+                    ClientBatchItemResult failure = response.itemAt(1);
+                    ClientBatchItemResult pending = response.itemAt(2)) {
+                assertEquals(3, response.itemCount());
+                assertEquals(0x13, success.operation());
+                assertEquals(0, success.resultStatus());
+                assertTrue(success.outcomeKind().isCompleted());
+                successful = success.revokeResponse().orElseThrow();
+
+                assertEquals(0x13, failure.operation());
+                assertEquals(1, failure.resultStatus());
+                assertEquals(5, failure.resultReason().orElseThrow());
+                assertEquals(java.util.Optional.of("revoke rejected"), failure.resultMessage());
+                assertTrue(failure.outcomeKind().isCompleted());
+                assertTrue(failure.revokeResponse().isEmpty());
+
+                assertEquals(0x13, pending.operation());
+                assertEquals(2, pending.resultStatus());
+                assertTrue(pending.outcomeKind().isPending());
+                assertArrayEquals(CORRELATION, pending.pendingCorrelationValue().orElseThrow());
+                assertTrue(pending.revokeResponse().isEmpty());
+            }
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        try (successful; TtlvStructureView responseTtlv = successful.responseTtlv().view()) {
+            assertEquals("revoked-server-id", successful.uniqueIdentifier().text());
+            assertTagOrder(responseTtlv, 0x42005c, 0x420093, 0x42007f, 0x42007c);
+            try (TtlvItemView payload = responseTtlv.itemAt(3);
+                    TtlvValueView payloadValue = payload.value();
+                    TtlvStructureView payloadStructure = payloadValue.structure()) {
+                assertTagOrder(payloadStructure, 0x420094, 0x541234);
+                assertTrue(containsByteString(payloadStructure, 0x541234,
+                        new byte[] {0x01, 0x00, (byte) 0xff}));
+            }
+            assertFalse(successful.toString().contains("revoked-server-id"));
+        }
+        assertContains(request, enumeration(0x42005c, 0x13));
+        assertEquals(3, countOccurrences(request, enumeration(0x42005c, 0x13)));
+        assertContains(request, structure(0x420081,
+                enumeration(0x420082, 2),
+                item(0x420080, 7, "operator audit".getBytes(StandardCharsets.UTF_8))));
+        assertContains(request, item(0x420021, 9, longInteger(1_700_000_000L)));
         assertTrue(peer.isDone());
     }
 
@@ -3651,6 +3748,33 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420093, 8, uniqueBatchItemId(0)),
                 enumeration(0x42007f, 0), payload);
         return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] revokeResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(3)));
+        byte[] successPayload = structure(0x42007c,
+                item(0x420094, 7, "revoked-server-id".getBytes(StandardCharsets.UTF_8)),
+                item(0x541234, 8, new byte[] {0x01, 0x00, (byte) 0xff}));
+        byte[] success = structure(0x42000f,
+                enumeration(0x42005c, 0x13),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0), successPayload);
+        byte[] failure = structure(0x42000f,
+                enumeration(0x42005c, 0x13),
+                item(0x420093, 8, uniqueBatchItemId(1)),
+                enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5),
+                item(0x42007d, 7, "revoke rejected".getBytes(StandardCharsets.UTF_8)));
+        byte[] pending = structure(0x42000f,
+                enumeration(0x42005c, 0x13),
+                item(0x420093, 8, uniqueBatchItemId(2)),
+                enumeration(0x42007f, 2),
+                item(0x420006, 8, CORRELATION),
+                structure(0x42007c));
+        return structure(0x42007b, header, success, failure, pending);
     }
 
     private static byte[] reprovisionResponseWithOptionalIdentifiersMessage() throws Exception {
