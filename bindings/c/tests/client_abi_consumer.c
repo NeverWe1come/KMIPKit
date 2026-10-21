@@ -428,6 +428,72 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(
+    kmipkit_client_batch_item_response_t *item) {
+    uint8_t shared_flag = 9;
+    uint8_t distinct_flag = 7;
+    kmipkit_byte_span_v1_t span = {(const uint8_t *)(uintptr_t)0x1234, 0x5678};
+    union {
+        uint8_t flag;
+        kmipkit_byte_span_v1_t span;
+    } retrieve_span_alias;
+    union {
+        uint8_t flag;
+        kmipkit_ttlv_structure_t *handle;
+    } retrieve_ttlv_alias;
+    union {
+        uint8_t flag;
+        int32_t length;
+    } seed_length_alias;
+    union {
+        uint8_t flag;
+        kmipkit_ttlv_structure_t *handle;
+    } seed_ttlv_alias;
+    unsigned char before[sizeof(retrieve_span_alias)];
+
+    if (item == 0) return 0;
+    if (kmipkit_client_batch_item_response_rng_retrieve(
+            item, &shared_flag, &shared_flag, &span) != T076_ERROR_INVALID_INPUT ||
+        shared_flag != 9) return 0;
+
+    memset(&retrieve_span_alias, 0xa5, sizeof(retrieve_span_alias));
+    memcpy(before, &retrieve_span_alias, sizeof(retrieve_span_alias));
+    if (kmipkit_client_batch_item_response_rng_retrieve(
+            item, &retrieve_span_alias.flag, &distinct_flag,
+            &retrieve_span_alias.span) != T076_ERROR_INVALID_INPUT ||
+        distinct_flag != 7 ||
+        memcmp(before, &retrieve_span_alias, sizeof(retrieve_span_alias)) != 0) return 0;
+
+    retrieve_ttlv_alias.handle = (kmipkit_ttlv_structure_t *)(uintptr_t)0x1234;
+    memcpy(before, &retrieve_ttlv_alias, sizeof(retrieve_ttlv_alias));
+    if (kmipkit_client_batch_item_response_rng_retrieve_ttlv(
+            item, &retrieve_ttlv_alias.flag, &retrieve_ttlv_alias.handle) !=
+                T076_ERROR_INVALID_INPUT ||
+        memcmp(before, &retrieve_ttlv_alias, sizeof(retrieve_ttlv_alias)) != 0) return 0;
+
+    shared_flag = 9;
+    distinct_flag = 7;
+    seed_length_alias.length = INT32_C(0x12345678);
+    memcpy(before, &seed_length_alias, sizeof(seed_length_alias));
+    if (kmipkit_client_batch_item_response_rng_seed(
+            item, &shared_flag, &shared_flag, &seed_length_alias.length) !=
+                T076_ERROR_INVALID_INPUT ||
+        shared_flag != 9) return 0;
+    if (kmipkit_client_batch_item_response_rng_seed(
+            item, &seed_length_alias.flag, &distinct_flag,
+            &seed_length_alias.length) != T076_ERROR_INVALID_INPUT ||
+        distinct_flag != 7 ||
+        memcmp(before, &seed_length_alias, sizeof(seed_length_alias)) != 0) return 0;
+
+    seed_ttlv_alias.handle = (kmipkit_ttlv_structure_t *)(uintptr_t)0x5678;
+    memcpy(before, &seed_ttlv_alias, sizeof(seed_ttlv_alias));
+    if (kmipkit_client_batch_item_response_rng_seed_ttlv(
+            item, &seed_ttlv_alias.flag, &seed_ttlv_alias.handle) !=
+                T076_ERROR_INVALID_INPUT ||
+        memcmp(before, &seed_ttlv_alias, sizeof(seed_ttlv_alias)) != 0) return 0;
+    return 1;
+}
+
 static int rekey_key_pair_constructor_is_callable_from_c(void) {
     static const uint8_t identifier_bytes[] = "existing-private-key";
     kmipkit_unique_identifier_v1_t identifier = {0};

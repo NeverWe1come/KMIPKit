@@ -722,6 +722,31 @@ fn ffi_rng_seed_response_preserves_zero_data_length_and_generic_ttlv() {
     );
 }
 
+#[test]
+fn ffi_rng_response_c_consumer_rejects_overlapping_output_regions() {
+    let retrieve_item = successful_cryptographic_item(
+        ClientRequest::RngRetrieve(RngRetrieveRequest::new(-17)),
+        0x25,
+        b"rng-retrieve-overlapping-output-consumer",
+        vec![ttlv_item(0x0042_00c2, 0x08, b"seedless")],
+    );
+    let seed_item = successful_cryptographic_item(
+        ClientRequest::RngSeed(RngSeedRequest::new(SecretBytes::new(b"seed".to_vec()))),
+        0x26,
+        b"rng-seed-overlapping-output-consumer",
+        vec![ttlv_item(0x0042_00d5, 0x02, &0_i32.to_be_bytes())],
+    );
+
+    // SAFETY: the compiled C consumer receives live, independently owned handles and only uses
+    // valid object addresses plus deliberately aliased output regions.
+    assert_eq!(1, unsafe { kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(retrieve_item) });
+    // SAFETY: the compiled C consumer receives live, independently owned handles and only uses
+    // valid object addresses plus deliberately aliased output regions.
+    assert_eq!(1, unsafe { kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(seed_item) });
+    kmipkit_client_batch_item_response_release(retrieve_item);
+    kmipkit_client_batch_item_response_release(seed_item);
+}
+
 fn assert_response_span(span: kmipkit_byte_span_v1_t, expected: &[u8]) {
     assert_eq!(
         span.length,
@@ -5470,6 +5495,9 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_rng_seed_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_data_length: i32,
+    ) -> i32;
+    fn kmipkit_client_abi_c_consumer_rejects_rng_output_aliases(
+        item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
     fn kmipkit_client_abi_c_consumer_validate_failed_check_response(
         item: *mut kmipkit_client_batch_item_response_t,
