@@ -544,6 +544,8 @@ class PublicApiParityTests(unittest.TestCase):
                     "client_batch_item_response_rekey_ttlv",
                     "client_batch_item_response_rekey_key_pair_ttlv",
                     "client_batch_item_response_reprovision_ttlv",
+                    "kmipkit_client_batch_item_response_rng_retrieve_ttlv",
+                    "kmipkit_client_batch_item_response_rng_seed_ttlv",
                 }:
                     self.assertNotIn("jniSymbol", java)
                     if "jniAggregateSymbol" in java:
@@ -555,6 +557,8 @@ class PublicApiParityTests(unittest.TestCase):
                         "client_batch_item_response_rekey_ttlv",
                         "client_batch_item_response_rekey_key_pair_ttlv",
                         "client_batch_item_response_reprovision_ttlv",
+                        "kmipkit_client_batch_item_response_rng_retrieve_ttlv",
+                        "kmipkit_client_batch_item_response_rng_seed_ttlv",
                     }:
                         self.assertIn("jniAggregateSymbol", java)
                 else:
