@@ -133,8 +133,8 @@ T024 implementation checkpoint: the Python client facade exposes the shared clie
 - [x] T061 [US2] Add four-language API mapping and parity evidence for Re-Provision under approved KMIPKIT-0036; cite OASIS KMIP 2.1 §6.1.48, Tables 313–315. Local mapping and focused tests pass; independent QA/security reviews pass; exact-head CI run `39548406302` passed all required checks, including selected-scope coverage. See `implementation-evidence.md`. No conformance, interoperability, profile-support, or certification claim is made.
 - [ ] T062 [US2] Add four-language API mapping and parity evidence for Register after its approved contract exists; cite §6.1.43.
 - [ ] T063 [US2] Add four-language API mapping and parity evidence for Revoke after its approved contract exists; cite §6.1.44.
-- [ ] T064 [US2] Add four-language API mapping and parity evidence for RNG Retrieve after its approved contract exists; cite §6.1.49.
-- [ ] T065 [US2] Add four-language API mapping and parity evidence for RNG Seed after its approved contract exists; cite §6.1.50.
+- [x] T064 [US2] Add four-language API mapping and parity evidence for RNG Retrieve after its approved contract exists; cite §6.1.49.
+- [x] T065 [US2] Add four-language API mapping and parity evidence for RNG Seed after its approved contract exists; cite §6.1.50.
 - [ ] T066 [US2] Add four-language API mapping and parity evidence for Set Constraints after its approved contract exists; cite §6.1.52.
 - [ ] T067 [US2] Add four-language API mapping and parity evidence for Set Defaults after its approved contract exists; cite §6.1.53.
 - [X] T068 [US2] Resolve Set Endpoint Role (§6.1.54) as explicitly deferred to 1.1 by the normative catalog and approved specification 025; keep it out of the 1.0 API while generic TTLV preserves its open Operation enumeration value.

@@ -4941,5 +4941,30 @@ Local verification after these additions: `cargo fmt --all --check` and scoped
 FFI Clippy pass; both new FFI tests pass (2/2); the full Python 3.12 suite passes
 705 tests with 99.23% total coverage; `mvn -f bindings/java/pom.xml verify`
 passes 411 tests with 3 existing skips and the JaCoCo gate; and the coverage
-gate suites pass (66 + 24 tests). Exact-head cross-platform CI and the selected
-changed-production gate are pending for the pushed correction.
+gate suites pass (66 + 24 tests). Linux FFI coverage collection also completed
+successfully. Exact-head cross-platform CI run
+[39563950677](https://github.com/NeverWe1come/KMIPKit/actions/runs/39563950677)
+passed on commit `55c7097aca51a02392802c31cbad8fbdb6a3efcd`, including Rust
+stable and MSRV 1.94 on Linux, Windows, and macOS; C consumers on all three
+platforms; Java/JNI integration on all three platforms; Python bindings on all
+three platforms; Java coverage on Linux and Windows; Python coverage; JNI
+sanitizers; C FFI sanitizers; inventory, immutable-source, and script-contract
+checks.
+
+The selected-scope coverage gate passed with the following measured results:
+
+| Scope | Result | Minimum |
+|---|---:|---:|
+| Changed production code | 11,907/12,512 (95.16%) | 95% |
+| `kmipkit-ttlv` | 735/741 (99.19%) | 95% |
+| `kmipkit-protocol` | 12,615/13,005 (97.00%) | 95% |
+| `kmipkit-transport` | 3,713/3,902 (95.16%) | 85% |
+| `kmipkit-ffi` | 7,559/7,991 (94.59%) | 85% |
+| Java adapters | 3,328/3,389 (98.20%), 9 documented unreachable lines excluded | 85% |
+| Python adapters | 4,111/4,142 (99.25%), 1 documented unreachable line excluded | 85% |
+| JNI bridge | 4,843/5,650 (85.72%), 49 documented unreachable lines excluded | 85% |
+| Rust workspace | 31,794/33,021 (96.28%) | 90% |
+
+Thus the coverage blocker is resolved and T064/T065 are complete. This evidence
+does not close the remaining KMIPKit-0043 tasks or release/interoperability
+gates.
