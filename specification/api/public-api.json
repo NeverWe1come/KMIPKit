@@ -26289,7 +26289,7 @@
             "type": "String"
           }
         ],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_revocationReasonCreate",
         "errorCategories": [
           "invalid_input",
           "resource_limit"
@@ -26409,7 +26409,7 @@
             "type": "Long"
           }
         ],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_revokeRequestCreate",
         "errorCategories": [
           "invalid_input",
           "resource_limit"

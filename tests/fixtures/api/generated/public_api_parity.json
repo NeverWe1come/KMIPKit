@@ -34756,7 +34756,7 @@
           "invalid_input",
           "resource_limit"
         ],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_revocationReasonCreate",
         "method": "create",
         "package": "org.kmipkit.extensions",
         "parameters": [
@@ -34872,7 +34872,7 @@
           "invalid_input",
           "resource_limit"
         ],
-        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_revokeRequestCreate",
         "method": "create",
         "package": "org.kmipkit.extensions",
         "parameters": [
