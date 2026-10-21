@@ -5187,3 +5187,36 @@ checks above are local evidence only. Full workspace validation, exact-head CI,
 independent scoped security/QA review, official OASIS test cases, two-server
 interoperability, conformance/profile claims, and certification remain outside
 this T066 local verification record.
+
+#### T066 success-only response TTLV and coverage follow-up (2026-10-21)
+
+The additional Red commit is `9b44041f`; it added a protocol test proving the
+generic response TTLV callback must not run for Failure or Pending. The test
+failed against the previous Rust API because `SetConstraintsResponse`
+unconditionally retained and exposed the complete response. Green is
+`7c33dc70`: the Rust model now retains the generic response only on Success,
+and `with_ttlv` returns `Option<R>`, matching the C, Java, and Python facades.
+The C ABI handles the success-only result explicitly. The FFI constructor's
+unreachable `None` fallback was removed by separating required-structure
+copying from optional-structure copying. Java JNI tests now exercise invalid
+request and response handles.
+
+Exact-head CI run [39626865330](https://github.com/NeverWe1come/KMIPKit/actions/runs/39626865330)
+for head `b389a769ff69610ec6bbb3affe6056e932440b3b` passed the Rust, C,
+Java/JNI, Python, source-inventory, fuzz, and platform coverage collection
+jobs. Its selected changed-production gate failed at 12,501/13,168 (94.94%,
+below 95%). The following local checks passed after the correction:
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-protocol --lib set_constraints_tests --no-fail-fast` | Pass, 11 tests, including Success, Failure, and Pending TTLV access behavior. |
+| `cargo test -p kmipkit-client --lib set_constraints` | Pass, 6 tests, including typed result, one-send behavior, Failure, and Pending correlation. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib set_constraints_ --no-fail-fast` | Pass, 6 tests, including the compiled C consumer and success-only owned TTLV. |
+| `.gradlew.bat --rerun-tasks test --tests org.kmipkit.SetConstraintsJavaFacadeTest --tests org.kmipkit.extensions.SetConstraintsResponseMappingTest --tests 'org.kmipkit.ClientFacadeTlsIntegrationTest.setConstraintsResponseUsesNativeJniBridgeAndExposesTtlvOnlyOnSuccess'` | Build and selected Java/JNI tests pass, including invalid native handle rejection and TLS 1.3 mTLS result mapping. |
+| `uv run --offline --no-project --with <rebuilt-wheel> --with pytest --with cffi --python 3.12 -- python -m pytest -q tests/test_set_constraints_operation.py` | Pass, 4 tests using the rebuilt wheel. |
+| `cargo clippy -p kmipkit-protocol -p kmipkit-ffi -p kmipkit-client --all-targets --all-features -- -D warnings` | Pass. |
+| `python -B -m unittest tools.api_manifest.tests.test_set_constraints_parity_manifest -v` and `python -B tools/api_manifest/generate.py --check` | Pass, 4 manifest tests and all 12 generated outputs. |
+| `cargo fmt --all --check` and `git diff --check` | Pass. |
+
+The corrected branch still requires exact-head CI to confirm the 95% changed-code
+gate. T066 remains open until that check and the scoped reviews pass.
