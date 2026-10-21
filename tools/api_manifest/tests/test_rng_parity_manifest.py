@@ -1,8 +1,8 @@
 """Manifest acceptance tests for KMIP 2.1 §§6.1.49–6.1.50 RNG mappings."""
 from __future__ import annotations
 
-import json
 import ast
+import json
 import unittest
 from pathlib import Path
 
@@ -90,6 +90,9 @@ class RngParityManifestTests(unittest.TestCase):
             row["declarationId"]: row for row in self.manifest["publicDeclarations"]
         }
         self.functions = {row["id"]: row for row in self.manifest["functions"]}
+        self.package_languages = {
+            row["id"]: row["language"] for row in self.manifest["publicPackages"]
+        }
 
     def test_rng_operations_are_approved_and_have_four_language_parity(self) -> None:
         for operation_id, expected in OPERATIONS.items():
@@ -103,7 +106,7 @@ class RngParityManifestTests(unittest.TestCase):
                 self.assertEqual("approved", operation["ownerDependency"]["state"])
                 self.assertEqual("KMIPKIT-0041", operation["ownerDependency"]["specId"])
                 self.assertEqual(OWNER_SPEC, operation["approvalEvidence"]["path"])
-                self.assertEqual("Approved for implementation", operation["approvalEvidence"]["status"])
+                self.assertEqual("Approved", operation["approvalEvidence"]["status"])
                 self.assertEqual(LANGUAGES, set(operation["declarations"]))
 
                 linked = {
@@ -122,6 +125,11 @@ class RngParityManifestTests(unittest.TestCase):
                         self.assertEqual("four-language", declaration["parityScope"])
                         self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
                         self.assertEqual(OWNER_SPEC, declaration["approvalSource"]["path"])
+                        owning_language = self.package_languages[declaration["packageId"]]
+                        self.assertEqual(
+                            declaration["packageId"],
+                            declaration["languageMappings"][owning_language]["packageId"],
+                        )
                         mapped_names[language].add(
                             declaration["languageMappings"][language]["name"]
                         )
@@ -149,7 +157,7 @@ class RngParityManifestTests(unittest.TestCase):
                     else "client_batch_item_rng_seed"
                 ]
                 self.assertTrue(
-                    any(value.startswith("KMIPKIT-REQ-SPEC-") for value in request["requirementIds"])
+                    any(value.startswith("KMIPKIT-0041-FR-") for value in request["requirementIds"])
                 )
                 self.assertIn("out_item", [item["name"] for item in request["c"]["parameters"]])
                 if expected["name"] == "RNG Seed":
@@ -162,8 +170,10 @@ class RngParityManifestTests(unittest.TestCase):
                     f"client_batch_item_response_{'rng_retrieve' if expected['name'] == 'RNG Retrieve' else 'rng_seed'}_ttlv"
                 ]
                 self.assertTrue(
-                    any(value.startswith("KMIPKIT-REQ-SPEC-") for value in response_ttlv["requirementIds"])
+                    any(value.startswith("KMIPKIT-0041-FR-") for value in response_ttlv["requirementIds"])
                 )
+                if expected["name"] == "RNG Seed":
+                    self.assertIn("KMIPKIT-REQ-SPEC-6.1.50-001", response_ttlv["requirementIds"])
                 self.assertIn("caller-owned copy", response_ttlv["c"]["documentation"][0])
 
     def test_python_rng_public_symbols_exist_in_handwritten_binding_sources(self) -> None:
@@ -197,6 +207,12 @@ class RngParityManifestTests(unittest.TestCase):
                     for node in client_classes[class_name].body
                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
                 }
+                declared.update(
+                    node.target.id
+                    for node in client_classes[class_name].body
+                    if isinstance(node, ast.AnnAssign)
+                    and isinstance(node.target, ast.Name)
+                )
                 self.assertTrue(methods.issubset(declared), methods - declared)
 
 
