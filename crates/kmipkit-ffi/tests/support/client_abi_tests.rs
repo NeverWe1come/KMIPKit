@@ -3482,28 +3482,14 @@ fn ffi_rekey_constructor_preserves_optional_fields_and_rejects_invalid_offset_fl
     let mut rejected = ptr::dangling_mut::<kmipkit_client_batch_item_t>();
 
     assert_eq!(
-        kmipkit_client_batch_item_rekey(
-            ptr::null(),
-            2,
-            0,
-            attributes,
-            masks,
-            &mut rejected,
-        ),
+        kmipkit_client_batch_item_rekey(ptr::null(), 2, 0, attributes, masks, &mut rejected,),
         ERROR_INVALID_INPUT
     );
     assert!(rejected.is_null());
 
     let mut item = ptr::null_mut();
     assert_eq!(
-        kmipkit_client_batch_item_rekey(
-            ptr::null(),
-            1,
-            u32::MAX,
-            attributes,
-            masks,
-            &mut item,
-        ),
+        kmipkit_client_batch_item_rekey(ptr::null(), 1, u32::MAX, attributes, masks, &mut item,),
         SUCCESS
     );
     let handle = reference_handle(item, Kind::BatchItem).expect("Re-key item handle is registered");
