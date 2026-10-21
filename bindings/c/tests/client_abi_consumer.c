@@ -5883,6 +5883,29 @@ cleanup:
     return result;
 }
 
+int kmipkit_client_abi_c_consumer_validate_set_constraints_failure_metadata(
+    kmipkit_client_batch_item_response_t *item) {
+    kmipkit_client_batch_item_metadata_v2_t metadata = {0};
+    uint8_t ttlv_present = UINT8_C(9);
+    kmipkit_ttlv_structure_t *response_ttlv =
+        (kmipkit_ttlv_structure_t *)(uintptr_t)9;
+
+    if (item == 0) return 0;
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = 2;
+    if (kmipkit_client_batch_item_response_metadata_v2(item, &metadata) != 0 ||
+        metadata.operation != UINT32_C(0x37) || metadata.outcome_kind != 1 ||
+        metadata.result_status != 1 || metadata.has_result_reason != 1 ||
+        metadata.result_reason != 6 || metadata.has_result_message != 0 ||
+        metadata.result_message_data != 0 || metadata.result_message_length != 0 ||
+        kmipkit_client_batch_item_response_set_constraints_ttlv(
+            item, &ttlv_present, &response_ttlv) != 0 ||
+        ttlv_present != 0 || response_ttlv != 0) {
+        return 0;
+    }
+    return 1;
+}
+
 int kmipkit_client_abi_c_consumer_reject_set_constraints_ttlv_output_overlap(void) {
     union {
         kmipkit_ttlv_structure_t *response;
