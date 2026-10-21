@@ -235,7 +235,7 @@ fn bind_local_dns_sockets_with<Udp, Tcp>(
                 Ok(listener) => listener,
                 Err(source) => {
                     retry_dns_socket_pair_bind("TCP", tcp_bind_address, attempt, source)?;
-                    bind_tcp_first = false;
+                    bind_tcp_first = !bind_tcp_first;
                     continue;
                 }
             };
@@ -244,7 +244,7 @@ fn bind_local_dns_sockets_with<Udp, Tcp>(
                 Ok(udp_socket) => return Ok((udp_socket, tcp_listener)),
                 Err(source) => {
                     retry_dns_socket_pair_bind("UDP", local_addr, attempt, source)?;
-                    bind_tcp_first = false;
+                    bind_tcp_first = !bind_tcp_first;
                 }
             }
         } else {
@@ -252,7 +252,7 @@ fn bind_local_dns_sockets_with<Udp, Tcp>(
                 Ok(socket) => socket,
                 Err(source) => {
                     retry_dns_socket_pair_bind("UDP", udp_bind_address, attempt, source)?;
-                    bind_tcp_first = true;
+                    bind_tcp_first = !bind_tcp_first;
                     continue;
                 }
             };
@@ -261,7 +261,7 @@ fn bind_local_dns_sockets_with<Udp, Tcp>(
                 Ok(listener) => return Ok((udp_socket, listener)),
                 Err(source) => {
                     retry_dns_socket_pair_bind("TCP", local_addr, attempt, source)?;
-                    bind_tcp_first = true;
+                    bind_tcp_first = !bind_tcp_first;
                 }
             }
         }
