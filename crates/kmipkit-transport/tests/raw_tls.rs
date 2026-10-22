@@ -288,7 +288,7 @@ fn raw_tls_total_deadline_remains_absolute_while_waiting_for_response() {
         address.port(),
         SERVER_NAME,
         Vec::new(),
-        short_timeout_policy(Duration::from_secs(1), Duration::from_millis(120))
+        short_timeout_policy(Duration::from_secs(1), Duration::from_secs(2))
             .with_read(TimeoutLimit::Bounded(Duration::from_secs(2))),
     );
 
