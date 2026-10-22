@@ -392,6 +392,54 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaises(ManifestError):
             generate._validate_release_package_versions(manifest, ROOT)
 
+    def test_release_gate_rejects_rust_python_and_java_metadata_identity_drift(self) -> None:
+        metadata_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        mutations = (
+            (
+                "crates/kmipkit-ttlv/Cargo.toml",
+                'name = "kmipkit-ttlv"',
+                'name = "kmipkit-ttlv-unexpected"',
+            ),
+            (
+                "bindings/python/pyproject.toml",
+                'name = "kmipkit"\n',
+                'name = "kmipkit-unexpected"\n',
+            ),
+            (
+                "bindings/java/pom.xml",
+                "<artifactId>kmipkit-java</artifactId>",
+                "<artifactId>unexpected-artifact</artifactId>",
+            ),
+        )
+        for relative, expected, replacement in mutations:
+            with self.subTest(path=relative), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                for metadata_path in metadata_paths:
+                    destination = root / metadata_path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(ROOT / metadata_path, destination)
+                source = root / relative
+                original = source.read_text(encoding="utf-8")
+                mutated = original.replace(expected, replacement, 1)
+                self.assertNotEqual(mutated, original, relative)
+                source.write_text(mutated, encoding="utf-8")
+
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(
+                        self.checked_in_manifest, root
+                    )
+
     def test_release_gate_requires_the_complete_shared_capability_inventory(self) -> None:
         operations = [
             {"apiState": "verified"}

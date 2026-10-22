@@ -1308,7 +1308,7 @@ def _validate_release_export_inventories(root: Path) -> None:
 def _validate_release_package_versions(
     manifest: dict[str, Any], root: Path
 ) -> None:
-    """Require the complete public package inventory to resolve to releaseLine."""
+    """Require package versions and identities to match release metadata."""
     release_line = manifest.get("releaseLine")
     packages = manifest.get("publicPackages")
     if not isinstance(release_line, str) or not isinstance(packages, list):
@@ -1331,6 +1331,21 @@ def _validate_release_package_versions(
     ):
         raise ManifestError("release package versions do not use releaseLine")
 
+    packages_by_id = {
+        package.get("id"): package
+        for package in packages
+        if isinstance(package, dict)
+    }
+
+    def require_package_identity(package_id: str, source_identity: Any) -> None:
+        package = packages_by_id.get(package_id)
+        if (
+            not isinstance(package, dict)
+            or not isinstance(source_identity, str)
+            or package.get("packageName") != source_identity
+        ):
+            raise ManifestError("release package identity does not match package metadata")
+
     def read_toml(relative_path: str) -> dict[str, Any]:
         try:
             document = tomllib.loads(_read_release_metadata(root, relative_path))
@@ -1352,7 +1367,7 @@ def _validate_release_package_versions(
     workspace_version = workspace_package.get("version")
     if workspace_version != release_line:
         raise ManifestError("Rust package versions are not synchronized with releaseLine")
-    for relative_path in _CARGO_PUBLIC_PACKAGE_MANIFESTS.values():
+    for package_id, relative_path in _CARGO_PUBLIC_PACKAGE_MANIFESTS.items():
         crate = read_toml(relative_path)
         crate_package = crate.get("package")
         if not isinstance(crate_package, dict):
@@ -1360,6 +1375,8 @@ def _validate_release_package_versions(
         version_source = crate_package.get("version")
         if version_source != {"workspace": True}:
             raise ManifestError("Rust package version does not inherit releaseLine")
+        if package_id != "c-kmipkit":
+            require_package_identity(package_id, crate_package.get("name"))
 
     python = read_toml("bindings/python/pyproject.toml")
     python_project = python.get("project")
@@ -1367,6 +1384,7 @@ def _validate_release_package_versions(
         raise ManifestError("Python package version source is malformed")
     if python_project.get("version") != release_line:
         raise ManifestError("Python package version is not synchronized with releaseLine")
+    require_package_identity("python-kmipkit", python_project.get("name"))
 
     try:
         gradle = _read_release_metadata(root, "bindings/java/build.gradle.kts")
@@ -1376,13 +1394,25 @@ def _validate_release_package_versions(
     gradle_version = re.search(r'(?m)^\s*version\s*=\s*"([^"\r\n]+)"\s*$', gradle)
     namespace = pom.tag.partition("}")[0] + "}" if "}" in pom.tag else ""
     pom_version = pom.find(f"{namespace}version")
+    pom_group = pom.find(f"{namespace}groupId")
+    pom_artifact = pom.find(f"{namespace}artifactId")
     if (
         gradle_version is None
         or gradle_version.group(1) != release_line
         or pom_version is None
         or pom_version.text != release_line
+        or pom_group is None
+        or not pom_group.text
+        or pom_artifact is None
+        or not pom_artifact.text
     ):
         raise ManifestError("Java package versions are not synchronized with releaseLine")
+    gradle_group = re.search(r'(?m)^\s*group\s*=\s*"([^"\r\n]+)"\s*$', gradle)
+    if gradle_group is None or gradle_group.group(1) != pom_group.text:
+        raise ManifestError("Java package identity metadata is inconsistent")
+    require_package_identity(
+        "java-kmipkit", f"{pom_group.text}:{pom_artifact.text}"
+    )
 
 
 def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> set[Any]:
