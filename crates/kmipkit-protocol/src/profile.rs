@@ -744,6 +744,7 @@ const GET_KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
 const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
 const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
 const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+const KEY_VALUE_PRESENT: u32 = 0x0042_00BB;
 const BATCH_ERROR_CONTINUATION_OPTION_STOP: u32 = 2;
 
 fn discover_versions_advertises_only_client_supported_versions(
@@ -1862,6 +1863,42 @@ fn client_register_key_value_location_requires_omitted_key_value(
     })
 }
 
+fn client_register_does_not_specify_key_value_present(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(
+                |payload| match field_presence(&payload, REGISTER_ATTRIBUTES) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Unique(attributes) => {
+                        attributes.with_value(|value| match value {
+                            ValueView::Structure(attributes) => attributes
+                                .children()
+                                .iter()
+                                .all(|attribute| attribute.tag().raw() != KEY_VALUE_PRESENT),
+                            _ => false,
+                        })
+                    }
+                    FieldPresence::Duplicate => false,
+                },
+            )
+            .unwrap_or(false)
+    })
+}
+
 fn client_register_preserves_optional_wrapped_key_value(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2400,6 +2437,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_location_only_without_key_value",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_register_does_not_specify_key_value_present),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_in_register_but_preserves_locate_criterion",
+            kind: RuleTestKind::NegativeBehavior,
         }],
         constraints: &[],
     },
