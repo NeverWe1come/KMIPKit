@@ -863,6 +863,39 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
 }
 
 #[test]
+fn profile_maps_derive_key_unique_identifiers_rejects_missing_request_context() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key ID Placeholder prohibition has a typed profile mapping");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let error = result
+        .evaluate_rules(
+            None,
+            None,
+            std::slice::from_ref(mapping),
+            ProfileValidationErrorCode::RequestRuleRejected,
+        )
+        .expect_err("the mapped rule rejects a missing outbound request");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+}
+
+#[test]
 fn profile_maps_required_derive_key_cryptographic_length() {
     // KMIP Specification v2.1 §6.1.14 Table 205 requires the desired output
     // length; §4.15 Table 57 defines Cryptographic Length as an Integer.
