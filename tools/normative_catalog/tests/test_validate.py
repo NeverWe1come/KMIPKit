@@ -2090,6 +2090,31 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn(requirement_id, request_field["requirement_ids"])
         self.assertNotIn(requirement_id, response_field["requirement_ids"])
 
+    def test_client_request_timestamp_requirement_does_not_cover_server_fields(self) -> None:
+        """Keep optional client request timestamp scope separate from server fields."""
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement_id = "KMIPKIT-REQ-SPEC-9.20-001-001"
+        requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
+        fields = {
+            row["element_id"]: row
+            for row in catalog["elements"]
+            if row["element_id"] in {
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
+            }
+        }
+        request_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"
+        response_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"
+        generic_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP"
+
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["element_ids"], [request_id])
+        self.assertIn(requirement_id, fields[request_id]["requirement_ids"])
+        self.assertNotIn(requirement_id, fields[response_id]["requirement_ids"])
+        self.assertNotIn(requirement_id, fields[generic_id]["requirement_ids"])
+
     def test_feature_spec_requirement_lookup_accepts_qualified_and_short_fr_ids(self) -> None:
         """Resolve prefixed feature FR IDs while preserving legacy short IDs."""
         self.assertEqual(
