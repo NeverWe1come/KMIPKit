@@ -640,6 +640,33 @@ def _bounded_iterable_snapshot(values: Iterable[Any], maximum: int) -> tuple[Any
             errors.raise_for_status(6)
 
 
+def _bounded_iterable_snapshots(
+    inputs: tuple[Iterable[Any], ...], maximum: int
+) -> tuple[tuple[Any, ...], ...]:
+    """Preflight sized inputs, then snapshot all iterables within one shared budget."""
+    declared_count = 0
+    for values in inputs:
+        if not isinstance(values, Sized):
+            continue
+        try:
+            count = len(values)
+        except MemoryError:
+            errors.raise_for_status(6)
+        except Exception:
+            errors.raise_for_status(4)
+        if count > maximum - declared_count:
+            errors.raise_for_status(6)
+        declared_count += count
+
+    remaining = maximum
+    snapshots: list[tuple[Any, ...]] = []
+    for values in inputs:
+        snapshot = _bounded_iterable_snapshot(values, remaining)
+        snapshots.append(snapshot)
+        remaining -= len(snapshot)
+    return tuple(snapshots)
+
+
 def _bounded_utf8_length(value: str, maximum: int) -> int:
     """Count UTF-8 bytes without allocating an encoded copy."""
     if not isinstance(value, str):
@@ -2395,25 +2422,9 @@ def client_batch_item_validate(
 ) -> ClientBatchItem:
     """Create one §6.1.57 Validate request with ordered certificate and identifier lists."""
     inputs = (certificates, unique_identifiers, payload_extensions)
-    declared_count = 0
-    for values in inputs:
-        if isinstance(values, Sized):
-            try:
-                count = len(values)
-            except MemoryError:
-                errors.raise_for_status(6)
-            except Exception:
-                errors.raise_for_status(4)
-            if count > 100_000 - declared_count:
-                errors.raise_for_status(6)
-            declared_count += count
-
-    remaining = 100_000
-    certificate_values = _bounded_iterable_snapshot(certificates, remaining)
-    remaining -= len(certificate_values)
-    identifier_values = _bounded_iterable_snapshot(unique_identifiers, remaining)
-    remaining -= len(identifier_values)
-    extension_values = _bounded_iterable_snapshot(payload_extensions, remaining)
+    certificate_values, identifier_values, extension_values = _bounded_iterable_snapshots(
+        inputs, 100_000
+    )
     if any(not isinstance(certificate, ttlv.Structure) for certificate in certificate_values):
         errors.raise_for_status(4)
     if any(not isinstance(identifier, UniqueIdentifier) for identifier in identifier_values):
