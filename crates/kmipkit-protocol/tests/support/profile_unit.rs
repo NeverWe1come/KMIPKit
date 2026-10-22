@@ -5236,18 +5236,18 @@ fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion(
     const SYMMETRIC_KEY_TAG: u32 = 0x0042_008F;
     const KEY_BLOCK_TAG: u32 = 0x0042_0040;
     const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
+    const KEY_VALUE_TAG: u32 = 0x0042_0045;
+    const KEY_MATERIAL_TAG: u32 = 0x0042_0044;
     const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BB;
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let register_request = |include_key_value_present: bool| {
-        let attributes = if include_key_value_present {
-            vec![tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(true))]
-        } else {
-            Vec::new()
-        };
+    let register_request = |key_value_present: Option<bool>| {
+        let attributes = key_value_present
+            .map(|value| vec![tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(value))])
+            .unwrap_or_default();
         request_message_with_operation_payload(
             REGISTER_OPERATION,
             structure([
@@ -5257,32 +5257,39 @@ fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion(
                     SYMMETRIC_KEY_TAG,
                     Value::structure(structure([tagged(
                         KEY_BLOCK_TAG,
-                        Value::structure(structure([tagged(
-                            KEY_FORMAT_TYPE_TAG,
-                            Value::enumeration(1),
-                        )])),
+                        Value::structure(structure([
+                            tagged(KEY_FORMAT_TYPE_TAG, Value::enumeration(1)),
+                            tagged(
+                                KEY_VALUE_TAG,
+                                Value::structure(structure([tagged(
+                                    KEY_MATERIAL_TAG,
+                                    Value::byte_string(b"synthetic-key-material".to_vec()),
+                                )])),
+                            ),
+                        ])),
                     )])),
                 ),
             ]),
         )
     };
 
-    let forbidden = register_request(true);
-    let error = result
-        .validate_request(&forbidden)
-        .expect_err("a client must not specify Key Value Present in Register");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::RequestRuleRejected
-    );
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
-    );
+    for value in [true, false] {
+        let error = result
+            .validate_request(&register_request(Some(value)))
+            .expect_err("a client must not specify Key Value Present in Register");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+        );
+    }
 
     result
-        .validate_request(&register_request(false))
+        .validate_request(&register_request(None))
         .expect("Register without Key Value Present is permitted");
 
     let locate_request = request_message_with_operation_payload(
