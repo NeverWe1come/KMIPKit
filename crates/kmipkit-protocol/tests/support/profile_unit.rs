@@ -4349,6 +4349,12 @@ fn profile_maps_required_tls13_cipher_suite_support() {
         &TLS13_PROFILE_CIPHER_SUITE_SUPPORT_TESTS
     );
     assert_eq!(mapping.constraints, &TLS13_PROFILE_CIPHER_SUITES);
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the TLS 1.3 cipher-suite support requirement is generated");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the typed TLS 1.3 cipher-suite support rule is valid");
 
     for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
         result
@@ -4385,6 +4391,12 @@ fn profile_maps_prohibited_tls13_cipher_suites() {
         &TLS13_UNLISTED_CIPHER_SUITE_PROHIBITION_TESTS
     );
     assert_eq!(mapping.constraints, &TLS13_PROFILE_CIPHER_SUITES);
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the cipher-suite prohibition requirement is generated");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the typed TLS 1.3 cipher-suite prohibition rule is valid");
 
     for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
         result
