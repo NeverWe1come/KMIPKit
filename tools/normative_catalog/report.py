@@ -76,6 +76,7 @@ _RULE_CONSTRAINTS = {
     ("transport", "https"),
     ("transport_security", "tls"),
     ("transport_security", "tls13"),
+    ("tls13_cipher_suites", "kmip_profiles_3_1_2"),
     ("encoding", "ttlv"),
 }
 _DOUBLE_QUOTED_SECRET_VALUE = r'"(?:\\.|[^"\\\r\n])*"'
@@ -337,8 +338,14 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
             evaluator == "None"
             and bool(constraints)
             and all(
-                constraint["key"] == "transport_security"
-                and constraint["value"] in {"tls", "tls13"}
+                (
+                    constraint["key"] == "transport_security"
+                    and constraint["value"] in {"tls", "tls13"}
+                )
+                or (
+                    constraint["key"] == "tls13_cipher_suites"
+                    and constraint["value"] == "kmip_profiles_3_1_2"
+                )
                 for constraint in constraints
             )
         )

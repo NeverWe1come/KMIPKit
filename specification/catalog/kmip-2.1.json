@@ -79737,12 +79737,20 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0010",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
+        "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
+        "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_tls13_cipher_suite_support",
+        "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Profiles v2.1 §3.1.2 paragraph 2 requires conformant clients supporting TLS 1.3 to support at least one of the two listed TLS 1.3 cipher suites; Baseline Client inherits the Basic Authentication Suite condition through §6.1 item 2. KMIPKit's shared AWS-LC provider retains both listed TLS 1.3 suites, and the Raw TTLV/TLS wire test captures a ClientHello offering exactly those suites. The typed mapping applies to both configured client transports, which share the TLS builder. This verifies configured client support and the observed offer only; no server acceptance, profile-conformance claim, or official Test Case ID is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3.1.2-005",
@@ -79770,15 +79778,19 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
+        "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
         "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_prohibited_tls13_cipher_suites",
         "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch"
       ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Profiles v2.1 §3.1.2 lists TLS13-CHACHA20-POLY1305-SHA256 and TLS13-AES-256-GCM-SHA384 for TLS 1.3 and prohibits support for any cipher suite not listed above. The AWS-LC provider excludes TLS13-AES-128-GCM-SHA256, and a negative wire-level test asserts that the ClientHello contains exactly the two listed TLS 1.3 suites. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources; profile-level readiness still requires the complete typed-rule and evidence closure tracked by T040."
+      "status": "scoped_verified",
+      "review_note": "KMIP Profiles v2.1 §3.1.2 paragraph 5 prohibits conformant clients or servers from supporting cipher suites not listed in the clause; Baseline Client inherits the Basic Authentication Suite condition through §6.1 item 2. KMIPKit's shared AWS-LC provider retains only the two listed TLS 1.3 suites, and the Raw TTLV/TLS wire test captures a ClientHello containing exactly those suites. The typed mapping applies to both configured client transports, which share the TLS builder. This verifies the configured client policy and observed offer only; TLS 1.2 remains disabled by the 1.0 transport boundary, no server support is claimed, and no official Test Case ID is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3.2-001",

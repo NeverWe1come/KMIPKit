@@ -104,6 +104,13 @@ impl ProfileTransport {
             (Self::RawTtlvTls | Self::Https, "tls" | "tls13")
         )
     }
+
+    fn satisfies_tls13_cipher_suite_policy(self, policy: &str) -> bool {
+        matches!(
+            (self, policy),
+            (Self::RawTtlvTls | Self::Https, "kmip_profiles_3_1_2")
+        )
+    }
 }
 
 /// Explicit profile IDs requested for one client exchange.
@@ -212,6 +219,9 @@ impl ProfileValidationResult {
                     "transport" => constraint.value == transport.as_rule_value(),
                     "transport_security" => {
                         transport.satisfies_transport_security(constraint.value)
+                    }
+                    "tls13_cipher_suites" => {
+                        transport.satisfies_tls13_cipher_suite_policy(constraint.value)
                     }
                     _ => true,
                 };
@@ -2345,6 +2355,46 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-3.1.2-002",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.2-002",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_tls13_cipher_suite_support",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "tls13_cipher_suites",
+            value: "kmip_profiles_3_1_2",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-3.1.2-005",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.2-005",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_prohibited_tls13_cipher_suites",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "tls13_cipher_suites",
+            value: "kmip_profiles_3_1_2",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
@@ -3316,6 +3366,7 @@ fn validate_mapping(
             (constraint.key, constraint.value),
             ("transport", "raw_tls" | "https")
                 | ("transport_security", "tls" | "tls13")
+                | ("tls13_cipher_suites", "kmip_profiles_3_1_2")
                 | ("encoding", "ttlv")
         )
     }) {
@@ -3356,7 +3407,9 @@ fn is_transport_only_mapping(mapping: &TypedRuleMapping) -> bool {
     mapping.evaluator.is_none()
         && !mapping.constraints.is_empty()
         && mapping.constraints.iter().all(|constraint| {
-            constraint.key == "transport_security" && matches!(constraint.value, "tls" | "tls13")
+            (constraint.key == "transport_security" && matches!(constraint.value, "tls" | "tls13"))
+                || (constraint.key == "tls13_cipher_suites"
+                    && constraint.value == "kmip_profiles_3_1_2")
         })
 }
 
