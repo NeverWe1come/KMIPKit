@@ -2060,6 +2060,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-9.6-001-002": {
                 "summary": "Use Undo, Stop, or Continue as the option value.",
                 "condition": "When the option is present.",
+                "source_refs": [
+                    {"source_id": "KMIPKIT-SRC-spec", "section": "9.6"},
+                    {"source_id": "KMIPKIT-SRC-spec", "section": "11.5"},
+                ],
             },
             "KMIPKIT-REQ-SPEC-9.6-001-003": {
                 "summary": "If omitted, the option defaults to Stop.",
@@ -2070,7 +2074,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
                 self.assertEqual(requirement["source_clause_ids"], [expected_error_clause_id])
-                self.assertEqual(requirement["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.6"}])
+                self.assertEqual(
+                    requirement["source_refs"],
+                    expected.get(
+                        "source_refs",
+                        [{"source_id": "KMIPKIT-SRC-spec", "section": "9.6"}],
+                    ),
+                )
                 self.assertEqual(requirement["source_keyword"], "SHALL")
                 self.assertEqual(requirement["normative_strength"], "mandatory")
                 self.assertEqual(requirement["subject"], "Batch Error Continuation Option")
