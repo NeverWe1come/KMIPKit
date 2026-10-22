@@ -1362,6 +1362,55 @@ fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
 }
 
 #[test]
+fn profile_maps_required_batch_count_to_request_item_count() {
+    // KMIP Specification v2.1 §9.5 requires Batch Count to represent the
+    // number of Batch Items in the message.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.5-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.5-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Batch Count has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Batch Count resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let single_item_request = request_message();
+    assert_eq!(single_item_request.header().batch_count(), 1);
+    assert_eq!(single_item_request.batch_items().len(), 1);
+    assert!(evaluate(Some(&single_item_request), None));
+    result
+        .validate_request(&single_item_request)
+        .expect("one Batch Item is accompanied by Batch Count 1");
+
+    let multi_item_request = request_message_with_batch_item_ids(&[b"first", b"second"]);
+    assert_eq!(multi_item_request.header().batch_count(), 2);
+    assert_eq!(multi_item_request.batch_items().len(), 2);
+    assert!(evaluate(Some(&multi_item_request), None));
+    result
+        .validate_request(&multi_item_request)
+        .expect("two Batch Items are accompanied by Batch Count 2");
+}
+
+#[test]
 fn profile_maps_client_get_key_compression_type_selector() {
     // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
     // §6.1.19 Table 220 exposes the caller-selected Get request field.
