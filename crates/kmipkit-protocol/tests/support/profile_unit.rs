@@ -5928,6 +5928,174 @@ fn client_register_key_value_present_evaluator_fails_closed_without_request_cont
 }
 
 #[test]
+fn profile_maps_key_value_present_modification_as_prohibited_behavior() {
+    // KMIP Specification v2.1 §4.28 and Table 85 prohibit client mutation.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.28-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Value Present mutation has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the mutation prohibition resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the client SHALL NOT has negative executable evidence");
+    assert!(mapping.evaluator.is_some());
+}
+
+#[test]
+fn profile_rejects_key_value_present_attribute_mutations() {
+    // KMIP Specification v2.1 §4.28 and Table 85: client mutation is prohibited.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
+    const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
+    const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
+    const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
+    const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
+    const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
+    const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let key_value_present = || tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(true));
+    let current_key_value_present = || {
+        tagged(
+            CURRENT_ATTRIBUTE_TAG,
+            Value::structure(structure([key_value_present()])),
+        )
+    };
+    let new_key_value_present = || {
+        tagged(
+            NEW_ATTRIBUTE_TAG,
+            Value::structure(structure([key_value_present()])),
+        )
+    };
+    let raw_tag_reference = || {
+        tagged(
+            ATTRIBUTE_REFERENCE_TAG,
+            Value::enumeration(KEY_VALUE_PRESENT_TAG),
+        )
+    };
+    let name_reference = || {
+        tagged(
+            ATTRIBUTE_REFERENCE_TAG,
+            Value::structure(structure([
+                tagged(VENDOR_IDENTIFICATION_TAG, Value::text_string(String::new())),
+                tagged(
+                    ATTRIBUTE_NAME_TAG,
+                    Value::text_string("Key Value Present".to_owned()),
+                ),
+            ])),
+        )
+    };
+    let requests = [
+        (
+            "Add Attribute",
+            ADD_ATTRIBUTE_OPERATION,
+            structure([new_key_value_present()]),
+        ),
+        (
+            "Adjust Attribute by tag reference",
+            ADJUST_ATTRIBUTE_OPERATION,
+            structure([raw_tag_reference()]),
+        ),
+        (
+            "Delete Attribute by current value",
+            DELETE_ATTRIBUTE_OPERATION,
+            structure([current_key_value_present()]),
+        ),
+        (
+            "Delete Attribute by name reference",
+            DELETE_ATTRIBUTE_OPERATION,
+            structure([name_reference()]),
+        ),
+        (
+            "Modify Attribute current value",
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([current_key_value_present()]),
+        ),
+        (
+            "Modify Attribute replacement value",
+            MODIFY_ATTRIBUTE_OPERATION,
+            structure([new_key_value_present()]),
+        ),
+        (
+            "Set Attribute",
+            SET_ATTRIBUTE_OPERATION,
+            structure([new_key_value_present()]),
+        ),
+    ];
+
+    for (case, operation, payload) in requests {
+        let request = request_message_with_operation_payload(operation, payload);
+        let error = result
+            .validate_request(&request)
+            .expect_err(&format!("{case} must reject Key Value Present mutation"));
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected, "{case}");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{case}");
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.28-001"),
+            "{case}"
+        );
+    }
+}
+
+#[test]
+fn profile_preserves_other_attribute_mutations_and_locate_criteria() {
+    // The §4.28 mutation prohibition is specific to Key Value Present.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+    const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
+    const CRYPTOGRAPHIC_LENGTH_TAG: u32 = 0x0042_002A;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let add_other_attribute = structure([tagged(
+        NEW_ATTRIBUTE_TAG,
+        Value::structure(structure([tagged(
+            CRYPTOGRAPHIC_LENGTH_TAG,
+            Value::integer(256),
+        )])),
+    )]);
+    let locate_key_value_present = structure([tagged(
+        ATTRIBUTES_TAG,
+        Value::structure(structure([tagged(
+            KEY_VALUE_PRESENT_TAG,
+            Value::boolean(true),
+        )])),
+    )]);
+    let mixed_batch = request_message_with_batch_operations([
+        (ADD_ATTRIBUTE_OPERATION, add_other_attribute),
+        (LOCATE_OPERATION, locate_key_value_present),
+    ]);
+
+    result
+        .validate_request(&mixed_batch)
+        .expect("other attribute mutations and the permitted Locate criterion remain valid");
+}
+
+#[test]
 fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
     // KMIP Specification v2.1 §§3.2–3.3, Tables 13–15; §11.18 Table 450; §6.1.43 Table 291.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-005";
