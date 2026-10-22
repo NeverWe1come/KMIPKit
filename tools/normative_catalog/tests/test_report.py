@@ -251,7 +251,9 @@ class CoverageReportTests(unittest.TestCase):
             test_path.parent.mkdir(parents=True)
             test_path.write_text(
                 "#[test]\nfn profile_requires_tls_for_basic_authentication_suite_transport() {}\n"
-                "#[test]\nfn profile_recommends_tls_1_3_for_basic_authentication_suite_transport() {}\n",
+                "#[test]\nfn profile_recommends_tls_1_3_for_basic_authentication_suite_transport() {}\n"
+                "#[cfg(target_pointer_width = \"32\")]\n"
+                "#[test]\nfn unrelated_32_bit_only_test() {}\n",
                 encoding="utf-8",
             )
             self._write_profile_module_tree(repository, include_test_file=True)
