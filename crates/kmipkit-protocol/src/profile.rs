@@ -13,6 +13,7 @@ use std::fmt;
 
 use kmipkit_ttlv::{Item, RawTag, StructureView, ValueView};
 
+use crate::attribute::{ClientAttributeMutation, client_attribute_mutation_is_prohibited};
 use crate::profiles_generated::{
     CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedClientProfile, GeneratedClientRequirement,
     GeneratedVerificationCategory,
@@ -738,6 +739,13 @@ const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
+const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
+const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
+const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
+const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
+const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
+const NEW_ATTRIBUTE: u32 = 0x0042_013D;
 const LOCATE_OPERATION: u32 = 0x0000_0008;
 const MAXIMUM_ITEMS: u32 = 0x0042_004F;
 const OFFSET_ITEMS: u32 = 0x0042_00D4;
@@ -1949,6 +1957,110 @@ fn client_register_does_not_specify_key_value_present(
     })
 }
 
+fn client_key_value_present_is_not_modified(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        let Some(mutation) = (match operation {
+            ADD_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Add),
+            ADJUST_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Adjust),
+            DELETE_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Delete),
+            MODIFY_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Modify),
+            SET_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Set),
+            _ => None,
+        }) else {
+            return true;
+        };
+
+        batch_item
+            .with_request_payload(|payload| match operation {
+                ADD_ATTRIBUTE_OPERATION | SET_ATTRIBUTE_OPERATION => {
+                    attribute_fields_do_not_mutate_key_value_present(
+                        &payload,
+                        NEW_ATTRIBUTE,
+                        mutation,
+                    )
+                }
+                ADJUST_ATTRIBUTE_OPERATION => {
+                    attribute_references_do_not_mutate_key_value_present(&payload, mutation)
+                }
+                DELETE_ATTRIBUTE_OPERATION => {
+                    attribute_fields_do_not_mutate_key_value_present(
+                        &payload,
+                        CURRENT_ATTRIBUTE,
+                        mutation,
+                    ) && attribute_references_do_not_mutate_key_value_present(&payload, mutation)
+                }
+                MODIFY_ATTRIBUTE_OPERATION => {
+                    attribute_fields_do_not_mutate_key_value_present(
+                        &payload,
+                        CURRENT_ATTRIBUTE,
+                        mutation,
+                    ) && attribute_fields_do_not_mutate_key_value_present(
+                        &payload,
+                        NEW_ATTRIBUTE,
+                        mutation,
+                    )
+                }
+                _ => true,
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn attribute_fields_do_not_mutate_key_value_present(
+    payload: &StructureView<'_>,
+    wrapper_tag: u32,
+    mutation: ClientAttributeMutation,
+) -> bool {
+    payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == wrapper_tag)
+        .all(|field| {
+            field.with_value(|value| match value {
+                ValueView::Structure(attributes) => attributes.children().iter().all(|attribute| {
+                    attribute.tag().raw() != KEY_VALUE_PRESENT
+                        || !client_attribute_mutation_is_prohibited(KEY_VALUE_PRESENT, mutation)
+                }),
+                _ => false,
+            })
+        })
+}
+
+fn attribute_references_do_not_mutate_key_value_present(
+    payload: &StructureView<'_>,
+    mutation: ClientAttributeMutation,
+) -> bool {
+    payload
+        .children()
+        .iter()
+        .filter(|field| field.tag().raw() == ATTRIBUTE_REFERENCE)
+        .all(|field| {
+            AttributeReference::try_from_ttlv_item(field).is_ok_and(|reference| {
+                if let Some(tag) = reference.tag_value() {
+                    tag != KEY_VALUE_PRESENT
+                        || !client_attribute_mutation_is_prohibited(KEY_VALUE_PRESENT, mutation)
+                } else if let Some((vendor_identification, attribute_name)) = reference.name_parts()
+                {
+                    !(vendor_identification.is_empty()
+                        && attribute_name == "Key Value Present"
+                        && client_attribute_mutation_is_prohibited(KEY_VALUE_PRESENT, mutation))
+                } else {
+                    false
+                }
+            })
+        })
+}
+
 fn client_locate_key_value_present_is_boolean_when_used(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2632,6 +2744,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::NegativeBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_key_value_present_is_not_modified),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_attribute_mutations",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
