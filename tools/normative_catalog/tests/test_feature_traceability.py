@@ -1198,6 +1198,17 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 if "::" in reference:
                     self.assertTrue(self._is_executable_test_ref(reference), reference)
 
+    def test_multi_item_identifier_requirement_cites_exact_oasis_table(self) -> None:
+        with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream))
+        requirement = next(
+            row
+            for row in rows
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-8.3-003"
+        )
+
+        self.assertEqual(requirement["source_section"], "§8.3, Table 396")
+
     def test_message_extension_private_test_uses_excluded_test_path(self) -> None:
         with MESSAGE_MODEL_REQUIREMENTS_PATH.open(encoding="utf-8", newline="") as stream:
             rows = list(csv.DictReader(stream))
