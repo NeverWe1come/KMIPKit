@@ -4647,3 +4647,16 @@ This slice maps client `SHALL` requirement `KMIPKIT-REQ-SPEC-9.6-001-002` to KMI
 | Catalog and generated checks | `py -3 -B tools/normative_catalog/validate.py --repo-root .`; profile, report, and attribute-policy generators with `--check`; `git diff --check` | PASS: 4 sources, 1,411 clauses, 4,123 records; all generated artifacts are current. |
 
 Baseline now has 54 unique typed mappings of 265 assigned requirements; 211 assigned requirements remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 unavailable. Readiness remains `evidence_incomplete`, T040 remains open, and this slice makes no profile-conformance claim.
+
+### T040 CI correction — Batch Error Continuation and TLS source evidence (2026-10-22)
+
+Hosted CI run `39835854786` exposed three stale catalog-contract assertions on Ubuntu, macOS, and Windows. The Batch Error Continuation requirement correctly cites both KMIP Specification v2.1 §9.6 and §11.5 Table 435, while its crosswalk test expected only §9.6. Two TLS review notes also needed to identify the reviewed Profiles v2.1 source as pinned. This correction changes no typed rule, requirement assignment, protocol behavior, or mapping count.
+
+| Phase | DCO-signed commit and command | Result |
+|---|---|---|
+| Red | `be758450`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk -v`; `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_test_evidence_is_bidirectional_or_has_gap_reason -v` | The source crosswalk expectation now preserves both exact sections. The TLS evidence test still failed as expected because the two review notes did not say `pinned`. |
+| Green | `199a9d54`; the two focused tests above | PASS after the TLS catalog notes explicitly identify the pinned KMIP Profiles source. |
+| Refactor / generated report | `py -3 -B tools/normative_catalog/generate_profiles.py --repo-root . --write`; `py -3 -B tools/normative_catalog/report.py --repo-root . --write`, followed by both generators with `--check` | PASS: generated profile metadata and coverage report are current; the report reflects the pinned-source notes. |
+| Full-suite reproduction before Green | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v` | Reproduced exactly three failures: the outdated §9.6-only expectation and the two missing-`pinned` TLS assertions (645 tests; 10 skipped). |
+
+The correction leaves Baseline at 54 typed mappings of 265, with 211 unmapped. T040 remains open; the new exact-head hosted CI run must verify this correction.
