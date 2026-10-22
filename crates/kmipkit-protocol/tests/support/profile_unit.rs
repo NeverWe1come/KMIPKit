@@ -3304,6 +3304,78 @@ fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt
 }
 
 #[test]
+fn profile_maps_gcm_tag_length_as_required_behavior() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
+    const IV_LENGTH_TAG: u32 = 0x0042_0066;
+    const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
+    const GCM_MODE: u32 = 9;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("GCM Tag Length has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the conditional GCM rule resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHALL has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the required GCM behavior has a typed evaluator");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let gcm_request = request_message_with_operation_payload(
+        ENCRYPT_OPERATION,
+        crate::EncryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "profile-key-id".to_owned(),
+            )),
+            Some(crate::OperationData::Integer(7)),
+        )
+        .with_cryptographic_parameters(structure([
+            tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE)),
+            tagged(IV_LENGTH_TAG, Value::integer(96)),
+            tagged(TAG_LENGTH_TAG, Value::integer(16)),
+        ]))
+        .to_ttlv_payload()
+        .expect("GCM request has the required IV Length and Tag Length"),
+    );
+    assert!(evaluate(Some(&gcm_request), None));
+    result
+        .validate_request(&gcm_request)
+        .expect("GCM may be requested when Tag Length is supplied");
+
+    let parameters_omitted = request_message_with_operation_payload(
+        ENCRYPT_OPERATION,
+        crate::EncryptRequest::new(
+            Some(crate::UniqueIdentifier::TextString(
+                "profile-key-id".to_owned(),
+            )),
+            Some(crate::OperationData::Integer(7)),
+        )
+        .to_ttlv_payload()
+        .expect("operation-level Cryptographic Parameters may be omitted"),
+    );
+    assert!(evaluate(Some(&parameters_omitted), None));
+    result
+        .validate_request(&parameters_omitted)
+        .expect("the conditional GCM rule does not require operation-level parameters");
+}
+
+#[test]
 fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
