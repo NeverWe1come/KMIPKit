@@ -2824,6 +2824,57 @@ fn profile_maps_default_batch_error_continuation_to_stop() {
 }
 
 #[test]
+fn profile_maps_assigned_batch_error_continuation_values() {
+    // KMIP Specification v2.1 §9.6 and §11.5 Table 435 assign Continue=1,
+    // Stop=2, and Undo=3. DEC-002 preserves extension values in generic models
+    // while restricting this outbound profile rule to the assigned values.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.6-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("assigned Batch Error Continuation values have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the assigned Batch Error Continuation values resolve to metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed outbound request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for value in [1, 2, 3] {
+        let request = request_message_with_batch_error_continuation_option(Some(value));
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("Continue, Stop, and Undo are assigned option values");
+    }
+
+    for value in [0, 4, 0x8000_0001] {
+        let request = request_message_with_batch_error_continuation_option(Some(value));
+        assert!(!evaluate(Some(&request), None));
+        let error = result
+            .validate_request(&request)
+            .expect_err("unassigned and extension values are not outbound profile values");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    }
+}
+
+#[test]
 fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
     // KMIP Specification v2.1 §9.6 permits this option only when Batch Count > 1.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-001";
