@@ -980,6 +980,35 @@ fn derive_key_specifies_cryptographic_length(
     })
 }
 
+fn derive_key_specifies_explicit_source_identifiers(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                // Table 205 permits repeats but requires an explicit source ID;
+                // omission would ask the server to use the ID Placeholder.
+                payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn derive_key_output_object_type(payload: &StructureView<'_>) -> Option<u32> {
     let FieldPresence::Unique(object_type) = field_presence(payload, DERIVE_KEY_OBJECT_TYPE) else {
         return None;
@@ -2040,6 +2069,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_optional_derive_key_secret_data_total_length",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-006-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(derive_key_specifies_explicit_source_identifiers),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder",
+            kind: RuleTestKind::NegativeBehavior,
         }],
         constraints: &[],
     },

@@ -92504,15 +92504,17 @@
       "feature_spec": "KMIPKIT-0037",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/derive_key.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes"
+        "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_rejects_id_placeholder_and_missing_symmetric_key_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
+      "review_note": "The typed Baseline preflight mapping enforces KMIP Specification v2.1 §6.1.14 Table 205 by requiring at least one explicit Unique Identifier in Derive Key requests, preserving its allowed repeats and preventing omission from invoking the ID Placeholder; other operations are unaffected. No requirement-specific official Test Cases ID is asserted as executed against the pinned OASIS Test Cases source; local tests use source-derived table vectors."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
