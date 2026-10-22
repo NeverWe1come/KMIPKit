@@ -310,6 +310,50 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertTrue(requirement["negative_verification_required"])
         self.assertEqual(requirement["status"], "verified")
 
+    def test_baseline_tls_legacy_protocol_prohibition_has_negative_wire_evidence(self) -> None:
+        """Profiles §3.1.1 prohibits legacy TLS and SSL protocols for clients."""
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        requirement_id = "KMIPKIT-REQ-PROF-3.1.1-005"
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1.1-005"
+        requirement = self.requirements[requirement_id]
+        review = self.reviews[clause_id]
+        source_excerpt = pinned_excerpt([4037, 4052])
+
+        self.assertIn("Conformant KMIP clients or servers SHALL NOT support", source_excerpt)
+        self.assertIn("TLS v1.1 [RFC4346]", source_excerpt)
+        self.assertIn("TLS v1.0 [RFC2246]", source_excerpt)
+        self.assertIn("Any version of the SSL protocol", source_excerpt)
+        self.assertEqual(review["source_obligations"][0]["source_keyword"], "SHALL NOT")
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertEqual(requirement["source_keyword"], "SHALL NOT")
+        self.assertEqual(requirement["normative_strength"], "prohibited")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["profile_ids"], ["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertTrue(requirement["negative_verification_required"])
+        self.assertEqual(
+            requirement["implementation_refs"],
+            ["crates/kmipkit-transport/src/tls.rs::tls13_builder"],
+        )
+        test_id = (
+            "crates/kmipkit-transport/tests/raw_tls.rs::"
+            "raw_tls_rejects_tls12_server_hello_before_request_dispatch"
+        )
+        self.assertEqual(requirement["verification_refs"], [test_id])
+        self.assertEqual(requirement["status"], "scoped_verified")
+
+        mapping = next(
+            row for row in load_typed_rule_mappings(ROOT) if row["requirement_id"] == requirement_id
+        )
+        self.assertEqual(mapping["source_clause_id"], clause_id)
+        self.assertEqual(mapping["verification_category"], "ProhibitedBehavior")
+        self.assertEqual(mapping["test_kind"], "NegativeBehavior")
+        self.assertEqual(mapping["test_id"], test_id)
+        self.assertTrue(mapping["transport_only"])
+
     def test_tls12_client_may_is_preserved_but_outside_the_10_profile_scope(self) -> None:
         """Profiles §3.1.1's TLS 1.2 permission cannot expand the TLS 1.3-only ADR."""
         requirement_id = "KMIPKIT-REQ-PROF-3.1.1-004"
