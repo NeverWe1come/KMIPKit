@@ -28,6 +28,7 @@ const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
 const BATCH_ERROR_CONTINUATION_OPTION_TAG: u32 = 0x0042_000E;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
@@ -1400,6 +1401,74 @@ fn profile_maps_request_batch_item_repetition_as_optional_capability() {
         .expect("a client can represent a request with repeated Batch Items");
 }
 
+#[test]
+fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
+    // KMIP Specification v2.1 §8.2 Table 395 permits Attestation Type to repeat.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.2-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.2-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("repeated request Attestation Type has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Attestation Type capability resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request_without_attestation_types = request_message();
+    result
+        .validate_request(&request_without_attestation_types)
+        .expect("the optional capability does not require Attestation Type in every request");
+
+    let repeated_types_request = request_message_with_attestation_types(&[2, 3]);
+    assert_eq!(repeated_types_request.header().attestation_types(), [2, 3]);
+    assert!(evaluate(Some(&repeated_types_request), None));
+    result
+        .validate_request(&repeated_types_request)
+        .expect("a client can represent repeated Request Header Attestation Type values");
+}
+
+fn request_message_with_attestation_types(attestation_types: &[u32]) -> crate::RequestMessage {
+    let mut header_fields = vec![test_protocol_version()];
+    header_fields.extend(
+        attestation_types
+            .iter()
+            .map(|value| tagged(ATTESTATION_TYPE_TAG, Value::enumeration(*value))),
+    );
+    header_fields.push(tagged(BATCH_COUNT_TAG, Value::integer(1)));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure(header_fields)),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message with Attestation Type fields is valid")
+}
 #[test]
 fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
     // KMIP Specification v2.1 §8.3 Table 396 requires this field when Batch
