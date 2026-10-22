@@ -336,13 +336,22 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertTrue(requirement["negative_verification_required"])
         self.assertEqual(
             requirement["implementation_refs"],
-            ["crates/kmipkit-transport/src/tls.rs::tls13_builder"],
+            [
+                "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_transport_security",
+                "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
+                "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
+                "crates/kmipkit-transport/src/tls.rs::tls13_builder",
+            ],
+        )
+        profile_test_id = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_prohibited_legacy_tls_and_ssl_protocols_to_tls13_transport"
         )
         test_id = (
             "crates/kmipkit-transport/tests/raw_tls.rs::"
             "raw_tls_rejects_tls12_server_hello_before_request_dispatch"
         )
-        self.assertEqual(requirement["verification_refs"], [test_id])
+        self.assertEqual(requirement["verification_refs"], [profile_test_id, test_id])
         self.assertEqual(requirement["status"], "scoped_verified")
 
         mapping = next(

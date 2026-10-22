@@ -2331,6 +2331,20 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-3.1.1-005",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-005",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+            kind: RuleTestKind::NegativeBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls13",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,

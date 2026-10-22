@@ -431,12 +431,13 @@ def _strip_rust_comments_and_literals(source: str) -> str | None:
 
 
 def _rust_test_cfgs_are_active(source: str) -> bool:
-    """Accept only the known test cfg; reject conditional/unknown test items."""
-    if re.search(r"#\s*!?\s*\[\s*cfg_attr\s*\(", source):
-        return False
-    marker = re.compile(r"#\s*!?\s*\[\s*cfg\s*\(")
+    """Reject unknown crate cfgs; the referenced test item's cfg is checked separately."""
+    marker = re.compile(r"#\s*!\s*\[\s*cfg(?P<attribute>_attr)?\s*\(")
     cursor = 0
     while match := marker.search(source, cursor):
+        if not _rust_item_is_top_level(source, match.start()):
+            cursor = match.end()
+            continue
         depth = 1
         end = match.end()
         while end < len(source) and depth:
@@ -445,7 +446,11 @@ def _rust_test_cfgs_are_active(source: str) -> bool:
             elif source[end] == ")":
                 depth -= 1
             end += 1
-        if depth or source[match.end():end - 1].strip() != "test":
+        if (
+            depth
+            or match.group("attribute") is not None
+            or source[match.end():end - 1].strip() != "test"
+        ):
             return False
         cursor = end
     return True
