@@ -384,6 +384,49 @@ class PublicApiParityTests(unittest.TestCase):
                     self.assertTrue(java_mapping.get("reason"), case["id"])
                     self.assertFalse(case["javaObservedOutput"].get("available", True), case["id"])
 
+    def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
+        fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
+        case = next(
+            item
+            for item in fixtures["cases"]
+            if item["id"] == "discover-versions.supported-versions.v1"
+        )
+        operation = next(
+            item
+            for item in self.manifest["operations"]
+            if item["operationId"] == "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS"
+        )
+
+        self.assertEqual(operation["apiState"], "verified")
+        evidence = set(operation["parityEvidenceIds"])
+        self.assertIn(SHARED_PARITY_FIXTURE.relative_to(ROOT).as_posix(), evidence)
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+            evidence,
+        )
+
+        consumers = case["consumerTests"]
+        self.assertEqual(set(consumers), set(SHARED_PARITY_LANGUAGES))
+        self.assertEqual(
+            (
+                consumers["rust"]["testFile"],
+                consumers["rust"]["test"],
+            ),
+            (
+                "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+                "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
+            ),
+        )
+        for language, consumer in consumers.items():
+            with self.subTest(language=language):
+                self.assertEqual(consumer["status"], "available")
+                if language == "java":
+                    class_name = consumer["test"].split("#", 1)[0]
+                    test_path = f"bindings/java/src/test/java/{class_name.replace('.', '/')}.java"
+                else:
+                    test_path = consumer["testFile"]
+                self.assertIn(test_path, evidence)
+
         self.assertEqual(
             available_languages,
             set(fixtures["executableConsumerLanguages"]),
