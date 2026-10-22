@@ -61807,7 +61807,12 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_table12_key_block_objects",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_direct_table12_pair_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_table12_register_key_value_location_without_key_block"
       ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes. MAY be omitted only if this information is available from the Key Value. Does not apply to Secret Data or Opaque If present, the Cryptographic Length SHALL also be present."
@@ -61845,7 +61850,12 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_table12_key_block_objects",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_direct_table12_pair_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_table12_register_key_value_location_without_key_block"
       ],
       "source_encoding": "Integer",
       "source_requiredness": "Yes. MAY be omitted only if this information is available from the Key Value. Does not apply to Secret Data (or Opaque. If present, the Cryptographic Algorithm SHALL also be present."
@@ -87244,7 +87254,12 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_table12_key_block_objects",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_direct_table12_pair_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_table12_register_key_value_location_without_key_block"
       ],
       "negative_verification_required": true,
       "decision_id": null,
@@ -87339,7 +87354,12 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_table12_key_block_objects",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_structure_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_present_table12_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_direct_table12_pair_fields",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_table12_register_key_value_location_without_key_block"
       ],
       "negative_verification_required": true,
       "decision_id": null,

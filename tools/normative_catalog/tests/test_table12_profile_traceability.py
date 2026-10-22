@@ -28,6 +28,16 @@ SUPPLEMENTAL_TESTS = {
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
     "profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+    "profile_rejects_non_structure_table12_key_block_objects",
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+    "profile_rejects_non_structure_present_table12_key_blocks",
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+    "profile_rejects_duplicate_present_table12_key_blocks",
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+    "profile_rejects_duplicate_direct_table12_pair_fields",
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+    "profile_allows_table12_register_key_value_location_without_key_block",
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
     "profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
     "profile_checks_each_mixed_register_import_batch_item",
