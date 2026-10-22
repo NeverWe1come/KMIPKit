@@ -924,6 +924,39 @@ fn client_can_include_optional_locate_offset_items(
     })
 }
 
+fn client_can_send_empty_locate_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != LOCATE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut found_attributes = false;
+                let attributes_are_structures = payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == ATTRIBUTES)
+                    .all(|field| {
+                        found_attributes = true;
+                        field.with_value(|value| matches!(value, ValueView::Structure(_)))
+                    });
+                found_attributes && attributes_are_structures
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn get_attributes_references_are_not_repeated(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2420,6 +2453,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_can_include_optional_locate_offset_items),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_offset_items_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_send_empty_locate_attributes),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_empty_attributes_match_all_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
