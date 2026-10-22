@@ -2385,6 +2385,106 @@ fn profile_maps_client_locate_empty_attributes_match_all_capability() {
 }
 
 #[test]
+fn profile_maps_client_locate_key_value_present_as_optional_capability() {
+    // KMIP Specification v2.1 §4.28 permits Key Value Present in Locate.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.28-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Value Present in Locate has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Locate capability resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional Locate capability has positive executable evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for value in [true, false] {
+        let criteria = crate::AttributeSet::try_new([tagged(
+            KEY_VALUE_PRESENT_TAG,
+            Value::boolean(value),
+        )])
+        .expect("Key Value Present is a Boolean Locate criterion");
+        let request = request_message_with_operation_payload(
+            LOCATE_OPERATION_TAG,
+            crate::LocateRequest::new(criteria)
+                .to_ttlv_payload()
+                .expect("Locate preserves the requested Boolean criterion"),
+        );
+        result
+            .validate_request(&request)
+            .expect("the selected client profile can use either Boolean criterion value");
+    }
+
+    let without_optional_criterion = request_message_with_operation_payload(
+        LOCATE_OPERATION_TAG,
+        crate::LocateRequest::new(crate::AttributeSet::new())
+            .to_ttlv_payload()
+            .expect("Locate still carries its required Attributes Structure"),
+    );
+    result
+        .validate_request(&without_optional_criterion)
+        .expect("the optional capability does not become mandatory");
+}
+
+#[test]
+fn profile_rejects_malformed_locate_key_value_present_criterion() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let malformed_requests = [
+        request_message_with_operation_payload(
+            LOCATE_OPERATION_TAG,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    KEY_VALUE_PRESENT_TAG,
+                    Value::text_string("not a Boolean".to_owned()),
+                )])),
+            )]),
+        ),
+        request_message_with_operation_payload(
+            LOCATE_OPERATION_TAG,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([
+                    tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(true)),
+                    tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(false)),
+                ])),
+            )]),
+        ),
+    ];
+
+    for request in malformed_requests {
+        let error = result
+            .validate_request(&request)
+            .expect_err("a Locate Key Value Present criterion must be one Boolean value");
+        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+        );
+    }
+}
+
+#[test]
 fn profile_maps_client_locate_partial_structured_attribute_fields() {
     // KMIP Specification v2.1 §6.1.28 permits partial structured attributes.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-007";
