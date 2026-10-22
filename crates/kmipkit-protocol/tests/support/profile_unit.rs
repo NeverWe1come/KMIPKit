@@ -5843,6 +5843,150 @@ fn assert_table12_request_rejected(
     assert_eq!(error.source_clause_id(), Some(source_clause_id));
 }
 
+fn assert_table12_malformed_shape_rejected(request: &crate::RequestMessage) {
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
+    const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
+    const LENGTH_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-005";
+
+    let error = table12_profile_result(&REQUIREMENT_IDS)
+        .validate_request(request)
+        .expect_err("malformed recognized Key Block shapes fail closed");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert!(matches!(
+        (error.requirement_id(), error.source_clause_id()),
+        (Some("KMIPKIT-REQ-SPEC-3.1-004-002"), Some(ALGORITHM_CLAUSE))
+            | (Some("KMIPKIT-REQ-SPEC-3.1-005-002"), Some(LENGTH_CLAUSE))
+    ));
+}
+
+#[test]
+fn profile_rejects_non_structure_table12_key_block_objects() {
+    // KMIP Specification v2.1 §3.1 Table 12 applies to recognized Key Block
+    // objects; §6.1.43 Table 291 carries the Register Any Object.
+    let malformed_object = tagged(TABLE12_SYMMETRIC_KEY, Value::integer(2));
+    let request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(TABLE12_REGISTER_OPERATION, malformed_object, []),
+    );
+
+    assert_table12_malformed_shape_rejected(&request);
+}
+
+#[test]
+fn profile_rejects_non_structure_present_table12_key_blocks() {
+    // KMIP Specification v2.1 §3.1 Table 12 checks fields within a Structure Key Block.
+    let malformed_key_block_object = tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([tagged(TABLE12_KEY_BLOCK, Value::integer(1))])),
+    );
+    let request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(TABLE12_REGISTER_OPERATION, malformed_key_block_object, []),
+    );
+
+    assert_table12_malformed_shape_rejected(&request);
+}
+
+#[test]
+fn profile_rejects_duplicate_present_table12_key_blocks() {
+    // KMIP Specification v2.1 §3.1 Table 12 applies to the unique direct Key Block.
+    let duplicate_key_block_object = tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([
+            tagged(TABLE12_KEY_BLOCK, Value::structure(Structure::new())),
+            tagged(TABLE12_KEY_BLOCK, Value::structure(Structure::new())),
+        ])),
+    );
+    let request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(TABLE12_REGISTER_OPERATION, duplicate_key_block_object, []),
+    );
+
+    assert_table12_malformed_shape_rejected(&request);
+}
+
+#[test]
+fn profile_rejects_duplicate_direct_table12_pair_fields() {
+    // KMIP Specification v2.1 §3.1 Table 12 pairs unique direct Key Block fields.
+    let request_with_members = |members: [Item; 3]| {
+        let mut key_block_fields = vec![
+            tagged(TABLE12_KEY_FORMAT_TYPE, Value::enumeration(1)),
+            tagged(
+                TABLE12_KEY_VALUE,
+                Value::structure(structure([tagged(
+                    TABLE12_KEY_MATERIAL,
+                    Value::byte_string(b"synthetic-key-material".to_vec()),
+                )])),
+            ),
+        ];
+        key_block_fields.extend(members);
+        let object = tagged(
+            TABLE12_SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                TABLE12_KEY_BLOCK,
+                Value::structure(structure(key_block_fields)),
+            )])),
+        );
+        request_message_with_operation_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_request_payload(TABLE12_REGISTER_OPERATION, object, []),
+        )
+    };
+    let algorithm = || tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3));
+    let length = || tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256));
+
+    for request in [
+        request_with_members([algorithm(), algorithm(), length()]),
+        request_with_members([algorithm(), length(), length()]),
+    ] {
+        assert_table12_malformed_shape_rejected(&request);
+    }
+}
+
+#[test]
+fn profile_allows_table12_register_key_value_location_without_key_block() {
+    // KMIP Specification v2.1 §4.27/Table 82 permits Key Value Location;
+    // §6.1.43/Table 291 scopes Register. Table 12 does not require a Key Block.
+    const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
+    const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
+    const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
+
+    let request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(TABLE12_OBJECT_TYPE, Value::enumeration(2)),
+            tagged(
+                TABLE12_ATTRIBUTES,
+                Value::structure(structure([tagged(
+                    KEY_VALUE_LOCATION,
+                    Value::structure(structure([
+                        tagged(
+                            KEY_VALUE_LOCATION_VALUE,
+                            Value::text_string("pkcs11:object=key-1".to_owned()),
+                        ),
+                        tagged(KEY_VALUE_LOCATION_TYPE, Value::enumeration(2)),
+                    ])),
+                )])),
+            ),
+            tagged(TABLE12_SYMMETRIC_KEY, Value::structure(Structure::new())),
+        ]),
+    );
+
+    table12_profile_result(&REQUIREMENT_IDS)
+        .validate_request(&request)
+        .expect("Table 12 pairing is inapplicable when Register has no Key Block");
+}
+
 #[test]
 fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
     // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
