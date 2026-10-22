@@ -4620,3 +4620,15 @@ The shared AWS-LC provider retains only `TLS13_AES_256_GCM_SHA384` and `TLS13_CH
 | Coverage probe | `cargo llvm-cov -p kmipkit-protocol --all-features --locked --summary-only` | All selected tests completed; the package-only aggregate reported 86.08% line coverage, which is below the 95% protocol threshold. This package-only run omits workspace consumer tests and is not the CI workspace coverage gate; exact-head CI must confirm the required selected-scope thresholds before PR readiness. |
 
 Baseline now has 53 unique typed mappings of 265 assigned requirements; 212 assigned requirements remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 cases remain unavailable. T040 remains open, readiness remains `evidence_incomplete`, and this slice makes no profile-conformance claim.
+
+### T040 QA correction — TLS cipher-suite prohibition evidence classification (2026-10-22)
+
+Independent QA found that `profile_maps_prohibited_tls13_cipher_suites` only verifies mapping metadata and acceptance of the compliant Raw TTLV/TLS and HTTPS configurations. It does not demonstrate prohibited behavior. The test is now classified as positive configuration evidence; `raw_tls_rejects_tls12_server_hello_before_request_dispatch` remains the negative wire evidence because its ClientHello assertion observes exactly the two permitted suites and no unlisted suite.
+
+| Phase | DCO-signed commit and command | Result |
+|---|---|---|
+| Red | `a8a8e6aa6b180e73fed09641ae1212ccde95bc60`; `py -3 -B -m unittest tools.normative_catalog.tests.test_profiles_3_4_crosswalk.ProfileSectionsThreeAndFourCrosswalkTests.test_baseline_tls13_cipher_suite_prohibition_has_negative_wire_evidence -v` | Expected failure: the mapping labeled the metadata-only profile test `NegativeBehavior` instead of `PositiveBehavior`. |
+| Green | `ece226fc093b338df99de66c25ee2b700daf079a`; focused crosswalk test and `cargo test -p kmipkit-protocol --all-features --locked profile_maps_prohibited_tls13_cipher_suites -- --nocapture` | PASS: evidence kinds now match the actual assertions; the Rust mapping test passes. |
+| Refactor / generated report | This DCO-signed documentation commit; `py -3 -B tools/normative_catalog/report.py --repo-root . --write` followed by `--check` | PASS: regenerated report is current; no generated diff was needed because the report does not render test-kind classifications. Task and implementation evidence now record the QA correction. |
+
+The correction does not add a typed requirement mapping: Baseline remains at 53 mapped requirements of 265, with 212 unmapped. Three mandatory fixtures remain blocked by typed preflight and 77 unavailable; readiness remains `evidence_incomplete`, T040 remains open, and no conformance claim is made.
