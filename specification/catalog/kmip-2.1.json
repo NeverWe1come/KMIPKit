@@ -79710,7 +79710,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Profiles v2.1 §3.1.1 paragraph 6 states that conformant KMIP clients or servers SHALL NOT support TLS 1.1, TLS 1.0, or any SSL protocol version; Baseline Client inherits the Basic Authentication Suite conditions through §6.1 item 2. KMIPKit's shared tls13_builder configures only TLS 1.3. The linked Raw TTLV/TLS negative test verifies that the ClientHello offers only TLS 1.3 and rejects a TLS 1.2 ServerHello before sending any KMIP application data; raw TLS and HTTPS use the shared TLS builder. This maps the client-to-server branch and configured transport policy only. No requirement-specific official Test Case ID is explicitly linked by the pinned sources, and this mapping makes no profile-conformance claim."
+      "review_note": "Pinned KMIP Profiles v2.1 §3.1.1 paragraph 5 states that conformant KMIP clients or servers SHALL NOT support TLS 1.1, TLS 1.0, or any SSL protocol version; Baseline Client inherits the Basic Authentication Suite conditions through §6.1 item 2. KMIPKit's shared tls13_builder configures only TLS 1.3. The linked Raw TTLV/TLS negative test verifies that the ClientHello offers only TLS 1.3 and rejects a TLS 1.2 ServerHello before sending any KMIP application data; raw TLS and HTTPS use the shared TLS builder. This maps the client-to-server branch and configured transport policy only. No requirement-specific official Test Case ID is explicitly linked by the pinned sources, and this mapping makes no profile-conformance claim."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3.1.2-002",

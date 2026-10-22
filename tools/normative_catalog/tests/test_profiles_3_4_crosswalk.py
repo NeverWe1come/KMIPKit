@@ -324,6 +324,11 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertIn("TLS v1.1 [RFC4346]", source_excerpt)
         self.assertIn("TLS v1.0 [RFC2246]", source_excerpt)
         self.assertIn("Any version of the SSL protocol", source_excerpt)
+        self.assertEqual(
+            self.clauses[clause_id]["locator"],
+            {"ordinal": 5, "block_kind": "paragraph"},
+        )
+        self.assertIn("paragraph 5", review["review_note"])
         self.assertEqual(review["source_obligations"][0]["source_keyword"], "SHALL NOT")
         self.assertEqual(requirement["source_clause_ids"], [clause_id])
         self.assertEqual(requirement["source_keyword"], "SHALL NOT")
