@@ -1349,6 +1349,58 @@ fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability()
 }
 
 #[test]
+fn profile_maps_request_batch_item_repetition_as_optional_capability() {
+    // KMIP Specification v2.1 §8.1 Table 394 allows Request Batch Item to repeat.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.1-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.1-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("request Batch Item repetition has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Batch Item capability resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let single_item_request = request_message();
+    result
+        .validate_request(&single_item_request)
+        .expect("the optional capability does not require repetition in every request");
+
+    let repeated_items_request = request_message_with_batch_item_ids(&[b"first", b"second"]);
+    let actual_ids = repeated_items_request
+        .batch_items()
+        .map(|item| {
+            item.with_unique_batch_item_id(<[u8]>::to_vec)
+                .expect("multi-item requests carry distinct identifiers")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(repeated_items_request.header().batch_count(), 2);
+    assert_eq!(actual_ids, vec![b"first".to_vec(), b"second".to_vec()]);
+    assert!(evaluate(Some(&repeated_items_request), None));
+    result
+        .validate_request(&repeated_items_request)
+        .expect("a client can represent a request with repeated Batch Items");
+}
+
+#[test]
 fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
     // KMIP Specification v2.1 §8.3 Table 396 requires this field when Batch
     // Count is greater than one; Profiles v2.1 §4.1.2 item 6 corroborates the
