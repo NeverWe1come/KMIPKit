@@ -206,7 +206,7 @@ class CoverageReportTests(unittest.TestCase):
                     '\n#[cfg(test)]\n#[path = "../tests/support/profile_unit.rs"]\nmod tests;\n'
                 )
 
-    def test_typed_rule_registry_reader_parses_a_complete_static_mapping(self) -> None:
+    def test_typed_rule_registry_reader_parses_tls_and_tls13_mappings(self) -> None:
         from tools.normative_catalog.report import load_typed_rule_mappings
 
         with tempfile.TemporaryDirectory() as directory:
@@ -229,6 +229,20 @@ class CoverageReportTests(unittest.TestCase):
             value: "tls",
         }],
     },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-3.1.1-002",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_tls_1_3_for_basic_authentication_suite_transport",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls13",
+        }],
+    },
 ];
 """,
                 encoding="utf-8",
@@ -236,7 +250,8 @@ class CoverageReportTests(unittest.TestCase):
             test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
             test_path.parent.mkdir(parents=True)
             test_path.write_text(
-                "#[test]\nfn profile_requires_tls_for_basic_authentication_suite_transport() {}\n",
+                "#[test]\nfn profile_requires_tls_for_basic_authentication_suite_transport() {}\n"
+                "#[test]\nfn profile_recommends_tls_1_3_for_basic_authentication_suite_transport() {}\n",
                 encoding="utf-8",
             )
             self._write_profile_module_tree(repository, include_test_file=True)
@@ -253,6 +268,18 @@ class CoverageReportTests(unittest.TestCase):
                         "test_id": (
                             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
                             "profile_requires_tls_for_basic_authentication_suite_transport"
+                        ),
+                    },
+                    {
+                        "requirement_id": "KMIPKIT-REQ-PROF-3.1.1-002",
+                        "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+                        "verification_category": "RecommendedBehaviorOrDeviation",
+                        "evaluator_present": False,
+                        "transport_only": True,
+                        "test_kind": "RecommendedBehavior",
+                        "test_id": (
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                            "profile_recommends_tls_1_3_for_basic_authentication_suite_transport"
                         ),
                     }
                 ],
