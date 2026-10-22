@@ -949,5 +949,28 @@ class PublicApiParityTests(unittest.TestCase):
                     )
 
 
+    def test_discover_versions_consumers_read_the_shared_expected_versions(self) -> None:
+        consumers = {
+            "rust": ROOT / "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+            "c_harness": ROOT / "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "c_abi": ROOT / "bindings/c/tests/client_abi_consumer.c",
+            "java": ROOT / "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+            "python": ROOT / "bindings/python/tests/test_client.py",
+        }
+        source = {
+            language: path.read_text(encoding="utf-8")
+            for language, path in consumers.items()
+        }
+
+        self.assertIn("discover-versions.supported-versions.v1", source["rust"])
+        self.assertIn('expected["supportedVersions"]', source["rust"])
+        self.assertIn("discover-versions.supported-versions.v1", source["c_harness"])
+        self.assertIn('expected["supportedVersions"]', source["c_harness"])
+        self.assertIn("fixture_version_count", source["c_abi"])
+        self.assertIn("fixture_versions", source["c_abi"])
+        self.assertIn("discover-versions.supported-versions.v1", source["java"])
+        self.assertIn('objectArrayFields(discoverVersionsExpected, "supportedVersions")', source["java"])
+        self.assertIn("discover-versions.supported-versions.v1", source["python"])
+
 if __name__ == "__main__":
     unittest.main()
