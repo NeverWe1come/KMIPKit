@@ -3039,13 +3039,7 @@ fn validate_validate_input_aliases(
     {
         return Err(ERROR_INVALID_INPUT);
     }
-    let total_count = certificate_count
-        .checked_add(identifier_count)
-        .and_then(|count| count.checked_add(payload_extension_count))
-        .ok_or(ERROR_RESOURCE_LIMIT)?;
-    if total_count > MAX_VALIDATE_INPUT_ITEMS {
-        return Err(ERROR_RESOURCE_LIMIT);
-    }
+    validate_validate_input_count(certificate_count, identifier_count, payload_extension_count)?;
     if (certificate_count > 0 && certificates.is_null())
         || (identifier_count > 0 && identifiers.is_null())
         || (payload_extension_count > 0 && payload_extensions.is_null())
@@ -3062,6 +3056,21 @@ fn validate_validate_input_aliases(
             )
     }) {
         return Err(ERROR_INVALID_INPUT);
+    }
+    Ok(())
+}
+
+fn validate_validate_input_count(
+    certificate_count: u64,
+    identifier_count: u64,
+    payload_extension_count: u64,
+) -> FfiResult<()> {
+    let total_count = certificate_count
+        .checked_add(identifier_count)
+        .and_then(|count| count.checked_add(payload_extension_count))
+        .ok_or(ERROR_RESOURCE_LIMIT)?;
+    if total_count > MAX_VALIDATE_INPUT_ITEMS {
+        return Err(ERROR_RESOURCE_LIMIT);
     }
     Ok(())
 }
