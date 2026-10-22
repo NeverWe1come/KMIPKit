@@ -99667,6 +99667,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "9.6"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.5"
         }
       ],
       "source_keyword": "SHALL",
@@ -99696,7 +99700,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-002",
       "status": "verified",
-      "review_note": "KMIPKIT-DEC-002 accepts assigned outbound values and preserves raw decoded values without claiming the Table 435 extension allocation invalid. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §9.6 requires one of Continue, Stop, or Undo; §11.5 Table 435 defines their assigned Enumeration values. KMIPKIT-DEC-002 applies an assigned-only outbound policy while preserving raw decoded values; it does not claim that OASIS invalidates the Table 435 extension allocation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.6-001-003",

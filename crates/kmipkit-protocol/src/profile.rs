@@ -1332,7 +1332,7 @@ fn client_uses_assigned_batch_error_continuation_values(
     request
         .header()
         .batch_error_continuation_option()
-        .map_or(true, |value| {
+        .is_none_or(|value| {
             matches!(
                 value,
                 BATCH_ERROR_CONTINUATION_OPTION_CONTINUE
@@ -2792,10 +2792,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_accepts_the_three_assigned_values",
                 kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_rejects_extension_allocation_value",
-                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],

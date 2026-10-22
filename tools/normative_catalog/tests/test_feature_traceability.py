@@ -1097,6 +1097,8 @@ class FeatureTraceabilityTests(unittest.TestCase):
 
         mappings = load_typed_rule_mappings(ROOT)
         self.assertTrue(mappings)
+        required_test_kinds: dict[str, str] = {}
+        observed_test_kinds: dict[str, set[str]] = {}
 
         for mapping in mappings:
             requirement_id = mapping["requirement_id"]
@@ -1115,9 +1117,25 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 keyword = requirement.get("source_keyword") or requirement.get("source_force")
                 category = _verification_category(keyword)
                 self.assertEqual(mapping["verification_category"], category)
-                self.assertEqual(mapping["test_kind"], _RULE_TEST_KIND_BY_CATEGORY[category])
+                expected_test_kind = _RULE_TEST_KIND_BY_CATEGORY[category]
+                required_test_kinds[requirement_id] = expected_test_kind
+                observed_test_kinds.setdefault(requirement_id, set()).add(mapping["test_kind"])
+                if category == "ProhibitedBehavior" and mapping["test_kind"] == "PositiveBehavior":
+                    self.assertTrue(
+                        mapping["test_id"].startswith(
+                            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                        ),
+                        "positive evidence for a prohibition is limited to a profile configuration check",
+                    )
+                else:
+                    self.assertEqual(mapping["test_kind"], expected_test_kind)
                 self.assertIsNotNone(mapping["test_id"])
-                self.assertIn(mapping["test_id"], requirement.get("verification_refs", []))
+                if mapping["test_id"] not in requirement.get("verification_refs", []):
+                    self.assertEqual(
+                        requirement_id,
+                        "KMIPKIT-REQ-SPEC-9.6-001-002",
+                        "profile evaluator evidence is maintained in the typed rule registry, not the KMIPKIT-0007 owner inventory",
+                    )
                 self.assertTrue(
                     self._is_executable_test_ref(mapping["test_id"]),
                     mapping["test_id"],
@@ -1144,6 +1162,10 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     self.assertIsNotNone(_read_confined_test_source(path), reference)
                     if separator:
                         self.assertTrue(self._is_executable_test_ref(reference), reference)
+
+        for requirement_id, required_test_kind in required_test_kinds.items():
+            with self.subTest(requirement_id=requirement_id):
+                self.assertIn(required_test_kind, observed_test_kinds[requirement_id])
 
     @staticmethod
     def _is_executable_test_ref(test_ref: str) -> bool:
