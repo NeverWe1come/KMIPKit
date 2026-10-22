@@ -89134,12 +89134,15 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_key_value_present_as_prohibited_behavior",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_in_register_but_preserves_locate_criterion"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_in_register_but_preserves_locate_criterion",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_attributes_type_for_register_key_value_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_attributes_for_register_key_value_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_register_key_value_present_for_each_batch_item"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.28 states that Key Value Present SHALL NOT be specified by the client in a Register request. The typed profile rule checks outbound client Register request attributes, rejects Key Value Present, and permits Register omission; the regression also confirms that this Register prohibition leaves Locate criteria unaffected. It makes no claim about server-created attributes, client modification, server behavior, official OASIS Test Case execution, or profile conformance. The separate §4.28 requirements KMIPKIT-REQ-SPEC-4.28-001-002 and KMIPKIT-REQ-SPEC-4.28-001-003 remain outside this mapping. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "Pinned KMIP Specification v2.1 §4.28 states that Key Value Present SHALL NOT be specified by the client in a Register request. The typed profile rule checks outbound client Register request attributes, rejects Key Value Present, and permits Register omission; focused regressions also cover malformed and duplicate Attributes and mixed batches while confirming non-Register items remain unaffected. It makes no claim about server-created attributes, client modification, server behavior, official OASIS Test Case execution, or profile conformance. The separate §4.28 requirements KMIPKIT-REQ-SPEC-4.28-001-002 and KMIPKIT-REQ-SPEC-4.28-001-003 remain outside this mapping. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.28-001-002",

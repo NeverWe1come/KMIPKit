@@ -9,6 +9,7 @@ use super::{
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_get_or_export_key_compression_type_is_enumeration,
     client_opaque_object_context_custom_attributes,
+    client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_versions_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
@@ -5407,11 +5408,10 @@ fn profile_checks_register_key_value_present_for_each_batch_item() {
             )])),
         )])
     };
-    let register_without_key_value_present =
-        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]);
+    let register_without_attributes = Structure::new();
     let permitted_batch = request_message_with_batch_operations([
         (LOCATE_OPERATION_TAG, locate_with_key_value_present()),
-        (REGISTER_OPERATION_TAG, register_without_key_value_present),
+        (REGISTER_OPERATION_TAG, register_without_attributes),
     ]);
     key_value_present_register_profile_result()
         .validate_request(&permitted_batch)
@@ -5453,6 +5453,13 @@ fn profile_maps_key_value_present_register_malformed_duplicate_and_batch_rejecti
             "profile mapping must link negative test evidence {expected_test_id}"
         );
     }
+}
+
+#[test]
+fn client_register_key_value_present_evaluator_fails_closed_without_request_context() {
+    assert!(!client_register_does_not_specify_key_value_present(
+        None, None
+    ));
 }
 
 #[test]
