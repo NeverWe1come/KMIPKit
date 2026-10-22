@@ -41,6 +41,10 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
                 )
                 self.assertEqual("declared", operation["apiState"])
                 self.assertIn("manifest API state: `declared`", row)
+                self.assertIn(
+                    "four-language request and response mappings are recorded, and parity verification remains incomplete",
+                    row,
+                )
                 self.assertNotIn("binding remains blocked", row)
 
     def test_bilingual_guides_separate_reconciled_inventory_from_incomplete_mappings(self) -> None:
@@ -107,8 +111,48 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             name.strip().removeprefix("and ") for name in typed_list.split(",")
         }
         self.assertEqual(expected_typed_set, documented_typed_set)
-        self.assertIn("../user-guide/en/language-packages.md", typed_protocol)
+        self.assertIn(
+            "it excludes the four explicit asynchronous follow-up operations",
+            normalized_typed.lower(),
+        )
+        self.assertIn(
+            "which remain blocked in the manifest pending kmipkit-0009",
+            normalized_typed.lower(),
+        )
+        for operation in async_followups:
+            with self.subTest(excluded_async_operation=operation):
+                self.assertIn(operation.lower(), normalized_typed.lower())
+        self.assertIn(
+            "[java and python package guide](../user-guide/en/language-packages.md)",
+            normalized_typed.lower(),
+        )
+        self.assertIn(
+            "[public api manifest](../../specification/api/public-api.json)",
+            normalized_typed.lower(),
+        )
         self.assertNotIn("manifest status table below", reference)
+
+    def test_t073_stays_open_until_c_package_identity_is_authoritative(self) -> None:
+        tasks_path = ROOT / "specs" / "043-public-api-bindings" / "tasks.md"
+        tasks = tasks_path.read_text(encoding="utf-8")
+        t073_line = next(line for line in tasks.splitlines() if "T073 [US1]" in line)
+        self.assertTrue(t073_line.startswith("- [ ] T073 [US1]"))
+        self.assertIn(
+            "C package identity lacks authoritative metadata; leave T073 open",
+            t073_line,
+        )
+        self.assertNotRegex(tasks, r"(?m)^- \[x\] T073 \[US1\]")
+
+        evidence = (
+            ROOT / "specs" / "043-public-api-bindings" / "implementation-evidence.md"
+        ).read_text(encoding="utf-8")
+        reconciliation = evidence.split(
+            "### T073 readiness wording reconciliation", maxsplit=1
+        )[1]
+        self.assertIn(
+            "C distribution identity still lacks authoritative package metadata",
+            re.sub(r"\s+", " ", reconciliation),
+        )
 
 
 if __name__ == "__main__":
