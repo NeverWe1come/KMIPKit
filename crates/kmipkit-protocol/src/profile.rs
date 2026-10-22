@@ -731,6 +731,7 @@ const GET_KEY_COMPRESSION_TYPE: u32 = 0x0042_0041;
 const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
 const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
 const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
+const BATCH_ERROR_CONTINUATION_OPTION_STOP: u32 = 2;
 
 fn discover_versions_advertises_only_client_supported_versions(
     request: Option<&RequestMessage>,
@@ -850,6 +851,20 @@ fn client_sets_batch_count_to_request_item_count(
     };
 
     usize::try_from(request.header().batch_count()).ok() == Some(request.batch_items().len())
+}
+
+fn client_defaults_batch_error_continuation_to_stop(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    let header = request.header();
+    header.batch_error_continuation_option().is_some()
+        || header.effective_batch_error_continuation_option()
+            == BATCH_ERROR_CONTINUATION_OPTION_STOP
 }
 
 fn client_can_inspect_optional_result_message(
@@ -1997,6 +2012,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_sets_batch_count_to_request_item_count),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_count_to_request_item_count",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_defaults_batch_error_continuation_to_stop),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_default_batch_error_continuation_to_stop",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
