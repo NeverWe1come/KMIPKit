@@ -5518,3 +5518,28 @@ The architecture API reference now distinguishes Rust declarations from four-lan
 | Refactor | this commit | `git diff --check` | Pass. No generated outputs changed. |
 
 These checks confirm documentation status alignment only; they do not complete T073, approve KMIPKIT-0009, or claim operation conformance, interoperability, profile support, or certification.
+
+### T073 package identity validation follow-up (2026-10-22)
+
+The strict package metadata validator now compares the manifest's five public Rust crate names with their Cargo package names, the Python package name with `project.name`, and the Java coordinate with the Maven `groupId:artifactId`. It also rejects disagreement between the Maven group and Gradle group. Regression tests mutate identities in both the manifest and its Cargo, Python, and Maven metadata sources. The unpublished `kmipkit-ffi` crate remains only a version source for the C family; it is not treated as the C distribution identity. The existing CMake file is a consumer harness and no authoritative C distribution package metadata currently exists, so C identity reconciliation remains outstanding and T073 stays open. The existing manifest value `kmipkit-c` is not represented as a verified external package identity.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `8f5a3b21` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_rust_package_name_drift -v` | Expected failure: the strict validator accepted a mutated Rust manifest package name. |
+| Red | `e80981a9` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_python_package_name_drift tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_java_coordinate_drift -v` | Expected failures: the strict validator accepted mutated Python and Java manifest identities. |
+| Green | `48b4275b` | Focused Rust/Python/Java identity and existing version-source tests | Pass, 4 tests. |
+| Green | `48b4275b` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` | Pass, 67 tests in 153.350 seconds, including source-metadata mutation cases. |
+| Green | `48b4275b` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` | Pass; all 12 fixed generated outputs verified. |
+| Green | `48b4275b` | `git diff --check` | Pass. |
+
+An independent read-only review identified whitespace-only Maven coordinates as malformed identities that could still pass when the manifest matched them. A regression test reproduced that case; the validator now rejects empty/whitespace and padded Maven group/artifact components and rejects whitespace in the Gradle group. The helper extraction keeps all authoritative identity comparisons in one check. Review confirmed that skipping C identity is appropriate because the repository has no authoritative C distribution metadata; this gap remains explicit and T073 stays open.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `9f81eb0a` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_whitespace_only_java_coordinate_parts -v` | Expected failure in both subcases: whitespace-only Maven group and artifact coordinates passed when mirrored by the manifest. |
+| Green | `a8b1c837` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_whitespace_only_java_coordinate_parts tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_java_coordinate_drift tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_rejects_rust_python_and_java_metadata_identity_drift tools.api_manifest.tests.test_manifest_v2.PublicApiManifestV2SchemaTests.test_release_gate_checks_rust_python_and_java_package_version_sources -v` | Pass, 4 tests. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v` | Pass, 68 tests in 155.121 seconds. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` | Pass; all 12 fixed generated outputs verified. |
+| Refactor | this commit | `git diff --check` | Pass. |
+
+This slice validates seven package identities only. It does not close T073, change generated outputs, or claim package release readiness; C identity awaits actual C distribution metadata.

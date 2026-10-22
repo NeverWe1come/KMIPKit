@@ -1337,15 +1337,6 @@ def _validate_release_package_versions(
         if isinstance(package, dict)
     }
 
-    def require_package_identity(package_id: str, source_identity: Any) -> None:
-        package = packages_by_id.get(package_id)
-        if (
-            not isinstance(package, dict)
-            or not isinstance(source_identity, str)
-            or package.get("packageName") != source_identity
-        ):
-            raise ManifestError("release package identity does not match package metadata")
-
     def read_toml(relative_path: str) -> dict[str, Any]:
         try:
             document = tomllib.loads(_read_release_metadata(root, relative_path))
@@ -1375,8 +1366,11 @@ def _validate_release_package_versions(
         version_source = crate_package.get("version")
         if version_source != {"workspace": True}:
             raise ManifestError("Rust package version does not inherit releaseLine")
+        # The unpublished FFI crate is a C version source, not a C package identity source.
         if package_id != "c-kmipkit":
-            require_package_identity(package_id, crate_package.get("name"))
+            _require_release_package_identity(
+                packages_by_id, package_id, crate_package.get("name")
+            )
 
     python = read_toml("bindings/python/pyproject.toml")
     python_project = python.get("project")
@@ -1384,7 +1378,9 @@ def _validate_release_package_versions(
         raise ManifestError("Python package version source is malformed")
     if python_project.get("version") != release_line:
         raise ManifestError("Python package version is not synchronized with releaseLine")
-    require_package_identity("python-kmipkit", python_project.get("name"))
+    _require_release_package_identity(
+        packages_by_id, "python-kmipkit", python_project.get("name")
+    )
 
     try:
         gradle = _read_release_metadata(root, "bindings/java/build.gradle.kts")
@@ -1417,9 +1413,26 @@ def _validate_release_package_versions(
         or gradle_group.group(1) != pom_group.text
     ):
         raise ManifestError("Java package identity metadata is inconsistent")
-    require_package_identity(
-        "java-kmipkit", f"{pom_group.text}:{pom_artifact.text}"
+    _require_release_package_identity(
+        packages_by_id,
+        "java-kmipkit",
+        f"{pom_group.text}:{pom_artifact.text}",
     )
+
+
+def _require_release_package_identity(
+    packages_by_id: dict[Any, dict[str, Any]],
+    package_id: str,
+    source_identity: Any,
+) -> None:
+    """Require one manifest package name to match its authoritative metadata."""
+    package = packages_by_id.get(package_id)
+    if (
+        not isinstance(package, dict)
+        or not isinstance(source_identity, str)
+        or package.get("packageName") != source_identity
+    ):
+        raise ManifestError("release package identity does not match package metadata")
 
 
 def _require_unique(records: list[dict[str, Any]], field: str, label: str) -> set[Any]:
