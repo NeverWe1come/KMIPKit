@@ -3310,7 +3310,7 @@ fn profile_maps_gcm_tag_length_as_required_behavior() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ENCRYPT_OPERATION: u32 = 0x0000_001F;
     const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
-    const IV_LENGTH_TAG: u32 = 0x0042_0066;
+    const IV_LENGTH_TAG: u32 = 0x0042_00CD;
     const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
     const GCM_MODE: u32 = 9;
 

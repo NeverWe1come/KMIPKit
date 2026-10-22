@@ -687,6 +687,9 @@ const PROTOCOL_VERSION: u32 = 0x0042_0069;
 const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
 const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
+const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
+const TAG_LENGTH: u32 = 0x0042_00CE;
+const GCM_MODE: u32 = 9;
 const IMPORT_OPERATION: u32 = 0x0000_002A;
 const IMPORT_OBJECT_TYPE: u32 = 0x0042_0057;
 const DERIVE_KEY_OBJECT_TYPE: u32 = 0x0042_0057;
@@ -789,6 +792,57 @@ fn type_specific_parameters_do_not_infer_remote_object_type(
                     .iter()
                     .filter(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS)
                     .all(|field| field.with_value(|value| matches!(value, ValueView::Structure(_))))
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_gcm_cryptographic_parameters_include_tag_length(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS)
+                    .all(|field| {
+                        field.with_value(|value| {
+                            let ValueView::Structure(parameters) = value else {
+                                return false;
+                            };
+
+                            let mut block_cipher_mode_is_gcm = false;
+                            let mut has_tag_length = false;
+                            let fields_are_valid = parameters.children().iter().all(|parameter| {
+                                match parameter.tag().raw() {
+                                    BLOCK_CIPHER_MODE => parameter.with_value(|value| {
+                                        if let ValueView::Enumeration(mode) = value {
+                                            block_cipher_mode_is_gcm = *mode == GCM_MODE;
+                                            true
+                                        } else {
+                                            false
+                                        }
+                                    }),
+                                    TAG_LENGTH => parameter.with_value(|value| {
+                                        let valid = matches!(value, ValueView::Integer(_));
+                                        has_tag_length |= valid;
+                                        valid
+                                    }),
+                                    _ => true,
+                                }
+                            });
+
+                            fields_are_valid
+                                && (!block_cipher_mode_is_gcm || has_tag_length)
+                        })
+                    })
             })
             .unwrap_or(false)
     })
@@ -2529,6 +2583,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.16-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-003",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_gcm_cryptographic_parameters_include_tag_length),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::gcm_requires_tag_length_and_preserves_supplied_parameters",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],
