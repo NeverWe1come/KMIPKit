@@ -2,7 +2,7 @@
 
 This matrix inventories the 56 catalog elements with `scope_state: client_1_0`. KMIP 2.1 defines 57 client-initiated operation types in §§6.1.1–6.1.57; §6.1.54 Set Endpoint Role is explicitly deferred to `client_1_1` by the catalog because its role transition requires bidirectional channel behavior outside the 1.0 boundary. Operation sections refer to **Key Management Interoperability Protocol Specification Version 2.1**, OASIS Standard, 14 December 2020, §§6.1.1–6.1.57. A linked owner/candidate reference does not imply that API bindings are implemented or verified.
 
-The owner states below were revalidated from active `release/1.0.0` at `7a430d5f` on 2026-10-12. Approved/accepted is derived only from the linked spec's checked-in status; implementation authorization for a draft does not count as approval. Draft worktrees are not sources for owner links.
+The owner states and API readiness below were reconciled against the checked-in manifest and owner specifications in this feature worktree on 2026-10-22. API mappings verified on this branch still await release-line integration. Approved/accepted is derived only from the linked specification's checked-in status; implementation authorization for a draft does not count as approval. Draft worktrees are not sources for owner links.
 
 | OASIS section | Operation | Linked owner specification | Current status / API gate |
 |---|---|---|---|
@@ -17,11 +17,11 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.9 | Create Key Pair | KMIPKIT-0014 | Accepted owner; four-language request/response mapping and shared fixture added by T032; separate attribute groups and Table 191 consistency remain in the canonical typed path; no complete official conformance claim |
 | §6.1.10 | Create Split Key | KMIPKIT-0014 | Accepted owner; four-language request/response mapping and shared fixture added by T032; ordered response identifiers and local maximum-response behavior remain covered; no complete official conformance claim |
 | §6.1.11 | Decrypt | KMIPKIT-0019 | Approved owner; autonomous implementation approval is recorded in the owner specification under the maintainer's standing instruction; T040 maps and verifies all four language facades for Tables 196–198; `KMIPKIT-DISC-045` and `KMIPKIT-DISC-046` remain bounded and tracked |
-| §6.1.12 | Delegated Login | KMIPKIT-0038 | Approved owner; KMIPKIT-0038 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.12 | Delegated Login | KMIPKIT-0038 | Approved owner; T045 records four-language request/response mapping and parity evidence on this feature branch; release integration and full operation conformance remain separate |
 | §6.1.13 | Delete Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.14 | Derive Key | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; four-language API mapping and parity evidence verified in CI run `39063120154` on `7fef6d24`; full operation conformance remains a separate requirement |
 | §6.1.15 | Destroy | KMIPKIT-0018 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
-| §6.1.16 | Discover Versions | KMIPKIT-0007 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
+| §6.1.16 | Discover Versions | KMIPKIT-0007 | Approved/accepted owner; T031 records four-language response access and parity evidence on this feature branch; release integration and full profile conformance remain separate |
 | §6.1.17 | Encrypt | KMIPKIT-0019 | Approved owner; autonomous implementation approval is recorded in the owner specification under the maintainer's standing instruction; T040 maps and verifies all four language facades for Tables 214–216; `KMIPKIT-DISC-045` and `KMIPKIT-DISC-046` remain bounded and tracked |
 | §6.1.18 | Export | KMIPKIT-0037 | Approved owner; T047 four-language mapping and parity evidence are verified in PR #104; current-head CI run `39083730360` passed, including selected-scope coverage. Release-branch integration awaits human merge; no complete OASIS conformance claim is implied |
 | §6.1.19 | Get | KMIPKIT-0017 | Approved owner; T038 records a verified four-language mapping and parity evidence; task review remains open and no complete OASIS conformance claim is made |
@@ -30,17 +30,17 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.22 | Get Constraints | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T048 verifies the four-language empty request and required Constraints response mapping against Tables 229–231, including generic response TTLV and common result/delivery handling |
 | §6.1.23 | Get Usage Allocation | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T049 verifies the four-language typed request and result mapping against Tables 232–234 with common status and delivery handling |
 | §6.1.24 | Hash | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
-| §6.1.25 | Import | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.25 | Import | KMIPKIT-0037 | Approved owner; T050 records four-language request/response mapping and response-TTLV access on this feature branch; release integration and full operation conformance remain separate |
 | §6.1.26 | Interop | KMIPKIT-0042 | Approved owner; KMIPKIT-0042 approval recorded 2026-10-11; T051 four-language mapping and parity evidence pass current-head CI run `39171829432`, including selected changed-code coverage; later T071 native-backed parity corpus remains separate; no complete OASIS conformance claim |
 | §6.1.27 | Join Split Key | KMIPKIT-0037 | Approved owner; KMIPKIT-0037 approval recorded 2026-10-11; T052 maps the canonical Rust API into C, Java, and Python with parity evidence; current-head CI run `39171829432` and selected changed-code coverage pass; release integration remains a separate gate; no complete OASIS conformance claim |
 | §6.1.28 | Locate | KMIPKIT-0017 | Approved owner; T038 records a verified four-language mapping and parity evidence; task review remains open and no complete OASIS conformance claim is made |
 | §6.1.29 | Log | KMIPKIT-0042 | Approved owner; T053 records a verified four-language mapping and parity evidence in draft PR #104; release-line API gate remains pending merge and no complete OASIS conformance claim is made |
-| §6.1.30 | Login | KMIPKIT-0038 | Approved owner; KMIPKIT-0038 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
-| §6.1.31 | Logout | KMIPKIT-0038 | Approved owner; KMIPKIT-0038 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.30 | Login | KMIPKIT-0038 | Approved owner; T054 records four-language request/response mapping and Ticket access on this feature branch; release integration and full operation conformance remain separate |
+| §6.1.31 | Logout | KMIPKIT-0038 | Approved owner; T055 records four-language request/response mapping on this feature branch; release integration and full operation conformance remain separate |
 | §6.1.32 | MAC | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.33 | MAC Verify | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.34 | Modify Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
-| §6.1.35 | Obtain Lease | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.35 | Obtain Lease | KMIPKIT-0036 | Approved owner; T056 records four-language request/response mapping and lease fields on this feature branch; release integration and full operation conformance remain separate |
 | §6.1.36 | Ping | KMIPKIT-0020 | Approved for autonomous implementation under the maintainer's standing direct instruction; T041 four-language mapping is in progress. This is not formal acceptance or a complete KMIP conformance claim. |
 | §6.1.37 | PKCS#11 | KMIPKIT-0040 | Owner specification remains Approved for implementation, not formal acceptance. The maintainer's direct instruction dated 2026-10-20 authorized implementation under that contract; it did not accept the specification or expand scope. Four-language mappings and parity evidence are verified on the KMIPKIT-0043 feature branch; profile support, certification, interoperability, and release integration are separate gates. |
 | §6.1.38 | Poll | KMIPKIT-0009 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-039` remains a typed asynchronous response gate |
@@ -48,8 +48,8 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.40 | Query | KMIPKIT-0020 | Approved for autonomous implementation under the maintainer's standing direct instruction; T041 four-language mapping is in progress. Preserve open `KMIPKIT-DISC-047`; this is not formal acceptance or a complete KMIP conformance claim. |
 | §6.1.41 | Query Asynchronous Requests | KMIPKIT-0009 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence; `KMIPKIT-DISC-039` remains a typed asynchronous response gate |
 | §6.1.42 | Recover | KMIPKIT-0018 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
-| §6.1.43 | Register | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
-| §6.1.44 | Revoke | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.43 | Register | KMIPKIT-0036 | Approved owner; T062 records four-language mapping, response-TTLV access, and opaque context selectors on this feature branch; release integration and full operation conformance remain separate |
+| §6.1.44 | Revoke | KMIPKIT-0036 | Approved owner; T063 records four-language request/response mapping and redacted reason handling on this feature branch; release integration and full operation conformance remain separate |
 | §6.1.45 | Re-certify | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; four-language request/response mapping verified by T058. This is API mapping evidence, not operation conformance or certification. |
 | §6.1.46 | Re-key | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; T059 records a four-language API mapping for Tables 305–307. This is API mapping evidence, not operation conformance or certification. |
 | §6.1.47 | Re-key Key Pair | KMIPKIT-0036 | Approved owner; KMIPKIT-0036 approval recorded 2026-10-11; T060 records a four-language API mapping for Tables 308–312. Exact-head CI run [39531170500](https://github.com/NeverWe1come/KMIPKit/actions/runs/39531170500) on `a4673a47` passed 34 jobs; two scheduled jobs were skipped. This is API mapping evidence, not operation conformance, interoperability, or certification. |
@@ -58,18 +58,18 @@ The owner states below were revalidated from active `release/1.0.0` at `7a430d5f
 | §6.1.50 | RNG Seed | KMIPKIT-0041 | Approved owner; KMIPKIT-0041 approval recorded 2026-10-11; T065 records local Rust/C/Java/Python mapping, zero Data Length, native Failure/Pending handling, malformed-output checks, and manifest coverage. Independent scoped review and exact-head CI remain pending; this is API parity evidence, not operation conformance or certification. |
 | §6.1.51 | Set Attribute | KMIPKIT-0016 | Candidate owner (draft, not formally approved); blocked until approval and four-language parity evidence |
 | §6.1.52 | Set Constraints | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; T066 records local four-language mapping and parity evidence for Tables 325–327; exact-head CI and independent review remain pending; no complete OASIS conformance claim is implied |
-| §6.1.53 | Set Defaults | KMIPKIT-0039 | Approved owner; KMIPKIT-0039 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.53 | Set Defaults | KMIPKIT-0039 | Approved owner; T067 records four-language request/response mapping and response-TTLV access on this feature branch; release integration and full operation conformance remain separate |
 | §6.1.55 | Sign | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
 | §6.1.56 | Signature Verify | KMIPKIT-0021 | Approved/accepted owner; binding remains blocked until Rust and four-language parity evidence exist |
-| §6.1.57 | Validate | KMIPKIT-0042 | Approved owner; KMIPKIT-0042 approval recorded 2026-10-11; binding remains blocked until four-language parity evidence exists |
+| §6.1.57 | Validate | KMIPKIT-0042 | Approved owner; T069 records four-language certificate-chain request/response mapping and raw Validity Indicator access on this feature branch; release integration and full operation conformance remain separate |
 
 ## Reconciliation
 
 - Total KMIP 2.1 client-initiated operation types: **57**.
 - In-scope `client_1_0` operations: **56**.
 - Linked to an owner specification in the active release line: **56**.
-- Linked to an approved/accepted owner: **37 operations**.
-- Linked to an unapproved candidate owner: **19 operations**.
+- Linked to an approved/accepted owner: **41 operations**.
+- Linked to an unapproved candidate owner: **15 operations**.
 - No owner specification linked: **0 operations**.
 - All other blocked API rows remain gated on an accepted owner contract, canonical Rust API, four-language mapping, and verification evidence. Get, Locate, Get Constraints, and Get Usage Allocation have T038/T048/T049 mapping evidence; T032 advances only §§6.1.8–6.1.10 after scoped evidence is recorded. T038 remains open for controller review. These status records do not establish formal OASIS conformance.
 

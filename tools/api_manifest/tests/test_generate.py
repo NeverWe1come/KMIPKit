@@ -1607,8 +1607,20 @@ class ManifestGeneratorCliTests(unittest.TestCase):
 
             manifest = _complete_readiness_manifest(root)
             _write_dependency_matrix_fixture_if_missing(manifest, root)
+            package_names = {
+                "rust-kmipkit-ttlv": "kmipkit-ttlv",
+                "rust-kmipkit-protocol": "kmipkit-protocol",
+                "rust-kmipkit-transport": "kmipkit-transport",
+                "rust-kmipkit-client": "kmipkit-client",
+                "rust-kmipkit": "kmipkit",
+                # The strict gate intentionally has no C distribution name source.
+                "c-kmipkit": "fixture-c-family",
+                "java-kmipkit": "org.kmipkit:kmipkit-java",
+                "python-kmipkit": "kmipkit",
+            }
             for package in manifest["publicPackages"]:
                 package["versionSource"] = "releaseLine"
+                package["packageName"] = package_names[package["id"]]
 
             error_declarations: list[dict[str, object]] = []
             error_exports: dict[str, dict[str, str]] = {}

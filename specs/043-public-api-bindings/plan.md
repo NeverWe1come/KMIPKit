@@ -53,7 +53,7 @@ Implement idiomatic Java 17/JNI and Python 3.12/CFFI facades over the stable C A
 
 ### Phase D - Operation-specific binding slices
 
-For every operation in the dependency matrix, use its formally approved feature specification and canonical Rust implementation as a prerequisite. Add the manifest mapping and C/Java/Python accessors, operation tests, documentation, and traceability. After T021/T024 and the Encrypt, MAC, Sign, and Get Usage Allocation mappings (T033, T040, T049) exist, T078 adds the approved 025 caller-owned local Usage Allocation guard across all facades; it remains distinct from those operation request/response mappings. The 19 operations whose linked owners remain unapproved stay blocked; all 56 operation rows now have an explicit owner link. Set Endpoint Role remains outside the 1.0 API per the accepted 025 scope disposition. The final release gate requires zero blocked rows.
+For every operation in the dependency matrix, use its formally approved feature specification and canonical Rust implementation as a prerequisite. Add the manifest mapping and C/Java/Python accessors, operation tests, documentation, and traceability. After T021/T024 and the Encrypt, MAC, Sign, and Get Usage Allocation mappings (T033, T040, T049) exist, T078 adds the approved 025 caller-owned local Usage Allocation guard across all facades; it remains distinct from those operation request/response mappings. The 15 operations whose linked owners remain unapproved stay blocked; all 56 operation rows now have an explicit owner link. Set Endpoint Role remains outside the 1.0 API per the accepted 025 scope disposition. The final release gate requires zero blocked rows.
 
 ### Phase E - Complete parity and packaging gate
 
@@ -103,7 +103,7 @@ specification/compliance/          # requirement traceability evidence
 - The public-package inventory is fixed to five Rust crates and the C, Java, and Python distribution families; actual publication coordinates are read from package metadata rather than invented here. Every export must map to an approved capability or an exact reviewed exclusion.
 - `kmipkit-transport::Transport::exchange` is the sole Rust-only API exception under accepted ADR-0003/ADR-0014; no raw request or arbitrary-transport injection is added to the typed facade.
 - Operation APIs depend on the owning approved operation specification plus its canonical Rust request/response/client contract.
-- The 19 operations without a formally approved owner contract are explicit release blockers; their candidate specifications are linked in the dependency matrix. They are not silently deferred out of 1.0.
+- The 15 operations without a formally approved owner contract are explicit release blockers; their candidate specifications are linked in the dependency matrix. They are not silently deferred out of 1.0.
 - A feature-specific operation API can be merged only with the corresponding approved contract and tests. KMIPKIT-0043's complete 1.0 gate remains red until all 56 in-scope operations and all shared APIs are verified across four languages.
 - Follow the repository's required Red, Green, Refactor commit evidence and draft-PR workflow during implementation; this documentation-preparation task does not modify production code.
 

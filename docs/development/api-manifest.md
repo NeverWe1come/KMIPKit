@@ -5,7 +5,7 @@ The reviewed source of truth for the complete 1.0 cross-language API is
 `specification/api/public-api.schema.json`. It uses manifest v2 and retains the
 KMIPKIT-0012 registry declarations as a registry slice while owning the full
 public-package, declaration, operation-readiness, and parity inventory. The
-first six generated destinations preserve the registry slice; the five
+first six generated destinations preserve the registry slice; the six
 additional destinations carry the full public API contract. Only declarations
 and capabilities marked `declared` or `verified` may appear in generated API
 outputs. Blocked inventory records are review metadata and do not create API

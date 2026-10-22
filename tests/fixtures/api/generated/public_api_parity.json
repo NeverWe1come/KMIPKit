@@ -740,7 +740,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -752,7 +752,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT_BATCH",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -764,7 +764,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT_BATCH_ITEM_RESPONSE",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -776,7 +776,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.CLIENT_BATCH_RESPONSE",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -788,7 +788,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.CODEC_LIMITS",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -797,10 +797,34 @@
       "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed org.kmipkit.extensions and org.kmipkit.ttlv facades. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REVOCATION_REASON",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public constant is an internal JNI handle-kind discriminator; the typed facade supplies the supported Java capability and callers do not select native handle kinds."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed org.kmipkit.extensions and org.kmipkit.ttlv facades. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.REVOKE_REQUEST",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public constant is an internal JNI handle-kind discriminator; the typed facade supplies the supported Java capability and callers do not select native handle kinds."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 uses this exact constant only to bind its owned native reference. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 uses this exact constant only to bind its owned native reference. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.SPLIT_KEY_REFERENCE",
       "packageId": "java-kmipkit",
       "reason": "This exact public constant is an internal JNI handle-kind discriminator. The typed SplitKeyReference facade supplies the product capability; callers do not select native handle kinds."
@@ -812,7 +836,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.TRANSPORT_CONFIGURATION",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -824,7 +848,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.USAGE_ALLOCATION_CONTEXT",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the internal handle-kind discriminator for the typed UsageAllocationContext facade. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -836,7 +860,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchAddErrorContinuationValue",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -848,7 +872,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchAddItem",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -860,7 +884,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchCreate",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -872,7 +896,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 Certify mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 Certify mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCertify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Certify factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -884,7 +908,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItem.check supplies typed values through this internal JNI constructor; applications use the typed facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItem.check supplies typed values through this internal JNI constructor; applications use the typed facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCheck",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed Check facade; it has no independent Java product capability."
@@ -896,7 +920,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreate",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability."
@@ -908,7 +932,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateKeyPair",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability."
@@ -920,7 +944,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateSplitKey",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability."
@@ -932,7 +956,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDecrypt",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -944,7 +968,7 @@
         "path": "specs/024-credential-sessions/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0038, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0038, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDelegatedLogin",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Delegated Login request factory; it has no independent Java product capability."
@@ -956,7 +980,7 @@
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDeriveKey",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Derive Key request factory; it has no independent Java product capability."
@@ -968,7 +992,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemEncrypt",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -980,7 +1004,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T047. The Java facade passes the optional identifier, raw-preserving Table 217 selectors, and borrowed wrapping-specification handle to the C ABI constructor. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T047. The Java facade passes the optional identifier, raw-preserving Table 217 selectors, and borrowed wrapping-specification handle to the C ABI constructor. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemExport",
       "packageId": "java-kmipkit",
       "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Export request facade; it has no independent product capability."
@@ -992,7 +1016,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemGet calls the C ABI for ClientBatchItem.get and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemGet calls the C ABI for ClientBatchItem.get and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGet",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for ClientBatchItem.get; it has no independent Java product capability."
@@ -1004,7 +1028,7 @@
         "path": "specs/025-policy-controls/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0039, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0039, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetConstraints",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Get Constraints request factory; it has no independent Java product capability."
@@ -1016,7 +1040,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade passes identifier kind, optional text or numeric identifier, and usage limits count to this JNI constructor, which creates the typed request handle. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. The Java facade passes identifier kind, optional text or numeric identifier, and usage limits count to this JNI constructor, which creates the typed request handle. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemGetUsageAllocation",
       "packageId": "java-kmipkit",
       "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Get Usage Allocation facade; it has no independent product capability."
@@ -1028,7 +1052,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemHash",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1040,7 +1064,7 @@
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemImport",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Import request factory; it has no independent Java product capability."
@@ -1052,7 +1076,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemInterop",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for the typed Interop request factory; applications use ClientBatchItem.interop."
@@ -1064,7 +1088,7 @@
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps the operation through ClientBatchItem.joinSplitKey. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps the operation through ClientBatchItem.joinSplitKey. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemJoinSplitKey",
       "packageId": "java-kmipkit",
       "reason": "This exact method is raw-handle JNI bridge plumbing for the typed ClientBatchItem.joinSplitKey factory; it has no independent Java product capability."
@@ -1076,7 +1100,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemLocate calls the C ABI for ClientBatchItem.locate and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemLocate calls the C ABI for ClientBatchItem.locate and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLocate",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for ClientBatchItem.locate; it has no independent Java product capability."
@@ -1088,7 +1112,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLog",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for the typed Log request factory; applications use ClientBatchItem.log."
@@ -1100,7 +1124,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLogin",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1112,7 +1136,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemLogout",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed ClientBatchItem.logout facade and the Logout result accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1124,7 +1148,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemMac",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1136,7 +1160,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemMacVerify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1148,7 +1172,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemObtainLease",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1160,7 +1184,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemPing",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1172,7 +1196,7 @@
         "path": "specs/026-pkcs11/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0040 mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0040 mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemPkcs11",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed PKCS#11 request factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1184,7 +1208,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemQuery",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1196,7 +1220,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemQueryWithLimits",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1208,7 +1232,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T058, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T058, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRecertify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify request factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1220,7 +1244,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekey",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify request factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1232,7 +1256,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRekeyKeyPair",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point; the typed ClientBatchItem.rekeyKeyPair factory is the product API."
@@ -1244,7 +1268,19 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 Certify mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemReprovision",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 Certify mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCertify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Certify factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1256,7 +1292,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItemResult.checkResponse validates the native tuple and owns the returned generic TTLV handle; applications use the typed result facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the KMIPKIT-0036 Check mapping. ClientBatchItemResult.checkResponse validates the native tuple and owns the returned generic TTLV handle; applications use the typed result facade. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCheck",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is raw-handle JNI bridge plumbing for the typed Check response facade; it has no independent Java product capability."
@@ -1268,7 +1304,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreate",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability."
@@ -1280,7 +1316,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateKeyPair",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability."
@@ -1292,7 +1328,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateSplitKey",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability."
@@ -1304,7 +1340,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDecrypt",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1316,7 +1352,7 @@
         "path": "specs/024-credential-sessions/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0038, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0038, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDelegatedLogin",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Delegated Login response accessor; it has no independent Java product capability."
@@ -1328,7 +1364,7 @@
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDeriveKey",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Derive Key response accessor; it has no independent Java product capability."
@@ -1340,7 +1376,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 in docs/architecture/ffi-and-bindings.md. The NativeExtensionRegistry class is the internal JNI bridge; its low-level native handle method only carries the typed facade call to the stable C ABI.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 in docs/architecture/ffi-and-bindings.md. The NativeExtensionRegistry class is the internal JNI bridge; its low-level native handle method only carries the typed facade call to the stable C ABI. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDiscoverVersionsSupportedVersions",
       "packageId": "java-kmipkit",
       "reason": "This exact native method is a raw-handle JNI bridge entry point. Java applications use the typed ClientBatchItemResult facade; the bridge method has no independent product-level capability."
@@ -1352,7 +1388,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseEncrypt",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1364,7 +1400,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T047. This JNI accessor returns a presence tuple, optional typed identifier data, and owned Attributes, Any Object, and complete response-TTLV handles; ClientBatchItemResult.parseExportResponse validates and wraps them. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T047. This JNI accessor returns a presence tuple, optional typed identifier data, and owned Attributes, Any Object, and complete response-TTLV handles; ClientBatchItemResult.parseExportResponse validates and wraps them. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseExport",
       "packageId": "java-kmipkit",
       "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Export response facade; it has no independent product capability."
@@ -1376,7 +1412,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemResponseGet calls the C ABI for ClientBatchItemResult.getResponse and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemResponseGet calls the C ABI for ClientBatchItemResult.getResponse and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGet",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for ClientBatchItemResult.getResponse; it has no independent Java product capability."
@@ -1388,7 +1424,7 @@
         "path": "specs/025-policy-controls/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0039, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0039, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetConstraints",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Get Constraints response accessor; it has no independent Java product capability."
@@ -1400,7 +1436,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. This JNI accessor returns an Object[] tuple of presence fields, typed identifier data, and an owned response-TTLV handle. ClientBatchItemResult.parseGetUsageAllocationResponse validates the tuple and constructs the owned typed response. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T049. This JNI accessor returns an Object[] tuple of presence fields, typed identifier data, and an owned response-TTLV handle. ClientBatchItemResult.parseGetUsageAllocationResponse validates the tuple and constructs the owned typed response. It is an internal Java-to-C bridge for the typed facade, not a separate public product capability. See docs/architecture/ffi-and-bindings.md for the supported minimal Java-to-C boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseGetUsageAllocation",
       "packageId": "java-kmipkit",
       "reason": "This public static member is raw-handle JNI bridge plumbing for the typed Get Usage Allocation response facade; it has no independent product capability."
@@ -1412,7 +1448,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseHash",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1424,7 +1460,7 @@
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021; this exact JNI bridge serves the typed Java facade and has no independent product capability. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseImport",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for the typed Import response accessor; it has no independent Java product capability."
@@ -1436,7 +1472,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T051. This is an exact binding implementation detail, not a separate facade capability; the typed Interop facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseInterop",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for mapping the typed Interop response; applications use ClientBatchItemResult.interopResponse."
@@ -1448,7 +1484,7 @@
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps the result through ClientBatchItemResult.joinSplitKeyResponse. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; T052 maps the result through ClientBatchItemResult.joinSplitKeyResponse. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJoinSplitKey",
       "packageId": "java-kmipkit",
       "reason": "This exact method is raw-handle JNI bridge plumbing for the typed ClientBatchItemResult.joinSplitKeyResponse accessor; it has no independent Java product capability."
@@ -1460,7 +1496,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemResponseLocate calls the C ABI for ClientBatchItemResult.locateResponse and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.clientBatchItemResponseLocate calls the C ABI for ClientBatchItemResult.locateResponse and is covered by T038 parity tests; the supported public surface is the typed facade. See docs/architecture/ffi-and-bindings.md for the minimal JNI boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLocate",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for ClientBatchItemResult.locateResponse; it has no independent Java product capability."
@@ -1472,7 +1508,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and T053. This is an exact binding implementation detail, not a separate facade capability; the typed Log facade remains inventoried, tested, and documented. See docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLog",
       "packageId": "java-kmipkit",
       "reason": "Internal JNI bridge for mapping the typed Log response; applications use ClientBatchItemResult.logResponse."
@@ -1484,7 +1520,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLogin",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1496,7 +1532,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0038-FR-008, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLogout",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed ClientBatchItemResult.logoutResponse facade. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1508,7 +1544,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMac",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1520,7 +1556,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMacVerify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1532,7 +1568,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMetadata",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1544,7 +1580,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseMetadataV2",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability."
@@ -1556,7 +1592,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseObtainLease",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1568,7 +1604,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponsePendingCorrelationValue",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1580,7 +1616,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponsePing",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1592,7 +1628,7 @@
         "path": "specs/026-pkcs11/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0040 mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0040 mapping, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponsePkcs11",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed PKCS#11 response factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1604,7 +1640,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 and the owning operation mapping. docs/development/ffi-and-bindings.md identifies this bridge as implementation plumbing and directs applications to typed facade classes. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseQueryTtlv",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native method is raw-handle JNI plumbing for a typed facade factory or response accessor; it has no independent Java product capability."
@@ -1616,7 +1652,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T058, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T058, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRecertify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify response factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1628,7 +1664,19 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRegister",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the KMIPKIT-0036 mapping for T059, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRekey",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed Re-certify response factory and response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1640,7 +1688,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T060. NativeExtensionRegistry remains a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRekeyKeyPair",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point; the typed ClientBatchItemResult accessor is the product API."
@@ -1652,7 +1700,43 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseReprovision",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseReprovisionTtlv",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRevoke",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRngRetrieve",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately."
@@ -1664,7 +1748,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRngSeed",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately."
@@ -1676,7 +1760,31 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSetConstraints",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSetDefaults",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSign",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1688,7 +1796,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseSignatureVerify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1700,7 +1808,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseUniqueBatchItemId",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1712,7 +1820,31 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseValidate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRevoke",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRngRetrieve",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately."
@@ -1724,7 +1856,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried.",
+      "evidence": "Reviewed under KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021 for T064/T065. NativeExtensionRegistry is documented as an internal JNI bridge; docs/architecture/ffi-and-bindings.md describes the Java-to-C boundary as a minimal JNI bridge, and the typed RNG facade mappings are separately inventoried. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemRngSeed",
       "packageId": "java-kmipkit",
       "reason": "This exact public static native member is raw-handle JNI bridge plumbing for an RNG operation, not an independent Java product capability. The typed RNG response/factory API is inventoried separately."
@@ -1736,7 +1868,31 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemSetConstraints",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemSetDefaults",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemSign",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1748,7 +1904,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021, the corresponding KMIPKIT-0021 operation mapping and jniSymbol, and docs/architecture/ffi-and-bindings.md. NativeExtensionRegistry is documented as a minimal JNI bridge; callers use the typed org.kmipkit.extensions facade. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemSignatureVerify",
       "packageId": "java-kmipkit",
       "reason": "This public static native member is a raw-handle JNI bridge entry point. The typed ClientBatchItem factory and ClientBatchItemResult response accessor provide the product-level capability; the bridge member has no independent Java product API."
@@ -1760,7 +1916,19 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemValidate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemWithUniqueBatchItemId",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1772,7 +1940,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchResponseItemAt",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1784,7 +1952,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchResponseItemCount",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1796,7 +1964,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetAsynchronousIndicator",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1808,7 +1976,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetClientCorrelationValue",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1820,7 +1988,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetOrderOption",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1832,7 +2000,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchSetRequestTimestamp",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1844,7 +2012,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientCreate",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1856,7 +2024,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecute",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1868,7 +2036,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteGuardedProtectionItem",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed Client.executeGuardedProtectionItem facade. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1880,7 +2048,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteGuardedProtectionItemWithAsynchronousIndicator",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed Client.executeGuardedProtectionItemWithAsynchronousIndicator facade. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1892,7 +2060,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The native method transports raw client, batch, and codec handles through the minimal JNI bridge; the typed Client.executeWithOptions method is the supported product entry point. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientExecuteWithOptions",
       "packageId": "java-kmipkit",
       "reason": "This exact public native method is raw-handle JNI bridge plumbing. Java exposes it for native binding dispatch; applications use the typed Client.executeWithOptions facade, which has the shared timeout capability."
@@ -1901,10 +2069,34 @@
       "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.revocationReasonCreate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.revokeRequestCreate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
         "path": "specs/023-key-material-transfer/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; this T052 JNI entry point is called by SplitKeyReference and is not an independent Java product API. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md.",
+      "evidence": "Reviewed for KMIPKIT-0037-FR-001 and KMIPKIT-0043-FR-021; this T052 JNI entry point is called by SplitKeyReference and is not an independent Java product API. The internal bridge exclusion follows KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021; see docs/development/ffi-and-bindings.md. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.splitKeyReferenceCreate",
       "packageId": "java-kmipkit",
       "reason": "This exact method is raw-handle JNI bridge plumbing for SplitKeyReference construction. The mapped constructor capability is exposed through the typed facade."
@@ -1916,7 +2108,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge.",
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class documentation identifies it as an internal JNI bridge and directs applications to typed facade classes; docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.transportConfigCreate",
       "packageId": "java-kmipkit",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability."
@@ -1928,7 +2120,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextAllocatedUnits",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.allocatedUnits accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1940,7 +2132,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextAvailableUnits",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.availableUnits accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1952,7 +2144,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextCreate",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed BatchItemResult.createUsageAllocationContext facade. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1964,7 +2156,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextReservedUnits",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.reservedUnits accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1976,7 +2168,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextUniqueIdentifier",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.uniqueIdentifier accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -1988,7 +2180,7 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary.",
+      "evidence": "Reviewed against KMIPKIT-0039-FR-009, KMIPKIT-0043-FR-008, and KMIPKIT-0043-FR-021. docs/architecture/ffi-and-bindings.md documents NativeExtensionRegistry as the minimal internal JNI bridge; the named typed facade is separately mapped across the approved API boundary. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope.",
       "exportName": "org.kmipkit.NativeExtensionRegistry.usageAllocationContextUsageLimitsUnit",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is internal JNI handle-kind or raw-handle bridge plumbing for the typed UsageAllocationContext.usageLimitsUnit accessor. Applications use the typed facade; this bridge member has no independent product-level capability."
@@ -2345,6 +2537,18 @@
       "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the operation mapping source. The exact method formats only redacted fields; the complete response remains available through explicit typed accessors.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ReProvisionResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
         "path": "specs/022-object-lifecycle/spec.md",
         "status": "Approved"
       },
@@ -2352,6 +2556,18 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RecertifyResponse.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java formatter emits only a redacted summary of the replacement certificate identifier and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the operation mapping source. The exact method formats only redacted fields; the complete response remains available through explicit typed accessors.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RegisterResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns redacted diagnostic presentation and is not an independent KMIPKit capability."
     },
     {
       "approvalSource": {
@@ -2384,6 +2600,18 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the operation mapping source. The exact method formats only redacted fields; the complete response remains available through explicit typed accessors.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RevokeResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
       "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the T064/T065 Java response declarations. The formatter does not emit response TTLV or random material; RNG Retrieve explicitly prints data=redacted, while the typed fields remain separately mapped.",
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RngRetrieveResponse.toString",
       "packageId": "java-kmipkit",
@@ -2400,6 +2628,30 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.RngSeedResponse.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java formatter is redacted presentation behavior for a typed RNG response, not a separate cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the operation mapping source. The exact method formats only redacted fields; the complete response remains available through explicit typed accessors.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.SetConstraintsResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns redacted diagnostic presentation and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the operation mapping source. The exact method formats only redacted fields; the complete response remains available through explicit typed accessors.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.SetDefaultsResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns redacted diagnostic presentation and is not an independent KMIPKit capability."
     },
     {
       "approvalSource": {
@@ -2424,6 +2676,18 @@
       "exportName": "org.kmipkit.extensions.ClientBatchItemResult.SignatureVerifyResponse.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java formatter emits only a redacted summary of cryptographic response fields and is not an independent KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and the operation mapping source. The exact method formats only redacted fields; the complete response remains available through explicit typed accessors.",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ValidateResponse.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns redacted diagnostic presentation and is not an independent KMIPKit capability."
     },
     {
       "approvalSource": {
@@ -2508,6 +2772,18 @@
       "exportName": "org.kmipkit.extensions.RequestOptions.toString",
       "packageId": "java-kmipkit",
       "reason": "This exact Java member is compiler-provided record value boilerplate, not a separately specified KMIPKit capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021. RevocationReason.toString redacts Message text, and RevokeMappingTest asserts the caller-supplied message is absent from formatted output.",
+      "exportName": "org.kmipkit.extensions.RevocationReason.toString",
+      "packageId": "java-kmipkit",
+      "reason": "This exact toString method returns redacted diagnostic presentation and is not an independent KMIPKit capability."
     },
     {
       "approvalSource": {
@@ -6699,6 +6975,246 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __dataclass_fields__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __dataclass_params__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __delattr__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __eq__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __hash__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __init__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse constructor is generated Python dataclass machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __match_args__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __repr__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse formatter is a Python presentation detail, not an independent cross-language operation; response TTLV is redacted from its representation."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __setattr__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __slots__.",
+      "exportName": "kmipkit.client.SetConstraintsResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __dataclass_fields__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__dataclass_fields__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __dataclass_params__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__dataclass_params__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __delattr__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__delattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __eq__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__eq__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __hash__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__hash__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __init__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __match_args__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__match_args__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __repr__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__repr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __setattr__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__setattr__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __slots__.",
+      "exportName": "kmipkit.client.SetDefaultsResponse.__slots__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved",
         "kind": "feature-specification",
         "path": "specs/021-hash-mac-signature-operations/spec.md",
@@ -7424,114 +7940,6 @@
         "path": "specs/043-public-api-bindings/spec.md",
         "status": "Approved"
       },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.ClientExecutionError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.ClientExecutionError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed as the exact inherited `BaseException.args` attribute under KMIPKIT-0043-FR-021; the shared taxonomy and delivery semantics are specified by KMIPKIT-0007-FR-013.",
-      "exportName": "kmipkit.errors.ClientExecutionError.args",
-      "packageId": "python-kmipkit",
-      "reason": "This exact attribute is inherited from Python's standard `BaseException` and stores positional exception-constructor arguments. It is language runtime boilerplate, not a separate KMIPKit error category or delivery capability; the shared error contract is represented by status, client_category, cause, and delivery."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.CompatibilityMismatchError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.CompatibilityMismatchError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.DuplicateKeyError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.DuplicateKeyError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidExtensionSchemaError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.InvalidExtensionSchemaError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidIdentityError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.InvalidIdentityError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidInputError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.InvalidInputError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.KmipKitError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.KmipKitError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.ResourceLimitError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
-      "exportName": "kmipkit.errors.ResourceLimitError.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0042-FR-004 for T069; the typed Validate response and caller-owned response TTLV remain inventoried, tested, and documented. This exclusion applies only to generated Python dataclass member __dataclass_fields__ and is not an independent cross-language product capability.",
       "exportName": "kmipkit.client.ValidateResponse.__dataclass_fields__",
       "packageId": "python-kmipkit",
@@ -7644,6 +8052,114 @@
       "exportName": "kmipkit.client.ValidateResponse.__slots__",
       "packageId": "python-kmipkit",
       "reason": "This exact ValidateResponse member is Python dataclass-generated record machinery and interpreter metadata, not an independent cross-language product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.ClientExecutionError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.ClientExecutionError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed as the exact inherited `BaseException.args` attribute under KMIPKIT-0043-FR-021; the shared taxonomy and delivery semantics are specified by KMIPKIT-0007-FR-013.",
+      "exportName": "kmipkit.errors.ClientExecutionError.args",
+      "packageId": "python-kmipkit",
+      "reason": "This exact attribute is inherited from Python's standard `BaseException` and stores positional exception-constructor arguments. It is language runtime boilerplate, not a separate KMIPKit error category or delivery capability; the shared error contract is represented by status, client_category, cause, and delivery."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.CompatibilityMismatchError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.CompatibilityMismatchError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.DuplicateKeyError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.DuplicateKeyError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidExtensionSchemaError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.InvalidExtensionSchemaError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidIdentityError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.InvalidIdentityError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.InvalidInputError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.InvalidInputError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.KmipKitError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.KmipKitError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-013 and KMIPKIT-0043-FR-021 for kmipkit.errors.ResourceLimitError.__init__. This local construction path is excluded individually; the public exception type and applicable category/cause/delivery mappings remain inventoried.",
+      "exportName": "kmipkit.errors.ResourceLimitError.__init__",
+      "packageId": "python-kmipkit",
+      "reason": "This exact Python exception constructor creates a local exception value; it does not execute a KMIP operation. The exception type and stable error taxonomy remain mapped."
     },
     {
       "approvalSource": {
@@ -8796,246 +9312,6 @@
       "exportName": "kmipkit_protocol::RegisterRequest::validate_local_shape",
       "packageId": "rust-kmipkit-protocol",
       "reason": "This cross-crate preflight helper supports client-side Register validation and is not a separate caller-facing API operation. Callers use the typed Register payload/client paths, which perform the preflight as part of the supported request flow."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __dataclass_fields__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__dataclass_fields__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __dataclass_params__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__dataclass_params__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __delattr__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__delattr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __eq__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__eq__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __hash__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__hash__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __init__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse constructor is generated Python dataclass machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __match_args__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__match_args__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __repr__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__repr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse formatter is a Python presentation detail, not an independent cross-language operation; response TTLV is redacted from its representation."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __setattr__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__setattr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T066; the successful Set Constraints response TTLV is mapped across four languages and redacted from ordinary diagnostics. This exclusion applies only to generated member __slots__.",
-      "exportName": "kmipkit.client.SetConstraintsResponse.__slots__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetConstraintsResponse member is Python dataclass introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __dataclass_fields__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__dataclass_fields__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __dataclass_params__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__dataclass_params__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __delattr__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__delattr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __eq__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__eq__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __hash__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__hash__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __init__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__init__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __match_args__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__match_args__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __repr__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__repr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __setattr__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__setattr__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation",
-        "kind": "feature-specification",
-        "path": "specs/043-public-api-bindings/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0039-FR-001 for T067; the successful Set Defaults response TTLV uses an owned redacted wrapper. This generated member is not an independent cross-language product capability. This exclusion applies only to generated member __slots__.",
-      "exportName": "kmipkit.client.SetDefaultsResponse.__slots__",
-      "packageId": "python-kmipkit",
-      "reason": "This exact SetDefaultsResponse member is Python dataclass-generated introspection or record machinery, not an independent cross-language product capability."
     }
   ],
   "capabilities": [
@@ -144489,7 +144765,7 @@
       "declarationId": "T063:revoke:reason-raw:python",
       "declarationState": "verified",
       "exportName": "kmipkit.extensions.RevocationReason.raw_code",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_revocation_reason_create",
@@ -144977,7 +145253,7 @@
       "declarationId": "T063:revoke:request-message:python",
       "declarationState": "verified",
       "exportName": "kmipkit.extensions.RevocationReason.message",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_revocation_reason_create",
@@ -145282,7 +145558,7 @@
       "declarationId": "T063:revoke:response-uid:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.RevokeResponse.unique_identifier",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_revoke",
@@ -145465,7 +145741,7 @@
       "declarationId": "T063:revoke:response-ttlv:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.RevokeResponse.response_ttlv",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_revoke_ttlv",
@@ -145770,7 +146046,7 @@
       "declarationId": "T063:revoke:outcome-accessor:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.BatchItemResult.revoke_response",
-      "kind": "python-export",
+      "kind": "field",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_revoke",
@@ -148173,6 +148449,10 @@
       "declarationId": "T069:request:java",
       "declarationState": "verified",
       "exportName": "org.kmipkit.extensions.ClientBatchItem.validate",
+      "javaSignatures": [
+        "public static org.kmipkit.extensions.ClientBatchItem validate(java.util.List<org.kmipkit.ttlv.TtlvStructure>, java.util.List<org.kmipkit.extensions.UniqueIdentifier>, java.lang.Long)",
+        "public static org.kmipkit.extensions.ClientBatchItem validate(java.util.List<org.kmipkit.ttlv.TtlvStructure>, java.util.List<org.kmipkit.extensions.UniqueIdentifier>, java.lang.Long, java.util.List<org.kmipkit.ttlv.TtlvItem>)"
+      ],
       "kind": "java-member",
       "languageMappings": {
         "c": {
@@ -148998,7 +149278,7 @@
       "declarationId": "T069:response:close:python",
       "declarationState": "verified",
       "exportName": "kmipkit.client.ValidateResponse.close",
-      "kind": "field",
+      "kind": "python-export",
       "languageMappings": {
         "c": {
           "name": "kmipkit_client_batch_item_response_validate_ttlv",

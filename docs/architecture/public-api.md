@@ -65,13 +65,17 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 
 KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
 `ClientBatch` with a closed typed request set. The currently implemented Rust
-operation variants
-are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
-Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Get Usage Allocation, Modify
-Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
-Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
-Revoke. The API does not accept generic Item values, raw message bytes, or
-caller-implemented conversions.
+operation variants are Discover Versions, Activate, Archive, Certify, Check,
+Delegated Login, Login, Logout, Obtain Lease, Re-certify, Re-key, Re-key Key
+Pair, Re-Provision, Register, Revoke, Destroy, Recover, Get, Locate, Create,
+Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
+Attribute, Modify Attribute, Set Attribute, Get Attributes, Get Attribute List,
+Ping, Interop, Log, Validate, PKCS#11, Get Constraints, Set Constraints, Set
+Defaults, Get Usage Allocation, Query, Encrypt, Decrypt, Derive Key, Export,
+Import, Join Split Key, Hash, MAC, MAC Verify, Sign, Signature Verify, RNG
+Retrieve, and RNG Seed. Cross-language availability is tracked separately in
+the manifest status table below. The API does not accept generic Item values,
+raw message bytes, or caller-implemented conversions.
 Discover Versions is explicit and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
