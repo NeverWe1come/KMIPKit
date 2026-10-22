@@ -32,6 +32,7 @@ const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
 const BATCH_ERROR_CONTINUATION_OPTION_TAG: u32 = 0x0042_000E;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
+const LOCATE_OPERATION_TAG: u32 = 0x0000_0008;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const TIME_STAMP_TAG: u32 = 0x0042_0092;
@@ -39,6 +40,7 @@ const CLIENT_CORRELATION_VALUE_TAG: u32 = 0x0042_0105;
 const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BB;
 const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
@@ -276,6 +278,42 @@ fn request_message_with_operation_payload(
         ),
     ]))
     .expect("test Request Message with operation payload is valid")
+}
+
+fn request_message_with_batch_operations(
+    operations: impl IntoIterator<Item = (u32, Structure)>,
+) -> crate::RequestMessage {
+    let operations: Vec<_> = operations.into_iter().collect();
+    let batch_count = i32::try_from(operations.len()).expect("test batch count fits in an Integer");
+    let mut root_items = vec![tagged(
+        REQUEST_HEADER_TAG,
+        Value::structure(structure([
+            test_protocol_version(),
+            tagged(BATCH_COUNT_TAG, Value::integer(batch_count)),
+        ])),
+    )];
+
+    root_items.extend(
+        operations
+            .into_iter()
+            .enumerate()
+            .map(|(index, (operation, payload))| {
+                tagged(
+                    BATCH_ITEM_TAG,
+                    Value::structure(structure([
+                        tagged(OPERATION_TAG, Value::enumeration(operation)),
+                        tagged(
+                            UNIQUE_BATCH_ITEM_ID_TAG,
+                            Value::byte_string(index.to_be_bytes().to_vec()),
+                        ),
+                        tagged(REQUEST_PAYLOAD_TAG, Value::structure(payload)),
+                    ])),
+                )
+            }),
+    );
+
+    crate::RequestMessage::try_from_ttlv(structure(root_items))
+        .expect("test multi-item Request Message has valid batch item identifiers")
 }
 
 fn register_key_value_location_request(
@@ -5299,6 +5337,122 @@ fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion(
     result
         .validate_request(&locate_request)
         .expect("the Register prohibition does not reject a Locate criterion");
+}
+
+fn key_value_present_register_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
+        requirement_ids: vec!["KMIPKIT-REQ-SPEC-4.28-001-001".to_owned()],
+    }
+}
+
+fn assert_key_value_present_register_request_rejected(request: &crate::RequestMessage) {
+    let error = key_value_present_register_profile_result()
+        .validate_request(request)
+        .expect_err("a Register request with malformed or prohibited Attributes is rejected");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some("KMIPKIT-REQ-SPEC-4.28-001-001")
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+    );
+}
+
+#[test]
+fn profile_rejects_malformed_attributes_type_for_register_key_value_present() {
+    // KMIP Specification v2.1 §4.28; malformed request representation fails closed.
+    let request = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(ATTRIBUTES_TAG, Value::integer(1))]),
+    );
+
+    assert_key_value_present_register_request_rejected(&request);
+}
+
+#[test]
+fn profile_rejects_duplicate_attributes_for_register_key_value_present() {
+    // KMIP Specification v2.1 §4.28; duplicate Attributes cannot establish compliance.
+    let request = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([
+            tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    KEY_VALUE_PRESENT_TAG,
+                    Value::boolean(true),
+                )])),
+            ),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+        ]),
+    );
+
+    assert_key_value_present_register_request_rejected(&request);
+}
+
+#[test]
+fn profile_checks_register_key_value_present_for_each_batch_item() {
+    // KMIP Specification v2.1 §4.28; the prohibition applies only to Register items.
+    let locate_with_key_value_present = || {
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                KEY_VALUE_PRESENT_TAG,
+                Value::boolean(true),
+            )])),
+        )])
+    };
+    let register_without_key_value_present =
+        structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]);
+    let permitted_batch = request_message_with_batch_operations([
+        (LOCATE_OPERATION_TAG, locate_with_key_value_present()),
+        (REGISTER_OPERATION_TAG, register_without_key_value_present),
+    ]);
+    key_value_present_register_profile_result()
+        .validate_request(&permitted_batch)
+        .expect("non-Register items remain unaffected in a mixed batch");
+
+    let register_with_key_value_present = structure([tagged(
+        ATTRIBUTES_TAG,
+        Value::structure(structure([tagged(
+            KEY_VALUE_PRESENT_TAG,
+            Value::boolean(false),
+        )])),
+    )]);
+    let prohibited_batch = request_message_with_batch_operations([
+        (LOCATE_OPERATION_TAG, locate_with_key_value_present()),
+        (REGISTER_OPERATION_TAG, register_with_key_value_present),
+    ]);
+    assert_key_value_present_register_request_rejected(&prohibited_batch);
+}
+
+#[test]
+fn profile_maps_key_value_present_register_malformed_duplicate_and_batch_rejections() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-001";
+    const EXPECTED_TEST_IDS: [&str; 3] = [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_attributes_type_for_register_key_value_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_attributes_for_register_key_value_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_register_key_value_present_for_each_batch_item",
+    ];
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Value Present in Register has a typed profile rule");
+    for expected_test_id in EXPECTED_TEST_IDS {
+        assert!(
+            mapping.test_evidence.iter().any(|evidence| {
+                evidence.test_id == expected_test_id
+                    && evidence.kind == RuleTestKind::NegativeBehavior
+            }),
+            "profile mapping must link negative test evidence {expected_test_id}"
+        );
+    }
 }
 
 #[test]
