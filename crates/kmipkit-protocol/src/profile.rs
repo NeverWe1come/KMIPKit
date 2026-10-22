@@ -1087,6 +1087,15 @@ fn client_can_include_request_time_stamp(
     request.is_some()
 }
 
+fn client_can_include_client_correlation_value(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §9.9 permits a caller-provided request string and does not require it to
+    // be unique. Request-header validation enforces the Table 408 Text String.
+    request.is_some()
+}
+
 fn client_includes_unique_batch_item_id_for_multi_item_request(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2295,6 +2304,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_attestation_types_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.9-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.9-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_include_client_correlation_value),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_client_correlation_value_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::client_correlation_values_are_preserved_at_message_header_scope",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/extension_outbound.rs::execute_encodes_every_optional_batch_header_and_item_identifier",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

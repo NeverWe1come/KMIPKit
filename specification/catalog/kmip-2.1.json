@@ -99762,15 +99762,18 @@
         "crates/kmipkit-protocol/src/message/batch.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
-        "crates/kmipkit-protocol/src/result.rs"
+        "crates/kmipkit-protocol/src/result.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/message_validation.rs::client_correlation_values_are_preserved_at_message_header_scope"
+        "crates/kmipkit-client/tests/unit/extension_outbound.rs::execute_encodes_every_optional_batch_header_and_item_identifier",
+        "crates/kmipkit-protocol/tests/message_validation.rs::client_correlation_values_are_preserved_at_message_header_scope",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_client_correlation_value_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §9.9 and Table 408 define Client Correlation Value as a request-header Text String that a client MAY add; it need not be unique. The typed profile rule records this optional request capability without treating it as a Unique Batch Item ID or claiming response echo or server logging behavior. Protocol, profile, and fake-transport tests verify preservation at request-header scope. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-002",
