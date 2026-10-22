@@ -12,6 +12,13 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 
 
+def _markdown_section(document: str, heading: str) -> str | None:
+    match = re.search(
+        rf"(?ms)^### {re.escape(heading)}\n(.*?)(?=^### |\Z)", document
+    )
+    return None if match is None else match.group(1)
+
+
 class T073DocumentationReconciliationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -158,13 +165,30 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
         evidence = (
             ROOT / "specs" / "043-public-api-bindings" / "implementation-evidence.md"
         ).read_text(encoding="utf-8")
-        reconciliation = evidence.split(
-            "### T073 readiness wording reconciliation", maxsplit=1
-        )[1]
+        reconciliation = _markdown_section(
+            evidence, "T073 readiness wording reconciliation (2026-10-22)"
+        )
+        self.assertIsNotNone(reconciliation)
         self.assertIn(
             "C distribution identity still lacks authoritative package metadata",
             re.sub(r"\s+", " ", reconciliation),
         )
+
+    def test_named_t073_evidence_section_excludes_later_sections(self) -> None:
+        rationale = "C distribution identity still lacks authoritative package metadata."
+        document = (
+            "### T073 readiness wording reconciliation (2026-10-22)\n"
+            "The T073 section is present.\n\n"
+            "### T073 unrelated evidence\n"
+            f"{rationale}\n"
+        )
+
+        section = _markdown_section(
+            document, "T073 readiness wording reconciliation (2026-10-22)"
+        )
+
+        self.assertIsNotNone(section)
+        self.assertNotIn(rationale, section)
 
 
 if __name__ == "__main__":
