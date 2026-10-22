@@ -1316,8 +1316,9 @@ fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability()
 
 #[test]
 fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
-    // KMIP Specification v2.1 §8.3 Table 57 requires this field when Batch
-    // Count is greater than one; §9.21 describes its per-item encoding.
+    // KMIP Specification v2.1 §8.3 Table 396 requires this field when Batch
+    // Count is greater than one; Profiles v2.1 §4.1.2 item 6 corroborates the
+    // client-side requirement and permits omission for a single-item request.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.3-003";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.3-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
