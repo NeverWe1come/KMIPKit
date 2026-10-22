@@ -49,6 +49,64 @@ fn validate_constructor_preserves_identifier_and_optional_date() {
 }
 
 #[test]
+fn validate_constructor_preserves_nonempty_certificate_array() {
+    let mut certificate = Structure::new();
+    for (tag, value) in [
+        (0x0042_001d, Value::enumeration(1)),
+        (
+            0x0042_001e,
+            Value::byte_string(b"validate-certificate-ffi-sentinel".to_vec()),
+        ),
+    ] {
+        certificate
+            .try_push(
+                Item::new(
+                    RawTag::new(tag)
+                        .expect("Validate certificate tag is a valid raw KMIP tag")
+                        .try_checked()
+                        .expect("Validate certificate tag is allocated"),
+                    value,
+                )
+                .expect("Validate certificate field is valid TTLV"),
+            )
+            .expect("Validate certificate fits within the default limits");
+    }
+    let certificate_handle = make_handle(Kind::Structure, HandleValue::Structure(certificate));
+    let mut certificates = [certificate_handle];
+    let mut item = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_validate(
+            certificates.as_mut_ptr(),
+            certificates.len() as u64,
+            ptr::null(),
+            0,
+            ptr::null_mut(),
+            0,
+            0,
+            0,
+            &raw mut item,
+        ),
+        SUCCESS
+    );
+    assert!(!item.is_null());
+
+    let handle = reference_handle(item, Kind::BatchItem)
+        .expect("Validate constructor returns a live batch-item handle");
+    let HandleValue::BatchItem(batch_item) = &handle.value else {
+        panic!("Validate constructor returns a batch item");
+    };
+    let ClientRequest::Validate(request) = batch_item.request() else {
+        panic!("batch item contains a Validate request");
+    };
+    assert_eq!(request.chain_len(), 1);
+    assert!(reference_handle(certificate_handle, Kind::Structure).is_ok());
+
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(certificate_handle);
+}
+
+#[test]
 fn validate_constructor_borrows_and_copies_payload_extensions() {
     let extension: *mut kmipkit_ttlv_item_t = make_handle(
         Kind::Item,

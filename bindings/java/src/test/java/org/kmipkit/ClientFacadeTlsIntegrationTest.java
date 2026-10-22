@@ -1991,6 +1991,8 @@ final class ClientFacadeTlsIntegrationTest {
         long rawValidityIndicator = 0xf123_4567L;
         byte[] responseSentinel =
                 "validate-response-secret-sentinel".getBytes(StandardCharsets.UTF_8);
+        byte[] certificateBytes = "validate-certificate-request-sentinel"
+                .getBytes(StandardCharsets.UTF_8);
         FutureTask<byte[]> peer = new FutureTask<>(
                 () -> serveOneResponse(
                         listener, validateResponseMessage(rawValidityIndicator, responseSentinel)));
@@ -2013,9 +2015,11 @@ final class ClientFacadeTlsIntegrationTest {
                         .build();
                 Client client = Client.create(extensions, transport);
                 ClientBatch batch = ClientBatch.create()) {
-            batch.add(ClientBatchItem.validate(List.of(),
-                    List.of(UniqueIdentifier.textString("validate-target")), null)
-                    .withUniqueBatchItemId(uniqueBatchItemId(0)));
+            try (TtlvStructure certificate = validateCertificate(certificateBytes)) {
+                batch.add(ClientBatchItem.validate(List.of(certificate),
+                        List.of(UniqueIdentifier.textString("validate-target")), null)
+                        .withUniqueBatchItemId(uniqueBatchItemId(0)));
+            }
 
             try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
                     ClientBatchItemResult result = response.itemAt(0);
@@ -2038,7 +2042,28 @@ final class ClientFacadeTlsIntegrationTest {
         assertContains(request, enumeration(0x42005c, 0x17));
         assertContains(request, item(0x420094, 7,
                 "validate-target".getBytes(StandardCharsets.UTF_8)));
+        assertContains(request, structure(0x420013,
+                enumeration(0x42001d, 1),
+                item(0x42001e, 8, certificateBytes)));
         assertTrue(peer.isDone());
+    }
+
+    private static TtlvStructure validateCertificate(byte[] value) {
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvStructure empty = TtlvStructure.create();
+                RawTag typeRaw = RawTag.fromRaw(0x0042_001d);
+                Tag typeTag = typeRaw.checked();
+                TtlvValue typeValue = TtlvValue.Enumeration(1);
+                TtlvItem typeItem = TtlvItem.create(typeTag, typeValue, limits)) {
+            TtlvStructure withType = TtlvStructure.withItem(empty, typeItem, limits);
+            try (withType;
+                    RawTag valueRaw = RawTag.fromRaw(0x0042_001e);
+                    Tag valueTag = valueRaw.checked();
+                    TtlvValue certificateValue = TtlvValue.ByteString(value, limits);
+                    TtlvItem valueItem = TtlvItem.create(valueTag, certificateValue, limits)) {
+                return TtlvStructure.withItem(withType, valueItem, limits);
+            }
+        }
     }
 
     @Test

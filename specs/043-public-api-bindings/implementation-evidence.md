@@ -5440,3 +5440,32 @@ Follow-up Red/Green evidence:
 | Green `14d87a8d` | API generator `--check`, extension fixture generator `--check`, and `git diff --check` | Pass; 12 API outputs verified. |
 
 The previous exact-head CI failure is explained and corrected locally. CI on the new code/evidence head and the complete final T069 gates remain pending; T069 stays open until they pass.
+
+### T069 Validate iterable, certificate-adapter, and refactor follow-up (2026-10-22)
+
+QA found that the Python facade declared `Iterable` inputs but accepted only lists and tuples, and that it copied up to 100,000 elements independently from each Validate list before enforcing the shared item ceiling. Red commit `920745ff` added generator and sized-iterable regressions. The focused tests failed as expected: generator input raised `InvalidInputError`, and the oversized aggregate did not reach the required shared-budget preflight. Green commit `9a48ebe3` added bounded iterable snapshots, preflight of all declared sized inputs, and one shared remaining budget while preserving the public `Iterable` contract. Refactor commit `aea526df` extracted the combined preflight/snapshot helper without changing the verified behavior.
+
+The same QA review found no successful non-empty Certificate-array case through the public language adapters. Test-only commit `75665a72` now constructs KMIP 2.1 §2.1 Table 2 Certificate Structures and submits them through the compiled C consumer, Java/JNI facade, and Python/CFFI facade. Each test checks successful construction and that the caller-owned source Structures remain usable after the ABI call. The operation mapping preserves list order; typed protocol tests already verify Table 340 Certificate-before-Identifier order.
+
+The independent security review noted that successful construction and source ownership alone did not prove the certificate survived marshaling into the request. Follow-up tests now close that evidence gap: the FFI test asserts a certificate-only array creates a Validate request with one chain entry; the Java/JNI mTLS test captures the encoded request and asserts the complete Certificate structure and bytes; the Python/CFFI test checks the native certificate array count, pointer identity, and order before calling the real FFI constructor. Existing protocol tests verify Certificate TTLV shape and payload mapping. These additions are test-only and do not change the public API or runtime behavior.
+
+The resource-limit follow-up Red/Green commits `bd64ca73`/`b202f333` now have a distinct behavior-preserving Refactor commit `b5140688`, which isolates the aggregate count check. The nested identifier/output alias Red/Green commits `bde66a2b`/`92d4c2ca` now have a distinct behavior-preserving Refactor commit `163780f0`, which shares checked memory-span overlap logic between array and identifier-text spans.
+
+Focused local verification on Windows:
+
+| Commit or check | Command or check | Result |
+|---|---|---|
+| Red `920745ff` | Python 3.12 `pytest tests/test_validate_operation.py -q -k 'iterable_inputs or aggregate_item_limit_before_iterating'` | Expected failures: valid generators were rejected and aggregate preflight returned the wrong input error before size evaluation. |
+| Green `9a48ebe3` | Same focused Python command | Pass, 2 tests. |
+| Refactor `aea526df` | Python 3.12 `pytest tests/test_validate_operation.py -q` | Pass, 9 tests. |
+| Certificates `75665a72` | Python 3.12 `pytest tests/test_validate_operation.py -q` | Pass, 10 tests using the current native FFI library. |
+| Certificates `75665a72` | Java `gradlew test --tests org.kmipkit.ValidateJavaFacadeTest` | Pass; JNI library rebuilt and facade test class passed. |
+| Certificates `75665a72` | `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --exact` | Pass; compiled C consumer passed with a non-empty Certificate array. |
+| Refactor `b5140688` | `cargo fmt --all --check`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib validate_constructor` | Pass; 6 focused constructor tests, including aggregate limit rejection. |
+| Refactor `163780f0` | `cargo fmt --all --check`; `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib validate_constructor_rejects_output_overlapping` | Pass; 2 overlap regressions. |
+| Certificate marshaling evidence | `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib validate_constructor_preserves_nonempty_certificate_array` | Pass; FFI retains one non-empty Certificate chain entry. |
+| Certificate marshaling evidence | `cargo test -p kmipkit-ffi --features coverage-c-consumer --lib` | Pass; 270 FFI unit tests. |
+| Certificate marshaling evidence | `gradlew test --rerun-tasks --tests org.kmipkit.ClientFacadeTlsIntegrationTest.validateResponseUsesNativeJniBridgeAndPreservesOpenValidityIndicator` | Pass; local mTLS peer confirms Certificate TTLV bytes reached the wire through JNI. |
+| Certificate marshaling evidence | Python 3.12 `pytest tests/test_validate_operation.py -q -k nonempty_certificate` | Pass; CFFI forwarded both certificate pointers in order to the real constructor. |
+
+These are local Windows results. The updated exact-head GitHub CI, selected-scope coverage gate, and independent final QA/security reviews remain pending; T069 remains open until all gates pass. These results do not claim OASIS conformance, interoperability, profile support, or certification.

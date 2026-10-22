@@ -87,14 +87,41 @@ def test_validate_builder_rejects_aggregate_item_limit_before_iterating() -> Non
         )
 
 
-def test_validate_builder_copies_nonempty_certificate_array_and_preserves_inputs() -> None:
+def test_validate_builder_copies_nonempty_certificate_array_and_preserves_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     certificates = [
         _certificate_structure(b"first-certificate"),
         _certificate_structure(b"second-certificate"),
     ]
+    native_make_handle = extensions._make_handle
+    observed_certificate_addresses: list[int] = []
+
+    def capture_certificate_array(
+        kind: str, symbol: str, arguments: tuple[object, ...]
+    ) -> object:
+        if symbol == "kmipkit_client_batch_item_validate":
+            native_certificates = arguments[0]
+            assert arguments[1] == len(certificates)
+            observed_certificate_addresses.extend(
+                int(client_ffi.cast("uintptr_t", native_certificates[index]))
+                for index in range(len(certificates))
+            )
+        return native_make_handle(kind, symbol, arguments)
+
+    monkeypatch.setattr(extensions, "_make_handle", capture_certificate_array)
     try:
         with extensions.client_batch_item_validate(certificates, ()) as item:
             assert item._pointer() != ffi.NULL
+        assert observed_certificate_addresses == [
+            int(
+                client_ffi.cast(
+                    "uintptr_t",
+                    extensions._client_native_structure(certificate, required=True),
+                )
+            )
+            for certificate in certificates
+        ]
         for certificate in certificates:
             with ttlv.ttlv_structure_view(certificate) as view:
                 assert ttlv.ttlv_structure_view_item_count(view) == 2
