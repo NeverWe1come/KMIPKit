@@ -1924,30 +1924,32 @@ fn client_key_block_direct_field_requires_companion(
                     })
                     .all(|object| {
                         object.with_value(|value| match value {
-                            ValueView::Structure(object) => object
-                                .children()
-                                .iter()
-                                .filter(|member| member.tag().raw() == KEY_BLOCK)
-                                .all(|key_block| {
-                                    key_block.with_value(|value| match value {
-                                        ValueView::Structure(key_block) => {
-                                            !key_block
-                                                .children()
-                                                .iter()
-                                                .any(|field| field.tag().raw() == field_tag)
-                                                || key_block
-                                                    .children()
-                                                    .iter()
-                                                    .any(|field| field.tag().raw() == companion_tag)
-                                        }
-                                        _ => true,
-                                    })
-                                }),
-                            _ => true,
+                            ValueView::Structure(object) => {
+                                match field_presence(&object, KEY_BLOCK) {
+                                    FieldPresence::Missing => true,
+                                    FieldPresence::Duplicate => false,
+                                    FieldPresence::Unique(key_block) => {
+                                        key_block.with_value(|value| match value {
+                                            ValueView::Structure(key_block) => {
+                                                match field_presence(&key_block, field_tag) {
+                                                    FieldPresence::Missing => true,
+                                                    FieldPresence::Duplicate => false,
+                                                    FieldPresence::Unique(_) => matches!(
+                                                        field_presence(&key_block, companion_tag),
+                                                        FieldPresence::Unique(_)
+                                                    ),
+                                                }
+                                            }
+                                            _ => false,
+                                        })
+                                    }
+                                }
+                            }
+                            _ => false,
                         })
                     })
             })
-            .unwrap_or(true)
+            .unwrap_or(false)
     })
 }
 
