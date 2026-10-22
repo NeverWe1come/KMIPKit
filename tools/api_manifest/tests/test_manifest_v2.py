@@ -440,6 +440,65 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                         self.checked_in_manifest, root
                     )
 
+    def test_release_gate_rejects_whitespace_only_java_coordinate_parts(self) -> None:
+        metadata_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        mutations = (
+            (
+                "   :kmipkit-java",
+                "group = \"org.kmipkit\"",
+                'group = "   "',
+                "<groupId>org.kmipkit</groupId>",
+                "<groupId>   </groupId>",
+            ),
+            (
+                "org.kmipkit:   ",
+                "<artifactId>kmipkit-java</artifactId>",
+                "<artifactId>   </artifactId>",
+            ),
+        )
+        for mutation in mutations:
+            package_name, *replacements = mutation
+            with self.subTest(package_name=package_name, replacements=replacements), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                for metadata_path in metadata_paths:
+                    destination = root / metadata_path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(ROOT / metadata_path, destination)
+                for index in range(0, len(replacements), 2):
+                    relative = (
+                        "bindings/java/build.gradle.kts"
+                        if replacements[index].startswith("group =")
+                        else "bindings/java/pom.xml"
+                    )
+                    source = root / relative
+                    original = source.read_text(encoding="utf-8")
+                    mutated = original.replace(
+                        replacements[index], replacements[index + 1], 1
+                    )
+                    self.assertNotEqual(mutated, original, relative)
+                    source.write_text(mutated, encoding="utf-8")
+                manifest = copy.deepcopy(self.checked_in_manifest)
+                java_package = next(
+                    package
+                    for package in manifest["publicPackages"]
+                    if package["id"] == "java-kmipkit"
+                )
+                java_package["packageName"] = package_name
+
+                with self.assertRaises(ManifestError):
+                    generate._validate_release_package_versions(manifest, root)
+
     def test_release_gate_requires_the_complete_shared_capability_inventory(self) -> None:
         operations = [
             {"apiState": "verified"}
