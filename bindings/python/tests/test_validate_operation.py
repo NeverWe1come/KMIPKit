@@ -10,6 +10,27 @@ from kmipkit._client_ffi import ffi as client_ffi
 from kmipkit._ffi import ffi
 
 
+def _certificate_structure(value_bytes: bytes) -> ttlv.Structure:
+    limits = ttlv.codec_limits_defaults()
+    structure = ttlv.ttlv_structure_create()
+    try:
+        for raw_tag_value, value in (
+            (0x0042_001D, ttlv.ttlv_value_enumeration(1)),
+            (0x0042_001E, ttlv.ttlv_value_byte_string(value_bytes, limits)),
+        ):
+            raw_tag = ttlv.raw_tag_from_raw(raw_tag_value)
+            tag = ttlv.raw_tag_try_checked(raw_tag)
+            item = ttlv.ttlv_item_create(tag, value, limits)
+            structure = ttlv.ttlv_structure_with_item(structure, item, limits)
+            item.close()
+            tag.close()
+            raw_tag.close()
+            value.close()
+        return structure
+    finally:
+        limits.close()
+
+
 def test_validate_builder_accepts_identifier_only_chain_and_optional_date(
     monkeypatch: Any,
 ) -> None:
@@ -64,6 +85,22 @@ def test_validate_builder_rejects_aggregate_item_limit_before_iterating() -> Non
             SizedIterable(40_000),  # type: ignore[arg-type]
             payload_extensions=SizedIterable(20_001),  # type: ignore[arg-type]
         )
+
+
+def test_validate_builder_copies_nonempty_certificate_array_and_preserves_inputs() -> None:
+    certificates = [
+        _certificate_structure(b"first-certificate"),
+        _certificate_structure(b"second-certificate"),
+    ]
+    try:
+        with extensions.client_batch_item_validate(certificates, ()) as item:
+            assert item._pointer() != ffi.NULL
+        for certificate in certificates:
+            with ttlv.ttlv_structure_view(certificate) as view:
+                assert ttlv.ttlv_structure_view_item_count(view) == 2
+    finally:
+        for certificate in certificates:
+            certificate.close()
 
 
 def test_validate_builder_rejects_missing_lists_and_out_of_range_date() -> None:

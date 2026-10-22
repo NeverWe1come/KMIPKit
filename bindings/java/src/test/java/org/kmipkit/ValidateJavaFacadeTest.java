@@ -21,6 +21,19 @@ import org.kmipkit.ttlv.TtlvValue;
 /** Validate facade coverage derived from OASIS KMIP 2.1 §6.1.57, Table 340. */
 final class ValidateJavaFacadeTest {
     @Test
+    void builderCopiesNonemptyCertificateArrayAndPreservesCallerOwnership() {
+        try (TtlvStructure first = certificate(new byte[] {1, 2, 3});
+                TtlvStructure second = certificate(new byte[] {4, 5, 6});
+                ClientBatchItem item = ClientBatchItem.validate(List.of(first, second), List.of(), null);
+                TtlvStructureView firstView = first.view();
+                TtlvStructureView secondView = second.view()) {
+            assertNotNull(item);
+            org.junit.jupiter.api.Assertions.assertEquals(2, firstView.itemCount());
+            org.junit.jupiter.api.Assertions.assertEquals(2, secondView.itemCount());
+        }
+    }
+
+    @Test
     void builderAcceptsIdentifierOnlyChainAndPreservesOptionalDate() {
         try (ClientBatchItem item = ClientBatchItem.validate(
                 List.of(), List.of(UniqueIdentifier.textString("chain-id")), Long.MIN_VALUE)) {
@@ -229,5 +242,32 @@ final class ValidateJavaFacadeTest {
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemValidate(
                         null, new int[0], new byte[0][], new long[0], new long[] {0}, false, 0));
+    }
+
+    private static TtlvStructure certificate(byte[] value) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure structure = TtlvStructure.create();
+        try {
+            structure = append(structure, 0x0042_001d, TtlvValue.Enumeration(1), limits);
+            structure = append(
+                    structure,
+                    0x0042_001e,
+                    TtlvValue.ByteString(value, limits),
+                    limits);
+            return structure;
+        } catch (RuntimeException exception) {
+            structure.close();
+            throw exception;
+        }
+    }
+
+    private static TtlvStructure append(
+            TtlvStructure structure, int rawTagValue, TtlvValue value, CodecLimits limits) {
+        try (RawTag rawTag = RawTag.fromRaw(rawTagValue);
+                Tag tag = rawTag.checked();
+                value;
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            return TtlvStructure.withItem(structure, item, limits);
+        }
     }
 }

@@ -1544,6 +1544,85 @@ static int validate_constructor_is_callable_from_c(void) {
     return result;
 }
 
+static int validate_constructor_copies_nonempty_certificate_array_from_c(void) {
+    static const uint8_t certificate_value[] = {0x30, 0x01, 0x00};
+    kmipkit_codec_limits_t *limits = 0;
+    kmipkit_raw_tag_t *type_raw_tag = 0;
+    kmipkit_tag_t *type_tag = 0;
+    kmipkit_ttlv_value_t *type_value = 0;
+    kmipkit_ttlv_item_t *type_item = 0;
+    kmipkit_raw_tag_t *value_raw_tag = 0;
+    kmipkit_tag_t *value_tag = 0;
+    kmipkit_ttlv_value_t *value = 0;
+    kmipkit_ttlv_item_t *value_item = 0;
+    kmipkit_ttlv_structure_t *certificate = 0;
+    kmipkit_ttlv_structure_t *updated_certificate = 0;
+    kmipkit_ttlv_structure_t *certificates[1] = {0};
+    kmipkit_ttlv_structure_view_t *view = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    uint64_t field_count = 0;
+    int result = 0;
+
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x0042001d), &type_raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(type_raw_tag, &type_tag) != 0 ||
+        kmipkit_ttlv_value_enumeration(UINT32_C(1), &type_value) != 0 ||
+        kmipkit_ttlv_item_create(type_tag, type_value, limits, &type_item) != 0) {
+        goto cleanup;
+    }
+    type_value = 0;
+    if (kmipkit_ttlv_structure_create(&certificate) != 0 ||
+        kmipkit_ttlv_structure_with_item(
+            certificate, type_item, limits, &updated_certificate) != 0) {
+        goto cleanup;
+    }
+    certificate = 0;
+    type_item = 0;
+    certificate = updated_certificate;
+    updated_certificate = 0;
+
+    if (kmipkit_ttlv_raw_tag_create(UINT32_C(0x0042001e), &value_raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(value_raw_tag, &value_tag) != 0 ||
+        kmipkit_ttlv_value_byte_string(
+            limits, certificate_value, (uint64_t)sizeof(certificate_value), &value) != 0 ||
+        kmipkit_ttlv_item_create(value_tag, value, limits, &value_item) != 0) {
+        goto cleanup;
+    }
+    value = 0;
+    if (kmipkit_ttlv_structure_with_item(
+            certificate, value_item, limits, &updated_certificate) != 0) {
+        goto cleanup;
+    }
+    certificate = 0;
+    value_item = 0;
+    certificate = updated_certificate;
+    updated_certificate = 0;
+    certificates[0] = certificate;
+    if (kmipkit_client_batch_item_validate(
+            certificates, 1, 0, 0, 0, 0, 0, 0, &item) != 0 || item == 0 ||
+        kmipkit_ttlv_structure_view(certificate, &view) != 0 || view == 0 ||
+        kmipkit_ttlv_structure_view_item_count(view, &field_count) != 0 || field_count != 2) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_view_release(view);
+    kmipkit_ttlv_structure_release(updated_certificate);
+    kmipkit_ttlv_structure_release(certificate);
+    kmipkit_ttlv_item_release(value_item);
+    kmipkit_ttlv_value_release(value);
+    kmipkit_tag_release(value_tag);
+    kmipkit_raw_tag_release(value_raw_tag);
+    kmipkit_ttlv_item_release(type_item);
+    kmipkit_ttlv_value_release(type_value);
+    kmipkit_tag_release(type_tag);
+    kmipkit_raw_tag_release(type_raw_tag);
+    kmipkit_codec_limits_release(limits);
+    return result;
+}
+
 static int validate_constructor_copies_payload_extensions(void) {
     static const uint8_t extension_text[] = "validate-extension-sentinel";
     kmipkit_codec_limits_t *limits = 0;
@@ -5711,6 +5790,7 @@ int main(int argc, char **argv) {
         !get_constraints_constructor_is_callable_from_c() ||
         !interop_constructor_is_callable_from_c() ||
         !validate_constructor_is_callable_from_c() ||
+        !validate_constructor_copies_nonempty_certificate_array_from_c() ||
         !validate_constructor_copies_payload_extensions() ||
         !validate_response_accessors_clear_invalid_outputs_from_c() ||
         !log_constructor_is_callable_from_c() ||
