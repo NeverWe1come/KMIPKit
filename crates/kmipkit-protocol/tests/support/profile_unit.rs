@@ -1998,6 +1998,81 @@ fn profile_maps_optional_locate_offset_items_capability() {
 }
 
 #[test]
+fn profile_maps_client_locate_empty_attributes_match_all_capability() {
+    // KMIP Specification v2.1 §6.1.28 Table 247 permits empty Attributes.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-013-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-013";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+    const ACTIVATION_DATE_TAG: u32 = 0x0042_0001;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("empty Locate Attributes has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the empty Attributes MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let empty_attributes = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(crate::AttributeSet::new())
+            .to_ttlv_payload()
+            .expect("the required Attributes structure may be empty"),
+    );
+    assert!(evaluate(Some(&empty_attributes), None));
+    result
+        .validate_request(&empty_attributes)
+        .expect("an empty required Attributes structure is valid");
+
+    let matching_attributes = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                ACTIVATION_DATE_TAG,
+                Value::date_time(100),
+            )])),
+        )]),
+    );
+    assert!(evaluate(Some(&matching_attributes), None));
+
+    let missing_attributes =
+        request_message_with_operation_payload(LOCATE_OPERATION, Structure::new());
+    assert!(!evaluate(Some(&missing_attributes), None));
+    assert!(result.validate_request(&missing_attributes).is_err());
+
+    let malformed_attributes = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::text_string("not a structure".to_owned()),
+        )]),
+    );
+    assert!(!evaluate(Some(&malformed_attributes), None));
+    assert!(result.validate_request(&malformed_attributes).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
