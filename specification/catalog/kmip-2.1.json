@@ -54555,9 +54555,7 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
       ],
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-9.20-001-001"
-      ],
+      "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
@@ -55541,9 +55539,7 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"
       ],
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-9.20-001-001"
-      ],
+      "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
@@ -98997,9 +98993,7 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP"
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"
       ],
       "profile_ids": [],
       "test_case_ids": [],
