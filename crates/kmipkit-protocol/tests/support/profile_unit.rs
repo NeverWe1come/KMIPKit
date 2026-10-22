@@ -85,6 +85,10 @@ static CONSTRAINTS_TLS: [RuleConstraint; 1] = [RuleConstraint {
     key: "transport_security",
     value: "tls",
 }];
+static CONSTRAINTS_TTLV: [RuleConstraint; 1] = [RuleConstraint {
+    key: "encoding",
+    value: "ttlv",
+}];
 static UNKNOWN_CONSTRAINT: [RuleConstraint; 1] = [RuleConstraint {
     key: "untyped-policy",
     value: "opaque",
@@ -4231,6 +4235,16 @@ fn selected_transport_constraints_match_or_reject_with_source_ids() {
     assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
     assert_eq!(error.requirement_id(), Some("TEST-REQ"));
     assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+
+    let encoding_mapping = [mapping(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        RuleTestKind::PositiveBehavior,
+        &CONSTRAINTS_TTLV,
+    )];
+    result
+        .validate_transport_with_mappings(ProfileTransport::Https, &encoding_mapping)
+        .expect("an encoding constraint does not reject a selected transport");
 }
 
 #[test]
@@ -4368,6 +4382,22 @@ fn missing_evaluator_and_wrong_source_link_fail_closed() {
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RuleMappingMismatch
+    );
+
+    let encoding_only = TypedRuleMapping {
+        evaluator: None,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_TTLV,
+        )
+    };
+    let error = validate_mapping("TEST-PROFILE", &requirement, &encoding_only)
+        .expect_err("an encoding-only rule is not a transport-only mapping");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::IncompleteRuleMapping
     );
 
     let wrong_clause = TypedRuleMapping {
