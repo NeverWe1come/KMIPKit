@@ -94806,9 +94806,11 @@
       "feature_spec": "KMIPKIT-0020",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/query.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_at_least_one_client_query_function",
         "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::names_all_standard_query_function_values_and_preserves_future_values",
         "crates/kmipkit-client/tests/unit/query_execution_tests.rs::empty_query_is_not_sent",
         "crates/kmipkit-client/tests/unit/query_ping_redaction_tests.rs::query_and_ping_error_chains_redact_malformed_response_payloads"

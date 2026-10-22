@@ -1845,10 +1845,7 @@ fn profile_requires_at_least_one_client_query_function() {
                 QUERY_FUNCTION_TAG,
                 Value::enumeration(crate::QueryFunction::OPERATIONS.raw()),
             ),
-            tagged(
-                QUERY_FUNCTION_TAG,
-                Value::text_string("INVALID".to_owned()),
-            ),
+            tagged(QUERY_FUNCTION_TAG, Value::text_string("INVALID".to_owned())),
         ]),
     );
     assert!(!evaluate(Some(&mixed_type_query), None));
