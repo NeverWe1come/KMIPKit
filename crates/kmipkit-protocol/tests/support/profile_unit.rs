@@ -1493,6 +1493,54 @@ fn profile_maps_request_time_stamp_as_optional_capability() {
         .expect("a client can represent an optional Request Header Time Stamp");
 }
 
+#[test]
+fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
+    // KMIP Specification v2.1 §9.21 makes the ID optional in a client request.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.21-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.21-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional client request ID has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional client request ID resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for expected_id in [None, Some(b"single-item-id".as_slice())] {
+        let request = request_message_with_unique_batch_item_id(expected_id);
+        let item = request
+            .batch_items()
+            .next()
+            .expect("the test request has one batch item");
+        assert_eq!(
+            item.with_unique_batch_item_id(<[u8]>::to_vec),
+            expected_id.map(<[u8]>::to_vec)
+        );
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("the request ID remains optional for a single-item request");
+    }
+}
+
 fn request_message_with_time_stamp(seconds: i64) -> crate::RequestMessage {
     crate::RequestMessage::try_from_ttlv(structure([
         tagged(
