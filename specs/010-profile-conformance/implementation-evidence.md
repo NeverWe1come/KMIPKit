@@ -4166,3 +4166,12 @@ Independent QA found that the first evaluator regression did not isolate the cyc
 | Serial full validator suite | `python -B -m unittest tools.normative_catalog.tests.test_validate -q` | PASS: 284 tests, 1 skipped, completed in 268.035 seconds. |
 
 The test's fabricated run context and manifest remain in-memory test data and do not satisfy the external protected-release-push gate. No actual CI run ID, current-run evidence, secret, token, or protection response was persisted or inspected; T026 remains open.
+
+### PR #90 CI corrective follow-up — report expectation and changed-Rust coverage (2026-10-22)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red — stale typed-rule report expectation | `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v`; GitHub Actions run `39724328157`, Script contracts on Ubuntu/macOS/Windows | FAIL as observed: the assertion at `test_report.py:1189` omits the newly mapped `KMIPKIT-REQ-SPEC-6.1.14-006-002`, while `load_typed_rule_mappings` returns it before `KMIPKIT-REQ-SPEC-11.56-001`. |
+| Red — changed Rust coverage gap | GitHub Actions run `39724328157`, Coverage gate / selected scopes; locally replayed the three uploaded platform artifacts against base `d5d5ab75ec9318d7d646c6ba85c5e56559ace21e` and merge `8e69363b1db64adb3c183c795b2c893e7b8e780e` | FAIL: 1,884/1,984 changed executable Rust lines covered (94.96%), with zero summary-only lines. Line attribution identified the newly added profile evaluator's absent-request rejection at `crates/kmipkit-protocol/src/profile.rs:996` as an uncovered, behavior-relevant branch for a focused regression. No threshold or coverage scope is changed. |
+
+The report failure is a stale expected mapping list, not a catalog-generation defect. The coverage follow-up will exercise the evaluator's fail-closed result when request context is absent. T040 remains open; this follow-up makes no profile-conformance claim.
