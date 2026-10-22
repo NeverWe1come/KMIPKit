@@ -918,7 +918,12 @@ fn client_query_contains_one_or_more_functions(
                 payload
                     .children()
                     .iter()
-                    .any(|field| field.tag().raw() == QUERY_FUNCTION)
+                    .any(|field| {
+                        field.tag().raw() == QUERY_FUNCTION
+                            && field.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(_))
+                            })
+                    })
             })
             .unwrap_or(false)
     })
