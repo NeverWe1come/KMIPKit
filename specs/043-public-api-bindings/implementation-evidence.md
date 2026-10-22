@@ -5591,3 +5591,23 @@ authoritative package metadata.
 This documentation slice does not complete T073, change the manifest or
 generated outputs, assert four-language operation verification, or claim
 conformance, interoperability, profile support, or certification.
+
+### T073 readiness contract coverage follow-up (2026-10-22)
+
+The documentation contracts now require each declared Hash/MAC/Sign-family
+row to say that its four-language request/response mappings are recorded while
+parity verification remains incomplete. They also require the Rust reference
+to name the four asynchronous follow-up operations excluded from its 52-item
+request set and state that they remain blocked pending KMIPKIT-0009, with links
+to both the package readiness guide and canonical manifest. A new task-state
+contract requires T073 to stay unchecked and records the outstanding C package
+identity reason on its task row; its evidence citation retains the underlying
+authoritative-metadata rationale. The task remains open.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `83618eb3be7571bd8bd96488d984ce66f91eeca7` | `python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation -v` | Expected failure: three documentation contracts passed; the new task-state assertion failed because T073 had no C identity rationale. |
+| Green | `8d8dde6019610e15b262925bf7ea6f8e837c0297` | `python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation -v` | Pass, 4 tests. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_operation_readiness.OperationReadinessSchemaTests.test_dependency_matrix_matches_current_owner_and_api_readiness -v` | Pass, 17 tests. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current; none were edited. |
+| Refactor | this commit | `git diff --check` | Pass; no whitespace errors. |
