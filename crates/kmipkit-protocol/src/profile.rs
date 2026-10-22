@@ -980,6 +980,14 @@ fn derive_key_specifies_cryptographic_length(
     })
 }
 
+fn payload_has_explicit_unique_identifier(payload: &StructureView<'_>) -> bool {
+    // Table 205 permits repeats but requires at least one explicit source ID.
+    payload
+        .children()
+        .iter()
+        .any(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
+}
+
 fn derive_key_specifies_explicit_source_identifiers(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -997,14 +1005,7 @@ fn derive_key_specifies_explicit_source_identifiers(
         }
 
         batch_item
-            .with_request_payload(|payload| {
-                // Table 205 permits repeats but requires an explicit source ID;
-                // omission would ask the server to use the ID Placeholder.
-                payload
-                    .children()
-                    .iter()
-                    .any(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
-            })
+            .with_request_payload(|payload| payload_has_explicit_unique_identifier(&payload))
             .unwrap_or(false)
     })
 }
