@@ -81,6 +81,10 @@ static CONSTRAINTS_RAW_TLS: [RuleConstraint; 1] = [RuleConstraint {
     key: "transport",
     value: "raw_tls",
 }];
+static CONSTRAINTS_TLS: [RuleConstraint; 1] = [RuleConstraint {
+    key: "transport_security",
+    value: "tls",
+}];
 static UNKNOWN_CONSTRAINT: [RuleConstraint; 1] = [RuleConstraint {
     key: "untyped-policy",
     value: "opaque",
@@ -4178,6 +4182,30 @@ fn minimum_capability_rules_do_not_reject_an_extra_base_protocol_operation() {
 }
 
 #[test]
+fn profile_requires_tls_for_basic_authentication_suite_transport() {
+    // KMIP Profiles v2.1 §3.1; Baseline Client inherits this condition through §6.1.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-3.1-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
+        result
+            .validate_transport(transport)
+            .expect("both configured KMIP 1.0 transports establish a TLS channel");
+    }
+    let request = request_message();
+    result
+        .validate_request(&request)
+        .expect("a transport rule does not add a request-payload restriction");
+    result
+        .validate_response(&request, &response_message())
+        .expect("a transport rule does not add a response-payload restriction");
+}
+
+#[test]
 fn selected_transport_constraints_match_or_reject_with_source_ids() {
     let result = ProfileValidationResult {
         profile_ids: vec!["TEST-PROFILE".to_owned()],
@@ -4203,6 +4231,38 @@ fn selected_transport_constraints_match_or_reject_with_source_ids() {
     assert_eq!(error.profile_id(), Some("TEST-PROFILE"));
     assert_eq!(error.requirement_id(), Some("TEST-REQ"));
     assert_eq!(error.source_clause_id(), Some("TEST-CLAUSE"));
+}
+
+#[test]
+fn tls_transport_rule_can_be_validated_without_a_message_evaluator() {
+    let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
+    let requirements = [requirement(
+        "TEST-REQ",
+        GeneratedVerificationCategory::RequiredBehavior,
+        false,
+    )];
+    let mapping = TypedRuleMapping {
+        evaluator: None,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &CONSTRAINTS_TLS,
+        )
+    };
+    let result = validate_selection_with_registry(
+        &ProfileValidationSelection::new(["TEST-PROFILE"]),
+        &profiles,
+        &requirements,
+        &[mapping],
+    )
+    .expect("the selected TLS transport constraint is an executable rule mapping");
+
+    for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
+        result
+            .validate_transport_with_mappings(transport, &[mapping])
+            .expect("both KMIPKit transport variants provide TLS");
+    }
 }
 
 #[test]
