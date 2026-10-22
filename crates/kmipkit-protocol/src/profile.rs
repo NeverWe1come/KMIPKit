@@ -915,15 +915,16 @@ fn client_query_contains_one_or_more_functions(
 
         batch_item
             .with_request_payload(|payload| {
-                payload
+                let mut query_function_count = 0;
+                let all_query_functions_are_enumerations = payload
                     .children()
                     .iter()
-                    .any(|field| {
-                        field.tag().raw() == QUERY_FUNCTION
-                            && field.with_value(|value| {
-                                matches!(value, ValueView::Enumeration(_))
-                            })
-                    })
+                    .filter(|field| field.tag().raw() == QUERY_FUNCTION)
+                    .all(|field| {
+                        query_function_count += 1;
+                        field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    });
+                query_function_count > 0 && all_query_functions_are_enumerations
             })
             .unwrap_or(false)
     })
