@@ -1856,6 +1856,79 @@ fn profile_requires_at_least_one_client_query_function() {
 }
 
 #[test]
+fn profile_maps_optional_locate_maximum_items_capability() {
+    // KMIP Specification v2.1 §6.1.28 and Table 247 make Maximum Items optional.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+    const MAXIMUM_ITEMS_TAG: u32 = 0x0042_004F;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Locate Maximum Items has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Maximum Items MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let omitted = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(crate::AttributeSet::new())
+            .to_ttlv_payload()
+            .expect("an omitted Maximum Items value is valid"),
+    );
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("the optional field may be omitted");
+
+    let supplied = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(crate::AttributeSet::new())
+            .with_maximum_items(3)
+            .to_ttlv_payload()
+            .expect("an Integer Maximum Items value is valid"),
+    );
+    assert!(evaluate(Some(&supplied), None));
+    result
+        .validate_request(&supplied)
+        .expect("a client may supply Maximum Items without asserting server behavior");
+
+    let malformed = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        structure([
+            tagged(
+                MAXIMUM_ITEMS_TAG,
+                Value::text_string("three".to_owned()),
+            ),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+        ]),
+    );
+    assert!(!evaluate(Some(&malformed), None));
+    assert!(result.validate_request(&malformed).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
