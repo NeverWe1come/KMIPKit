@@ -40,6 +40,9 @@ const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
+const DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
+const DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
+const DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -122,6 +125,13 @@ fn tagged(raw_tag: u32, value: Value) -> Item {
         .try_checked()
         .expect("test tag is allocated");
     Item::new(tag, value).expect("test item is valid")
+}
+
+fn derive_key_id_placeholder_mapping() -> &'static TypedRuleMapping {
+    TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID)
+        .expect("Derive Key ID Placeholder prohibition has a typed profile mapping")
 }
 
 fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
@@ -805,29 +815,25 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
 fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     // KMIP Specification v2.1 §6.1.14 Table 205 prohibits using the current
     // ID Placeholder in place of a Derive Key Unique Identifier.
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
-    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-
-    let mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("Derive Key ID Placeholder prohibition has a typed profile mapping");
+    let mapping = derive_key_id_placeholder_mapping();
     let requirement = CLIENT_REQUIREMENTS
         .iter()
-        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .find(|requirement| requirement.requirement_id == DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID)
         .expect("Derive Key ID Placeholder prohibition resolves to normative metadata");
-    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.source_clause_id,
+        DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID
+    );
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::ProhibitedBehavior
     );
-    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+    validate_mapping(DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID, requirement, mapping)
         .expect("the prohibition has category-matched negative evidence");
 
     let result = ProfileValidationResult {
-        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+        profile_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID.to_owned()],
+        requirement_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID.to_owned()],
     };
     let explicit_identifiers = request_message_with_operation_payload(
         DERIVE_KEY_OPERATION,
@@ -851,8 +857,8 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     assert_request_rejected_for_requirement(
         &result,
         &omitted_identifier,
-        REQUIREMENT_ID,
-        SOURCE_CLAUSE_ID,
+        DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID,
+        DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID,
         "Derive Key must specify a source identifier instead of using the ID Placeholder",
     );
 
@@ -864,17 +870,10 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
 
 #[test]
 fn profile_maps_derive_key_unique_identifiers_rejects_missing_request_context() {
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
-    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-
-    let mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("Derive Key ID Placeholder prohibition has a typed profile mapping");
+    let mapping = derive_key_id_placeholder_mapping();
     let result = ProfileValidationResult {
-        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+        profile_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID.to_owned()],
+        requirement_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID.to_owned()],
     };
 
     let error = result
@@ -890,9 +889,18 @@ fn profile_maps_derive_key_unique_identifiers_rejects_missing_request_context() 
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
-    assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    assert_eq!(
+        error.profile_id(),
+        Some(DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID)
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID)
+    );
 }
 
 #[test]
