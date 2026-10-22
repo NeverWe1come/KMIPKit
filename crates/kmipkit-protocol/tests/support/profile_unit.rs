@@ -1714,6 +1714,73 @@ fn profile_rejects_repeated_identical_get_attributes_references() {
 }
 
 #[test]
+fn profile_maps_client_query_function_repetition_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.40 Table 282 allows Query Function repetition.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.40-016";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.40-016";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const QUERY_OPERATION: u32 = 0x0000_0018;
+    const QUERY_FUNCTION_TAG: u32 = 0x0042_0074;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Query Function repetition has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Query Function MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let repeated_payload = crate::QueryRequest::new([
+        crate::QueryFunction::OPERATIONS,
+        crate::QueryFunction::OBJECTS,
+        crate::QueryFunction::OPERATIONS,
+    ])
+    .to_ttlv_payload()
+    .expect("Table 282 permits repeated Query Function values");
+    assert_eq!(
+        repeated_payload
+            .view()
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == QUERY_FUNCTION_TAG)
+            .count(),
+        3
+    );
+    let repeated_request =
+        request_message_with_operation_payload(QUERY_OPERATION, repeated_payload);
+    assert!(evaluate(Some(&repeated_request), None));
+    result
+        .validate_request(&repeated_request)
+        .expect("repeated Query Functions are an allowed client capability");
+
+    let single_function = request_message_with_operation_payload(
+        QUERY_OPERATION,
+        crate::QueryRequest::new([crate::QueryFunction::OPERATIONS])
+            .to_ttlv_payload()
+            .expect("a single Query Function is valid"),
+    );
+    assert!(result.validate_request(&single_function).is_ok());
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
