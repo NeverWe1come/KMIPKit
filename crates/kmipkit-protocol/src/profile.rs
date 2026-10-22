@@ -854,6 +854,14 @@ fn client_can_include_optional_create_split_key_source_identifier(
     request.is_some()
 }
 
+fn client_can_include_optional_get_attributes_attribute_references(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.20 Table 223 permits zero or more distinct Attribute Reference fields.
+    request.is_some()
+}
+
 fn client_can_include_request_time_stamp(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2254,6 +2262,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_can_include_optional_create_split_key_source_identifier),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_create_split_key_optional_source_identifier",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_include_optional_get_attributes_attribute_references),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],

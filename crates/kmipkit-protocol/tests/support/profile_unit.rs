@@ -1547,7 +1547,7 @@ fn profile_maps_client_get_attributes_optional_attribute_references() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-004";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.20-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_000F;
+    const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
