@@ -11,7 +11,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, StructureView, ValueView};
+use kmipkit_ttlv::{Item, RawTag, StructureView, ValueView};
 
 use crate::profiles_generated::{
     CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedClientProfile, GeneratedClientRequirement,
@@ -2063,6 +2063,29 @@ fn client_request_tags_use_kmip_prefixes(
     request.with_ttlv(|message| structure_tags_use_kmip_prefixes(&message))
 }
 
+fn client_request_tags_are_allocated(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.with_ttlv(|message| structure_tags_are_allocated(&message))
+}
+
+fn structure_tags_are_allocated(structure: &StructureView<'_>) -> bool {
+    structure.children().iter().all(|item| {
+        RawTag::new(item.tag().raw())
+            .and_then(|raw_tag| raw_tag.try_checked())
+            .is_ok()
+            && item.with_value(|value| match value {
+                ValueView::Structure(nested) => structure_tags_are_allocated(&nested),
+                _ => true,
+            })
+    })
+}
+
 fn structure_tags_use_kmip_prefixes(structure: &StructureView<'_>) -> bool {
     structure.children().iter().all(|item| {
         tag_has_kmip_21_prefix(item.tag().raw())
@@ -2664,6 +2687,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-11-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-11-001",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_request_tags_are_allocated),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reserved_tag_prohibition_for_outbound_requests",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-ttlv/tests/tag_allocation.rs::individually_and_residually_reserved_tags_are_rejected",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-ttlv/tests/codec_negative.rs::public_decoder_rejects_received_reserved_tags",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[],
     },
 ];
