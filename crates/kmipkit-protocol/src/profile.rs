@@ -705,6 +705,8 @@ const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+const LOCATE_OPERATION: u32 = 0x0000_0008;
+const MAXIMUM_ITEMS: u32 = 0x0042_004F;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const QUERY_FUNCTION: u32 = 0x0042_0074;
 const ATTRIBUTES: u32 = 0x0042_0125;
@@ -863,6 +865,34 @@ fn client_can_include_optional_get_attributes_attribute_references(
 ) -> bool {
     // §6.1.20 Table 223 permits zero or more distinct Attribute Reference fields.
     request.is_some()
+}
+
+fn client_can_include_optional_locate_maximum_items(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != LOCATE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == MAXIMUM_ITEMS)
+                    .all(|field| field.with_value(|value| matches!(value, ValueView::Integer(_))))
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn get_attributes_references_are_not_repeated(
@@ -2339,6 +2369,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_can_include_optional_create_split_key_source_identifier),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_create_split_key_optional_source_identifier",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_include_optional_locate_maximum_items),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_maximum_items_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
