@@ -35,6 +35,7 @@ const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
 const RESULT_STATUS_TAG: u32 = 0x0042_007F;
 const TIME_STAMP_TAG: u32 = 0x0042_0092;
+const CLIENT_CORRELATION_VALUE_TAG: u32 = 0x0042_0105;
 const UNIQUE_BATCH_ITEM_ID_TAG: u32 = 0x0042_0093;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTES_TAG: u32 = 0x0042_0125;
@@ -1494,6 +1495,55 @@ fn profile_maps_request_time_stamp_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_optional_client_correlation_value_capability() {
+    // KMIP Specification v2.1 §9.9 permits clients to add this request string.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.9-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.9-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional client correlation value has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the client correlation MAY resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let omitted = request_message();
+    assert_eq!(omitted.header().with_client_correlation_value(str::to_owned), None);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("the optional Client Correlation Value may be omitted");
+
+    let supplied = request_message_with_client_correlation_value("request-123");
+    assert_eq!(
+        supplied.header().with_client_correlation_value(str::to_owned),
+        Some("request-123".to_owned())
+    );
+    assert!(evaluate(Some(&supplied), None));
+    result
+        .validate_request(&supplied)
+        .expect("the client may include its caller-provided correlation string");
+}
+
+#[test]
 fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
     // KMIP Specification v2.1 §9.21 makes the ID optional in a client request.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.21-001-001";
@@ -2321,6 +2371,30 @@ fn request_message_with_time_stamp(seconds: i64) -> crate::RequestMessage {
         ),
     ]))
     .expect("test Request Message with a Time Stamp is valid")
+}
+
+fn request_message_with_client_correlation_value(value: &str) -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(
+                    CLIENT_CORRELATION_VALUE_TAG,
+                    Value::text_string(value.to_owned()),
+                ),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message with Client Correlation Value is valid")
 }
 
 fn request_message_with_attestation_types(attestation_types: &[u32]) -> crate::RequestMessage {
