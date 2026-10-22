@@ -846,6 +846,7 @@ fn client_can_repeat_request_attestation_types(
     // valid Request Header can preserve multiple Attestation Type values.
     request.is_some()
 }
+
 fn client_includes_unique_batch_item_id_for_multi_item_request(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
