@@ -489,6 +489,35 @@ def _rust_item_is_top_level(source: str, item_start: int) -> bool:
     return depth == 0
 
 
+def _rust_test_item_has_active_module_context(source: str, item_start: int) -> bool:
+    """Accept root or active inline-module tests, but reject tests nested in bodies."""
+    module_stack: list[bool] = []
+    statement_start = 0
+    for index, character in enumerate(source[:item_start]):
+        if character == "{":
+            statement = source[statement_start:index].strip()
+            module_match = re.search(r"\bmod\s+[A-Za-z_][A-Za-z0-9_]*\s*$", statement)
+            if module_match is None:
+                module_stack.append(False)
+            else:
+                module_attributes = statement[:module_match.start()]
+                if re.search(r"#\s*\[\s*cfg_attr\s*\(", module_attributes):
+                    return False
+                active_attributes = re.sub(
+                    r"#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]", "", module_attributes
+                )
+                module_stack.append(not re.search(r"#\s*\[\s*cfg\s*\(", active_attributes))
+            statement_start = index + 1
+        elif character == "}":
+            if not module_stack:
+                return False
+            module_stack.pop()
+            statement_start = index + 1
+        elif character == ";":
+            statement_start = index + 1
+    return all(module_stack)
+
+
 def _confined_rust_path(repository: Path, candidate: Path) -> Path | None:
     """Normalize a module path lexically, then reject links and escapes."""
     try:
@@ -696,7 +725,7 @@ def _typed_rule_test_reference_resolves(repository: Path, reference: str) -> boo
     for index, line in enumerate(lines):
         if (
             not declaration.match(line)
-            or not _rust_item_is_top_level(source, line_offsets[index])
+            or not _rust_test_item_has_active_module_context(source, line_offsets[index])
         ):
             continue
         cursor = index - 1

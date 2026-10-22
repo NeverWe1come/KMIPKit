@@ -332,13 +332,56 @@ def _rust_cfg_condition_is_enabled(expression: str) -> bool | None:
     return result if cursor == len(tokens) else None
 
 
+def _rust_item_is_top_level(source: str, item_start: int) -> bool:
+    """Return whether a Rust item starts outside an inline module or body."""
+    depth = 0
+    for character in source[:item_start]:
+        if character == "{":
+            depth += 1
+        elif character == "}":
+            depth -= 1
+            if depth < 0:
+                return False
+    return depth == 0
+
+
+def _rust_test_item_has_active_module_context(source: str, item_start: int) -> bool:
+    """Accept root or active inline-module test items, but reject nested local items."""
+    module_stack: list[bool] = []
+    statement_start = 0
+    for index, character in enumerate(source[:item_start]):
+        if character == "{":
+            statement = source[statement_start:index].strip()
+            module_match = re.search(r"\bmod\s+[A-Za-z_][A-Za-z0-9_]*\s*$", statement)
+            if module_match is None:
+                module_stack.append(False)
+            else:
+                module_attributes = statement[:module_match.start()]
+                if re.search(r"#\s*\[\s*cfg_attr\s*\(", module_attributes):
+                    return False
+                active_attributes = re.sub(
+                    r"#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]", "", module_attributes
+                )
+                module_stack.append(not re.search(r"#\s*\[\s*cfg\s*\(", active_attributes))
+            statement_start = index + 1
+        elif character == "}":
+            if not module_stack:
+                return False
+            module_stack.pop()
+            statement_start = index + 1
+        elif character == ";":
+            statement_start = index + 1
+    return all(module_stack)
+
+
 def _rust_source_has_only_unconditionally_enabled_cfg(source: str) -> bool:
-    """Fail closed on unresolved item- or crate-level cfg conditions."""
-    if re.search(r"#\s*!?\s*\[\s*cfg_attr\s*\(", source):
-        return False
-    marker = re.compile(r"#\s*!?\s*\[\s*cfg\s*\(")
+    """Fail closed on unresolved crate cfg; target-item cfg is checked separately."""
+    marker = re.compile(r"#\s*!\s*\[\s*cfg(?P<attribute>_attr)?\s*\(")
     cursor = 0
     while match := marker.search(source, cursor):
+        if not _rust_item_is_top_level(source, match.start()):
+            cursor = match.end()
+            continue
         depth = 1
         end = match.end()
         while end < len(source) and depth:
@@ -347,7 +390,7 @@ def _rust_source_has_only_unconditionally_enabled_cfg(source: str) -> bool:
             elif source[end] == ")":
                 depth -= 1
             end += 1
-        if depth:
+        if depth or match.group("attribute") is not None:
             return False
         expression = source[match.end():end - 1]
         if _rust_cfg_condition_is_enabled(expression) is not True:
@@ -370,11 +413,22 @@ def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> b
         test_attribute = re.compile(
             r"^\s*#\[(?:test|tokio::test)(?:\s*\([^]]*\))?\]\s*$"
         )
+        cfg_attribute = re.compile(r"^\s*#\[\s*cfg\((?P<condition>.*)\)\s*\]\s*$")
+        cfg_attr_marker = re.compile(r"^\s*#\[\s*cfg_attr\s*\(")
         lines = source.splitlines()
+        line_offsets: list[int] = []
+        offset = 0
+        for raw_line in source.splitlines(keepends=True):
+            line_offsets.append(offset)
+            offset += len(raw_line)
         for index, line in enumerate(lines):
-            if not declaration.match(line):
+            if (
+                not declaration.match(line)
+                or not _rust_test_item_has_active_module_context(source, line_offsets[index])
+            ):
                 continue
             cursor = index - 1
+            is_test = False
             while cursor >= 0:
                 preceding_line = lines[cursor].strip()
                 if not preceding_line or preceding_line.startswith("//"):
@@ -382,10 +436,17 @@ def _is_discoverable_positive_test(path: Path, test_name: str, source: str) -> b
                     continue
                 if preceding_line.startswith("#["):
                     if test_attribute.fullmatch(preceding_line):
-                        return True
+                        is_test = True
+                    elif cfg_attr_marker.match(preceding_line):
+                        return False
+                    elif cfg_match := cfg_attribute.fullmatch(preceding_line):
+                        if _rust_cfg_condition_is_enabled(cfg_match.group("condition")) is not True:
+                            return False
                     cursor -= 1
                     continue
                 break
+            if is_test:
+                return True
         return False
 
     if path.suffix == ".py":
@@ -825,6 +886,15 @@ class FeatureTraceabilityTests(unittest.TestCase):
             "active test": (
                 "#[test]\nfn request_capability_is_available() { assert!(true); }\n",
                 True,
+            ),
+            "active test inside an inline test module": (
+                "mod tests {\n    #[test]\n    fn request_capability_is_available() { assert!(true); }\n}\n",
+                True,
+            ),
+            "disabled cfg on inline test module": (
+                "#[cfg(any())]\nmod tests {\n    #[test]\n"
+                "    fn request_capability_is_available() { assert!(true); }\n}\n",
+                False,
             ),
             "test cfg is enabled in a test build": (
                 "#[cfg(test)]\n#[test]\n"
