@@ -1914,10 +1914,7 @@ fn profile_maps_optional_locate_maximum_items_capability() {
     let malformed = request_message_with_operation_payload(
         LOCATE_OPERATION,
         structure([
-            tagged(
-                MAXIMUM_ITEMS_TAG,
-                Value::text_string("three".to_owned()),
-            ),
+            tagged(MAXIMUM_ITEMS_TAG, Value::text_string("three".to_owned())),
             tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
         ]),
     );
