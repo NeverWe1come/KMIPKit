@@ -331,7 +331,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(
             {(row["verification_category"], row["test_kind"], row["test_id"]) for row in mappings},
             {
-                ("ProhibitedBehavior", "NegativeBehavior", profile_test_id),
+                ("ProhibitedBehavior", "PositiveBehavior", profile_test_id),
                 ("ProhibitedBehavior", "NegativeBehavior", wire_test_id),
             },
         )
