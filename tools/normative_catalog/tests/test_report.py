@@ -248,6 +248,7 @@ class CoverageReportTests(unittest.TestCase):
                         "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1-001",
                         "verification_category": "RequiredBehavior",
                         "evaluator_present": False,
+                        "transport_only": True,
                         "test_kind": "PositiveBehavior",
                         "test_id": (
                             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
@@ -1126,6 +1127,41 @@ mod unrelated {
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", report)
         self.assertIn("current pass/fail is not evaluated", report)
 
+    def test_profile_requirement_coverage_accepts_transport_only_mapping(self) -> None:
+        catalog = report_catalog()
+        catalog["profiles"] = [
+            {
+                "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
+                "name": "Baseline Client",
+                "role": "client",
+                "applicability": "client_1_0",
+                "claim_state": "not_claimed",
+                "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "element_ids": [],
+                "dependency_profile_ids": [],
+                "test_case_ids": [],
+                "transport_requirements": [],
+                "encoding_requirements": [],
+            }
+        ]
+        mapping = {
+            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "verification_category": "RequiredBehavior",
+            "evaluator_present": False,
+            "transport_only": True,
+            "test_kind": "PositiveBehavior",
+            "test_id": "profile_validation::configured_tls_transport_satisfies_rule",
+        }
+
+        report = render_report(catalog, typed_rule_mappings=[mapping])
+
+        self.assertIn("Typed rule mapping: present", report)
+        self.assertIn("Category test reference: present", report)
+        self.assertIn(r"profile\_validation::configured\_tls\_transport\_satisfies\_rule", report)
+
     def test_profile_requirement_coverage_accepts_approved_recommended_deviation(self) -> None:
         from tools.normative_catalog import report as report_module
 
@@ -1191,6 +1227,7 @@ mod unrelated {
 
         self.assertEqual(
             [
+                "KMIPKIT-REQ-PROF-3.1-001",
                 "KMIPKIT-REQ-SPEC-2.3-001",
                 "KMIPKIT-REQ-SPEC-2.3-001",
                 "KMIPKIT-REQ-SPEC-2.3-002",
