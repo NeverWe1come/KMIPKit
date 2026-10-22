@@ -247,7 +247,16 @@ class PackageDocumentationContractTests(unittest.TestCase):
         reference = (ROOT / "docs/architecture/public-api.md").read_text(
             encoding="utf-8"
         )
-        operations = {operation["name"]: operation for operation in self.manifest["operations"]}
+        operations = {
+            operation["name"]: operation for operation in self.manifest["operations"]
+        }
+        documented_states = {
+            name.strip(): state.strip()
+            for name, state in re.findall(
+                r"(?m)^\|\s*([^|]+?)\s*\|\s*(blocked|declared|verified)\s*\|$",
+                reference,
+            )
+        }
         asynchronous_followups = (
             "Cancel",
             "Poll",
@@ -258,10 +267,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
         for operation_name in asynchronous_followups:
             with self.subTest(operation=operation_name):
                 self.assertEqual("blocked", operations[operation_name]["apiState"])
-                self.assertRegex(
-                    reference,
-                    rf"(?m)^\|\s*{re.escape(operation_name)}\s*\|\s*blocked\s*\|$",
-                )
+                self.assertEqual("blocked", documented_states.get(operation_name))
 
     def test_t071_checkpoint_records_active_manifest_snapshot_and_remains_open(self) -> None:
         tasks = (ROOT / "specs/043-public-api-bindings/tasks.md").read_text(

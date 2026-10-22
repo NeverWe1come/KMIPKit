@@ -5504,3 +5504,17 @@ This bounded documentation slice reconciles the English and Spanish language-pac
 | Refactor | this commit | `git diff --check` | Pass. |
 
 These checks verify documentation against the manifest snapshot; they do not claim formal conformance, interoperability, profile support, certification, or completion of T071 or T073.
+
+### T073 public API readiness reference follow-up (2026-10-22)
+
+The architecture API reference now distinguishes Rust declarations from four-language 1.0 readiness and lists Poll, Cancel, Process, and Query Asynchronous Requests as blocked pending KMIPKIT-0009, matching KMIPKIT-0043-FR-019 and the public manifest. It describes KMIPKIT-0007's Pending outcome and correlation-value support without claiming that the 1.0 client exposes the blocked follow-up operations. The reference remains a manually maintained design document; the manifest generator's fixed output set was not expanded. T073 remains open because the C distribution identity has no authoritative package metadata; `kmipkit-c` is not treated as a verified external name or replaced with an inferred coordinate.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `e59e9387` | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs.PackageDocumentationContractTests.test_public_api_reference_marks_async_followups_blocked -v` | Expected failure: the reference did not identify the four async follow-up operations as blocked; all four status-row assertions failed. |
+| Green | `96baf072` | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs -v` | Pass, 10 tests after reconciling the Rust-surface and async readiness statements. |
+| Green | `96baf072` | `git diff --check` | Pass. |
+| Refactor | this commit | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs -v` | Pass, 10 tests after parsing status rows once for concise manifest-to-reference assertions. |
+| Refactor | this commit | `git diff --check` | Pass. No generated outputs changed. |
+
+These checks confirm documentation status alignment only; they do not complete T073, approve KMIPKIT-0009, or claim operation conformance, interoperability, profile support, or certification.
