@@ -99007,7 +99007,8 @@
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/message_contract.rs::request_time_stamp_is_optional_and_preserved_as_raw_date_time"
+        "crates/kmipkit-protocol/tests/message_contract.rs::request_time_stamp_is_optional_and_preserved_as_raw_date_time",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_time_stamp_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,

@@ -1483,7 +1483,10 @@ fn profile_maps_request_time_stamp_as_optional_capability() {
 
     let raw_seconds = 1_751_100_123_i64;
     let request_with_time_stamp = request_message_with_time_stamp(raw_seconds);
-    assert_eq!(request_with_time_stamp.header().time_stamp(), Some(raw_seconds));
+    assert_eq!(
+        request_with_time_stamp.header().time_stamp(),
+        Some(raw_seconds)
+    );
     assert!(evaluate(Some(&request_with_time_stamp), None));
     result
         .validate_request(&request_with_time_stamp)
