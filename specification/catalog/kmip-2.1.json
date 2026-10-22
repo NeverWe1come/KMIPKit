@@ -53793,6 +53793,7 @@
       ],
       "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/message/mod.rs",
         "crates/kmipkit-protocol/src/message/header.rs",
         "crates/kmipkit-protocol/src/message/batch.rs",
@@ -53801,6 +53802,7 @@
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_maximum_response_size_capability",
         "crates/kmipkit-protocol/tests/message_contract.rs",
         "crates/kmipkit-protocol/tests/message_accessors.rs"
       ],
@@ -54983,6 +54985,7 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/message/mod.rs",
         "crates/kmipkit-protocol/src/message/header.rs",
         "crates/kmipkit-protocol/src/message/batch.rs",
@@ -54991,6 +54994,7 @@
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_maximum_response_size_capability",
         "crates/kmipkit-protocol/tests/message_contract.rs",
         "crates/kmipkit-protocol/tests/message_accessors.rs"
       ],
@@ -98647,6 +98651,7 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/message/mod.rs",
         "crates/kmipkit-protocol/src/message/header.rs",
         "crates/kmipkit-protocol/src/message/batch.rs",
@@ -98655,12 +98660,13 @@
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_maximum_response_size_capability",
         "crates/kmipkit-protocol/tests/message_accessors.rs::request_header_accessors_expose_every_represented_field"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §9.12 and Table 417 define Maximum Response Size as an OPTIONAL Integer in the request header; the typed profile mapping and test demonstrate that the client can omit or include a caller-supplied value. Client handling of the declared size (KMIPKIT-REQ-SPEC-9.12-001-002) and SHOULD guidance on when to send it (KMIPKIT-REQ-SPEC-9.12-001-003) are separate requirements. No server enforcement, recommendation-selection behavior, official Test Case result, or profile-conformance claim is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.12-001-002",
