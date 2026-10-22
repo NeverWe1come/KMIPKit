@@ -22,14 +22,17 @@ mapped or complete.
 ### High level
 
 The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
-not implement the general builder surface. The current typed client exposes
+not implement the general builder surface. This high-level section describes
+the initial Rust operation subset of the complete 52-variant typed request set,
+shown for batch execution and lifecycle conveniences. The complete set appears
+in the Typed protocol section below, and this subset does not establish
+four-language 1.0 availability. The current typed client exposes
 Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke for batch execution, with single-operation convenience methods for
-lifecycle calls. This inventory describes the Rust client surface and does
-not assert four-language 1.0 readiness. In particular, explicit asynchronous
+lifecycle calls. In particular, explicit asynchronous
 follow-up operations remain blocked in the 1.0 manifest pending KMIPKIT-0009:
 
 | KMIP operation | Four-language 1.0 mapping |
@@ -64,18 +67,24 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 ### Typed protocol
 
 KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
-`ClientBatch` with a closed typed request set. The currently implemented Rust
-operation variants are Discover Versions, Activate, Archive, Certify, Check,
-Delegated Login, Login, Logout, Obtain Lease, Re-certify, Re-key, Re-key Key
-Pair, Re-Provision, Register, Revoke, Destroy, Recover, Get, Locate, Create,
-Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete
-Attribute, Modify Attribute, Set Attribute, Get Attributes, Get Attribute List,
-Ping, Interop, Log, Validate, PKCS#11, Get Constraints, Set Constraints, Set
-Defaults, Get Usage Allocation, Query, Encrypt, Decrypt, Derive Key, Export,
-Import, Join Split Key, Hash, MAC, MAC Verify, Sign, Signature Verify, RNG
-Retrieve, and RNG Seed. Cross-language availability is tracked separately in
-the manifest status table below. The API does not accept generic Item values,
-raw message bytes, or caller-implemented conversions.
+`ClientBatch` with a closed typed request set. The complete Rust typed request
+set currently contains 52 variants, covering 52 of the 56 `client_1_0`
+operation types. It excludes the four explicit asynchronous follow-up
+operations Cancel, Poll, Process, and Query Asynchronous Requests, which remain
+blocked in the manifest pending KMIPKIT-0009. Variants: Discover Versions,
+Activate, Archive, Certify, Check, Delegated Login, Login, Logout, Obtain Lease,
+Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, Revoke, Destroy,
+Recover, Get, Locate, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Modify Attribute, Set Attribute, Get
+Attributes, Get Attribute List, Ping, Interop, Log, Validate, PKCS#11, Get
+Constraints, Set Constraints, Set Defaults, Get Usage Allocation, Query,
+Encrypt, Decrypt, Derive Key, Export, Import, Join Split Key, Hash, MAC, MAC
+Verify, Sign, Signature Verify, RNG Retrieve, and RNG Seed. Cross-language
+availability is summarized in the [Java and Python package
+guide](../user-guide/en/language-packages.md); exact operation and capability
+states remain in the [public API
+manifest](../../specification/api/public-api.json). The API does not accept
+generic Item values, raw message bytes, or caller-implemented conversions.
 Discover Versions is explicit and is never a hidden preflight.
 Per-call `CodecLimits` bound request encoding and response decoding and supply
 the transport response-byte cap.
