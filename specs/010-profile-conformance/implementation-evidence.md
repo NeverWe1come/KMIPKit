@@ -4079,6 +4079,12 @@ This correction updates test expectations only. The profile readiness behavior r
 
 The test is based on KMIP Specification v2.1 §6.1.14, which permits a client to request Secret Data with Cryptographic Length equal to the total derived output length when deriving multiple keys and IVs. It also asserts that registering this optional capability does not restrict ordinary Symmetric Key derivation. T040 remains open.
 
+### KMIPKIT-0010 T040 slice — Derive Key ID Placeholder prohibition (2026-10-22)
+
+| Phase | Evidence | Result |
+|---|---|---|
+| Red | This DCO-signed Red commit; `cargo test -p kmipkit-protocol --lib profile_maps_derive_key_unique_identifiers_exclude_id_placeholder -- --nocapture` | FAIL as intended: the Baseline typed-rule registry has no mapping for `KMIPKIT-REQ-SPEC-6.1.14-006-002`. The regression cites KMIP Specification v2.1 §6.1.14 Table 205 and requires explicit Unique Identifier values to pass, allows repeats, and rejects omission that would invoke the ID Placeholder. |
+
 ### KMIPKIT-0010 T041 follow-up — documentary QA corrections (2026-10-19)
 
 The T041 checkpoint above is a historical snapshot and is superseded only for its closure-oracle and T003 status: it described the oracle as partial and T003/T041 as unchecked. The current task record marks T003 complete after the source-reviewed closure work; this follow-up does not rewrite that history or mark T041 complete. T041 remains open for independent QA of the full feature and its remaining blockers.

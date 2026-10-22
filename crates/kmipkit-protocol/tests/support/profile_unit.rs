@@ -41,6 +41,7 @@ const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
+const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
 const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
@@ -798,6 +799,67 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
         discover_versions_payload(&[(2, 1), (3, 0)]),
     );
     assert!(result.validate_request(&mixed_versions).is_err());
+}
+
+#[test]
+fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
+    // KMIP Specification v2.1 §6.1.14 Table 205 prohibits using the current
+    // ID Placeholder in place of a Derive Key Unique Identifier.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key ID Placeholder prohibition has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Derive Key ID Placeholder prohibition resolves to normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the prohibition has category-matched negative evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let explicit_identifiers = request_message_with_operation_payload(
+        DERIVE_KEY_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("source-key-1".to_owned()),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("source-key-2".to_owned()),
+            ),
+        ]),
+    );
+    result
+        .validate_request(&explicit_identifiers)
+        .expect("repeated explicit source identifiers remain valid");
+
+    let omitted_identifier =
+        request_message_with_operation_payload(DERIVE_KEY_OPERATION, Structure::new());
+    assert_request_rejected_for_requirement(
+        &result,
+        &omitted_identifier,
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
+        "Derive Key must specify a source identifier instead of using the ID Placeholder",
+    );
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_000A, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Derive Key prohibition does not constrain other operations");
 }
 
 #[test]
