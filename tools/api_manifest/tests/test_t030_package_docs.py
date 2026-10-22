@@ -136,6 +136,9 @@ class PackageDocumentationContractTests(unittest.TestCase):
         blocked_operations = sum(
             operation["apiState"] == "blocked" for operation in operations
         )
+        verified_operation_count = sum(
+            operation["apiState"] == "verified" for operation in operations
+        )
         declared_operations = [
             operation for operation in operations if operation["apiState"] == "declared"
         ]
@@ -143,69 +146,14 @@ class PackageDocumentationContractTests(unittest.TestCase):
             operation for operation in operations if operation["apiState"] == "verified"
         ]
         self.assertEqual(
-            [operation["name"] for operation in declared_operations],
-            [
-                "Create",
-                "Create Key Pair",
-                "Create Split Key",
-                "Hash",
-                "MAC",
-                "MAC Verify",
-                "Sign",
-                "Signature Verify",
-            ],
-        )
-        self.assertEqual(
-            [operation["name"] for operation in verified_operations],
-            [
-                "Certify",
-                "Check",
-                "Decrypt",
-                "Delegated Login",
-                "Derive Key",
-                "Discover Versions",
-                "Encrypt",
-                "Export",
-                "Get",
-                "Get Constraints",
-                "Get Usage Allocation",
-                "Import",
-                "Interop",
-                "Join Split Key",
-                "Locate",
-                "Log",
-                "Login",
-                "Logout",
-                "Obtain Lease",
-                "Ping",
-                "PKCS#11",
-                "Query",
-                "Register",
-                "Revoke",
-                "Re-certify",
-                "Re-key",
-                "Re-key Key Pair",
-                "Re-Provision",
-                "RNG Retrieve",
-                "RNG Seed",
-                "Set Constraints",
-                "Set Defaults",
-                "Validate",
-            ],
-        )
-        self.assertEqual(
-            (
-                len(operations),
-                blocked_operations,
-                len(declared_operations),
-                len(verified_operations),
-            ),
-            (56, 15, 8, 33),
-        )
-        self.assertEqual(
             len(operations),
-            blocked_operations + len(declared_operations) + len(verified_operations),
+            blocked_operations + len(declared_operations) + verified_operation_count,
         )
+
+        register = next(
+            operation for operation in operations if operation["name"] == "Register"
+        )
+        self.assertEqual("verified", register["apiState"])
 
         for guide, operation_phrase in (
             (self.english, "full operation parity"),
@@ -223,15 +171,28 @@ class PackageDocumentationContractTests(unittest.TestCase):
             self.assertIn(operation_phrase, normalized_guide)
             for operation in (*declared_operations, *verified_operations):
                 self.assertIn(operation["name"].lower(), normalized_guide)
-        self.assertIn("**8** rows are `declared`", self.english)
-        self.assertIn("**33** operation mappings are `verified`", self.english)
-        self.assertIn("**8** filas están en estado `declared`", self.spanish)
-        self.assertIn("**33** mapeos de operación están en estado `verified`", self.spanish)
+        self.assertIn(
+            f"**{len(declared_operations)}** rows are `declared`", self.english
+        )
+        self.assertIn(
+            f"**{verified_operation_count}** operation mappings are `verified`",
+            self.english,
+        )
+        self.assertIn(
+            f"**{len(declared_operations)}** filas están en estado `declared`",
+            self.spanish,
+        )
+        self.assertIn(
+            f"**{verified_operation_count}** mapeos de operación están en estado `verified`",
+            self.spanish,
+        )
         self.assertNotIn("full Register operation parity remains blocked", self.english)
         self.assertNotIn(
             "la paridad completa de la operación Register sigue bloqueada",
             self.spanish.lower(),
         )
+        self.assertIn("The Register operation row is verified.", self.english)
+        self.assertIn("La fila de la operación Register está `verified`.", self.spanish)
 
     def test_bilingual_client_execution_guides_scope_operation_rows_to_rust(self) -> None:
         guides = {
@@ -266,6 +227,26 @@ class PackageDocumentationContractTests(unittest.TestCase):
         tasks = (ROOT / "specs/043-public-api-bindings/tasks.md").read_text(
             encoding="utf-8"
         )
+        operations = self.manifest["operations"]
+        operation_counts = {
+            state: sum(operation["apiState"] == state for operation in operations)
+            for state in ("verified", "declared", "blocked")
+        }
+        capabilities = self.manifest["capabilities"]
+        capability_counts = {
+            state: sum(
+                capability["capabilityState"] == state for capability in capabilities
+            )
+            for state in ("verified", "declared", "blocked")
+        }
+        declarations = self.manifest["publicDeclarations"]
+        declaration_counts = {
+            state: sum(
+                declaration["declarationState"] == state
+                for declaration in declarations
+            )
+            for state in ("verified", "declared", "blocked")
+        }
         checkpoint = re.search(
             r"(?s)\*\*Checkpoint \(manifest snapshot, [^)]+\)\*\*: (.*?)(?=\n\n)",
             tasks,
@@ -273,10 +254,14 @@ class PackageDocumentationContractTests(unittest.TestCase):
         self.assertIsNotNone(checkpoint)
         assert checkpoint is not None
         for audited_status in (
-            "33/56 `client_1_0` operations as verified, 8 as declared, and 15 as blocked",
-            "0/15 verified (14 declared, 1 blocked)",
-            "818/11,352 verified, 1,345 declared, and 9,189 blocked",
-            "729 approved exclusions",
+            f"{operation_counts['verified']}/{len(operations)} `client_1_0` operations as verified, "
+            f"{operation_counts['declared']} as declared, and {operation_counts['blocked']} as blocked",
+            f"{capability_counts['verified']}/{len(capabilities)} verified "
+            f"({capability_counts['declared']} declared, {capability_counts['blocked']} blocked)",
+            f"{declaration_counts['verified']:,}/{len(declarations):,} verified, "
+            f"{declaration_counts['declared']:,} declared, and "
+            f"{declaration_counts['blocked']:,} blocked",
+            f"{len(self.manifest['approvedExclusions'])} approved exclusions",
             "T071 remains open",
         ):
             self.assertIn(audited_status, checkpoint.group(1))

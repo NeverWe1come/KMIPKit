@@ -5488,3 +5488,19 @@ The scope of this slice is the Discover Versions operation's shared fixture pari
 | Final focused checks — the three contract tests above, `python -B tools/api_manifest/generate.py --check`, `cargo fmt --all --check`, and `git diff --check` | Pass; 3 contract tests and all 12 generated outputs verified. |
 
 The generated Java parity fixture contains the manifest JSON in fixed-size string chunks. The generated source is LF in both the branch base and current output; parsing its embedded JSON confirms the only data change is the Discover Versions operation's `apiState` and `parityEvidenceIds`. The full generated-file diff is due to chunk boundaries shifting after the added evidence row. These local Windows checks establish shared parity evidence only; they do not claim broader T071 completion, OASIS conformance, interoperability, profile support, or certification.
+
+
+### T073 bilingual manifest-status documentation follow-up (2026-10-22)
+
+This bounded documentation slice reconciles the English and Spanish language-package guides with the active API manifest, scopes the client-execution guides to their Rust API surface, and refreshes the T071 checkpoint without closing T071. The package guides now report 33 verified, 8 declared, and 15 blocked operation rows; they distinguish the declared `opaque_register_context` capability from the verified Register operation. The client-execution guides retain accurate Rust API descriptions and explain that a manifest `blocked` state means the complete four-language 1.0 operation mapping is unavailable, even where Rust types exist. The checkpoint includes current capability and public-declaration totals, approved exclusions, and states that T071 remains open. This slice does not close the remaining T073 identity, C metadata, or API-reference audit gaps.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `679c9bb4` | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs.PackageDocumentationContractTests.test_bilingual_capability_summary_does_not_advertise_blocked_surface tools.api_manifest.tests.test_t030_package_docs.PackageDocumentationContractTests.test_bilingual_client_execution_guides_scope_operation_rows_to_rust tools.api_manifest.tests.test_t030_package_docs.PackageDocumentationContractTests.test_t071_checkpoint_records_active_manifest_snapshot_and_remains_open -v` | Expected failures exposed stale 22/56 operation status, missing Rust API scope and cross-language status explanation in both client-execution guides, and stale T071 checkpoint counts. |
+| Green | `3a602b43` | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs -v` | Pass, 9 tests. |
+| Green | `3a602b43` | `git diff --check` | Pass. |
+| Refactor iteration | worktree before commit | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs -v` | One contract failure caught ungrouped dynamic public-declaration counts (`818/11352`) against the checkpoint's thousands separators (`818/11,352`); the test formatter was corrected to preserve documentation formatting. |
+| Refactor | this commit | `python -B -m unittest tools.api_manifest.tests.test_t030_package_docs -v` | Pass, 9 tests. The documentation contract derives operation, capability, public-declaration, and approved-exclusion counts from the manifest and checks each declared/verified operation listed in the package guides. |
+| Refactor | this commit | `git diff --check` | Pass. |
+
+These checks verify documentation against the manifest snapshot; they do not claim formal conformance, interoperability, profile support, certification, or completion of T071 or T073.
