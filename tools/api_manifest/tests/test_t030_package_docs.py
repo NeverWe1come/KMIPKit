@@ -243,6 +243,26 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 for statement in required_scope[language]:
                     self.assertIn(statement, normalized_guide)
 
+    def test_public_api_reference_marks_async_followups_blocked(self) -> None:
+        reference = (ROOT / "docs/architecture/public-api.md").read_text(
+            encoding="utf-8"
+        )
+        operations = {operation["name"]: operation for operation in self.manifest["operations"]}
+        asynchronous_followups = (
+            "Cancel",
+            "Poll",
+            "Process",
+            "Query Asynchronous Requests",
+        )
+
+        for operation_name in asynchronous_followups:
+            with self.subTest(operation=operation_name):
+                self.assertEqual("blocked", operations[operation_name]["apiState"])
+                self.assertRegex(
+                    reference,
+                    rf"(?m)^\|\s*{re.escape(operation_name)}\s*\|\s*blocked\s*\|$",
+                )
+
     def test_t071_checkpoint_records_active_manifest_snapshot_and_remains_open(self) -> None:
         tasks = (ROOT / "specs/043-public-api-bindings/tasks.md").read_text(
             encoding="utf-8"
