@@ -384,6 +384,45 @@ class PublicApiParityTests(unittest.TestCase):
                     self.assertTrue(java_mapping.get("reason"), case["id"])
                     self.assertFalse(case["javaObservedOutput"].get("available", True), case["id"])
 
+        self.assertEqual(
+            available_languages,
+            set(fixtures["executableConsumerLanguages"]),
+        )
+        self.assertEqual(
+            set(fixtures["plannedConsumerLanguages"]),
+            set(fixtures["parityLanguages"]) - available_languages,
+        )
+
+        redaction = next(case for case in cases if case["id"] == "errors.schema-redaction.v1")
+        self.assertEqual(redaction["errorCategory"], "invalid_schema")
+        self.assertTrue(redaction["expectedOutput"]["diagnosticOmitsInputMarker"])
+
+        batch = next(case for case in cases if case["id"] == "batch.ordered-completed-pending-failed.v1")
+        self.assertEqual(batch["expectedOutput"]["resultStatuses"], [
+            "Success", "Operation Pending", "Operation Failed"
+        ])
+        batch_java_output = {
+            key: value
+            for key, value in batch["javaObservedOutput"].items()
+            if key != "available"
+        }
+        self.assertEqual(batch_java_output, batch["expectedOutput"])
+
+        ttlv = next(case for case in cases if case["id"] == "ttlv.open-values-and-child-order.v1")
+        self.assertEqual(ttlv["javaObservedOutput"]["childTagsInOrder"], ["0x540001", "0x540002"])
+        self.assertEqual(ttlv["expectedOutput"]["enumerationValue"], 0xE1020304)
+        self.assertTrue(ttlv["expectedOutput"]["unknownValuesPreserved"])
+
+        extension = next(
+            case for case in cases
+            if case["id"] == "extensions.recognition-and-generic-preservation.v1"
+        )
+        extension_fixtures = json.loads(
+            (ROOT / extension["input"]["sourceFixture"]).read_text(encoding="utf-8")
+        )
+        source_case_ids = {case["id"] for case in extension_fixtures["cases"]}
+        self.assertTrue(set(extension["input"]["caseIds"]).issubset(source_case_ids))
+
     def test_discover_versions_operation_has_four_language_shared_parity_evidence(self) -> None:
         fixtures = json.loads(SHARED_PARITY_FIXTURE.read_text(encoding="utf-8"))
         case = next(
@@ -426,45 +465,9 @@ class PublicApiParityTests(unittest.TestCase):
                 else:
                     test_path = consumer["testFile"]
                 self.assertIn(test_path, evidence)
-
-        self.assertEqual(
-            available_languages,
-            set(fixtures["executableConsumerLanguages"]),
-        )
-        self.assertEqual(
-            set(fixtures["plannedConsumerLanguages"]),
-            set(fixtures["parityLanguages"]) - available_languages,
-        )
-
-        redaction = next(case for case in cases if case["id"] == "errors.schema-redaction.v1")
-        self.assertEqual(redaction["errorCategory"], "invalid_schema")
-        self.assertTrue(redaction["expectedOutput"]["diagnosticOmitsInputMarker"])
-
-        batch = next(case for case in cases if case["id"] == "batch.ordered-completed-pending-failed.v1")
-        self.assertEqual(batch["expectedOutput"]["resultStatuses"], [
-            "Success", "Operation Pending", "Operation Failed"
-        ])
-        batch_java_output = {
-            key: value
-            for key, value in batch["javaObservedOutput"].items()
-            if key != "available"
-        }
-        self.assertEqual(batch_java_output, batch["expectedOutput"])
-
-        ttlv = next(case for case in cases if case["id"] == "ttlv.open-values-and-child-order.v1")
-        self.assertEqual(ttlv["javaObservedOutput"]["childTagsInOrder"], ["0x540001", "0x540002"])
-        self.assertEqual(ttlv["expectedOutput"]["enumerationValue"], 0xE1020304)
-        self.assertTrue(ttlv["expectedOutput"]["unknownValuesPreserved"])
-
-        extension = next(
-            case for case in cases
-            if case["id"] == "extensions.recognition-and-generic-preservation.v1"
-        )
-        extension_fixtures = json.loads(
-            (ROOT / extension["input"]["sourceFixture"]).read_text(encoding="utf-8")
-        )
-        source_case_ids = {case["id"] for case in extension_fixtures["cases"]}
-        self.assertTrue(set(extension["input"]["caseIds"]).issubset(source_case_ids))
+        c_harness = consumers["c"]["supportingTests"][0]
+        self.assertEqual(c_harness["testFile"], "crates/kmipkit-ffi/tests/c_api_coverage.rs")
+        self.assertIn(c_harness["testFile"], evidence)
 
     def test_generated_rust_api_uses_rust_mapping_and_excludes_blocked_records(self) -> None:
         manifest = {
@@ -963,9 +966,9 @@ class PublicApiParityTests(unittest.TestCase):
         }
 
         self.assertIn("discover-versions.supported-versions.v1", source["rust"])
-        self.assertIn('expected["supportedVersions"]', source["rust"])
+        self.assertIn('discover_expected["supportedVersions"]', source["rust"])
         self.assertIn("discover-versions.supported-versions.v1", source["c_harness"])
-        self.assertIn('expected["supportedVersions"]', source["c_harness"])
+        self.assertIn('discover_expected["supportedVersions"]', source["c_harness"])
         self.assertIn("fixture_version_count", source["c_abi"])
         self.assertIn("fixture_versions", source["c_abi"])
         self.assertIn("discover-versions.supported-versions.v1", source["java"])

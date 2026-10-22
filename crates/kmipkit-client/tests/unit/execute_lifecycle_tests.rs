@@ -470,6 +470,39 @@ fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
         .iter()
         .find(|case| case["id"] == "batch.ordered-completed-pending-failed.v1")
         .expect("shared ordered batch case exists");
+    let discover_versions_case = fixture["cases"]
+        .as_array()
+        .expect("shared fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "discover-versions.supported-versions.v1")
+        .expect("shared Discover Versions case exists");
+    let discover_expected = &discover_versions_case["expectedOutput"];
+    let expected_supported_versions = discover_expected["supportedVersions"]
+        .as_array()
+        .expect("Discover Versions fixture versions are an array")
+        .iter()
+        .map(|version| {
+            (
+                i32::try_from(
+                    version["major"]
+                        .as_i64()
+                        .expect("fixture version major is an integer"),
+                )
+                .expect("fixture version major fits i32"),
+                i32::try_from(
+                    version["minor"]
+                        .as_i64()
+                        .expect("fixture version minor is an integer"),
+                )
+                .expect("fixture version minor fits i32"),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        discover_expected["preservesSourceOrderAndRepetitions"]
+            .as_bool()
+            .expect("fixture repetition contract is boolean")
+    );
     let input_ids = case["input"]["uniqueBatchItemIds"]
         .as_array()
         .expect("batch fixture IDs are an array")
@@ -501,7 +534,10 @@ fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
     let response_items = expected_statuses
         .iter()
         .zip(&expected_ids)
-        .map(|(status, id)| match status.as_str() {
+        .enumerate()
+        .map(|(index, (status, id))| match status.as_str() {
+            "Success" if index == 0 => ResponseItemFixture::success(Some(id))
+                .with_supported_versions(expected_supported_versions.clone()),
             "Success" => ResponseItemFixture::success(Some(id)),
             "Operation Pending" => ResponseItemFixture::pending(Some(id), &correlation),
             "Operation Failed" => ResponseItemFixture::failure(Some(id)),
@@ -565,9 +601,11 @@ fn ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange() {
                 let supported_versions = item
                     .discover_versions_supported_versions()
                     .expect("successful Discover Versions response has a present list");
-                assert_eq!(supported_versions.len(), 1);
-                assert_eq!(supported_versions[0].major(), 2);
-                assert_eq!(supported_versions[0].minor(), 1);
+                let actual_versions = supported_versions
+                    .iter()
+                    .map(|version| (version.major(), version.minor()))
+                    .collect::<Vec<_>>();
+                assert_eq!(actual_versions, expected_supported_versions);
             }
             ("Operation Pending", ClientBatchOutcome::Pending(pending)) => {
                 actual_pending_count += 1;

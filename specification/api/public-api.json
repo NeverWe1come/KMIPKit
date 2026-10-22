@@ -310357,7 +310357,7 @@
       "name": "Discover Versions",
       "section": "6.1.16",
       "scope": "client_1_0",
-      "apiState": "declared",
+      "apiState": "verified",
       "ownerDependency": {
         "state": "approved",
         "specId": "KMIPKIT-0007"
@@ -310369,6 +310369,15 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
       },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
       "declarations": {
         "rust": [
           "T031:accessor:rust"

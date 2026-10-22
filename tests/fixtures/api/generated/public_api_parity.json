@@ -37074,7 +37074,7 @@
       "section": "6.1.14"
     },
     {
-      "apiState": "declared",
+      "apiState": "verified",
       "approvalEvidence": {
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
         "kind": "feature-specification",
@@ -37102,6 +37102,15 @@
         "specId": "KMIPKIT-0007",
         "state": "approved"
       },
+      "parityEvidenceIds": [
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_client.py",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+        "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+        "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
+        "tests/fixtures/api/shared-capability-parity.json"
+      ],
       "scope": "client_1_0",
       "section": "6.1.16"
     },

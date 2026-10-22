@@ -832,6 +832,39 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
         .iter()
         .find(|case| case["id"] == "batch.ordered-completed-pending-failed.v1")
         .expect("the ordered batch fixture case exists");
+    let discover_versions_case = fixture["cases"]
+        .as_array()
+        .expect("fixture cases are an array")
+        .iter()
+        .find(|case| case["id"] == "discover-versions.supported-versions.v1")
+        .expect("the Discover Versions fixture case exists");
+    let discover_expected = &discover_versions_case["expectedOutput"];
+    let fixture_versions = discover_expected["supportedVersions"]
+        .as_array()
+        .expect("fixture supported versions are an array")
+        .iter()
+        .map(|version| {
+            (
+                i32::try_from(
+                    version["major"]
+                        .as_i64()
+                        .expect("fixture major version is an integer"),
+                )
+                .expect("fixture major version fits i32"),
+                i32::try_from(
+                    version["minor"]
+                        .as_i64()
+                        .expect("fixture minor version is an integer"),
+                )
+                .expect("fixture minor version fits i32"),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        discover_expected["preservesSourceOrderAndRepetitions"]
+            .as_bool()
+            .expect("fixture repetition contract is boolean")
+    );
     let input_ids = case["input"]["uniqueBatchItemIds"]
         .as_array()
         .expect("fixture batch IDs are an array")
@@ -877,6 +910,13 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
             .to_string(),
     )
     .expect("fixture pending count has no NUL byte");
+    let fixture_version_count = CString::new(fixture_versions.len().to_string())
+        .expect("fixture version count has no NUL byte");
+    let fixture_version_values = fixture_versions
+        .iter()
+        .flat_map(|(major, minor)| [major.to_string(), minor.to_string()])
+        .map(|version| CString::new(version).expect("numeric version has no NUL byte"))
+        .collect::<Vec<_>>();
     let expected_exchange_count = expected["transportExchangeCount"]
         .as_u64()
         .expect("fixture transport exchange count is unsigned");
@@ -904,7 +944,12 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     let port = CString::new(port.to_string()).expect("port has no NUL byte");
     let server_config = mtls_server_config(&pki);
     let exchange_count = Arc::new(AtomicU64::new(0));
-    let peer = spawn_public_client_batch_peer(listener, server_config, Arc::clone(&exchange_count));
+    let peer = spawn_public_client_batch_peer(
+        listener,
+        server_config,
+        Arc::clone(&exchange_count),
+        fixture_versions.clone(),
+    );
 
     let executable = CString::new("kmipkit_public_client_consumer")
         .expect("test executable name has no NUL byte");
@@ -933,6 +978,12 @@ fn generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls() {
     arguments.push(correlation.as_ptr().cast_mut());
     arguments.push(fixture_item_count.as_ptr().cast_mut());
     arguments.push(fixture_pending_count.as_ptr().cast_mut());
+    arguments.push(fixture_version_count.as_ptr().cast_mut());
+    arguments.extend(
+        fixture_version_values
+            .iter()
+            .map(|version| version.as_ptr().cast_mut()),
+    );
     let argument_count = i32::try_from(arguments.len()).expect("argument count fits in i32");
     let mut limits = std::ptr::null_mut();
     // SAFETY: `limits` is a writable output slot and the successful handle is
@@ -986,6 +1037,7 @@ fn spawn_public_client_batch_peer(
     listener: TcpListener,
     server_config: Arc<ServerConfig>,
     exchange_count: Arc<AtomicU64>,
+    fixture_versions: Vec<(i32, i32)>,
 ) -> thread::JoinHandle<()> {
     thread::spawn(move || {
         let (stream, _) = listener
@@ -1035,7 +1087,7 @@ fn spawn_public_client_batch_peer(
             c_request_contains_login(&request),
             "C ABI consumer must transmit the typed Login request through the public batch API"
         );
-        tls.write_all(&mixed_discover_versions_response())
+        tls.write_all(&mixed_discover_versions_response(&fixture_versions))
             .expect("the typed KMIP response is written");
         tls.flush().expect("the TLS response is flushed");
         let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -2399,7 +2451,7 @@ fn rekey_key_pair_success_response() -> Vec<u8> {
 }
 
 // This TLS batch returns 28 ordered items, including Login, Encrypt, Decrypt, Ping, and Query results.
-fn mixed_discover_versions_response() -> Vec<u8> {
+fn mixed_discover_versions_response(fixture_versions: &[(i32, i32)]) -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
@@ -2412,10 +2464,16 @@ fn mixed_discover_versions_response() -> Vec<u8> {
             integer(0x0042_000D, 28),
         ],
     );
-    let response_payload = structure(
-        0x0042_007C,
-        [protocol_version.clone(), protocol_version.clone()],
-    );
+    let response_versions = fixture_versions
+        .iter()
+        .map(|(major, minor)| {
+            structure(
+                0x0042_0069,
+                [integer(0x0042_006A, *major), integer(0x0042_006B, *minor)],
+            )
+        })
+        .collect::<Vec<_>>();
+    let response_payload = structure(0x0042_007C, response_versions);
     structure(
         0x0042_007B,
         std::iter::once(header)

@@ -2977,7 +2977,7 @@ cleanup:
 }
 
 static int execute_public_tls_request(
-    char **argv, kmipkit_codec_limits_t *limits, int rekey_key_pair_only) {
+    int argc, char **argv, kmipkit_codec_limits_t *limits, int rekey_key_pair_only) {
     static const uint8_t host[] = "127.0.0.1";
     static const uint8_t server_name[] = "server.kmipkit.test";
     static const uint32_t expected_statuses[] = {
@@ -3039,6 +3039,8 @@ static int execute_public_tls_request(
     uint64_t fixture_correlation_length = 0;
     uint64_t fixture_item_count = 0;
     uint64_t fixture_pending_count = 0;
+    uint64_t fixture_version_count = 0;
+    kmipkit_protocol_version_v1_t fixture_versions[64] = {{0}};
     uint64_t actual_pending_count = 0;
     uint64_t response_count = 0;
     char *port_end = 0;
@@ -3065,9 +3067,23 @@ static int execute_public_tls_request(
                 &fixture_correlation_length) ||
             !parse_fixture_decimal(argv[13], &fixture_item_count) ||
             !parse_fixture_decimal(argv[14], &fixture_pending_count) ||
+            !parse_fixture_decimal(argv[15], &fixture_version_count) ||
             fixture_item_count != UINT64_C(3) ||
-            fixture_pending_count > fixture_item_count) {
+            fixture_pending_count > fixture_item_count ||
+            fixture_version_count > UINT64_C(64) ||
+            (uint64_t)argc != UINT64_C(16) + fixture_version_count * UINT64_C(2)) {
             return 3;
+        }
+        for (uint64_t index = 0; index < fixture_version_count; ++index) {
+            uint64_t major = 0;
+            uint64_t minor = 0;
+            if (!parse_fixture_decimal(argv[16 + index * 2], &major) ||
+                !parse_fixture_decimal(argv[17 + index * 2], &minor) ||
+                major > INT32_MAX || minor > INT32_MAX) {
+                return 3;
+            }
+            fixture_versions[index].major = (int32_t)major;
+            fixture_versions[index].minor = (int32_t)minor;
         }
     }
     client_certificates[0].source_kind = 2; /* file */
@@ -3451,7 +3467,7 @@ static int execute_public_tls_request(
         uint8_t unique_id_present = 0;
         uint8_t versions_present = 0;
         uint64_t version_count = 0;
-        kmipkit_protocol_version_v1_t versions[2] = {{0}};
+        kmipkit_protocol_version_v1_t versions[64] = {{0}};
         const uint32_t expected_status = index < fixture_item_count
             ? fixture_statuses[index]
             : expected_statuses[index];
@@ -3869,7 +3885,7 @@ static int execute_public_tls_request(
             goto cleanup;
         }
         if (index == 0) {
-            if (versions_present != 1 || version_count != 2) {
+            if (versions_present != 1 || version_count != fixture_version_count) {
                 goto cleanup;
             }
             uint64_t copied_count = 0;
@@ -3878,15 +3894,19 @@ static int execute_public_tls_request(
             if (kmipkit_client_batch_item_response_discover_versions_supported_versions(
                     response_item, &insufficient_present, versions, 1, &insufficient_count) !=
                     T076_ERROR_INVALID_INPUT ||
-                insufficient_present != 1 || insufficient_count != 2) {
+                insufficient_present != 1 || insufficient_count != fixture_version_count) {
                 goto cleanup;
             }
             if (kmipkit_client_batch_item_response_discover_versions_supported_versions(
-                    response_item, &versions_present, versions, 2, &copied_count) != 0 ||
-                versions_present != 1 || copied_count != 2 ||
-                versions[0].major != 2 || versions[0].minor != 1 ||
-                versions[1].major != 2 || versions[1].minor != 1) {
+                    response_item, &versions_present, versions, fixture_version_count, &copied_count) != 0 ||
+                versions_present != 1 || copied_count != fixture_version_count) {
                 goto cleanup;
+            }
+            for (uint64_t version_index = 0; version_index < fixture_version_count; ++version_index) {
+                if (versions[version_index].major != fixture_versions[version_index].major ||
+                    versions[version_index].minor != fixture_versions[version_index].minor) {
+                    goto cleanup;
+                }
             }
         } else if (index == 3) {
             if (versions_present != 1 || version_count != 0) {
@@ -5740,10 +5760,10 @@ int kmipkit_client_abi_c_consumer_execute_tls(
     }
     if (argc == 7 && argv[6] != 0 && strcmp(argv[6], "rekey-key-pair") == 0) {
         rekey_key_pair_only = 1;
-    } else if (argc != 15) {
+    } else if (argc < 16) {
         return 22;
     }
-    return execute_public_tls_request(argv, limits, rekey_key_pair_only);
+    return execute_public_tls_request(argc, argv, limits, rekey_key_pair_only);
 }
 
 int main(int argc, char **argv) {

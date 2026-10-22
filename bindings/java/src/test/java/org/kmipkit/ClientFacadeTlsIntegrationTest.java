@@ -485,6 +485,26 @@ final class ClientFacadeTlsIntegrationTest {
         String fixture = Files.readString(SharedCapabilityParityFixtureTest.sharedFixturePath());
         String batchFixture = SharedCapabilityParityFixtureTest.caseById(fixture,
                 "batch.ordered-completed-pending-failed.v1");
+        String discoverVersionsCase = SharedCapabilityParityFixtureTest.caseById(fixture,
+                "discover-versions.supported-versions.v1");
+        String discoverVersionsExpected = SharedCapabilityParityFixtureTest.objectField(
+                discoverVersionsCase, "expectedOutput");
+        List<ProtocolVersion> expectedSupportedVersions = SharedCapabilityParityFixtureTest
+                .objectArrayFields(discoverVersionsExpected, "supportedVersions").stream()
+                .map(version -> new ProtocolVersion(
+                        Math.toIntExact(SharedCapabilityParityFixtureTest.numberField(version, "major")),
+                        Math.toIntExact(SharedCapabilityParityFixtureTest.numberField(version, "minor"))))
+                .toList();
+        List<ProtocolVersion> expectedEmptyVersions = SharedCapabilityParityFixtureTest
+                .objectArrayFields(discoverVersionsExpected, "emptySuccessfulResponseVersions").stream()
+                .map(version -> new ProtocolVersion(
+                        Math.toIntExact(SharedCapabilityParityFixtureTest.numberField(version, "major")),
+                        Math.toIntExact(SharedCapabilityParityFixtureTest.numberField(version, "minor"))))
+                .toList();
+        assertTrue(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                discoverVersionsExpected, "preservesSourceOrderAndRepetitions")));
+        assertFalse(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                discoverVersionsExpected, "automaticFollowUp")));
         String fixtureInput = SharedCapabilityParityFixtureTest.objectField(batchFixture, "input");
         String fixtureExpected = SharedCapabilityParityFixtureTest.objectField(batchFixture, "expectedOutput");
         List<String> requestIdsHex = SharedCapabilityParityFixtureTest.stringArrayField(
@@ -516,7 +536,8 @@ final class ClientFacadeTlsIntegrationTest {
         listener.setNeedClientAuth(true);
         listener.setSoTimeout(10_000);
         FutureTask<byte[]> peer = new FutureTask<>(
-                () -> serveOneResponse(listener, mixedResponseMessage(requestIds, expectedCorrelation)));
+                () -> serveOneResponse(listener,
+                        mixedResponseMessage(requestIds, expectedCorrelation, expectedSupportedVersions)));
         Thread peerThread = new Thread(peer, "kmipkit-java-tls-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -675,29 +696,34 @@ final class ClientFacadeTlsIntegrationTest {
                 assertArrayEquals(expectedIds.get(0), completed.uniqueBatchItemId().orElseThrow());
                 assertTrue(completed.pendingCorrelationValue().isEmpty());
                 assertTrue(completed.resultReason().isEmpty());
-                assertEquals(List.of(new ProtocolVersion(2, 1), new ProtocolVersion(2, 1)),
-                        completed.supportedVersions().orElseThrow());
+                assertEquals(expectedSupportedVersions, completed.supportedVersions().orElseThrow());
                 assertEquals(resultStatusCode(expectedStatuses.get(1)), pending.resultStatus());
                 assertEquals("Operation Pending".equals(expectedStatuses.get(1)),
                         pending.outcomeKind().isPending());
                 assertArrayEquals(expectedIds.get(1), pending.uniqueBatchItemId().orElseThrow());
                 assertArrayEquals(expectedCorrelation, pending.pendingCorrelationValue().orElseThrow());
                 assertTrue(pending.resultReason().isEmpty());
-                assertTrue(pending.supportedVersions().isEmpty());
+                assertEquals(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                        discoverVersionsExpected, "pendingAndFailureHaveNoSupportedVersions")),
+                        pending.supportedVersions().isEmpty());
                 assertEquals(resultStatusCode(expectedStatuses.get(2)), failed.resultStatus());
                 assertEquals("Operation Failed".equals(expectedStatuses.get(2)),
                         failed.outcomeKind().isCompleted());
                 assertArrayEquals(expectedIds.get(2), failed.uniqueBatchItemId().orElseThrow());
                 assertTrue(failed.pendingCorrelationValue().isEmpty());
                 assertEquals(1, failed.resultReason().orElseThrow());
-                assertTrue(failed.supportedVersions().isEmpty());
+                assertEquals(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                        discoverVersionsExpected, "pendingAndFailureHaveNoSupportedVersions")),
+                        failed.supportedVersions().isEmpty());
                 long pendingCount = List.of(completed, pending, failed).stream()
                         .filter(result -> result.outcomeKind().isPending()).count();
                 assertEquals(SharedCapabilityParityFixtureTest.numberField(fixtureExpected, "pendingCount"),
                         pendingCount);
                 assertEquals(0, empty.resultStatus());
-                assertTrue(empty.supportedVersions().isPresent());
-                assertTrue(empty.supportedVersions().orElseThrow().isEmpty());
+                assertEquals(Boolean.parseBoolean(SharedCapabilityParityFixtureTest.stringOrBooleanField(
+                        discoverVersionsExpected, "emptySuccessfulResponseIsPresent")),
+                        empty.supportedVersions().isPresent());
+                assertEquals(expectedEmptyVersions, empty.supportedVersions().orElseThrow());
 
                 assertEquals(1, created.operation());
                 ClientBatchItemResult.CreateResponse createResponse =
@@ -3619,13 +3645,23 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] mixedResponseMessage(List<byte[]> fixtureItemIds, byte[] correlation)
             throws Exception {
+        return mixedResponseMessage(fixtureItemIds, correlation,
+                List.of(new ProtocolVersion(2, 1), new ProtocolVersion(2, 1)));
+    }
+
+    private static byte[] mixedResponseMessage(List<byte[]> fixtureItemIds, byte[] correlation,
+            List<ProtocolVersion> supportedVersions) throws Exception {
         byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
                 item(0x42006b, 2, integer(1)));
         byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
                 item(0x42000d, 2, integer(27)));
-        byte[] responseVersion = structure(0x420069, item(0x42006a, 2, integer(2)),
-                item(0x42006b, 2, integer(1)));
-        byte[] responsePayload = structure(0x42007c, responseVersion, responseVersion);
+        ByteArrayOutputStream responseVersionValues = new ByteArrayOutputStream();
+        for (ProtocolVersion supportedVersion : supportedVersions) {
+            responseVersionValues.write(structure(0x420069,
+                    item(0x42006a, 2, integer(supportedVersion.major())),
+                    item(0x42006b, 2, integer(supportedVersion.minor()))));
+        }
+        byte[] responsePayload = structure(0x42007c, responseVersionValues.toByteArray());
         byte[] successfulItem = structure(0x42000f,
                 item(0x42005c, 5, integer(30)),
                 item(0x420093, 8, fixtureItemIds.get(0)),

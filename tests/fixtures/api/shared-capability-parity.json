@@ -414,13 +414,26 @@
       "consumerTests": {
         "rust": {
           "status": "available",
-          "testFile": "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs",
-          "test": "offered_response_versions_are_preserved_in_order_with_repetitions"
+          "testFile": "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
+          "test": "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange"
         },
         "c": {
           "status": "available",
+          "adapterAssertions": [
+            "fixture-driven-supported-version-count-and-order"
+          ],
           "testFile": "bindings/c/tests/client_abi_consumer.c",
-          "test": "execute_public_tls_request"
+          "test": "execute_public_tls_request",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+              "assertions": [
+                "fixture-driven-supported-versions-response"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",
