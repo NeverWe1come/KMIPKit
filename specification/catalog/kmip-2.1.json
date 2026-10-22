@@ -93065,14 +93065,16 @@
         "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/attribute.rs",
         "crates/kmipkit-protocol/src/attribute_reference.rs",
-        "crates/kmipkit-protocol/src/get_attributes.rs"
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attribute_execution_contract_tests.rs",
         "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
-        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs"
+        "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_identical_get_attributes_references"
       ],
       "negative_verification_required": true,
       "decision_id": null,

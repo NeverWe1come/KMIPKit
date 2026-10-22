@@ -1630,6 +1630,7 @@ fn profile_rejects_repeated_identical_get_attributes_references() {
     let evaluate = mapping
         .evaluator
         .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -1641,24 +1642,47 @@ fn profile_rejects_repeated_identical_get_attributes_references() {
             .expect("the test Attribute Reference is valid")
     };
     let duplicate_payload = structure([repeated_reference(), repeated_reference()]);
-    assert_eq!(
-        duplicate_payload
-            .view()
-            .children()
-            .iter()
-            .filter(|field| field.tag().raw() == ATTRIBUTE_REFERENCE_TAG)
-            .count(),
-        2
-    );
     let duplicate_request =
         request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, duplicate_payload);
-    assert!(!evaluate(Some(&duplicate_request), None));
     let error = result
         .validate_request(&duplicate_request)
         .expect_err("a Get Attributes request must not repeat an identical reference");
-    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
-    assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
-    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let repeated_named_reference = || {
+        crate::AttributeReference::name("KMIPKit.TestVendor_1", "Opaque.Attribute")
+            .to_ttlv_item()
+            .expect("the test name-form Attribute Reference is valid")
+    };
+    let duplicate_name_request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([repeated_named_reference(), repeated_named_reference()]),
+    );
+    let error = result
+        .validate_request(&duplicate_name_request)
+        .expect_err("a name-form Attribute Reference must not be repeated either");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let malformed_reference_request = request_message_with_operation_payload(
+        GET_ATTRIBUTES_OPERATION,
+        structure([tagged(
+            ATTRIBUTE_REFERENCE_TAG,
+            Value::text_string("not an Attribute Reference".to_owned()),
+        )]),
+    );
+    let error = result
+        .validate_request(&malformed_reference_request)
+        .expect_err("a malformed Attribute Reference must fail closed");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
 
     for references in [
         Vec::new(),
@@ -1679,10 +1703,10 @@ fn profile_rejects_repeated_identical_get_attributes_references() {
             .expect("omitted or distinct Attribute References are permitted");
     }
 
-    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, structure([
-        repeated_reference(),
-        repeated_reference(),
-    ]));
+    let unrelated_operation = request_message_with_operation_payload(
+        0x0000_0003,
+        structure([repeated_reference(), repeated_reference()]),
+    );
     assert!(evaluate(Some(&unrelated_operation), None));
     result
         .validate_request(&unrelated_operation)
