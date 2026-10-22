@@ -895,6 +895,15 @@ fn get_attributes_references_are_not_repeated(
     })
 }
 
+fn client_can_repeat_query_functions(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.40 Table 282 permits repetition; positive evidence verifies the
+    // typed Query request preserves repeated functions in caller order.
+    request.is_some()
+}
+
 fn client_can_include_request_time_stamp(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2317,6 +2326,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_can_include_optional_get_attributes_attribute_references),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-016",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_repeat_query_functions),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_query_function_repetition_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
