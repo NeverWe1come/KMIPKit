@@ -11218,6 +11218,15 @@ class CatalogValidationTests(unittest.TestCase):
             locate_capability["source_refs"],
         )
         self.assertEqual(
+            locate_capability["source_refs"],
+            [
+                {"source_id": "KMIPKIT-SRC-spec", "section": "4.28"},
+                {"source_id": "KMIPKIT-SRC-spec", "section": "6.1.28"},
+            ],
+            "§4.28 Table 84 specifies the Boolean item encoding; §11.56 is Tag Enumeration",
+        )
+        self.assertIn("§4.28 Table 84 specifies the Boolean item encoding", locate_capability["review_note"])
+        self.assertEqual(
             [
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
                 for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.30-001"]["source_obligations"]
