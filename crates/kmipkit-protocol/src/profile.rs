@@ -772,7 +772,9 @@ const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
 const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
 const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
 const KEY_VALUE_PRESENT: u32 = 0x0042_00BB;
+const BATCH_ERROR_CONTINUATION_OPTION_CONTINUE: u32 = 1;
 const BATCH_ERROR_CONTINUATION_OPTION_STOP: u32 = 2;
+const BATCH_ERROR_CONTINUATION_OPTION_UNDO: u32 = 3;
 
 fn discover_versions_advertises_only_client_supported_versions(
     request: Option<&RequestMessage>,
@@ -1317,6 +1319,27 @@ fn client_defaults_batch_error_continuation_to_stop(
     header.batch_error_continuation_option().is_some()
         || header.effective_batch_error_continuation_option()
             == BATCH_ERROR_CONTINUATION_OPTION_STOP
+}
+
+fn client_uses_assigned_batch_error_continuation_values(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request
+        .header()
+        .batch_error_continuation_option()
+        .map_or(true, |value| {
+            matches!(
+                value,
+                BATCH_ERROR_CONTINUATION_OPTION_CONTINUE
+                    | BATCH_ERROR_CONTINUATION_OPTION_STOP
+                    | BATCH_ERROR_CONTINUATION_OPTION_UNDO
+            )
+        })
 }
 
 fn client_includes_batch_error_continuation_only_for_multi_item_request(
@@ -2754,6 +2777,27 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_batch_error_continuation_option_only_for_multi_item_batches",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_uses_assigned_batch_error_continuation_values),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_assigned_batch_error_continuation_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_accepts_the_three_assigned_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/option_tests.rs::outbound_batch_error_continuation_rejects_extension_allocation_value",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

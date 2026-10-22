@@ -2870,7 +2870,10 @@ fn profile_maps_assigned_batch_error_continuation_values() {
         let error = result
             .validate_request(&request)
             .expect_err("unassigned and extension values are not outbound profile values");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
     }
 }
 
