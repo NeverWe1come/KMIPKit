@@ -1571,14 +1571,151 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         )
         self.assertEqual((ROOT / V2_GENERATED_OUTPUTS[0]).read_bytes(), output_before)
 
-    def test_check_require_complete_returns_success_when_validator_accepts_manifest(self) -> None:
-        with mock.patch.object(generate, "_validate_v2_manifest") as validate_manifest:
-            result = generate.main(
-                ["--repo-root", str(ROOT), "--check", "--require-complete"]
+    def test_check_require_complete_validates_complete_fixture_and_runs_release_audits(
+        self,
+    ) -> None:
+        from tools.api_manifest.tests.test_operation_readiness import (
+            _complete_readiness_manifest,
+            _write_dependency_matrix_fixture_if_missing,
+        )
+
+        version_paths = (
+            "Cargo.toml",
+            "crates/kmipkit-ttlv/Cargo.toml",
+            "crates/kmipkit-protocol/Cargo.toml",
+            "crates/kmipkit-transport/Cargo.toml",
+            "crates/kmipkit-client/Cargo.toml",
+            "crates/kmipkit/Cargo.toml",
+            "crates/kmipkit-ffi/Cargo.toml",
+            "bindings/python/pyproject.toml",
+            "bindings/java/build.gradle.kts",
+            "bindings/java/pom.xml",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            api_directory = root / "specification" / "api"
+            api_directory.mkdir(parents=True)
+            shutil.copy2(SCHEMA, api_directory / SCHEMA.name)
+            catalog_path = root / "specification" / "catalog" / CATALOG.name
+            catalog_path.parent.mkdir(parents=True)
+            shutil.copy2(CATALOG, catalog_path)
+
+            for relative_path in version_paths:
+                destination = root / relative_path
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative_path, destination)
+
+            manifest = _complete_readiness_manifest(root)
+            _write_dependency_matrix_fixture_if_missing(manifest, root)
+            for package in manifest["publicPackages"]:
+                package["versionSource"] = "releaseLine"
+
+            error_declarations: list[dict[str, object]] = []
+            error_exports: dict[str, dict[str, str]] = {}
+            package_ids = {
+                "rust": "rust-kmipkit-protocol",
+                "c": "c-kmipkit",
+                "java": "java-kmipkit",
+                "python": "python-kmipkit",
+            }
+            for error in manifest["errorCategories"]:
+                error_id = error["id"]
+                name = "".join(part.title() for part in error_id.split("_"))
+                exports = {
+                    "rust": f"kmipkit_protocol::fixture::Error::{name}",
+                    "c": f"KMIPKIT_ERROR_{error_id.upper()}",
+                    "java": f"org.kmipkit.fixture.{name}Exception",
+                    "python": f"kmipkit.errors.fixture_{error_id}_error",
+                }
+                error["cCode"] = exports["c"]
+                error["javaException"] = exports["java"]
+                error["pythonException"] = exports["python"]
+                error_exports[error_id] = exports
+                for language, export_name in exports.items():
+                    error_declarations.append(
+                        {
+                            "declarationId": f"strict_fixture_error_{error_id}_{language}",
+                            "packageId": package_ids[language],
+                            "kind": {
+                                "rust": "associated-item",
+                                "c": "constant",
+                                "java": "type",
+                                "python": "type",
+                            }[language],
+                            "exportName": export_name,
+                            "capabilityId": "public_binding_surface",
+                            "requirementIds": ["KMIPKIT-0043-FR-001"],
+                            "declarationState": "verified",
+                            "parityScope": "four-language",
+                            "approvalSource": {
+                                "kind": "feature-specification",
+                                "path": "specs/007-client-execution/approval-record.md",
+                                "status": "Approved",
+                                "evidence": "Maintainer acceptance for release 1.0.0",
+                            },
+                            "languageMappings": {
+                                mapped_language: {
+                                    "packageId": package_ids[mapped_language],
+                                    "name": mapped_export,
+                                }
+                                for mapped_language, mapped_export in exports.items()
+                            },
+                            "parityEvidenceIds": ["tests/fixtures/api/parity.json"],
+                        }
+                    )
+            manifest["publicDeclarations"].extend(error_declarations)
+            public_binding_surface = next(
+                capability
+                for capability in manifest["capabilities"]
+                if capability["capabilityId"] == "public_binding_surface"
+            )
+            for language in package_ids:
+                public_binding_surface["mappings"][language] = sorted(
+                    [
+                        *public_binding_surface["mappings"][language],
+                        *(exports[language] for exports in error_exports.values()),
+                    ]
+                )
+            (api_directory / "public-api.json").write_text(
+                json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
             )
 
-        self.assertEqual(result, 0)
-        self.assertTrue(validate_manifest.call_args.kwargs["require_complete"])
+            write_result = generate.main(["--repo-root", str(root), "--write"])
+            self.assertEqual(write_result, 0)
+            output_paths = [root / path for path in V2_GENERATED_OUTPUTS]
+            before_check = {
+                path: (path.read_bytes(), path.stat().st_mtime_ns)
+                for path in output_paths
+            }
+
+            with mock.patch(
+                "tools.api_manifest.generate.subprocess.run",
+                return_value=subprocess.CompletedProcess([], 0),
+            ) as run_audits:
+                result = generate.main(
+                    [
+                        "--repo-root",
+                        str(root),
+                        "--check",
+                        "--require-complete",
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            audit_commands = [call.args[0] for call in run_audits.call_args_list]
+            self.assertEqual(len(audit_commands), 2)
+            self.assertEqual(
+                {Path(command[2]).name for command in audit_commands},
+                {"audit_rust_exports.py", "audit_binding_exports.py"},
+            )
+            self.assertTrue(all(command[-1] == "--check" for command in audit_commands))
+            self.assertEqual(
+                {
+                    path: (path.read_bytes(), path.stat().st_mtime_ns)
+                    for path in output_paths
+                },
+                before_check,
+            )
 
     def test_rejects_malformed_manifest_without_writing_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
