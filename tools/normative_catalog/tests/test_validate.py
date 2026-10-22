@@ -17224,6 +17224,62 @@ class CatalogValidationTests(unittest.TestCase):
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
 
+    def test_validate_validity_date_may_has_typed_optional_traceability(self) -> None:
+        """The §6.1.57 date MAY links to its typed request representation rule."""
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-002-002"
+        positive_test = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_validate_validity_date_as_optional_capability"
+        )
+        malformed_test = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_rejects_malformed_validate_validity_date_when_present"
+        )
+        requirement = next(
+            row
+            for row in json.loads(
+                (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+                    encoding="utf-8"
+                )
+            )["requirements"]
+            if row["requirement_id"] == requirement_id
+        )
+        mappings = [
+            mapping
+            for mapping in load_typed_rule_mappings(ROOT)
+            if mapping["requirement_id"] == requirement_id
+        ]
+
+        self.assertEqual(
+            requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1.57-002"]
+        )
+        self.assertEqual(requirement["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.57"}])
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["element_ids"], ["KMIPKIT-ELEM-OP-C2S-VALIDATE"])
+        self.assertTrue(
+            {
+                "crates/kmipkit-protocol/src/validate.rs::ValidateRequest::with_validity_date",
+                "crates/kmipkit-protocol/src/validate.rs::ValidateRequest::into_ttlv_payload",
+                "crates/kmipkit-protocol/src/profile.rs::client_validate_validity_date_is_usable",
+            }.issubset(requirement["implementation_refs"])
+        )
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::"
+            "req_002_002_optional_validity_date_preserves_exact_value",
+            requirement["verification_refs"],
+        )
+        self.assertIn(positive_test, requirement["verification_refs"])
+        self.assertIn(malformed_test, requirement["verification_refs"])
+        self.assertEqual(len(mappings), 1)
+        self.assertEqual(
+            mappings[0]["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.57-002"
+        )
+        self.assertEqual(mappings[0]["verification_category"], "OptionalCapability")
+        self.assertEqual(mappings[0]["test_kind"], "OptionalCapabilityUsable")
+        self.assertEqual(mappings[0]["test_id"], positive_test)
+        self.assertTrue(mappings[0]["evaluator_present"])
+
     def test_opaque_object_context_capability_evidence_has_a_bounded_typed_rule(self) -> None:
         """The §2.3 capability is limited to tested client encode/decode paths."""
         requirement_id = "KMIPKIT-REQ-SPEC-2.3-001"

@@ -46,6 +46,7 @@ const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
 const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
+const VALIDITY_DATE_TAG: u32 = 0x0042_009A;
 const DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
 const DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
 const DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -1624,6 +1625,110 @@ fn profile_maps_request_time_stamp_as_optional_capability() {
     result
         .validate_request(&request_with_time_stamp)
         .expect("a client can represent an optional Request Header Time Stamp");
+}
+
+#[test]
+fn profile_maps_validate_validity_date_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.57 paragraph 2 and Table 340 make the
+    // Validate request Validity Date optional.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Validate Validity Date has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional date resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let omitted_payload = crate::ValidateRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
+        .into_ttlv_payload()
+        .expect("the Validate request without a date has a valid payload");
+    let omitted = request_message_with_operation_payload(VALIDATE_OPERATION, omitted_payload);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("the optional Validity Date may be omitted");
+
+    let caller_date = 1_751_100_123_i64;
+    let supplied_payload = crate::ValidateRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
+        .with_validity_date(caller_date)
+        .into_ttlv_payload()
+        .expect("the Validate request with a Date-Time has a valid payload");
+    assert!(matches!(
+        supplied_payload.view().children().last().map(|field| {
+            field.with_value(|value| matches!(value, ValueView::DateTime(date) if *date == caller_date))
+        }),
+        Some(true)
+    ));
+    let supplied = request_message_with_operation_payload(VALIDATE_OPERATION, supplied_payload);
+    assert!(evaluate(Some(&supplied), None));
+    result
+        .validate_request(&supplied)
+        .expect("a client may include the caller-supplied Validity Date");
+}
+
+#[test]
+fn profile_rejects_malformed_validate_validity_date_when_present() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Validate Validity Date has a typed profile rule");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let malformed = request_message_with_operation_payload(
+        VALIDATE_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("managed-certificate".to_owned()),
+            ),
+            tagged(VALIDITY_DATE_TAG, Value::integer(42)),
+        ]),
+    );
+
+    assert!(!evaluate(Some(&malformed), None));
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("a present Validity Date must retain its Date-Time wire type");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
 }
 
 #[test]
