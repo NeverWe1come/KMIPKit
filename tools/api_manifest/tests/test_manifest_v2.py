@@ -368,6 +368,30 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         with self.assertRaises(ManifestError):
             generate._validate_release_package_versions(manifest, ROOT)
 
+    def test_release_gate_rejects_python_package_name_drift(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        python_package = next(
+            package
+            for package in manifest["publicPackages"]
+            if package["id"] == "python-kmipkit"
+        )
+        python_package["packageName"] = "kmipkit-unexpected"
+
+        with self.assertRaises(ManifestError):
+            generate._validate_release_package_versions(manifest, ROOT)
+
+    def test_release_gate_rejects_java_coordinate_drift(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        java_package = next(
+            package
+            for package in manifest["publicPackages"]
+            if package["id"] == "java-kmipkit"
+        )
+        java_package["packageName"] = "org.kmipkit:unexpected-artifact"
+
+        with self.assertRaises(ManifestError):
+            generate._validate_release_package_versions(manifest, ROOT)
+
     def test_release_gate_requires_the_complete_shared_capability_inventory(self) -> None:
         operations = [
             {"apiState": "verified"}
