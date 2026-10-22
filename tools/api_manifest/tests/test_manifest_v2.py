@@ -356,6 +356,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 with self.assertRaises(ManifestError):
                     generate._validate_release_package_versions(malformed, ROOT)
 
+    def test_release_gate_rejects_rust_package_name_drift(self) -> None:
+        manifest = copy.deepcopy(self.checked_in_manifest)
+        rust_package = next(
+            package
+            for package in manifest["publicPackages"]
+            if package["id"] == "rust-kmipkit-ttlv"
+        )
+        rust_package["packageName"] = "kmipkit-ttlv-unexpected"
+
+        with self.assertRaises(ManifestError):
+            generate._validate_release_package_versions(manifest, ROOT)
+
     def test_release_gate_requires_the_complete_shared_capability_inventory(self) -> None:
         operations = [
             {"apiState": "verified"}
