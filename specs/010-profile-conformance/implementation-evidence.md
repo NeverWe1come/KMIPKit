@@ -4327,7 +4327,7 @@ Exact-head Actions run `39752978537` reported a failure in Documentation contrac
 
 | Check | Command or evidence | Result |
 |---|---|---|
-| CI Red | Exact-head Actions run `39752978537` on `d9a4b8591b5b0ae49e8b3294b9b6d52fa966434d`; Documentation contracts / traceability | FAIL: the catalog requirement lacked the profile test reference required by the traceability contract. Other jobs were still running when this correction was prepared. |
+| CI Red | Exact-head Actions run `39752978537` on `d9a4b8591b5b0ae49e8b3294b9b6d52fa966434d`; Documentation contracts / traceability and Python Script contracts on Linux, Windows, and macOS | FAIL: all four contract jobs rejected the same missing profile-test `verification_refs` link; no other distinct failure was reported in those job logs. |
 | Correction verification | `py -3 -B -m unittest tools.normative_catalog.tests.test_feature_traceability -q` | PASS: 19 tests, 1 skipped, after adding the verification reference. |
 | Generated artifacts | `py -3 -B tools/normative_catalog/report.py --check --repo-root .`; `py -3 -B tools/normative_catalog/generate_profiles.py --check --repo-root .` (serial rerun) | PASS: the report and generated profile metadata are current. One concurrent profile check transiently reported a pinned source unavailable; the serial rerun passed. |
 | Catalog validation | `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `git diff --check` | PASS: 4 sources, 1,411 clauses, and 4,123 records; no whitespace errors. |
