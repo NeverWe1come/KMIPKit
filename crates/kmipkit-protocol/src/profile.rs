@@ -707,6 +707,7 @@ const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
 const LOCATE_OPERATION: u32 = 0x0000_0008;
 const MAXIMUM_ITEMS: u32 = 0x0042_004F;
+const OFFSET_ITEMS: u32 = 0x0042_00D4;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const QUERY_FUNCTION: u32 = 0x0042_0074;
 const ATTRIBUTES: u32 = 0x0042_0125;
@@ -889,6 +890,34 @@ fn client_can_include_optional_locate_maximum_items(
                     .children()
                     .iter()
                     .filter(|field| field.tag().raw() == MAXIMUM_ITEMS)
+                    .all(|field| field.with_value(|value| matches!(value, ValueView::Integer(_))))
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_can_include_optional_locate_offset_items(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != LOCATE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == OFFSET_ITEMS)
                     .all(|field| field.with_value(|value| matches!(value, ValueView::Integer(_))))
             })
             .unwrap_or(false)
@@ -2380,6 +2409,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_can_include_optional_locate_maximum_items),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_maximum_items_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_include_optional_locate_offset_items),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_offset_items_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
