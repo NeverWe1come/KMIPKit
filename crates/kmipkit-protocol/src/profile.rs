@@ -734,6 +734,10 @@ const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
 const PGP_KEY: u32 = 0x0042_00BD;
 const PGP_KEY_VERSION: u32 = 0x0042_00BE;
+const SYMMETRIC_KEY: u32 = 0x0042_008F;
+const PUBLIC_KEY: u32 = 0x0042_007F;
+const PRIVATE_KEY: u32 = 0x0042_007E;
+const SPLIT_KEY: u32 = 0x0042_0090;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
@@ -1868,6 +1872,85 @@ fn import_payload_preserves_pgp_key(payload: &StructureView<'_>) -> bool {
     })
 }
 
+fn client_key_block_algorithm_requires_length(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_key_block_direct_field_requires_companion(
+        request,
+        CRYPTOGRAPHIC_ALGORITHM,
+        CRYPTOGRAPHIC_LENGTH,
+    )
+}
+
+fn client_key_block_length_requires_algorithm(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_key_block_direct_field_requires_companion(
+        request,
+        CRYPTOGRAPHIC_LENGTH,
+        CRYPTOGRAPHIC_ALGORITHM,
+    )
+}
+
+fn client_key_block_direct_field_requires_companion(
+    request: Option<&RequestMessage>,
+    field_tag: u32,
+    companion_tag: u32,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|object| {
+                        matches!(
+                            object.tag().raw(),
+                            SYMMETRIC_KEY | PUBLIC_KEY | PRIVATE_KEY | SPLIT_KEY | PGP_KEY
+                        )
+                    })
+                    .all(|object| {
+                        object.with_value(|value| match value {
+                            ValueView::Structure(object) => object
+                                .children()
+                                .iter()
+                                .filter(|member| member.tag().raw() == KEY_BLOCK)
+                                .all(|key_block| {
+                                    key_block.with_value(|value| match value {
+                                        ValueView::Structure(key_block) => {
+                                            !key_block
+                                                .children()
+                                                .iter()
+                                                .any(|field| field.tag().raw() == field_tag)
+                                                || key_block
+                                                    .children()
+                                                    .iter()
+                                                    .any(|field| field.tag().raw() == companion_tag)
+                                        }
+                                        _ => true,
+                                    })
+                                }),
+                            _ => true,
+                        })
+                    })
+            })
+            .unwrap_or(true)
+    })
+}
+
 fn pgp_key_preserves_required_fields(pgp_key: &StructureView<'_>) -> bool {
     let FieldPresence::Unique(version) = field_presence(pgp_key, PGP_KEY_VERSION) else {
         return false;
@@ -2706,6 +2789,40 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-004-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_key_block_algorithm_requires_length),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.1-005-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_key_block_length_requires_algorithm),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],
