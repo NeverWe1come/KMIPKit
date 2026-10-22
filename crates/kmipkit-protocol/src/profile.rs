@@ -2675,16 +2675,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-002",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_variable_iv_cryptographic_parameters_include_iv_length),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_invalid_ttlv_types_for_variable_iv_rule",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

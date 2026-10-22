@@ -28639,6 +28639,7 @@
         "KMIPKIT-ELEM-TAG-42002B"
       ],
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003"
       ],
       "profile_ids": [],
@@ -28649,7 +28650,12 @@
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_variable_iv_length_in_nested_register_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_invalid_ttlv_types_for_variable_iv_rule",
         "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::gcm_requires_tag_length_and_preserves_supplied_parameters",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::ccm_requires_iv_length_without_requiring_gcm_tag_length",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::variable_iv_mode_requires_iv_length_and_preserves_supplied_parameters",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_validates_nested_register_gcm_tag_length"
       ],
@@ -52146,6 +52152,7 @@
       "scope_state": "client_1_0",
       "parent_element_ids": [],
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003"
       ],
       "profile_ids": [],
@@ -52156,7 +52163,12 @@
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_variable_iv_length_in_nested_register_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_invalid_ttlv_types_for_variable_iv_rule",
         "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::gcm_requires_tag_length_and_preserves_supplied_parameters",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::ccm_requires_iv_length_without_requiring_gcm_tag_length",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::variable_iv_mode_requires_iv_length_and_preserves_supplied_parameters",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_validates_nested_register_gcm_tag_length"
       ]
@@ -63108,6 +63120,7 @@
         "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS"
       ],
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.16-002",
         "KMIPKIT-REQ-SPEC-4.16-003"
       ],
       "profile_ids": [],
@@ -63118,7 +63131,12 @@
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_variable_iv_length_in_nested_register_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_invalid_ttlv_types_for_variable_iv_rule",
         "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::gcm_requires_tag_length_and_preserves_supplied_parameters",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::ccm_requires_iv_length_without_requiring_gcm_tag_length",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::variable_iv_mode_requires_iv_length_and_preserves_supplied_parameters",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_validates_nested_register_gcm_tag_length"
       ],
@@ -63308,12 +63326,23 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-4.16-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0019",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_variable_iv_cryptographic_parameters_include_iv_length"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_variable_iv_length_in_nested_register_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_invalid_ttlv_types_for_variable_iv_rule",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::ccm_requires_iv_length_without_requiring_gcm_tag_length",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::variable_iv_mode_requires_iv_length_and_preserves_supplied_parameters"
+      ],
       "source_encoding": "Integer",
       "source_requiredness": "No unless Block Cipher Mode supports variable IV lengths"
     },
@@ -88623,7 +88652,12 @@
       "direction": "unclear",
       "condition": "Examples include CTR and GCM.",
       "scope_state": "profile_conditional",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+        "KMIPKIT-ELEM-ENUMERATION-BLOCK-CIPHER-MODE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-IV-LENGTH"
+      ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
         "KMIPKIT-PROFILE-ASYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -88646,12 +88680,21 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0019",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/cryptographic_parameters.rs::validate_known_cryptographic_parameters_view",
+        "crates/kmipkit-protocol/src/profile.rs::client_variable_iv_cryptographic_parameters_include_iv_length"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_variable_iv_length_in_nested_register_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_variable_iv_modes_to_required_iv_length",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_invalid_ttlv_types_for_variable_iv_rule",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::ccm_requires_iv_length_without_requiring_gcm_tag_length",
+        "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::variable_iv_mode_requires_iv_length_and_preserves_supplied_parameters"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.16 requires IV Length when the selected Block Cipher Mode supports variable IV length and names CTR and GCM as examples; §11.6 Table 436 assigns CTR=6, CCM=8, and GCM=9. The Baseline evaluator checks the client-produced outbound request representation for this typed profile rule; the catalog retains normative direction as unclear and links no separate decision. It checks only supplied Cryptographic Parameters and leaves operation-level omission valid. CCM is included because NIST SP 800-38C permits nonce lengths from 7 through 13 bytes; this classification is not attributed to the OASIS table. CBC is tested as a fixed-IV control. Unknown/vendor mode values are not classified by this evidence. The linked local tests cover direct and nested Register parameters, missing IV Length, malformed TTLV types, and known-mode parameter validation; they do not establish server acceptance, official OASIS test execution, or formal profile conformance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.16-003",
@@ -88674,9 +88717,9 @@
       "scope_state": "profile_conditional",
       "element_ids": [
         "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+        "KMIPKIT-ELEM-ENUMERATION-BLOCK-CIPHER-MODE",
         "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE",
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TAG-LENGTH",
-        "KMIPKIT-ELEM-ENUMERATION-BLOCK-CIPHER-MODE"
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TAG-LENGTH"
       ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
@@ -88712,7 +88755,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §4.16 states that Tag Length SHALL be provided when Block Cipher Mode is GCM; §11.6 Table 436 assigns GCM enumeration 9. The client rule checks supplied request Cryptographic Parameters and requires an Integer Tag Length only for GCM. Omission of operation-level Cryptographic Parameters remains valid; the linked negative test supplies IV Length while omitting Tag Length, keeping §4.16-002 separate. No server-held parameter inference, official Test Case pass, or profile-conformance claim is made."
+      "review_note": "Pinned KMIP Specification v2.1 §4.16 states that Tag Length SHALL be provided when Block Cipher Mode is GCM; §11.6 Table 436 assigns GCM enumeration 9. The client rule checks supplied request Cryptographic Parameters and requires an Integer Tag Length only for GCM. Omission of operation-level Cryptographic Parameters remains valid; the linked negative test supplies IV Length while omitting Tag Length, keeping §4.16-002 separate. No server-held parameter inference, official Test Case pass, or profile-conformance claim is made. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.17-001-001",
