@@ -73,6 +73,10 @@ const TLS_TEST_TIMEOUT: Duration = Duration::from_secs(2);
 const PEER_ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
 const PEER_ACCEPT_POLL_INTERVAL: Duration = Duration::from_millis(10);
 const PEER_OPERATION_TIMEOUT: Duration = Duration::from_secs(6);
+// Keep CI scheduling headroom and ensure the peer outlives the total deadline.
+const TOTAL_DEADLINE_TEST_TIMEOUT: Duration = Duration::from_secs(2);
+const TOTAL_DEADLINE_PEER_HOLD: Duration = Duration::from_secs(4);
+const TOTAL_DEADLINE_PHASE_TIMEOUT: Duration = Duration::from_secs(5);
 const SERVER_NAME: &str = "server.kmipkit.test";
 
 #[derive(Clone, Default)]
@@ -279,7 +283,7 @@ fn raw_tls_total_deadline_remains_absolute_while_waiting_for_response() {
         listener.into_inner(),
         server_config(&pki, true),
         fixtures::REQUEST_SENTINEL.len(),
-        PeerAction::HoldAfterRequestFor(Duration::from_secs(4)),
+        PeerAction::HoldAfterRequestFor(TOTAL_DEADLINE_PEER_HOLD),
     );
     let observer = secret::SecretBufferObserver::new(fixtures::REQUEST_SENTINEL.len());
     let config = client_config_with_timeouts(
@@ -288,8 +292,8 @@ fn raw_tls_total_deadline_remains_absolute_while_waiting_for_response() {
         address.port(),
         SERVER_NAME,
         Vec::new(),
-        short_timeout_policy(Duration::from_secs(5), Duration::from_secs(2))
-            .with_read(TimeoutLimit::Bounded(Duration::from_secs(5))),
+        short_timeout_policy(TOTAL_DEADLINE_PHASE_TIMEOUT, TOTAL_DEADLINE_TEST_TIMEOUT)
+            .with_read(TimeoutLimit::Bounded(TOTAL_DEADLINE_PHASE_TIMEOUT)),
     );
 
     let result = exchange(config, fixtures::REQUEST_SENTINEL, Some(observer.clone()));
