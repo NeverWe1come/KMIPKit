@@ -17259,8 +17259,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["element_ids"], ["KMIPKIT-ELEM-OP-C2S-VALIDATE"])
         self.assertTrue(
             {
-                "crates/kmipkit-protocol/src/validate.rs::ValidateRequest::with_validity_date",
-                "crates/kmipkit-protocol/src/validate.rs::ValidateRequest::into_ttlv_payload",
+                "crates/kmipkit-protocol/src/validate.rs",
                 "crates/kmipkit-protocol/src/profile.rs::client_validate_validity_date_is_usable",
             }.issubset(requirement["implementation_refs"])
         )
