@@ -29,6 +29,43 @@ def test_validate_builder_accepts_identifier_only_chain_and_optional_date(
     assert identifiers == [extensions.UniqueIdentifier.text_string("chain-id")]
 
 
+def test_validate_builder_accepts_iterable_inputs(monkeypatch: Any) -> None:
+    calls: list[tuple[str, tuple[object, ...]]] = []
+
+    def make_handle(_kind: str, symbol: str, arguments: tuple[object, ...]) -> int:
+        calls.append((symbol, arguments))
+        return 62
+
+    monkeypatch.setattr(extensions, "_make_handle", make_handle)
+    monkeypatch.setattr(extensions, "_wrap_owned_handle", lambda _kind, value: value)
+
+    identifiers = (value for value in [extensions.UniqueIdentifier.text_string("chain-id")])
+    assert extensions.client_batch_item_validate(
+        iter(()), identifiers, payload_extensions=iter(())
+    ) == 62
+    assert len(calls) == 1
+    assert calls[0][0] == "kmipkit_client_batch_item_validate"
+
+
+def test_validate_builder_rejects_aggregate_item_limit_before_iterating() -> None:
+    class SizedIterable:
+        def __init__(self, count: int) -> None:
+            self.count = count
+
+        def __len__(self) -> int:
+            return self.count
+
+        def __iter__(self) -> Any:
+            raise AssertionError("oversized Validate inputs must fail before copying")
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions.client_batch_item_validate(
+            SizedIterable(40_000),  # type: ignore[arg-type]
+            SizedIterable(40_000),  # type: ignore[arg-type]
+            payload_extensions=SizedIterable(20_001),  # type: ignore[arg-type]
+        )
+
+
 def test_validate_builder_rejects_missing_lists_and_out_of_range_date() -> None:
     with pytest.raises(errors.InvalidInputError):
         extensions.client_batch_item_validate(None, (), validity_date=None)  # type: ignore[arg-type]
