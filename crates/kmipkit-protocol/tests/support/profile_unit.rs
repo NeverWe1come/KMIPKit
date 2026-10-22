@@ -1337,6 +1337,12 @@ fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
     );
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the required behavior has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+    let single_item_request = request_message_with_unique_batch_item_id(None);
+    assert!(evaluate(Some(&single_item_request), None));
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],

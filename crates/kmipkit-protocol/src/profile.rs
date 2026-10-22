@@ -828,6 +828,19 @@ fn client_may_include_or_omit_unique_batch_item_id(
     request.is_some()
 }
 
+fn client_includes_unique_batch_item_id_for_multi_item_request(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    let mut batch_items = request.batch_items();
+    batch_items.len() <= 1
+        || batch_items.all(|item| item.with_unique_batch_item_id(|_| ()).is_some())
+}
+
 fn client_can_inspect_optional_result_message(
     _request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -1952,6 +1965,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-8.3-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.3-003",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_includes_unique_batch_item_id_for_multi_item_request),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_unique_batch_item_id_for_multi_item_requests",
+            kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
     },

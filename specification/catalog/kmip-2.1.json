@@ -98275,11 +98275,13 @@
         "crates/kmipkit-protocol/src/message/batch.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/message_validation.rs::every_multi_item_request_requires_an_id",
-        "crates/kmipkit-protocol/tests/message_validation.rs::multi_item_request_rejects_repeated_unique_batch_item_ids"
+        "crates/kmipkit-protocol/tests/message_validation.rs::multi_item_request_rejects_repeated_unique_batch_item_ids",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_unique_batch_item_id_for_multi_item_requests"
       ],
       "negative_verification_required": false,
       "decision_id": null,
