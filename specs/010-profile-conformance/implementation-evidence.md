@@ -4660,3 +4660,16 @@ Hosted CI run `39835854786` exposed three stale catalog-contract assertions on U
 | Full-suite reproduction before Green | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -v` | Reproduced exactly three failures: the outdated §9.6-only expectation and the two missing-`pinned` TLS assertions (645 tests; 10 skipped). |
 
 The correction leaves Baseline at 54 typed mappings of 265, with 211 unmapped. T040 remains open; the new exact-head hosted CI run must verify this correction.
+
+### KMIPKIT-0010 T040 slice — Key Value Present in Locate (2026-10-22)
+
+This slice maps client `MAY` requirement `KMIPKIT-REQ-SPEC-4.28-001-003`. KMIP Specification v2.1 §4.28 permits Key Value Present as part of Locate; §6.1.28 describes the Locate request payload, and §11.56 defines the attribute encoding as Boolean. The Baseline Client typed rule validates only the outbound Locate request representation when the optional criterion is present: omission remains valid, either Boolean value is accepted, and malformed or duplicate fields are rejected. The catalog retains direction as unclear. This evidence does not claim server matching semantics, response results, official OASIS Test Case execution, or profile conformance.
+
+| Phase | DCO-signed commit and command | Result |
+|---|---|---|
+| Red | `2cfafb5f97243bee0f995c18ea471e2117af7479`; focused `cargo test -p kmipkit-protocol --all-features --locked` runs for `profile_maps_client_locate_key_value_present_as_optional_capability` and `profile_rejects_malformed_locate_key_value_present_criterion` | Expected failures: no typed profile rule was registered; malformed input returned `MissingRuleMapping` instead of `RequestRuleRejected`. |
+| Green | `35ece5c8`; `cargo test -p kmipkit-protocol --all-features --locked locate_key_value_present -- --nocapture`; catalog validation; profile traceability and crosswalk suites; `cargo fmt --all --check` | PASS: both focused Rust tests; catalog valid with 1,411 clauses and 4,123 records; 19 traceability tests (1 skipped); 16 crosswalk tests; formatting clean. |
+| Refactor / generated evidence | This DCO-signed Refactor commit; profile metadata and coverage report regenerated from the catalog, then both generators run with `--check`; `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles tools.normative_catalog.tests.test_report -q` | Generated files are current; the report links §4.28, §6.1.28, §11.56 and the implementation and verification references; 117 generator/report tests pass (2 skipped). The report test's static typed-rule registry expectation now includes both optional-capability evidence links. |
+| Full protocol verification | `cargo test -p kmipkit-protocol --all-features --locked --quiet`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `git diff --check` | PASS: 841 protocol unit tests and all integration/doctests; Clippy clean; diff has no whitespace errors. |
+
+Baseline now has 55 unique typed mappings of 265 assigned requirements; 210 assigned requirements remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 unavailable. Readiness remains `evidence_incomplete`, T040 remains open, and this slice makes no profile-conformance claim.
