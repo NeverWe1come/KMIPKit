@@ -1682,7 +1682,9 @@ fn profile_maps_validate_validity_date_as_optional_capability() {
         .expect("the Validate request with a Date-Time has a valid payload");
     assert!(matches!(
         supplied_payload.view().children().last().map(|field| {
-            field.with_value(|value| matches!(value, ValueView::DateTime(date) if *date == caller_date))
+            field.with_value(
+                |value| matches!(value, ValueView::DateTime(date) if *date == caller_date),
+            )
         }),
         Some(true)
     ));
