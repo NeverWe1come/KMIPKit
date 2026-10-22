@@ -4663,7 +4663,7 @@ The correction leaves Baseline at 54 typed mappings of 265, with 211 unmapped. T
 
 ### KMIPKIT-0010 T040 slice — Key Value Present in Locate (2026-10-22)
 
-This slice maps client `MAY` requirement `KMIPKIT-REQ-SPEC-4.28-001-003`. KMIP Specification v2.1 §4.28 permits Key Value Present as part of Locate; §6.1.28 describes the Locate request payload, and §11.56 defines the attribute encoding as Boolean. The Baseline Client typed rule validates only the outbound Locate request representation when the optional criterion is present: omission remains valid, either Boolean value is accepted, and malformed or duplicate fields are rejected. The catalog retains direction as unclear. This evidence does not claim server matching semantics, response results, official OASIS Test Case execution, or profile conformance.
+This slice maps client `MAY` requirement `KMIPKIT-REQ-SPEC-4.28-001-003`. KMIP Specification v2.1 §4.28 permits Key Value Present as part of Locate; §6.1.28 describes the client-originated Locate request, establishing `client_to_server` direction, and §11.56 defines the attribute encoding as Boolean. The Baseline Client typed rule validates only the outbound Locate request representation when the optional criterion is present: omission remains valid, either Boolean value is accepted, and malformed or duplicate fields are rejected. This evidence does not claim server matching semantics, response results, official OASIS Test Case execution, or profile conformance.
 
 | Phase | DCO-signed commit and command | Result |
 |---|---|---|
@@ -4673,3 +4673,13 @@ This slice maps client `MAY` requirement `KMIPKIT-REQ-SPEC-4.28-001-003`. KMIP S
 | Full protocol verification | `cargo test -p kmipkit-protocol --all-features --locked --quiet`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `git diff --check` | PASS: 841 protocol unit tests and all integration/doctests; Clippy clean; diff has no whitespace errors. |
 
 Baseline now has 55 unique typed mappings of 265 assigned requirements; 210 assigned requirements remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 unavailable. Readiness remains `evidence_incomplete`, T040 remains open, and this slice makes no profile-conformance claim.
+
+### T040 CI correction — Locate capability direction (2026-10-22)
+
+Hosted CI run `39842184109` exposed that retaining `direction: unclear` made the audited optional-evidence gate treat `KMIPKIT-REQ-SPEC-4.28-001-003` as unsupported, despite its typed mapping and positive tests. KMIP Specification v2.1 §6.1.28 explicitly describes a client-originated Locate request; together with §4.28's Locate MAY, this establishes `client_to_server`. The catalog and review note now use that direction and cite §6.1.28. No additional condition or server-result claim was inferred.
+
+| Phase | DCO-signed commit and command | Result |
+|---|---|---|
+| Red | `6d2beafc`; `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_spec_4_26_through_4_33_source_review_slice_preserves_mixed_actors -v` | Expected failure: the catalog recorded `unclear` instead of the source-backed `client_to_server`. |
+| Green | `7795639c`; the focused source-review test and `test_every_reviewed_client_may_or_optional_has_usable_positive_evidence`; `py -3 -B tools/normative_catalog/validate.py --repo-root .`; profile traceability suite | PASS: direction and §6.1.28 crosswalk asserted; selected MAY/OPTIONAL evidence gate passes; catalog valid with 1,411 clauses and 4,123 records; traceability 19 tests (1 skipped). |
+| Refactor / generated evidence | This DCO-signed Refactor commit; `py -3 -B tools/normative_catalog/report.py --repo-root . --write`, followed by `--check` | The generated report records client-to-server direction and the source basis; T040 remains `evidence_incomplete`. |
