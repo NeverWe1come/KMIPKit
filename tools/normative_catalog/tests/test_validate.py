@@ -7815,11 +7815,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             requirement["element_ids"],
             [
-                "KMIPKIT-ELEM-OP-C2S-REVOKE",
                 "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
                 "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE",
                 "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
+                "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE",
             ],
         )
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
@@ -7835,9 +7835,22 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed",
             requirement["verification_refs"],
         )
+        for test_name in (
+            "profile_maps_revoke_compromise_occurrence_date_shall_not_rule",
+            "profile_accepts_revoke_compromise_occurrence_date_for_key_and_ca_compromise",
+            "profile_accepts_revoke_without_compromise_occurrence_date_for_any_reason",
+        ):
+            self.assertIn(
+                f"crates/kmipkit-protocol/tests/support/profile_unit.rs::{test_name}",
+                requirement["verification_refs"],
+            )
         self.assertTrue(requirement["negative_verification_required"])
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.44-003-001", requirement["verification_refs"])
+        self.assertIn("§6.1.44 Table 295", requirement["review_note"])
+        self.assertIn("§11.48 Table 481", requirement["review_note"])
+        self.assertIn("adjacent SHOULD", requirement["review_note"])
+        self.assertIn("no profile-conformance claim", requirement["review_note"])
 
     def test_spec_6_1_46_rekey_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.46 and 6.1.46.1 preserve Re-key source roles."""

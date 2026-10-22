@@ -151,6 +151,18 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                     ],
                     row[0],
                 )
+            elif row[0] == "KMIPKIT-REQ-SPEC-6.1.44-003-002":
+                self.assertEqual(
+                    requirement["element_ids"],
+                    [
+                        "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
+                        "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
+                        "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
+                        "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE",
+                    ],
+                    row[0],
+                )
             elif row[0] != ABSENT_LINK_REQUIREMENT_ID:
                 self.assertEqual(len(requirement["element_ids"]), 1, row[0])
                 self.assertEqual(

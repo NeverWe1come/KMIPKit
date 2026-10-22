@@ -7425,10 +7425,7 @@ fn revoke_profile_request(
 ) -> crate::RequestMessage {
     let mut payload: Vec<_> = reason_fields.into_iter().collect();
     if include_compromise_occurrence_date {
-        payload.push(tagged(
-            COMPROMISE_OCCURRENCE_DATE,
-            Value::date_time(0),
-        ));
+        payload.push(tagged(COMPROMISE_OCCURRENCE_DATE, Value::date_time(0)));
     }
     request_message_with_operation_payload(REVOKE_OPERATION, structure(payload))
 }
@@ -7457,7 +7454,10 @@ fn profile_maps_revoke_compromise_occurrence_date_shall_not_rule() {
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == REVOKE_REQUIREMENT_ID);
-    assert!(mapping.is_some(), "the Revoke SHALL NOT has a typed profile mapping");
+    assert!(
+        mapping.is_some(),
+        "the Revoke SHALL NOT has a typed profile mapping"
+    );
     if let Some(mapping) = mapping {
         assert_eq!(mapping.source_clause_id, REVOKE_SOURCE_CLAUSE_ID);
         assert_eq!(
@@ -7470,6 +7470,12 @@ fn profile_maps_revoke_compromise_occurrence_date_shall_not_rule() {
                     "profile_rejects_revoke_compromise_occurrence_date_for_other_reasons",
                 )
         }));
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.kind == RuleTestKind::NegativeBehavior
+                && evidence.test_id.ends_with(
+                    "profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed",
+                )
+        }));
     }
 }
 
@@ -7477,10 +7483,8 @@ fn profile_maps_revoke_compromise_occurrence_date_shall_not_rule() {
 fn profile_accepts_revoke_compromise_occurrence_date_for_key_and_ca_compromise() {
     // KMIP Specification v2.1 §6.1.44 Table 295; §11.48 Table 481 assigns 2 and 3.
     for reason in [2, 3] {
-        let request = revoke_profile_request(
-            [revoke_reason_item(Value::enumeration(reason))],
-            true,
-        );
+        let request =
+            revoke_profile_request([revoke_reason_item(Value::enumeration(reason))], true);
         assert!(
             revoke_profile_result().validate_request(&request).is_ok(),
             "the SHALL NOT rule must not enforce the adjacent SHOULD for reason {reason}"
@@ -7492,10 +7496,8 @@ fn profile_accepts_revoke_compromise_occurrence_date_for_key_and_ca_compromise()
 fn profile_rejects_revoke_compromise_occurrence_date_for_other_reasons() {
     // Standard non-compromise reasons and an unknown value remain distinct inputs.
     for reason in [1, 4, 6, 0x8000_0000] {
-        let request = revoke_profile_request(
-            [revoke_reason_item(Value::enumeration(reason))],
-            true,
-        );
+        let request =
+            revoke_profile_request([revoke_reason_item(Value::enumeration(reason))], true);
         assert_revoke_profile_request_rejected(&request);
     }
 }
@@ -7504,10 +7506,8 @@ fn profile_rejects_revoke_compromise_occurrence_date_for_other_reasons() {
 fn profile_accepts_revoke_without_compromise_occurrence_date_for_any_reason() {
     // The SHALL NOT rule does not require the adjacent SHOULD field for reasons 2 or 3.
     for reason in [1, 2, 3, 4, 6, 0x8000_0000] {
-        let request = revoke_profile_request(
-            [revoke_reason_item(Value::enumeration(reason))],
-            false,
-        );
+        let request =
+            revoke_profile_request([revoke_reason_item(Value::enumeration(reason))], false);
         assert!(revoke_profile_result().validate_request(&request).is_ok());
     }
 }

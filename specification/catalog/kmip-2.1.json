@@ -95635,6 +95635,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "6.1.44"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.48"
         }
       ],
       "source_keyword": "SHALL NOT",
@@ -95646,23 +95650,34 @@
       "condition": "For all other revocation reasons.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-REVOKE"
+        "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
+        "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
+        "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
+        "KMIPKIT-ELEM-OP-C2S-REVOKE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/revoke.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_compromise_occurrence_date_only_for_key_or_ca_compromise"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_revoke_compromise_occurrence_date_shall_not_rule",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_for_other_reasons",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_compromise_occurrence_date_for_key_and_ca_compromise",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_compromise_occurrence_date_for_any_reason",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "The Baseline Client profile screens outbound Revoke Request Payloads under KMIP Specification v2.1 §6.1.44 Table 295 and recognizes Key Compromise=2 and CA Compromise=3 from §11.48 Table 481. A present date is rejected for every other reason, including unknown enum values; an unparseable or non-unique reason fails closed. A missing date is valid for any reason, and this mapping does not enforce the adjacent SHOULD. No official Test Cases are linked in the pinned OASIS source; no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.45-001",
