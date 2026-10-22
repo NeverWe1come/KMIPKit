@@ -1,9 +1,9 @@
 # Ejecución tipada del cliente
 
-Esta guía describe la base de ejecución tipada introducida por KMIPKIT-0007 y
-sus operaciones: Discover Versions, Create, Create Key Pair, Create Split Key,
-Add Attribute, Adjust Attribute, Delete Attribute, Get Attributes, Get
-Attribute List, Modify Attribute, Set Attribute, Activate, Archive, Destroy,
+Esta guía describe la base de ejecución tipada en Rust introducida por
+KMIPKIT-0007 y sus APIs de operación en Rust: Discover Versions, Create, Create
+Key Pair, Create Split Key, Add Attribute, Adjust Attribute, Delete Attribute,
+Get Attributes, Get Attribute List, Modify Attribute, Set Attribute, Activate, Archive, Destroy,
 Recover, Encrypt, Decrypt, Query y Ping. Para ejemplos de Encrypt y Decrypt de
 una parte y multipart controlado por el llamador, consulta la
 [guía de Encrypt y Decrypt](cifrado-descifrado.md). Para el comportamiento de
@@ -13,12 +13,20 @@ y Ping, consulta la [guía de Query y Ping](operaciones-query-ping.md). Para
 configurar una conexión de producción, consulta la [guía de transportes TLS y
 HTTPS](transportes-produccion.md).
 
+Esta guía describe la superficie de la API Rust de `kmipkit-client`. Un modelo
+o accesor de Rust no establece la disponibilidad de una operación en los
+cuatro lenguajes de la versión 1.0. En el manifiesto, `blocked` significa que
+el mapeo completo de operaciones 1.0 para los cuatro lenguajes no está
+disponible, aunque existan tipos de Rust. Consulta el [estado de paquetes e
+idiomas](paquetes-de-idiomas.md) para ver el estado actual de operaciones y
+capacidades.
+
 ## Límite de peticiones tipadas
 
-La API síncrona `kmipkit_client::Client::execute` acepta un `ClientBatch` que
-contiene únicamente variantes del conjunto cerrado `ClientRequest`. El cliente
-admite peticiones explícitas del cliente al servidor para Discover Versions,
-Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
+La API síncrona de Rust `kmipkit_client::Client::execute` acepta un `ClientBatch`
+que contiene únicamente variantes del conjunto cerrado `ClientRequest`. El
+cliente Rust admite peticiones explícitas del cliente al servidor para Discover
+Versions, Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
 Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
 Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query y Ping.
 Discover Versions anuncia el par de versión KMIP 2.1 (2, 1), conforme a

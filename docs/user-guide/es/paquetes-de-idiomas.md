@@ -72,19 +72,24 @@ tabla.
 | `crypto_response_ttlv` | declared | El acceso TTLV genérico se limita a errores aprobados de forma del identificador único en respuestas correctas de MAC, MAC Verify, Sign y Signature Verify. |
 | `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
 | `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
-| `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de Register están mapeados en cuatro lenguajes; la paridad completa de la operación Register sigue bloqueada. |
+| `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de solicitud Register están mapeados en cuatro lenguajes; esta capacidad distinta sigue en estado `declared`. La fila de la operación Register está `verified`. |
 | `server_generated_creation` | declared | Los identificadores generados por el servidor, los metadatos del resultado y las representaciones de identificadores únicos están mapeados en cuatro lenguajes; la conformidad completa de las operaciones sigue pendiente. |
 | `usage_allocation_guard` | declared | Un contexto local de Usage Allocation, propiedad del llamador, protege la ejecución de Encrypt, MAC y Sign en cuatro lenguajes; no aplica políticas del servidor. Véase [controles de uso](controles-de-uso.md). |
 
-De las **56** filas de operaciones KMIP `client_1_0`, **22 / 56** siguen en
-estado `blocked`. Nueve filas están `declared`: Create, Create Key Pair, Create
-Split Key, Discover Versions, Hash, MAC, MAC Verify, Sign y Signature Verify.
-Sus mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
+De las **56** filas de operaciones KMIP `client_1_0`, **15 / 56** siguen en
+estado `blocked`. **8** filas están en estado `declared`: Create, Create Key
+Pair, Create Split Key, Hash, MAC, MAC Verify, Sign y Signature Verify. Sus
+mapeos de solicitud y respuesta para cuatro lenguajes están registrados;
 `declared` no demuestra la conformidad completa de las operaciones. No se debe
 inferir que una operación está disponible porque haya tipos o código en otra
-parte del repositorio. Veinticinco mapeos de operación están `verified`: Certify,
-Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get, Get Constraints, Get Usage
-Allocation, Import, Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key, Re-key Key Pair y Re-Provision. Logout envía el Ticket proporcionado por el llamador; no añade credenciales a peticiones posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
+parte del repositorio. **33** mapeos de operación están en estado `verified`:
+Certify, Check, Decrypt, Delegated Login, Derive Key, Discover Versions,
+Encrypt, Export, Get, Get Constraints, Get Usage Allocation, Import, Interop,
+Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query,
+Register, Revoke, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
+RNG Retrieve, RNG Seed, Set Constraints, Set Defaults y Validate. Logout envía
+el Ticket proporcionado por el llamador; no añade credenciales a peticiones
+posteriores ni cierra la sesión automáticamente. Véase [sesiones de credenciales](sesiones-credenciales.md). El mapeo de Derive
 Key rechaza una respuesta correcta que no incluya el Unique Identifier
 obligatorio y conserva el TTLV completo y
 ordenado en los cuatro lenguajes. Ping mapea la petición y la respuesta correcta

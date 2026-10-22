@@ -68,20 +68,23 @@ changes to this table.
 | `crypto_response_ttlv` | declared | Generic response access is limited to approved Unique Identifier shape errors in successful MAC, MAC Verify, Sign, and Signature Verify responses. |
 | `production_transport` | declared | Rust and the three adapters expose the approved TLS 1.3 client transport configuration; interoperability evidence remains pending. |
 | `api_level_discovery` | declared | Rust, C, Java, and Python expose the local API-level taxonomy without network access. |
-| `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; full Register operation parity remains blocked. |
+| `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; this separate capability remains declared. The Register operation row is verified. |
 | `server_generated_creation` | declared | Server-generated identifiers, result metadata, and unique-identifier representations are mapped across four languages; complete operation conformance remains pending. |
 | `usage_allocation_guard` | declared | A caller-owned local Usage Allocation context guards Encrypt, MAC, and Sign execution across four languages; it does not enforce server policy. See [policy controls](policy-controls.md). |
 
-Of the **56** KMIP `client_1_0` operation rows, **22 / 56** remain `blocked`.
-Nine rows are `declared`: Create, Create Key Pair, Create Split Key, Discover
-Versions, Hash, MAC, MAC Verify, Sign, and Signature Verify. Their four-language
-request and response mappings are recorded; `declared` is not evidence of
-complete operation conformance. Do not infer operation availability from types
-or implementation code elsewhere in the repository. Twenty-five operation mappings
-are `verified`: Certify, Check, Decrypt, Delegated Login, Derive Key, Encrypt, Export, Get,
-Get Constraints, Get Usage Allocation, Import, Interop, Join Split Key, Locate,
-Log, Login, Logout, Obtain Lease, Ping, PKCS#11, Query, Re-certify, Re-key,
-Re-key Key Pair, and Re-Provision. Logout sends the caller-supplied
+Of the **56** KMIP `client_1_0` operation rows, **15 / 56** remain `blocked`.
+**8** rows are `declared`: Create, Create Key Pair, Create Split Key, Hash, MAC,
+MAC Verify, Sign, and Signature Verify. Their four-language request and
+response mappings are recorded; `declared` is not evidence of complete
+operation conformance. Do not infer operation availability from types or
+implementation code elsewhere in the repository.
+**33** operation mappings are `verified`:
+Certify, Check, Decrypt, Delegated Login, Derive Key, Discover Versions,
+Encrypt, Export, Get, Get Constraints, Get Usage Allocation, Import,
+Interop, Join Split Key, Locate, Log, Login, Logout, Obtain Lease, Ping,
+PKCS#11, Query, Register, Revoke, Re-certify, Re-key, Re-key Key Pair,
+Re-Provision, RNG Retrieve, RNG Seed, Set Constraints, Set Defaults, and
+Validate. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;
 see [credential sessions](credential-sessions.md). The Derive Key mapping rejects a successful result without its
 required Unique Identifier and preserves the
