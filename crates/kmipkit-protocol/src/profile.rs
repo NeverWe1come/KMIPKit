@@ -819,13 +819,12 @@ fn client_get_or_export_key_compression_type_is_enumeration(
     })
 }
 
-fn client_may_include_or_omit_unique_batch_item_id(
+fn client_can_include_optional_unique_batch_item_id(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    // Profiles §4.1.2 grants a client choice for a single-item request. This
-    // optional-capability rule must not synthesize or require the identifier;
-    // positive evidence checks that both caller-selected forms remain usable.
+    // §9.21 makes the ID optional in requests; §8.3 requires it for multi-item
+    // requests. Positive evidence proves both single-item caller choices work.
     request.is_some()
 }
 
@@ -2084,6 +2083,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_include_optional_unique_batch_item_id),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_unique_batch_item_id_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::request_item_ids_remain_associated_in_seeded_batch_order",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-8.3-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.3-003",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
@@ -2142,7 +2158,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-007",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-007",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_may_include_or_omit_unique_batch_item_id),
+        evaluator: Some(client_can_include_optional_unique_batch_item_id),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_single_item_unique_batch_item_id_as_optional_capability",
