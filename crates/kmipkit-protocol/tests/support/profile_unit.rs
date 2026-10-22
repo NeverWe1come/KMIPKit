@@ -113,6 +113,10 @@ static TLS13_RECOMMENDED_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
     test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_tls_1_3_for_basic_authentication_suite_transport",
     kind: RuleTestKind::RecommendedBehavior,
 }];
+static TLS_LEGACY_PROHIBITION_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+    kind: RuleTestKind::NegativeBehavior,
+}];
 static DISCOURAGED_ABSENCE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
     test_id: "profile-rule-discouraged-absence-test",
     kind: RuleTestKind::DiscouragedBehaviorAbsent,
@@ -4264,6 +4268,36 @@ fn configured_tls13_constraint_accepts_both_tls_client_transports() {
             .expect("TLS 1.3 is configured for both supported client transports");
     }
     assert!(!ProfileTransport::Https.satisfies_transport_security("tls12"));
+}
+
+#[test]
+fn profile_maps_prohibited_legacy_tls_and_ssl_protocols_to_tls13_transport() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-3.1.1-005";
+    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-PROF-3.1.1-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("legacy TLS and SSL protocol prohibition has a typed rule");
+
+    assert_eq!(mapping.source_clause_id, CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(mapping.test_evidence, &TLS_LEGACY_PROHIBITION_TEST);
+    assert_eq!(mapping.constraints, &CONSTRAINTS_TLS13);
+
+    for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
+        result
+            .validate_transport_with_mappings(transport, std::slice::from_ref(mapping))
+            .expect("both client transports use TLS 1.3 and exclude legacy protocols");
+    }
 }
 
 #[test]
