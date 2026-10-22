@@ -89260,7 +89260,7 @@
       "subject": "Key Value Present in Locate",
       "summary": "The client may use Key Value Present as a Locate criterion.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
@@ -89283,7 +89283,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.28 permits Key Value Present as part of Locate. §6.1.28 describes the Locate request payload and §11.56 defines the attribute encoding as Boolean. The typed profile rule checks only the outbound Locate request representation when the optional criterion is present; it accepts omission and either Boolean value, and rejects malformed or duplicate fields. The existing Locate encoder test demonstrates that the criterion can be sent. The catalog retains direction as unclear, and this evidence makes no claim about server matching semantics, response results, official OASIS Test Case execution, or profile conformance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
+      "review_note": "Pinned KMIP Specification v2.1 §4.28 permits Key Value Present as part of Locate. §6.1.28 describes the client-originated Locate request and its request payload, establishing client_to_server direction; §11.56 defines the attribute encoding as Boolean. The typed profile rule checks only the outbound Locate request representation when the optional criterion is present; it accepts omission and either Boolean value, and rejects malformed or duplicate fields. The existing Locate encoder test demonstrates that the criterion can be sent. This evidence makes no claim about server matching semantics, response results, official OASIS Test Case execution, or profile conformance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.28-002",
