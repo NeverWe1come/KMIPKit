@@ -349,6 +349,55 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         )
         self.assertFalse(fixture["authorization"]["formalAcceptance"])
 
+    def test_dependency_matrix_matches_current_owner_and_api_readiness(self) -> None:
+        matrix_path = (
+            ROOT
+            / "specs"
+            / "043-public-api-bindings"
+            / "contracts"
+            / "operation-dependencies.md"
+        )
+        matrix = matrix_path.read_text(encoding="utf-8")
+        operation_rows = {
+            fields[1]: fields[3]
+            for line in matrix.splitlines()
+            if line.startswith("| §6.1.")
+            for fields in [[field.strip() for field in line.strip("|").split("|")]]
+        }
+        owner_counts = {
+            state: sum(
+                operation["ownerDependency"]["state"] == state
+                for operation in self._release_manifest()["operations"]
+            )
+            for state in ("approved", "candidate", "unassigned")
+        }
+        manifest = self._release_manifest()
+
+        self.assertEqual(56, len(operation_rows))
+        self.assertEqual(41, owner_counts["approved"])
+        self.assertEqual(15, owner_counts["candidate"])
+        self.assertEqual(0, owner_counts["unassigned"])
+        self.assertIn(
+            f"Linked to an approved/accepted owner: **{owner_counts['approved']} operations**.",
+            matrix,
+        )
+        self.assertIn(
+            f"Linked to an unapproved candidate owner: **{owner_counts['candidate']} operations**.",
+            matrix,
+        )
+
+        for operation in manifest["operations"]:
+            if operation["apiState"] == "verified":
+                with self.subTest(operation=operation["name"]):
+                    self.assertNotIn("binding remains blocked", operation_rows[operation["name"]])
+
+    def _release_manifest(self) -> dict[str, object]:
+        return json.loads(
+            (ROOT / "specification" / "api" / "public-api.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
     def test_blocked_operation_records_only_candidate_and_reason(self) -> None:
         manifest = _contract_manifest()
         operation = manifest["operations"][0]

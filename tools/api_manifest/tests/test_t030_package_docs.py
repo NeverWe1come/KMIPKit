@@ -269,6 +269,37 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 self.assertEqual("blocked", operations[operation_name]["apiState"])
                 self.assertEqual("blocked", documented_states.get(operation_name))
 
+    def test_public_api_reference_lists_every_verified_rust_operation(self) -> None:
+        reference = (ROOT / "docs/architecture/public-api.md").read_text(
+            encoding="utf-8"
+        )
+        typed_protocol = reference.split("### Typed protocol", maxsplit=1)[1].split(
+            "### ", maxsplit=1
+        )[0]
+        documented_operation_list = re.sub(
+            r"\s+",
+            " ",
+            typed_protocol.split("The API does not accept", maxsplit=1)[0],
+        )
+
+        for operation in self.manifest["operations"]:
+            if operation["apiState"] != "verified":
+                continue
+            with self.subTest(operation=operation["name"]):
+                self.assertIn(operation["name"], documented_operation_list)
+
+    def test_manifest_maintenance_doc_counts_all_v2_output_destinations(self) -> None:
+        documentation = (ROOT / "docs/development/api-manifest.md").read_text(
+            encoding="utf-8"
+        )
+        normalized_documentation = re.sub(r"\s+", " ", documentation)
+        outputs = self.manifest["generatedOutputs"]
+        registry_outputs = outputs[:6]
+
+        self.assertEqual(6, len(registry_outputs))
+        self.assertEqual(6, len(outputs) - len(registry_outputs))
+        self.assertIn("six additional destinations", normalized_documentation)
+
     def test_t071_checkpoint_records_active_manifest_snapshot_and_remains_open(self) -> None:
         tasks = (ROOT / "specs/043-public-api-bindings/tasks.md").read_text(
             encoding="utf-8"
