@@ -1688,9 +1688,40 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 for path in output_paths
             }
 
+            expected_audit_commands = {
+                (
+                    sys.executable,
+                    "-B",
+                    str(root / "tools" / "api_manifest" / script_name),
+                    "--repo-root",
+                    str(root),
+                    "--check",
+                )
+                for script_name in (
+                    "audit_rust_exports.py",
+                    "audit_binding_exports.py",
+                )
+            }
+
+            def successful_audit(
+                command: list[str], **kwargs: object
+            ) -> subprocess.CompletedProcess[str]:
+                self.assertIn(tuple(command), expected_audit_commands)
+                self.assertEqual(
+                    kwargs,
+                    {
+                        "cwd": root,
+                        "check": False,
+                        "stdout": subprocess.DEVNULL,
+                        "stderr": subprocess.DEVNULL,
+                        "timeout": 900,
+                    },
+                )
+                return subprocess.CompletedProcess(command, 0)
+
             with mock.patch(
                 "tools.api_manifest.generate.subprocess.run",
-                return_value=subprocess.CompletedProcess([], 0),
+                side_effect=successful_audit,
             ) as run_audits:
                 result = generate.main(
                     [
@@ -1705,10 +1736,24 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             audit_commands = [call.args[0] for call in run_audits.call_args_list]
             self.assertEqual(len(audit_commands), 2)
             self.assertEqual(
-                {Path(command[2]).name for command in audit_commands},
-                {"audit_rust_exports.py", "audit_binding_exports.py"},
+                {tuple(command) for command in audit_commands},
+                expected_audit_commands,
             )
-            self.assertTrue(all(command[-1] == "--check" for command in audit_commands))
+            with mock.patch(
+                "tools.api_manifest.generate.subprocess.run",
+                return_value=subprocess.CompletedProcess([], 1),
+            ) as failed_audit:
+                failed_result = generate.main(
+                    [
+                        "--repo-root",
+                        str(root),
+                        "--check",
+                        "--require-complete",
+                    ]
+                )
+
+            self.assertEqual(failed_result, 2)
+            self.assertEqual(failed_audit.call_count, 1)
             self.assertEqual(
                 {
                     path: (path.read_bytes(), path.stat().st_mtime_ns)
