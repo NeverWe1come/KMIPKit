@@ -79750,7 +79750,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Profiles v2.1 §3.1.2 paragraph 2 requires conformant clients supporting TLS 1.3 to support at least one of the two listed TLS 1.3 cipher suites; Baseline Client inherits the Basic Authentication Suite condition through §6.1 item 2. KMIPKit's shared AWS-LC provider retains both listed TLS 1.3 suites, and the Raw TTLV/TLS wire test captures a ClientHello offering exactly those suites. The typed mapping applies to both configured client transports, which share the TLS builder. This verifies configured client support and the observed offer only; no server acceptance, profile-conformance claim, or official Test Case ID is inferred."
+      "review_note": "Pinned KMIP Profiles v2.1 §3.1.2 paragraph 2 requires conformant clients supporting TLS 1.3 to support at least one of the two listed TLS 1.3 cipher suites; Baseline Client inherits the Basic Authentication Suite condition through §6.1 item 2. KMIPKit's shared AWS-LC provider retains both listed TLS 1.3 suites, and the Raw TTLV/TLS wire test captures a ClientHello offering exactly those suites. The typed mapping applies to both configured client transports, which share the TLS builder. This verifies configured client support and the observed offer only; no server acceptance, profile-conformance claim, or official Test Case ID is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3.1.2-005",
@@ -79790,7 +79790,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Profiles v2.1 §3.1.2 paragraph 5 prohibits conformant clients or servers from supporting cipher suites not listed in the clause; Baseline Client inherits the Basic Authentication Suite condition through §6.1 item 2. KMIPKit's shared AWS-LC provider retains only the two listed TLS 1.3 suites, and the Raw TTLV/TLS wire test captures a ClientHello containing exactly those suites. The typed mapping applies to both configured client transports, which share the TLS builder. This verifies the configured client policy and observed offer only; TLS 1.2 remains disabled by the 1.0 transport boundary, no server support is claimed, and no official Test Case ID is inferred."
+      "review_note": "Pinned KMIP Profiles v2.1 §3.1.2 paragraph 5 prohibits conformant clients or servers from supporting cipher suites not listed in the clause; Baseline Client inherits the Basic Authentication Suite condition through §6.1 item 2. KMIPKit's shared AWS-LC provider retains only the two listed TLS 1.3 suites, and the Raw TTLV/TLS wire test captures a ClientHello containing exactly those suites. The typed mapping applies to both configured client transports, which share the TLS builder. This verifies the configured client policy and observed offer only; TLS 1.2 remains disabled by the 1.0 transport boundary, no server support is claimed, and no official Test Case ID is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3.2-001",
