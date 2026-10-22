@@ -812,6 +812,12 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 "fn request_capability_is_available() { assert!(true); }\n",
                 False,
             ),
+            "unrelated conditional test does not disable active test reference": (
+                "#[cfg(target_pointer_width = \"32\")]\n#[test]\n"
+                "fn unrelated_32_bit_test() { assert!(true); }\n"
+                "#[test]\nfn request_capability_is_available() { assert!(true); }\n",
+                True,
+            ),
             "missing test attribute": (
                 "fn request_capability_is_available() { assert!(true); }\n",
                 False,
