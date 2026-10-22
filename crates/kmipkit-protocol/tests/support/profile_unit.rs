@@ -3374,26 +3374,58 @@ fn profile_maps_gcm_tag_length_as_required_behavior() {
     result
         .validate_request(&parameters_omitted)
         .expect("the conditional GCM rule does not require operation-level parameters");
+}
 
-    let register_with_nested_gcm_attribute = request_message_with_operation_payload(
-        REGISTER_OPERATION_TAG,
-        structure([tagged(
-            ATTRIBUTES_TAG,
-            Value::structure(structure([tagged(
-                0x0042_002B,
-                Value::structure(structure([
-                    tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE)),
-                    tagged(IV_LENGTH_TAG, Value::integer(96)),
-                ])),
-            )])),
-        )]),
-    );
-    assert!(
-        !evaluate(Some(&register_with_nested_gcm_attribute), None),
-        "Register Attributes may not omit Tag Length when their GCM parameters are supplied"
-    );
+#[test]
+fn profile_validates_nested_register_gcm_tag_length() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
+    const IV_LENGTH_TAG: u32 = 0x0042_00CD;
+    const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const GCM_MODE: u32 = 9;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let evaluate = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .and_then(|mapping| mapping.evaluator)
+        .expect("GCM Tag Length has a typed profile evaluator");
+    let register_request = |include_tag_length: bool| {
+        let mut parameters = vec![
+            tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE)),
+            tagged(IV_LENGTH_TAG, Value::integer(96)),
+        ];
+        if include_tag_length {
+            parameters.push(tagged(TAG_LENGTH_TAG, Value::integer(16)));
+        }
+
+        request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    CRYPTOGRAPHIC_PARAMETERS_TAG,
+                    Value::structure(structure(parameters)),
+                )])),
+            )]),
+        )
+    };
+
+    let valid = register_request(true);
+    assert!(evaluate(Some(&valid), None));
+    result
+        .validate_request(&valid)
+        .expect("nested GCM parameters pass when Tag Length is supplied");
+
+    let invalid = register_request(false);
+    assert!(!evaluate(Some(&invalid), None));
     let error = result
-        .validate_request(&register_with_nested_gcm_attribute)
+        .validate_request(&invalid)
         .expect_err("nested GCM parameters without Tag Length violate §4.16");
     assert_eq!(
         error.code(),
