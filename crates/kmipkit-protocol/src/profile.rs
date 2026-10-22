@@ -751,6 +751,12 @@ const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
 const CURRENT_ATTRIBUTE: u32 = 0x0042_013C;
 const NEW_ATTRIBUTE: u32 = 0x0042_013D;
 const LOCATE_OPERATION: u32 = 0x0000_0008;
+const REVOKE_OPERATION: u32 = 0x0000_0013;
+const REVOCATION_REASON: u32 = 0x0042_0081;
+const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
+const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
+const KEY_COMPROMISE_REASON: u32 = 2;
+const CA_COMPROMISE_REASON: u32 = 3;
 const MAXIMUM_ITEMS: u32 = 0x0042_004F;
 const OFFSET_ITEMS: u32 = 0x0042_00D4;
 const QUERY_OPERATION: u32 = 0x0000_0018;
@@ -2101,6 +2107,59 @@ fn client_key_value_present_is_not_modified(
     })
 }
 
+fn client_compromise_occurrence_date_only_for_key_or_ca_compromise(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REVOKE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                if !payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == COMPROMISE_OCCURRENCE_DATE)
+                {
+                    return true;
+                }
+
+                let FieldPresence::Unique(reason) = field_presence(&payload, REVOCATION_REASON)
+                else {
+                    return false;
+                };
+                reason.with_value(|value| {
+                    let ValueView::Structure(reason) = value else {
+                        return false;
+                    };
+                    let FieldPresence::Unique(reason_code) =
+                        field_presence(&reason, REVOCATION_REASON_CODE)
+                    else {
+                        return false;
+                    };
+                    reason_code.with_value(|value| {
+                        matches!(
+                            value,
+                            ValueView::Enumeration(value)
+                                if *value == KEY_COMPROMISE_REASON
+                                    || *value == CA_COMPROMISE_REASON
+                        )
+                    })
+                })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn attribute_fields_do_not_mutate_key_value_present(
     payload: &StructureView<'_>,
     wrapper_tag: u32,
@@ -2894,6 +2953,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_compromise_occurrence_date_only_for_key_or_ca_compromise),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_for_other_reasons",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],
