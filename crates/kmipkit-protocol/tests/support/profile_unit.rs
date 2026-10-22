@@ -2073,6 +2073,104 @@ fn profile_maps_client_locate_empty_attributes_match_all_capability() {
 }
 
 #[test]
+fn profile_maps_client_locate_partial_structured_attribute_fields() {
+    // KMIP Specification v2.1 §6.1.28 permits partial structured attributes.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-007";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-007";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+    const LINK_TAG: u32 = 0x0042_004A;
+    const LINK_TYPE_TAG: u32 = 0x0042_004B;
+    const LINKED_OBJECT_IDENTIFIER_TAG: u32 = 0x0042_004C;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("partial structured Locate attributes have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("partial structured Locate attributes resolve to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the partial structured-attribute capability has executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let partial_link = crate::AttributeSet::try_new([tagged(
+        LINK_TAG,
+        Value::structure(structure([tagged(
+            LINKED_OBJECT_IDENTIFIER_TAG,
+            Value::text_string("linked-object-7".to_owned()),
+        )])),
+    )])
+    .expect("a Link may contain Linked Object Identifier without Link Type");
+    let partial_request = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(partial_link)
+            .to_ttlv_payload()
+            .expect("the partial Link attribute is retained in Locate"),
+    );
+    assert!(evaluate(Some(&partial_request), None));
+    result
+        .validate_request(&partial_request)
+        .expect("the partial structured Link is valid client evidence");
+
+    let complete_link = crate::AttributeSet::try_new([tagged(
+        LINK_TAG,
+        Value::structure(structure([
+            tagged(LINK_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                LINKED_OBJECT_IDENTIFIER_TAG,
+                Value::text_string("linked-object-7".to_owned()),
+            ),
+        ])),
+    )])
+    .expect("a complete Link attribute remains valid");
+    let complete_request = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(complete_link)
+            .to_ttlv_payload()
+            .expect("the complete Link attribute is retained in Locate"),
+    );
+    assert!(evaluate(Some(&complete_request), None));
+
+    let malformed_link = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                LINK_TAG,
+                Value::text_string("not a Link Structure".to_owned()),
+            )])),
+        )]),
+    );
+    assert!(!evaluate(Some(&malformed_link), None));
+    assert!(result.validate_request(&malformed_link).is_err());
+
+    let no_link_criteria = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(crate::AttributeSet::new())
+            .to_ttlv_payload()
+            .expect("Link is an optional matching criterion"),
+    );
+    assert!(evaluate(Some(&no_link_criteria), None));
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
