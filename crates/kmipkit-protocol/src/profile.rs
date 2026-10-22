@@ -7,7 +7,7 @@
 //! Specification v2.1 §14.1; Baseline Client's inherited profile closure
 //! follows KMIP Profiles v2.1 §6.1.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 
@@ -17,7 +17,7 @@ use crate::profiles_generated::{
     CLIENT_PROFILES, CLIENT_REQUIREMENTS, GeneratedClientProfile, GeneratedClientRequirement,
     GeneratedVerificationCategory,
 };
-use crate::{RequestMessage, ResponseMessage};
+use crate::{AttributeReference, RequestMessage, ResponseMessage};
 
 /// Stable reason that explicit profile validation could not be prepared.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -704,6 +704,7 @@ const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
@@ -860,6 +861,38 @@ fn client_can_include_optional_get_attributes_attribute_references(
 ) -> bool {
     // §6.1.20 Table 223 permits zero or more distinct Attribute Reference fields.
     request.is_some()
+}
+
+fn get_attributes_references_are_not_repeated(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != GET_ATTRIBUTES_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut seen = HashSet::new();
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == ATTRIBUTE_REFERENCE)
+                    .all(|field| {
+                        AttributeReference::try_from_ttlv_item(field)
+                            .is_ok_and(|reference| seen.insert(reference))
+                    })
+            })
+            .unwrap_or(false)
+    })
 }
 
 fn client_can_include_request_time_stamp(
@@ -2263,6 +2296,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_create_split_key_optional_source_identifier",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(get_attributes_references_are_not_repeated),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_repeated_identical_get_attributes_references",
+            kind: RuleTestKind::NegativeBehavior,
         }],
         constraints: &[],
     },

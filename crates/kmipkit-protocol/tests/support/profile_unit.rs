@@ -1652,7 +1652,7 @@ fn profile_rejects_repeated_identical_get_attributes_references() {
     );
     let duplicate_request =
         request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, duplicate_payload);
-    assert!(evaluate(Some(&duplicate_request), None));
+    assert!(!evaluate(Some(&duplicate_request), None));
     let error = result
         .validate_request(&duplicate_request)
         .expect_err("a Get Attributes request must not repeat an identical reference");
