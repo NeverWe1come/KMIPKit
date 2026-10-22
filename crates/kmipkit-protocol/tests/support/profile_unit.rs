@@ -1542,6 +1542,70 @@ fn profile_maps_request_time_stamp_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_optional_maximum_response_size_capability() {
+    // KMIP Specification v2.1 §9.12 defines Maximum Response Size as optional.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const MAXIMUM_RESPONSE_SIZE_TAG: u32 = 0x0042_0050;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Maximum Response Size has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional field resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let omitted = request_message();
+    assert_eq!(omitted.header().maximum_response_size(), None);
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("the OPTIONAL field may be omitted");
+
+    let supplied = crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(MAXIMUM_RESPONSE_SIZE_TAG, Value::integer(4096)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("the optional Maximum Response Size request is valid");
+    assert_eq!(supplied.header().maximum_response_size(), Some(4096));
+    assert!(evaluate(Some(&supplied), None));
+    result
+        .validate_request(&supplied)
+        .expect("a client may include Maximum Response Size");
+}
+
+#[test]
 fn profile_maps_optional_client_correlation_value_capability() {
     // KMIP Specification v2.1 §9.9 permits clients to add this request string.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.9-001";
