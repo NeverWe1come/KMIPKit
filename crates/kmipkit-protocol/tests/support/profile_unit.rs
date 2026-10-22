@@ -3305,6 +3305,7 @@ fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt
 
 #[test]
 fn profile_maps_gcm_tag_length_as_required_behavior() {
+    // §4.16 requires Tag Length for GCM; §11.6 Table 436 assigns GCM value 9.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-003";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -3373,6 +3374,32 @@ fn profile_maps_gcm_tag_length_as_required_behavior() {
     result
         .validate_request(&parameters_omitted)
         .expect("the conditional GCM rule does not require operation-level parameters");
+
+    let register_with_nested_gcm_attribute = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(
+            ATTRIBUTES_TAG,
+            Value::structure(structure([tagged(
+                0x0042_002B,
+                Value::structure(structure([
+                    tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE)),
+                    tagged(IV_LENGTH_TAG, Value::integer(96)),
+                ])),
+            )])),
+        )]),
+    );
+    assert!(
+        !evaluate(Some(&register_with_nested_gcm_attribute), None),
+        "Register Attributes may not omit Tag Length when their GCM parameters are supplied"
+    );
+    let error = result
+        .validate_request(&register_with_nested_gcm_attribute)
+        .expect_err("nested GCM parameters without Tag Length violate §4.16");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
 }
 
 #[test]
