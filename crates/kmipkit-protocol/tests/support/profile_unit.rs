@@ -5200,6 +5200,101 @@ fn profile_maps_client_register_key_value_location_only_without_key_value() {
 }
 
 #[test]
+fn profile_maps_client_register_key_value_present_as_prohibited_behavior() {
+    // KMIP Specification v2.1 §4.28 prohibits this client-supplied Register attribute.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.28-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Key Value Present in Register has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Register prohibition resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHALL NOT has negative executable evidence");
+    assert!(mapping.evaluator.is_some());
+}
+
+#[test]
+fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion() {
+    // KMIP Specification v2.1 §4.28 prohibits Register use and permits Locate use.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+    const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+    const SYMMETRIC_KEY_TAG: u32 = 0x0042_008F;
+    const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0042;
+    const KEY_VALUE_PRESENT_TAG: u32 = 0x0042_00BB;
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let register_request = |include_key_value_present: bool| {
+        let attributes = if include_key_value_present {
+            vec![tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(true))]
+        } else {
+            Vec::new()
+        };
+        request_message_with_operation_payload(
+            REGISTER_OPERATION,
+            structure([
+                tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+                tagged(ATTRIBUTES_TAG, Value::structure(structure(attributes))),
+                tagged(
+                    SYMMETRIC_KEY_TAG,
+                    Value::structure(structure([tagged(
+                        KEY_BLOCK_TAG,
+                        Value::structure(structure([tagged(
+                            KEY_FORMAT_TYPE_TAG,
+                            Value::enumeration(1),
+                        )])),
+                    )])),
+                ),
+            ]),
+        )
+    };
+
+    let forbidden = register_request(true);
+    let error = result
+        .validate_request(&forbidden)
+        .expect_err("a client must not specify Key Value Present in Register");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+    );
+
+    result
+        .validate_request(&register_request(false))
+        .expect("Register without Key Value Present is permitted");
+
+    let locate_request = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        structure([tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(true))]),
+    );
+    result
+        .validate_request(&locate_request)
+        .expect("the Register prohibition does not reject a Locate criterion");
+}
+
+#[test]
 fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
     // KMIP Specification v2.1 §§3.2–3.3, Tables 13–15; §11.18 Table 450; §6.1.43 Table 291.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-005";
