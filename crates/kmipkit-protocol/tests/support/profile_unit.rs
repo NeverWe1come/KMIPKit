@@ -1781,6 +1781,57 @@ fn profile_maps_client_query_function_repetition_as_optional_capability() {
 }
 
 #[test]
+fn profile_requires_at_least_one_client_query_function() {
+    // KMIP Specification v2.1 §6.1.40 paragraph 14 requires one or more.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.40-014";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.40-014";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const QUERY_OPERATION: u32 = 0x0000_0018;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the required Query Function has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Query Function SHALL resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_request = request_message_with_operation_payload(
+        QUERY_OPERATION,
+        crate::QueryRequest::new([crate::QueryFunction::OPERATIONS])
+            .to_ttlv_payload()
+            .expect("one Query Function satisfies the requirement"),
+    );
+    assert!(evaluate(Some(&valid_request), None));
+    result
+        .validate_request(&valid_request)
+        .expect("a Query request with one function satisfies the SHALL");
+
+    let empty_query = request_message_with_operation_payload(QUERY_OPERATION, Structure::new());
+    assert!(!evaluate(Some(&empty_query), None));
+    assert!(result.validate_request(&empty_query).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
