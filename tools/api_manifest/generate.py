@@ -1403,12 +1403,19 @@ def _validate_release_package_versions(
         or pom_version.text != release_line
         or pom_group is None
         or not pom_group.text
+        or pom_group.text != pom_group.text.strip()
         or pom_artifact is None
         or not pom_artifact.text
+        or pom_artifact.text != pom_artifact.text.strip()
     ):
-        raise ManifestError("Java package versions are not synchronized with releaseLine")
+        raise ManifestError("Java package version or identity metadata is malformed")
     gradle_group = re.search(r'(?m)^\s*group\s*=\s*"([^"\r\n]+)"\s*$', gradle)
-    if gradle_group is None or gradle_group.group(1) != pom_group.text:
+    if (
+        gradle_group is None
+        or not gradle_group.group(1).strip()
+        or gradle_group.group(1) != gradle_group.group(1).strip()
+        or gradle_group.group(1) != pom_group.text
+    ):
         raise ManifestError("Java package identity metadata is inconsistent")
     require_package_identity(
         "java-kmipkit", f"{pom_group.text}:{pom_artifact.text}"
