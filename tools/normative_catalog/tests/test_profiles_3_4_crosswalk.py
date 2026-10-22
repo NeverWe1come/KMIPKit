@@ -286,6 +286,8 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertNotIn(requirement_id, UNRESOLVED_IDS)
 
     def test_baseline_tls13_cipher_suite_prohibition_has_negative_wire_evidence(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
         requirement_id = "KMIPKIT-REQ-PROF-3.1.2-005"
         clause_id = "KMIPKIT-CLAUSE-PROF-3.1.2-005"
         requirement = self.requirements[requirement_id]
@@ -299,16 +301,101 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
         self.assertEqual(review["source_obligations"][0]["source_keyword"], "SHALL NOT")
         self.assertEqual(
             requirement["implementation_refs"],
-            ["crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider"],
+            [
+                "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
+                "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
+                "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
+                "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider",
+            ],
+        )
+        profile_test_id = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_prohibited_tls13_cipher_suites"
+        )
+        wire_test_id = (
+            "crates/kmipkit-transport/tests/raw_tls.rs::"
+            "raw_tls_rejects_tls12_server_hello_before_request_dispatch"
         )
         self.assertEqual(
             requirement["verification_refs"],
-            [
-                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch"
-            ],
+            [profile_test_id, wire_test_id],
         )
         self.assertTrue(requirement["negative_verification_required"])
-        self.assertEqual(requirement["status"], "verified")
+        self.assertEqual(requirement["status"], "scoped_verified")
+
+        mappings = [
+            row
+            for row in load_typed_rule_mappings(ROOT)
+            if row["requirement_id"] == requirement_id
+        ]
+        self.assertEqual(
+            {(row["verification_category"], row["test_kind"], row["test_id"]) for row in mappings},
+            {
+                ("ProhibitedBehavior", "NegativeBehavior", profile_test_id),
+                ("ProhibitedBehavior", "NegativeBehavior", wire_test_id),
+            },
+        )
+        self.assertTrue(all(row["transport_only"] for row in mappings))
+
+    def test_baseline_tls13_cipher_suite_support_has_positive_wire_evidence(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        requirement_id = "KMIPKIT-REQ-PROF-3.1.2-002"
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1.2-002"
+        requirement = self.requirements[requirement_id]
+        review = self.reviews[clause_id]
+        client_suites = pinned_excerpt([4068, 4074])
+
+        self.assertIn("Conformant KMIP clients SHALL support at least one", client_suites)
+        self.assertIn("TLS13-CHACHA20-POLY1305-SHA256", client_suites)
+        self.assertIn("TLS13-AES-256-GCM-SHA384", client_suites)
+        self.assertEqual(
+            self.clauses[clause_id]["locator"],
+            {"ordinal": 2, "block_kind": "paragraph"},
+        )
+        self.assertEqual(review["source_obligations"][0]["source_keyword"], "SHALL")
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertEqual(requirement["source_keyword"], "SHALL")
+        self.assertEqual(requirement["normative_strength"], "mandatory")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["profile_ids"], ["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertFalse(requirement["negative_verification_required"])
+        self.assertEqual(
+            requirement["implementation_refs"],
+            [
+                "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
+                "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
+                "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
+                "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider",
+            ],
+        )
+        profile_test_id = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_required_tls13_cipher_suite_support"
+        )
+        wire_test_id = (
+            "crates/kmipkit-transport/tests/raw_tls.rs::"
+            "raw_tls_rejects_tls12_server_hello_before_request_dispatch"
+        )
+        self.assertEqual(requirement["verification_refs"], [profile_test_id, wire_test_id])
+        self.assertEqual(requirement["status"], "scoped_verified")
+
+        mappings = [
+            row
+            for row in load_typed_rule_mappings(ROOT)
+            if row["requirement_id"] == requirement_id
+        ]
+        self.assertEqual(
+            {(row["verification_category"], row["test_kind"], row["test_id"]) for row in mappings},
+            {
+                ("RequiredBehavior", "PositiveBehavior", profile_test_id),
+                ("RequiredBehavior", "PositiveBehavior", wire_test_id),
+            },
+        )
+        self.assertTrue(all(row["transport_only"] for row in mappings))
 
     def test_baseline_tls_legacy_protocol_prohibition_has_negative_wire_evidence(self) -> None:
         """Profiles §3.1.1 prohibits legacy TLS and SSL protocols for clients."""

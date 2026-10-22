@@ -117,6 +117,30 @@ static TLS_LEGACY_PROHIBITION_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
     test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
     kind: RuleTestKind::NegativeBehavior,
 }];
+static TLS13_PROFILE_CIPHER_SUITES: [RuleConstraint; 1] = [RuleConstraint {
+    key: "tls13_cipher_suites",
+    value: "kmip_profiles_3_1_2",
+}];
+static TLS13_PROFILE_CIPHER_SUITE_SUPPORT_TESTS: [RuleTestEvidence; 2] = [
+    RuleTestEvidence {
+        test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_tls13_cipher_suite_support",
+        kind: RuleTestKind::PositiveBehavior,
+    },
+    RuleTestEvidence {
+        test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+        kind: RuleTestKind::PositiveBehavior,
+    },
+];
+static TLS13_UNLISTED_CIPHER_SUITE_PROHIBITION_TESTS: [RuleTestEvidence; 2] = [
+    RuleTestEvidence {
+        test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_prohibited_tls13_cipher_suites",
+        kind: RuleTestKind::NegativeBehavior,
+    },
+    RuleTestEvidence {
+        test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
+        kind: RuleTestKind::NegativeBehavior,
+    },
+];
 static DISCOURAGED_ABSENCE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
     test_id: "profile-rule-discouraged-absence-test",
     kind: RuleTestKind::DiscouragedBehaviorAbsent,
@@ -4298,6 +4322,78 @@ fn profile_maps_prohibited_legacy_tls_and_ssl_protocols_to_tls13_transport() {
             .validate_transport_with_mappings(transport, std::slice::from_ref(mapping))
             .expect("both client transports use TLS 1.3 and exclude legacy protocols");
     }
+}
+
+#[test]
+fn profile_maps_required_tls13_cipher_suite_support() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-3.1.2-002";
+    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-PROF-3.1.2-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("TLS 1.3 cipher-suite support has a typed rule");
+
+    assert_eq!(mapping.source_clause_id, CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(
+        mapping.test_evidence,
+        &TLS13_PROFILE_CIPHER_SUITE_SUPPORT_TESTS
+    );
+    assert_eq!(mapping.constraints, &TLS13_PROFILE_CIPHER_SUITES);
+
+    for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
+        result
+            .validate_transport_with_mappings(transport, std::slice::from_ref(mapping))
+            .expect("both configured transports use the KMIP Profiles TLS 1.3 suites");
+    }
+    result
+        .validate_request(&request_message())
+        .expect("cipher-suite constraints do not add a request-payload restriction");
+}
+
+#[test]
+fn profile_maps_prohibited_tls13_cipher_suites() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-3.1.2-005";
+    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-PROF-3.1.2-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("unlisted TLS cipher-suite prohibition has a typed rule");
+
+    assert_eq!(mapping.source_clause_id, CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(
+        mapping.test_evidence,
+        &TLS13_UNLISTED_CIPHER_SUITE_PROHIBITION_TESTS
+    );
+    assert_eq!(mapping.constraints, &TLS13_PROFILE_CIPHER_SUITES);
+
+    for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
+        result
+            .validate_transport_with_mappings(transport, std::slice::from_ref(mapping))
+            .expect("both configured transports exclude unlisted TLS 1.3 suites");
+    }
+    result
+        .validate_request(&request_message())
+        .expect("cipher-suite prohibitions do not add a request-payload restriction");
 }
 
 #[test]
