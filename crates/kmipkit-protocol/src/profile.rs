@@ -867,6 +867,18 @@ fn client_defaults_batch_error_continuation_to_stop(
             == BATCH_ERROR_CONTINUATION_OPTION_STOP
 }
 
+fn client_includes_batch_error_continuation_only_for_multi_item_request(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    let header = request.header();
+    header.batch_error_continuation_option().is_none() || header.batch_count() > 1
+}
+
 fn client_can_inspect_optional_result_message(
     _request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2012,6 +2024,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_sets_batch_count_to_request_item_count),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_count_to_request_item_count",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_includes_batch_error_continuation_only_for_multi_item_request),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_batch_error_continuation_option_only_for_multi_item_batches",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
