@@ -93652,23 +93652,27 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-TAG-4200D4"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/locate.rs"
+        "crates/kmipkit-protocol/src/locate.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/operation_boundary.rs::rust_quickstart_get_and_locate_examples_execute_through_the_client",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
-        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order"
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_emits_supplied_optional_fields_in_table_247_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_offset_items_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The referenced local protocol and client tests verify that caller-supplied Offset Items, including explicit zero, remains present in the request; they do not assert server-side zero-equivalence behavior. No official case-level pass is claimed."
+      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The local protocol, client, and profile tests verify that Offset Items may be omitted or supplied as an Integer, including explicit zero, and that zero is preserved when supplied. They do not assert server-side zero-equivalence behavior. This client mapping does not require Maximum Items or claim local/server pagination. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-004-001",
