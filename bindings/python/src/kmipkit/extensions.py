@@ -14,7 +14,7 @@ generic TTLV intact; Python never infers identity by rescanning payload content.
 from __future__ import annotations
 
 import sys
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sized
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import IntEnum
@@ -611,6 +611,33 @@ def _bounded_snapshot(values: object, maximum: int | None) -> tuple[Any, ...]:
         except MemoryError:
             errors.raise_for_status(6)
     errors.raise_for_status(4)
+
+
+def _bounded_iterable_snapshot(values: Iterable[Any], maximum: int) -> tuple[Any, ...]:
+    """Snapshot an iterable without retaining more than its remaining item budget."""
+    try:
+        iterator = iter(values)
+    except MemoryError:
+        errors.raise_for_status(6)
+    except Exception:
+        errors.raise_for_status(4)
+
+    snapshot: list[Any] = []
+    while True:
+        try:
+            value = next(iterator)
+        except StopIteration:
+            return tuple(snapshot)
+        except MemoryError:
+            errors.raise_for_status(6)
+        except Exception:
+            errors.raise_for_status(4)
+        if len(snapshot) >= maximum:
+            errors.raise_for_status(6)
+        try:
+            snapshot.append(value)
+        except MemoryError:
+            errors.raise_for_status(6)
 
 
 def _bounded_utf8_length(value: str, maximum: int) -> int:
@@ -2367,11 +2394,26 @@ def client_batch_item_validate(
     payload_extensions: Iterable[ttlv.TtlvItem] = (),
 ) -> ClientBatchItem:
     """Create one §6.1.57 Validate request with ordered certificate and identifier lists."""
-    certificate_values = _bounded_snapshot(certificates, 100_000)
-    identifier_values = _bounded_snapshot(unique_identifiers, 100_000)
-    extension_values = _bounded_snapshot(payload_extensions, 100_000)
-    if len(certificate_values) + len(identifier_values) + len(extension_values) > 100_000:
-        errors.raise_for_status(6)
+    inputs = (certificates, unique_identifiers, payload_extensions)
+    declared_count = 0
+    for values in inputs:
+        if isinstance(values, Sized):
+            try:
+                count = len(values)
+            except MemoryError:
+                errors.raise_for_status(6)
+            except Exception:
+                errors.raise_for_status(4)
+            if count > 100_000 - declared_count:
+                errors.raise_for_status(6)
+            declared_count += count
+
+    remaining = 100_000
+    certificate_values = _bounded_iterable_snapshot(certificates, remaining)
+    remaining -= len(certificate_values)
+    identifier_values = _bounded_iterable_snapshot(unique_identifiers, remaining)
+    remaining -= len(identifier_values)
+    extension_values = _bounded_iterable_snapshot(payload_extensions, remaining)
     if any(not isinstance(certificate, ttlv.Structure) for certificate in certificate_values):
         errors.raise_for_status(4)
     if any(not isinstance(identifier, UniqueIdentifier) for identifier in identifier_values):
