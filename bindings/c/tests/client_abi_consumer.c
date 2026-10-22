@@ -2976,6 +2976,12 @@ cleanup:
     return result;
 }
 
+enum {
+    FIXTURE_VERSION_COUNT_ARG_INDEX = 15,
+    FIXTURE_VERSION_VALUES_ARG_INDEX = 16,
+    FIXTURE_VERSION_CAPACITY = 64,
+};
+
 static int execute_public_tls_request(
     int argc, char **argv, kmipkit_codec_limits_t *limits, int rekey_key_pair_only) {
     static const uint8_t host[] = "127.0.0.1";
@@ -3040,7 +3046,7 @@ static int execute_public_tls_request(
     uint64_t fixture_item_count = 0;
     uint64_t fixture_pending_count = 0;
     uint64_t fixture_version_count = 0;
-    kmipkit_protocol_version_v1_t fixture_versions[64] = {{0}};
+    kmipkit_protocol_version_v1_t fixture_versions[FIXTURE_VERSION_CAPACITY] = {{0}};
     uint64_t actual_pending_count = 0;
     uint64_t response_count = 0;
     char *port_end = 0;
@@ -3067,18 +3073,18 @@ static int execute_public_tls_request(
                 &fixture_correlation_length) ||
             !parse_fixture_decimal(argv[13], &fixture_item_count) ||
             !parse_fixture_decimal(argv[14], &fixture_pending_count) ||
-            !parse_fixture_decimal(argv[15], &fixture_version_count) ||
+            !parse_fixture_decimal(argv[FIXTURE_VERSION_COUNT_ARG_INDEX], &fixture_version_count) ||
             fixture_item_count != UINT64_C(3) ||
             fixture_pending_count > fixture_item_count ||
-            fixture_version_count > UINT64_C(64) ||
-            (uint64_t)argc != UINT64_C(16) + fixture_version_count * UINT64_C(2)) {
+            fixture_version_count > FIXTURE_VERSION_CAPACITY ||
+            (uint64_t)argc != FIXTURE_VERSION_VALUES_ARG_INDEX + fixture_version_count * UINT64_C(2)) {
             return 3;
         }
         for (uint64_t index = 0; index < fixture_version_count; ++index) {
             uint64_t major = 0;
             uint64_t minor = 0;
-            if (!parse_fixture_decimal(argv[16 + index * 2], &major) ||
-                !parse_fixture_decimal(argv[17 + index * 2], &minor) ||
+            if (!parse_fixture_decimal(argv[FIXTURE_VERSION_VALUES_ARG_INDEX + index * 2], &major) ||
+                !parse_fixture_decimal(argv[FIXTURE_VERSION_VALUES_ARG_INDEX + index * 2 + 1], &minor) ||
                 major > INT32_MAX || minor > INT32_MAX) {
                 return 3;
             }
@@ -3467,7 +3473,7 @@ static int execute_public_tls_request(
         uint8_t unique_id_present = 0;
         uint8_t versions_present = 0;
         uint64_t version_count = 0;
-        kmipkit_protocol_version_v1_t versions[64] = {{0}};
+        kmipkit_protocol_version_v1_t versions[FIXTURE_VERSION_CAPACITY] = {{0}};
         const uint32_t expected_status = index < fixture_item_count
             ? fixture_statuses[index]
             : expected_statuses[index];
