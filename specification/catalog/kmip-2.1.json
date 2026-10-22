@@ -98190,15 +98190,17 @@
         "crates/kmipkit-protocol/src/message/batch.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_batch_item_repetition_as_optional_capability",
+        "crates/kmipkit-protocol/tests/message_validation.rs::request_item_ids_remain_associated_in_seeded_batch_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §8.1 Table 394 marks Request Batch Item as a required Structure that MAY be repeated. This mapping covers the client optional repetition capability; the in-memory Request Message model enforces at least one item and preserves multiple Batch Items in order, while multi-item IDs remain governed by §8.3. KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.2-002",
