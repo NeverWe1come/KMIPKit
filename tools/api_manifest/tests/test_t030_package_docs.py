@@ -159,14 +159,14 @@ class PackageDocumentationContractTests(unittest.TestCase):
             (
                 self.english,
                 "full operation parity",
-                "**8** rows are `declared`:",
-                "**33** operation mappings are `verified`:",
+                f"**{len(declared_operations)}** rows are `declared`:",
+                f"**{verified_operation_count}** operation mappings are `verified`:",
             ),
             (
                 self.spanish,
                 "paridad completa de operaciones",
-                "**8** filas están en estado `declared`:",
-                "**33** mapeos de operación están en estado `verified`:",
+                f"**{len(declared_operations)}** filas están en estado `declared`:",
+                f"**{verified_operation_count}** mapeos de operación están en estado `verified`:",
             ),
         ):
             for capability in capabilities:
