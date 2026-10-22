@@ -1787,6 +1787,7 @@ fn profile_requires_at_least_one_client_query_function() {
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.40-014";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const QUERY_OPERATION: u32 = 0x0000_0018;
+    const QUERY_FUNCTION_TAG: u32 = 0x0042_0074;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -1826,6 +1827,16 @@ fn profile_requires_at_least_one_client_query_function() {
     let empty_query = request_message_with_operation_payload(QUERY_OPERATION, Structure::new());
     assert!(!evaluate(Some(&empty_query), None));
     assert!(result.validate_request(&empty_query).is_err());
+
+    let wrong_type_query = request_message_with_operation_payload(
+        QUERY_OPERATION,
+        structure([tagged(
+            QUERY_FUNCTION_TAG,
+            Value::text_string("OPERATIONS".to_owned()),
+        )]),
+    );
+    assert!(!evaluate(Some(&wrong_type_query), None));
+    assert!(result.validate_request(&wrong_type_query).is_err());
 
     let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
     assert!(result.validate_request(&unrelated_operation).is_ok());
