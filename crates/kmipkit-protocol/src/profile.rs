@@ -2798,16 +2798,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-004",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_key_block_algorithm_requires_length),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
@@ -2815,16 +2809,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-005",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_key_block_length_requires_algorithm),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

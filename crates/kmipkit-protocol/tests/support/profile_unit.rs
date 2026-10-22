@@ -5753,10 +5753,7 @@ fn table12_key_block_object(
         ));
     }
     if has_length {
-        key_block_fields.push(tagged(
-            TABLE12_CRYPTOGRAPHIC_LENGTH,
-            Value::integer(256),
-        ));
+        key_block_fields.push(tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
     }
 
     let mut object_fields = vec![tagged(
@@ -5764,17 +5761,30 @@ fn table12_key_block_object(
         Value::structure(structure(key_block_fields)),
     )];
     match object_tag {
-        TABLE12_SECRET_DATA => object_fields.push(tagged(
-            TABLE12_SECRET_DATA_TYPE,
-            Value::enumeration(1),
-        )),
-        TABLE12_PGP_KEY => object_fields.push(tagged(
-            TABLE12_PGP_KEY_VERSION,
-            Value::integer(4),
-        )),
-        _ => {}
+        TABLE12_SYMMETRIC_KEY => {}
+        TABLE12_SECRET_DATA => {
+            object_fields.push(tagged(TABLE12_SECRET_DATA_TYPE, Value::enumeration(1)));
+        }
+        TABLE12_PGP_KEY => {
+            object_fields.push(tagged(TABLE12_PGP_KEY_VERSION, Value::integer(4)));
+        }
+        _ => unreachable!("Table 12 Key Block fixture uses a supported object type"),
     }
     tagged(object_tag, Value::structure(structure(object_fields)))
+}
+
+fn table12_opaque_object() -> Item {
+    tagged(
+        TABLE12_OPAQUE_OBJECT,
+        Value::structure(structure([
+            // KMIP Specification v2.1 §11.35 Table 469 reserves 8XXXXXXX for extensions.
+            tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(0x8000_0001)),
+            tagged(
+                OPAQUE_DATA_VALUE_TAG,
+                Value::byte_string(b"opaque-object-value".to_vec()),
+            ),
+        ])),
+    )
 }
 
 fn table12_request_payload(
@@ -5835,7 +5845,8 @@ fn assert_table12_request_rejected(
 
 #[test]
 fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
-    // KMIP Specification v2.1 §3.1 Table 12 requires reciprocal direct fields.
+    // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
+    // and 6.1.43 Table 291 establish Import and Register request applicability.
     const CASES: [(&str, &str); 2] = [
         (
             "KMIPKIT-REQ-SPEC-3.1-004-002",
@@ -5861,12 +5872,8 @@ fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
             mapping.verification_category,
             GeneratedVerificationCategory::RequiredBehavior
         );
-        validate_mapping(
-            "KMIPKIT-PROFILE-BASELINE-CLIENT",
-            requirement,
-            mapping,
-        )
-        .expect("the reciprocal-presence rule has category-matched evidence");
+        validate_mapping("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement, mapping)
+            .expect("the reciprocal-presence rule has category-matched evidence");
         assert!(mapping.evaluator.is_some());
     }
 }
@@ -5926,7 +5933,9 @@ fn profile_rejects_unpaired_direct_key_block_fields_in_register_and_import() {
 
 #[test]
 fn profile_accepts_absent_or_present_direct_key_block_pairs() {
-    // Both fields are optional under these reciprocal-presence SHALLs alone.
+    // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
+    // and 6.1.43 Table 291 establish Import and Register request applicability.
+    // Both fields may be absent together under these reciprocal-presence SHALLs.
     const REQUIREMENT_IDS: [&str; 2] = [
         "KMIPKIT-REQ-SPEC-3.1-004-002",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
@@ -5954,10 +5963,8 @@ fn profile_accepts_absent_or_present_direct_key_block_pairs() {
         }
     }
 
-    let unrelated_operation = request_message_with_operation_payload(
-        TABLE12_GET_OPERATION,
-        Structure::new(),
-    );
+    let unrelated_operation =
+        request_message_with_operation_payload(TABLE12_GET_OPERATION, Structure::new());
     result
         .validate_request(&unrelated_operation)
         .expect("Table 12 does not constrain unrelated operations");
@@ -5965,7 +5972,8 @@ fn profile_accepts_absent_or_present_direct_key_block_pairs() {
 
 #[test]
 fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing() {
-    // KMIP Specification v2.1 §3.1 Table 12 checks only direct Key Block fields.
+    // KMIP Specification v2.1 §3.1 Table 12 checks direct Key Block fields;
+    // §6.1.43 Table 291 places Register Attributes outside that Key Block.
     const ALGORITHM_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-004-002";
     const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
     const LENGTH_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-005-002";
@@ -5979,15 +5987,9 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
                 TABLE12_SYMMETRIC_KEY,
                 true,
                 false,
-                Some(tagged(
-                    TABLE12_CRYPTOGRAPHIC_LENGTH,
-                    Value::integer(256),
-                )),
+                Some(tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))),
             ),
-            [tagged(
-                TABLE12_CRYPTOGRAPHIC_LENGTH,
-                Value::integer(256),
-            )],
+            [tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))],
         ),
     );
     assert_table12_request_rejected(
@@ -6023,32 +6025,42 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 }
 
 #[test]
-fn profile_exempts_secret_data_and_opaque_key_blocks_from_table12_pairing() {
-    // KMIP Specification v2.1 §3.1 Table 12 excludes Secret Data and Opaque.
+fn profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks() {
+    // KMIP Specification v2.1 §3.1 Table 12 exempts Secret Data and Opaque;
+    // §2.3 Table 4 defines Opaque Data Type/Value, §11.35 Table 469 gives the
+    // extension range, and §6.1.43 Table 291 carries Register's Any Object.
+    // Opaque Objects have no Key Block under Table 4.
     const REQUIREMENT_IDS: [&str; 2] = [
         "KMIPKIT-REQ-SPEC-3.1-004-002",
         "KMIPKIT-REQ-SPEC-3.1-005-002",
     ];
     let result = table12_profile_result(&REQUIREMENT_IDS);
 
-    for object_tag in [TABLE12_SECRET_DATA, TABLE12_OPAQUE_OBJECT] {
-        let request = request_message_with_operation_payload(
+    let secret_data_with_unpaired_key_block = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
             TABLE12_REGISTER_OPERATION,
-            table12_request_payload(
-                TABLE12_REGISTER_OPERATION,
-                table12_key_block_object(object_tag, true, false, None),
-                [],
-            ),
-        );
-        result
-            .validate_request(&request)
-            .expect("Table 12 reciprocal presence does not apply to Secret Data or Opaque");
-    }
+            table12_key_block_object(TABLE12_SECRET_DATA, true, false, None),
+            [],
+        ),
+    );
+    result
+        .validate_request(&secret_data_with_unpaired_key_block)
+        .expect("Table 12 reciprocal presence does not apply to Secret Data");
+
+    let valid_opaque_object = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(TABLE12_REGISTER_OPERATION, table12_opaque_object(), []),
+    );
+    result
+        .validate_request(&valid_opaque_object)
+        .expect("a valid Opaque Object has no Key Block for Table 12 pairing to inspect");
 }
 
 #[test]
 fn profile_checks_each_mixed_register_import_batch_item() {
-    // KMIP Specification v2.1 §§6.1.25 and 6.1.43 carry one Any Object per item.
+    // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
+    // and 6.1.43 Table 291 carry one Any Object per Import or Register Batch Item.
     const REQUIREMENT_IDS: [&str; 2] = [
         "KMIPKIT-REQ-SPEC-3.1-004-002",
         "KMIPKIT-REQ-SPEC-3.1-005-002",

@@ -61789,12 +61789,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_algorithm_requires_length",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_length_requires_algorithm",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_direct_field_requires_companion",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+      ],
       "source_encoding": "Enumeration",
       "source_requiredness": "Yes. MAY be omitted only if this information is available from the Key Value. Does not apply to Secret Data or Opaque If present, the Cryptographic Length SHALL also be present."
     },
@@ -61813,12 +61827,26 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_algorithm_requires_length",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_length_requires_algorithm",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_direct_field_requires_companion",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+      ],
       "source_encoding": "Integer",
       "source_requiredness": "Yes. MAY be omitted only if this information is available from the Key Value. Does not apply to Secret Data (or Opaque. If present, the Cryptographic Algorithm SHALL also be present."
     },
@@ -87181,6 +87209,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "3.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
         }
       ],
       "source_keyword": "SHALL",
@@ -87188,19 +87224,32 @@
       "subject": "Cryptographic Length",
       "summary": "If Cryptographic Algorithm is present, the client must also include Cryptographic Length.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "Not applicable to Secret Data or Opaque objects.",
+      "direction": "client_to_server",
+      "condition": "For an outbound Register or Import request Batch Item whose Any Object is not Secret Data or Opaque, when its direct Key Block contains Cryptographic Algorithm.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_algorithm_requires_length",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_direct_field_requires_companion",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+      ],
+      "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §3.1 Table 12 requires the direct Key Block Cryptographic Algorithm and Cryptographic Length fields to be present together when either is present, except for Secret Data and Opaque. §§6.1.25 Table 238 and 6.1.43 Table 291 define the client Import and Register request payloads carrying Any Object. The outbound client rule checks each Register and Import Batch Item and only the direct Key Block fields; both fields absent or both present satisfy these two requirements. Key Value Attributes and outer Attributes (including Register Attributes), nested metadata, and wrapped Key Value bytes are not merged into this presence check. No response object or server acceptance is checked. No official OASIS test case is linked, and this implementation evidence does not establish profile-conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-005-001",
@@ -87255,6 +87304,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "3.1"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
         }
       ],
       "source_keyword": "SHALL",
@@ -87262,19 +87319,32 @@
       "subject": "Cryptographic Algorithm",
       "summary": "If Cryptographic Length is present, the client must also include Cryptographic Algorithm.",
       "role": "client",
-      "direction": "unclear",
-      "condition": "Not applicable to Secret Data or Opaque objects.",
+      "direction": "client_to_server",
+      "condition": "For an outbound Register or Import request Batch Item whose Any Object is not Secret Data or Opaque, when its direct Key Block contains Cryptographic Length.",
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
-      "negative_verification_required": false,
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_length_requires_algorithm",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_block_direct_field_requires_companion",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_unpaired_direct_key_block_fields_in_register_and_import",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_each_mixed_register_import_batch_item"
+      ],
+      "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "Pinned KMIP Specification v2.1 §3.1 Table 12 requires the direct Key Block Cryptographic Algorithm and Cryptographic Length fields to be present together when either is present, except for Secret Data and Opaque. §§6.1.25 Table 238 and 6.1.43 Table 291 define the client Import and Register request payloads carrying Any Object. The outbound client rule checks each Register and Import Batch Item and only the direct Key Block fields; both fields absent or both present satisfy these two requirements. Key Value Attributes and outer Attributes (including Register Attributes), nested metadata, and wrapped Key Value bytes are not merged into this presence check. No response object or server acceptance is checked. No official OASIS test case is linked, and this implementation evidence does not establish profile-conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.1-006",
