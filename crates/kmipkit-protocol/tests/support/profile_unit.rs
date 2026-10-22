@@ -4329,6 +4329,10 @@ fn dependency_cycles_and_constraint_conflicts_fail_deterministically() {
 
 #[test]
 fn missing_evaluator_and_wrong_source_link_fail_closed() {
+    static UNSUPPORTED_SECURITY: [RuleConstraint; 1] = [RuleConstraint {
+        key: "transport_security",
+        value: "cleartext",
+    }];
     let requirement = requirement(
         "TEST-REQ",
         GeneratedVerificationCategory::RequiredBehavior,
@@ -4348,6 +4352,26 @@ fn missing_evaluator_and_wrong_source_link_fail_closed() {
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::IncompleteRuleMapping
+    );
+
+    let unsupported_transport_only = TypedRuleMapping {
+        evaluator: None,
+        ..mapping(
+            "TEST-REQ",
+            GeneratedVerificationCategory::RequiredBehavior,
+            RuleTestKind::PositiveBehavior,
+            &UNSUPPORTED_SECURITY,
+        )
+    };
+    let error = validate_mapping(
+        "TEST-PROFILE",
+        &requirement,
+        &unsupported_transport_only,
+    )
+    .expect_err("a transport-only mapping rejects an unsupported security class");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RuleMappingMismatch
     );
 
     let wrong_clause = TypedRuleMapping {
