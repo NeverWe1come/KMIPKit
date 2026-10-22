@@ -74,6 +74,7 @@ _RULE_TEST_KINDS = {
 _RULE_CONSTRAINTS = {
     ("transport", "raw_tls"),
     ("transport", "https"),
+    ("transport_security", "tls"),
     ("encoding", "ttlv"),
 }
 _DOUBLE_QUOTED_SECRET_VALUE = r'"(?:\\.|[^"\\\r\n])*"'
@@ -321,6 +322,7 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
                 raise ValueError("unsupported typed profile rule mapping")
             evidence.append(evidence_fields)
 
+        constraints: list[dict[str, str]] = []
         for constraint_entry in _split_rust_registry_entries(fields["constraints"]):
             constraint_match = _RULE_CONSTRAINT_ENTRY.fullmatch(constraint_entry)
             if constraint_match is None:
@@ -328,6 +330,17 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
             constraint = constraint_match.groupdict()
             if (constraint["key"], constraint["value"]) not in _RULE_CONSTRAINTS:
                 raise ValueError("unsupported typed profile rule mapping")
+            constraints.append(constraint)
+
+        transport_only = (
+            evaluator == "None"
+            and bool(constraints)
+            and all(
+                constraint["key"] == "transport_security"
+                and constraint["value"] == "tls"
+                for constraint in constraints
+            )
+        )
 
         if not evidence:
             evidence.append({"test_id": "", "kind": ""})
@@ -337,6 +350,7 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
                 "source_clause_id": fields["source_clause_id"],
                 "verification_category": category,
                 "evaluator_present": evaluator != "None",
+                "transport_only": transport_only,
                 "test_kind": item["kind"] or None,
                 "test_id": item["test_id"] or None,
             })
@@ -773,7 +787,10 @@ def _typed_rule_coverage(
         for mapping in candidates
         if mapping.get("source_clause_id") in source_clause_ids
         and mapping.get("verification_category") == category
-        and mapping.get("evaluator_present") is True
+        and (
+            mapping.get("evaluator_present") is True
+            or mapping.get("transport_only") is True
+        )
     ]
     if typed_rule_mappings is None:
         mapping_status = "not evaluated"

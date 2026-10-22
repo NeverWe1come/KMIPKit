@@ -97,6 +97,13 @@ impl ProfileTransport {
             Self::Https => "https",
         }
     }
+
+    fn satisfies_transport_security(self, required_security: &str) -> bool {
+        matches!(
+            (self, required_security),
+            (Self::RawTtlvTls | Self::Https, "tls")
+        )
+    }
 }
 
 /// Explicit profile IDs requested for one client exchange.
@@ -173,8 +180,8 @@ impl ProfileValidationResult {
     ///
     /// # Errors
     ///
-    /// Returns a stable source-backed error when a selected rule requires a
-    /// different transport or its mapping is no longer present.
+    /// Returns a stable source-backed error when a selected rule requires an
+    /// incompatible transport or its mapping is no longer present.
     pub fn validate_transport(
         &self,
         transport: ProfileTransport,
@@ -201,7 +208,14 @@ impl ProfileValidationResult {
                 ));
             };
             for constraint in mapping.constraints {
-                if constraint.key == "transport" && constraint.value != transport.as_rule_value() {
+                let satisfied = match constraint.key {
+                    "transport" => constraint.value == transport.as_rule_value(),
+                    "transport_security" => {
+                        transport.satisfies_transport_security(constraint.value)
+                    }
+                    _ => true,
+                };
+                if !satisfied {
                     return Err(ProfileValidationError::for_requirement(
                         ProfileValidationErrorCode::TransportConstraintRejected,
                         profile_id,
@@ -273,6 +287,9 @@ impl ProfileValidationResult {
                 ));
             };
             let Some(evaluator) = mapping.evaluator else {
+                if is_transport_only_mapping(mapping) {
+                    continue;
+                }
                 return Err(ProfileValidationError::for_requirement(
                     ProfileValidationErrorCode::IncompleteRuleMapping,
                     profile_id,
@@ -2286,6 +2303,20 @@ fn tag_has_kmip_21_prefix(raw_tag: u32) -> bool {
 
 const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-3.1-001",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_tls_for_basic_authentication_suite_transport",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
@@ -3252,16 +3283,18 @@ fn validate_mapping(
     {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
     }
-    if mapping.evaluator.is_none() {
-        return Err(error(ProfileValidationErrorCode::IncompleteRuleMapping));
-    }
     if mapping.constraints.iter().any(|constraint| {
         !matches!(
             (constraint.key, constraint.value),
-            ("transport", "raw_tls" | "https") | ("encoding", "ttlv")
+            ("transport", "raw_tls" | "https")
+                | ("transport_security", "tls")
+                | ("encoding", "ttlv")
         )
     }) {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
+    }
+    if mapping.evaluator.is_none() && !is_transport_only_mapping(mapping) {
+        return Err(error(ProfileValidationErrorCode::IncompleteRuleMapping));
     }
 
     let required_test_kind = match requirement.verification_category {
@@ -3289,6 +3322,15 @@ fn validate_mapping(
         return Err(error(ProfileValidationErrorCode::MissingCategoryTest));
     }
     Ok(())
+}
+
+fn is_transport_only_mapping(mapping: &TypedRuleMapping) -> bool {
+    mapping.evaluator.is_none()
+        && !mapping.constraints.is_empty()
+        && mapping
+            .constraints
+            .iter()
+            .all(|constraint| constraint.key == "transport_security" && constraint.value == "tls")
 }
 
 #[cfg(test)]

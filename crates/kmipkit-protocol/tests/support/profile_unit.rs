@@ -4363,12 +4363,8 @@ fn missing_evaluator_and_wrong_source_link_fail_closed() {
             &UNSUPPORTED_SECURITY,
         )
     };
-    let error = validate_mapping(
-        "TEST-PROFILE",
-        &requirement,
-        &unsupported_transport_only,
-    )
-    .expect_err("a transport-only mapping rejects an unsupported security class");
+    let error = validate_mapping("TEST-PROFILE", &requirement, &unsupported_transport_only)
+        .expect_err("a transport-only mapping rejects an unsupported security class");
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RuleMappingMismatch

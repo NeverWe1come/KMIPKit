@@ -79585,12 +79585,18 @@
       ],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0010",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_transport_security",
+        "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_tls_for_basic_authentication_suite_transport"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Profiles v2.1 §3.1 requires TLS to establish the Basic Authentication Suite secure channel; Baseline Client inherits this condition through §6.1 item 2. The typed rule accepts the configured RawTtlvTls and HTTPS transport classes. It does not inspect a live TLS handshake, negotiated parameters, peer identity, certificate validation, or server acceptance. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-3.1.1-002",
