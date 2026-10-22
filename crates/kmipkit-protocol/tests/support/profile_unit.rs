@@ -1244,6 +1244,53 @@ fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
         .expect("nested standard and extension tags use their required prefixes");
 }
 
+#[test]
+fn profile_maps_reserved_tag_prohibition_for_outbound_requests() {
+    // KMIP Specification v2.1 §11 prohibits using Tag Values marked Reserved.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-11-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-11-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the reserved-tag prohibition has an outbound profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the prohibition resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the prohibition has category-appropriate negative evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the prohibition has a typed outbound-request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_operation_payload(
+        0x0000_0001,
+        structure([tagged(
+            0x0042_0173,
+            Value::structure(structure([tagged(
+                0x0054_1234,
+                Value::byte_string(vec![0xA5]),
+            )])),
+        )]),
+    );
+    assert!(evaluate(Some(&request), None));
+    result
+        .validate_request(&request)
+        .expect("allocated standard and extension tags remain usable");
+}
+
 fn derive_key_payload(object_type: u32, lengths: impl IntoIterator<Item = Value>) -> Structure {
     let attributes = structure(
         lengths
