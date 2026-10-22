@@ -148,7 +148,6 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Create",
                 "Create Key Pair",
                 "Create Split Key",
-                "Discover Versions",
                 "Hash",
                 "MAC",
                 "MAC Verify",
@@ -164,6 +163,7 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Decrypt",
                 "Delegated Login",
                 "Derive Key",
+                "Discover Versions",
                 "Encrypt",
                 "Export",
                 "Get",
@@ -180,11 +180,27 @@ class PackageDocumentationContractTests(unittest.TestCase):
                 "Ping",
                 "PKCS#11",
                 "Query",
+                "Register",
+                "Revoke",
                 "Re-certify",
                 "Re-key",
                 "Re-key Key Pair",
                 "Re-Provision",
+                "RNG Retrieve",
+                "RNG Seed",
+                "Set Constraints",
+                "Set Defaults",
+                "Validate",
             ],
+        )
+        self.assertEqual(
+            (
+                len(operations),
+                blocked_operations,
+                len(declared_operations),
+                len(verified_operations),
+            ),
+            (56, 15, 8, 33),
         )
         self.assertEqual(
             len(operations),
@@ -207,6 +223,64 @@ class PackageDocumentationContractTests(unittest.TestCase):
             self.assertIn(operation_phrase, normalized_guide)
             for operation in (*declared_operations, *verified_operations):
                 self.assertIn(operation["name"].lower(), normalized_guide)
+        self.assertIn("**8** rows are `declared`", self.english)
+        self.assertIn("**33** operation mappings are `verified`", self.english)
+        self.assertIn("**8** filas están en estado `declared`", self.spanish)
+        self.assertIn("**33** mapeos de operación están en estado `verified`", self.spanish)
+        self.assertNotIn("full Register operation parity remains blocked", self.english)
+        self.assertNotIn(
+            "la paridad completa de la operación Register sigue bloqueada",
+            self.spanish.lower(),
+        )
+
+    def test_bilingual_client_execution_guides_scope_operation_rows_to_rust(self) -> None:
+        guides = {
+            "en": (ROOT / "docs/user-guide/en/client-execution.md").read_text(
+                encoding="utf-8"
+            ),
+            "es": (ROOT / "docs/user-guide/es/ejecucion-cliente.md").read_text(
+                encoding="utf-8"
+            ),
+        }
+        required_scope = {
+            "en": (
+                "This guide describes the Rust `kmipkit-client` API surface.",
+                "A Rust model or accessor does not establish four-language 1.0 operation availability.",
+                "`blocked` means the complete four-language 1.0 operation mapping is unavailable, even if Rust types exist.",
+                "[language and package status](language-packages.md)",
+            ),
+            "es": (
+                "Esta guía describe la superficie de la API Rust de `kmipkit-client`.",
+                "Un modelo o accesor de Rust no establece la disponibilidad de una operación en los cuatro lenguajes de la versión 1.0.",
+                "`blocked` significa que el mapeo completo de operaciones 1.0 para los cuatro lenguajes no está disponible, aunque existan tipos de Rust.",
+                "[estado de paquetes e idiomas](paquetes-de-idiomas.md)",
+            ),
+        }
+        for language, guide in guides.items():
+            normalized_guide = re.sub(r"\s+", " ", guide)
+            with self.subTest(language=language):
+                for statement in required_scope[language]:
+                    self.assertIn(statement, normalized_guide)
+
+    def test_t071_checkpoint_records_active_manifest_snapshot_and_remains_open(self) -> None:
+        tasks = (ROOT / "specs/043-public-api-bindings/tasks.md").read_text(
+            encoding="utf-8"
+        )
+        checkpoint = re.search(
+            r"(?s)\*\*Checkpoint \(manifest snapshot, [^)]+\)\*\*: (.*?)(?=\n\n)",
+            tasks,
+        )
+        self.assertIsNotNone(checkpoint)
+        assert checkpoint is not None
+        for audited_status in (
+            "33/56 `client_1_0` operations as verified, 8 as declared, and 15 as blocked",
+            "0/15 verified (14 declared, 1 blocked)",
+            "818/11,352 verified, 1,345 declared, and 9,189 blocked",
+            "729 approved exclusions",
+            "T071 remains open",
+        ):
+            self.assertIn(audited_status, checkpoint.group(1))
+        self.assertRegex(tasks, r"(?m)^- \[ \] T071 \[US2\]")
 
     def test_recertify_summary_names_every_mapped_request_field(self) -> None:
         request_fields = (
