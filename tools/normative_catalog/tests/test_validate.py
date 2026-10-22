@@ -21966,7 +21966,7 @@ class CatalogValidationTests(unittest.TestCase):
 
 
     def test_locate_client_may_capabilities_keep_exact_local_evidence_and_official_case_gap(self) -> None:
-        """Locate client MAY capabilities link only their local request evidence."""
+        """Locate client request rules link only their local evidence."""
         catalog = json.loads(
             (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
@@ -21974,6 +21974,7 @@ class CatalogValidationTests(unittest.TestCase):
         locate_implementation_refs = [
             "crates/kmipkit-client/src/execute.rs",
             "crates/kmipkit-protocol/src/locate.rs",
+            "crates/kmipkit-protocol/src/profile.rs",
         ]
         locate_batch_test = (
             "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::"
@@ -21991,25 +21992,57 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-protocol/tests/unit/locate_tests.rs::"
             "request_always_encodes_the_required_empty_attributes_structure"
         )
+        required_attributes_test = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_client_locate_attributes_as_required_behavior"
+        )
+        attributes_implementation_refs = [
+            locate_implementation_refs[0],
+            "crates/kmipkit-protocol/src/attribute.rs",
+            locate_implementation_refs[1],
+            locate_implementation_refs[2],
+        ]
         expected_evidence = {
             "KMIPKIT-REQ-SPEC-6.1.28-001": (
                 locate_implementation_refs,
-                [locate_batch_test, locate_wire_test],
+                [
+                    locate_batch_test,
+                    locate_wire_test,
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                    "profile_maps_optional_locate_maximum_items_capability",
+                ],
                 "do not assert how many identifiers a server returns",
             ),
             "KMIPKIT-REQ-SPEC-6.1.28-002": (
                 locate_implementation_refs,
-                [locate_quickstart_test, locate_batch_test, locate_wire_test],
+                [
+                    locate_quickstart_test,
+                    locate_batch_test,
+                    locate_wire_test,
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                    "profile_maps_optional_locate_offset_items_capability",
+                ],
                 "do not assert server-side zero-equivalence behavior",
             ),
             "KMIPKIT-REQ-SPEC-6.1.28-013-002": (
+                attributes_implementation_refs,
                 [
-                    locate_implementation_refs[0],
-                    "crates/kmipkit-protocol/src/attribute.rs",
-                    locate_implementation_refs[1],
+                    locate_quickstart_test,
+                    empty_attributes_test,
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+                    "profile_maps_client_locate_empty_attributes_match_all_capability",
                 ],
-                [locate_quickstart_test, empty_attributes_test],
-                "do not assert the server returns every matching object",
+                "do not assert that a server returns every matching object",
+            ),
+            "KMIPKIT-REQ-SPEC-6.1.28-013-001": (
+                attributes_implementation_refs,
+                [
+                    locate_batch_test,
+                    "crates/kmipkit-protocol/tests/unit/locate_tests.rs::"
+                    "request_preserves_structured_repeated_and_usage_criteria_for_server_matching",
+                    required_attributes_test,
+                ],
+                "they do not assert which objects the server matches or returns",
             ),
         }
 

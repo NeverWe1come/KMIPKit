@@ -925,7 +925,7 @@ fn client_can_include_optional_locate_offset_items(
     })
 }
 
-fn client_can_send_empty_locate_attributes(
+fn client_supplies_locate_attributes_structure(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -2519,7 +2519,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_can_send_empty_locate_attributes),
+        evaluator: Some(client_supplies_locate_attributes_structure),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_attributes_as_required_behavior",
             kind: RuleTestKind::PositiveBehavior,
@@ -2530,7 +2530,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_can_send_empty_locate_attributes),
+        evaluator: Some(client_supplies_locate_attributes_structure),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_empty_attributes_match_all_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,

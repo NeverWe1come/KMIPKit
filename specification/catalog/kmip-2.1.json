@@ -93789,7 +93789,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.28 paragraph 7 says all fields of a structured attribute are not REQUIRED to be specified. The client must accept a partial Link criterion containing Linked Object Identifier without Link Type. Preserve REQUIRED as the literal source keyword; KMIPKIT-0010 verifies this as RequiredBehavior while normative_strength retains the effective permission_or_optional meaning. The local protocol and profile tests verify that the partial structure is retained and accepted in the request; they do not test server-side matching behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002, and no official case-level pass is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.28 paragraph 7 says all fields of a structured attribute are not REQUIRED to be specified. The client must accept a partial Link criterion containing Linked Object Identifier without Link Type. Preserve REQUIRED as the literal source keyword; KMIPKIT-0010 verifies this as RequiredBehavior while normative_strength retains the effective permission_or_optional meaning. The matching behavior belongs to the server; the local protocol and profile tests verify that the partial structure is retained and accepted in the request without testing server-side results. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002, and no official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-008-001",
@@ -93999,16 +93999,18 @@
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/attribute.rs",
-        "crates/kmipkit-protocol/src/locate.rs"
+        "crates/kmipkit-protocol/src/locate.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
-        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_preserves_structured_repeated_and_usage_criteria_for_server_matching"
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_preserves_structured_repeated_and_usage_criteria_for_server_matching",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_attributes_as_required_behavior"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. Local protocol and fake-transport tests preserve caller-supplied Locate criteria, including structured and repeated values, for server-side matching; they do not assert which objects the server matches or returns. No official case-level pass is claimed."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.28 Table 247 marks the Locate Attributes field REQUIRED and states that its Structure MAY be empty. The typed client rule requires the Attributes Structure in each Locate request and validates its TTLV type; KMIPKIT-REQ-SPEC-6.1.28-013-002 separately covers the permission to leave it empty. The local protocol, client, and profile tests verify request representation only; they do not assert which objects the server matches or returns. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-013-002",
