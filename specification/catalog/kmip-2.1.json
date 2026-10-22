@@ -94846,11 +94846,13 @@
       "feature_spec": "KMIPKIT-0020",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/query.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
-        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups"
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_query_function_repetition_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
