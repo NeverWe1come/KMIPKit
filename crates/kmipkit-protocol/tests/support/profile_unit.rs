@@ -1445,6 +1445,72 @@ fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
         .expect("a client can represent repeated Request Header Attestation Type values");
 }
 
+#[test]
+fn profile_maps_request_time_stamp_as_optional_capability() {
+    // KMIP Specification v2.1 §9.20 makes Time Stamp OPTIONAL in a client request.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.20-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.20-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional client request Time Stamp has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional client request Time Stamp resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request_without_time_stamp = request_message();
+    result
+        .validate_request(&request_without_time_stamp)
+        .expect("the OPTIONAL field does not have to appear in every request");
+
+    let raw_seconds = 1_751_100_123_i64;
+    let request_with_time_stamp = request_message_with_time_stamp(raw_seconds);
+    assert_eq!(request_with_time_stamp.header().time_stamp(), Some(raw_seconds));
+    assert!(evaluate(Some(&request_with_time_stamp), None));
+    result
+        .validate_request(&request_with_time_stamp)
+        .expect("a client can represent an optional Request Header Time Stamp");
+}
+
+fn request_message_with_time_stamp(seconds: i64) -> crate::RequestMessage {
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(seconds)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message with a Time Stamp is valid")
+}
+
 fn request_message_with_attestation_types(attestation_types: &[u32]) -> crate::RequestMessage {
     let mut header_fields = vec![test_protocol_version()];
     header_fields.extend(
