@@ -93158,6 +93158,7 @@
         "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_roundtrip_tests.rs",
         "crates/kmipkit-protocol/tests/unit/attribute_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
         "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs::request_follows_table_223_order_and_allows_repeated_reference_fields"
       ],
       "negative_verification_required": false,
