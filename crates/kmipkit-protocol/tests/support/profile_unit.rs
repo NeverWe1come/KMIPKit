@@ -7404,3 +7404,145 @@ fn profile_rejects_malformed_register_object_key_block_shapes_for_key_value_loca
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     }
 }
+
+const REVOKE_OPERATION: u32 = 0x0000_0013;
+const REVOCATION_REASON: u32 = 0x0042_0081;
+const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
+const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
+const REVOKE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-002";
+const REVOKE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.44-003";
+
+fn revoke_reason_item(reason_code: Value) -> Item {
+    tagged(
+        REVOCATION_REASON,
+        Value::structure(structure([tagged(REVOCATION_REASON_CODE, reason_code)])),
+    )
+}
+
+fn revoke_profile_request(
+    reason_fields: impl IntoIterator<Item = Item>,
+    include_compromise_occurrence_date: bool,
+) -> crate::RequestMessage {
+    let mut payload: Vec<_> = reason_fields.into_iter().collect();
+    if include_compromise_occurrence_date {
+        payload.push(tagged(
+            COMPROMISE_OCCURRENCE_DATE,
+            Value::date_time(0),
+        ));
+    }
+    request_message_with_operation_payload(REVOKE_OPERATION, structure(payload))
+}
+
+fn revoke_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
+        requirement_ids: vec![REVOKE_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn assert_revoke_profile_request_rejected(request: &crate::RequestMessage) {
+    let error = revoke_profile_result()
+        .validate_request(request)
+        .expect_err("a date with a non-compromise or malformed reason is rejected");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REVOKE_REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(REVOKE_SOURCE_CLAUSE_ID));
+}
+
+#[test]
+fn profile_maps_revoke_compromise_occurrence_date_shall_not_rule() {
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REVOKE_REQUIREMENT_ID);
+    assert!(mapping.is_some(), "the Revoke SHALL NOT has a typed profile mapping");
+    if let Some(mapping) = mapping {
+        assert_eq!(mapping.source_clause_id, REVOKE_SOURCE_CLAUSE_ID);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::ProhibitedBehavior
+        );
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.kind == RuleTestKind::NegativeBehavior
+                && evidence.test_id.ends_with(
+                    "profile_rejects_revoke_compromise_occurrence_date_for_other_reasons",
+                )
+        }));
+    }
+}
+
+#[test]
+fn profile_accepts_revoke_compromise_occurrence_date_for_key_and_ca_compromise() {
+    // KMIP Specification v2.1 §6.1.44 Table 295; §11.48 Table 481 assigns 2 and 3.
+    for reason in [2, 3] {
+        let request = revoke_profile_request(
+            [revoke_reason_item(Value::enumeration(reason))],
+            true,
+        );
+        assert!(
+            revoke_profile_result().validate_request(&request).is_ok(),
+            "the SHALL NOT rule must not enforce the adjacent SHOULD for reason {reason}"
+        );
+    }
+}
+
+#[test]
+fn profile_rejects_revoke_compromise_occurrence_date_for_other_reasons() {
+    // Standard non-compromise reasons and an unknown value remain distinct inputs.
+    for reason in [1, 4, 6, 0x8000_0000] {
+        let request = revoke_profile_request(
+            [revoke_reason_item(Value::enumeration(reason))],
+            true,
+        );
+        assert_revoke_profile_request_rejected(&request);
+    }
+}
+
+#[test]
+fn profile_accepts_revoke_without_compromise_occurrence_date_for_any_reason() {
+    // The SHALL NOT rule does not require the adjacent SHOULD field for reasons 2 or 3.
+    for reason in [1, 2, 3, 4, 6, 0x8000_0000] {
+        let request = revoke_profile_request(
+            [revoke_reason_item(Value::enumeration(reason))],
+            false,
+        );
+        assert!(revoke_profile_result().validate_request(&request).is_ok());
+    }
+}
+
+#[test]
+fn profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed() {
+    let malformed_reasons = [
+        Vec::new(),
+        vec![tagged(REVOCATION_REASON, Value::integer(2))],
+        vec![tagged(
+            REVOCATION_REASON,
+            Value::structure(Structure::new()),
+        )],
+        vec![tagged(
+            REVOCATION_REASON,
+            Value::structure(structure([tagged(
+                REVOCATION_REASON_CODE,
+                Value::integer(2),
+            )])),
+        )],
+        vec![tagged(
+            REVOCATION_REASON,
+            Value::structure(structure([
+                tagged(REVOCATION_REASON_CODE, Value::enumeration(2)),
+                tagged(REVOCATION_REASON_CODE, Value::enumeration(3)),
+            ])),
+        )],
+        vec![
+            revoke_reason_item(Value::enumeration(2)),
+            revoke_reason_item(Value::enumeration(3)),
+        ],
+    ];
+
+    for reason_fields in malformed_reasons {
+        let request = revoke_profile_request(reason_fields, true);
+        assert_revoke_profile_request_rejected(&request);
+    }
+}

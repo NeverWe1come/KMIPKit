@@ -7798,6 +7798,47 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual([row for row in oracle["source_only_requirement_gaps"] if row["gap_id"] == gap_id], [])
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
+    def test_spec_6_1_44_revoke_date_prohibition_has_typed_profile_traceability(self) -> None:
+        """The Table 295 client prohibition links the request rule and both source clauses."""
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+        requirement = requirements["KMIPKIT-REQ-SPEC-6.1.44-003-002"]
+
+        self.assertEqual(requirement["source_keyword"], "SHALL NOT")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertIn(
+            {"source_id": "KMIPKIT-SRC-spec", "section": "11.48"},
+            requirement["source_refs"],
+        )
+        self.assertEqual(
+            requirement["element_ids"],
+            [
+                "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
+                "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE",
+                "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
+            ],
+        )
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/src/profile.rs::client_compromise_occurrence_date_only_for_key_or_ca_compromise",
+            requirement["implementation_refs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_for_other_reasons",
+            requirement["verification_refs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed",
+            requirement["verification_refs"],
+        )
+        self.assertTrue(requirement["negative_verification_required"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.44-003-001", requirement["verification_refs"])
+
     def test_spec_6_1_46_rekey_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.46 and 6.1.46.1 preserve Re-key source roles."""
         fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
