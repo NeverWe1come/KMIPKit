@@ -1542,6 +1542,69 @@ fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_client_get_attributes_optional_attribute_references() {
+    // KMIP Specification v2.1 §6.1.20 Table 223 permits repeated references.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.20-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_000F;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Get Attributes references have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional references resolve to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for references in [
+        Vec::new(),
+        vec![
+            crate::AttributeReference::tag(0x0042_002F),
+            crate::AttributeReference::name("KMIPKit.TestVendor_1", "Opaque.Attribute"),
+        ],
+    ] {
+        let expected_reference_count = references.len();
+        let request = crate::GetAttributesRequest::try_new(None, references)
+            .expect("Table 223 permits zero or more distinct references");
+        let payload = request
+            .to_ttlv_payload()
+            .expect("the Get Attributes request is structurally valid");
+        assert_eq!(
+            payload
+                .view()
+                .children()
+                .iter()
+                .filter(|field| field.tag().raw() == ATTRIBUTE_REFERENCE_TAG)
+                .count(),
+            expected_reference_count
+        );
+
+        let request = request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted or repeated Get Attributes references remain usable");
+    }
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
