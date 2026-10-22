@@ -1,5 +1,12 @@
 # Public API design
 
+This reference describes the current API design and Rust declarations where
+identified. A Rust declaration does not establish 1.0 availability in all
+four languages. The reviewed [package status](../user-guide/en/language-packages.md)
+is the source for operation-level 1.0 readiness; `declared` and `verified`
+have distinct meanings, and `blocked` means the complete four-language
+mapping is unavailable.
+
 ## Three supported levels
 
 ### Local API-level metadata
@@ -21,8 +28,17 @@ Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke for batch execution, with single-operation convenience methods for
-lifecycle calls and separate Poll, Cancel, Process, and Query Asynchronous
-Requests methods.
+lifecycle calls. This inventory describes the Rust client surface and does
+not assert four-language 1.0 readiness. In particular, explicit asynchronous
+follow-up operations remain blocked in the 1.0 manifest pending KMIPKIT-0009:
+
+| KMIP operation | Four-language 1.0 mapping |
+|---|---|
+| Cancel | blocked |
+| Poll | blocked |
+| Process | blocked |
+| Query Asynchronous Requests | blocked |
+
 KMIPKIT-0013 adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
@@ -47,8 +63,9 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 
 ### Typed protocol
 
-KMIPKIT-0007 provides synchronous `Client::execute` over an ordered `ClientBatch`
-with a closed typed request set. The currently implemented operation variants
+KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
+`ClientBatch` with a closed typed request set. The currently implemented Rust
+operation variants
 are Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
 Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Get Usage Allocation, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
@@ -228,8 +245,7 @@ call itself.
 
 ## Protocol asynchronous outcome
 
-The 1.0 target includes explicit follow-up operations for KMIP asynchronous
-results. KMIPKIT-0007 represents a Pending item as
+KMIPKIT-0007 represents a Pending item as
 `ClientBatchOutcome::Pending(PendingOutcome)`, preserving the opaque
 Asynchronous Correlation Value behind an explicit borrowed accessor. The
 Pending value retains the originating typed response; `response()` returns a
@@ -237,8 +253,10 @@ borrowed `ClientResponseView` with a shared operation-result accessor and
 operation-specific accessors. The view also preserves Discover Versions'
 supported-version accessor. Formatted output is redacted and KMIPKit-owned
 correlation storage is zeroized when the Pending value is dropped. Poll,
-Cancel, result processing, automatic waiting, and background execution are not
-implemented by this foundation; see the
+Cancel, Process, and Query Asynchronous Requests remain blocked in the
+four-language 1.0 API pending approval and implementation of KMIPKIT-0009,
+even though KMIPKit preserves Pending outcomes and their correlation value.
+Automatic waiting and background execution are not implemented. See the
 [client execution guide](../user-guide/en/client-execution.md).
 
 ## Secrets
