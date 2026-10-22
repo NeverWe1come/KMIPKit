@@ -846,6 +846,14 @@ fn client_can_repeat_request_attestation_types(
     request.is_some()
 }
 
+fn client_can_include_optional_create_split_key_source_identifier(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.10 permits a caller to identify the existing split source.
+    request.is_some()
+}
+
 fn client_can_include_request_time_stamp(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2235,6 +2243,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(discover_versions_advertises_only_client_supported_versions),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.10-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.10-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_include_optional_create_split_key_source_identifier),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_create_split_key_optional_source_identifier",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
