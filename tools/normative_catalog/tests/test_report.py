@@ -250,10 +250,12 @@ class CoverageReportTests(unittest.TestCase):
             test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
             test_path.parent.mkdir(parents=True)
             test_path.write_text(
+                "mod tests {\n"
                 "#[test]\nfn profile_requires_tls_for_basic_authentication_suite_transport() {}\n"
                 "#[test]\nfn profile_recommends_tls_1_3_for_basic_authentication_suite_transport() {}\n"
                 "#[cfg(target_pointer_width = \"32\")]\n"
-                "#[test]\nfn unrelated_32_bit_only_test() {}\n",
+                "#[test]\nfn unrelated_32_bit_only_test() {}\n"
+                "}\n",
                 encoding="utf-8",
             )
             self._write_profile_module_tree(repository, include_test_file=True)
@@ -313,6 +315,42 @@ class CoverageReportTests(unittest.TestCase):
     },
 ];
 """,
+                encoding="utf-8",
+            )
+            self._write_profile_module_tree(repository, include_test_file=True)
+
+            with self.assertRaisesRegex(ValueError, "unresolvable typed profile rule test evidence"):
+                load_typed_rule_mappings(repository)
+
+    def test_typed_rule_registry_rejects_a_conditionally_compiled_target_test(self) -> None:
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            source_path = repository / "crates/kmipkit-protocol/src/profile.rs"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(
+                """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(validate_discover_versions_rule),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::conditional_test",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+];
+""",
+                encoding="utf-8",
+            )
+            test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
+            test_path.parent.mkdir(parents=True)
+            test_path.write_text(
+                '#[cfg(target_pointer_width = "32")]\n'
+                "#[test]\nfn conditional_test() {}\n",
                 encoding="utf-8",
             )
             self._write_profile_module_tree(repository, include_test_file=True)
