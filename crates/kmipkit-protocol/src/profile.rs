@@ -705,6 +705,8 @@ const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
 const ATTRIBUTE_REFERENCE: u32 = 0x0042_013B;
+const QUERY_OPERATION: u32 = 0x0000_0018;
+const QUERY_FUNCTION: u32 = 0x0042_0074;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
@@ -890,6 +892,33 @@ fn get_attributes_references_are_not_repeated(
                         AttributeReference::try_from_ttlv_item(field)
                             .is_ok_and(|reference| seen.insert(reference))
                     })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_query_contains_one_or_more_functions(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != QUERY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == QUERY_FUNCTION)
             })
             .unwrap_or(false)
     })
@@ -2327,6 +2356,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_optional_attribute_references",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-014",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_query_contains_one_or_more_functions),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_at_least_one_client_query_function",
+            kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
     },
