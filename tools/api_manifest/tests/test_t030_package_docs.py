@@ -155,9 +155,19 @@ class PackageDocumentationContractTests(unittest.TestCase):
         )
         self.assertEqual("verified", register["apiState"])
 
-        for guide, operation_phrase in (
-            (self.english, "full operation parity"),
-            (self.spanish, "paridad completa de operaciones"),
+        for guide, operation_phrase, declared_marker, verified_marker in (
+            (
+                self.english,
+                "full operation parity",
+                "**8** rows are `declared`:",
+                "**33** operation mappings are `verified`:",
+            ),
+            (
+                self.spanish,
+                "paridad completa de operaciones",
+                "**8** filas están en estado `declared`:",
+                "**33** mapeos de operación están en estado `verified`:",
+            ),
         ):
             for capability in capabilities:
                 self.assertIn(capability["capabilityId"], guide)
@@ -169,8 +179,18 @@ class PackageDocumentationContractTests(unittest.TestCase):
             self.assertIn(f"{blocked_operations} / {len(operations)}", guide)
             normalized_guide = re.sub(r"\s+", " ", guide.lower())
             self.assertIn(operation_phrase, normalized_guide)
+            declared_start = normalized_guide.index(declared_marker.lower())
+            verified_start = normalized_guide.index(
+                verified_marker.lower(), declared_start + len(declared_marker)
+            )
+            declared_section = normalized_guide[declared_start:verified_start]
+            verified_section = normalized_guide[verified_start:]
             for operation in (*declared_operations, *verified_operations):
                 self.assertIn(operation["name"].lower(), normalized_guide)
+            for operation in declared_operations:
+                self.assertIn(operation["name"].lower(), declared_section)
+            for operation in verified_operations:
+                self.assertIn(operation["name"].lower(), verified_section)
         self.assertIn(
             f"**{len(declared_operations)}** rows are `declared`", self.english
         )
