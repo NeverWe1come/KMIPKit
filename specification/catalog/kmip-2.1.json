@@ -99424,15 +99424,17 @@
         "crates/kmipkit-protocol/src/message/batch.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_operation_batch_count_to_one",
         "crates/kmipkit-protocol/tests/message_contract.rs::signed_batch_count_must_be_nonnegative_and_match_item_count"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §9.5 requires Batch Count 1 when only one operation is requested. The typed client profile rule checks that request condition and leaves multi-item requests outside it, including the tested two-item case; the message model also enforces equality between Batch Count and request Batch Items. KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.6-001-001",
