@@ -97,6 +97,16 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             "Query Asynchronous Requests",
         }
         expected_typed_set = operations - async_followups
+        operations_by_name = {
+            item["name"]: item for item in self.manifest["operations"]
+        }
+        documented_states = {
+            name.strip(): state.strip()
+            for name, state in re.findall(
+                r"(?m)^\|\s*([^|]+?)\s*\|\s*(blocked|declared|verified)\s*\|$",
+                reference,
+            )
+        }
 
         self.assertEqual(52, len(expected_typed_set))
         self.assertIn(
@@ -122,6 +132,8 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
         for operation in async_followups:
             with self.subTest(excluded_async_operation=operation):
                 self.assertIn(operation.lower(), normalized_typed.lower())
+                self.assertEqual("blocked", operations_by_name[operation]["apiState"])
+                self.assertEqual("blocked", documented_states.get(operation))
         self.assertIn(
             "[java and python package guide](../user-guide/en/language-packages.md)",
             normalized_typed.lower(),
