@@ -54872,8 +54872,7 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"
       ],
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-8.3-003",
-        "KMIPKIT-REQ-SPEC-9.21-001-001"
+        "KMIPKIT-REQ-SPEC-9.21-001-002"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -55573,10 +55572,7 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
       ],
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-8.3-003",
-        "KMIPKIT-REQ-SPEC-9.21-001-001"
-      ],
+      "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
@@ -98259,9 +98255,7 @@
       "condition": "When Batch Count exceeds one.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99065,9 +99059,7 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -99078,11 +99070,13 @@
         "crates/kmipkit-protocol/src/message/batch.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/message_validation.rs::a_single_item_request_may_omit_its_unique_id",
-        "crates/kmipkit-protocol/tests/message_validation.rs::request_item_ids_remain_associated_in_seeded_batch_order"
+        "crates/kmipkit-protocol/tests/message_validation.rs::request_item_ids_remain_associated_in_seeded_batch_order",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_unique_batch_item_id_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
@@ -99108,7 +99102,9 @@
       "direction": "unclear",
       "condition": "When the request includes this identifier.",
       "scope_state": "unclear",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0007",
