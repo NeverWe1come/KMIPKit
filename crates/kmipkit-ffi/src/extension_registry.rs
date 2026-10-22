@@ -3007,20 +3007,32 @@ fn validate_input_overlaps_output<T>(
     let Some(input_bytes) = input_count.checked_mul(std::mem::size_of::<T>()) else {
         return true;
     };
-    if input_bytes == 0 {
+    memory_regions_overlap(
+        output.cast(),
+        std::mem::size_of::<*mut kmipkit_client_batch_item_t>(),
+        input.cast(),
+        input_bytes,
+    )
+}
+
+fn memory_regions_overlap(
+    first: *const u8,
+    first_length: usize,
+    second: *const u8,
+    second_length: usize,
+) -> bool {
+    if first_length == 0 || second_length == 0 {
         return false;
     }
-    let output_start = output.cast::<u8>() as usize;
-    let input_start = input.cast::<u8>() as usize;
-    let Some(output_end) =
-        output_start.checked_add(std::mem::size_of::<*mut kmipkit_client_batch_item_t>())
-    else {
+    let first_start = first as usize;
+    let second_start = second as usize;
+    let Some(first_end) = first_start.checked_add(first_length) else {
         return true;
     };
-    let Some(input_end) = input_start.checked_add(input_bytes) else {
+    let Some(second_end) = second_start.checked_add(second_length) else {
         return true;
     };
-    output_start < input_end && input_start < output_end
+    first_start < second_end && second_start < first_end
 }
 
 fn validate_validate_input_aliases(
@@ -3083,20 +3095,12 @@ fn validate_input_bytes_overlap_output(
     let Ok(input_bytes) = usize::try_from(input_length) else {
         return true;
     };
-    if input_bytes == 0 {
-        return false;
-    }
-    let output_start = output.cast::<u8>() as usize;
-    let input_start = input.cast::<u8>() as usize;
-    let Some(output_end) =
-        output_start.checked_add(std::mem::size_of::<*mut kmipkit_client_batch_item_t>())
-    else {
-        return true;
-    };
-    let Some(input_end) = input_start.checked_add(input_bytes) else {
-        return true;
-    };
-    output_start < input_end && input_start < output_end
+    memory_regions_overlap(
+        output.cast(),
+        std::mem::size_of::<*mut kmipkit_client_batch_item_t>(),
+        input,
+        input_bytes,
+    )
 }
 
 fn copy_validate_certificates(
