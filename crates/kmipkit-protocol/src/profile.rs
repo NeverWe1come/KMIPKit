@@ -711,6 +711,7 @@ const OFFSET_ITEMS: u32 = 0x0042_00D4;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const QUERY_FUNCTION: u32 = 0x0042_0074;
 const ATTRIBUTES: u32 = 0x0042_0125;
+const LINK_ATTRIBUTE: u32 = 0x0042_004A;
 const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME: u32 = 0x0042_00B4;
@@ -952,6 +953,52 @@ fn client_can_send_empty_locate_attributes(
                         field.with_value(|value| matches!(value, ValueView::Structure(_)))
                     });
                 found_attributes && attributes_are_structures
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_can_send_partial_structured_locate_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != LOCATE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut found_attributes = false;
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == ATTRIBUTES)
+                    .all(|field| {
+                        found_attributes = true;
+                        field.with_value(|value| {
+                            let ValueView::Structure(attributes) = value else {
+                                return false;
+                            };
+                            attributes
+                                .children()
+                                .iter()
+                                .filter(|attribute| attribute.tag().raw() == LINK_ATTRIBUTE)
+                                .all(|attribute| {
+                                    attribute.with_value(|value| {
+                                        matches!(value, ValueView::Structure(_))
+                                    })
+                                })
+                        })
+                    })
+                    && found_attributes
             })
             .unwrap_or(false)
     })
@@ -2454,6 +2501,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_locate_offset_items_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-007",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_can_send_partial_structured_locate_attributes),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_partial_structured_attribute_fields",
+            kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
     },

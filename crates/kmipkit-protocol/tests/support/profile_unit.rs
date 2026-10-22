@@ -2094,10 +2094,10 @@ fn profile_maps_client_locate_partial_structured_attribute_fields() {
     assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
     assert_eq!(
         mapping.verification_category,
-        GeneratedVerificationCategory::OptionalCapability
+        GeneratedVerificationCategory::RequiredBehavior
     );
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-        .expect("the partial structured-attribute capability has executable evidence");
+        .expect("the required partial-structure behavior has executable evidence");
     let evaluate = mapping
         .evaluator
         .expect("the requirement has a typed evaluator");
