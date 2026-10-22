@@ -2115,11 +2115,17 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertNotIn(requirement_id, fields[response_id]["requirement_ids"])
         self.assertNotIn(requirement_id, fields[generic_id]["requirement_ids"])
 
-    def test_optional_request_batch_item_id_does_not_cover_response_fields(self) -> None:
-        """Keep optional client request ID scope separate from response correlation."""
+    def test_unique_batch_item_id_requirements_link_to_directional_fields(self) -> None:
+        """Keep request ID requirements separate from response correlation."""
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        requirement_id = "KMIPKIT-REQ-SPEC-9.21-001-001"
-        requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
+        request_optional_id = "KMIPKIT-REQ-SPEC-9.21-001-001"
+        request_required_id = "KMIPKIT-REQ-SPEC-8.3-003"
+        response_correlation_id = "KMIPKIT-REQ-SPEC-9.21-001-002"
+        requirements = {
+            row["requirement_id"]: row
+            for row in catalog["requirements"]
+            if row["requirement_id"] in {request_optional_id, request_required_id, response_correlation_id}
+        }
         fields = {
             row["element_id"]: row
             for row in catalog["elements"]
@@ -2133,12 +2139,21 @@ class CatalogValidationTests(unittest.TestCase):
         response_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
         generic_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"
 
-        self.assertEqual(requirement["role"], "client")
-        self.assertEqual(requirement["direction"], "client_to_server")
-        self.assertEqual(requirement["element_ids"], [request_id])
-        self.assertIn(requirement_id, fields[request_id]["requirement_ids"])
-        self.assertNotIn(requirement_id, fields[response_id]["requirement_ids"])
-        self.assertNotIn(requirement_id, fields[generic_id]["requirement_ids"])
+        self.assertEqual(requirements[request_optional_id]["role"], "client")
+        self.assertEqual(requirements[request_optional_id]["direction"], "client_to_server")
+        self.assertEqual(requirements[request_optional_id]["element_ids"], [request_id])
+        self.assertEqual(requirements[request_required_id]["element_ids"], [request_id])
+        self.assertEqual(requirements[response_correlation_id]["element_ids"], [response_id])
+        self.assertEqual(
+            set(fields[request_id]["requirement_ids"]),
+            {request_optional_id, request_required_id},
+        )
+        self.assertEqual(fields[response_id]["requirement_ids"], [response_correlation_id])
+        self.assertNotIn(request_optional_id, fields[response_id]["requirement_ids"])
+        self.assertNotIn(request_required_id, fields[response_id]["requirement_ids"])
+        self.assertNotIn(request_optional_id, fields[generic_id]["requirement_ids"])
+        self.assertNotIn(request_required_id, fields[generic_id]["requirement_ids"])
+        self.assertNotIn(response_correlation_id, fields[generic_id]["requirement_ids"])
 
     def test_feature_spec_requirement_lookup_accepts_qualified_and_short_fr_ids(self) -> None:
         """Resolve prefixed feature FR IDs while preserving legacy short IDs."""
