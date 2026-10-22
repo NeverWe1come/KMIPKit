@@ -54274,9 +54274,7 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
       ],
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-8.2-002"
-      ],
+      "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
@@ -98202,7 +98200,7 @@
       "status": "verified",
       "review_note": "KMIP Specification v2.1 §8.1 Table 394 marks Request Batch Item as a required Structure that MAY be repeated. This mapping covers the client optional repetition capability; the in-memory Request Message model enforces at least one item and preserves multiple Batch Items in order, while multi-item IDs remain governed by §8.3. KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
-    {
+        {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.2-002",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-8.2-002"
@@ -98222,27 +98220,28 @@
       "condition": null,
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE"
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/message/mod.rs",
-        "crates/kmipkit-protocol/src/message/header.rs",
         "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/mod.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/message_accessors.rs::request_header_accessors_expose_every_represented_field"
+        "crates/kmipkit-protocol/tests/message_accessors.rs::request_header_accessors_expose_every_represented_field",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_attestation_types_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §8.2 Table 395 states that Attestation Type is optional and MAY be repeated. KMIPKIT-0006 owns the in-memory client protocol model for this clause; the typed optional-capability mapping and positive test prove that a Request Header can preserve multiple values without requiring them in every request. The §8.5 response field and §9.11 credential Attestation Type are separate contexts. Outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.3-003",
