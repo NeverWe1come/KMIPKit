@@ -2696,10 +2696,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_request_tags_are_allocated),
         test_evidence: &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reserved_tag_prohibition_for_outbound_requests",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
                 test_id: "crates/kmipkit-ttlv/tests/tag_allocation.rs::individually_and_residually_reserved_tags_are_rejected",
                 kind: RuleTestKind::NegativeBehavior,
             },

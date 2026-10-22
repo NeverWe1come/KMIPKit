@@ -85913,17 +85913,21 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
-        "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
+        "crates/kmipkit-protocol/src/profile.rs",
+        "crates/kmipkit-ttlv/src/codec/decoder.rs",
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-ttlv/src/tag.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_reserved_tag_prohibition_for_outbound_requests",
+        "crates/kmipkit-ttlv/tests/codec_negative.rs::public_decoder_rejects_received_reserved_tags",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::individually_and_residually_reserved_tags_are_rejected",
         "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check"
       ],
       "negative_verification_required": true,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §11 prohibits using Tag Values marked Reserved. The typed rule is limited to outbound client-request validation and recursively rechecks tags against the generated allocation catalog; ordinary typed Tag construction already prevents Reserved values from entering a RequestMessage. Independent negative tests cover rejection by the public tag-allocation API and the public decoder. §11.56 tag-prefix behavior remains a separate requirement. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources; no fixture pass or profile-conformance claim is inferred."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-11.56-001",
