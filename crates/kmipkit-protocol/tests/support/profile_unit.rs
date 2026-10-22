@@ -5703,6 +5703,402 @@ fn profile_maps_client_register_key_value_location_only_without_key_value() {
     );
 }
 
+const TABLE12_REGISTER_OPERATION: u32 = 0x0000_0003;
+const TABLE12_IMPORT_OPERATION: u32 = 0x0000_002A;
+const TABLE12_GET_OPERATION: u32 = 0x0000_000A;
+const TABLE12_OBJECT_TYPE: u32 = 0x0042_0057;
+const TABLE12_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const TABLE12_ATTRIBUTES: u32 = 0x0042_0125;
+const TABLE12_KEY_BLOCK: u32 = 0x0042_0040;
+const TABLE12_KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+const TABLE12_KEY_VALUE: u32 = 0x0042_0045;
+const TABLE12_KEY_MATERIAL: u32 = 0x0042_0043;
+const TABLE12_CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+const TABLE12_CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const TABLE12_SYMMETRIC_KEY: u32 = 0x0042_008F;
+const TABLE12_SECRET_DATA: u32 = 0x0042_0085;
+const TABLE12_SECRET_DATA_TYPE: u32 = 0x0042_0086;
+const TABLE12_OPAQUE_OBJECT: u32 = 0x0042_005B;
+const TABLE12_PGP_KEY: u32 = 0x0042_00BD;
+const TABLE12_PGP_KEY_VERSION: u32 = 0x0042_00BE;
+
+fn table12_key_block_object(
+    object_tag: u32,
+    has_algorithm: bool,
+    has_length: bool,
+    nested_key_value_attribute: Option<Item>,
+) -> Item {
+    let mut key_value_fields = vec![tagged(
+        TABLE12_KEY_MATERIAL,
+        Value::byte_string(b"synthetic-key-material".to_vec()),
+    )];
+    if let Some(attribute) = nested_key_value_attribute {
+        key_value_fields.push(tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure([attribute])),
+        ));
+    }
+
+    let mut key_block_fields = vec![
+        tagged(TABLE12_KEY_FORMAT_TYPE, Value::enumeration(1)),
+        tagged(
+            TABLE12_KEY_VALUE,
+            Value::structure(structure(key_value_fields)),
+        ),
+    ];
+    if has_algorithm {
+        key_block_fields.push(tagged(
+            TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+            Value::enumeration(3),
+        ));
+    }
+    if has_length {
+        key_block_fields.push(tagged(
+            TABLE12_CRYPTOGRAPHIC_LENGTH,
+            Value::integer(256),
+        ));
+    }
+
+    let mut object_fields = vec![tagged(
+        TABLE12_KEY_BLOCK,
+        Value::structure(structure(key_block_fields)),
+    )];
+    match object_tag {
+        TABLE12_SECRET_DATA => object_fields.push(tagged(
+            TABLE12_SECRET_DATA_TYPE,
+            Value::enumeration(1),
+        )),
+        TABLE12_PGP_KEY => object_fields.push(tagged(
+            TABLE12_PGP_KEY_VERSION,
+            Value::integer(4),
+        )),
+        _ => {}
+    }
+    tagged(object_tag, Value::structure(structure(object_fields)))
+}
+
+fn table12_request_payload(
+    operation: u32,
+    object: Item,
+    outer_attributes: impl IntoIterator<Item = Item>,
+) -> Structure {
+    let object_type = match object.tag().raw() {
+        TABLE12_SYMMETRIC_KEY => 2,
+        TABLE12_SECRET_DATA => 7,
+        TABLE12_OPAQUE_OBJECT => 8,
+        TABLE12_PGP_KEY => 9,
+        _ => unreachable!("Table 12 test fixture uses a known object tag"),
+    };
+    let mut payload = Vec::new();
+    if operation == TABLE12_IMPORT_OPERATION {
+        payload.push(tagged(
+            TABLE12_UNIQUE_IDENTIFIER,
+            Value::text_string("imported-object".to_owned()),
+        ));
+    }
+    payload.extend([
+        tagged(TABLE12_OBJECT_TYPE, Value::enumeration(object_type)),
+        tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure(outer_attributes)),
+        ),
+        object,
+    ]);
+    structure(payload)
+}
+
+fn table12_profile_result(requirement_ids: &[&str]) -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
+        requirement_ids: requirement_ids
+            .iter()
+            .map(|requirement_id| (*requirement_id).to_owned())
+            .collect(),
+    }
+}
+
+fn assert_table12_request_rejected(
+    request: &crate::RequestMessage,
+    requirement_id: &str,
+    source_clause_id: &str,
+) {
+    let error = table12_profile_result(&[requirement_id])
+        .validate_request(request)
+        .expect_err("a one-sided direct Key Block pair is rejected");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(requirement_id));
+    assert_eq!(error.source_clause_id(), Some(source_clause_id));
+}
+
+#[test]
+fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
+    // KMIP Specification v2.1 §3.1 Table 12 requires reciprocal direct fields.
+    const CASES: [(&str, &str); 2] = [
+        (
+            "KMIPKIT-REQ-SPEC-3.1-004-002",
+            "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-3.1-005-002",
+            "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        ),
+    ];
+
+    for (requirement_id, source_clause_id) in CASES {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("Table 12 pairing has a typed profile rule");
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == requirement_id)
+            .expect("Table 12 pairing resolves to generated normative metadata");
+        assert_eq!(mapping.source_clause_id, source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
+        validate_mapping(
+            "KMIPKIT-PROFILE-BASELINE-CLIENT",
+            requirement,
+            mapping,
+        )
+        .expect("the reciprocal-presence rule has category-matched evidence");
+        assert!(mapping.evaluator.is_some());
+    }
+}
+
+#[test]
+fn profile_rejects_unpaired_direct_key_block_fields_in_register_and_import() {
+    // KMIP Specification v2.1 §3.1 Table 12; request scope is §§6.1.25 and 6.1.43.
+    const ALGORITHM_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-004-002";
+    const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
+    const LENGTH_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-005-002";
+    const LENGTH_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-005";
+
+    for operation in [TABLE12_REGISTER_OPERATION, TABLE12_IMPORT_OPERATION] {
+        let algorithm_without_length = request_message_with_operation_payload(
+            operation,
+            table12_request_payload(
+                operation,
+                table12_key_block_object(TABLE12_SYMMETRIC_KEY, true, false, None),
+                [],
+            ),
+        );
+        assert_table12_request_rejected(
+            &algorithm_without_length,
+            ALGORITHM_REQUIREMENT,
+            ALGORITHM_CLAUSE,
+        );
+
+        let length_without_algorithm = request_message_with_operation_payload(
+            operation,
+            table12_request_payload(
+                operation,
+                table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, true, None),
+                [],
+            ),
+        );
+        assert_table12_request_rejected(
+            &length_without_algorithm,
+            LENGTH_REQUIREMENT,
+            LENGTH_CLAUSE,
+        );
+    }
+
+    let pgp_key_without_length = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_PGP_KEY, true, false, None),
+            [],
+        ),
+    );
+    assert_table12_request_rejected(
+        &pgp_key_without_length,
+        ALGORITHM_REQUIREMENT,
+        ALGORITHM_CLAUSE,
+    );
+}
+
+#[test]
+fn profile_accepts_absent_or_present_direct_key_block_pairs() {
+    // Both fields are optional under these reciprocal-presence SHALLs alone.
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
+    let result = table12_profile_result(&REQUIREMENT_IDS);
+
+    for operation in [TABLE12_REGISTER_OPERATION, TABLE12_IMPORT_OPERATION] {
+        for (has_algorithm, has_length) in [(false, false), (true, true)] {
+            let request = request_message_with_operation_payload(
+                operation,
+                table12_request_payload(
+                    operation,
+                    table12_key_block_object(
+                        TABLE12_SYMMETRIC_KEY,
+                        has_algorithm,
+                        has_length,
+                        None,
+                    ),
+                    [],
+                ),
+            );
+            result
+                .validate_request(&request)
+                .expect("the reciprocal-presence requirements allow both absent or both present");
+        }
+    }
+
+    let unrelated_operation = request_message_with_operation_payload(
+        TABLE12_GET_OPERATION,
+        Structure::new(),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("Table 12 does not constrain unrelated operations");
+}
+
+#[test]
+fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing() {
+    // KMIP Specification v2.1 §3.1 Table 12 checks only direct Key Block fields.
+    const ALGORITHM_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-004-002";
+    const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
+    const LENGTH_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-005-002";
+    const LENGTH_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-005";
+
+    let algorithm_only_with_nested_and_outer_length = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(
+                TABLE12_SYMMETRIC_KEY,
+                true,
+                false,
+                Some(tagged(
+                    TABLE12_CRYPTOGRAPHIC_LENGTH,
+                    Value::integer(256),
+                )),
+            ),
+            [tagged(
+                TABLE12_CRYPTOGRAPHIC_LENGTH,
+                Value::integer(256),
+            )],
+        ),
+    );
+    assert_table12_request_rejected(
+        &algorithm_only_with_nested_and_outer_length,
+        ALGORITHM_REQUIREMENT,
+        ALGORITHM_CLAUSE,
+    );
+
+    let length_only_with_nested_and_outer_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(
+                TABLE12_SYMMETRIC_KEY,
+                false,
+                true,
+                Some(tagged(
+                    TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                    Value::enumeration(3),
+                )),
+            ),
+            [tagged(
+                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(3),
+            )],
+        ),
+    );
+    assert_table12_request_rejected(
+        &length_only_with_nested_and_outer_algorithm,
+        LENGTH_REQUIREMENT,
+        LENGTH_CLAUSE,
+    );
+}
+
+#[test]
+fn profile_exempts_secret_data_and_opaque_key_blocks_from_table12_pairing() {
+    // KMIP Specification v2.1 §3.1 Table 12 excludes Secret Data and Opaque.
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
+    let result = table12_profile_result(&REQUIREMENT_IDS);
+
+    for object_tag in [TABLE12_SECRET_DATA, TABLE12_OPAQUE_OBJECT] {
+        let request = request_message_with_operation_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_request_payload(
+                TABLE12_REGISTER_OPERATION,
+                table12_key_block_object(object_tag, true, false, None),
+                [],
+            ),
+        );
+        result
+            .validate_request(&request)
+            .expect("Table 12 reciprocal presence does not apply to Secret Data or Opaque");
+    }
+}
+
+#[test]
+fn profile_checks_each_mixed_register_import_batch_item() {
+    // KMIP Specification v2.1 §§6.1.25 and 6.1.43 carry one Any Object per item.
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
+    let result = table12_profile_result(&REQUIREMENT_IDS);
+    let valid_import = table12_request_payload(
+        TABLE12_IMPORT_OPERATION,
+        table12_key_block_object(TABLE12_SYMMETRIC_KEY, true, true, None),
+        [],
+    );
+    let permitted = request_message_with_batch_operations([
+        (TABLE12_GET_OPERATION, Structure::new()),
+        (
+            TABLE12_REGISTER_OPERATION,
+            table12_request_payload(
+                TABLE12_REGISTER_OPERATION,
+                table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+                [],
+            ),
+        ),
+        (TABLE12_IMPORT_OPERATION, valid_import),
+    ]);
+    result
+        .validate_request(&permitted)
+        .expect("unrelated, Register, and Import items with valid pairs remain accepted");
+
+    let invalid_import = table12_request_payload(
+        TABLE12_IMPORT_OPERATION,
+        table12_key_block_object(TABLE12_SYMMETRIC_KEY, true, false, None),
+        [],
+    );
+    let invalid_batch = request_message_with_batch_operations([
+        (TABLE12_GET_OPERATION, Structure::new()),
+        (
+            TABLE12_REGISTER_OPERATION,
+            table12_request_payload(
+                TABLE12_REGISTER_OPERATION,
+                table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+                [],
+            ),
+        ),
+        (TABLE12_IMPORT_OPERATION, invalid_import),
+    ]);
+    assert_table12_request_rejected(
+        &invalid_batch,
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-CLAUSE-SPEC-3.1-004",
+    );
+}
+
 #[test]
 fn profile_maps_client_register_key_value_present_as_prohibited_behavior() {
     // KMIP Specification v2.1 §4.28 prohibits this client-supplied Register attribute.
