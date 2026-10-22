@@ -11200,6 +11200,23 @@ class CatalogValidationTests(unittest.TestCase):
                 (4, "client request; server evaluates Locate criterion", "client_1_0"),
             ],
         )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        locate_capability = next(
+            requirement
+            for requirement in catalog["requirements"]
+            if requirement["requirement_id"] == "KMIPKIT-REQ-SPEC-4.28-001-003"
+        )
+        self.assertEqual(
+            locate_capability["direction"],
+            "client_to_server",
+            "§4.28's Locate MAY is a client request capability under §6.1.28",
+        )
+        self.assertIn(
+            {"source_id": "KMIPKIT-SRC-spec", "section": "6.1.28"},
+            locate_capability["source_refs"],
+        )
         self.assertEqual(
             [
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
