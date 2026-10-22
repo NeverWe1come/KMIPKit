@@ -279,7 +279,7 @@ fn raw_tls_total_deadline_remains_absolute_while_waiting_for_response() {
         listener.into_inner(),
         server_config(&pki, true),
         fixtures::REQUEST_SENTINEL.len(),
-        PeerAction::HoldAfterRequest,
+        PeerAction::HoldAfterRequestFor(Duration::from_secs(4)),
     );
     let observer = secret::SecretBufferObserver::new(fixtures::REQUEST_SENTINEL.len());
     let config = client_config_with_timeouts(
@@ -288,20 +288,22 @@ fn raw_tls_total_deadline_remains_absolute_while_waiting_for_response() {
         address.port(),
         SERVER_NAME,
         Vec::new(),
-        short_timeout_policy(Duration::from_secs(1), Duration::from_secs(2))
-            .with_read(TimeoutLimit::Bounded(Duration::from_secs(2))),
+        short_timeout_policy(Duration::from_secs(5), Duration::from_secs(2))
+            .with_read(TimeoutLimit::Bounded(Duration::from_secs(5))),
     );
 
     let result = exchange(config, fixtures::REQUEST_SENTINEL, Some(observer.clone()));
     let peer = peer.join().expect("the bounded TLS peer thread completes");
 
+    assert!(peer.handshake_completed, "the TLS handshake completes");
+    assert_eq!(
+        peer.request_bytes.as_slice(),
+        fixtures::REQUEST_SENTINEL,
+        "the peer receives the complete request before withholding its response"
+    );
     let error = result.expect_err("the absolute total deadline expires");
     assert_eq!(error.cause_category(), TransportCauseCategory::Timeout);
     assert_eq!(error.delivery_state(), RequestDeliveryState::PossiblySent);
-    assert!(
-        peer.request_bytes.as_slice() == fixtures::REQUEST_SENTINEL,
-        "the peer receives the caller bytes unchanged"
-    );
     assert_request_owner_zeroized(&observer, fixtures::REQUEST_SENTINEL.len());
 }
 
@@ -1464,6 +1466,7 @@ enum PeerAction {
     CloseAfterHandshake,
     HoldBeforeHandshake,
     HoldAfterRequest,
+    HoldAfterRequestFor(Duration),
     ReadPrefixThenHold(usize),
 }
 
@@ -1670,9 +1673,13 @@ fn run_peer(
         accepted: true,
         ..PeerObservation::default()
     };
+    let peer_io_timeout = match action {
+        PeerAction::HoldAfterRequestFor(duration) => TLS_TEST_TIMEOUT.max(duration),
+        _ => TLS_TEST_TIMEOUT,
+    };
     if stream.set_nonblocking(false).is_err()
-        || stream.set_read_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
-        || stream.set_write_timeout(Some(TLS_TEST_TIMEOUT)).is_err()
+        || stream.set_read_timeout(Some(peer_io_timeout)).is_err()
+        || stream.set_write_timeout(Some(peer_io_timeout)).is_err()
     {
         return observation;
     }
@@ -1757,6 +1764,7 @@ fn run_peer(
         PeerAction::HoldAfterRequest | PeerAction::ReadPrefixThenHold(_) => {
             thread::sleep(Duration::from_millis(400));
         }
+        PeerAction::HoldAfterRequestFor(duration) => thread::sleep(duration),
     }
     observation
 }
