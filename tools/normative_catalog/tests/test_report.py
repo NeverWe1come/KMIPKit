@@ -216,15 +216,18 @@ class CoverageReportTests(unittest.TestCase):
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
-        verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(validate_discover_versions_rule),
+        requirement_id: "KMIPKIT-REQ-PROF-3.1-001",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
         test_evidence: &[RuleTestEvidence {
-            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::production_discover_versions_rule_accepts_only_kmip_21_offers",
-            kind: RuleTestKind::OptionalCapabilityUsable,
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_tls_for_basic_authentication_suite_transport",
+            kind: RuleTestKind::PositiveBehavior,
         }],
-        constraints: &[],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls",
+        }],
     },
 ];
 """,
@@ -233,7 +236,7 @@ class CoverageReportTests(unittest.TestCase):
             test_path = repository / "crates/kmipkit-protocol/tests/support/profile_unit.rs"
             test_path.parent.mkdir(parents=True)
             test_path.write_text(
-                "#[test]\nfn production_discover_versions_rule_accepts_only_kmip_21_offers() {}\n",
+                "#[test]\nfn profile_requires_tls_for_basic_authentication_suite_transport() {}\n",
                 encoding="utf-8",
             )
             self._write_profile_module_tree(repository, include_test_file=True)
@@ -241,14 +244,14 @@ class CoverageReportTests(unittest.TestCase):
             self.assertEqual(
                 [
                     {
-                        "requirement_id": "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-                        "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
-                        "verification_category": "OptionalCapability",
-                        "evaluator_present": True,
-                        "test_kind": "OptionalCapabilityUsable",
+                        "requirement_id": "KMIPKIT-REQ-PROF-3.1-001",
+                        "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1-001",
+                        "verification_category": "RequiredBehavior",
+                        "evaluator_present": False,
+                        "test_kind": "PositiveBehavior",
                         "test_id": (
                             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
-                            "production_discover_versions_rule_accepts_only_kmip_21_offers"
+                            "profile_requires_tls_for_basic_authentication_suite_transport"
                         ),
                     }
                 ],
