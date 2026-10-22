@@ -17069,6 +17069,59 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["scope_state"], "profile_conditional")
         self.assertIn("KMIPKIT-PROFILE-BASELINE-CLIENT", requirement["profile_ids"])
 
+    def test_tls13_client_recommendation_has_a_scoped_transport_rule(self) -> None:
+        """Profiles §3.1.1 recommends TLS 1.3 for Baseline Client transports."""
+        from tools.normative_catalog.report import load_typed_rule_mappings
+
+        catalog = json.loads(
+            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirement_id = "KMIPKIT-REQ-PROF-3.1.1-002"
+        clause_id = "KMIPKIT-CLAUSE-PROF-3.1.1-002"
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+        clause = next(row for row in catalog["source_clauses"] if row["clause_id"] == clause_id)
+        source_text = pinned_source_excerpt(
+            "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
+            [4016, 4018],
+        )
+
+        self.assertIn("Conformant KMIP clients SHOULD support", source_text)
+        self.assertEqual(clause["section"], "3.1.1")
+        self.assertEqual(clause["source_keywords"], ["SHOULD"])
+        self.assertEqual(clause["locator"], {"ordinal": 2, "block_kind": "paragraph"})
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertEqual(requirement["source_keyword"], "SHOULD")
+        self.assertEqual(requirement["normative_strength"], "recommended")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["scope_state"], "profile_conditional")
+        self.assertEqual(requirement["profile_ids"], ["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertEqual(requirement["status"], "scoped_verified")
+        self.assertIn(
+            "crates/kmipkit-transport/src/tls.rs::tls13_builder",
+            requirement["implementation_refs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-transport/tests/tls_integrity.rs::"
+            "raw_tls_rejects_a_tampered_post_handshake_application_record",
+            requirement["verification_refs"],
+        )
+        self.assertIn(
+            "crates/kmipkit-transport/tests/https.rs::"
+            "https_default_target_posts_exact_bytes_with_required_headers_and_zeroizes_on_success",
+            requirement["verification_refs"],
+        )
+        mapping = next(
+            row for row in load_typed_rule_mappings(ROOT) if row["requirement_id"] == requirement_id
+        )
+        self.assertEqual(
+            mapping["verification_category"], "RecommendedBehaviorOrDeviation"
+        )
+        self.assertTrue(mapping["transport_only"])
+
     def test_optional_capability_evidence_links_name_positive_tests(self) -> None:
         """Known optional capabilities point to their source-reviewed positive tests."""
         catalog = json.loads(

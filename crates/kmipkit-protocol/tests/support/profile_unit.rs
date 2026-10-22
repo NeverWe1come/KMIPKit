@@ -4228,10 +4228,17 @@ fn profile_recommends_tls_1_3_for_basic_authentication_suite_transport() {
     };
 
     for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
-        result.validate_transport(transport).expect(
-            "both configured KMIPKit transport classes satisfy the TLS 1.3 recommendation",
-        );
+        result
+            .validate_transport(transport)
+            .expect("both configured KMIPKit transport classes satisfy the TLS 1.3 recommendation");
     }
+    let request = request_message();
+    result
+        .validate_request(&request)
+        .expect("a transport recommendation does not add a request-payload restriction");
+    result
+        .validate_response(&request, &response_message())
+        .expect("a transport recommendation does not add a response-payload restriction");
 }
 
 #[test]
@@ -4256,6 +4263,7 @@ fn configured_tls13_constraint_accepts_both_tls_client_transports() {
             .validate_transport_with_mappings(transport, &mapping)
             .expect("TLS 1.3 is configured for both supported client transports");
     }
+    assert!(!ProfileTransport::Https.satisfies_transport_security("tls12"));
 }
 
 #[test]

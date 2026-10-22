@@ -101,7 +101,7 @@ impl ProfileTransport {
     fn satisfies_transport_security(self, required_security: &str) -> bool {
         matches!(
             (self, required_security),
-            (Self::RawTtlvTls | Self::Https, "tls")
+            (Self::RawTtlvTls | Self::Https, "tls" | "tls13")
         )
     }
 }
@@ -2317,6 +2317,20 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-PROF-3.1.1-002",
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_tls_1_3_for_basic_authentication_suite_transport",
+            kind: RuleTestKind::RecommendedBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "transport_security",
+            value: "tls13",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
@@ -3287,7 +3301,7 @@ fn validate_mapping(
         !matches!(
             (constraint.key, constraint.value),
             ("transport", "raw_tls" | "https")
-                | ("transport_security", "tls")
+                | ("transport_security", "tls" | "tls13")
                 | ("encoding", "ttlv")
         )
     }) {
@@ -3327,10 +3341,9 @@ fn validate_mapping(
 fn is_transport_only_mapping(mapping: &TypedRuleMapping) -> bool {
     mapping.evaluator.is_none()
         && !mapping.constraints.is_empty()
-        && mapping
-            .constraints
-            .iter()
-            .all(|constraint| constraint.key == "transport_security" && constraint.value == "tls")
+        && mapping.constraints.iter().all(|constraint| {
+            constraint.key == "transport_security" && matches!(constraint.value, "tls" | "tls13")
+        })
 }
 
 #[cfg(test)]

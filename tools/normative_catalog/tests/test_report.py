@@ -1255,6 +1255,7 @@ mod unrelated {
         self.assertEqual(
             [
                 "KMIPKIT-REQ-PROF-3.1-001",
+                "KMIPKIT-REQ-PROF-3.1.1-002",
                 "KMIPKIT-REQ-SPEC-2.3-001",
                 "KMIPKIT-REQ-SPEC-2.3-001",
                 "KMIPKIT-REQ-SPEC-2.3-002",
