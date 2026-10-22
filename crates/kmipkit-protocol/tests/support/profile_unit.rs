@@ -1513,7 +1513,9 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
     let requirement = CLIENT_REQUIREMENTS
         .iter()
         .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
-        .expect("the Batch Error Continuation Option cardinality rule resolves to generated metadata");
+        .expect(
+            "the Batch Error Continuation Option cardinality rule resolves to generated metadata",
+        );
     assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
     assert_eq!(
         mapping.verification_category,
@@ -1532,23 +1534,43 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
     };
     let single_item_request = request_message();
     assert_eq!(single_item_request.header().batch_count(), 1);
-    assert_eq!(single_item_request.header().batch_error_continuation_option(), None);
+    assert_eq!(
+        single_item_request
+            .header()
+            .batch_error_continuation_option(),
+        None
+    );
     assert!(evaluate(Some(&single_item_request), None));
     result
         .validate_request(&single_item_request)
         .expect("a single-item request omits the option");
 
-    let multi_item_request = request_message_with_batch_error_continuation_option(Some(1));
-    assert_eq!(multi_item_request.header().batch_count(), 2);
+    let multi_item_request_without_option =
+        request_message_with_batch_error_continuation_option(None);
+    assert_eq!(multi_item_request_without_option.header().batch_count(), 2);
     assert_eq!(
-        multi_item_request
+        multi_item_request_without_option
+            .header()
+            .batch_error_continuation_option(),
+        None
+    );
+    assert!(evaluate(Some(&multi_item_request_without_option), None));
+    result
+        .validate_request(&multi_item_request_without_option)
+        .expect("a multi-item request may omit the optional field");
+
+    let multi_item_request_with_option =
+        request_message_with_batch_error_continuation_option(Some(1));
+    assert_eq!(multi_item_request_with_option.header().batch_count(), 2);
+    assert_eq!(
+        multi_item_request_with_option
             .header()
             .batch_error_continuation_option(),
         Some(1)
     );
-    assert!(evaluate(Some(&multi_item_request), None));
+    assert!(evaluate(Some(&multi_item_request_with_option), None));
     result
-        .validate_request(&multi_item_request)
+        .validate_request(&multi_item_request_with_option)
         .expect("a multi-item request may include the option");
 }
 
