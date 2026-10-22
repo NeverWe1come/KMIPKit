@@ -5562,3 +5562,32 @@ The operation dependency matrix now reflects the current 56-row catalog and owne
 | Refactor | this commit | `python tools/api_manifest/generate.py --check`; `git diff --check` | Pass; all 12 generated outputs are current and the patch has no whitespace errors. |
 
 These records close the current T073 report, operation-matrix, output-count, and Rust-reference gaps only. They do not resolve C package identity, complete T073, close T071/T075, or claim KMIP conformance, profile support, interoperability, or certification.
+
+### T073 readiness wording reconciliation (2026-10-22)
+
+The operation dependency matrix now identifies Hash, MAC, MAC Verify, Sign,
+and Signature Verify as `declared`, matching the current manifest; their four-
+language mappings are recorded, while parity verification remains incomplete.
+The English and Spanish package guides state that T011 reconciled the observed
+export inventory by requiring a manifest record or exact approved exclusion
+for each declaration. They keep `public_binding_surface` `blocked` because
+capability mappings remain incomplete. The Rust API reference scopes its
+initial high-level operation subset against the complete 52-variant Rust typed
+request set, identifies the four asynchronous follow-up operations excluded
+from that set, and links cross-language readiness to the package guide and
+manifest. T073 remains unchecked because C distribution identity still lacks
+authoritative package metadata.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `620d0c637def75cfcd10c01a7fed037e64d37096` | `python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation -v` | Expected failures on the pre-reconciliation docs: both guide descriptions omit T011 inventory completion, all five operation rows report blocked instead of declared, and the high-level reference scope assertion fails. |
+| Green | `312dcbbd8add3fe7bedaa52ecd196b86b565d1a4` | Focused T073/package/readiness contracts via `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_operation_readiness.OperationReadinessSchemaTests.test_dependency_matrix_matches_current_owner_and_api_readiness -v` | Pass, 16 tests. |
+| Green | `312dcbbd8add3fe7bedaa52ecd196b86b565d1a4` | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current. No generated output was edited. |
+| Green | `312dcbbd8add3fe7bedaa52ecd196b86b565d1a4` | `git diff --check` | Pass. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_operation_readiness.OperationReadinessSchemaTests.test_dependency_matrix_matches_current_owner_and_api_readiness -v` | Pass, 16 tests after recording this evidence. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` | Pass; all 12 fixed generated outputs are current. |
+| Refactor | this commit | `git diff --check` | Pass; no whitespace errors. |
+
+This documentation slice does not complete T073, change the manifest or
+generated outputs, assert four-language operation verification, or claim
+conformance, interoperability, profile support, or certification.
