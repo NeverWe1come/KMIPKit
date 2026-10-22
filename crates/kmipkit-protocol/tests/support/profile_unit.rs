@@ -1998,6 +1998,65 @@ fn profile_maps_optional_locate_offset_items_capability() {
 }
 
 #[test]
+fn profile_maps_client_locate_attributes_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.28 Table 247 marks Locate Attributes required.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-013-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-013";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Locate Attributes has a typed required-behavior rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("required Locate Attributes resolve to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required Attributes Structure has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the required Attributes field has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_request = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(crate::AttributeSet::new())
+            .to_ttlv_payload()
+            .expect("Locate encodes its required Attributes Structure"),
+    );
+    assert!(evaluate(Some(&valid_request), None));
+    result
+        .validate_request(&valid_request)
+        .expect("a Locate request with the required empty Attributes Structure is valid");
+
+    let missing_attributes =
+        request_message_with_operation_payload(LOCATE_OPERATION, Structure::new());
+    assert!(!evaluate(Some(&missing_attributes), None));
+    assert!(result.validate_request(&missing_attributes).is_err());
+
+    let malformed_attributes = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        structure([tagged(ATTRIBUTES_TAG, Value::integer(1))]),
+    );
+    assert!(!evaluate(Some(&malformed_attributes), None));
+    assert!(result.validate_request(&malformed_attributes).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
 fn profile_maps_client_locate_empty_attributes_match_all_capability() {
     // KMIP Specification v2.1 §6.1.28 Table 247 permits empty Attributes.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-013-002";
