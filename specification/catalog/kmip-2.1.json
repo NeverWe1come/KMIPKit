@@ -29403,7 +29403,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-TAG-42004A"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.28-007"
+      ],
       "profile_ids": [],
       "test_case_ids": [
         "KMIPKIT-TEST-CN01-2-66"
@@ -63686,7 +63688,8 @@
         "KMIPKIT-ELEM-ATTRIBUTE-LINK"
       ],
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-4.31-004"
+        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIPKIT-REQ-SPEC-6.1.28-007"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -63712,7 +63715,8 @@
         "KMIPKIT-ELEM-ATTRIBUTE-LINK"
       ],
       "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-4.31-005"
+        "KMIPKIT-REQ-SPEC-4.31-005",
+        "KMIPKIT-REQ-SPEC-6.1.28-007"
       ],
       "profile_ids": [],
       "test_case_ids": [],
@@ -69601,7 +69605,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-TAG"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.28-007"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0004",
@@ -93762,21 +93768,28 @@
       "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-LINK",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINK-TYPE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINKED-OBJECT-IDENTIFIER",
+        "KMIPKIT-ELEM-TAG-42004A"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0017",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/attribute.rs",
-        "crates/kmipkit-protocol/src/locate.rs"
+        "crates/kmipkit-protocol/src/locate.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_preserves_structured_repeated_and_usage_criteria_for_server_matching"
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::request_preserves_structured_repeated_and_usage_criteria_for_server_matching",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_partial_structured_attribute_fields"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "The source says all fields of a structured attribute are not REQUIRED to be specified, so the client may provide only selected fields. Preserve REQUIRED as the literal source keyword, but classify the negated client obligation as permission_or_optional. The Link example permits Linked Object Identifier without Link Type; matching behavior belongs to the server and creates no client obligation. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. The local Locate test verifies that a partial structured Link attribute is accepted and retained in request criteria; it does not test server matching behavior. No official case-level pass is claimed."
+      "status": "verified",
+      "review_note": "KMIP Specification v2.1 §6.1.28 paragraph 7 says all fields of a structured attribute are not REQUIRED to be specified. The client must accept a partial Link criterion containing Linked Object Identifier without Link Type. Preserve REQUIRED as the literal source keyword; KMIPKIT-0010 verifies this as RequiredBehavior while normative_strength retains the effective permission_or_optional meaning. The local protocol and profile tests verify that the partial structure is retained and accepted in the request; they do not test server-side matching behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002, and no official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-008-001",
