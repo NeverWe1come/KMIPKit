@@ -2382,7 +2382,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_prohibited_tls13_cipher_suites",
-                kind: RuleTestKind::NegativeBehavior,
+                kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_tls12_server_hello_before_request_dispatch",
