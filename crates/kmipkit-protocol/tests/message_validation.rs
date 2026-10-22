@@ -367,7 +367,7 @@ fn response_message_extension_is_a_singleton() {
 }
 
 #[test]
-fn client_correlation_values_are_preserved_at_message_header_scope() {
+fn message_headers_preserve_independent_client_correlation_values() {
     let request = request_tree_with_header_fields(item(
         CLIENT_CORRELATION_VALUE,
         Value::text_string("request-17".to_owned()),
@@ -386,7 +386,7 @@ fn client_correlation_values_are_preserved_at_message_header_scope() {
         response
             .header()
             .with_client_correlation_value(str::to_owned),
-        Some("request-17".to_owned())
+        Some("response-client-42".to_owned())
     );
     assert_eq!(
         response
@@ -501,7 +501,7 @@ fn response_with_correlations() -> Structure {
                 item(TIME_STAMP, Value::date_time(1)),
                 item(
                     CLIENT_CORRELATION_VALUE,
-                    Value::text_string("request-17".to_owned()),
+                    Value::text_string("response-client-42".to_owned()),
                 ),
                 item(
                     SERVER_CORRELATION_VALUE,

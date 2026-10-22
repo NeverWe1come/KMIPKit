@@ -2317,7 +2317,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::client_correlation_values_are_preserved_at_message_header_scope",
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::message_headers_preserve_independent_client_correlation_values",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
             RuleTestEvidence {

@@ -1526,7 +1526,12 @@ fn profile_maps_optional_client_correlation_value_capability() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     let omitted = request_message();
-    assert_eq!(omitted.header().with_client_correlation_value(str::to_owned), None);
+    assert_eq!(
+        omitted
+            .header()
+            .with_client_correlation_value(str::to_owned),
+        None
+    );
     assert!(evaluate(Some(&omitted), None));
     result
         .validate_request(&omitted)
@@ -1534,7 +1539,9 @@ fn profile_maps_optional_client_correlation_value_capability() {
 
     let supplied = request_message_with_client_correlation_value("request-123");
     assert_eq!(
-        supplied.header().with_client_correlation_value(str::to_owned),
+        supplied
+            .header()
+            .with_client_correlation_value(str::to_owned),
         Some("request-123".to_owned())
     );
     assert!(evaluate(Some(&supplied), None));

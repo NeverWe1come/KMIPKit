@@ -54348,9 +54348,7 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER"
       ],
-      "requirement_ids": [
-        "KMIPKIT-REQ-SPEC-9.9-001"
-      ],
+      "requirement_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
@@ -99750,7 +99748,6 @@
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE",
         "KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE"
       ],
       "profile_ids": [],
@@ -99767,13 +99764,13 @@
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/extension_outbound.rs::execute_encodes_every_optional_batch_header_and_item_identifier",
-        "crates/kmipkit-protocol/tests/message_validation.rs::client_correlation_values_are_preserved_at_message_header_scope",
+        "crates/kmipkit-protocol/tests/message_validation.rs::message_headers_preserve_independent_client_correlation_values",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_client_correlation_value_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §9.9 and Table 408 define Client Correlation Value as a request-header Text String that a client MAY add; it need not be unique. The typed profile rule records this optional request capability without treating it as a Unique Batch Item ID or claiming response echo or server logging behavior. Protocol, profile, and fake-transport tests verify preservation at request-header scope. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
+      "review_note": "Within KMIPKit 1.0 client-initiated scope, KMIP Specification v2.1 §9.9 and Table 408 define Client Correlation Value as a request-header Text String that a client MAY add; it need not be unique. Section 9.9 assigns the value to a response only for server-to-client operations, which are outside this requirement's direction and the 1.0 scope. The typed profile rule records the optional request capability without treating it as a Unique Batch Item ID or claiming response echo or server logging behavior. Protocol, profile, and fake-transport tests verify preservation at request-header scope. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; no official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-PROF-5.13.1-002",
