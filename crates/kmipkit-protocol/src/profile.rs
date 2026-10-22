@@ -811,41 +811,55 @@ fn client_gcm_cryptographic_parameters_include_tag_length(
                 payload
                     .children()
                     .iter()
-                    .filter(|field| field.tag().raw() == CRYPTOGRAPHIC_PARAMETERS)
-                    .all(|field| {
-                        field.with_value(|value| {
-                            let ValueView::Structure(parameters) = value else {
-                                return false;
-                            };
-
-                            let mut block_cipher_mode_is_gcm = false;
-                            let mut has_tag_length = false;
-                            let fields_are_valid = parameters.children().iter().all(|parameter| {
-                                match parameter.tag().raw() {
-                                    BLOCK_CIPHER_MODE => parameter.with_value(|value| {
-                                        if let ValueView::Enumeration(mode) = value {
-                                            block_cipher_mode_is_gcm = *mode == GCM_MODE;
-                                            true
-                                        } else {
-                                            false
-                                        }
-                                    }),
-                                    TAG_LENGTH => parameter.with_value(|value| {
-                                        let valid = matches!(value, ValueView::Integer(_));
-                                        has_tag_length |= valid;
-                                        valid
-                                    }),
-                                    _ => true,
-                                }
-                            });
-
-                            fields_are_valid
-                                && (!block_cipher_mode_is_gcm || has_tag_length)
-                        })
-                    })
+                    .all(item_and_nested_cryptographic_parameters_are_valid)
             })
             .unwrap_or(false)
     })
+}
+
+fn item_and_nested_cryptographic_parameters_are_valid(item: &Item) -> bool {
+    let item_is_valid = if item.tag().raw() == CRYPTOGRAPHIC_PARAMETERS {
+        item.with_value(|value| match value {
+            ValueView::Structure(parameters) => {
+                let mut block_cipher_mode_is_gcm = false;
+                let mut has_tag_length = false;
+                let fields_are_valid =
+                    parameters
+                        .children()
+                        .iter()
+                        .all(|parameter| match parameter.tag().raw() {
+                            BLOCK_CIPHER_MODE => parameter.with_value(|value| {
+                                if let ValueView::Enumeration(mode) = value {
+                                    block_cipher_mode_is_gcm |= *mode == GCM_MODE;
+                                    true
+                                } else {
+                                    false
+                                }
+                            }),
+                            TAG_LENGTH => parameter.with_value(|value| {
+                                let valid = matches!(value, ValueView::Integer(_));
+                                has_tag_length |= valid;
+                                valid
+                            }),
+                            _ => true,
+                        });
+
+                fields_are_valid && (!block_cipher_mode_is_gcm || has_tag_length)
+            }
+            _ => false,
+        })
+    } else {
+        true
+    };
+
+    item_is_valid
+        && item.with_value(|value| match value {
+            ValueView::Structure(nested) => nested
+                .children()
+                .iter()
+                .all(item_and_nested_cryptographic_parameters_are_valid),
+            _ => true,
+        })
 }
 
 fn client_get_or_export_key_compression_type_is_enumeration(
@@ -2592,16 +2606,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-003",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_gcm_cryptographic_parameters_include_tag_length),
-        test_evidence: &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::gcm_requires_tag_length_and_preserves_supplied_parameters",
-                kind: RuleTestKind::NegativeBehavior,
-            },
-        ],
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_gcm_tag_length_as_required_behavior",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
