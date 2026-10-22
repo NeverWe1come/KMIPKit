@@ -91910,6 +91910,7 @@
         "crates/kmipkit-protocol/src/create_split_key.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_create_split_key_optional_source_identifier",
         "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::request_preserves_table_193_fields_order_and_exact_input_identifier"
       ],
       "negative_verification_required": false,
