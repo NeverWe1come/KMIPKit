@@ -28,6 +28,7 @@ const PROTOCOL_VERSION_MAJOR_TAG: u32 = 0x0042_006A;
 const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
+const BATCH_ERROR_CONTINUATION_OPTION_TAG: u32 = 0x0042_000E;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
@@ -215,6 +216,39 @@ fn request_message_with_batch_item_ids(ids: &[&[u8]]) -> crate::RequestMessage {
 
     crate::RequestMessage::try_from_ttlv(structure(root_items))
         .expect("test multi-item Request Message has each required item ID")
+}
+
+fn request_message_with_batch_error_continuation_option(
+    option: Option<u32>,
+) -> crate::RequestMessage {
+    let mut header_items = vec![test_protocol_version()];
+    if let Some(option) = option {
+        header_items.push(tagged(
+            BATCH_ERROR_CONTINUATION_OPTION_TAG,
+            Value::enumeration(option),
+        ));
+    }
+    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(2)));
+
+    let mut root_items = vec![tagged(
+        REQUEST_HEADER_TAG,
+        Value::structure(structure(header_items)),
+    )];
+    for identifier in [b"first".as_slice(), b"second".as_slice()] {
+        root_items.push(tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(identifier.to_vec()),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ));
+    }
+    crate::RequestMessage::try_from_ttlv(structure(root_items))
+        .expect("test multi-item Request Message has valid continuation option shape")
 }
 
 fn request_message_with_operation_payload(
@@ -1408,6 +1442,61 @@ fn profile_maps_required_batch_count_to_request_item_count() {
     result
         .validate_request(&multi_item_request)
         .expect("two Batch Items are accompanied by Batch Count 2");
+}
+
+#[test]
+fn profile_maps_default_batch_error_continuation_to_stop() {
+    // KMIP Specification v2.1 §9.6 defaults an omitted option to Stop.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.6-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const STOP: u32 = 2;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the omitted Batch Error Continuation Option default has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Batch Error Continuation Option default resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request_without_option = request_message_with_batch_error_continuation_option(None);
+    assert_eq!(
+        request_without_option
+            .header()
+            .batch_error_continuation_option(),
+        None
+    );
+    assert_eq!(
+        request_without_option
+            .header()
+            .effective_batch_error_continuation_option(),
+        STOP
+    );
+    assert!(evaluate(Some(&request_without_option), None));
+    result
+        .validate_request(&request_without_option)
+        .expect("an omitted option has the §9.6 effective value Stop");
+
+    let request_with_explicit_continue =
+        request_message_with_batch_error_continuation_option(Some(1));
+    assert!(evaluate(Some(&request_with_explicit_continue), None));
 }
 
 #[test]
