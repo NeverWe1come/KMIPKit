@@ -1605,6 +1605,91 @@ fn profile_maps_client_get_attributes_optional_attribute_references() {
 }
 
 #[test]
+fn profile_rejects_repeated_identical_get_attributes_references() {
+    // KMIP Specification v2.1 §6.1.20 prohibits repeating one Attribute Reference.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.20-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the repeated-reference prohibition has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the prohibition resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::ProhibitedBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the prohibited behavior has negative executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let repeated_reference = || {
+        crate::AttributeReference::tag(0x0042_002F)
+            .to_ttlv_item()
+            .expect("the test Attribute Reference is valid")
+    };
+    let duplicate_payload = structure([repeated_reference(), repeated_reference()]);
+    assert_eq!(
+        duplicate_payload
+            .view()
+            .children()
+            .iter()
+            .filter(|field| field.tag().raw() == ATTRIBUTE_REFERENCE_TAG)
+            .count(),
+        2
+    );
+    let duplicate_request =
+        request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, duplicate_payload);
+    assert!(evaluate(Some(&duplicate_request), None));
+    let error = result
+        .validate_request(&duplicate_request)
+        .expect_err("a Get Attributes request must not repeat an identical reference");
+    assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+    assert_eq!(error.profile_id(), Some(BASELINE_PROFILE_ID));
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+
+    for references in [
+        Vec::new(),
+        vec![
+            crate::AttributeReference::tag(0x0042_002F),
+            crate::AttributeReference::tag(0x0042_002A),
+        ],
+    ] {
+        let payload = structure(
+            references
+                .iter()
+                .map(|reference| reference.to_ttlv_item().expect("reference is valid")),
+        );
+        let request = request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted or distinct Attribute References are permitted");
+    }
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, structure([
+        repeated_reference(),
+        repeated_reference(),
+    ]));
+    assert!(evaluate(Some(&unrelated_operation), None));
+    result
+        .validate_request(&unrelated_operation)
+        .expect("Get Attributes reference rules do not apply to other operations");
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
