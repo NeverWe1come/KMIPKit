@@ -2071,6 +2071,25 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == requirement_id
         )
 
+    def test_request_attestation_repetition_does_not_cover_response_header_field(self) -> None:
+        """Keep request and response header requirement links separate."""
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement_id = "KMIPKIT-REQ-SPEC-8.2-002"
+        requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
+        request_field = next(
+            row for row in catalog["elements"]
+            if row["element_id"] == "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE"
+        )
+        response_field = next(
+            row for row in catalog["elements"]
+            if row["element_id"] == "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE"
+        )
+
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["element_ids"], [request_field["element_id"]])
+        self.assertIn(requirement_id, request_field["requirement_ids"])
+        self.assertNotIn(requirement_id, response_field["requirement_ids"])
+
     def test_feature_spec_requirement_lookup_accepts_qualified_and_short_fr_ids(self) -> None:
         """Resolve prefixed feature FR IDs while preserving legacy short IDs."""
         self.assertEqual(
