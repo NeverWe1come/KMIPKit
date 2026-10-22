@@ -189,6 +189,34 @@ fn request_message_with_unique_batch_item_id(
     .expect("test single-item Request Message is valid")
 }
 
+fn request_message_with_batch_item_ids(ids: &[&[u8]]) -> crate::RequestMessage {
+    let batch_count = i32::try_from(ids.len()).expect("test batch count fits in an Integer");
+    let mut root_items = vec![tagged(
+        REQUEST_HEADER_TAG,
+        Value::structure(structure([
+            test_protocol_version(),
+            tagged(BATCH_COUNT_TAG, Value::integer(batch_count)),
+        ])),
+    )];
+
+    root_items.extend(ids.iter().map(|identifier| {
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(
+                    UNIQUE_BATCH_ITEM_ID_TAG,
+                    Value::byte_string(identifier.to_vec()),
+                ),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        )
+    }));
+
+    crate::RequestMessage::try_from_ttlv(structure(root_items))
+        .expect("test multi-item Request Message has each required item ID")
+}
+
 fn request_message_with_operation_payload(
     operation: u32,
     payload: Structure,
@@ -1284,6 +1312,46 @@ fn profile_maps_client_single_item_unique_batch_item_id_as_optional_capability()
             .validate_request(&request)
             .expect("the profile capability allows the ID to be included or omitted");
     }
+}
+
+#[test]
+fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
+    // KMIP Specification v2.1 §8.3 Table 57 requires this field when Batch
+    // Count is greater than one; §9.21 describes its per-item encoding.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.3-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.3-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("multi-item Unique Batch Item ID has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the requirement resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = request_message_with_batch_item_ids(&[b"first-item", b"second-item"]);
+    assert_eq!(request.batch_items().len(), 2);
+    assert!(
+        request
+            .batch_items()
+            .all(|item| item.with_unique_batch_item_id(|_| ()).is_some())
+    );
+    result
+        .validate_request(&request)
+        .expect("a multi-item request with per-item IDs satisfies §8.3");
 }
 
 #[test]
