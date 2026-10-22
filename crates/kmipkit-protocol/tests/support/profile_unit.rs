@@ -4235,6 +4235,7 @@ fn selected_transport_constraints_match_or_reject_with_source_ids() {
 
 #[test]
 fn tls_transport_rule_can_be_validated_without_a_message_evaluator() {
+    assert!(!ProfileTransport::Https.satisfies_transport_security("cleartext"));
     let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
     let requirements = [requirement(
         "TEST-REQ",
