@@ -2412,11 +2412,9 @@ fn profile_maps_client_locate_key_value_present_as_optional_capability() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     for value in [true, false] {
-        let criteria = crate::AttributeSet::try_new([tagged(
-            KEY_VALUE_PRESENT_TAG,
-            Value::boolean(value),
-        )])
-        .expect("Key Value Present is a Boolean Locate criterion");
+        let criteria =
+            crate::AttributeSet::try_new([tagged(KEY_VALUE_PRESENT_TAG, Value::boolean(value))])
+                .expect("Key Value Present is a Boolean Locate criterion");
         let request = request_message_with_operation_payload(
             LOCATE_OPERATION_TAG,
             crate::LocateRequest::new(criteria)
@@ -2475,7 +2473,10 @@ fn profile_rejects_malformed_locate_key_value_present_criterion() {
         let error = result
             .validate_request(&request)
             .expect_err("a Locate Key Value Present criterion must be one Boolean value");
-        assert_eq!(error.code(), ProfileValidationErrorCode::RequestRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
         assert_eq!(
             error.source_clause_id(),

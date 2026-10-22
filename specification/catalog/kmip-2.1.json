@@ -89178,7 +89178,7 @@
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.28 states that Key Value Present SHALL NOT be specified by the client in a Register request. The typed profile rule checks outbound client Register request attributes, rejects Key Value Present, and permits Register omission; focused regressions also cover malformed and duplicate Attributes and mixed batches while confirming non-Register items remain unaffected. It makes no claim about server-created attributes, client modification, server behavior, official OASIS Test Case execution, or profile conformance. The separate §4.28 requirements KMIPKIT-REQ-SPEC-4.28-001-002 and KMIPKIT-REQ-SPEC-4.28-001-003 remain outside this mapping. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "Pinned KMIP Specification v2.1 §4.28 states that Key Value Present SHALL NOT be specified by the client in a Register request. The typed profile rule checks outbound client Register request attributes, rejects Key Value Present, and permits Register omission; focused regressions also cover malformed and duplicate Attributes and mixed batches while confirming non-Register items remain unaffected. It makes no claim about server-created attributes, client modification, server behavior, official OASIS Test Case execution, or profile conformance. The separate §4.28 requirements KMIPKIT-REQ-SPEC-4.28-001-002 and KMIPKIT-REQ-SPEC-4.28-001-003 are not covered by this Register prohibition mapping. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.28-001-002",
@@ -89245,6 +89245,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.28"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.28"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -89255,20 +89263,27 @@
       "direction": "unclear",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
+        "KMIPKIT-ELEM-OP-C2S-LOCATE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/locate.rs"
+        "crates/kmipkit-protocol/src/locate.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_locate_key_value_present_is_boolean_when_used",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion"
+        "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_key_value_present_as_optional_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_locate_key_value_present_criterion"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Spec v2.1 §4.28 permits Key Value Present as a Locate criterion. The linked test asserts the Boolean attribute is encoded as a direct Locate criterion; it makes no Register or matching-result claim. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §4.28 permits Key Value Present as part of Locate. §6.1.28 describes the Locate request payload and §11.56 defines the attribute encoding as Boolean. The typed profile rule checks only the outbound Locate request representation when the optional criterion is present; it accepts omission and either Boolean value, and rejects malformed or duplicate fields. The existing Locate encoder test demonstrates that the criterion can be sent. The catalog retains direction as unclear, and this evidence makes no claim about server matching semantics, response results, official OASIS Test Case execution, or profile conformance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.28-002",

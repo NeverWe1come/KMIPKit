@@ -1949,6 +1949,43 @@ fn client_register_does_not_specify_key_value_present(
     })
 }
 
+fn client_locate_key_value_present_is_boolean_when_used(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != LOCATE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| match field_presence(&payload, ATTRIBUTES) {
+                FieldPresence::Missing => true,
+                FieldPresence::Unique(attributes) => attributes.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        match field_presence(&attributes, KEY_VALUE_PRESENT) {
+                            FieldPresence::Missing => true,
+                            FieldPresence::Unique(attribute) => {
+                                attribute.with_value(|value| matches!(value, ValueView::Boolean(_)))
+                            }
+                            FieldPresence::Duplicate => false,
+                        }
+                    }
+                    _ => false,
+                }),
+                FieldPresence::Duplicate => false,
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_register_preserves_optional_wrapped_key_value(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2593,6 +2630,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_checks_register_key_value_present_for_each_batch_item",
                 kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_locate_key_value_present_is_boolean_when_used),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_locate_key_value_present_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
