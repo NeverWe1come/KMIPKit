@@ -1541,6 +1541,79 @@ fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
     }
 }
 
+#[test]
+fn profile_maps_create_split_key_optional_source_identifier() {
+    // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.10-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Create Split Key source ID has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional source ID resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    for include_identifier in [false, true] {
+        let request = crate::CreateSplitKeyRequest::new(
+            crate::ObjectType::from_raw(7),
+            3,
+            2,
+            crate::SplitKeyMethod::from_raw(1),
+            crate::AttributeSet::new(),
+        );
+        let request = if include_identifier {
+            request.with_unique_identifier(crate::UniqueIdentifier::TextString(
+                "split-source".to_owned(),
+            ))
+        } else {
+            request
+        };
+        let request = request_message_with_operation_payload(
+            CREATE_SPLIT_KEY_OPERATION,
+            request
+                .into_ttlv_payload()
+                .expect("the Create Split Key request is structurally valid"),
+        );
+        let item = request
+            .batch_items()
+            .next()
+            .expect("the test request contains one batch item");
+        let has_identifier = item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == UNIQUE_IDENTIFIER_TAG)
+            })
+            .expect("the test request contains a Request Payload");
+        assert_eq!(has_identifier, include_identifier);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("the client may omit or provide the optional split source ID");
+    }
+}
 fn request_message_with_time_stamp(seconds: i64) -> crate::RequestMessage {
     crate::RequestMessage::try_from_ttlv(structure([
         tagged(
