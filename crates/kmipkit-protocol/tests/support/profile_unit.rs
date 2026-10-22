@@ -4198,7 +4198,7 @@ fn profile_requires_tls_for_basic_authentication_suite_transport() {
     for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
         result
             .validate_transport(transport)
-            .expect("both configured KMIP 1.0 transports establish a TLS channel");
+            .expect("both configured KMIPKit transport classes satisfy the TLS requirement");
     }
     let request = request_message();
     result
