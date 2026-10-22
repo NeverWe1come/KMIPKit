@@ -3304,6 +3304,124 @@ fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt
 }
 
 #[test]
+fn profile_maps_variable_iv_modes_to_required_iv_length() {
+    // KMIP Specification v2.1 §4.16 requires IV Length for variable-IV modes,
+    // including CTR and GCM. Existing NIST-based parameter validation also
+    // classifies CCM as variable-IV. GCM Tag Length remains a separate rule.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const IV_LENGTH_TAG: u32 = 0x0042_00CD;
+    const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
+    const CBC_MODE: u32 = 1;
+    const CTR_MODE: u32 = 6;
+    const CCM_MODE: u32 = 8;
+    const GCM_MODE: u32 = 9;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("variable-IV Length has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the variable-IV rule resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the SHALL has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("variable-IV modes have a typed evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let request_with_parameters = |mode: u32, include_iv_length: bool, include_tag_length: bool| {
+        let mut parameters = vec![tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(mode))];
+        if include_iv_length {
+            parameters.push(tagged(IV_LENGTH_TAG, Value::integer(96)));
+        }
+        if include_tag_length {
+            parameters.push(tagged(TAG_LENGTH_TAG, Value::integer(16)));
+        }
+        request_message_with_operation_payload(
+            ENCRYPT_OPERATION,
+            structure([tagged(
+                CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(structure(parameters)),
+            )]),
+        )
+    };
+
+    for (mode, include_tag_length) in [(CTR_MODE, false), (CCM_MODE, false), (GCM_MODE, true)] {
+        let valid = request_with_parameters(mode, true, include_tag_length);
+        assert!(evaluate(Some(&valid), None));
+        result
+            .validate_request(&valid)
+            .expect("a variable-IV mode passes when IV Length is supplied");
+
+        let invalid = request_with_parameters(mode, false, include_tag_length);
+        assert!(!evaluate(Some(&invalid), None));
+        let error = result
+            .validate_request(&invalid)
+            .expect_err("a variable-IV mode without IV Length violates §4.16");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    }
+
+    let parameters_omitted =
+        request_message_with_operation_payload(ENCRYPT_OPERATION, Structure::new());
+    assert!(evaluate(Some(&parameters_omitted), None));
+    result
+        .validate_request(&parameters_omitted)
+        .expect("operation-level Cryptographic Parameters may be omitted");
+
+    let fixed_iv_mode = request_with_parameters(CBC_MODE, false, false);
+    assert!(evaluate(Some(&fixed_iv_mode), None));
+    result
+        .validate_request(&fixed_iv_mode)
+        .expect("CBC does not require variable IV Length under §4.16");
+
+    let nested_register_request = |include_iv_length: bool| {
+        let mut parameters = vec![tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE))];
+        if include_iv_length {
+            parameters.push(tagged(IV_LENGTH_TAG, Value::integer(96)));
+        }
+        parameters.push(tagged(TAG_LENGTH_TAG, Value::integer(16)));
+        request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([tagged(
+                ATTRIBUTES_TAG,
+                Value::structure(structure([tagged(
+                    CRYPTOGRAPHIC_PARAMETERS_TAG,
+                    Value::structure(structure(parameters)),
+                )])),
+            )]),
+        )
+    };
+
+    let nested_valid = nested_register_request(true);
+    assert!(evaluate(Some(&nested_valid), None));
+    result
+        .validate_request(&nested_valid)
+        .expect("nested Register parameters pass when IV Length is supplied");
+
+    let nested_invalid = nested_register_request(false);
+    assert!(!evaluate(Some(&nested_invalid), None));
+    result
+        .validate_request(&nested_invalid)
+        .expect_err("nested Register parameters without IV Length violate §4.16");
+}
+
+#[test]
 fn profile_maps_gcm_tag_length_as_required_behavior() {
     // §4.16 requires Tag Length for GCM; §11.6 Table 436 assigns GCM value 9.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-003";
