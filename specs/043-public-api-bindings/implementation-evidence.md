@@ -5611,3 +5611,26 @@ authoritative-metadata rationale. The task remains open.
 | Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_operation_readiness.OperationReadinessSchemaTests.test_dependency_matrix_matches_current_owner_and_api_readiness -v` | Pass, 17 tests. |
 | Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current; none were edited. |
 | Refactor | this commit | `git diff --check` | Pass; no whitespace errors. |
+
+### T073 async manifest and bounded evidence contract follow-up (2026-10-22)
+
+The asynchronous-exclusion contract now checks the manifest `apiState` and
+the public API reference for each of Cancel, Poll, Process, and Query
+Asynchronous Requests; each remains `blocked` in both sources. A mutation
+probe changing Cancel's in-memory manifest state to `declared` makes the
+contract fail. The C-identity evidence assertion reads only the named T073
+readiness section. A boundary mutation moving the rationale into a later
+section makes the targeted contract fail, and a separate helper test confirms
+later sections are excluded. The T073 task remains unchecked because C
+distribution identity still lacks authoritative package metadata.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `4e51a2d604a561ca49eb3c2c23602aeab2672ead` | `python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation.T073DocumentationReconciliationTests.test_public_api_reference_scopes_high_level_subset_and_complete_typed_set -v` with an in-memory mutation setting `Cancel.apiState` to `declared` | Expected failure: the contract detects that Cancel's manifest state is no longer `blocked`. |
+| Green | `80b384e22d5f49e487d2cb658ea329c04d6708fe` | `python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation -v` | Pass, 5 tests. The targeted T073 evidence assertion also failed as expected when the rationale was moved out of its named section into a later section. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_t073_doc_reconciliation tools.api_manifest.tests.test_t030_package_docs tools.api_manifest.tests.test_operation_readiness.OperationReadinessSchemaTests.test_dependency_matrix_matches_current_owner_and_api_readiness -v` | Pass, 18 tests. |
+| Refactor | this commit | `uv run --python 3.12 --no-project --with-requirements tools/api_manifest/requirements-test.txt python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs are current. |
+| Refactor | this commit | `git diff --check 2b039d8bae31226ff336c20262bcd653638f6abf..HEAD` | Pass; no whitespace errors. |
+
+No generated files were edited. These additional contracts do not close T073
+or resolve the C distribution identity gap.
