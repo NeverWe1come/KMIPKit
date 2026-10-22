@@ -85,6 +85,10 @@ static CONSTRAINTS_TLS: [RuleConstraint; 1] = [RuleConstraint {
     key: "transport_security",
     value: "tls",
 }];
+static CONSTRAINTS_TLS13: [RuleConstraint; 1] = [RuleConstraint {
+    key: "transport_security",
+    value: "tls13",
+}];
 static CONSTRAINTS_TTLV: [RuleConstraint; 1] = [RuleConstraint {
     key: "encoding",
     value: "ttlv",
@@ -103,6 +107,10 @@ static NEGATIVE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
 }];
 static RECOMMENDED_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
     test_id: "profile-rule-recommended-test",
+    kind: RuleTestKind::RecommendedBehavior,
+}];
+static TLS13_RECOMMENDED_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
+    test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_recommends_tls_1_3_for_basic_authentication_suite_transport",
     kind: RuleTestKind::RecommendedBehavior,
 }];
 static DISCOURAGED_ABSENCE_TEST: [RuleTestEvidence; 1] = [RuleTestEvidence {
@@ -4207,6 +4215,47 @@ fn profile_requires_tls_for_basic_authentication_suite_transport() {
     result
         .validate_response(&request, &response_message())
         .expect("a transport rule does not add a response-payload restriction");
+}
+
+#[test]
+fn profile_recommends_tls_1_3_for_basic_authentication_suite_transport() {
+    // KMIP Profiles v2.1 §3.1.1 paragraph 2; Baseline inherits §3.1 via §6.1 item 2.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-3.1.1-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
+        result.validate_transport(transport).expect(
+            "both configured KMIPKit transport classes satisfy the TLS 1.3 recommendation",
+        );
+    }
+}
+
+#[test]
+fn configured_tls13_constraint_accepts_both_tls_client_transports() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-PROF-3.1.1-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let mapping = [TypedRuleMapping {
+        requirement_id: REQUIREMENT_ID,
+        source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: None,
+        test_evidence: &TLS13_RECOMMENDED_TEST,
+        constraints: &CONSTRAINTS_TLS13,
+    }];
+
+    for transport in [ProfileTransport::RawTtlvTls, ProfileTransport::Https] {
+        result
+            .validate_transport_with_mappings(transport, &mapping)
+            .expect("TLS 1.3 is configured for both supported client transports");
+    }
 }
 
 #[test]
