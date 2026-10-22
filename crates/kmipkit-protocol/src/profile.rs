@@ -829,6 +829,15 @@ fn client_may_include_or_omit_unique_batch_item_id(
     request.is_some()
 }
 
+fn client_can_repeat_request_batch_items(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // Repetition is optional per request; executable evidence proves that a
+    // valid client request can contain multiple Batch Items.
+    request.is_some()
+}
+
 fn client_includes_unique_batch_item_id_for_multi_item_request(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -2013,6 +2022,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_response_preserves_x509_optional_values),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_response_x509_values",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-8.1-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.1-002",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_repeat_request_batch_items),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_request_batch_item_repetition_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
