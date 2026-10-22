@@ -1926,6 +1926,78 @@ fn profile_maps_optional_locate_maximum_items_capability() {
 }
 
 #[test]
+fn profile_maps_optional_locate_offset_items_capability() {
+    // KMIP Specification v2.1 §6.1.28 and Table 247 make Offset Items optional.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-002";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const LOCATE_OPERATION: u32 = 0x0000_0008;
+    const OFFSET_ITEMS_TAG: u32 = 0x0042_00D4;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Locate Offset Items has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Offset Items MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the requirement has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let omitted = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        crate::LocateRequest::new(crate::AttributeSet::new())
+            .to_ttlv_payload()
+            .expect("an omitted Offset Items value is valid"),
+    );
+    assert!(evaluate(Some(&omitted), None));
+    result
+        .validate_request(&omitted)
+        .expect("Offset Items may be omitted");
+
+    for offset_items in [0, 3] {
+        let supplied = request_message_with_operation_payload(
+            LOCATE_OPERATION,
+            crate::LocateRequest::new(crate::AttributeSet::new())
+                .with_offset_items(offset_items)
+                .to_ttlv_payload()
+                .expect("Offset Items is encoded as an Integer"),
+        );
+        assert!(evaluate(Some(&supplied), None));
+        result
+            .validate_request(&supplied)
+            .expect("the optional Integer is usable, including explicit zero");
+    }
+
+    let malformed = request_message_with_operation_payload(
+        LOCATE_OPERATION,
+        structure([
+            tagged(OFFSET_ITEMS_TAG, Value::text_string("three".to_owned())),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+        ]),
+    );
+    assert!(!evaluate(Some(&malformed), None));
+    assert!(result.validate_request(&malformed).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
+    assert!(result.validate_request(&unrelated_operation).is_ok());
+}
+
+#[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
