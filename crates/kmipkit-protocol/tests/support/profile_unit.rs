@@ -4,7 +4,7 @@ use std::fmt::Write as _;
 use super::{
     CLIENT_REQUIREMENTS, ProfileEvidenceRecord, ProfileReadiness, ProfileReadinessBlocker,
     ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
-    ProfileValidationSelection, RuleConstraint, RuleTestEvidence, RuleTestKind,
+    ProfileValidationSelection, RuleConstraint, RuleEvaluator, RuleTestEvidence, RuleTestKind,
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_get_or_export_key_compression_type_is_enumeration,
@@ -46,6 +46,8 @@ const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
 const DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
 const DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
 const DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+const VARIABLE_IV_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-002";
+const VARIABLE_IV_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -3303,33 +3305,18 @@ fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt
     }
 }
 
-#[test]
-fn profile_maps_variable_iv_modes_to_required_iv_length() {
-    // KMIP Specification v2.1 §4.16 requires IV Length for variable-IV modes,
-    // including CTR and GCM. Existing NIST-based parameter validation also
-    // classifies CCM as variable-IV. GCM Tag Length remains a separate rule.
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
+fn variable_iv_profile_rule() -> (RuleEvaluator, ProfileValidationResult) {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
-    const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
-    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
-    const IV_LENGTH_TAG: u32 = 0x0042_00CD;
-    const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
-    const CBC_MODE: u32 = 1;
-    const CTR_MODE: u32 = 6;
-    const CCM_MODE: u32 = 8;
-    const GCM_MODE: u32 = 9;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .find(|mapping| mapping.requirement_id == VARIABLE_IV_REQUIREMENT_ID)
         .expect("variable-IV Length has a typed profile rule");
     let requirement = CLIENT_REQUIREMENTS
         .iter()
-        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .find(|requirement| requirement.requirement_id == VARIABLE_IV_REQUIREMENT_ID)
         .expect("the variable-IV rule resolves to generated metadata");
-    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.source_clause_id, VARIABLE_IV_SOURCE_CLAUSE_ID);
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::RequiredBehavior
@@ -3341,8 +3328,27 @@ fn profile_maps_variable_iv_modes_to_required_iv_length() {
         .expect("variable-IV modes have a typed evaluator");
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+        requirement_ids: vec![VARIABLE_IV_REQUIREMENT_ID.to_owned()],
     };
+    (evaluate, result)
+}
+
+#[test]
+fn profile_maps_variable_iv_modes_to_required_iv_length() {
+    // KMIP Specification v2.1 §4.16 requires IV Length for variable-IV modes,
+    // including CTR and GCM. Existing NIST-based parameter validation also
+    // classifies CCM as variable-IV. GCM Tag Length remains a separate rule.
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const IV_LENGTH_TAG: u32 = 0x0042_00CD;
+    const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
+    const CBC_MODE: u32 = 1;
+    const CTR_MODE: u32 = 6;
+    const CCM_MODE: u32 = 8;
+    const GCM_MODE: u32 = 9;
+
+    let (evaluate, result) = variable_iv_profile_rule();
 
     let request_with_parameters = |mode: u32, include_iv_length: bool, include_tag_length: bool| {
         let mut parameters = vec![tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(mode))];
@@ -3373,8 +3379,8 @@ fn profile_maps_variable_iv_modes_to_required_iv_length() {
         let error = result
             .validate_request(&invalid)
             .expect_err("a variable-IV mode without IV Length violates §4.16");
-        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+        assert_eq!(error.requirement_id(), Some(VARIABLE_IV_REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(VARIABLE_IV_SOURCE_CLAUSE_ID));
     }
 
     let parameters_omitted =
@@ -3389,7 +3395,17 @@ fn profile_maps_variable_iv_modes_to_required_iv_length() {
     result
         .validate_request(&fixed_iv_mode)
         .expect("CBC does not require variable IV Length under §4.16");
+}
 
+#[test]
+fn profile_checks_variable_iv_length_in_nested_register_attributes() {
+    const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const IV_LENGTH_TAG: u32 = 0x0042_00CD;
+    const TAG_LENGTH_TAG: u32 = 0x0042_00CE;
+    const GCM_MODE: u32 = 9;
+
+    let (evaluate, result) = variable_iv_profile_rule();
     let nested_register_request = |include_iv_length: bool| {
         let mut parameters = vec![tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(GCM_MODE))];
         if include_iv_length {
@@ -3419,6 +3435,58 @@ fn profile_maps_variable_iv_modes_to_required_iv_length() {
     result
         .validate_request(&nested_invalid)
         .expect_err("nested Register parameters without IV Length violate §4.16");
+}
+
+#[test]
+fn profile_rejects_invalid_ttlv_types_for_variable_iv_rule() {
+    const ENCRYPT_OPERATION: u32 = 0x0000_001F;
+    const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
+    const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const IV_LENGTH_TAG: u32 = 0x0042_00CD;
+    const CTR_MODE: u32 = 6;
+
+    let (evaluate, result) = variable_iv_profile_rule();
+    let request_with_parameters = |parameters| {
+        request_message_with_operation_payload(
+            ENCRYPT_OPERATION,
+            structure([tagged(
+                CRYPTOGRAPHIC_PARAMETERS_TAG,
+                Value::structure(structure(parameters)),
+            )]),
+        )
+    };
+
+    let invalid_iv_type = request_with_parameters([
+        tagged(BLOCK_CIPHER_MODE_TAG, Value::enumeration(CTR_MODE)),
+        tagged(
+            IV_LENGTH_TAG,
+            Value::text_string("96 is not an Integer".to_owned()),
+        ),
+    ]);
+    assert!(!evaluate(Some(&invalid_iv_type), None));
+    assert_eq!(
+        result
+            .validate_request(&invalid_iv_type)
+            .expect_err("IV Length with a non-Integer TTLV type is invalid")
+            .requirement_id(),
+        Some(VARIABLE_IV_REQUIREMENT_ID)
+    );
+
+    let invalid_mode_type = request_with_parameters([
+        tagged(
+            BLOCK_CIPHER_MODE_TAG,
+            Value::text_string("CTR is not an Enumeration".to_owned()),
+        ),
+        tagged(IV_LENGTH_TAG, Value::integer(96)),
+    ]);
+    assert!(!evaluate(Some(&invalid_mode_type), None));
+    assert_eq!(
+        result
+            .validate_request(&invalid_mode_type)
+            .expect_err("Block Cipher Mode with a non-Enumeration TTLV type is invalid")
+            .requirement_id(),
+        Some(VARIABLE_IV_REQUIREMENT_ID)
+    );
 }
 
 #[test]
