@@ -1838,6 +1838,22 @@ fn profile_requires_at_least_one_client_query_function() {
     assert!(!evaluate(Some(&wrong_type_query), None));
     assert!(result.validate_request(&wrong_type_query).is_err());
 
+    let mixed_type_query = request_message_with_operation_payload(
+        QUERY_OPERATION,
+        structure([
+            tagged(
+                QUERY_FUNCTION_TAG,
+                Value::enumeration(crate::QueryFunction::OPERATIONS.raw()),
+            ),
+            tagged(
+                QUERY_FUNCTION_TAG,
+                Value::text_string("INVALID".to_owned()),
+            ),
+        ]),
+    );
+    assert!(!evaluate(Some(&mixed_type_query), None));
+    assert!(result.validate_request(&mixed_type_query).is_err());
+
     let unrelated_operation = request_message_with_operation_payload(0x0000_0003, Structure::new());
     assert!(result.validate_request(&unrelated_operation).is_ok());
 }
