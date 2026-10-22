@@ -3212,7 +3212,7 @@ The pinned Profiles v2.1 §5.3.1 clauses 6–7 (HTML lines 5139–5142) are clie
 
 ### KMIPKIT-0010 T002 tranche — shared Profiles §4.1.2 clause closure
 
-The pinned Profiles v2.1 §4.1.2 item 7 says “For all profiles” when describing the Unique Batch Item ID condition for client requests (HTML lines 4488–4493). The requirement crosswalk already links its optional single-item capability to all 18 client profiles, but neither the catalog nor its independently reviewed closure oracle includes the source clause in those profile closures. The regression checks the source wording, all 18 direct and inherited clause closures, their requirement IDs, and the computed closure.
+The pinned Profiles v2.1 §4.1.2 item 6 says “For all profiles” when describing the Unique Batch Item ID condition for client requests (HTML lines 4488–4493). The requirement crosswalk already links its optional single-item capability to all 18 client profiles, but neither the catalog nor its independently reviewed closure oracle includes the source clause in those profile closures. The regression checks the source wording, all 18 direct and inherited clause closures, their requirement IDs, and the computed closure.
 
 | Stage | DCO-signed commit and command | Result |
 |---|---|---|
@@ -4191,6 +4191,6 @@ This slice covers exactly `KMIPKIT-REQ-SPEC-8.3-003`. The pinned KMIP Specificat
 
 ### Normative locator correction (2026-10-22)
 
-Independent QA identified two inaccurate citations in the slice notes: the Unique Batch Item ID condition is in KMIP Specification v2.1 §8.3 Table 396 (not Table 57), and the corroborating Profiles text is §4.1.2 item 6 (not §5.18.3). Red commit `7d4d6803` added a regression test that failed while the requirement inventory cited only §8.3. Green commit `ea2dfafb` corrected the inventory to §8.3, Table 396, updated the test's normative comment and catalog review note, and regenerated the coverage report; the focused regression and message-model traceability tests then passed. This Refactor commit records the corrected rationale and review outcome. No behavior or conformance status changed.
+Independent QA identified inaccurate citations: the Unique Batch Item ID condition is in KMIP Specification v2.1 §8.3 Table 396 (not Table 57), and the corroborating Profiles text is §4.1.2 item 6 (not §5.18.3). A second-pass source check also corrected this historical T002 note from item 7 to item 6. Red commit `7d4d6803` added a regression test that failed while the requirement inventory cited only §8.3. Green commit `ea2dfafb` corrected the inventory to §8.3, Table 396, updated the test's normative comment and catalog review note, and regenerated the coverage report; the focused regression and message-model traceability tests then passed. This Refactor commit records the corrected rationale and review outcome. No behavior or conformance status changed.
 
 The catalog continues to mark Baseline Client as `evidence_incomplete`; the 3 mandatory fixture preflight blockers, 77 unavailable linked cases, and remaining requirement/rule evidence gaps are unchanged. No official Test Case ID was completed by this slice. T040 remains unchecked and no Baseline readiness, profile support, conformance, or certification claim is made.
