@@ -5205,3 +5205,19 @@ KMIP Specification v2.1 §2.4 recommends that implementers treat the PGP Key Blo
 | Focused verification | `cargo test -p kmipkit-protocol --lib --all-features client_pgp_key_forms -- --nocapture`; `cargo test -p kmipkit-protocol --lib --all-features import_preserves_pgp_key_versions_and_opaque_key_bytes -- --nocapture`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `py -3 -B tools/normative_catalog/validate.py --repo-root .`; `py -3 -B tools/normative_catalog/report.py --write --repo-root .`; `py -3 -B tools/normative_catalog/report.py --check --repo-root .`; focused typed-mapping traceability test; `cargo fmt --all --check`; `git diff --check` | PASS: one focused profile test, one protocol serialization test, one traceability test, catalog validation (4 sources, 1,411 clauses, 4,123 records), generated report checks, formatting, Clippy, and diff checks. |
 
 The Baseline Client now has 81 typed mappings of 265 assigned requirements; 184 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 cases remain unavailable. T040 stays open, readiness stays `evidence_incomplete`, and the exact-head hosted CI run for these local PGP changes has not yet started.
+
+### T040 follow-up — remediate hosted conformance and coverage failures (2026-10-23)
+
+Exact-head GitHub Actions run `40017372345` on `7cf1c391` exposed a stale typed-mapping report fixture, seven scoped requirements whose review notes did not explicitly identify the pinned OASIS test-case gap, one missing Revoke verification reference, and changed Rust coverage of 3,100/3,286 (94.34%). The catalog notes now state that the pinned source set does not link requirement-specific official Test Cases; the Revoke evidence reference and the deterministic mapping snapshot now match the typed registry (132 mapping rows, including operation-specific repetitions).
+
+Two focused RNG evaluator tests exercise request absence, unrelated operations, omitted fields, malformed and duplicate Register Attributes, RNG fields, New Attributes, and RNG Algorithm values. This covers valid future-proof defensive paths without changing the wire contract or profile rule behavior.
+
+| Check | Evidence | Result |
+|---|---|---|
+| Focused protocol regression | `cargo test -p kmipkit-protocol --lib --all-features --locked rng_ -- --nocapture` | PASS: 20 tests, including the new Register and Add Attribute evaluator cases. |
+| Full Rust workspace tests and coverage | `cargo llvm-cov --workspace --all-features --locked --summary-only` | PASS: all workspace test targets; workspace line coverage 31,993/33,540 (95.39%); `profile.rs` 2,736/2,873 lines (95.23%). |
+| Rust lint | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | PASS. Only non-fatal AWS-LC/MSVC/NASM environment warnings were emitted. |
+| Catalog and report regressions | Focused report snapshot test; optional-capability evidence test; bidirectional test-evidence test; catalog validation; profile metadata and coverage report `--check` commands | PASS: 1,411 clauses and 4,123 catalog records; generated artifacts are current. |
+| Formatting and patch hygiene | `cargo fmt --all --check`; `git diff --check` | PASS. |
+
+The full normative-catalog Python suite was not rerun locally because the previous hosted run took over 12 minutes; the three failing regression cases were run directly and passed. The exact changed-Rust aggregate and all-platform CI remain to be confirmed on the next pushed head. Baseline remains at 81/265 typed mappings, with 184 unmapped; three mandatory fixtures remain blocked and 77 profile cases remain unavailable. No profile-conformance claim is made.

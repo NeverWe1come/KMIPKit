@@ -89990,7 +89990,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.38 Table 105 and §6.1.43 Table 293. It accepts omission and a single Date-Time Original Creation Date when present. The profile and protocol tests establish request serialization only; they do not assert server acceptance or state. No official Test Case is linked and no profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.38 Table 105 and §6.1.43 Table 293. It accepts omission and a single Date-Time Original Creation Date when present. The profile and protocol tests establish request serialization only; they do not assert server acceptance or state. No official Test Case is linked and no profile-conformance claim is made. The pinned OASIS source set does not link a requirement-specific official Test Case for this rule."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-001-002",
@@ -90040,7 +90040,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.38 Table 105 and §6.1.43 Table 293, accepting one Date-Time Original Creation Date and rejecting a wrong TTLV type. The profile and protocol tests establish request serialization only; they do not assert server acceptance or stored state. No official Test Case is linked and no profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.38 Table 105 and §6.1.43 Table 293, accepting one Date-Time Original Creation Date and rejecting a wrong TTLV type. The profile and protocol tests establish request serialization only; they do not assert server acceptance or stored state. No official Test Case is linked and no profile-conformance claim is made. The pinned OASIS source set does not link a requirement-specific official Test Case for this rule."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-001-003",
@@ -90095,7 +90095,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule checks New Attribute in client Add Attribute requests under KMIP Specification v2.1 §4.38, §6.1.2 Table 167, and §5.7 Table 163. It accepts a Date-Time Original Creation Date and rejects a wrong TTLV type. The profile and protocol tests establish request serialization only; they do not assert server acceptance or object state. No official Test Case is linked and no profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule checks New Attribute in client Add Attribute requests under KMIP Specification v2.1 §4.38, §6.1.2 Table 167, and §5.7 Table 163. It accepts a Date-Time Original Creation Date and rejects a wrong TTLV type. The profile and protocol tests establish request serialization only; they do not assert server acceptance or object state. No official Test Case is linked and no profile-conformance claim is made. The pinned OASIS source set does not link a requirement-specific official Test Case for this rule."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-003",
@@ -90525,7 +90525,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.46 Table 121 and §6.1.43 Table 293. A supplied Random Number Generator is an RNG Parameters structure with one direct RNG Algorithm Enumeration per §7.36 Table 388; Unspecified (1) is accepted. The profile and protocol tests are request-serialization evidence only and do not assert a server RNG outcome. No official Test Case is linked and no profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.46 Table 121 and §6.1.43 Table 293. A supplied Random Number Generator is an RNG Parameters structure with one direct RNG Algorithm Enumeration per §7.36 Table 388; Unspecified (1) is accepted. The profile and protocol tests are request-serialization evidence only and do not assert a server RNG outcome. No official Test Case is linked and no profile-conformance claim is made. The pinned OASIS source set does not link a requirement-specific official Test Case for this rule."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -90590,7 +90590,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule checks client Add Attribute New Attribute under KMIP Specification v2.1 §4.46, §6.1.2 Table 167, and §5.7 Table 163. A supplied Random Number Generator is an RNG Parameters structure with one direct RNG Algorithm Enumeration per §7.36 Table 388; it is not a nested RNG Parameters member. The profile and protocol tests are request-serialization evidence only and do not assert a server RNG outcome. No official Test Case is linked and no profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule checks client Add Attribute New Attribute under KMIP Specification v2.1 §4.46, §6.1.2 Table 167, and §5.7 Table 163. A supplied Random Number Generator is an RNG Parameters structure with one direct RNG Algorithm Enumeration per §7.36 Table 388; it is not a nested RNG Parameters member. The profile and protocol tests are request-serialization evidence only and do not assert a server RNG outcome. No official Test Case is linked and no profile-conformance claim is made. The pinned OASIS source set does not link a requirement-specific official Test Case for this rule."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-001-001",
@@ -90629,6 +90629,7 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_emits_table_295_fields_in_order_and_preserves_open_reason",
         "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_revoke_revocation_message_as_optional_capability",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
@@ -90638,7 +90639,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule inspects outbound Revoke requests under KMIP Specification v2.1 §4.47. It accepts omission and one Text String Revocation Message, rejects duplicate or malformed message fields, and does not interpret or log the caller-supplied audit content. The protocol encoder and profile tests are derived local evidence; no official Test Case or profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule inspects outbound Revoke requests under KMIP Specification v2.1 §4.47. It accepts omission and one Text String Revocation Message, rejects duplicate or malformed message fields, and does not interpret or log the caller-supplied audit content. The protocol encoder and profile tests are derived local evidence; no official Test Case or profile-conformance claim is made. The pinned OASIS source set does not link a requirement-specific official Test Case for this rule."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-001-002",
@@ -90686,7 +90687,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule inspects outbound Revoke requests under KMIP Specification v2.1 §4.47. It accepts omission and one Text String Revocation Message, rejects duplicate or malformed message fields, and does not interpret or log the caller-supplied audit content. The protocol encoder and profile tests are derived local evidence; no official Test Case or profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule inspects outbound Revoke requests under KMIP Specification v2.1 §4.47. It accepts omission and one Text String Revocation Message, rejects duplicate or malformed message fields, and does not interpret or log the caller-supplied audit content. The protocol encoder and profile tests are derived local evidence; no official Test Case or profile-conformance claim is made. The pinned OASIS source set does not link a requirement-specific official Test Case for this rule."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-002",
