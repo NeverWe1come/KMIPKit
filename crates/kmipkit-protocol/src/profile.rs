@@ -4807,6 +4807,13 @@ pub struct ProfileValidationError {
     source_gap_locator: Option<&'static str>,
 }
 
+fn catalogued_source_gap_locator(source_gap_id: &str) -> Option<&'static str> {
+    CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.source_gap_id == Some(source_gap_id))
+        .and_then(|requirement| requirement.source_locator)
+}
+
 impl ProfileValidationError {
     fn new(code: ProfileValidationErrorCode) -> Self {
         Self {
@@ -4875,12 +4882,7 @@ impl ProfileValidationError {
         };
         let mut error = Self::for_requirement(code, profile_id, requirement_id, source_clause_id);
         error.source_gap_id = source_gap_id;
-        error.source_gap_locator = source_gap_id.and_then(|gap_id| {
-            CLIENT_REQUIREMENTS
-                .iter()
-                .find(|requirement| requirement.source_gap_id == Some(gap_id))
-                .and_then(|requirement| requirement.source_locator)
-        });
+        error.source_gap_locator = source_gap_id.and_then(catalogued_source_gap_locator);
         error
     }
 
