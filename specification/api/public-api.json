@@ -309000,6 +309000,246 @@
     },
     {
       "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__eq__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__hash__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__init__",
+      "reason": "This exact generated constructor wraps a successful Activate response identifier and is not an independent KMIP request operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. Callers obtain this response through BatchItemResult.activate_response; this constructor does not send requests or perform protocol work."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__repr__",
+      "reason": "This exact formatter emits a constant redacted diagnostic representation and is not an independent KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse identifier is redacted in repr; this exact formatter is diagnostic presentation."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ActivateResponse.__slots__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ActivateResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.1. The ActivateResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__eq__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__hash__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__init__",
+      "reason": "This exact generated constructor wraps a successful Archive response identifier and is not an independent KMIP request operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. Callers obtain this response through BatchItemResult.archive_response; this constructor does not send requests or perform protocol work."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__repr__",
+      "reason": "This exact formatter emits a constant redacted diagnostic representation and is not an independent KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse identifier is redacted in repr; this exact formatter is diagnostic presentation."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.ArchiveResponse.__slots__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the ArchiveResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.4. The ArchiveResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
       "exportName": "kmipkit.client.Batch.__enter__",
       "reason": "This exact Python context-manager syntax method delegates to the already mapped close lifecycle; it is not a separate cross-language product capability.",
       "approvalSource": {
@@ -309909,6 +310149,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed under KMIPKIT-0043-FR-021 and KMIPKIT-0037 for the typed DeriveKeyResponse fields and ordered owned TTLV mapping across languages. This exclusion applies only to generated member __slots__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__eq__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__hash__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__init__",
+      "reason": "This exact generated constructor wraps a successful Destroy response identifier and is not an independent KMIP request operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. Callers obtain this response through BatchItemResult.destroy_response; this constructor does not send requests or perform protocol work."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__repr__",
+      "reason": "This exact formatter emits a constant redacted diagnostic representation and is not an independent KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse identifier is redacted in repr; this exact formatter is diagnostic presentation."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.DestroyResponse.__slots__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the DestroyResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.15. The DestroyResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
     },
     {
       "packageId": "python-kmipkit",
@@ -312165,6 +312525,126 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0036 and KMIPKIT-0043-FR-021 for T058. The RecertifyResponse type and unique_identifier field are inventoried separately; this exclusion applies only to generated member __slots__."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__dataclass_fields__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__dataclass_params__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__delattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__eq__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__hash__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__init__",
+      "reason": "This exact generated constructor wraps a successful Recover response identifier and is not an independent KMIP request operation.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. Callers obtain this response through BatchItemResult.recover_response; this constructor does not send requests or perform protocol work."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__match_args__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__repr__",
+      "reason": "This exact formatter emits a constant redacted diagnostic representation and is not an independent KMIP capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse identifier is redacted in repr; this exact formatter is diagnostic presentation."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__setattr__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
+    },
+    {
+      "packageId": "python-kmipkit",
+      "exportName": "kmipkit.client.RecoverResponse.__slots__",
+      "reason": "This exact dataclass-generated Python member is interpreter mechanics for the RecoverResponse record and has no independent KMIPKit capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed under KMIPKIT-0043-FR-021 and T039 against OASIS KMIP 2.1 §6.1.42. The RecoverResponse type and unique_identifier are mapped separately; this exact generated dataclass member has no independent protocol behavior."
     },
     {
       "packageId": "python-kmipkit",

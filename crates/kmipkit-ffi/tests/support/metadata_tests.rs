@@ -6,6 +6,34 @@ const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const DELIVERY_NONE: u32 = 0;
 
+fn macro_generated_c_exports(source: &str, macro_name: &str) -> Vec<(String, bool)> {
+    let definition_marker = format!("macro_rules! {macro_name}");
+    let invocation_marker = format!("{macro_name}!(");
+    let macro_body = source
+        .split_once(&definition_marker)
+        .map(|(_, definition)| definition.split("};").next().unwrap_or(""))
+        .unwrap_or("");
+    let starts_inside_panic_boundary = macro_body
+        .split_once("pub extern \"C\" fn $name")
+        .and_then(|(_, signature)| signature.split_once("-> i32 {"))
+        .is_some_and(|(_, body)| {
+            macro_body.contains("#[unsafe(no_mangle)]")
+                && body.trim_start().starts_with("ffi_entrypoint(||")
+        });
+
+    source
+        .split(&invocation_marker)
+        .skip(1)
+        .filter_map(|invocation| {
+            let symbol = invocation
+                .trim_start()
+                .split(|character: char| character.is_whitespace() || character == ',')
+                .next()?;
+            (!symbol.is_empty()).then(|| (symbol.to_owned(), starts_inside_panic_boundary))
+        })
+        .collect()
+}
+
 #[test]
 fn version_query_matches_the_package_version_and_stable_abi() {
     let mut major = u32::MAX;
@@ -365,7 +393,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
         include_str!("../../src/extension_registry.rs"),
         include_str!("../../src/extension_registry/client_abi.rs"),
     ];
-    let exports: Vec<(String, bool)> = sources
+    let mut exports: Vec<(String, bool)> = sources
         .into_iter()
         .flat_map(|source| source.split("#[unsafe(no_mangle)]"))
         .filter_map(|declaration| {
@@ -385,7 +413,16 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
                     .starts_with("ffi_entrypoint(||"),
             ))
         })
+        .filter(|(symbol, _)| symbol != "$name")
         .collect();
+    exports.extend(macro_generated_c_exports(
+        sources[0],
+        "lifecycle_batch_item_constructor",
+    ));
+    exports.extend(macro_generated_c_exports(
+        sources[1],
+        "lifecycle_response_identifier",
+    ));
 
     let source_symbols: BTreeSet<&str> =
         exports.iter().map(|(symbol, _)| symbol.as_str()).collect();
