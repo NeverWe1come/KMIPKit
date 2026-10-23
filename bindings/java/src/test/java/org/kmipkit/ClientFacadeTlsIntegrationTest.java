@@ -1954,6 +1954,90 @@ final class ClientFacadeTlsIntegrationTest {
         assertTrue(peer.isDone());
     }
 
+    @Test
+    void lifecycleSuccessResponsesExposeTypedIdentifiersAndRedactThem() throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveOneResponse(listener, lifecycleSuccessResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-lifecycle-success-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.add(ClientBatchItem.activate(UniqueIdentifier.textString("activate-request"))
+                    .withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.archive(UniqueIdentifier.textString("archive-request"))
+                    .withUniqueBatchItemId(uniqueBatchItemId(1)));
+            batch.add(ClientBatchItem.destroy(UniqueIdentifier.textString("destroy-request"))
+                    .withUniqueBatchItemId(uniqueBatchItemId(2)));
+            batch.add(ClientBatchItem.recover(UniqueIdentifier.textString("recover-request"))
+                    .withUniqueBatchItemId(uniqueBatchItemId(3)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult activate = response.itemAt(0);
+                    ClientBatchItemResult archive = response.itemAt(1);
+                    ClientBatchItemResult destroy = response.itemAt(2);
+                    ClientBatchItemResult recover = response.itemAt(3)) {
+                assertEquals(4, response.itemCount());
+                assertEquals("activate-result-secret",
+                        activate.activateResponse().orElseThrow().uniqueIdentifier().text());
+
+                ClientBatchItemResult.ArchiveResponse archiveResponse =
+                        archive.archiveResponse().orElseThrow();
+                assertEquals(UniqueIdentifier.Kind.ENUMERATION,
+                        archiveResponse.uniqueIdentifier().kind());
+                assertEquals(0x8fed_cba9L, archiveResponse.uniqueIdentifier().number());
+
+                ClientBatchItemResult.DestroyResponse destroyResponse =
+                        destroy.destroyResponse().orElseThrow();
+                assertEquals(UniqueIdentifier.Kind.INTEGER,
+                        destroyResponse.uniqueIdentifier().kind());
+                assertEquals(-723, destroyResponse.uniqueIdentifier().number());
+
+                ClientBatchItemResult.RecoverResponse recoverResponse =
+                        recover.recoverResponse().orElseThrow();
+                assertEquals("recover-result-secret", recoverResponse.uniqueIdentifier().text());
+
+                assertTrue(activate.activateResponse().orElseThrow().toString().contains("redacted"));
+                assertFalse(activate.activateResponse().orElseThrow().toString()
+                        .contains("activate-result-secret"));
+                assertTrue(archiveResponse.toString().contains("redacted"));
+                assertTrue(destroyResponse.toString().contains("redacted"));
+                assertTrue(recoverResponse.toString().contains("redacted"));
+                assertFalse(recoverResponse.toString().contains("recover-result-secret"));
+            }
+            request = peer.get(12, TimeUnit.SECONDS);
+        } finally {
+            listener.close();
+        }
+
+        assertContains(request, item(0x42005c, 5, integer(0x12)));
+        assertContains(request, item(0x42005c, 5, integer(0x15)));
+        assertContains(request, item(0x42005c, 5, integer(0x14)));
+        assertContains(request, item(0x42005c, 5, integer(0x16)));
+        assertTrue(peer.isDone());
+    }
+
     // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.
     @Test
     void setConstraintsResponseUsesNativeJniBridgeAndExposesTtlvOnlyOnSuccess() throws Exception {
@@ -4230,6 +4314,36 @@ final class ClientFacadeTlsIntegrationTest {
                 structure(0x42007c));
         return structure(0x42007b, header,
                 activateFailure, archiveFailure, destroyPending, recoverPending);
+    }
+
+    private static byte[] lifecycleSuccessResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(4)));
+        byte[] activate = structure(0x42000f,
+                enumeration(0x42005c, 0x12),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 0),
+                structure(0x42007c,
+                        item(0x420094, 7, "activate-result-secret".getBytes(StandardCharsets.UTF_8))));
+        byte[] archive = structure(0x42000f,
+                enumeration(0x42005c, 0x15),
+                item(0x420093, 8, uniqueBatchItemId(1)),
+                enumeration(0x42007f, 0),
+                structure(0x42007c, enumeration(0x420094, (int) 0x8fed_cba9L)));
+        byte[] destroy = structure(0x42000f,
+                enumeration(0x42005c, 0x14),
+                item(0x420093, 8, uniqueBatchItemId(2)),
+                enumeration(0x42007f, 0),
+                structure(0x42007c, item(0x420094, 2, integer(-723))));
+        byte[] recover = structure(0x42000f,
+                enumeration(0x42005c, 0x16),
+                item(0x420093, 8, uniqueBatchItemId(3)),
+                enumeration(0x42007f, 0),
+                structure(0x42007c,
+                        item(0x420094, 7, "recover-result-secret".getBytes(StandardCharsets.UTF_8))));
+        return structure(0x42007b, header, activate, archive, destroy, recover);
     }
 
     private static byte[] setConstraintsResponseMessage() throws Exception {

@@ -158,9 +158,17 @@ def test_revoke_request_retains_unsigned_unknown_reason_and_nested_message() -> 
     reason = extensions.RevocationReason.create(0xFFFF_FFFF, "operator audit")
     assert reason.raw_code == 0xFFFF_FFFF
     assert reason.message == "operator audit"
+    assert repr(reason) == "RevocationReason(raw_code=4294967295, message=redacted)"
     request = extensions.RevokeRequest.create(None, reason, None)
     item = extensions.client_batch_item_revoke(request)
     item.close()
+
+
+def test_revocation_reason_rejects_non_string_message_and_wrong_reason_type() -> None:
+    with pytest.raises(errors.InvalidInputError):
+        extensions.RevocationReason.create(1, object())  # type: ignore[arg-type]
+    with pytest.raises(errors.InvalidInputError):
+        extensions.RevokeRequest.create(None, object(), None)  # type: ignore[arg-type]
 
 
 def test_revoke_rejects_compromise_date_for_other_reason_before_send() -> None:

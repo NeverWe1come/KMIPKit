@@ -206,6 +206,92 @@ def test_bounded_snapshot_maps_tuple_allocation_failure_to_resource_limit(
         extensions._bounded_snapshot(values, 10)
 
 
+@pytest.mark.parametrize(
+    ("failure", "error_type"),
+    [
+        (MemoryError, errors.ResourceLimitError),
+        (ValueError, errors.InvalidInputError),
+    ],
+)
+def test_validate_iterable_snapshot_maps_iterator_creation_failures(
+    failure: type[Exception], error_type: type[Exception]
+) -> None:
+    class FailingIterable:
+        def __iter__(self):
+            raise failure("iterator creation failed")
+
+    with pytest.raises(error_type):
+        extensions._bounded_iterable_snapshot(FailingIterable(), 4)
+
+
+@pytest.mark.parametrize(
+    ("failure", "error_type"),
+    [
+        (MemoryError, errors.ResourceLimitError),
+        (ValueError, errors.InvalidInputError),
+    ],
+)
+def test_validate_iterable_snapshot_maps_iteration_failures(
+    failure: type[Exception], error_type: type[Exception]
+) -> None:
+    class FailingIterator:
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            raise failure("iteration failed")
+
+    with pytest.raises(error_type):
+        extensions._bounded_iterable_snapshot(FailingIterator(), 4)
+
+
+def test_validate_iterable_snapshot_enforces_remaining_budget_for_underreported_size() -> None:
+    class UnderreportedIterable:
+        def __len__(self) -> int:
+            return 0
+
+        def __iter__(self):
+            return iter(("first",))
+
+    with pytest.raises(errors.ResourceLimitError):
+        extensions._bounded_iterable_snapshots(
+            (["already counted"], UnderreportedIterable()), 1
+        )
+
+
+@pytest.mark.parametrize(
+    ("failure", "error_type"),
+    [
+        (MemoryError, errors.ResourceLimitError),
+        (ValueError, errors.InvalidInputError),
+    ],
+)
+def test_validate_iterable_snapshots_maps_sized_length_failures(
+    failure: type[Exception], error_type: type[Exception]
+) -> None:
+    class FailingSizedIterable:
+        def __len__(self) -> int:
+            raise failure("length lookup failed")
+
+        def __iter__(self):
+            return iter(())
+
+    with pytest.raises(error_type):
+        extensions._bounded_iterable_snapshots((FailingSizedIterable(),), 4)
+
+
+def test_validate_utf8_length_rejects_invalid_and_over_limit_values() -> None:
+    assert extensions._bounded_utf8_length("🔐", 4) == 4
+    with pytest.raises(errors.InvalidInputError):
+        extensions._bounded_utf8_length(object(), 4)  # type: ignore[arg-type]
+    with pytest.raises(errors.ResourceLimitError):
+        extensions._bounded_utf8_length("long", 3)
+    with pytest.raises(errors.InvalidInputError):
+        extensions._bounded_utf8_length("\ud800", 4)
+    with pytest.raises(errors.ResourceLimitError):
+        extensions._bounded_utf8_length("é", 1)
+
+
 def test_query_preflight_rejects_object_group_span_count_overflow(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
