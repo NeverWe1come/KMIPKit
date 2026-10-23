@@ -92142,8 +92142,43 @@
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+        "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
+        "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY",
         "KMIPKIT-ELEM-OP-C2S-CHECK",
+        "KMIPKIT-ELEM-OP-C2S-CREATE",
+        "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+        "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+        "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "KMIPKIT-ELEM-OP-C2S-DESTROY",
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+        "KMIPKIT-ELEM-OP-C2S-EXPORT",
+        "KMIPKIT-ELEM-OP-C2S-GET",
+        "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+        "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+        "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+        "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "KMIPKIT-ELEM-OP-C2S-LOCATE",
+        "KMIPKIT-ELEM-OP-C2S-MAC",
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+        "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+        "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+        "KMIPKIT-ELEM-OP-C2S-RECOVER",
         "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "KMIPKIT-ELEM-OP-C2S-REVOKE",
+        "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+        "KMIPKIT-ELEM-OP-C2S-SIGN",
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
         "KMIPKIT-ELEM-TAG-420094"
       ],
       "profile_ids": [],
@@ -92151,15 +92186,29 @@
       "feature_spec": "KMIPKIT-0019",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
-        "crates/kmipkit-protocol/src/check.rs"
+        "crates/kmipkit-protocol/src/certify.rs",
+        "crates/kmipkit-protocol/src/check.rs",
+        "crates/kmipkit-protocol/src/get_attribute_list.rs",
+        "crates/kmipkit-protocol/src/get_attributes.rs",
+        "crates/kmipkit-protocol/src/mac_verify.rs",
+        "crates/kmipkit-protocol/src/signature_verify.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::explicit_id_placeholder_get_after_certify_is_sent_once",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::attribute_lookup_without_identifier_requires_a_placeholder_producer",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::attribute_lookup_without_identifier_is_allowed_after_a_placeholder_producer",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::export_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::create_split_key_can_select_a_preceding_placeholder_before_producing_its_result",
+        "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::explicit_id_placeholder_in_certify_import_join_split_key_and_recertify_is_a_consumer",
+        "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::explicit_id_placeholder_consumers_including_certify_reject_false_batch_order_before_send"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The named fake-transport test checks a Register followed by a Check request with Unique Identifier omitted and Batch Order Option unspecified, which section 6.1 permits. The transport fails before write, so this proves request construction only; it does not claim successful Register, server ID Placeholder assignment, or server consumption. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
+      "review_note": "The client preflight recognizes request fields whose pinned KMIP v2.1 operation clauses permit ID Placeholder use, checks that a preceding eligible producer exists, and rejects use when Batch Order Option is false. Fake-transport tests prove request-side eligibility and pre-send rejection only; they do not claim server-side assignment or consumption. Create Split Key is treated as a consumer only for explicit Enumeration(1); omission remains the distinct request to create a new split key. Certify follows KMIPKIT-DEC-013 for omitted request material and preflights an explicit ID Placeholder when Certificate Request Value is present. No requirement-specific official Test Case is linked in the pinned OASIS Test Cases source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1-004",
@@ -97109,16 +97158,19 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs::request_without_request_value_rejects_id_placeholder_as_public_key_identifier",
         "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_request_identifier_as_required_behavior",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_request_value_without_unique_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_id_placeholder_for_omitted_certify_request_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certify_identifier_for_omitted_request_value",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-013",
       "status": "verified",
-      "review_note": "The §6.1.6 paragraph 2 condition is enforced in the outbound typed Baseline Client profile: when Certificate Request Value is omitted, a direct Unique Identifier must be present. This follows approved KMIPKIT-DEC-013 and does not substitute an ID Placeholder for the public-key input. The profile permits Unique Identifier omission when Certificate Request Value is present; Certificate Type's sibling condition remains a separate mapping. Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "The §6.1.6 paragraph 2 condition is enforced in the typed Certify request and outbound Baseline Client profile: when Certificate Request Value is omitted, exactly one direct Unique Identifier must be present; the ID Placeholder sentinel Enumeration(1) is rejected under approved KMIPKIT-DEC-013. The profile permits Unique Identifier omission when Certificate Request Value is present; Certificate Type's sibling condition remains a separate mapping. Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-002-003",
@@ -97205,12 +97257,15 @@
         "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
         "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
         "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability"
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::explicit_id_placeholder_get_after_certify_is_sent_once",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_get_id_placeholder_without_a_preceding_producer",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_get_id_placeholder_when_batch_order_is_false"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Profile and fake-transport tests verify the client-side request representation and placeholder eligibility only. They do not assert Certify success, server-side placeholder storage or consumption, or Get response content. No official OASIS Test Cases are linked to this requirement; no formal conformance is claimed."
+      "review_note": "The typed profile evaluator accepts Get when it uses an explicit identifier or follows an eligible ID Placeholder producer with effective Batch Order Option true. Profile and fake-transport tests verify request representation and local eligibility only; they do not assert Certify success, server-side placeholder storage or consumption, or Get response content. No official OASIS Test Cases are linked by the pinned OASIS sources; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-007",
