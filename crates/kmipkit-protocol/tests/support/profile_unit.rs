@@ -9841,8 +9841,8 @@ fn add_original_creation_date_request(value: Value) -> crate::RequestMessage {
 // KMIP Specification v2.1 §4.38 Table 105 and §11.56; §6.1.43 Table 293.
 fn profile_maps_original_creation_date_register_and_add_capabilities() {
     let evidence_tests = [
-        "profile_accepts_register_without_original_creation_date",
-        "profile_accepts_register_original_creation_date",
+        "profile_accepts_register_without_and_with_original_creation_date",
+        "profile_accepts_register_without_and_with_original_creation_date",
         "profile_accepts_add_attribute_original_creation_date",
     ];
     for (requirement_id, evidence_test) in ORIGINAL_CREATION_DATE_REQUIREMENTS

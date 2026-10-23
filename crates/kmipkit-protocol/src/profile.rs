@@ -796,6 +796,7 @@ const GET_OPERATION: u32 = 0x0000_000A;
 const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
+const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const PUBLIC_KEY_OBJECT_TYPE: u32 = 3;
@@ -2435,6 +2436,86 @@ fn pgp_key_block_preserves_opaque_value(key_block: &StructureView<'_>) -> bool {
     key_value.with_value(|value| matches!(value, ValueView::ByteString(_)))
 }
 
+fn client_register_original_creation_date_is_datetime_when_used(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(
+                |payload| match field_presence(&payload, REGISTER_ATTRIBUTES) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(attributes) => {
+                        attributes.with_value(|value| match value {
+                            ValueView::Structure(attributes) => {
+                                match field_presence(&attributes, ORIGINAL_CREATION_DATE) {
+                                    FieldPresence::Missing => true,
+                                    FieldPresence::Duplicate => false,
+                                    FieldPresence::Unique(date) => date.with_value(|value| {
+                                        matches!(value, ValueView::DateTime(_))
+                                    }),
+                                }
+                            }
+                            _ => false,
+                        })
+                    }
+                },
+            )
+            .unwrap_or(false)
+    })
+}
+
+fn client_add_original_creation_date_is_datetime_when_used(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != ADD_ATTRIBUTE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| match field_presence(&payload, NEW_ATTRIBUTE) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(new_attribute) => {
+                    new_attribute.with_value(|value| match value {
+                        ValueView::Structure(new_attribute) => {
+                            match field_presence(&new_attribute, ORIGINAL_CREATION_DATE) {
+                                FieldPresence::Missing => true,
+                                FieldPresence::Duplicate => false,
+                                FieldPresence::Unique(date) => {
+                                    date.with_value(|value| matches!(value, ValueView::DateTime(_)))
+                                }
+                            }
+                        }
+                        _ => false,
+                    })
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_register_key_value_location_requires_omitted_key_value(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -3643,6 +3724,57 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_original_creation_date_is_datetime_when_used),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_original_creation_date_is_datetime_when_used),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_add_original_creation_date_is_datetime_when_used),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_original_creation_date",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],

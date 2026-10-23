@@ -89940,6 +89940,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.38"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "OPTIONAL",
@@ -89959,15 +89967,19 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/register.rs",
-        "crates/kmipkit-protocol/src/attribute.rs"
+        "crates/kmipkit-protocol/src/profile.rs::client_register_original_creation_date_is_datetime_when_used",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_register_and_add_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_original_creation_date",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "OASIS KMIP v2.1 §4.38 Table 105 marks Original Creation Date OPTIONAL on Register. The linked test asserts that this Date-Time attribute is omitted from the request while the Register Table 293 prerequisites are present. It does not assert registration success or server state. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
+      "status": "scoped_verified",
+      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.38 Table 105 and §6.1.43 Table 293. It accepts omission and a single Date-Time Original Creation Date when present. The profile and protocol tests establish request serialization only; they do not assert server acceptance or state. No official Test Case is linked and no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-001-002",
@@ -89978,6 +89990,14 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.38"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -89997,15 +90017,19 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/register.rs",
-        "crates/kmipkit-protocol/src/attribute.rs"
+        "crates/kmipkit-protocol/src/profile.rs::client_register_original_creation_date_is_datetime_when_used",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_register_and_add_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_without_and_with_original_creation_date",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_original_creation_date",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "OASIS KMIP v2.1 §4.38 Table 105 and §11.56 permit the client to supply Original Creation Date as Date-Time on Register. The linked test checks serialization of the caller-supplied value; it makes no claim that a server stores it or that the stateful operation succeeds. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
+      "status": "scoped_verified",
+      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.38 Table 105 and §6.1.43 Table 293, accepting one Date-Time Original Creation Date and rejecting a wrong TTLV type. The profile and protocol tests establish request serialization only; they do not assert server acceptance or stored state. No official Test Case is linked and no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-001-003",
@@ -90016,6 +90040,18 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.38"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.7"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -90036,15 +90072,19 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/add_attribute.rs",
-        "crates/kmipkit-protocol/src/attribute.rs"
+        "crates/kmipkit-protocol/src/profile.rs::client_add_original_creation_date_is_datetime_when_used",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_original_creation_date_register_and_add_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_original_creation_date",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_original_creation_date",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "OASIS KMIP v2.1 §4.38 Table 105 and §11.56 permit the client to add a previously omitted Original Creation Date using Add Attribute. The linked test checks the exact Date-Time inside New Attribute serialization only; it makes no claim about server acceptance or stored state. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
+      "status": "scoped_verified",
+      "review_note": "The typed Baseline Client rule checks New Attribute in client Add Attribute requests under KMIP Specification v2.1 §4.38, §6.1.2 Table 167, and §5.7 Table 163. It accepts a Date-Time Original Creation Date and rejects a wrong TTLV type. The profile and protocol tests establish request serialization only; they do not assert server acceptance or object state. No official Test Case is linked and no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.38-003",
