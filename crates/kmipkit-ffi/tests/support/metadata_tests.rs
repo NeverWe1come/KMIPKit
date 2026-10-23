@@ -15,8 +15,9 @@ fn macro_generated_c_exports(source: &str, macro_name: &str) -> Vec<(String, boo
     let invocation_marker = format!("{macro_name}!(");
     let macro_body = source
         .split_once(&definition_marker)
-        .map(|(_, definition)| definition.split("};").next().unwrap_or(""))
-        .unwrap_or("");
+        .map_or("", |(_, definition)| {
+            definition.split("};").next().unwrap_or("")
+        });
     let starts_inside_panic_boundary = macro_body
         .split_once("pub extern \"C\" fn $name")
         .and_then(|(_, signature)| signature.split_once("-> i32 {"))

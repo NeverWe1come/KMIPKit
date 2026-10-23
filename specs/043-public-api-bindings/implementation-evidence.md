@@ -5714,6 +5714,7 @@ to its concrete symbol while checking the shared panic boundary.
 | Green | `c5e12187` | In WSL Ubuntu: `CARGO_TARGET_DIR=/tmp/kmipkit-target-t039 cargo test -p kmipkit-ffi --all-features --lib every_exported_c_function_starts_inside_the_shared_panic_boundary -- --nocapture` | Pass, 1 test; the all-features build compiles the C consumer needed by this test. |
 | Refactor | this commit | `cargo fmt --all --check`; the focused lifecycle/Python export audit tests above; and the WSL FFI test above | Pass; the shared panic-boundary predicate is factored without changing the export contract. |
 | Refactor | this commit | `python -B tools/api_manifest/generate.py --check`; `git diff --check` | Pass; all 12 generated outputs remain current and the patch has no whitespace errors. |
+| Refactor | this commit | In WSL Ubuntu-26.04: `CARGO_TARGET_DIR=/tmp/kmipkit-target-t039 cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Pass; Clippy completed with warnings denied. |
 
 The wider API-manifest discovery run is not a release-gate result: it ran 335
 tests and reported unrelated snapshot/state failures and import errors from the
