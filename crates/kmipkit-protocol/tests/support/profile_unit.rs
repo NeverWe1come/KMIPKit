@@ -9924,6 +9924,7 @@ fn profile_rejects_malformed_original_creation_date() {
 }
 
 const RANDOM_NUMBER_GENERATOR_TAG: u32 = 0x0042_00DE;
+const RNG_PARAMETERS_TAG: u32 = 0x0042_00D9;
 const RNG_ALGORITHM_TAG: u32 = 0x0042_00DA;
 const RANDOM_NUMBER_GENERATOR_ADD_OPERATION: u32 = 0x0000_000D;
 const RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -10050,6 +10051,27 @@ fn profile_rejects_malformed_random_number_generator() {
             .expect_err("RNG Parameters has a mandatory RNG Algorithm");
     assert_eq!(
         missing_algorithm_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let nested_parameters = add_attribute_random_number_generator_request(Value::structure(
+        structure([
+            tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+            tagged(
+                RNG_PARAMETERS_TAG,
+                Value::structure(structure([tagged(
+                    RNG_ALGORITHM_TAG,
+                    Value::enumeration(1),
+                )])),
+            ),
+        ]),
+    ));
+    let nested_parameters_error =
+        table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[1]])
+            .validate_request(&nested_parameters)
+            .expect_err("RNG Parameters members are encoded directly on the attribute");
+    assert_eq!(
+        nested_parameters_error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
 }
