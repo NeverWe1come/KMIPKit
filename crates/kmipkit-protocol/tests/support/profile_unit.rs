@@ -8000,7 +8000,10 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
         .find(|requirement| requirement.requirement_id == CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID)
         .expect("the Certify/Get MAY resolves to generated normative metadata");
 
-    assert_eq!(mapping.source_clause_id, CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.source_clause_id,
+        CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID
+    );
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::OptionalCapability
@@ -8046,7 +8049,10 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
                 .any(|field| field.tag().raw() == UNIQUE_IDENTIFIER_TAG)
         })
         .expect("Get has a Request Payload");
-    assert!(!get_has_unique_identifier, "Get uses the ID Placeholder by omission");
+    assert!(
+        !get_has_unique_identifier,
+        "Get uses the ID Placeholder by omission"
+    );
 
     certify_get_placeholder_profile_result()
         .validate_request(&request)

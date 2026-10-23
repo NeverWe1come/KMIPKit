@@ -68,6 +68,12 @@ const ARCHIVED_LOCATE_BATCH_ID: &[u8] = b"archived-locate-frame";
 const ARCHIVED_RECOVER_BATCH_ID: &[u8] = b"archived-recover-frame";
 const ARCHIVED_GET_BATCH_ID: &[u8] = b"archived-get-frame";
 
+fn get_with_explicit_identifier() -> GetRequest {
+    GetRequest::new().with_unique_identifier(UniqueIdentifier::TextString(
+        "client-requested-object-id".to_owned(),
+    ))
+}
+
 #[derive(Debug, Eq, PartialEq)]
 enum WireValue {
     Structure(Vec<(u32, WireValue)>),
@@ -294,7 +300,7 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
         response,
         request_write_chunks: vec![3, 7],
     });
-    let request = ClientRequest::get(GetRequest::new());
+    let request = ClientRequest::get(get_with_explicit_identifier());
     assert_eq!(format!("{request:?}"), "Get([REDACTED])");
 
     let response = client
@@ -313,8 +319,8 @@ fn get_success_preserves_completed_object_data_in_one_exchange() {
                 .expect("the request reached the fake transport"),
             0,
         ),
-        Some((GET_OPERATION, false)),
-        "an omitted request identifier remains omitted on the wire"
+        Some((GET_OPERATION, true)),
+        "a standalone Get identifies its object explicitly"
     );
     let outcome = response.get(0).expect("one result is returned").outcome();
     assert_eq!(outcome.operation(), ClientOperation::Get);
@@ -365,7 +371,9 @@ fn get_failure_preserves_result_status_reason_and_message_without_retry() {
 
     let response = client
         .execute(
-            ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))),
+            ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(
+                get_with_explicit_identifier(),
+            ))),
             &CodecLimits::defaults(),
         )
         .expect("the operation failure remains a typed Get result");
@@ -413,8 +421,10 @@ fn get_pending_preserves_correlation_and_typed_result_without_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new())))
-        .with_asynchronous_indicator(2);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(
+        get_with_explicit_identifier(),
+    )))
+    .with_asynchronous_indicator(2);
 
     let response = client
         .execute(batch, &CodecLimits::defaults())
@@ -468,7 +478,9 @@ fn get_transport_failures_preserve_delivery_state_without_retry() {
         let (mut client, fake, _) = client_for(script);
         let error = client
             .execute(
-                ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))),
+                ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(
+                    get_with_explicit_identifier(),
+                ))),
                 &CodecLimits::defaults(),
             )
             .expect_err("the scripted transport failure is returned to the caller");
@@ -565,7 +577,7 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         (
             GET_OPERATION,
             LOCATE_GET_BATCH_ID.to_vec(),
-            successful_get_payload("server-resolved-placeholder-id"),
+            successful_get_payload("server-id-z"),
         ),
     ]);
     let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {

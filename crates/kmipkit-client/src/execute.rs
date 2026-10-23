@@ -706,6 +706,7 @@ impl ClientRequest {
             Self::Rekey(request) => request.unique_identifier().is_none(),
             Self::RekeyKeyPair(request) => request.private_key_unique_identifier().is_none(),
             Self::Revoke(request) => request.unique_identifier().is_none(),
+            Self::Get(request) => request.unique_identifier().is_none(),
             Self::Encrypt(request) => request.unique_identifier().is_none(),
             Self::Decrypt(request) => request.unique_identifier().is_none(),
             _ => false,
@@ -713,10 +714,13 @@ impl ClientRequest {
     }
 
     const fn is_id_placeholder_producer(&self) -> bool {
+        // §6.1 lists Locate alongside the create-like operations whose returned
+        // Unique Identifier may populate the server's batch-scoped placeholder.
         matches!(
             self,
             Self::Create(_)
                 | Self::CreateKeyPair(_)
+                | Self::Locate(_)
                 | Self::Recover(_)
                 | Self::Certify(_)
                 | Self::Recertify(_)
