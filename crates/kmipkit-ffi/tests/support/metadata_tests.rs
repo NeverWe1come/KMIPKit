@@ -6,6 +6,10 @@ const ERROR_CATEGORY_VALIDATION: u32 = 1;
 const ERROR_CAUSE_INVALID_INPUT: u32 = 1;
 const DELIVERY_NONE: u32 = 0;
 
+fn starts_inside_shared_panic_boundary(body: &str) -> bool {
+    body.trim_start().starts_with("ffi_entrypoint(||")
+}
+
 fn macro_generated_c_exports(source: &str, macro_name: &str) -> Vec<(String, bool)> {
     let definition_marker = format!("macro_rules! {macro_name}");
     let invocation_marker = format!("{macro_name}!(");
@@ -17,8 +21,7 @@ fn macro_generated_c_exports(source: &str, macro_name: &str) -> Vec<(String, boo
         .split_once("pub extern \"C\" fn $name")
         .and_then(|(_, signature)| signature.split_once("-> i32 {"))
         .is_some_and(|(_, body)| {
-            macro_body.contains("#[unsafe(no_mangle)]")
-                && body.trim_start().starts_with("ffi_entrypoint(||")
+            macro_body.contains("#[unsafe(no_mangle)]") && starts_inside_shared_panic_boundary(body)
         });
 
     source
@@ -408,9 +411,7 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
             let body_start = function.find('{')?;
             Some((
                 symbol,
-                function[body_start + 1..]
-                    .trim_start()
-                    .starts_with("ffi_entrypoint(||"),
+                starts_inside_shared_panic_boundary(&function[body_start + 1..]),
             ))
         })
         .filter(|(symbol, _)| symbol != "$name")

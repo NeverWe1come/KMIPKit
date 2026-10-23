@@ -5691,3 +5691,32 @@ does not close platform CI, workspace coverage, or release verification gates.
 | Refactor | this commit | From `bindings/python`, with `PYTHONPATH=src` and `KMIPKIT_NATIVE_LIBRARY=C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\target\debug\kmipkit_ffi.dll`: ` .\.venv-codex\Scripts\python.exe -m pytest tests\test_lifecycle_operations.py tests\test_lifecycle_native_integration.py -q` | Pass, 13 tests. |
 | Refactor | this commit | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_lifecycle_parity_manifest tools.api_manifest.tests.test_operation_readiness -v`; `python -B tools/api_manifest/generate.py --check` | Pass, 19 tests; all 12 generated outputs verified. |
 | Refactor | this commit | `cargo fmt --all --check`; `git diff --check` | Pass. |
+
+### T039 exact-head CI contract follow-up (2026-10-23)
+
+The exact-head CI run exposed three T039 contract regressions: the Python
+Ping/Query positional-field test still sliced the pre-T039 tail, the public API
+audit lacked exact exclusions for generated dataclass members on the four new
+lifecycle response types, and the Rust panic-boundary inventory did not expand
+the two macros that generate eight new C exports. The positional test now
+asserts both the preserved pre-T039 tail and the four appended lifecycle
+fields. The manifest records each generated Python dataclass artifact as an
+exact approved exclusion, and the FFI contract resolves each macro invocation
+to its concrete symbol while checking the shared panic boundary.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `b861bdb9` | `python -B -m unittest tools.api_manifest.tests.test_lifecycle_parity_manifest -v` | Expected failure: 2 existing tests passed and the new exclusion contract reported all 40 missing generated dataclass records. GitHub Actions run `39999362361` also failed the stale positional-field assertion and the Rust macro-generated export inventory. |
+| Green | `c5e12187` | `python -B -m unittest tools.api_manifest.tests.test_lifecycle_parity_manifest tools.api_manifest.tests.test_t076_client_mapping.T076ClientMappingTests.test_remaining_python_exports_are_mapped_or_exactly_excluded -v` | Pass, 4 tests, including the lifecycle exclusion contract and Python export audit. |
+| Green | `c5e12187` | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 pinned generated outputs verified. |
+| Green | `c5e12187` | `bindings/python/.venv-candidate-win/Scripts/python.exe -m pytest -q bindings/python/tests/test_query_ping_operation.py::test_ping_query_result_fields_follow_existing_positional_fields` with `KMIPKIT_NATIVE_LIBRARY` set to the built native library | Pass, 1 test. |
+| Green | `c5e12187` | `python -m unittest discover -s scripts/tests -p 'test_*.py' -v` | Pass, 298 tests. |
+| Green | `c5e12187` | In WSL Ubuntu: `CARGO_TARGET_DIR=/tmp/kmipkit-target-t039 cargo test -p kmipkit-ffi --all-features --lib every_exported_c_function_starts_inside_the_shared_panic_boundary -- --nocapture` | Pass, 1 test; the all-features build compiles the C consumer needed by this test. |
+| Refactor | this commit | `cargo fmt --all --check`; the focused lifecycle/Python export audit tests above; and the WSL FFI test above | Pass; the shared panic-boundary predicate is factored without changing the export contract. |
+| Refactor | this commit | `python -B tools/api_manifest/generate.py --check`; `git diff --check` | Pass; all 12 generated outputs remain current and the patch has no whitespace errors. |
+
+The wider API-manifest discovery run is not a release-gate result: it ran 335
+tests and reported unrelated snapshot/state failures and import errors from the
+bare discovery environment. The designated CI script-test command and all
+focused T039 checks pass. This follow-up does not change dependencies or
+advisory exceptions.
