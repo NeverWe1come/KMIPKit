@@ -7916,11 +7916,21 @@ const CERTIFY_OPERATION: u32 = 0x0000_0006;
 const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
 const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-001";
 const CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
+const CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-002";
+const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str =
+    "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 
 fn certify_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
         requirement_ids: vec![CERTIFY_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn certify_omitted_value_identifier_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID.to_owned()],
     }
 }
 
@@ -8075,4 +8085,93 @@ fn profile_maps_omitted_certify_certificate_request_object_as_optional_capabilit
     result
         .validate_request(&request)
         .expect("the Baseline profile accepts the valid omitted-object path");
+}
+
+#[test]
+fn profile_maps_omitted_certify_request_identifier_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.6 paragraph 2 requires an explicit Unique
+    // Identifier when Certificate Request Value is omitted; KMIPKIT-DEC-013
+    // resolves the conflicting Table 179 ID Placeholder sentence.
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| {
+            mapping.requirement_id == CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID
+        })
+        .expect("the conditional Certify Unique Identifier SHALL has a typed mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| {
+            requirement.requirement_id == CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID
+        })
+        .expect("the conditional Certify SHALL resolves to normative metadata");
+
+    assert_eq!(
+        mapping.source_clause_id,
+        CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(CERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::PositiveBehavior
+            && evidence.test_id.ends_with(
+                "profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
+            )
+    }));
+}
+
+#[test]
+fn profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier() {
+    let request = request_message_with_operation_payload(
+        CERTIFY_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("public-key".to_owned()),
+        )]),
+    );
+
+    certify_omitted_value_identifier_profile_result()
+        .validate_request(&request)
+        .expect("omitted Certificate Request Value is permitted with explicit Unique Identifier");
+}
+
+#[test]
+fn profile_rejects_omitted_certify_request_value_without_unique_identifier() {
+    // A raw Request Message cannot substitute a preceding batch item's
+    // ID Placeholder for the public key identifier required by DEC-013.
+    let request = request_message_with_operation_payload(CERTIFY_OPERATION, Structure::new());
+    let error = certify_omitted_value_identifier_profile_result()
+        .validate_request(&request)
+        .expect_err("omitting Certificate Request Value requires explicit Unique Identifier");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
+fn profile_accepts_certify_request_value_without_unique_identifier() {
+    let request = request_message_with_operation_payload(
+        CERTIFY_OPERATION,
+        structure([tagged(
+            CERTIFICATE_REQUEST_VALUE_TAG,
+            Value::byte_string(vec![0x30, 0x00]),
+        )]),
+    );
+
+    certify_omitted_value_identifier_profile_result()
+        .validate_request(&request)
+        .expect("the Unique Identifier condition does not apply when request material is present");
 }
