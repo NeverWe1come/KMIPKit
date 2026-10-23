@@ -5221,3 +5221,11 @@ Two focused RNG evaluator tests exercise request absence, unrelated operations, 
 | Formatting and patch hygiene | `cargo fmt --all --check`; `git diff --check` | PASS. |
 
 The full normative-catalog Python suite was not rerun locally because the previous hosted run took over 12 minutes; the three failing regression cases were run directly and passed. The exact changed-Rust aggregate and all-platform CI remain to be confirmed on the next pushed head. Baseline remains at 81/265 typed mappings, with 184 unmapped; three mandatory fixtures remain blocked and 77 profile cases remain unavailable. No profile-conformance claim is made.
+
+### T040 follow-up — Key Wrapping Data key-information requirement (2026-10-23)
+
+KMIP Specification v2.1 §3.3/Table 14 requires Encryption Key Information, MAC/Signature Key Information, or both whenever Key Wrapping Data is used. The new profile regression covers wrapped Register and Import requests, the conditional unwrapped path, and rejection of wrapped Secret Data and Register Key Blocks without the required key information. It makes no claim about performing cryptographic wrapping or server acceptance.
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red — require the typed §3.3 mapping | Local regression `profile_maps_required_key_information_when_wrapping_data_is_supplied`; `cargo test -p kmipkit-protocol profile_maps_required_key_information_when_wrapping_data_is_supplied -- --nocapture` | Expected failure: `MissingRuleMapping` for `KMIPKIT-REQ-SPEC-3.3-004` on the valid wrapped Register request. |

@@ -5931,6 +5931,53 @@ fn valid_secret_data_wrapping() -> Value {
     ]))
 }
 
+fn register_wrapped_key_without_wrapping_key_information() -> crate::RequestMessage {
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+    const WRAPPING_METHOD: u32 = 0x0042_009E;
+    const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
+    const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+
+    request_message_with_operation_payload(
+        0x0000_0003,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(2)),
+            tagged(
+                ATTRIBUTES,
+                Value::structure(structure([
+                    tagged(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                    tagged(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                ])),
+            ),
+            tagged(
+                SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    KEY_BLOCK,
+                    Value::structure(structure([
+                        tagged(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                        tagged(
+                            KEY_VALUE,
+                            Value::byte_string(b"synthetic-wrapped-key".to_vec()),
+                        ),
+                        tagged(
+                            KEY_WRAPPING_DATA,
+                            Value::structure(structure([tagged(
+                                WRAPPING_METHOD,
+                                Value::enumeration(1),
+                            )])),
+                        ),
+                    ])),
+                )])),
+            ),
+        ]),
+    )
+}
+
 #[test]
 fn typed_rule_evaluators_fail_closed_without_a_request() {
     // KMIP Specification v2.1 §§2.7, 4.14, and 4.27; the rules must fail closed
@@ -6015,6 +6062,69 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
     assert_eq!(
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
+}
+
+#[test]
+fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
+    // KMIP Specification v2.1 §3.3/Table 14 requires Encryption Key Information,
+    // MAC/Signature Key Information, or both whenever Key Wrapping Data is used.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.3-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    result
+        .validate_request(&register_wrapped_key_value_request(Value::enumeration(2)))
+        .expect("the client can Register wrapped key data with key information");
+    result
+        .validate_request(&secret_data_import_request(
+            Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+            Some(valid_secret_data_wrapping()),
+        ))
+        .expect("the client can Import wrapped Secret Data with key information");
+    result
+        .validate_request(&secret_data_import_request(
+            Value::structure(Structure::new()),
+            None,
+        ))
+        .expect("the conditional key-information requirement does not require wrapping");
+
+    let malformed_import = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(Value::structure(structure([tagged(
+            0x0042_009E,
+            Value::enumeration(1),
+        )]))),
+    );
+    let error = result
+        .validate_request(&malformed_import)
+        .expect_err("wrapped Secret Data requires Encryption or MAC/Signature Key Information");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
+    );
+
+    let malformed_register = register_wrapped_key_without_wrapping_key_information();
+    let error = result
+        .validate_request(&malformed_register)
+        .expect_err("wrapped Register Key Block requires key information");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
     );
 }
 
