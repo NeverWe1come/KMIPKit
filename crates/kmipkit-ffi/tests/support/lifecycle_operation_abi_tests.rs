@@ -23,6 +23,105 @@ fn lifecycle_constructors_preserve_optional_identifier_omission() {
     assert_lifecycle_request!(kmipkit_client_batch_item_recover, Recover,);
 }
 
+macro_rules! assert_lifecycle_request_identifier {
+    ($call:ident, $variant:ident, $identifier:expr, $expected:expr $(,)?) => {{
+        let mut item = ptr::null_mut();
+        let identifier = $identifier;
+        assert_eq!(SUCCESS, $call(&raw const identifier, &raw mut item));
+        let handle = reference_handle(item, Kind::BatchItem)
+            .expect("lifecycle constructor returns a valid item handle");
+        let HandleValue::BatchItem(batch_item) = &handle.value else {
+            panic!("the constructor returns a batch item");
+        };
+        let ClientRequest::$variant(request) = batch_item.request() else {
+            panic!("the batch item preserves its lifecycle operation");
+        };
+        assert_eq!(request.unique_identifier(), Some(&$expected));
+        kmipkit_client_batch_item_release(item);
+    }};
+}
+
+#[test]
+fn lifecycle_constructors_preserve_supplied_identifier_kind_and_value() {
+    let mut activate_text = b"activate-target".to_vec();
+    let activate_identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier size fits ABI field"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: activate_text.as_ptr(),
+        text_length: u64::try_from(activate_text.len()).expect("text length fits ABI"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    let expected_activate = UniqueIdentifier::TextString("activate-target".to_owned());
+    let archive_identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier size fits ABI field"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0x8fed_cba9,
+        integer_value: 0,
+    };
+    let expected_archive = UniqueIdentifier::Enumeration(0x8fed_cba9);
+    let destroy_identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier size fits ABI field"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER,
+        reserved: 0,
+        text_data: ptr::null(),
+        text_length: 0,
+        enumeration_value: 0,
+        integer_value: -723,
+    };
+    let expected_destroy = UniqueIdentifier::Integer(-723);
+    let mut recover_text = b"recover-target".to_vec();
+    let recover_identifier = kmipkit_unique_identifier_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_unique_identifier_v1_t>())
+            .expect("identifier size fits ABI field"),
+        abi_version: 1,
+        kind: crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        reserved: 0,
+        text_data: recover_text.as_ptr(),
+        text_length: u64::try_from(recover_text.len()).expect("text length fits ABI"),
+        enumeration_value: 0,
+        integer_value: 0,
+    };
+    let expected_recover = UniqueIdentifier::TextString("recover-target".to_owned());
+
+    assert_lifecycle_request_identifier!(
+        kmipkit_client_batch_item_activate,
+        Activate,
+        activate_identifier,
+        expected_activate
+    );
+    activate_text.fill(b'x');
+    assert_lifecycle_request_identifier!(
+        kmipkit_client_batch_item_archive,
+        Archive,
+        archive_identifier,
+        expected_archive
+    );
+    assert_lifecycle_request_identifier!(
+        kmipkit_client_batch_item_destroy,
+        Destroy,
+        destroy_identifier,
+        expected_destroy
+    );
+    assert_lifecycle_request_identifier!(
+        kmipkit_client_batch_item_recover,
+        Recover,
+        recover_identifier,
+        expected_recover
+    );
+    recover_text.fill(b'x');
+}
+
 macro_rules! assert_successful_lifecycle_response {
     ($request:expr, $operation:expr, $getter:ident) => {{
         let identifier = b"lifecycle-response";

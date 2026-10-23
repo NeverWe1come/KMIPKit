@@ -191,6 +191,10 @@ OPERATION_PARITY_EVIDENCE = {
         "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
     },
 }
+NATIVE_OPERATION_PARITY_EVIDENCE = {
+    "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+    "bindings/python/tests/test_lifecycle_native_integration.py",
+}
 
 
 class LifecycleParityManifestTests(unittest.TestCase):
@@ -230,7 +234,15 @@ class LifecycleParityManifestTests(unittest.TestCase):
                 self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
                 operation_evidence = OPERATION_PARITY_EVIDENCE[expected["name"]]
                 self.assertTrue(operation_evidence <= set(operation["parityEvidenceIds"]))
-                for evidence in PARITY_EVIDENCE | operation_evidence:
+                self.assertTrue(
+                    NATIVE_OPERATION_PARITY_EVIDENCE
+                    <= set(operation["parityEvidenceIds"])
+                )
+                for evidence in (
+                    PARITY_EVIDENCE
+                    | operation_evidence
+                    | NATIVE_OPERATION_PARITY_EVIDENCE
+                ):
                     self.assertTrue((ROOT / evidence).is_file(), evidence)
 
                 actual = {language: set() for language in LANGUAGES}
