@@ -8642,6 +8642,7 @@ fn profile_maps_revoke_compromise_occurrence_date_shall_not_rule() {
 }
 
 #[test]
+// Normative sources: KMIP Specification v2.1 §4.47 Table 123 and §6.1.44 Table 295.
 fn profile_maps_revoke_revocation_message_as_optional_capability() {
     for requirement_id in REVOKE_MESSAGE_REQUIREMENT_IDS {
         let mapping = TYPED_RULE_MAPPINGS
@@ -8659,14 +8660,17 @@ fn profile_maps_revoke_revocation_message_as_optional_capability() {
             );
             assert!(mapping.test_evidence.iter().any(|evidence| {
                 evidence.kind == RuleTestKind::OptionalCapabilityUsable
-                    && evidence.test_id.ends_with(
-                        "profile_accepts_optional_revoke_revocation_message",
-                    )
+                    && evidence
+                        .test_id
+                        .ends_with("profile_accepts_optional_revoke_revocation_message")
             }));
         }
     }
 }
 
+// KMIP Specification v2.1 §4.47 Table 123 makes Revocation Message OPTIONAL
+// and permits caller-supplied audit context; §6.1.44 Table 295 places
+// Revocation Reason in the client-originated Revoke request.
 #[test]
 fn profile_accepts_optional_revoke_revocation_message() {
     let result = revoke_message_profile_result();
@@ -8688,6 +8692,19 @@ fn profile_accepts_optional_revoke_revocation_message() {
 }
 
 #[test]
+// KMIP Specification v2.1 §4.47 Table 123 marks the field OPTIONAL.
+fn profile_accepts_revoke_without_revocation_message() {
+    let request = revoke_profile_request([revoke_reason_item(Value::enumeration(1))], false);
+
+    assert!(
+        revoke_message_profile_result()
+            .validate_request(&request)
+            .is_ok()
+    );
+}
+
+#[test]
+// KMIP Specification v2.1 §4.47 Table 123 defines Revocation Message as Text String.
 fn profile_rejects_malformed_revoke_revocation_message() {
     let result = revoke_message_profile_result();
     let request = revoke_profile_request(

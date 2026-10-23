@@ -768,6 +768,7 @@ const VALIDITY_DATE: u32 = 0x0042_009A;
 const VALIDATE_CERTIFICATE: u32 = 0x0042_0013;
 const REVOCATION_REASON: u32 = 0x0042_0081;
 const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
+const REVOCATION_MESSAGE: u32 = 0x0042_0080;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
 const KEY_COMPROMISE_REASON: u32 = 2;
 const CA_COMPROMISE_REASON: u32 = 3;
@@ -2604,6 +2605,44 @@ fn client_compromise_occurrence_date_only_for_key_or_ca_compromise(
     })
 }
 
+fn client_revoke_revocation_message_is_text_when_used(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REVOKE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(
+                |payload| match field_presence(&payload, REVOCATION_REASON) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(reason) => reason.with_value(|value| {
+                        let ValueView::Structure(reason) = value else {
+                            return false;
+                        };
+                        match field_presence(&reason, REVOCATION_MESSAGE) {
+                            FieldPresence::Missing => true,
+                            FieldPresence::Duplicate => false,
+                            FieldPresence::Unique(message) => message
+                                .with_value(|value| matches!(value, ValueView::TextString(_))),
+                        }
+                    }),
+                },
+            )
+            .unwrap_or(false)
+    })
+}
+
 fn client_validate_validity_date_is_usable(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -3599,6 +3638,48 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_revoke_revocation_message_is_text_when_used),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_revoke_revocation_message_is_text_when_used),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],

@@ -90506,6 +90506,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.47"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.44"
         }
       ],
       "source_keyword": "OPTIONAL",
@@ -90513,23 +90517,33 @@
       "subject": "Revocation Message",
       "summary": "The client may omit the optional Revocation Message field.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
+        "KMIPKIT-ELEM-OP-C2S-REVOKE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-MESSAGE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/revoke.rs"
+        "crates/kmipkit-protocol/src/revoke.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_revoke_revocation_message_is_text_when_used",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_emits_table_295_fields_in_order_and_preserves_open_reason"
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_revoke_revocation_message_as_optional_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_revoke_revocation_message"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Specification v2.1 §4.47 marks Revocation Message OPTIONAL. The linked test shows a Revoke request can omit that field; it makes no claim about server audit behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance."
+      "status": "scoped_verified",
+      "review_note": "The typed Baseline Client rule inspects outbound Revoke requests under KMIP Specification v2.1 §4.47. It accepts omission and one Text String Revocation Message, rejects duplicate or malformed message fields, and does not interpret or log the caller-supplied audit content. The protocol encoder and profile tests are derived local evidence; no official Test Case or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-001-002",
@@ -90540,6 +90554,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.47"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.44"
         }
       ],
       "source_keyword": "MAY",
@@ -90547,23 +90565,33 @@
       "subject": "Revocation Message content",
       "summary": "The client may supply additional audit-trail information explaining the revocation reason.",
       "role": "client",
-      "direction": "unclear",
+      "direction": "client_to_server",
       "condition": null,
       "scope_state": "client_1_0",
-      "element_ids": [],
+      "element_ids": [
+        "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
+        "KMIPKIT-ELEM-OP-C2S-REVOKE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-MESSAGE"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/revoke.rs"
+        "crates/kmipkit-protocol/src/revoke.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_revoke_revocation_message_is_text_when_used",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure"
+        "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_revoke_revocation_message_as_optional_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_optional_revoke_revocation_message",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_revoke_without_revocation_message",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_revoke_revocation_message"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Specification v2.1 §4.47 permits a Revocation Message to contain additional revocation context. The linked test shows caller-supplied audit text is encoded inside the Revoke request; it does not claim that a server stores or logs the text. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance."
+      "status": "scoped_verified",
+      "review_note": "The typed Baseline Client rule inspects outbound Revoke requests under KMIP Specification v2.1 §4.47. It accepts omission and one Text String Revocation Message, rejects duplicate or malformed message fields, and does not interpret or log the caller-supplied audit content. The protocol encoder and profile tests are derived local evidence; no official Test Case or profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-002",
