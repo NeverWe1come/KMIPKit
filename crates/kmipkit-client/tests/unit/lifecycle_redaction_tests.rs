@@ -80,7 +80,9 @@ fn lifecycle_errors_and_debug_never_include_result_text_or_raw_response_body() {
     let response = client
         .execute(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Activate(
-                ActivateRequest::new(None),
+                ActivateRequest::new(Some(UniqueIdentifier::TextString(
+                    LIFECYCLE_ID_SENTINEL.to_owned(),
+                ))),
             ))),
             &CodecLimits::defaults(),
         )
@@ -99,7 +101,9 @@ fn lifecycle_errors_and_debug_never_include_result_text_or_raw_response_body() {
     let error = client
         .execute(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::Recover(
-                RecoverRequest::new(None),
+                RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                    LIFECYCLE_ID_SENTINEL.to_owned(),
+                ))),
             ))),
             &CodecLimits::defaults(),
         )

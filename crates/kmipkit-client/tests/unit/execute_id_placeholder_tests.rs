@@ -62,4 +62,11 @@ fn create_split_key_can_select_a_preceding_placeholder_before_producing_its_resu
 
     assert!(request.uses_id_placeholder());
     assert!(request.is_id_placeholder_producer());
+
+    let batch = super::ClientBatch::new(super::ClientBatchItem::new(request));
+    assert_eq!(
+        super::validate_id_placeholder_eligibility(&batch),
+        Err(super::BatchValidationError::IneligibleIdPlaceholder),
+        "the request cannot consume a placeholder produced only by itself"
+    );
 }

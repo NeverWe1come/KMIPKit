@@ -39,7 +39,7 @@ use kmipkit_protocol::{
     RngRetrieveResponse, RngSeedRequest, RngSeedResponse, SetAttributeRequest,
     SetAttributeResponse, SetConstraintsRequest, SetConstraintsResponse, SetDefaultsRequest,
     SetDefaultsResponse, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse,
+    SignatureVerifyResponse, UniqueIdentifier,
 };
 use kmipkit_protocol::{InteropRequest, InteropResponse, LogRequest, LogResponse};
 use kmipkit_protocol::{ValidateRequest, ValidateResponse};
@@ -211,6 +211,8 @@ const ASYNCHRONOUS_PROHIBITED: u32 = 3;
 const BATCH_ERROR_CONTINUATION_STOP: u32 = 2;
 const ENUMERATION_EXTENSION_MIN: u32 = 0x8000_0000;
 const ENUMERATION_EXTENSION_MAX: u32 = 0x8fff_ffff;
+// KMIP v2.1 §11.58, Table 489 assigns Enumeration 1 to ID Placeholder.
+const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 const RESULT_STATUS_PENDING: u32 = 2;
 
 /// One request variant admitted by the typed client execution path.
@@ -702,28 +704,84 @@ impl ClientRequest {
         }
     }
 
-    fn omits_identifier_for_id_placeholder(&self) -> bool {
+    // Keep consumers aligned with KMIP v2.1 §§6.1.1–6.1.56 operation payload
+    // descriptions: some allow omission only when the operation-specific field
+    // is absent, while enum-backed fields also allow explicit Enumeration(1).
+    fn uses_id_placeholder(&self) -> bool {
         match self {
-            Self::Check(request) => request.unique_identifier().is_none(),
-            Self::ObtainLease(request) => request.unique_identifier().is_none(),
-            Self::Recertify(request) => request.unique_identifier().is_none(),
-            Self::Rekey(request) => request.unique_identifier().is_none(),
-            Self::RekeyKeyPair(request) => request.private_key_unique_identifier().is_none(),
-            Self::Revoke(request) => request.unique_identifier().is_none(),
-            Self::Get(request) => request.unique_identifier().is_none(),
-            Self::Encrypt(request) => request.unique_identifier().is_none(),
-            Self::Decrypt(request) => request.unique_identifier().is_none(),
+            Self::Activate(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::AddAttribute(request) => request.unique_identifier().is_none(),
+            Self::AdjustAttribute(request) => request.unique_identifier().is_none(),
+            Self::Archive(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Check(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::DeleteAttribute(request) => request.unique_identifier().is_none(),
+            Self::Destroy(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::ObtainLease(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::Recertify(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::Rekey(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::RekeyKeyPair(request) => {
+                Self::id_placeholder_is_selected(request.private_key_unique_identifier())
+            }
+            Self::Recover(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Revoke(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Get(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::GetAttributes(request) => request.unique_identifier().is_none(),
+            Self::GetAttributeList(request) => request.unique_identifier().is_none(),
+            Self::GetUsageAllocation(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            // Create Split Key uses an omitted identifier to create a new
+            // split key. Only an explicit Enumeration(1) selects the prior
+            // Batch Item's identifier.
+            Self::CreateSplitKey(request) => matches!(
+                request.unique_identifier(),
+                Some(UniqueIdentifier::Enumeration(
+                    ID_PLACEHOLDER_ENUMERATION_VALUE
+                ))
+            ),
+            Self::ModifyAttribute(request) => request.unique_identifier().is_none(),
+            Self::Export(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::SetAttribute(request) => request.unique_identifier().is_none(),
+            Self::Encrypt(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Decrypt(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::Mac(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::MacVerify(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
+            Self::Sign(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            Self::SignatureVerify(request) => {
+                Self::id_placeholder_is_selected(request.unique_identifier())
+            }
             _ => false,
         }
     }
 
+    fn id_placeholder_is_selected(identifier: Option<&UniqueIdentifier>) -> bool {
+        matches!(
+            identifier,
+            None | Some(UniqueIdentifier::Enumeration(
+                ID_PLACEHOLDER_ENUMERATION_VALUE
+            ))
+        )
+    }
+
     const fn is_id_placeholder_producer(&self) -> bool {
-        // §6.1 lists Locate alongside the create-like operations whose returned
-        // Unique Identifier may populate the server's batch-scoped placeholder.
+        // §6.1 lists the general producers; §§6.1.10, 6.1.14, and 6.1.18
+        // additionally specify Create Split Key, Derive Key, and Export.
+        // Locate's actual placeholder value remains dependent on its response.
         matches!(
             self,
             Self::Create(_)
                 | Self::CreateKeyPair(_)
+                | Self::CreateSplitKey(_)
+                | Self::DeriveKey(_)
+                | Self::Export(_)
                 | Self::Locate(_)
                 | Self::Recover(_)
                 | Self::Certify(_)
@@ -5761,9 +5819,7 @@ impl fmt::Display for BatchValidationError {
             Self::EmptyBatch => "client batch must contain an item",
             Self::MissingBatchItemId => "multi-item request requires every batch item ID",
             Self::DuplicateBatchItemId => "request batch item IDs must be unique",
-            Self::IneligibleIdPlaceholder => {
-                "omitted Unique Identifier has no eligible preceding ID Placeholder producer"
-            }
+            Self::IneligibleIdPlaceholder => "ID Placeholder has no eligible preceding batch item",
             Self::InvalidAsynchronousIndicator => "asynchronous indicator is unassigned",
             Self::RepeatedBatchErrorContinuation => "batch error continuation is repeated",
             Self::SingleItemBatchErrorContinuation => {
@@ -5820,9 +5876,7 @@ fn validate_id_placeholder_eligibility(batch: &ClientBatch) -> Result<(), BatchV
     let mut eligible_producer_seen = false;
     for item in &batch.items {
         // Evaluate consumers against the prefix before recording the current item.
-        if item.request.omits_identifier_for_id_placeholder()
-            && !(batch_ordered && eligible_producer_seen)
-        {
+        if item.request.uses_id_placeholder() && !(batch_ordered && eligible_producer_seen) {
             return Err(BatchValidationError::IneligibleIdPlaceholder);
         }
         eligible_producer_seen |= item.request.is_id_placeholder_producer();

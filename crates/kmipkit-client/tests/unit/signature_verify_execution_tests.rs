@@ -98,6 +98,7 @@ fn client(response: Vec<u8>) -> (Client, Rc<RefCell<ExchangeState>>) {
 fn request() -> ClientRequest {
     ClientRequest::signature_verify(
         SignatureVerifyRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("verification-key".to_owned()))
             .with_signature_data(SecretBytes::new(b"opaque-signature".to_vec())),
     )
 }
@@ -281,6 +282,9 @@ fn request_table_337_multipart_fields_reach_the_fake_transport_unchanged() {
         .execute(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::signature_verify(
                 SignatureVerifyRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString(
+                        "verification-key".to_owned(),
+                    ))
                     .with_correlation_value(SecretBytes::new(correlation.to_vec()))
                     .with_init_indicator(true)
                     .with_final_indicator(false),
@@ -297,6 +301,10 @@ fn request_table_337_multipart_fields_reach_the_fake_transport_unchanged() {
     assert_eq!(
         fields,
         [
+            (
+                UNIQUE_IDENTIFIER,
+                CapturedSignatureVerifyField::Text("verification-key".to_owned()),
+            ),
             (
                 CORRELATION_VALUE,
                 CapturedSignatureVerifyField::Bytes(correlation.to_vec()),
@@ -380,6 +388,7 @@ fn client_errors_retain_nonfinal_validity_indicator_response_ttlv() {
     ]);
     let (mut client, _) = client(response_with_payload(payload));
     let request = SignatureVerifyRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString("verification-key".to_owned()))
         .with_correlation_value(SecretBytes::new(b"previous-part".to_vec()))
         .with_init_indicator(false)
         .with_final_indicator(false);
@@ -550,6 +559,7 @@ fn reordered_batch_responses_keep_each_requests_multipart_indicator_context() {
     let (mut client, state) = client(reordered_batch_response_bytes());
     let multipart = ClientRequest::signature_verify(
         SignatureVerifyRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("verification-key".to_owned()))
             .with_correlation_value(SecretBytes::new(b"previous-part".to_vec()))
             .with_init_indicator(false)
             .with_final_indicator(false),

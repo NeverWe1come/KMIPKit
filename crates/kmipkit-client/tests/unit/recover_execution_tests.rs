@@ -141,7 +141,12 @@ fn recover_wire_code_matches_kmip_table_470() {
         response,
         request_write_chunks: vec![4],
     });
-    let result = client.recover(RecoverRequest::new(None), &CodecLimits::defaults());
+    let result = client.recover(
+        RecoverRequest::new(Some(UniqueIdentifier::TextString(
+            "recover-test-object".to_owned(),
+        ))),
+        &CodecLimits::defaults(),
+    );
 
     let request = request.borrow();
     assert_recover_request(
@@ -149,7 +154,7 @@ fn recover_wire_code_matches_kmip_table_470() {
             .as_ref()
             .expect("the fake transport captured the request")
             .as_slice(),
-        None,
+        Some("recover-test-object"),
     );
     assert!(result.is_ok());
 }
@@ -249,7 +254,7 @@ fn enumeration_value(item: &Item) -> Option<u32> {
 fn recover_success_returns_completed_result_and_leaves_get_explicit() {
     for (request_identifier, response_identifier) in [
         (Some("requested-object"), "server-returned-object"),
-        (None, "server-returned-placeholder-object"),
+        (Some("another-requested-object"), "server-returned-object"),
     ] {
         let response = response_bytes(
             SUCCESS,
@@ -326,7 +331,12 @@ fn recover_failure_preserves_common_result_and_does_not_retry() {
     });
 
     let response = client
-        .recover(RecoverRequest::new(None), &CodecLimits::defaults())
+        .recover(
+            RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                "recover-test-object".to_owned(),
+            ))),
+            &CodecLimits::defaults(),
+        )
         .expect("a valid server Failure remains a Recover result");
     let outcome = response.outcome();
     let typed = outcome
@@ -372,7 +382,12 @@ fn malformed_recover_success_is_a_redacted_protocol_error_after_one_exchange() {
         });
 
         let error = client
-            .recover(RecoverRequest::new(None), &CodecLimits::defaults())
+            .recover(
+                RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                    "recover-test-object".to_owned(),
+                ))),
+                &CodecLimits::defaults(),
+            )
             .expect_err("a successful Recover response needs one Unique Identifier");
 
         assert_eq!(error.category(), ClientErrorCategory::Protocol);
@@ -406,7 +421,9 @@ fn recover_pending_preserves_exact_correlation_without_poll_or_follow_up() {
         response,
         request_write_chunks: Vec::new(),
     });
-    let typed_request = ClientRequest::Recover(RecoverRequest::new(None));
+    let typed_request = ClientRequest::Recover(RecoverRequest::new(Some(
+        UniqueIdentifier::TextString("recover-test-object".to_owned()),
+    )));
     let batch = ClientBatch::new(
         ClientBatchItem::new(typed_request).with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
     )
@@ -474,8 +491,10 @@ fn caller_issues_poll_after_recover_pending_with_the_returned_correlation() {
     let recovered = client
         .execute(
             ClientBatch::new(
-                ClientBatchItem::new(ClientRequest::Recover(RecoverRequest::new(None)))
-                    .with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
+                ClientBatchItem::new(ClientRequest::Recover(RecoverRequest::new(Some(
+                    UniqueIdentifier::TextString("recover-test-object".to_owned()),
+                ))))
+                .with_unique_batch_item_id(REQUEST_BATCH_ID.to_vec()),
             )
             .with_asynchronous_indicator(1),
             &CodecLimits::defaults(),
@@ -531,7 +550,12 @@ fn recover_partial_write_failure_preserves_possibly_sent_delivery_without_retry(
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 2 });
 
     let error = client
-        .recover(RecoverRequest::new(None), &CodecLimits::defaults())
+        .recover(
+            RecoverRequest::new(Some(UniqueIdentifier::TextString(
+                "recover-test-object".to_owned(),
+            ))),
+            &CodecLimits::defaults(),
+        )
         .expect_err("a partial Recover request write returns a transport error");
 
     assert_eq!(error.category(), ClientErrorCategory::Transport);

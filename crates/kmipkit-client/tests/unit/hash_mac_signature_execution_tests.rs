@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 use kmipkit_protocol::{
     HashRequest, MacRequest, MacVerifyRequest, OperationData, SecretBytes, SignRequest,
-    SignatureVerifyRequest,
+    SignatureVerifyRequest, UniqueIdentifier,
 };
 use kmipkit_transport::{Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode};
@@ -43,6 +43,10 @@ const HASHING_ALGORITHM: u32 = 0x0042_0038;
 const HASH_DATA: u32 = 0x0042_00C2;
 const MAC_DATA: u32 = 0x0042_00C4;
 const SIGNATURE_DATA: u32 = 0x0042_00C3;
+
+fn test_identifier() -> UniqueIdentifier {
+    UniqueIdentifier::TextString("execution-test-key".to_owned())
+}
 
 #[derive(Clone, Copy)]
 struct OperationFixture {
@@ -84,13 +88,24 @@ impl OperationFixture {
                 )]))
                 .with_data(bytes()),
             ),
-            MAC => ClientRequest::mac(MacRequest::new().with_data(bytes())),
-            MAC_VERIFY => ClientRequest::mac_verify(
-                MacVerifyRequest::new().with_mac_data(SecretBytes::new(b"mac".to_vec())),
+            MAC => ClientRequest::mac(
+                MacRequest::new()
+                    .with_unique_identifier(test_identifier())
+                    .with_data(bytes()),
             ),
-            SIGN => ClientRequest::sign(SignRequest::new().with_data(bytes())),
+            MAC_VERIFY => ClientRequest::mac_verify(
+                MacVerifyRequest::new()
+                    .with_unique_identifier(test_identifier())
+                    .with_mac_data(SecretBytes::new(b"mac".to_vec())),
+            ),
+            SIGN => ClientRequest::sign(
+                SignRequest::new()
+                    .with_unique_identifier(test_identifier())
+                    .with_data(bytes()),
+            ),
             SIGNATURE_VERIFY => ClientRequest::signature_verify(
                 SignatureVerifyRequest::new()
+                    .with_unique_identifier(test_identifier())
                     .with_signature_data(SecretBytes::new(b"signature".to_vec())),
             ),
             _ => unreachable!("fixture only uses the five assigned operations"),
@@ -106,8 +121,16 @@ impl OperationFixture {
                 )]))
                 .with_init_indicator(true),
             ),
-            MAC => ClientRequest::mac(MacRequest::new().with_init_indicator(true)),
-            SIGN => ClientRequest::sign(SignRequest::new().with_init_indicator(true)),
+            MAC => ClientRequest::mac(
+                MacRequest::new()
+                    .with_unique_identifier(test_identifier())
+                    .with_init_indicator(true),
+            ),
+            SIGN => ClientRequest::sign(
+                SignRequest::new()
+                    .with_unique_identifier(test_identifier())
+                    .with_init_indicator(true),
+            ),
             _ => unreachable!("only Hash, MAC, and Sign have output cardinality here"),
         }
     }
@@ -125,11 +148,13 @@ impl OperationFixture {
             ),
             MAC => ClientRequest::mac(
                 MacRequest::new()
+                    .with_unique_identifier(test_identifier())
                     .with_correlation_value(correlation())
                     .with_final_indicator(true),
             ),
             SIGN => ClientRequest::sign(
                 SignRequest::new()
+                    .with_unique_identifier(test_identifier())
                     .with_correlation_value(correlation())
                     .with_final_indicator(true),
             ),

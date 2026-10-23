@@ -95,9 +95,11 @@ fn client(response: Vec<u8>) -> (Client, Rc<RefCell<ExchangeState>>) {
 
 fn request() -> ClientRequest {
     ClientRequest::sign(
-        SignRequest::new().with_data(kmipkit_protocol::OperationData::ByteString(
-            SecretBytes::new(b"input-to-sign".to_vec()),
-        )),
+        SignRequest::new()
+            .with_unique_identifier(UniqueIdentifier::TextString("signing-key".to_owned()))
+            .with_data(kmipkit_protocol::OperationData::ByteString(
+                SecretBytes::new(b"input-to-sign".to_vec()),
+            )),
     )
 }
 
@@ -307,6 +309,7 @@ fn request_table_fields_reach_the_fake_transport_unchanged() {
         .execute(
             ClientBatch::new(ClientBatchItem::new(ClientRequest::sign(
                 SignRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString("signing-key".to_owned()))
                     .with_correlation_value(SecretBytes::new(correlation.to_vec()))
                     .with_init_indicator(false)
                     .with_final_indicator(true),
@@ -321,6 +324,10 @@ fn request_table_fields_reach_the_fake_transport_unchanged() {
     assert_eq!(
         multipart_fields,
         [
+            (
+                UNIQUE_IDENTIFIER,
+                CapturedSignField::Text("signing-key".to_owned()),
+            ),
             (
                 CORRELATION_VALUE,
                 CapturedSignField::Bytes(correlation.to_vec()),
