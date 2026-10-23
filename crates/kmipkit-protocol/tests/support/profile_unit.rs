@@ -707,6 +707,14 @@ fn opaque_object_register_payload(include_context: bool) -> Structure {
     .expect("the Opaque Object and its optional Attributes have valid TTLV shapes")
 }
 
+fn raw_opaque_object_register_payload(opaque_object: Value) -> Structure {
+    structure([
+        tagged(OBJECT_TYPE_TAG, Value::enumeration(8)),
+        tagged(ATTRIBUTES_TAG, Value::structure(structure([]))),
+        tagged(OPAQUE_OBJECT_TAG, opaque_object),
+    ])
+}
+
 fn managed_opaque_object_register_payload() -> Structure {
     let mut attributes = crate::AttributeSet::new();
     for attribute in [
@@ -8074,6 +8082,59 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
         error.source_clause_id(),
         Some("KMIPKIT-CLAUSE-SPEC-6.1.43-005")
     );
+}
+
+#[test]
+fn profile_maps_required_fields_of_opaque_register_object() {
+    // KMIP Specification v2.1 §2.3, Table 4 requires both typed child fields.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    validation
+        .validate_request(&request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            opaque_object_register_payload(false),
+        ))
+        .expect("a valid Opaque Object satisfies its required Table 4 fields");
+
+    for malformed_object in [
+        Value::structure(structure([])),
+        Value::structure(structure([tagged(
+            OPAQUE_DATA_TYPE_TAG,
+            Value::enumeration(0xF123_4567),
+        )])),
+        Value::structure(structure([tagged(
+            OPAQUE_DATA_VALUE_TAG,
+            Value::byte_string(b"opaque-data".to_vec()),
+        )])),
+        Value::structure(structure([
+            tagged(OPAQUE_DATA_TYPE_TAG, Value::integer(1)),
+            tagged(
+                OPAQUE_DATA_VALUE_TAG,
+                Value::byte_string(b"opaque-data".to_vec()),
+            ),
+        ])),
+        Value::structure(structure([
+            tagged(OPAQUE_DATA_TYPE_TAG, Value::enumeration(0xF123_4567)),
+            tagged(
+                OPAQUE_DATA_VALUE_TAG,
+                Value::text_string("not-opaque-bytes".to_owned()),
+            ),
+        ])),
+    ] {
+        let request = request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            raw_opaque_object_register_payload(malformed_object),
+        );
+        assert!(
+            validation.validate_request(&request).is_err(),
+            "Opaque Object violates the required §2.3/Table 4 child shape"
+        );
+    }
 }
 
 #[test]
