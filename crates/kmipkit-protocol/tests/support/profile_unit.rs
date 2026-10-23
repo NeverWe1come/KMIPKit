@@ -8443,6 +8443,36 @@ fn profile_rejects_omitted_certify_request_value_without_unique_identifier() {
 }
 
 #[test]
+fn profile_rejects_id_placeholder_for_omitted_certify_request_value() {
+    // DEC-013 requires an explicit public-key identifier when request material
+    // is omitted; Enumeration(1) names the batch ID Placeholder, not the key.
+    let request = request_message_with_operation_payload(
+        CERTIFY_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::enumeration(1),
+        )]),
+    );
+
+    let error = certify_omitted_value_identifier_profile_result()
+        .validate_request(&request)
+        .expect_err("the ID Placeholder is not an explicit public-key identifier");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
 fn profile_accepts_certify_request_value_without_unique_identifier() {
     let request = request_message_with_operation_payload(
         CERTIFY_OPERATION,
