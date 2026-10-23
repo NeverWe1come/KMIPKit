@@ -46,3 +46,20 @@ fn operation_clauses_add_create_split_key_derive_key_and_export_as_producers() {
         );
     }
 }
+
+#[test]
+fn create_split_key_can_select_a_preceding_placeholder_before_producing_its_result() {
+    let request = ClientRequest::CreateSplitKey(
+        CreateSplitKeyRequest::new(
+            ObjectType::from_raw(7),
+            3,
+            2,
+            SplitKeyMethod::XOR,
+            AttributeSet::new(),
+        )
+        .with_unique_identifier(UniqueIdentifier::Enumeration(1)),
+    );
+
+    assert!(request.uses_id_placeholder());
+    assert!(request.is_id_placeholder_producer());
+}
