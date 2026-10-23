@@ -5234,3 +5234,14 @@ KMIP Specification v2.1 §3.3/Table 14 requires Encryption Key Information, MAC/
 | Verification | `cargo test -p kmipkit-protocol --all-features --locked profile_maps_required_key_information_when_wrapping_data_is_supplied`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check`; catalog validation; `generate_profiles.py --check`; `report.py --check` | PASS: focused profile test, protocol Clippy, formatting, patch hygiene, catalog validation (4 sources, 1,411 clauses, 4,123 records), and generated profile/report checks. |
 
 The Baseline Client now has 82 typed mappings of 265 assigned requirements; 183 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 cases remain unavailable. T040 stays open, readiness stays `evidence_incomplete`, and no profile-conformance claim is made. The next hosted CI run must confirm the exact-head changed-Rust coverage gate after the earlier 94.67% failure.
+
+### T040 follow-up — cover missing evaluator context
+
+Exact-head CI run `40022706549` failed the changed-Rust gate at 3,111/3,286 executable lines (94.67%). Inspection of its three platform artifacts showed 134 uncovered added lines in `profile.rs`, mostly evaluator branches for absent request context. A single test now invokes every registered typed evaluator with no request or response and asserts that it returns without panicking. The test deliberately does not require `false`: response-only optional capabilities may correctly have no response check when response context is absent. This adds evidence for total evaluator behavior without changing runtime semantics.
+
+| Check | Evidence | Result |
+|---|---|---|
+| Missing-context evaluator regression | DCO-signed commit `dec4e862`; `cargo test -p kmipkit-protocol --all-features --locked typed_rule_evaluators_tolerate_missing_context -- --nocapture` | PASS: every registered evaluator tolerates absent request/response context. |
+| Rust workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/t040-workspace-coverage.json` | PASS: all local Rust workspace test targets; 32,046/33,580 lines (95.43%) overall and 2,790/2,913 lines (95.78%) in `profile.rs`. Three Cosmian integration tests remain ignored because the local server is unavailable. |
+| Protocol lint and formatting | `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Exact-head hosted coverage | GitHub Actions after pushing this commit | Pending; hosted CI remains authoritative for the changed-Rust threshold. |
