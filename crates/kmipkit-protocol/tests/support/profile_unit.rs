@@ -1493,6 +1493,85 @@ fn profile_maps_required_ttlv_structure_order_and_numeric_padding() {
 }
 
 #[test]
+fn profile_maps_required_channel_confidentiality_integrity_and_authenticity() {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let expected_mappings: &[(&str, &[&str])] = &[
+        (
+            "KMIPKIT-REQ-SPEC-10.4-001-001",
+            &[
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
+                "crates/kmipkit-transport/tests/https.rs::https_default_target_posts_exact_bytes_with_required_headers_and_zeroizes_on_success",
+            ],
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-10.4-001-002",
+            &[
+                "crates/kmipkit-transport/tests/tls_integrity.rs::raw_tls_rejects_a_tampered_post_handshake_application_record",
+                "crates/kmipkit-transport/tests/tls_integrity.rs::https_invalidates_a_connection_after_a_tampered_post_handshake_application_record",
+            ],
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-10.4-001-003",
+            &[
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_unknown_server_ca",
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_expired_server_certificate",
+                "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_server_name_mismatch",
+            ],
+        ),
+    ];
+
+    for (requirement_id, expected_test_ids) in expected_mappings {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == *requirement_id)
+            .unwrap_or_else(|| panic!("{requirement_id} has a typed profile mapping"));
+        assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-10.4-001");
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
+        assert!(mapping.evaluator.is_none());
+        assert_eq!(
+            mapping.constraints,
+            &[RuleConstraint {
+                key: "transport_security",
+                value: "tls13",
+            }]
+        );
+        assert_eq!(
+            mapping
+                .test_evidence
+                .iter()
+                .map(|evidence| evidence.test_id)
+                .collect::<Vec<_>>(),
+            *expected_test_ids
+        );
+
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == *requirement_id)
+            .unwrap_or_else(|| panic!("{requirement_id} is generated for the client profile"));
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .unwrap_or_else(|error| panic!("{requirement_id} maps to TLS evidence: {error}"));
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: expected_mappings
+            .iter()
+            .map(|(requirement_id, _)| (*requirement_id).to_owned())
+            .collect(),
+    };
+    result
+        .validate_transport(ProfileTransport::RawTtlvTls)
+        .expect("raw TTLV/TLS satisfies the channel-security requirement");
+    result
+        .validate_transport(ProfileTransport::Https)
+        .expect("HTTPS satisfies the channel-security requirement");
+}
+
+#[test]
 fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
     // KMIP Specification v2.1 §11.56: defined tags start with 0x42 and
     // extension tags start with 0x54. Applicability is mapped by DEC-018.
