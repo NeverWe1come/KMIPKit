@@ -723,6 +723,12 @@ impl ClientRequest {
             }
             Self::Recertify(request) => {
                 Self::id_placeholder_is_selected(request.unique_identifier())
+                    || matches!(
+                        request.certificate_request_unique_identifier(),
+                        Some(UniqueIdentifier::Enumeration(
+                            ID_PLACEHOLDER_ENUMERATION_VALUE
+                        ))
+                    )
             }
             Self::Rekey(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
             Self::RekeyKeyPair(request) => {
@@ -736,6 +742,12 @@ impl ClientRequest {
             Self::GetUsageAllocation(request) => {
                 Self::id_placeholder_is_selected(request.unique_identifier())
             }
+            Self::Import(request) => {
+                Self::id_placeholder_is_selected(Some(request.unique_identifier()))
+            }
+            Self::JoinSplitKey(request) => request.references().iter().any(|reference| {
+                Self::id_placeholder_is_selected(Some(reference.unique_identifier()))
+            }),
             // Create Split Key uses an omitted identifier to create a new
             // split key. Only an explicit Enumeration(1) selects the prior
             // Batch Item's identifier.

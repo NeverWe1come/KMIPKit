@@ -710,6 +710,13 @@ struct TypedRuleMapping {
 
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
+const CREATE_OPERATION: u32 = 0x0000_0001;
+const REKEY_OPERATION: u32 = 0x0000_0004;
+const RECERTIFY_OPERATION: u32 = 0x0000_0007;
+const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
+const RECOVER_OPERATION: u32 = 0x0000_0016;
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
+const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
 const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
 const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const CERTIFY_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -776,6 +783,7 @@ const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME: u32 = 0x0042_00B4;
 const MAC_SIGNATURE_KEY_INFORMATION: u32 = 0x0042_004E;
 const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 const ENCODING_OPTION: u32 = 0x0042_00A3;
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
@@ -898,9 +906,67 @@ fn client_can_retrieve_certified_certificate_with_get_in_batch(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    // §6.1.6 grants this request-side capability; positive profile and fake-
-    // transport evidence exercise Certify followed by Get with omitted UID.
-    request.is_some()
+    let Some(request) = request else {
+        return false;
+    };
+
+    let batch_ordered = request.header().effective_batch_order_option();
+    let mut preceding_placeholder_producer = false;
+    for batch_item in request.batch_items() {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+
+        if operation == GET_OPERATION {
+            let Some(uses_placeholder) = batch_item.with_request_payload(|payload| {
+                let mut has_identifier = false;
+                let mut selects_placeholder = false;
+                for field in payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == UNIQUE_IDENTIFIER)
+                {
+                    has_identifier = true;
+                    selects_placeholder |= field.with_value(|value| {
+                        matches!(
+                            value,
+                            ValueView::Enumeration(value)
+                                if *value == ID_PLACEHOLDER_ENUMERATION_VALUE
+                        )
+                    });
+                }
+                !has_identifier || selects_placeholder
+            }) else {
+                return false;
+            };
+
+            if uses_placeholder && (!batch_ordered || !preceding_placeholder_producer) {
+                return false;
+            }
+        }
+
+        if matches!(
+            operation,
+            CREATE_OPERATION
+                | CREATE_KEY_PAIR_OPERATION
+                | REGISTER_OPERATION
+                | REKEY_OPERATION
+                | DERIVE_KEY_OPERATION
+                | CERTIFY_OPERATION
+                | RECERTIFY_OPERATION
+                | LOCATE_OPERATION
+                | RECOVER_OPERATION
+                | REKEY_KEY_PAIR_OPERATION
+                | CREATE_SPLIT_KEY_OPERATION
+                | JOIN_SPLIT_KEY_OPERATION
+                | IMPORT_OPERATION
+                | EXPORT_OPERATION
+        ) {
+            preceding_placeholder_producer = true;
+        }
+    }
+
+    true
 }
 
 fn client_certify_request_type_required_with_request_value(
@@ -964,8 +1030,14 @@ fn client_certify_omitted_request_requires_unique_identifier(
                     .filter(|field| field.tag().raw() == CERTIFY_UNIQUE_IDENTIFIER)
                 {
                     identifier_count += 1;
-                    has_direct_identifier =
-                        field.with_value(|value| !matches!(value, ValueView::Enumeration(1)));
+                    has_direct_identifier = field.with_value(|value| {
+                        matches!(value, ValueView::TextString(_))
+                            || matches!(
+                                value,
+                                ValueView::Enumeration(value)
+                                    if *value != ID_PLACEHOLDER_ENUMERATION_VALUE
+                            )
+                    });
                 }
                 has_certificate_request || (identifier_count == 1 && has_direct_identifier)
             })
