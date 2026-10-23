@@ -8084,6 +8084,32 @@ fn profile_maps_omitted_certify_certificate_request_object_as_optional_capabilit
     result
         .validate_request(&request)
         .expect("the Baseline profile accepts the valid omitted-object path");
+
+    let supplied_request_value = [0x30, 0x00];
+    let supplied_payload = crate::CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(supplied_request_value.to_vec()))
+        .into_ttlv_payload()
+        .expect("the supplied Certificate Request Value has its required request type");
+    assert!(supplied_payload.view().children().iter().any(|field| {
+        field.tag().raw() == CERTIFICATE_REQUEST_VALUE_TAG
+            && field.with_value(|value| {
+                matches!(value, ValueView::ByteString(bytes) if bytes == supplied_request_value)
+            })
+    }));
+    let supplied_value_request =
+        request_message_with_operation_payload(CERTIFY_OPERATION, supplied_payload);
+    assert!(evaluate(Some(&supplied_value_request), None));
+    result
+        .validate_request(&supplied_value_request)
+        .expect("the optional omission capability accepts a supplied Certificate Request Value");
+
+    let unrelated_operation_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    assert!(evaluate(Some(&unrelated_operation_request), None));
+    result
+        .validate_request(&unrelated_operation_request)
+        .expect("the Certify optional capability does not constrain Locate requests");
 }
 
 #[test]
