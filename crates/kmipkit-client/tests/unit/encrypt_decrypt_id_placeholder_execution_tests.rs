@@ -7,8 +7,9 @@
 //! eligibility and result association through the typed client path.
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, CreateSplitKeyRequest, DecryptRequest, EncryptRequest, ObjectType,
-    OperationData, ResultReason, SplitKeyMethod,
+    AttributeSet, CertifyRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
+    EncryptRequest, GetRequest, ObjectType, OperationData, ResultReason, SecretBytes,
+    SplitKeyMethod,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
@@ -54,6 +55,7 @@ const OBJECT_NOT_FOUND: u32 = 0x37;
 const CREATE_BATCH_ID: &[u8] = b"id-placeholder-create";
 const ENCRYPT_BATCH_ID: &[u8] = b"id-placeholder-encrypt";
 const DECRYPT_BATCH_ID: &[u8] = b"id-placeholder-decrypt";
+const GET_BATCH_ID: &[u8] = b"id-placeholder-get";
 
 fn create_request() -> CreateRequest {
     CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new())
@@ -71,6 +73,14 @@ fn decrypt_without_identifier() -> ClientRequest {
         None,
         Some(OperationData::Enumeration(23)),
     ))
+}
+
+fn certify_placeholder_producer() -> ClientRequest {
+    ClientRequest::Certify(
+        CertifyRequest::new()
+            .with_certificate_request_type(1)
+            .with_certificate_request_value(SecretBytes::new(vec![0x30, 0x00])),
+    )
 }
 
 fn batch_item(request: ClientRequest, id: &[u8]) -> ClientBatchItem {
@@ -110,6 +120,25 @@ fn encrypt_and_decrypt_without_a_preceding_batch_item_are_rejected_before_send()
     for request in [encrypt_without_identifier(), decrypt_without_identifier()] {
         assert_rejected_before_send(ClientBatch::new(ClientBatchItem::new(request)));
     }
+}
+
+#[test]
+fn get_without_identifier_and_no_placeholder_producer_is_rejected_before_send() {
+    assert_rejected_before_send(ClientBatch::new(batch_item(
+        ClientRequest::Get(GetRequest::new()),
+        GET_BATCH_ID,
+    )));
+}
+
+#[test]
+fn get_without_identifier_is_rejected_when_batch_order_is_false() {
+    let batch = ClientBatch::from_items([
+        batch_item(certify_placeholder_producer(), CREATE_BATCH_ID),
+        batch_item(ClientRequest::Get(GetRequest::new()), GET_BATCH_ID),
+    ])
+    .with_batch_order_option(false);
+
+    assert_rejected_before_send(batch);
 }
 
 #[test]
