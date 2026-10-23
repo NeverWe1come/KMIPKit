@@ -1349,6 +1349,20 @@ mod unrelated {
         self.assertEqual("Accepted deviation: KMIPKIT-DEC-PROFILE-001", rows[0][4])
         self.assertTrue(runtime_availability["KMIPKIT-PROFILE-BASELINE-CLIENT"])
 
+    def test_requirement_rule_coverage_shows_linked_certify_request_type_element(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+
+        report = render_report(catalog, typed_rule_mappings=[])
+        coverage_report = report.split("## Profile requirement rule coverage", maxsplit=1)[1]
+        requirement_row = next(
+            row
+            for row in coverage_report.splitlines()
+            if row.startswith("| KMIPKIT-REQ-SPEC-6.1.6-007 |")
+        )
+
+        self.assertIn("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE".replace("_", r"\_"), requirement_row)
+        self.assertIn("Certificate Request Type", requirement_row)
+
     def test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures(self) -> None:
         from tools.normative_catalog import report as report_module
 
