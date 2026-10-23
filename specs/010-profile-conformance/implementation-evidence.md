@@ -5315,3 +5315,19 @@ Mapped Baseline Client requirement `KMIPKIT-REQ-SPEC-10.1.5-001-001` from KMIP S
 | Exact-head hosted CI | GitHub Actions after pushing this increment | Pending. |
 
 Baseline now has 85 typed mappings of 265 assigned requirements; 180 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 cases remain unavailable. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+### KMIPKIT-0010 T040 — TTLV structure order and numeric padding (2026-10-24)
+
+Mapped four Baseline Client requirements to the KMIPKit 1.0 TTLV encoder: `KMIPKIT-REQ-SPEC-10.1.2-001`, `KMIPKIT-REQ-SPEC-10.1.2-002-001`, `KMIPKIT-REQ-SPEC-10.1.2-002-002`, and `KMIPKIT-REQ-SPEC-10.1.5-001-002`. The mappings link the profile's TTLV-only encoding constraint to existing client encoder tests for structure order, Big Integer padding and Item Length, and the four following padding bytes after Integer, Enumeration, and Interval. The profile evaluator does not inspect request payload bytes for these configuration-level rules. Decoder evidence was excluded from the client-to-server padding assignment. The pinned OASIS sources do not link requirement-specific official test cases for these rules.
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red | Commit `d5fb80bf`; focused `profile_maps_required_ttlv_structure_order_and_numeric_padding` test | Expected failure: no typed mapping existed for `KMIPKIT-REQ-SPEC-10.1.2-001`. |
+| Green | Commit `85108974`; four typed mappings, catalog assignments, generated coverage report, and the mapping-registry snapshot | PASS: all four mappings resolve to the selected Baseline closure, exact source clauses, code, and encoder tests. |
+| Refactor | Commit `c7807acf`; share the TTLV mapping assertions between the string-padding and numeric/order tests | PASS: test intent and mapping behavior are unchanged. |
+| Rust tests | `cargo test -p kmipkit-protocol --lib --all-features --locked --quiet`; `cargo test -p kmipkit-client --lib --all-features --locked` | PASS: 934 protocol tests and 584 client tests. |
+| Python traceability | Full-profile report snapshot and bidirectional requirement/test-evidence regression tests | PASS when run serially; they verify the five new typed-evidence rows and catalog evidence notes. |
+| Quality and generation | Catalog validation; profile generation `--check`; report generation `--check`; protocol Clippy; `cargo fmt --all --check`; `git diff --check` | PASS: 4 sources, 1,411 clauses, 4,123 catalog records; generated report current. |
+| Rust workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/t040-ttlv-encoder-batch-coverage.json` | PASS: 32,192/33,724 lines (95.46%) workspace; `profile.rs` 2,934/3,057 lines (95.98%). |
+| Exact-head hosted CI | Run after publishing this coherent batch | Pending. |
+
+Baseline now has 89 typed mappings of 265 assigned requirements; 176 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
