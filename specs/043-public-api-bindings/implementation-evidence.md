@@ -5657,3 +5657,32 @@ distribution identity still lacks authoritative package metadata.
 
 No generated files were edited. These additional contracts do not close T073
 or resolve the C distribution identity gap.
+
+### T039 native identifier and non-success adapter evidence follow-up (2026-10-23)
+
+The review follow-up adds native-backed checks that supplied lifecycle Unique
+Identifier kinds and values reach the operation request and that the Java JNI
+and Python CFFI response adapters preserve Failure/Pending shared metadata.
+Activate and Archive Failure results retain status, reason, and message while
+exposing no typed lifecycle response identifier. Destroy and Recover Pending
+results retain status and their exact correlation bytes while exposing no
+typed lifecycle response identifier. The Recover correlation is asserted
+exactly. Both binding integrations assert that no automatic follow-up exchange
+occurs. Java uses the existing deterministic TLS 1.3 mutual-TLS peer; Python
+uses its lifecycle fixture peer. These checks validate the binding and client
+mapping only and do not claim KMIP conformance or profile support.
+
+| Phase | Commit | Command or check | Result |
+|---|---|---|---|
+| Red | `e91951e6` | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_lifecycle_parity_manifest.LifecycleParityManifestTests.test_lifecycle_operations_have_approved_four_language_mappings -v` | Expected failure: each of four lifecycle operation rows lacked native Java/Python evidence paths. The same Red commit adds the native ABI identifier-kind/value test. |
+| Green | this commit | `cargo test -p kmipkit-ffi --all-features lifecycle_operation_abi_tests -- --nocapture` | Pass, 4 tests; the new test verifies text, enumeration, and integer identifier values through the native constructors. |
+| Green | this commit | `cargo test -p kmipkit-ffi --all-features --test c_api_coverage generated_public_client_abi_consumer_compiles_and_runs -- --nocapture` | Pass, 1 compiled C consumer test. |
+| Green | this commit | `mvn -f bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#lifecycleRequestsPreserveIdentifiersAndFailurePendingResponsesWithoutFollowUp' '-Dkmipkit.nativeLibrary=C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\bindings\java\target\native\kmipkit_jni.dll' test -q` | Pass, exit 0. The native-backed mTLS test checks all four request identifiers and Failure/Pending adapters, including exact Recover correlation and no follow-up bytes on the original connection or follow-up connection. |
+| Green | this commit | From `bindings/python`, with `PYTHONPATH=src` and `KMIPKIT_NATIVE_LIBRARY=C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\target\debug\kmipkit_ffi.dll`: ` .\.venv-codex\Scripts\python.exe -m pytest tests\test_lifecycle_operations.py tests\test_lifecycle_native_integration.py -q` | Pass, 13 tests. The native-backed mTLS test checks all four request identifiers and Failure/Pending adapters, including exact Recover correlation and no follow-up exchange. |
+| Green | this commit | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_lifecycle_parity_manifest tools.api_manifest.tests.test_operation_readiness -v` | Pass, 19 tests. |
+| Green | this commit | `python -B tools/api_manifest/generate.py --check` | Pass; all 12 generated outputs verified. |
+| Green | this commit | `cargo fmt --all --check`; `git diff --check` | Pass. |
+
+The Windows Rust/JNI builds emitted existing AWS-LC stdalign/NASM probe and
+linker warnings; all recorded commands exited successfully. This follow-up
+does not close platform CI, workspace coverage, or release verification gates.

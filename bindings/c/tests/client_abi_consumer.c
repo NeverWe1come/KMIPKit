@@ -5759,14 +5759,56 @@ failure:
 }
 
 static int lifecycle_constructors_are_callable_from_c(void) {
+    static const uint8_t activate_text[] = "activate-target";
+    static const uint8_t recover_text[] = "recover-target";
+    kmipkit_unique_identifier_v1_t activate_identifier = {
+        (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        1,
+        KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        0,
+        activate_text,
+        sizeof(activate_text) - 1,
+        0,
+        0
+    };
+    kmipkit_unique_identifier_v1_t archive_identifier = {
+        (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        1,
+        KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
+        0,
+        0,
+        0,
+        UINT32_C(0x8fedcba9),
+        0
+    };
+    kmipkit_unique_identifier_v1_t destroy_identifier = {
+        (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        1,
+        KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER,
+        0,
+        0,
+        0,
+        0,
+        -723
+    };
+    kmipkit_unique_identifier_v1_t recover_identifier = {
+        (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        1,
+        KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        0,
+        recover_text,
+        sizeof(recover_text) - 1,
+        0,
+        0
+    };
     kmipkit_client_batch_item_t *activate = 0;
     kmipkit_client_batch_item_t *archive = 0;
     kmipkit_client_batch_item_t *destroy = 0;
     kmipkit_client_batch_item_t *recover = 0;
-    if (kmipkit_client_batch_item_activate(0, &activate) != 0 || activate == 0 ||
-        kmipkit_client_batch_item_archive(0, &archive) != 0 || archive == 0 ||
-        kmipkit_client_batch_item_destroy(0, &destroy) != 0 || destroy == 0 ||
-        kmipkit_client_batch_item_recover(0, &recover) != 0 || recover == 0) {
+    if (kmipkit_client_batch_item_activate(&activate_identifier, &activate) != 0 || activate == 0 ||
+        kmipkit_client_batch_item_archive(&archive_identifier, &archive) != 0 || archive == 0 ||
+        kmipkit_client_batch_item_destroy(&destroy_identifier, &destroy) != 0 || destroy == 0 ||
+        kmipkit_client_batch_item_recover(&recover_identifier, &recover) != 0 || recover == 0) {
         goto failure;
     }
     kmipkit_client_batch_item_release(activate);

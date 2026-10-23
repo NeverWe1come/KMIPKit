@@ -37706,7 +37706,9 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
         "bindings/python/tests/test_lifecycle_operations.py",
         "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -37761,7 +37763,9 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
         "bindings/python/tests/test_lifecycle_operations.py",
         "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -38309,7 +38313,9 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
         "bindings/python/tests/test_lifecycle_operations.py",
         "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
@@ -39508,7 +39514,9 @@
       },
       "parityEvidenceIds": [
         "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
         "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
+        "bindings/python/tests/test_lifecycle_native_integration.py",
         "bindings/python/tests/test_lifecycle_operations.py",
         "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",

@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -82,6 +83,12 @@ import org.kmipkit.ttlv.TtlvValueView;
 final class ClientFacadeTlsIntegrationTest {
     private static final char[] STORE_PASSWORD = "kmipkit-test".toCharArray();
     private static final byte[] CORRELATION = {0, (byte) 0xa1, 0x7f};
+    private static final byte[] LIFECYCLE_DESTROY_CORRELATION = {
+        0, (byte) 0xd3, 0x51, (byte) 0xff
+    };
+    private static final byte[] LIFECYCLE_RECOVER_CORRELATION = {
+        (byte) 0x80, 0x52, 0, (byte) 0xff
+    };
     private static final String RNG_RETRIEVED_SENTINEL = "KMIP_RNG_RETRIEVE_SECRET_SENTINEL";
     private static final int LARGE_RESPONSE_DATA_BYTES = 16 * 1024 * 1024 + 1;
 
@@ -1841,6 +1848,112 @@ final class ClientFacadeTlsIntegrationTest {
         assertTrue(peer.isDone());
     }
 
+    @Test
+    void lifecycleRequestsPreserveIdentifiersAndFailurePendingResponsesWithoutFollowUp()
+            throws Exception {
+        byte[] serverCertificatePem = testFixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = testFixture("server-key.pem");
+        byte[] clientCertificatePem = testFixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = testFixture("client-key.pem");
+        X509Certificate clientCertificate = testCertificate(clientCertificatePem);
+        SSLServerSocket listener = deterministicMtlsListener(
+                serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        FutureTask<byte[]> peer = new FutureTask<>(
+                () -> serveLifecycleResponseWithoutFollowUp(
+                        listener, lifecycleFailurePendingResponseMessage()));
+        Thread peerThread = new Thread(peer, "kmipkit-java-lifecycle-tls-fixture");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        byte[] request;
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration extensions = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientCertificatePem}, clientPrivateKeyPem)
+                        .trustCertificatesPem(new byte[][] {serverCertificatePem})
+                        .timeouts(TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(5)),
+                                TransportConfiguration.Timeout.bounded(Duration.ofSeconds(8)))
+                        .build();
+                Client client = Client.create(extensions, transport);
+                ClientBatch batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(1);
+            batch.add(ClientBatchItem.activate(UniqueIdentifier.textString("activate-target"))
+                    .withUniqueBatchItemId(uniqueBatchItemId(0)));
+            batch.add(ClientBatchItem.archive(UniqueIdentifier.enumeration(0x8fed_cba9L))
+                    .withUniqueBatchItemId(uniqueBatchItemId(1)));
+            batch.add(ClientBatchItem.destroy(UniqueIdentifier.integer(-723))
+                    .withUniqueBatchItemId(uniqueBatchItemId(2)));
+            batch.add(ClientBatchItem.recover(UniqueIdentifier.textString("recover-target"))
+                    .withUniqueBatchItemId(uniqueBatchItemId(3)));
+
+            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+                    ClientBatchItemResult activate = response.itemAt(0);
+                    ClientBatchItemResult archive = response.itemAt(1);
+                    ClientBatchItemResult destroy = response.itemAt(2);
+                    ClientBatchItemResult recover = response.itemAt(3)) {
+                assertEquals(4, response.itemCount());
+
+                assertEquals(0x12, activate.operation());
+                assertEquals(1, activate.resultStatus());
+                assertEquals(5, activate.resultReason().orElseThrow());
+                assertEquals(java.util.Optional.of("activate rejected"), activate.resultMessage());
+                assertTrue(activate.outcomeKind().isCompleted());
+                assertTrue(activate.activateResponse().isEmpty());
+
+                assertEquals(0x15, archive.operation());
+                assertEquals(1, archive.resultStatus());
+                assertEquals(5, archive.resultReason().orElseThrow());
+                assertEquals(java.util.Optional.of("archive rejected"), archive.resultMessage());
+                assertTrue(archive.outcomeKind().isCompleted());
+                assertTrue(archive.archiveResponse().isEmpty());
+
+                assertEquals(0x14, destroy.operation());
+                assertEquals(2, destroy.resultStatus());
+                assertTrue(destroy.outcomeKind().isPending());
+                assertArrayEquals(LIFECYCLE_DESTROY_CORRELATION,
+                        destroy.pendingCorrelationValue().orElseThrow());
+                assertTrue(destroy.destroyResponse().isEmpty());
+
+                assertEquals(0x16, recover.operation());
+                assertEquals(2, recover.resultStatus());
+                assertTrue(recover.outcomeKind().isPending());
+                assertArrayEquals(LIFECYCLE_RECOVER_CORRELATION,
+                        recover.pendingCorrelationValue().orElseThrow());
+                assertTrue(recover.recoverResponse().isEmpty());
+            }
+            request = peer.get(12, TimeUnit.SECONDS);
+            listener.setSoTimeout(250);
+            assertThrows(SocketTimeoutException.class, () -> listener.accept());
+        } finally {
+            listener.close();
+        }
+
+        assertContains(request, structure(0x42000f,
+                enumeration(0x42005c, 0x12),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                structure(0x420079,
+                        item(0x420094, 7, "activate-target".getBytes(StandardCharsets.UTF_8)))));
+        assertContains(request, structure(0x42000f,
+                enumeration(0x42005c, 0x15),
+                item(0x420093, 8, uniqueBatchItemId(1)),
+                structure(0x420079,
+                        enumeration(0x420094, (int) 0x8fed_cba9L))));
+        assertContains(request, structure(0x42000f,
+                enumeration(0x42005c, 0x14),
+                item(0x420093, 8, uniqueBatchItemId(2)),
+                structure(0x420079, item(0x420094, 2, integer(-723)))));
+        assertContains(request, structure(0x42000f,
+                enumeration(0x42005c, 0x16),
+                item(0x420093, 8, uniqueBatchItemId(3)),
+                structure(0x420079,
+                        item(0x420094, 7, "recover-target".getBytes(StandardCharsets.UTF_8)))));
+        assertTrue(peer.isDone());
+    }
+
     // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.
     @Test
     void setConstraintsResponseUsesNativeJniBridgeAndExposesTtlvOnlyOnSuccess() throws Exception {
@@ -3366,6 +3479,30 @@ final class ClientFacadeTlsIntegrationTest {
         }
     }
 
+    private static byte[] serveLifecycleResponseWithoutFollowUp(
+            SSLServerSocket listener, byte[] response) throws Exception {
+        try (SSLSocket socket = (SSLSocket) listener.accept()) {
+            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+            socket.setSoTimeout(10_000);
+            socket.startHandshake();
+            byte[] request = readFrame(socket.getInputStream());
+            OutputStream output = socket.getOutputStream();
+            output.write(response);
+            output.flush();
+
+            socket.setSoTimeout(250);
+            try {
+                int followUp = socket.getInputStream().read();
+                if (followUp >= 0) {
+                    throw new AssertionError("unexpected lifecycle follow-up request");
+                }
+            } catch (SocketTimeoutException expected) {
+                // No bytes arrived on the original TLS connection after its response.
+            }
+            return request;
+        }
+    }
+
     private static List<byte[]> serveResponses(SSLServerSocket listener, byte[]... responses)
             throws Exception {
         List<byte[]> requests = new ArrayList<>(responses.length);
@@ -4062,6 +4199,39 @@ final class ClientFacadeTlsIntegrationTest {
                 item(0x420006, 8, CORRELATION),
                 structure(0x42007c));
         return structure(0x42007b, header, success, failure, pending);
+    }
+
+    private static byte[] lifecycleFailurePendingResponseMessage() throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, integer(2)),
+                item(0x42006b, 2, integer(1)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longInteger(1)),
+                item(0x42000d, 2, integer(4)));
+        byte[] activateFailure = structure(0x42000f,
+                enumeration(0x42005c, 0x12),
+                item(0x420093, 8, uniqueBatchItemId(0)),
+                enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5),
+                item(0x42007d, 7, "activate rejected".getBytes(StandardCharsets.UTF_8)));
+        byte[] archiveFailure = structure(0x42000f,
+                enumeration(0x42005c, 0x15),
+                item(0x420093, 8, uniqueBatchItemId(1)),
+                enumeration(0x42007f, 1),
+                enumeration(0x42007e, 5),
+                item(0x42007d, 7, "archive rejected".getBytes(StandardCharsets.UTF_8)));
+        byte[] destroyPending = structure(0x42000f,
+                enumeration(0x42005c, 0x14),
+                item(0x420093, 8, uniqueBatchItemId(2)),
+                enumeration(0x42007f, 2),
+                item(0x420006, 8, LIFECYCLE_DESTROY_CORRELATION),
+                structure(0x42007c));
+        byte[] recoverPending = structure(0x42000f,
+                enumeration(0x42005c, 0x16),
+                item(0x420093, 8, uniqueBatchItemId(3)),
+                enumeration(0x42007f, 2),
+                item(0x420006, 8, LIFECYCLE_RECOVER_CORRELATION),
+                structure(0x42007c));
+        return structure(0x42007b, header,
+                activateFailure, archiveFailure, destroyPending, recoverPending);
     }
 
     private static byte[] setConstraintsResponseMessage() throws Exception {
