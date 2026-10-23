@@ -96824,15 +96824,17 @@
       "feature_spec": "KMIPKIT-0042",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/validate.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_validate_repeated_certificates_are_usable",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_repeated_certificates_as_optional_capability",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_004_repeated_certificate_values_preserve_order"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "No requirement-specific official Test Cases are linked by the pinned OASIS sources. Rust client structure and forwarding verified by source-derived tests. Server chain evaluation, trust and default-date policy are not locally verified. C/Java/Python parity remains gated by KMIPKIT-0043; two-server interoperability evidence remains unavailable."
+      "review_note": "No requirement-specific official Test Cases are linked by the pinned OASIS sources. Rust request representation, Certificate field repetition, and order preservation are verified by source-derived tests. This does not verify server-side certificate path evaluation or trust policy. C/Java/Python parity remains gated by KMIPKIT-0043; two-server interoperability evidence remains unavailable."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.57-005",

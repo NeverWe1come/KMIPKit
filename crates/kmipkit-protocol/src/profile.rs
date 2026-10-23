@@ -754,6 +754,7 @@ const LOCATE_OPERATION: u32 = 0x0000_0008;
 const REVOKE_OPERATION: u32 = 0x0000_0013;
 const VALIDATE_OPERATION: u32 = 0x0000_0017;
 const VALIDITY_DATE: u32 = 0x0042_009A;
+const VALIDATE_CERTIFICATE: u32 = 0x0042_0013;
 const REVOCATION_REASON: u32 = 0x0042_0081;
 const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
@@ -2190,6 +2191,34 @@ fn client_validate_validity_date_is_usable(
     })
 }
 
+fn client_validate_repeated_certificates_are_usable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != VALIDATE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == VALIDATE_CERTIFICATE)
+                    .all(|field| field.with_value(|value| matches!(value, ValueView::Structure(_))))
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn attribute_fields_do_not_mutate_key_value_present(
     payload: &StructureView<'_>,
     wrapper_tag: u32,
@@ -3011,6 +3040,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_validate_validity_date_is_usable),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_validity_date_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-004",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_validate_repeated_certificates_are_usable),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_validate_repeated_certificates_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
