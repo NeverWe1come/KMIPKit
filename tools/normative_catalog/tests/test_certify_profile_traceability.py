@@ -18,7 +18,11 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
         requirements = {
             record["requirement_id"]: record for record in catalog["requirements"]
         }
+        elements = {
+            record["element_id"]: record for record in catalog["elements"]
+        }
         requirement = requirements[REQUIREMENT_ID]
+        certify_element = elements["KMIPKIT-ELEM-OP-C2S-CERTIFY"]
 
         self.assertEqual(requirement["source_clause_ids"], [SOURCE_CLAUSE_ID])
         self.assertEqual(requirement["source_keyword"], "SHALL")
@@ -33,6 +37,15 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
         self.assertIn(
             f"{PROFILE_TEST_PATH}::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item",
             requirement["verification_refs"],
+        )
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", certify_element["implementation_refs"])
+        self.assertIn(
+            f"{PROFILE_TEST_PATH}::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
+            certify_element["verification_refs"],
+        )
+        self.assertIn(
+            f"{PROFILE_TEST_PATH}::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item",
+            certify_element["verification_refs"],
         )
 
         for reference in (
