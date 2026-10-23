@@ -1306,6 +1306,14 @@ fn client_can_repeat_request_attestation_types(
     request.is_some()
 }
 
+fn client_can_repeat_request_message_extensions(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §8.3 Table 396 permits repetition; the request model validates field shape.
+    request.is_some()
+}
+
 fn client_can_include_optional_create_split_key_source_identifier(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -3576,6 +3584,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_unique_batch_item_id_for_multi_item_requests",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-8.3-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.3-004",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_repeat_request_message_extensions),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_message_extensions_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
