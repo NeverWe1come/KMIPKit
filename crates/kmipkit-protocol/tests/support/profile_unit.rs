@@ -6768,6 +6768,107 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 }
 
 #[test]
+fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 links Cryptographic Algorithm
+    // in Register Attributes to Cryptographic Length. §3.1 Table 12 separately
+    // governs direct Key Block fields.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Register Algorithm/Length has a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    assert!(mapping.evaluator.is_some());
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+
+    let result = table12_profile_result(&[REQUIREMENT_ID]);
+    let algorithm_and_length = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            [
+                tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            ],
+        ),
+    );
+    result
+        .validate_request(&algorithm_and_length)
+        .expect("Register Attributes may provide Algorithm and Length together");
+
+    let no_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            [],
+        ),
+    );
+    result
+        .validate_request(&no_algorithm)
+        .expect("the conditional Table 293 rule allows Algorithm to be absent");
+}
+
+#[test]
+fn profile_rejects_client_register_algorithm_without_length_in_attributes() {
+    // KMIP Specification v2.1 §6.1.43 Table 293, Register Attributes column.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
+
+    let algorithm_without_length = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            [tagged(
+                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(3),
+            )],
+        ),
+    );
+    let error = table12_profile_result(&[REQUIREMENT_ID])
+        .validate_request(&algorithm_without_length)
+        .expect_err("a Register Algorithm requires Cryptographic Length");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+}
+
+#[test]
+fn profile_exempts_secret_data_from_register_algorithm_length_requirement() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 explicitly excludes Secret Data.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+
+    let secret_data_with_algorithm_only = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SECRET_DATA, false, false, None),
+            [tagged(
+                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(3),
+            )],
+        ),
+    );
+    table12_profile_result(&[REQUIREMENT_ID])
+        .validate_request(&secret_data_with_algorithm_only)
+        .expect("Table 293 Algorithm/Length requirements do not apply to Secret Data");
+}
+
+#[test]
 fn profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_blocks() {
     // KMIP Specification v2.1 §3.1 Table 12 exempts Secret Data and Opaque;
     // §2.3 Table 4 defines Opaque Data Type/Value, §11.35 Table 469 gives the
