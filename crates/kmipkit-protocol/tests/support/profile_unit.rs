@@ -1797,6 +1797,166 @@ fn profile_maps_validate_repeated_certificates_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.57 Table 340 makes Validate Unique
+    // Identifier fields optional and permits them to be repeated.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("repeated Validate Unique Identifiers have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Unique Identifier MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let certificate = || {
+        structure([
+            tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+            tagged(
+                CERTIFICATE_VALUE_TAG,
+                Value::byte_string(b"certificate".to_vec()),
+            ),
+        ])
+    };
+    let validate_request =
+        |payload| request_message_with_operation_payload(VALIDATE_OPERATION, payload);
+
+    let omitted_payload = crate::ValidateRequest::new()
+        .with_certificate(certificate())
+        .into_ttlv_payload()
+        .expect("a Validate request may omit the optional Unique Identifier fields");
+    assert_eq!(
+        omitted_payload
+            .view()
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [CERTIFICATE_TAG]
+    );
+    let omitted = validate_request(omitted_payload);
+    result
+        .validate_request(&omitted)
+        .expect("the optional Unique Identifier fields may be omitted");
+
+    let one_payload = crate::ValidateRequest::new()
+        .with_certificate(certificate())
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "first-certificate".to_owned(),
+        ))
+        .into_ttlv_payload()
+        .expect("one Unique Identifier is a valid Validate request");
+    assert_eq!(
+        one_payload
+            .view()
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [CERTIFICATE_TAG, UNIQUE_IDENTIFIER_TAG]
+    );
+    let one = validate_request(one_payload);
+    result
+        .validate_request(&one)
+        .expect("one Unique Identifier remains valid");
+
+    let repeated_payload = crate::ValidateRequest::new()
+        .with_certificate(certificate())
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "first-certificate".to_owned(),
+        ))
+        .with_unique_identifier(crate::UniqueIdentifier::Enumeration(0xf123_4567))
+        .with_unique_identifier(crate::UniqueIdentifier::Integer(-7))
+        .into_ttlv_payload()
+        .expect("repeated Unique Identifiers are represented in the request payload");
+    assert_eq!(
+        repeated_payload
+            .view()
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [
+            CERTIFICATE_TAG,
+            UNIQUE_IDENTIFIER_TAG,
+            UNIQUE_IDENTIFIER_TAG,
+            UNIQUE_IDENTIFIER_TAG
+        ]
+    );
+    let repeated_view = repeated_payload.view();
+    let identifiers = &repeated_view.children()[1..];
+    identifiers[0].with_value(|value| {
+        assert!(matches!(value, ValueView::TextString("first-certificate")));
+    });
+    identifiers[1].with_value(|value| {
+        assert!(matches!(value, ValueView::Enumeration(0xf123_4567)));
+    });
+    identifiers[2].with_value(|value| assert!(matches!(value, ValueView::Integer(-7))));
+    let repeated = validate_request(repeated_payload);
+    result
+        .validate_request(&repeated)
+        .expect("the request preserves multiple ordered Unique Identifier values");
+}
+
+#[test]
+fn profile_rejects_malformed_validate_unique_identifier_wire_type() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("repeated Validate Unique Identifiers have a typed profile rule");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let malformed = request_message_with_operation_payload(
+        VALIDATE_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::structure(Structure::new()),
+        )]),
+    );
+
+    assert!(!evaluate(Some(&malformed), None));
+    let error = result
+        .validate_request(&malformed)
+        .expect_err("Unique Identifier fields must use an identifier wire type");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+}
+
+#[test]
 fn profile_rejects_malformed_validate_validity_date_when_present() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
