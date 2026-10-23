@@ -3467,20 +3467,16 @@ final class ClientFacadeTlsIntegrationTest {
     }
 
     private static byte[] serveOneResponse(SSLServerSocket listener, byte[] response) throws Exception {
-        try (SSLSocket socket = (SSLSocket) listener.accept()) {
-            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
-            socket.setSoTimeout(10_000);
-            socket.startHandshake();
-            byte[] request = readFrame(socket.getInputStream());
-            OutputStream output = socket.getOutputStream();
-            output.write(response);
-            output.flush();
-            return request;
-        }
+        return serveOneResponse(listener, response, false);
     }
 
     private static byte[] serveLifecycleResponseWithoutFollowUp(
             SSLServerSocket listener, byte[] response) throws Exception {
+        return serveOneResponse(listener, response, true);
+    }
+
+    private static byte[] serveOneResponse(
+            SSLServerSocket listener, byte[] response, boolean assertNoFollowUp) throws Exception {
         try (SSLSocket socket = (SSLSocket) listener.accept()) {
             socket.setEnabledProtocols(new String[] {"TLSv1.3"});
             socket.setSoTimeout(10_000);
@@ -3490,14 +3486,16 @@ final class ClientFacadeTlsIntegrationTest {
             output.write(response);
             output.flush();
 
-            socket.setSoTimeout(250);
-            try {
-                int followUp = socket.getInputStream().read();
-                if (followUp >= 0) {
-                    throw new AssertionError("unexpected lifecycle follow-up request");
+            if (assertNoFollowUp) {
+                socket.setSoTimeout(250);
+                try {
+                    int followUp = socket.getInputStream().read();
+                    if (followUp >= 0) {
+                        throw new AssertionError("unexpected lifecycle follow-up request");
+                    }
+                } catch (SocketTimeoutException expected) {
+                    // No bytes arrived on the original TLS connection after its response.
                 }
-            } catch (SocketTimeoutException expected) {
-                // No bytes arrived on the original TLS connection after its response.
             }
             return request;
         }

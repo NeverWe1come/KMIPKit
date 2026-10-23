@@ -5686,3 +5686,8 @@ mapping only and do not claim KMIP conformance or profile support.
 The Windows Rust/JNI builds emitted existing AWS-LC stdalign/NASM probe and
 linker warnings; all recorded commands exited successfully. This follow-up
 does not close platform CI, workspace coverage, or release verification gates.
+
+| Refactor | this commit | `mvn -f bindings/java/pom.xml '-Dtest=ClientFacadeTlsIntegrationTest#lifecycleRequestsPreserveIdentifiersAndFailurePendingResponsesWithoutFollowUp' '-Dkmipkit.nativeLibrary=C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\bindings\java\target\native\kmipkit_jni.dll' test -q` | Pass, 1 test; the TLS peer setup is shared by the one-response helpers while no-follow-up checking remains opt-in. |
+| Refactor | this commit | From `bindings/python`, with `PYTHONPATH=src` and `KMIPKIT_NATIVE_LIBRARY=C:\Users\ramp1953\.codex\worktrees\0043-t076-client-mapping\KMIPKit\target\debug\kmipkit_ffi.dll`: ` .\.venv-codex\Scripts\python.exe -m pytest tests\test_lifecycle_operations.py tests\test_lifecycle_native_integration.py -q` | Pass, 13 tests. |
+| Refactor | this commit | `uv run --with-requirements tools/api_manifest/requirements-test.txt python -B -m unittest tools.api_manifest.tests.test_lifecycle_parity_manifest tools.api_manifest.tests.test_operation_readiness -v`; `python -B tools/api_manifest/generate.py --check` | Pass, 19 tests; all 12 generated outputs verified. |
+| Refactor | this commit | `cargo fmt --all --check`; `git diff --check` | Pass. |
