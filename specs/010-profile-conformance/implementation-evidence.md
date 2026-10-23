@@ -5029,3 +5029,17 @@ Terminology now distinguishes the `OptionalCapability` verification category fro
 | Rust quality and diff | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `git diff --check` | PASS. Clippy emitted only existing non-fatal AWS-LC/MSVC/NASM environment warnings. |
 
 No runtime behavior changed. The client requirement no longer cross-links the response element, the response mapping remains unchanged, and T040 remains open with no profile-conformance claim.
+
+
+### Re-review follow-up — remove the stale reverse association (2026-10-23)
+
+The response element `KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION` still reverse-linked client request requirement `KMIPKIT-REQ-SPEC-8.3-004` after its forward link had been removed. Removed only that stale ID; its `requirement_ids` retains `KMIPKIT-REQ-SPEC-9.13-001-001` and `KMIPKIT-REQ-SPEC-9.13-001-002`. Extended `test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk` to assert the exact request forward links and directions, the matching reverse associations on the request and structure elements, and the response element's preserved requirement IDs and `server_to_client` direction. Its forward-link assertion also rejects reintroduction of the stale request-to-response association; the earlier forward-link Red result is recorded in the preceding review follow-up.
+
+| Check | Command | Result |
+|---|---|---|
+| Red reverse-link regression | Focused `ProfileMetadataGeneratorTests.test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk` unittest before reverse-link correction | Expected failure: the response element still listed the client-to-server requirement. |
+| Green crosswalk regression | Same focused unittest after correction | PASS: forward request links, matching reverse request/structure links, and preserved §9.13 associations on the response element are consistent. |
+| Catalog/report | `py -3 -B tools/normative_catalog/report.py --write`; `py -3 -B tools/normative_catalog/validate.py --repo-root .` | PASS: report regenerated; catalog valid with 4 sources, 1,411 clauses, and 4,123 records. |
+| Generator checks | `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/generate_attribute_policy.py --check`; `py -3 -B tools/normative_catalog/report.py --check` | PASS: all deterministic generated outputs are current. |
+| Focused catalog test | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk -v` | PASS: one test; checks forward and reverse IDs, preserves the §9.13 associations, and checks element directions. |
+| Rust checks | `cargo test -p kmipkit-protocol --lib profile_maps_repeated_request_message_extensions_as_optional_capability --locked -- --nocapture`; `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `git diff --check` | PASS: focused Rust test, formatting, Clippy, and diff check. Clippy emitted only existing non-fatal AWS-LC/MSVC/NASM environment warnings. |
