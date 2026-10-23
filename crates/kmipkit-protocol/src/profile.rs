@@ -711,6 +711,7 @@ struct TypedRuleMapping {
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
 const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
+const CERTIFY_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const SPECIFICATION_TAG_PREFIX: u32 = 0x42;
 const EXTENSION_TAG_PREFIX: u32 = 0x54;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -886,6 +887,38 @@ fn client_certify_certificate_request_value_is_omittable(
                     .all(|field| {
                         field.with_value(|value| matches!(value, ValueView::ByteString(_)))
                     })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_certify_omitted_request_requires_unique_identifier(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CERTIFY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let has_certificate_request = payload
+                    .children()
+                    .iter()
+                    .any(|field| field.tag().raw() == CERTIFICATE_REQUEST_VALUE);
+                has_certificate_request
+                    || payload
+                        .children()
+                        .iter()
+                        .any(|field| field.tag().raw() == CERTIFY_UNIQUE_IDENTIFIER)
             })
             .unwrap_or(false)
     })
@@ -3117,6 +3150,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_request_object_as_optional_capability",
             kind: RuleTestKind::OptionalCapabilityUsable,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_certify_omitted_request_requires_unique_identifier),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

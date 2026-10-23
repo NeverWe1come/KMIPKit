@@ -57002,7 +57002,11 @@
         "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_request_object_as_optional_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_request_identifier_as_required_behavior",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_request_value_without_unique_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item"
       ],
       "payload_tables": [
@@ -97024,16 +97028,21 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/certify.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_request_identifier_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_request_value_without_unique_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-013",
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "The §6.1.6 paragraph 2 condition is enforced in the outbound typed Baseline Client profile: when Certificate Request Value is omitted, a direct Unique Identifier must be present. This follows approved KMIPKIT-DEC-013 and does not substitute an ID Placeholder for the public-key input. The profile permits Unique Identifier omission when Certificate Request Value is present; Certificate Type's sibling condition remains a separate mapping. Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-002-003",
