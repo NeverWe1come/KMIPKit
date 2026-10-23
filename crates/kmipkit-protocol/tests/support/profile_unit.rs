@@ -7918,6 +7918,10 @@ const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-00
 const CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 const CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-002";
 const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
+const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID: &str =
+    "KMIPKIT-REQ-SPEC-6.1.6-002-003";
+const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_SOURCE_CLAUSE_ID: &str =
+    "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 
 fn certify_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
@@ -7931,6 +7935,24 @@ fn certify_omitted_value_identifier_profile_result() -> ProfileValidationResult 
         profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
         requirement_ids: vec![CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID.to_owned()],
     }
+}
+
+fn certify_omitted_request_certificate_type_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn certify_payload_with_omitted_request_fields(attributes: Option<Value>) -> Structure {
+    let mut payload = vec![tagged(
+        UNIQUE_IDENTIFIER_TAG,
+        Value::text_string("public-key".to_owned()),
+    )];
+    if let Some(attributes) = attributes {
+        payload.push(tagged(ATTRIBUTES_TAG, attributes));
+    }
+    structure(payload)
 }
 
 fn certify_payload_with_request_values(count: usize) -> Structure {
@@ -8205,4 +8227,136 @@ fn profile_accepts_certify_request_value_without_unique_identifier() {
     certify_omitted_value_identifier_profile_result()
         .validate_request(&request)
         .expect("the Unique Identifier condition does not apply when request material is present");
+}
+
+#[test]
+fn profile_maps_omitted_certify_certificate_type_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.6 paragraph 2 requires Certificate Type
+    // inside Attributes when both Certificate Request fields are omitted;
+    // Table 41 defines the attribute's TTLV type as Enumeration.
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| {
+            mapping.requirement_id == CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID
+        })
+        .expect("the conditional Certify Certificate Type SHALL has a typed mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| {
+            requirement.requirement_id == CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID
+        })
+        .expect("the conditional Certify SHALL resolves to normative metadata");
+
+    assert_eq!(
+        mapping.source_clause_id,
+        CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(CERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::PositiveBehavior
+            && evidence
+                .test_id
+                .ends_with("profile_accepts_omitted_certify_certificate_type_in_attributes")
+    }));
+    let evaluate = mapping
+        .evaluator
+        .expect("the required behavior has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let unrelated_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    assert!(evaluate(Some(&unrelated_request), None));
+}
+
+#[test]
+fn profile_accepts_omitted_certify_certificate_type_in_attributes() {
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+
+    let attributes = Value::structure(structure([tagged(
+        CERTIFICATE_TYPE_TAG,
+        Value::enumeration(1),
+    )]));
+    let request = request_message_with_operation_payload(
+        CERTIFY_OPERATION,
+        certify_payload_with_omitted_request_fields(Some(attributes)),
+    );
+
+    certify_omitted_request_certificate_type_profile_result()
+        .validate_request(&request)
+        .expect("an omitted Certificate Request pair specifies Certificate Type in Attributes");
+}
+
+#[test]
+fn profile_rejects_omitted_certify_certificate_type_when_attribute_missing() {
+    let request = request_message_with_operation_payload(
+        CERTIFY_OPERATION,
+        certify_payload_with_omitted_request_fields(None),
+    );
+    let error = certify_omitted_request_certificate_type_profile_result()
+        .validate_request(&request)
+        .expect_err("omitting both Certificate Request fields requires Certificate Type");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
+fn profile_rejects_malformed_certificate_type_attribute_when_request_fields_are_omitted() {
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+
+    let malformed_attributes = [
+        Value::structure(structure([tagged(CERTIFICATE_TYPE_TAG, Value::integer(1))])),
+        Value::enumeration(1),
+    ];
+    for attributes in malformed_attributes {
+        let request = request_message_with_operation_payload(
+            CERTIFY_OPERATION,
+            certify_payload_with_omitted_request_fields(Some(attributes)),
+        );
+        let error = certify_omitted_request_certificate_type_profile_result()
+            .validate_request(&request)
+            .expect_err("Certificate Type must be an Enumeration within Attributes");
+
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(
+            error.requirement_id(),
+            Some(CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID)
+        );
+        assert_eq!(
+            error.source_clause_id(),
+            Some(CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_SOURCE_CLAUSE_ID)
+        );
+    }
+}
+
+#[test]
+fn profile_accepts_certificate_request_fields_without_certificate_type_attribute() {
+    let payload = crate::CertifyRequest::new()
+        .with_certificate_request_type(1)
+        .with_certificate_request_value(crate::SecretBytes::new(vec![0x30, 0x00]))
+        .into_ttlv_payload()
+        .expect("a supplied Certificate Request Value includes its required request type");
+    let request = request_message_with_operation_payload(CERTIFY_OPERATION, payload);
+
+    certify_omitted_request_certificate_type_profile_result()
+        .validate_request(&request)
+        .expect("Certificate Type is conditional on both Certificate Request fields being omitted");
 }

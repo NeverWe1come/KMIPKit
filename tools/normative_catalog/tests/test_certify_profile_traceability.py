@@ -146,6 +146,63 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
             path = ROOT / reference.partition("::")[0]
             self.assertTrue(path.is_file(), reference)
 
+    def test_omitted_certify_request_fields_require_certificate_type_attribute(self) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.6-002-003"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.6-002"
+        profile_tests = (
+            f"{PROFILE_TEST_PATH}::profile_accepts_omitted_certify_certificate_type_in_attributes",
+            f"{PROFILE_TEST_PATH}::profile_rejects_omitted_certify_certificate_type_when_attribute_missing",
+            f"{PROFILE_TEST_PATH}::profile_rejects_malformed_certificate_type_attribute_when_request_fields_are_omitted",
+            f"{PROFILE_TEST_PATH}::profile_accepts_certificate_request_fields_without_certificate_type_attribute",
+        )
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirements = {
+            record["requirement_id"]: record for record in catalog["requirements"]
+        }
+        elements = {
+            record["element_id"]: record for record in catalog["elements"]
+        }
+        requirement = requirements[requirement_id]
+        certify_element = elements["KMIPKIT-ELEM-OP-C2S-CERTIFY"]
+        certificate_type_element = elements["KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE"]
+
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertEqual(requirement["source_refs"][0]["section"], "6.1.6")
+        self.assertEqual(requirement["source_keyword"], "SHALL")
+        self.assertEqual(requirement["normative_strength"], "mandatory")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(
+            requirement["condition"],
+            "When both request fields are omitted.",
+        )
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertIsNone(requirement["decision_id"])
+        self.assertIn("KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE", requirement["element_ids"])
+        self.assertIn(requirement_id, certificate_type_element["requirement_ids"])
+        self.assertEqual(certificate_type_element["source_encoding"], "Enumeration")
+        self.assertIn(
+            {"source_id": "KMIPKIT-SRC-spec", "section": "4.7"},
+            certificate_type_element["source_refs"],
+        )
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", certify_element["implementation_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/src/profile.rs",
+            certificate_type_element["implementation_refs"],
+        )
+        for profile_test in profile_tests:
+            self.assertIn(profile_test, requirement["verification_refs"])
+            self.assertIn(profile_test, certify_element["verification_refs"])
+            self.assertIn(profile_test, certificate_type_element["verification_refs"])
+
+        for reference in (
+            "crates/kmipkit-protocol/src/profile.rs",
+            *requirement["verification_refs"],
+        ):
+            path = ROOT / reference.partition("::")[0]
+            self.assertTrue(path.is_file(), reference)
+
 
 if __name__ == "__main__":
     unittest.main()
