@@ -95574,7 +95574,8 @@
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_count_key_block_length_from_a_non_object_register_structure",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_applies_register_algorithm_length_rule_to_standard_object_types"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_applies_register_algorithm_length_rule_to_standard_object_types",
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_object_key_block_length_sources"
       ],
       "negative_verification_required": false,
       "decision_id": null,

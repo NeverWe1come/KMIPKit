@@ -7019,6 +7019,88 @@ fn profile_does_not_count_key_block_length_from_a_non_object_register_structure(
 }
 
 #[test]
+fn profile_rejects_malformed_register_object_key_block_length_sources() {
+    // KMIP Specification v2.1 §6.1.43 Table 293; §§3.1–3.2 Tables 12–13.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
+    let result = table12_profile_result(&[REQUIREMENT_ID]);
+    let request_for_object = |object: Option<Item>| {
+        let mut fields = vec![
+            tagged(
+                TABLE12_OBJECT_TYPE,
+                Value::enumeration(TABLE12_SYMMETRIC_KEY_OBJECT_TYPE),
+            ),
+            tagged(
+                TABLE12_ATTRIBUTES,
+                Value::structure(structure([tagged(
+                    TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                    Value::enumeration(3),
+                )])),
+            ),
+        ];
+        fields.extend(object);
+        request_message_with_operation_payload(TABLE12_REGISTER_OPERATION, structure(fields))
+    };
+    let assert_rejected = |request: &crate::RequestMessage| {
+        assert!(!super::client_register_algorithm_requires_length(
+            Some(request),
+            None,
+        ));
+        let error = result
+            .validate_request(request)
+            .expect_err("malformed Key Block evidence cannot satisfy Table 293");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    };
+
+    assert_rejected(&request_for_object(None));
+    assert_rejected(&request_for_object(Some(tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::integer(1),
+    ))));
+    assert_rejected(&request_for_object(Some(tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([tagged(TABLE12_KEY_BLOCK, Value::integer(1))])),
+    ))));
+    assert_rejected(&request_for_object(Some(tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([tagged(
+            TABLE12_KEY_BLOCK,
+            Value::structure(structure([
+                tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(128)),
+                tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            ])),
+        )])),
+    ))));
+    assert_rejected(&request_for_object(Some(tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([tagged(
+            TABLE12_KEY_BLOCK,
+            Value::structure(structure([
+                tagged(TABLE12_KEY_FORMAT_TYPE, Value::enumeration(1)),
+                tagged(
+                    TABLE12_KEY_VALUE,
+                    Value::byte_string(b"opaque wrapped value".to_vec()),
+                ),
+            ])),
+        )])),
+    ))));
+    assert_rejected(&request_for_object(Some(tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([tagged(
+            TABLE12_KEY_BLOCK,
+            Value::structure(structure([tagged(
+                TABLE12_KEY_VALUE,
+                Value::structure(structure([tagged(
+                    TABLE12_ATTRIBUTES,
+                    Value::structure(Structure::new()),
+                )])),
+            )])),
+        )])),
+    ))));
+}
+
+#[test]
 fn profile_applies_register_algorithm_length_rule_to_standard_object_types() {
     // KMIP Specification v2.1 §§2.1–2.9 and §6.1.43 Table 293.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
