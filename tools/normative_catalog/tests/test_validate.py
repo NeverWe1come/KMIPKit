@@ -18433,6 +18433,7 @@ class CatalogValidationTests(unittest.TestCase):
                         "    TypedRuleMapping {\n"
                         f'        requirement_id: "{requirement_id}",\n'
                         f'        source_clause_id: "{source_clause_id}",\n'
+                        "        source_gap_id: None,\n"
                         "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
                         "        evaluator: Some(request_capability_rule),\n"
                         "        test_evidence: &[RuleTestEvidence {\n"
@@ -18537,6 +18538,7 @@ class CatalogValidationTests(unittest.TestCase):
             "    TypedRuleMapping {\n"
             f'        requirement_id: "{requirement_id}",\n'
             f'        source_clause_id: "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL",\n'
+            "        source_gap_id: None,\n"
             "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
             "        evaluator: Some(response_capability_rule),\n"
             "        test_evidence: &[RuleTestEvidence {\n"
@@ -18607,6 +18609,7 @@ class CatalogValidationTests(unittest.TestCase):
             "    TypedRuleMapping {\n"
             f'        requirement_id: "{requirement_id}",\n'
             '        source_clause_id: "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL",\n'
+            "        source_gap_id: None,\n"
             "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
             "        evaluator: Some(request_capability_rule),\n"
             "        test_evidence: &[RuleTestEvidence {\n"

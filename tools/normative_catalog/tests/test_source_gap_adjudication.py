@@ -877,7 +877,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(
             {status: sum(row["status"] == status for row in requirements)
              for status in ("verified", "scoped_verified", "unassigned")},
-            {"verified": 24, "scoped_verified": 6, "unassigned": 27},
+            {"verified": 23, "scoped_verified": 7, "unassigned": 27},
         )
 
         for requirement in requirements:

@@ -218,6 +218,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-3.1-001",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: None,
         test_evidence: &[RuleTestEvidence {
@@ -232,6 +233,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.1-002",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         evaluator: None,
         test_evidence: &[RuleTestEvidence {
@@ -265,6 +267,7 @@ class CoverageReportTests(unittest.TestCase):
                     {
                         "requirement_id": "KMIPKIT-REQ-PROF-3.1-001",
                         "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1-001",
+                        "source_gap_id": None,
                         "verification_category": "RequiredBehavior",
                         "evaluator_present": False,
                         "transport_only": True,
@@ -277,6 +280,7 @@ class CoverageReportTests(unittest.TestCase):
                     {
                         "requirement_id": "KMIPKIT-REQ-PROF-3.1.1-002",
                         "source_clause_id": "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+                        "source_gap_id": None,
                         "verification_category": "RecommendedBehaviorOrDeviation",
                         "evaluator_present": False,
                         "transport_only": True,
@@ -305,6 +309,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -334,6 +339,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -370,6 +376,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -405,6 +412,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -440,6 +448,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -475,6 +484,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -507,6 +517,7 @@ class CoverageReportTests(unittest.TestCase):
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -543,6 +554,7 @@ mod unrelated {
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -584,6 +596,7 @@ mod unrelated {
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -621,6 +634,7 @@ mod unrelated {
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -657,6 +671,7 @@ mod unrelated {
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -693,6 +708,7 @@ mod unrelated {
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
         test_evidence: &[RuleTestEvidence {
@@ -729,6 +745,7 @@ mod unrelated {
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(run_unreviewed_macro!()),
         test_evidence: &[],

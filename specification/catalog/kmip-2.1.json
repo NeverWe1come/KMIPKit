@@ -86242,7 +86242,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §12 requires all mask values to use TTLV Integer encoding. The typed profile evaluator checks Cryptographic Usage Mask, Protection Storage Mask, and Storage Status Mask recursively in outbound requests and received responses. Project tests accept signed Integer boundary values and reject Enumeration encodings. The pinned OASIS Test Cases do not link a requirement-specific case; this project test is local evidence and does not establish profile conformance."
+      "review_note": "KMIP Specification v2.1 §12 requires all mask values to use TTLV Integer encoding. The typed profile evaluator checks Cryptographic Usage Mask, Protection Storage Mask, and Storage Status Mask recursively in outbound requests and received responses. Project tests accept signed Integer boundary values and reject Enumeration encodings. The pinned OASIS source set links no official OASIS Test Case to this requirement; this project test is local evidence and does not establish profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-12-001-002",
