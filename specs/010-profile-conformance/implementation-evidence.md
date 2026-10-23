@@ -5108,3 +5108,20 @@ The Baseline Client now has 71 typed mappings of 265 assigned requirements; 194 
 | Independent reviews | QA re-review `a83c2015..38132345`; security review of the same range | PASS: both reviewers report no actionable findings; QA confirms the two earlier findings are resolved. |
 
 The generated coverage report is refreshed and records the typed mapping and executable evidence. The Baseline Client now has 72 typed mappings of 265 assigned requirements; 193 remain unmapped. Three mandatory fixtures remain blocked by typed preflight and 77 remain unavailable. No official Test Case pass or profile-conformance claim is made. T040 remains open, readiness remains `evidence_incomplete`, and exact-head hosted CI remains pending.
+
+
+### Changed-Rust coverage correction — malformed Register sources (2026-10-23)
+
+Hosted run 39963186331 failed only the selected changed-Rust coverage gate at 2,973/3,133 executable lines (94.89%). Added a traceable regression for malformed Register object and Key Block evidence: missing object, wrong object value type, wrong Key Block type, duplicate Cryptographic Length, opaque wrapped Key Value bytes, and nested Key Value Attributes without Cryptographic Length. Each case rejects the Table 293 pairing before it can be counted as profile evidence. The existing implementation already rejects these inputs; this change adds executable evidence and does not change runtime behavior.
+
+| Check | Command or evidence | Result |
+|---|---|---|
+| Red — hosted threshold | GitHub Actions run `39963186331`, head `053a5dcc` | Expected failure: changed Rust coverage 2,973/3,133 (94.89%); all coverage producers completed. |
+| Green — regression | DCO-signed commit `7ac7e23c`; `cargo test -p kmipkit-protocol --lib profile_rejects_malformed_register_object_key_block_length_sources --all-features --locked` | PASS: all malformed source shapes are rejected with the exact requirement and source-clause IDs. |
+| Rust workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/coverage-raw.json`; normalized report and summary | PASS: workspace line coverage 31,850/33,374 (95.43%); `crates/kmipkit-protocol/src/profile.rs` 2,602/2,718 (95.73%). All workspace tests completed under coverage instrumentation; three local Cosmian tests remain ignored because the server is not installed. |
+| Selected-scope reaggregation | `scripts/coverage_gate.py aggregate` with the new Windows report, prior hosted Linux/macOS and adapter reports, base `d5d5ab75`, and merge `7ac7e23c` | PASS locally: changed Rust 2,979/3,133 (95.08%); TTLV 99.19%, protocol 96.73%, transport 95.16%, FFI 95.87%, Java 96.01%, Python 98.37%, JNI 90.92%, workspace 96.55%. Hosted exact-head CI remains authoritative. |
+| Catalog and generated evidence | `tools/normative_catalog/report.py --write`; catalog validator; profile, attribute-policy, and report `--check` commands | PASS: catalog valid with 4 sources, 1,411 clauses, and 4,123 records; generated outputs are current. |
+| Normative catalog tests | `python -B -m unittest discover -s tools/normative_catalog/tests -v` | PASS: 660 tests, 10 skipped. |
+| Format and lint | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `git diff --check` | PASS. Only the previously observed non-fatal AWS-LC/MSVC/NASM environment warnings remain. |
+
+The catalog verification reference and generated coverage report now include the malformed-input test. Baseline remains at 72 typed mappings of 265 assigned requirements, with 193 unmapped. T040 remains open; no profile-conformance claim is made. The complete normative catalog suite passes (660 tests, 10 skipped); exact-head hosted CI remains pending.
