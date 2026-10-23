@@ -715,6 +715,15 @@ impl ClientRequest {
             Self::AddAttribute(request) => request.unique_identifier().is_none(),
             Self::AdjustAttribute(request) => request.unique_identifier().is_none(),
             Self::Archive(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
+            // Certify's direct Unique Identifier identifies the public key
+            // when the request value is omitted, but an explicit Enumeration(1)
+            // with request material selects the prior batch placeholder.
+            Self::Certify(request) => matches!(
+                request.unique_identifier(),
+                Some(UniqueIdentifier::Enumeration(
+                    ID_PLACEHOLDER_ENUMERATION_VALUE
+                ))
+            ),
             Self::Check(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
             Self::DeleteAttribute(request) => request.unique_identifier().is_none(),
             Self::Destroy(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
