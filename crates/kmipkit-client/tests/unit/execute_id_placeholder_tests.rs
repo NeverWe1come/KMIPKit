@@ -3,9 +3,10 @@
 //! ID Placeholder operation classification derived from KMIP Specification v2.1 §6.1 and operation clauses.
 
 use kmipkit_protocol::{
-    AttributeSet, CreateRequest, CreateSplitKeyRequest, DerivationMethod, DerivationParameters,
-    DeriveKeyRequest, ExportRequest, ImportRequest, JoinSplitKeyRequest, ObjectType,
-    RecertifyRequest, SecretBytes, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
+    AttributeSet, CertifyRequest, CreateRequest, CreateSplitKeyRequest, DerivationMethod,
+    DerivationParameters, DeriveKeyRequest, ExportRequest, ImportRequest, JoinSplitKeyRequest,
+    ObjectType, RecertifyRequest, SecretBytes, SplitKeyMethod, SplitKeyReference,
+    UniqueIdentifier,
 };
 use kmipkit_ttlv::Value;
 
@@ -74,8 +75,17 @@ fn create_split_key_can_select_a_preceding_placeholder_before_producing_its_resu
     );
 }
 
-fn explicit_id_placeholder_consumers() -> [(&'static str, ClientRequest); 3] {
+fn explicit_id_placeholder_consumers() -> [(&'static str, ClientRequest); 4] {
     [
+        (
+            "Certify Unique Identifier with Certificate Request Value",
+            ClientRequest::Certify(
+                CertifyRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::Enumeration(1))
+                    .with_certificate_request_type(1)
+                    .with_certificate_request_value(SecretBytes::new(vec![1])),
+            ),
+        ),
         (
             "Import Unique Identifier",
             ClientRequest::Import(ImportRequest::new(
@@ -109,7 +119,7 @@ fn explicit_id_placeholder_consumers() -> [(&'static str, ClientRequest); 3] {
 }
 
 #[test]
-fn explicit_id_placeholder_in_import_join_split_key_and_recertify_is_a_consumer() {
+fn explicit_id_placeholder_in_certify_import_join_split_key_and_recertify_is_a_consumer() {
     for (field, request) in explicit_id_placeholder_consumers() {
         assert!(
             request.uses_id_placeholder(),
@@ -125,7 +135,7 @@ fn explicit_id_placeholder_in_import_join_split_key_and_recertify_is_a_consumer(
 }
 
 #[test]
-fn explicit_id_placeholder_consumers_reject_false_batch_order_before_send() {
+fn explicit_id_placeholder_consumers_including_certify_reject_false_batch_order_before_send() {
     for (field, request) in explicit_id_placeholder_consumers() {
         let batch = super::ClientBatch::from_items([
             super::ClientBatchItem::new(ClientRequest::Create(CreateRequest::new(
