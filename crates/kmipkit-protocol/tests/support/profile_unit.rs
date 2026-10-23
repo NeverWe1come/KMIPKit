@@ -5933,6 +5933,10 @@ fn valid_secret_data_wrapping() -> Value {
     ]))
 }
 
+fn wrapping_data_without_key_information() -> Value {
+    Value::structure(structure([tagged(0x0042_009E, Value::enumeration(1))]))
+}
+
 fn register_wrapped_key_without_wrapping_key_information() -> crate::RequestMessage {
     const OBJECT_TYPE: u32 = 0x0042_0057;
     const ATTRIBUTES: u32 = 0x0042_0125;
@@ -5941,7 +5945,6 @@ fn register_wrapped_key_without_wrapping_key_information() -> crate::RequestMess
     const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
     const KEY_VALUE: u32 = 0x0042_0045;
     const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
-    const WRAPPING_METHOD: u32 = 0x0042_009E;
     const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
     const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 
@@ -5966,13 +5969,7 @@ fn register_wrapped_key_without_wrapping_key_information() -> crate::RequestMess
                             KEY_VALUE,
                             Value::byte_string(b"synthetic-wrapped-key".to_vec()),
                         ),
-                        tagged(
-                            KEY_WRAPPING_DATA,
-                            Value::structure(structure([tagged(
-                                WRAPPING_METHOD,
-                                Value::enumeration(1),
-                            )])),
-                        ),
+                        tagged(KEY_WRAPPING_DATA, wrapping_data_without_key_information()),
                     ])),
                 )])),
             ),
@@ -6106,10 +6103,7 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
 
     let malformed_import = secret_data_import_request(
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
-        Some(Value::structure(structure([tagged(
-            0x0042_009E,
-            Value::enumeration(1),
-        )]))),
+        Some(wrapping_data_without_key_information()),
     );
     let error = result
         .validate_request(&malformed_import)
