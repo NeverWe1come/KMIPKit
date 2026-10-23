@@ -1306,10 +1306,11 @@ fn client_can_repeat_request_attestation_types(
     request.is_some()
 }
 
-fn client_advertises_attestation_capability_when_credential_creation_is_supported(
+fn client_sets_attestation_indicator_true(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
+    // §9.3 treats absence as False, so supported clients must send True explicitly.
     request.is_some_and(|request| request.header().attestation_capable_indicator() == Some(true))
 }
 
@@ -3520,9 +3521,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(
-            client_advertises_attestation_capability_when_credential_creation_is_supported,
-        ),
+        evaluator: Some(client_sets_attestation_indicator_true),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_capable_indicator_when_client_can_create_credential",

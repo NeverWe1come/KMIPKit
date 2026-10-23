@@ -229,7 +229,10 @@ fn request_message_with_attestation_capable_indicator(
     header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(1)));
 
     crate::RequestMessage::try_from_ttlv(structure([
-        tagged(REQUEST_HEADER_TAG, Value::structure(structure(header_items))),
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure(header_items)),
+        ),
         tagged(
             BATCH_ITEM_TAG,
             Value::structure(structure([
@@ -3550,7 +3553,10 @@ fn profile_requires_attestation_capable_indicator_when_client_can_create_credent
     };
 
     let advertised = request_message_with_attestation_capable_indicator(Some(true));
-    assert_eq!(advertised.header().attestation_capable_indicator(), Some(true));
+    assert_eq!(
+        advertised.header().attestation_capable_indicator(),
+        Some(true)
+    );
     assert!(evaluate(Some(&advertised), None));
     result
         .validate_request(&advertised)
