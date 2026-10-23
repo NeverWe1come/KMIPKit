@@ -5758,6 +5758,31 @@ failure:
     return 0;
 }
 
+static int lifecycle_constructors_are_callable_from_c(void) {
+    kmipkit_client_batch_item_t *activate = 0;
+    kmipkit_client_batch_item_t *archive = 0;
+    kmipkit_client_batch_item_t *destroy = 0;
+    kmipkit_client_batch_item_t *recover = 0;
+    if (kmipkit_client_batch_item_activate(0, &activate) != 0 || activate == 0 ||
+        kmipkit_client_batch_item_archive(0, &archive) != 0 || archive == 0 ||
+        kmipkit_client_batch_item_destroy(0, &destroy) != 0 || destroy == 0 ||
+        kmipkit_client_batch_item_recover(0, &recover) != 0 || recover == 0) {
+        goto failure;
+    }
+    kmipkit_client_batch_item_release(activate);
+    kmipkit_client_batch_item_release(archive);
+    kmipkit_client_batch_item_release(destroy);
+    kmipkit_client_batch_item_release(recover);
+    return 1;
+
+failure:
+    kmipkit_client_batch_item_release(activate);
+    kmipkit_client_batch_item_release(archive);
+    kmipkit_client_batch_item_release(destroy);
+    kmipkit_client_batch_item_release(recover);
+    return 0;
+}
+
 int kmipkit_client_abi_c_consumer_execute_tls(
     int argc, char **argv, kmipkit_codec_limits_t *limits) {
     int rekey_key_pair_only = 0;
@@ -5824,6 +5849,7 @@ int main(int argc, char **argv) {
         !get_constraints_response_accessor_clears_outputs_from_c() ||
         !get_locate_abi_is_callable_from_c() ||
         !ping_query_abi_is_callable() ||
+        !lifecycle_constructors_are_callable_from_c() ||
         !obtain_lease_abi_is_callable_from_c() ||
         !get_usage_allocation_constructor_is_callable_from_c() ||
         !import_constructor_rejects_invalid_table_238_inputs_from_c() ||

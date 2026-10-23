@@ -357,6 +357,22 @@ ffi.cdef(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
         kmipkit_ttlv_structure_t **out_response_ttlv);
+    int32_t kmipkit_client_batch_item_response_activate(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_archive(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_destroy(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
+    int32_t kmipkit_client_batch_item_response_recover(
+        kmipkit_client_batch_item_response_t *item,
+        uint8_t *out_present,
+        kmipkit_unique_identifier_v1_t *out_unique_identifier);
     int32_t kmipkit_client_batch_item_response_obtain_lease(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,
@@ -693,6 +709,18 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_get_usage_allocation(
         const kmipkit_unique_identifier_v1_t *unique_identifier,
         int64_t usage_limits_count,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_activate(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_archive(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_destroy(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_recover(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_obtain_lease(
         const kmipkit_unique_identifier_v1_t *unique_identifier,

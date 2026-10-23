@@ -10,11 +10,12 @@ use std::thread;
 use base64::Engine;
 use kmipkit_client::{Client, ClientBatchResponse, ClientError, ClientErrorCategory};
 use kmipkit_protocol::{
-    AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateSplitKeyRequest,
-    DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest, ExportRequest,
-    GetRequest, GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
-    LocateRequest, LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OperationData, Pkcs11Request, ReProvisionRequest, RecertifyRequest,
+    ActivateRequest, ArchiveRequest, AttributeSet, CertifyRequest, CheckRequest,
+    CreateKeyPairRequest, CreateSplitKeyRequest, DelegatedLoginRequest, DerivationMethod,
+    DerivationParameters, DeriveKeyRequest, DestroyRequest, ExportRequest, GetRequest,
+    GetUsageAllocationRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, LocateRequest,
+    LogRequest, LoginRequest, LogoutRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OperationData, Pkcs11Request, ReProvisionRequest, RecertifyRequest, RecoverRequest,
     RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
     RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SplitKeyMethod, SplitKeyReference,
     StorageStatusMask, Ticket, TicketType, UniqueIdentifier, ValidateRequest,
@@ -36,6 +37,8 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 use super::*;
 use crate::kmipkit_byte_span_v1_t;
 
+#[path = "lifecycle_operation_abi_tests.rs"]
+mod lifecycle_operation_abi_tests;
 #[path = "query_ping_abi_tests.rs"]
 mod query_ping_abi_tests;
 #[path = "set_constraints_abi_tests.rs"]

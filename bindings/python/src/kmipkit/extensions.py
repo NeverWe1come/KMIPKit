@@ -100,6 +100,10 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_set_constraints",
         "kmipkit_client_batch_item_set_defaults",
         "kmipkit_client_batch_item_validate",
+        "kmipkit_client_batch_item_activate",
+        "kmipkit_client_batch_item_archive",
+        "kmipkit_client_batch_item_destroy",
+        "kmipkit_client_batch_item_recover",
     }
 )
 
@@ -2650,6 +2654,55 @@ def client_batch_item_get_usage_allocation(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def _client_batch_item_lifecycle(operation: str, unique_identifier: UniqueIdentifier | None) -> ClientBatchItem:
+    with _staging_buffer_scope() as staging_buffers:
+        identifier, _owner = _native_unique_identifier(
+            unique_identifier, staging_buffers
+        )
+        client_identifier = (
+            _client_ffi.NULL
+            if unique_identifier is None
+            else _client_ffi.cast(
+                "kmipkit_unique_identifier_v1_t *",
+                int(ffi.cast("uintptr_t", identifier)),
+            )
+        )
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            f"kmipkit_client_batch_item_{operation}",
+            (client_identifier,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_activate(
+    unique_identifier: UniqueIdentifier | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.1 Activate item with an optional identifier."""
+    return _client_batch_item_lifecycle("activate", unique_identifier)
+
+
+def client_batch_item_archive(
+    unique_identifier: UniqueIdentifier | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.4 Archive item with an optional identifier."""
+    return _client_batch_item_lifecycle("archive", unique_identifier)
+
+
+def client_batch_item_destroy(
+    unique_identifier: UniqueIdentifier | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.15 Destroy item with an optional identifier."""
+    return _client_batch_item_lifecycle("destroy", unique_identifier)
+
+
+def client_batch_item_recover(
+    unique_identifier: UniqueIdentifier | None = None,
+) -> ClientBatchItem:
+    """Create a KMIP 2.1 §6.1.42 Recover item with an optional identifier."""
+    return _client_batch_item_lifecycle("recover", unique_identifier)
+
+
 def client_batch_item_obtain_lease(
     unique_identifier: UniqueIdentifier | None,
 ) -> ClientBatchItem:
@@ -3208,6 +3261,10 @@ __all__ = [
     "client_batch_item_login",
     "client_batch_item_logout",
     "client_batch_item_get_usage_allocation",
+    "client_batch_item_activate",
+    "client_batch_item_archive",
+    "client_batch_item_destroy",
+    "client_batch_item_recover",
     "client_batch_item_obtain_lease",
     "client_batch_item_import",
     "client_batch_item_join_split_key",

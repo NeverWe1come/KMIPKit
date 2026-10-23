@@ -158,6 +158,14 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemLogout(long ticket);
     public static native long clientBatchItemGetUsageAllocation(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber, long usageLimitsCount);
+    public static native long clientBatchItemActivate(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemArchive(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemDestroy(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemRecover(int identifierKind,
+            @Nullable byte[] identifierText, long identifierNumber);
     public static native long clientBatchItemObtainLease(int identifierKind,
             @Nullable byte[] identifierText, long identifierNumber);
     public static native long clientBatchItemImport(int identifierKind, byte[] identifierText,
@@ -292,6 +300,10 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseRevoke(long itemResponse);
     public static native Object[] clientBatchItemResponseRngRetrieve(long itemResponse);
     public static native Object[] clientBatchItemResponseRngSeed(long itemResponse);
+    public static native Object[] clientBatchItemResponseActivate(long itemResponse);
+    public static native Object[] clientBatchItemResponseArchive(long itemResponse);
+    public static native Object[] clientBatchItemResponseDestroy(long itemResponse);
+    public static native Object[] clientBatchItemResponseRecover(long itemResponse);
     public static native Object[] clientBatchItemResponseCheck(long itemResponse);
     public static native Object[] clientBatchItemResponseDelegatedLogin(long itemResponse);
     public static native Object[] clientBatchItemResponseLogin(long itemResponse);

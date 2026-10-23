@@ -1,5 +1,12 @@
 # Implementation Evidence
 
+## T039 owner approval evidence
+
+- **Merged owner approval evidence**: `KMIPKIT-0018` is approved for implementation by specification PR #65, MERGED into `release/1.0.0` on `2026-10-09`; the PR body gates implementation on approval and merge. The checked-in owner status remains `Status: Draft for independent human review`.
+- PR #65 is the approval evidence for implementation. The stale checked-in status in `specs/018-managed-object-lifecycle/spec.md` was not changed. This record does not claim formal acceptance, complete OASIS conformance, interoperability, profile support, or certification.
+- T039 maps Activate, Archive, Destroy, and Recover as specified in the owner contract and OASIS KMIP 2.1 §§6.1.1, 6.1.4, 6.1.15, and 6.1.42. Request identifiers remain optional; successful response identifiers are exposed; common result, delivery, and Pending correlation metadata use the existing shared response path. No response-TTLV accessor or automatic follow-up behavior is added.
+
+
 ## T015 — Manifest-backed handle lifecycle and C status contract
 
 This task closes the existing approved C ABI lifecycle implementation against the v2 manifest. Opaque handles use a private `Arc<Handle>` envelope with a kind discriminator; the T022 follow-up below adds a process-local registry of keyed, non-reused tokens so foreign handle values are checked before payload access. Views retain their owning handle, so releasing the original owner does not invalidate a child view. Every manifest opaque-handle type declares library ownership and its matching release symbol. Input byte spans carry explicit `uint64_t` byte lengths, apply bounds before dereferencing, and validate UTF-8 before model construction. C status values remain the manifest-declared stable codes, and safe category/cause/delivery snapshots are stored per thread. Java and Python resource wrappers reject operations on closed handles and serialize closure against native use.

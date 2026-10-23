@@ -116,6 +116,42 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return parseRegisterResponse(values);
     }
 
+    /** Returns the successful Activate response identifier, when present. */
+    public Optional<ActivateResponse> activateResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseActivate);
+        return parseLifecycleIdentifierResponse(values, "Activate").map(ActivateResponse::new);
+    }
+
+    /** Returns the successful Archive response identifier, when present. */
+    public Optional<ArchiveResponse> archiveResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseArchive);
+        return parseLifecycleIdentifierResponse(values, "Archive").map(ArchiveResponse::new);
+    }
+
+    /** Returns the successful Destroy response identifier, when present. */
+    public Optional<DestroyResponse> destroyResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseDestroy);
+        return parseLifecycleIdentifierResponse(values, "Destroy").map(DestroyResponse::new);
+    }
+
+    /** Returns the successful Recover response identifier, when present. */
+    public Optional<RecoverResponse> recoverResponse() {
+        if (resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        Object[] values = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseRecover);
+        return parseLifecycleIdentifierResponse(values, "Recover").map(RecoverResponse::new);
+    }
+
     /** Returns the required returned identifier and owned TTLV only for successful Revoke. */
     public Optional<RevokeResponse> revokeResponse() {
         if (resultStatus() != 0) return Optional.empty();
@@ -640,6 +676,66 @@ public final class ClientBatchItemResult implements AutoCloseable {
             return "ReProvisionResponse[uniqueIdentifier="
                     + (uniqueIdentifier.isPresent() ? "redacted" : "absent")
                     + ", responseTtlv=redacted]";
+        }
+    }
+
+    /** Successful §6.1.1 response with its required returned identifier. */
+    public static final class ActivateResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private ActivateResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "ActivateResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful §6.1.4 response with its required returned identifier. */
+    public static final class ArchiveResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private ArchiveResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "ArchiveResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful §6.1.15 response with its required returned identifier. */
+    public static final class DestroyResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private DestroyResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "DestroyResponse[uniqueIdentifier=redacted]";
+        }
+    }
+
+    /** Successful §6.1.42 response with its required returned identifier. */
+    public static final class RecoverResponse {
+        private final UniqueIdentifier uniqueIdentifier;
+
+        private RecoverResponse(UniqueIdentifier uniqueIdentifier) {
+            this.uniqueIdentifier = uniqueIdentifier;
+        }
+
+        public UniqueIdentifier uniqueIdentifier() { return uniqueIdentifier; }
+
+        @Override public String toString() {
+            return "RecoverResponse[uniqueIdentifier=redacted]";
         }
     }
 
@@ -1719,6 +1815,23 @@ public final class ClientBatchItemResult implements AutoCloseable {
             responseTtlv.close();
             throw exception;
         }
+    }
+
+    static Optional<UniqueIdentifier> parseLifecycleIdentifierResponse(
+            Object[] values, String operation) {
+        Object[] tuple = requireTuple(values, 2, "native " + operation + " response is invalid");
+        long[] fields = requireLongArray(
+                tuple[0], 1, "native " + operation + " response is invalid");
+        if (!responsePresent(fields)) {
+            if (tuple[1] != null) {
+                throw new InvalidInputException("native absent " + operation + " response contains an identifier");
+            }
+            return Optional.empty();
+        }
+        if (tuple[1] == null) {
+            throw new InvalidInputException("native successful " + operation + " response omitted its identifier");
+        }
+        return Optional.of(identifierRecord(tuple[1]));
     }
 
     static Optional<RegisterResponse> parseRegisterResponse(Object[] values) {

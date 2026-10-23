@@ -606,6 +606,62 @@ public final class ClientBatchItem implements AutoCloseable {
         return joinSplitKey(objectType, references, null, null, null);
     }
 
+    /** Creates an Activate request with the optional §6.1.1 Unique Identifier. */
+    public static ClientBatchItem activate(@Nullable UniqueIdentifier uniqueIdentifier) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemActivate(
+                    identifierKind(uniqueIdentifier), identifierText,
+                    identifierNumber(uniqueIdentifier));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates an Archive request with the optional §6.1.4 Unique Identifier. */
+    public static ClientBatchItem archive(@Nullable UniqueIdentifier uniqueIdentifier) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemArchive(
+                    identifierKind(uniqueIdentifier), identifierText,
+                    identifierNumber(uniqueIdentifier));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a Destroy request with the optional §6.1.15 Unique Identifier. */
+    public static ClientBatchItem destroy(@Nullable UniqueIdentifier uniqueIdentifier) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemDestroy(
+                    identifierKind(uniqueIdentifier), identifierText,
+                    identifierNumber(uniqueIdentifier));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a Recover request with the optional §6.1.42 Unique Identifier. */
+    public static ClientBatchItem recover(@Nullable UniqueIdentifier uniqueIdentifier) {
+        byte[] identifierText = uniqueIdentifier == null ? null : uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeExtensionRegistry.clientBatchItemRecover(
+                    identifierKind(uniqueIdentifier), identifierText,
+                    identifierNumber(uniqueIdentifier));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates a Get request with the optional Table 220 fields in their canonical order. */
     public static ClientBatchItem get(
             @Nullable UniqueIdentifier uniqueIdentifier,

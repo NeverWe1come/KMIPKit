@@ -38,14 +38,15 @@ use kmipkit_client::{
 use kmipkit_protocol::Pkcs11Request;
 use kmipkit_protocol::extension;
 use kmipkit_protocol::{
-    AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, DecryptRequest, DelegatedLoginRequest, DerivationMethod,
-    DerivationParameters, DeriveKeyRequest, EncryptRequest, ExportRequest, GetConstraintsRequest,
-    GetRequest, GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest,
-    JoinSplitKeyRequest, KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest,
-    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType,
-    ObtainLeaseRequest, OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind,
-    QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest, RegisterRequest,
+    ActivateRequest, ArchiveRequest, AttributeSet, CertifyRequest, CheckRequest,
+    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
+    DelegatedLoginRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
+    DestroyRequest, EncryptRequest, ExportRequest, GetConstraintsRequest, GetRequest,
+    GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
+    KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LogRequest, LoginRequest,
+    LogoutRequest, MacRequest, MacVerifyRequest, ObjectGroupMember, ObjectType, ObtainLeaseRequest,
+    OpaqueObjectContext, OperationData, ProtocolError, ProtocolErrorKind, QueryFunction,
+    QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
     RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
     RngSeedRequest, SecretBytes, SecretText, SetConstraintsRequest, SetDefaultsRequest,
     SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, StorageStatusMask,
@@ -3435,6 +3436,50 @@ fn batch_item_handle(request: ClientRequest) -> FfiResult<*mut kmipkit_client_ba
         HandleValue::BatchItem(Box::new(ClientBatchItem::new(request))),
     )
 }
+
+macro_rules! lifecycle_batch_item_constructor {
+    ($name:ident, $request:ty, $variant:ident, $operation:literal) => {
+        #[doc = concat!("Creates a typed ", $operation, " request with its optional Unique Identifier.")]
+        #[unsafe(no_mangle)]
+        pub extern "C" fn $name(
+            unique_identifier: *const kmipkit_unique_identifier_v1_t,
+            out_item: *mut *mut kmipkit_client_batch_item_t,
+        ) -> i32 {
+            ffi_entrypoint(|| {
+                let out = out_slot!(out_item);
+                let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
+                let request = <$request>::new(identifier);
+                *out = try_ffi!(batch_item_handle(ClientRequest::$variant(request)));
+                SUCCESS
+            })
+        }
+    };
+}
+
+lifecycle_batch_item_constructor!(
+    kmipkit_client_batch_item_activate,
+    ActivateRequest,
+    Activate,
+    "Activate"
+);
+lifecycle_batch_item_constructor!(
+    kmipkit_client_batch_item_archive,
+    ArchiveRequest,
+    Archive,
+    "Archive"
+);
+lifecycle_batch_item_constructor!(
+    kmipkit_client_batch_item_destroy,
+    DestroyRequest,
+    Destroy,
+    "Destroy"
+);
+lifecycle_batch_item_constructor!(
+    kmipkit_client_batch_item_recover,
+    RecoverRequest,
+    Recover,
+    "Recover"
+);
 
 /// Creates a typed Check request from KMIP 2.1 §6.1.7, Table 183.
 #[unsafe(no_mangle)]

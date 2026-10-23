@@ -440,8 +440,8 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         manifest = self._release_manifest()
 
         self.assertEqual(56, len(operation_rows))
-        self.assertEqual(41, owner_counts["approved"])
-        self.assertEqual(15, owner_counts["candidate"])
+        self.assertEqual(45, owner_counts["approved"])
+        self.assertEqual(11, owner_counts["candidate"])
         self.assertEqual(0, owner_counts["unassigned"])
         self.assertIn(
             f"Linked to an approved/accepted owner: **{owner_counts['approved']} operations**.",

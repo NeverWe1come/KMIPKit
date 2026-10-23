@@ -892,6 +892,10 @@ class BatchItemResult(_BatchItemResultNativeState):
     register_response: RegisterResponse | None = field(default=None, repr=False)
     revoke_response: RevokeResponse | None = field(default=None, repr=False)
     set_defaults_response: SetDefaultsResponse | None = field(default=None, repr=False)
+    activate_response: ActivateResponse | None = field(default=None, repr=False)
+    archive_response: ArchiveResponse | None = field(default=None, repr=False)
+    destroy_response: DestroyResponse | None = field(default=None, repr=False)
+    recover_response: RecoverResponse | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_usage_allocation_response", None)
@@ -1177,6 +1181,46 @@ class RevokeResponse:
 
     def __repr__(self) -> str:
         return "RevokeResponse(unique_identifier=redacted, response_ttlv=preserved)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ActivateResponse:
+    """Successful KMIP 2.1 §6.1.1 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "ActivateResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ArchiveResponse:
+    """Successful KMIP 2.1 §6.1.4 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "ArchiveResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class DestroyResponse:
+    """Successful KMIP 2.1 §6.1.15 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "DestroyResponse(unique_identifier=redacted)"
+
+
+@dataclass(frozen=True, slots=True, repr=False)
+class RecoverResponse:
+    """Successful KMIP 2.1 §6.1.42 response identifier."""
+
+    unique_identifier: extensions.UniqueIdentifier = field(repr=False)
+
+    def __repr__(self) -> str:
+        return "RecoverResponse(unique_identifier=redacted)"
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -2073,6 +2117,34 @@ def _batch_result(handle: Any) -> BatchResult:
                     and int(metadata.operation) == 0x13
                 ):
                     revoke_response = _revoke_response(item)
+                activate_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x12
+                ):
+                    activate_response = _lifecycle_response(item, "activate", ActivateResponse)
+                archive_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x15
+                ):
+                    archive_response = _lifecycle_response(item, "archive", ArchiveResponse)
+                destroy_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x14
+                ):
+                    destroy_response = _lifecycle_response(item, "destroy", DestroyResponse)
+                recover_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x16
+                ):
+                    recover_response = _lifecycle_response(item, "recover", RecoverResponse)
                 rng_retrieve_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -2248,6 +2320,10 @@ def _batch_result(handle: Any) -> BatchResult:
                     reprovision_response=reprovision_response,
                     register_response=register_response,
                     revoke_response=revoke_response,
+                    activate_response=activate_response,
+                    archive_response=archive_response,
+                    destroy_response=destroy_response,
+                    recover_response=recover_response,
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
@@ -2769,6 +2845,34 @@ def _revoke_response(item: _ClientBatchItemResponse) -> RevokeResponse | None:
         lib.kmipkit_ttlv_structure_release(response_ttlv_handle)
         raise
     return RevokeResponse(unique_identifier, response_ttlv)
+
+
+def _lifecycle_response(
+    item: _ClientBatchItemResponse,
+    operation: str,
+    response_type: type[ActivateResponse]
+    | type[ArchiveResponse]
+    | type[DestroyResponse]
+    | type[RecoverResponse],
+) -> ActivateResponse | ArchiveResponse | DestroyResponse | RecoverResponse | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        getattr(lib, f"kmipkit_client_batch_item_response_{operation}")(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        if identifier.kind != 0:
+            errors.raise_for_status(4)
+        _optional_output_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    unique_identifier = _optional_output_identifier(identifier)
+    if unique_identifier is None:
+        errors.raise_for_status(4)
+    return response_type(unique_identifier)
 
 
 def _rekey_response(item: _ClientBatchItemResponse) -> RekeyResponse | None:
@@ -4294,6 +4398,8 @@ def _nonempty_text(value: str) -> str:
 
 
 __all__ = [
+    "ActivateResponse",
+    "ArchiveResponse",
     "Batch",
     "BatchItemMetadataV2",
     "BatchItemResult",
@@ -4304,6 +4410,7 @@ __all__ = [
     "DelegatedLoginResponse",
     "LoginResponse",
     "DeriveKeyResponse",
+    "DestroyResponse",
     "ExportResponse",
     "Client",
     "CredentialEncoding",
@@ -4327,6 +4434,7 @@ __all__ = [
     "MacVerifyResponse",
     "RequestOptions",
     "ReProvisionResponse",
+    "RecoverResponse",
     "RegisterResponse",
     "RngRetrieveResponse",
     "RngSeedResponse",

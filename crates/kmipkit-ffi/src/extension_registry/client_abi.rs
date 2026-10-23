@@ -1688,6 +1688,76 @@ fn write_unique_identifier_v1(
     Ok(())
 }
 
+macro_rules! lifecycle_response_identifier {
+    ($name:ident, $accessor:ident, $operation:literal) => {
+        #[doc = concat!("Copies the successful ", $operation, " response Unique Identifier.")]
+        #[unsafe(no_mangle)]
+        pub extern "C" fn $name(
+            item: *mut kmipkit_client_batch_item_response_t,
+            out_present: *mut u8,
+            out_unique_identifier: *mut kmipkit_unique_identifier_v1_t,
+        ) -> i32 {
+            ffi_entrypoint(|| {
+                if out_present.is_null()
+                    || out_unique_identifier.is_null()
+                    || ffi_output_ranges_overlap(out_present, out_unique_identifier)
+                {
+                    return record_ffi_error(ERROR_INVALID_INPUT);
+                }
+                let present = scalar_out!(out_present);
+                if let Err(status) = write_unique_identifier_v1(out_unique_identifier, None) {
+                    return record_ffi_error(status);
+                }
+                *present = 0;
+                let item = read_handle!(item, ClientBatchItemResponse);
+                let HandleValue::ClientBatchItemResponse { response, index } = &item.value else {
+                    return record_ffi_error(ERROR_INVALID_INPUT);
+                };
+                let Some(item) = response.get(*index) else {
+                    return record_ffi_error(ERROR_INTERNAL);
+                };
+                let outcome = item.outcome();
+                if outcome.result().status().raw() != 0 {
+                    return SUCCESS;
+                }
+                if let Some(response) = outcome.$accessor() {
+                    let Some(identifier) = response.unique_identifier() else {
+                        return record_ffi_error(ERROR_INTERNAL);
+                    };
+                    if let Err(status) =
+                        write_unique_identifier_v1(out_unique_identifier, Some(identifier))
+                    {
+                        return record_ffi_error(status);
+                    }
+                    *present = 1;
+                }
+                SUCCESS
+            })
+        }
+    };
+}
+
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_activate,
+    activate_response,
+    "Activate"
+);
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_archive,
+    archive_response,
+    "Archive"
+);
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_destroy,
+    destroy_response,
+    "Destroy"
+);
+lifecycle_response_identifier!(
+    kmipkit_client_batch_item_response_recover,
+    recover_response,
+    "Recover"
+);
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_response_create(
     item: *mut kmipkit_client_batch_item_response_t,
