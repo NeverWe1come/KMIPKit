@@ -7919,6 +7919,8 @@ const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
 const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
 const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-001";
 const CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
+const CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-003";
+const CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-003";
 const CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-002";
 const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID: &str =
@@ -7954,6 +7956,13 @@ fn certify_request_type_profile_result() -> ProfileValidationResult {
     }
 }
 
+fn certify_get_placeholder_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID.to_owned()],
+    }
+}
+
 fn certify_payload_with_omitted_request_fields(attributes: Option<Value>) -> Structure {
     let mut payload = vec![tagged(
         UNIQUE_IDENTIFIER_TAG,
@@ -7972,6 +7981,82 @@ fn certify_payload_with_request_values(count: usize) -> Structure {
             Value::byte_string(vec![u8::try_from(index).expect("small test index")]),
         )
     }))
+}
+
+#[test]
+fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.6 permits a later Get to retrieve the
+    // generated Certificate through the ID Placeholder. §6.1 makes omission
+    // of Batch Order Option effectively true, and §6.1.19 Table 220 defines
+    // an omitted Get Unique Identifier as use of that placeholder.
+    const GET_OPERATION: u32 = 0x0000_000A;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID)
+        .expect("same-batch Certify and Get have a typed optional-capability mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID)
+        .expect("the Certify/Get MAY resolves to generated normative metadata");
+
+    assert_eq!(mapping.source_clause_id, CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(CERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::OptionalCapabilityUsable
+            && evidence.test_id.ends_with(
+                "profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
+            )
+    }));
+
+    let certify_payload = structure([
+        tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(1)),
+        tagged(
+            CERTIFICATE_REQUEST_VALUE_TAG,
+            Value::byte_string(vec![0x30, 0x00]),
+        ),
+    ]);
+    let request = request_message_with_batch_operations([
+        (CERTIFY_OPERATION, certify_payload),
+        (GET_OPERATION, Structure::new()),
+    ]);
+    assert_eq!(
+        request
+            .batch_items()
+            .map(|batch_item| batch_item.operation())
+            .collect::<Vec<_>>(),
+        [Some(CERTIFY_OPERATION), Some(GET_OPERATION)]
+    );
+    assert_eq!(request.header().batch_order_option(), None);
+    assert!(request.header().effective_batch_order_option());
+    let get_item = request
+        .batch_items()
+        .nth(1)
+        .expect("the second Batch Item is Get");
+    let get_has_unique_identifier = get_item
+        .with_request_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() == UNIQUE_IDENTIFIER_TAG)
+        })
+        .expect("Get has a Request Payload");
+    assert!(!get_has_unique_identifier, "Get uses the ID Placeholder by omission");
+
+    certify_get_placeholder_profile_result()
+        .validate_request(&request)
+        .expect("the client profile accepts Certify followed by Get without Unique Identifier");
+
+    let request_without_the_optional_capability =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    certify_get_placeholder_profile_result()
+        .validate_request(&request_without_the_optional_capability)
+        .expect("the MAY does not require every request to use Certify and Get");
 }
 
 #[test]
