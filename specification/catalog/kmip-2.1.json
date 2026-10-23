@@ -86630,7 +86630,7 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
-        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_versions_and_opaque_bytes"
+        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_form_and_opaque_bytes"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
@@ -86689,7 +86689,7 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
-        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_versions_and_opaque_bytes"
+        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_form_and_opaque_bytes"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
@@ -86729,7 +86729,7 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/import.rs",
-        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_versions_and_opaque_bytes",
+        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_form_and_opaque_bytes",
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [

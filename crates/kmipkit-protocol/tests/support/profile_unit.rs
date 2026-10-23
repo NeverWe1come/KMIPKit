@@ -12,7 +12,7 @@ use super::{
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
     discover_versions_advertises_only_client_supported_versions,
-    import_preserves_pgp_key_versions_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
+    import_preserves_pgp_key_form_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
     protocol_version_is_kmip_2_1, reconcile_effective_state,
     type_specific_parameters_do_not_infer_remote_object_type, validate_mapping,
     validate_selection_with_registry,
@@ -3895,14 +3895,12 @@ fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
         ]),
     );
     assert!(result.validate_request(&malformed_key_value).is_err());
-    assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+    assert!(!import_preserves_pgp_key_form_and_opaque_bytes(
         Some(&malformed_key_value),
         None
     ));
-    assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
-        None, None
-    ));
-    assert!(import_preserves_pgp_key_versions_and_opaque_bytes(
+    assert!(!import_preserves_pgp_key_form_and_opaque_bytes(None, None));
+    assert!(import_preserves_pgp_key_form_and_opaque_bytes(
         Some(&request_message_with_operation_payload(
             0x0000_0003,
             Structure::new()
@@ -3997,12 +3995,12 @@ fn profile_rejects_malformed_pgp_key_import_shapes() {
     ];
 
     for malformed in malformed_requests {
-        assert!(!import_preserves_pgp_key_versions_and_opaque_bytes(
+        assert!(!import_preserves_pgp_key_form_and_opaque_bytes(
             Some(&malformed),
             None
         ));
     }
-    assert!(import_preserves_pgp_key_versions_and_opaque_bytes(
+    assert!(import_preserves_pgp_key_form_and_opaque_bytes(
         Some(&request_message_with_operation_payload(
             0x0000_002A,
             structure([tagged(0x0042_0057, Value::enumeration(2))]),

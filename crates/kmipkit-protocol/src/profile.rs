@@ -2159,7 +2159,7 @@ fn import_preserves_wrapped_secret_data_shape(
     })
 }
 
-fn import_preserves_pgp_key_versions_and_opaque_bytes(
+fn import_preserves_pgp_key_form_and_opaque_bytes(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -3518,7 +3518,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
@@ -3535,7 +3535,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
@@ -3552,7 +3552,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-002-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-002",
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
-        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
