@@ -6068,6 +6068,19 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
 }
 
 #[test]
+fn typed_rule_evaluators_tolerate_missing_context() {
+    for mapping in TYPED_RULE_MAPPINGS {
+        if let Some(evaluator) = mapping.evaluator {
+            assert!(
+                std::panic::catch_unwind(|| evaluator(None, None)).is_ok(),
+                "{} must tolerate absent request and response context",
+                mapping.requirement_id
+            );
+        }
+    }
+}
+
+#[test]
 fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
     // KMIP Specification v2.1 §3.3/Table 14 requires Encryption Key Information,
     // MAC/Signature Key Information, or both whenever Key Wrapping Data is used.
