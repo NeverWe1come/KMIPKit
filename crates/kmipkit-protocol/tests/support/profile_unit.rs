@@ -1796,6 +1796,34 @@ fn profile_maps_validate_repeated_certificates_as_optional_capability() {
         .expect("two ordered Certificate values are accepted");
 }
 
+fn validate_certificate_for_unique_identifier_profile_test() -> Structure {
+    structure([
+        tagged(0x0042_001D, Value::enumeration(1)),
+        tagged(0x0042_001E, Value::byte_string(b"certificate".to_vec())),
+    ])
+}
+
+fn validate_request_payload_tags(payload: &Structure) -> Vec<u32> {
+    payload
+        .view()
+        .children()
+        .iter()
+        .map(|field| field.tag().raw())
+        .collect()
+}
+
+fn assert_ordered_validate_identifier_values(payload: &Structure) {
+    let view = payload.view();
+    let identifiers = &view.children()[1..];
+    identifiers[0].with_value(|value| {
+        assert!(matches!(value, ValueView::TextString("first-certificate")));
+    });
+    identifiers[1].with_value(|value| {
+        assert!(matches!(value, ValueView::Enumeration(0xf123_4567)));
+    });
+    identifiers[2].with_value(|value| assert!(matches!(value, ValueView::Integer(-7))));
+}
+
 #[test]
 fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 Table 340 makes Validate Unique
@@ -1805,8 +1833,6 @@ fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
-    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
-    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -1832,29 +1858,15 @@ fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-    let certificate = || {
-        structure([
-            tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
-            tagged(
-                CERTIFICATE_VALUE_TAG,
-                Value::byte_string(b"certificate".to_vec()),
-            ),
-        ])
-    };
     let validate_request =
         |payload| request_message_with_operation_payload(VALIDATE_OPERATION, payload);
 
     let omitted_payload = crate::ValidateRequest::new()
-        .with_certificate(certificate())
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
         .into_ttlv_payload()
         .expect("a Validate request may omit the optional Unique Identifier fields");
     assert_eq!(
-        omitted_payload
-            .view()
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect::<Vec<_>>(),
+        validate_request_payload_tags(&omitted_payload),
         [CERTIFICATE_TAG]
     );
     let omitted = validate_request(omitted_payload);
@@ -1863,19 +1875,14 @@ fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
         .expect("the optional Unique Identifier fields may be omitted");
 
     let one_payload = crate::ValidateRequest::new()
-        .with_certificate(certificate())
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
         .with_unique_identifier(crate::UniqueIdentifier::TextString(
             "first-certificate".to_owned(),
         ))
         .into_ttlv_payload()
         .expect("one Unique Identifier is a valid Validate request");
     assert_eq!(
-        one_payload
-            .view()
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect::<Vec<_>>(),
+        validate_request_payload_tags(&one_payload),
         [CERTIFICATE_TAG, UNIQUE_IDENTIFIER_TAG]
     );
     let one = validate_request(one_payload);
@@ -1884,7 +1891,7 @@ fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
         .expect("one Unique Identifier remains valid");
 
     let repeated_payload = crate::ValidateRequest::new()
-        .with_certificate(certificate())
+        .with_certificate(validate_certificate_for_unique_identifier_profile_test())
         .with_unique_identifier(crate::UniqueIdentifier::TextString(
             "first-certificate".to_owned(),
         ))
@@ -1893,12 +1900,7 @@ fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
         .into_ttlv_payload()
         .expect("repeated Unique Identifiers are represented in the request payload");
     assert_eq!(
-        repeated_payload
-            .view()
-            .children()
-            .iter()
-            .map(|field| field.tag().raw())
-            .collect::<Vec<_>>(),
+        validate_request_payload_tags(&repeated_payload),
         [
             CERTIFICATE_TAG,
             UNIQUE_IDENTIFIER_TAG,
@@ -1906,15 +1908,7 @@ fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
             UNIQUE_IDENTIFIER_TAG
         ]
     );
-    let repeated_view = repeated_payload.view();
-    let identifiers = &repeated_view.children()[1..];
-    identifiers[0].with_value(|value| {
-        assert!(matches!(value, ValueView::TextString("first-certificate")));
-    });
-    identifiers[1].with_value(|value| {
-        assert!(matches!(value, ValueView::Enumeration(0xf123_4567)));
-    });
-    identifiers[2].with_value(|value| assert!(matches!(value, ValueView::Integer(-7))));
+    assert_ordered_validate_identifier_values(&repeated_payload);
     let repeated = validate_request(repeated_payload);
     result
         .validate_request(&repeated)

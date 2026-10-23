@@ -4803,3 +4803,23 @@ This slice maps only `KMIPKIT-REQ-SPEC-6.1.57-004`, the client MAY in KMIP Speci
 | Full normative-catalog suite | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` | PASS: 649 tests in 529.914 s; 10 skipped; exit 0. |
 
 The Baseline Client typed registry now has 61 unique mappings of 265 assigned requirements; 204 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 remain unavailable. Readiness remains `evidence_incomplete`; T040 remains open.
+
+
+### KMIPKIT-0010 T040 slice — repeated Validate Unique Identifier optional capability (2026-10-23)
+
+This slice maps only `KMIPKIT-REQ-SPEC-6.1.57-005`, the client MAY in KMIP Specification v2.1 §6.1.57 Table 340, Unique Identifier row ordinal 5. The row says Unique Identifier is not REQUIRED and MAY be repeated, describing “One or more Unique Identifiers of Certificate Objects.” The typed Baseline Client rule applies only to outbound Validate requests. It accepts omission, one identifier, and repeated identifier fields with the supported TextString, Enumeration, and Integer wire forms, preserving caller order and unknown Enumeration values. It does not resolve identifiers or claim a certificate chain order, server evaluation, or trust policy. Neighboring Validate Certificate repetition, list-choice, single-chain, and Validity Date requirements remain separate. No requirement-specific official OASIS Test Case is linked; no profile-conformance claim is made.
+
+**PR note:** The change exposes repeated Certificate-object identifiers in Validate requests and records typed optional-capability evidence. Verification is request representation only; identifier resolution, chain validation or order, and server behavior remain outside this evidence.
+
+| Phase | DCO-signed commit and command | Result |
+|---|---|---|
+| Red profile behavior | `590b37f9`; `cargo test -p kmipkit-protocol --lib unique_identifier -- --nocapture` | Expected Red: 68 tests ran; the two new Validate profile tests failed at the missing typed-rule lookup, with 66 existing identifier tests passing. |
+| Red catalog traceability | `590b37f9`; focused `test_validate_repeated_unique_identifier_may_has_typed_optional_traceability` and report registry inventory test | Expected Red: traceability lacked the evaluator implementation reference and the report registry did not yet include `KMIPKIT-REQ-SPEC-6.1.57-005`. |
+| Green | `0119f8e0`; focused `profile_maps_validate_repeated_unique_identifiers_as_optional_capability` and `profile_rejects_malformed_validate_unique_identifier_wire_type` | PASS: each focused profile test passed. The evaluator is Validate-scoped, fails closed without request context, accepts omission and repeated supported identifier forms, and rejects a malformed Structure value. It does not resolve values. |
+| Refactor / catalog evidence | This DCO-signed completion commit; focused catalog traceability and report inventory tests | PASS: 2 catalog tests. They check the Table 340 row ordinal, clause, direction, condition, Validate element, evaluator and test refs, OptionalCapability mapping, and typed report inventory. |
+| Generated artifacts and catalog validation | `generate_profiles.py --write`; `report.py --write`; then `validate.py`, `generate_profiles.py --check`, `generate_attribute_policy.py --check`, and `report.py --check` | PASS: catalog valid with 4 sources, 1,411 clauses, and 4,123 records; generated profile metadata, attribute policy, and coverage report are current. The coverage report reflects the new mapping. |
+| Protocol package | `cargo test -p kmipkit-protocol --all-features --locked --quiet` | PASS: 868 unit tests plus all protocol integration test binaries and doctests. |
+| Rust quality | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings` | PASS after extracting test-only helpers to keep the regression below the Clippy line-count limit; formatting is clean and Clippy passes with warnings denied. |
+| Full normative-catalog suite | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` | PASS: 650 tests in 523.162 s; 10 skipped; exit 0. |
+
+The Baseline Client typed registry now has 62 unique mappings of 265 assigned requirements; 203 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 remain unavailable. Readiness remains `evidence_incomplete`; T040 remains open.
