@@ -9922,3 +9922,134 @@ fn profile_rejects_malformed_original_creation_date() {
         Some(ORIGINAL_CREATION_DATE_REQUIREMENTS[2])
     );
 }
+
+const RANDOM_NUMBER_GENERATOR_TAG: u32 = 0x0042_00DE;
+const RNG_ALGORITHM_TAG: u32 = 0x0042_00DA;
+const RANDOM_NUMBER_GENERATOR_ADD_OPERATION: u32 = 0x0000_000D;
+const RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE: u32 = 0x0042_013D;
+const RANDOM_NUMBER_GENERATOR_REQUIREMENTS: [&str; 2] = [
+    "KMIPKIT-REQ-SPEC-4.46-001-001",
+    "KMIPKIT-REQ-SPEC-4.46-001-002",
+];
+
+fn random_number_generator_structure() -> Value {
+    Value::structure(structure([tagged(
+        RNG_ALGORITHM_TAG,
+        Value::enumeration(1),
+    )]))
+}
+
+fn register_random_number_generator_request(value: Option<Value>) -> crate::RequestMessage {
+    let mut attributes = vec![
+        tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ];
+    if let Some(value) = value {
+        attributes.push(tagged(RANDOM_NUMBER_GENERATOR_TAG, value));
+    }
+    request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            attributes,
+        ),
+    )
+}
+
+fn add_attribute_random_number_generator_request(value: Value) -> crate::RequestMessage {
+    request_message_with_operation_payload(
+        RANDOM_NUMBER_GENERATOR_ADD_OPERATION,
+        structure([
+            tagged(
+                TABLE12_UNIQUE_IDENTIFIER,
+                Value::text_string("rng-target".to_owned()),
+            ),
+            tagged(
+                RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE,
+                Value::structure(structure([tagged(RANDOM_NUMBER_GENERATOR_TAG, value)])),
+            ),
+        ]),
+    )
+}
+
+#[test]
+// KMIP Specification v2.1 §4.46 Table 121 and §7.36 Table 388; §6.1.43 Table 293 and §6.1.2 Table 167.
+fn profile_maps_register_and_add_attribute_random_number_generator_capabilities() {
+    let evidence_tests = [
+        "profile_accepts_register_random_number_generator",
+        "profile_accepts_add_attribute_random_number_generator",
+    ];
+    for (requirement_id, evidence_test) in RANDOM_NUMBER_GENERATOR_REQUIREMENTS
+        .into_iter()
+        .zip(evidence_tests)
+    {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id);
+        assert!(
+            mapping.is_some(),
+            "Random Number Generator has a typed mapping"
+        );
+        if let Some(mapping) = mapping {
+            assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.46-001");
+            assert_eq!(
+                mapping.verification_category,
+                GeneratedVerificationCategory::OptionalCapability
+            );
+            assert!(mapping.test_evidence.iter().any(|evidence| {
+                evidence.kind == RuleTestKind::OptionalCapabilityUsable
+                    && evidence.test_id.ends_with(evidence_test)
+            }));
+        }
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §4.46 allows setting Random Number Generator on Register.
+fn profile_accepts_register_random_number_generator() {
+    let omitted = register_random_number_generator_request(None);
+    table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[0]])
+        .validate_request(&omitted)
+        .expect("Register may omit Random Number Generator");
+
+    let supplied =
+        register_random_number_generator_request(Some(random_number_generator_structure()));
+    table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[0]])
+        .validate_request(&supplied)
+        .expect("Register may include Random Number Generator");
+}
+
+#[test]
+// KMIP Specification v2.1 §4.46 allows adding Random Number Generator later through Add Attribute.
+fn profile_accepts_add_attribute_random_number_generator() {
+    let request =
+        add_attribute_random_number_generator_request(random_number_generator_structure());
+    table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[1]])
+        .validate_request(&request)
+        .expect("Add Attribute may carry Random Number Generator");
+}
+
+#[test]
+// KMIP Specification v2.1 §4.46 Table 121 and §7.36 Table 388 require RNG Parameters structure with RNG Algorithm.
+fn profile_rejects_malformed_random_number_generator() {
+    let register = register_random_number_generator_request(Some(Value::integer(7)));
+    let register_error = table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[0]])
+        .validate_request(&register)
+        .expect_err("Random Number Generator is an RNG Parameters structure");
+    assert_eq!(
+        register_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+
+    let missing_algorithm =
+        add_attribute_random_number_generator_request(Value::structure(structure([])));
+    let missing_algorithm_error =
+        table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[1]])
+            .validate_request(&missing_algorithm)
+            .expect_err("RNG Parameters has a mandatory RNG Algorithm");
+    assert_eq!(
+        missing_algorithm_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+}
