@@ -743,12 +743,14 @@ const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
+const CERTIFICATE_OBJECT: u32 = 0x0042_0013;
+const CERTIFICATE_REQUEST_OBJECT: u32 = 0x0042_0018;
 const PGP_KEY: u32 = 0x0042_00BD;
 const PGP_KEY_VERSION: u32 = 0x0042_00BE;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
-const PUBLIC_KEY: u32 = 0x0042_007F;
-const PRIVATE_KEY: u32 = 0x0042_007E;
-const SPLIT_KEY: u32 = 0x0042_0090;
+const PUBLIC_KEY: u32 = 0x0042_006D;
+const PRIVATE_KEY: u32 = 0x0042_0064;
+const SPLIT_KEY: u32 = 0x0042_0089;
 const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
 const WRAPPING_METHOD: u32 = 0x0042_009E;
 const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
@@ -2315,12 +2317,9 @@ fn client_register_algorithm_requires_length(
                 // Secret Data is explicitly exempted by §6.1.43, Table 293.
                 // Unknown/vendor object types remain forward-compatible and
                 // are outside the base specification's typed applicability.
-                if object_type == SECRET_DATA_OBJECT_TYPE
-                    || object_type == OPAQUE_OBJECT_TYPE
-                    || !is_known_managed_cryptographic_object_type(object_type)
-                {
+                let Some(object_tag) = register_object_tag(object_type) else {
                     return true;
-                }
+                };
 
                 match field_presence(&payload, REGISTER_ATTRIBUTES) {
                     FieldPresence::Missing => true,
@@ -2346,7 +2345,9 @@ fn client_register_algorithm_requires_length(
                                             }
                                             FieldPresence::Duplicate => false,
                                             FieldPresence::Missing => {
-                                                register_key_block_has_crypto_length(&payload)
+                                                register_key_block_has_crypto_length(
+                                                    &payload, object_tag,
+                                                )
                                             }
                                         }
                                     }
@@ -2361,58 +2362,46 @@ fn client_register_algorithm_requires_length(
     })
 }
 
-fn is_known_managed_cryptographic_object_type(object_type: u32) -> bool {
-    matches!(
-        object_type,
-        CERTIFICATE_OBJECT_TYPE
-            | SYMMETRIC_KEY_OBJECT_TYPE
-            | PUBLIC_KEY_OBJECT_TYPE
-            | PRIVATE_KEY_OBJECT_TYPE
-            | SPLIT_KEY_OBJECT_TYPE
-            | PGP_KEY_OBJECT_TYPE
-            | CERTIFICATE_REQUEST_OBJECT_TYPE
-    )
+fn register_object_tag(object_type: u32) -> Option<u32> {
+    match object_type {
+        CERTIFICATE_OBJECT_TYPE => Some(CERTIFICATE_OBJECT),
+        SYMMETRIC_KEY_OBJECT_TYPE => Some(SYMMETRIC_KEY),
+        PUBLIC_KEY_OBJECT_TYPE => Some(PUBLIC_KEY),
+        PRIVATE_KEY_OBJECT_TYPE => Some(PRIVATE_KEY),
+        SPLIT_KEY_OBJECT_TYPE => Some(SPLIT_KEY),
+        PGP_KEY_OBJECT_TYPE => Some(PGP_KEY),
+        CERTIFICATE_REQUEST_OBJECT_TYPE => Some(CERTIFICATE_REQUEST_OBJECT),
+        SECRET_DATA_OBJECT_TYPE | OPAQUE_OBJECT_TYPE => None,
+        _ => None,
+    }
 }
 
-fn register_key_block_has_crypto_length(payload: &StructureView<'_>) -> bool {
-    for field in payload.children() {
-        if matches!(
-            field.tag().raw(),
-            REGISTER_OBJECT_TYPE | REGISTER_ATTRIBUTES | REGISTER_PROTECTION_STORAGE_MASKS
-        ) {
-            continue;
-        }
-
-        let has_length = field.with_value(|value| {
-            let ValueView::Structure(object) = value else {
-                return None;
+fn register_key_block_has_crypto_length(payload: &StructureView<'_>, object_tag: u32) -> bool {
+    let FieldPresence::Unique(object) = field_presence(payload, object_tag) else {
+        return false;
+    };
+    object.with_value(|value| {
+        let ValueView::Structure(object) = value else {
+            return false;
+        };
+        let FieldPresence::Unique(key_block) = field_presence(&object, KEY_BLOCK) else {
+            return false;
+        };
+        key_block.with_value(|value| {
+            let ValueView::Structure(key_block) = value else {
+                return false;
             };
-            match field_presence(&object, KEY_BLOCK) {
-                FieldPresence::Missing => None,
-                FieldPresence::Duplicate => Some(false),
-                FieldPresence::Unique(key_block) => Some(key_block.with_value(|value| {
-                    let ValueView::Structure(key_block) = value else {
-                        return false;
-                    };
-                    match field_presence(&key_block, CRYPTOGRAPHIC_LENGTH) {
-                        FieldPresence::Unique(length) => {
-                            length.with_value(|value| matches!(value, ValueView::Integer(_)))
-                        }
-                        FieldPresence::Duplicate => false,
-                        FieldPresence::Missing => {
-                            register_key_value_attributes_have_crypto_length(&key_block)
-                        }
-                    }
-                })),
+            match field_presence(&key_block, CRYPTOGRAPHIC_LENGTH) {
+                FieldPresence::Unique(length) => {
+                    length.with_value(|value| matches!(value, ValueView::Integer(_)))
+                }
+                FieldPresence::Duplicate => false,
+                FieldPresence::Missing => {
+                    register_key_value_attributes_have_crypto_length(&key_block)
+                }
             }
-        });
-
-        if let Some(has_length) = has_length {
-            return has_length;
-        }
-    }
-
-    false
+        })
+    })
 }
 
 fn register_key_value_attributes_have_crypto_length(key_block: &StructureView<'_>) -> bool {
