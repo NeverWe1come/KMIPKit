@@ -894,6 +894,38 @@ fn client_certify_certificate_request_value_is_omittable(
     })
 }
 
+fn client_certify_request_type_required_with_request_value(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CERTIFY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let fields = payload.children();
+                let has_request_value = fields
+                    .iter()
+                    .any(|field| field.tag().raw() == CERTIFICATE_REQUEST_VALUE);
+                !has_request_value
+                    || fields.iter().any(|field| {
+                        field.tag().raw() == CERTIFICATE_REQUEST_TYPE
+                            && field.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_certify_omitted_request_requires_unique_identifier(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -3228,6 +3260,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(client_certify_omitted_request_requires_certificate_type_attribute),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_certificate_type_in_attributes",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-007",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-007",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_certify_request_type_required_with_request_value),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_type_with_request_value",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],

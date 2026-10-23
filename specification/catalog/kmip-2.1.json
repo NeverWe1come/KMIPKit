@@ -57022,7 +57022,12 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_certificate_type_in_attributes",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_certificate_type_when_attribute_missing",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certificate_type_attribute_when_request_fields_are_omitted",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_fields_without_certificate_type_attribute"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_fields_without_certificate_type_attribute",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_request_type_when_request_value_is_present_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_type_with_request_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_certificate_request_value_without_request_type",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certificate_request_type_when_request_value_is_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_valid_certify_omission_without_request_type"
       ],
       "payload_tables": [
         {
@@ -97167,17 +97172,23 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/certify.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
         "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_request_type_when_request_value_is_present_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_type_with_request_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_certificate_request_value_without_request_type",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certificate_request_type_when_request_value_is_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_valid_certify_omission_without_request_type"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.6 Table 179 row 7 requires an Enumeration Certificate Request Type when Certificate Request Value is present. The typed Baseline Client evaluator applies this condition to direct fields in each outbound Certify Batch Item; an omitted value does not trigger it. The rule remains separate from the §6.1.6 omission conditions. Caller-facing builder and fake-transport evidence remains linked through specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-001",
