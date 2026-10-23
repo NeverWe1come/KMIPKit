@@ -6,11 +6,13 @@ use super::{
     ProfileTransport, ProfileValidationError, ProfileValidationErrorCode, ProfileValidationResult,
     ProfileValidationSelection, RuleConstraint, RuleEvaluator, RuleTestEvidence, RuleTestKind,
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
+    client_add_attribute_random_number_generator_is_well_formed,
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_get_or_export_key_compression_type_is_enumeration,
     client_key_value_present_is_not_modified, client_opaque_object_context_custom_attributes,
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
+    client_register_random_number_generator_is_well_formed,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_form_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
     protocol_version_is_kmip_2_1, reconcile_effective_state,
@@ -10076,4 +10078,187 @@ fn profile_rejects_malformed_random_number_generator() {
         nested_parameters_error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
+}
+
+#[test]
+// KMIP Specification v2.1 §§4.46, 6.1.2, 6.1.43, and 7.36: RNG profile rules are request-scoped and operation-specific.
+fn rng_profile_evaluators_handle_absent_requests_and_unrelated_operations() {
+    assert!(!client_register_random_number_generator_is_well_formed(
+        None, None
+    ));
+    assert!(!client_add_attribute_random_number_generator_is_well_formed(None, None));
+
+    let unrelated = request_message_with_operation_payload(TABLE12_GET_OPERATION, structure([]));
+    assert!(client_register_random_number_generator_is_well_formed(
+        Some(&unrelated),
+        None
+    ));
+    assert!(client_add_attribute_random_number_generator_is_well_formed(
+        Some(&unrelated),
+        None
+    ));
+
+    let register_without_attributes =
+        request_message_with_operation_payload(TABLE12_REGISTER_OPERATION, structure([]));
+    assert!(client_register_random_number_generator_is_well_formed(
+        Some(&register_without_attributes),
+        None
+    ));
+
+    let add_without_new_attribute = request_message_with_operation_payload(
+        RANDOM_NUMBER_GENERATOR_ADD_OPERATION,
+        structure([]),
+    );
+    assert!(client_add_attribute_random_number_generator_is_well_formed(
+        Some(&add_without_new_attribute),
+        None
+    ));
+}
+
+#[test]
+// KMIP Specification v2.1 §§4.46, 6.1.43, and 7.36: malformed Register RNG fields fail closed.
+fn register_rng_evaluator_rejects_duplicate_and_malformed_fields() {
+    let duplicate_register_attributes = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(TABLE12_ATTRIBUTES, Value::structure(structure([]))),
+            tagged(TABLE12_ATTRIBUTES, Value::structure(structure([]))),
+        ]),
+    );
+    let malformed_register_attributes = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([tagged(TABLE12_ATTRIBUTES, Value::integer(7))]),
+    );
+    let duplicate_register_rng = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure([
+                tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    random_number_generator_structure(),
+                ),
+                tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    random_number_generator_structure(),
+                ),
+            ])),
+        )]),
+    );
+    let malformed_register_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure([tagged(
+                RANDOM_NUMBER_GENERATOR_TAG,
+                Value::structure(structure([tagged(
+                    RNG_ALGORITHM_TAG,
+                    Value::text_string("not-an-enumeration".to_owned()),
+                )])),
+            )])),
+        )]),
+    );
+    let duplicate_register_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure([tagged(
+                RANDOM_NUMBER_GENERATOR_TAG,
+                Value::structure(structure([
+                    tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+                    tagged(RNG_ALGORITHM_TAG, Value::enumeration(2)),
+                ])),
+            )])),
+        )]),
+    );
+
+    for request in [
+        duplicate_register_attributes,
+        malformed_register_attributes,
+        duplicate_register_rng,
+        malformed_register_algorithm,
+        duplicate_register_algorithm,
+    ] {
+        assert!(!client_register_random_number_generator_is_well_formed(
+            Some(&request),
+            None
+        ));
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §§4.46, 6.1.2, and 7.36: malformed Add Attribute RNG fields fail closed.
+fn add_attribute_rng_evaluator_rejects_duplicate_and_malformed_fields() {
+    let duplicate_new_attribute = request_message_with_operation_payload(
+        RANDOM_NUMBER_GENERATOR_ADD_OPERATION,
+        structure([
+            tagged(
+                RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE,
+                Value::structure(structure([])),
+            ),
+            tagged(
+                RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE,
+                Value::structure(structure([])),
+            ),
+        ]),
+    );
+    let malformed_new_attribute = request_message_with_operation_payload(
+        RANDOM_NUMBER_GENERATOR_ADD_OPERATION,
+        structure([tagged(
+            RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE,
+            Value::text_string("not-a-structure".to_owned()),
+        )]),
+    );
+    let duplicate_add_rng = request_message_with_operation_payload(
+        RANDOM_NUMBER_GENERATOR_ADD_OPERATION,
+        structure([tagged(
+            RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE,
+            Value::structure(structure([
+                tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    random_number_generator_structure(),
+                ),
+                tagged(
+                    RANDOM_NUMBER_GENERATOR_TAG,
+                    random_number_generator_structure(),
+                ),
+            ])),
+        )]),
+    );
+    let malformed_add_algorithm = request_message_with_operation_payload(
+        RANDOM_NUMBER_GENERATOR_ADD_OPERATION,
+        structure([tagged(
+            RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE,
+            Value::structure(structure([tagged(
+                RANDOM_NUMBER_GENERATOR_TAG,
+                Value::structure(structure([tagged(
+                    RNG_ALGORITHM_TAG,
+                    Value::text_string("not-an-enumeration".to_owned()),
+                )])),
+            )])),
+        )]),
+    );
+    let duplicate_add_algorithm = request_message_with_operation_payload(
+        RANDOM_NUMBER_GENERATOR_ADD_OPERATION,
+        structure([tagged(
+            RANDOM_NUMBER_GENERATOR_NEW_ATTRIBUTE,
+            Value::structure(structure([tagged(
+                RANDOM_NUMBER_GENERATOR_TAG,
+                Value::structure(structure([
+                    tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
+                    tagged(RNG_ALGORITHM_TAG, Value::enumeration(2)),
+                ])),
+            )])),
+        )]),
+    );
+
+    for request in [
+        duplicate_new_attribute,
+        malformed_new_attribute,
+        duplicate_add_rng,
+        malformed_add_algorithm,
+        duplicate_add_algorithm,
+    ] {
+        assert!(!client_add_attribute_random_number_generator_is_well_formed(Some(&request), None));
+    }
 }
