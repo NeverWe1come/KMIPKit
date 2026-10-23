@@ -3337,10 +3337,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
                 kind: RuleTestKind::PositiveBehavior,
             },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_id_placeholder_for_omitted_certify_request_value",
-                kind: RuleTestKind::NegativeBehavior,
-            },
         ],
         constraints: &[],
     },
