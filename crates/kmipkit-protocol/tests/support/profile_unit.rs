@@ -6314,8 +6314,13 @@ const TABLE12_KEY_VALUE: u32 = 0x0042_0045;
 const TABLE12_KEY_MATERIAL: u32 = 0x0042_0043;
 const TABLE12_CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const TABLE12_CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const TABLE12_CERTIFICATE: u32 = 0x0042_0013;
+const TABLE12_CERTIFICATE_REQUEST: u32 = 0x0042_0018;
 const TABLE12_SYMMETRIC_KEY: u32 = 0x0042_008F;
 const TABLE12_SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
+const TABLE12_PUBLIC_KEY: u32 = 0x0042_007F;
+const TABLE12_PRIVATE_KEY: u32 = 0x0042_007E;
+const TABLE12_SPLIT_KEY: u32 = 0x0042_0090;
 const TABLE12_SECRET_DATA: u32 = 0x0042_0085;
 const TABLE12_SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const TABLE12_OPAQUE_OBJECT: u32 = 0x0042_005B;
@@ -6973,6 +6978,87 @@ fn profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opa
     table12_profile_result(&[REQUIREMENT_ID])
         .validate_request(&opaque_with_algorithm_only)
         .expect("wire-only validation leaves context-dependent Opaque applicability neutral");
+}
+
+#[test]
+fn profile_does_not_count_key_block_length_from_a_non_object_register_structure() {
+    // KMIP Specification v2.1 §6.1.43 Table 291 places the object in its
+    // object-specific structure; an unrelated payload structure is not evidence.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+
+    let decoy = tagged(
+        0x0042_0001,
+        Value::structure(structure([tagged(
+            TABLE12_KEY_BLOCK,
+            Value::structure(structure([tagged(
+                TABLE12_CRYPTOGRAPHIC_LENGTH,
+                Value::integer(256),
+            )])),
+        )])),
+    );
+    let payload = structure([
+        tagged(
+            TABLE12_OBJECT_TYPE,
+            Value::enumeration(TABLE12_SYMMETRIC_KEY_OBJECT_TYPE),
+        ),
+        tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure([tagged(
+                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(3),
+            )])),
+        ),
+        decoy,
+        table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+    ]);
+    let request = request_message_with_operation_payload(TABLE12_REGISTER_OPERATION, payload);
+
+    table12_profile_result(&[REQUIREMENT_ID])
+        .validate_request(&request)
+        .expect_err("a non-object structure cannot supply Register Cryptographic Length");
+}
+
+#[test]
+fn profile_applies_register_algorithm_length_rule_to_standard_object_types() {
+    // KMIP Specification v2.1 §§2.1–2.9 and §6.1.43 Table 293.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    let cases = [
+        (1, TABLE12_CERTIFICATE, true),
+        (2, TABLE12_SYMMETRIC_KEY, true),
+        (3, TABLE12_PUBLIC_KEY, true),
+        (4, TABLE12_PRIVATE_KEY, true),
+        (5, TABLE12_SPLIT_KEY, true),
+        (6, 0x0042_0001, false),
+        (7, TABLE12_SECRET_DATA, false),
+        (8, TABLE12_OPAQUE_OBJECT, false),
+        (9, TABLE12_PGP_KEY, true),
+        (10, TABLE12_CERTIFICATE_REQUEST, true),
+        (0x8000_0001, 0x0042_0001, false),
+    ];
+
+    for (object_type, object_tag, requires_length) in cases {
+        let request = request_message_with_operation_payload(
+            TABLE12_REGISTER_OPERATION,
+            structure([
+                tagged(TABLE12_OBJECT_TYPE, Value::enumeration(object_type)),
+                tagged(
+                    TABLE12_ATTRIBUTES,
+                    Value::structure(structure([tagged(
+                        TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                        Value::enumeration(3),
+                    )])),
+                ),
+                tagged(object_tag, Value::structure(Structure::new())),
+            ]),
+        );
+        let validation = table12_profile_result(&[REQUIREMENT_ID]).validate_request(&request);
+
+        if requires_length {
+            validation.expect_err("a standard Managed Cryptographic Object requires Length");
+        } else {
+            validation.expect("Secret Data, Opaque, reserved and vendor values stay neutral");
+        }
+    }
 }
 
 #[test]
