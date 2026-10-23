@@ -299,7 +299,7 @@ impl ProfileValidationResult {
                 ));
             };
             let Some(evaluator) = mapping.evaluator else {
-                if is_transport_only_mapping(mapping) {
+                if is_configuration_only_mapping(mapping) {
                     continue;
                 }
                 return Err(ProfileValidationError::for_rule_requirement(
@@ -5267,7 +5267,7 @@ fn validate_mapping(
     }) {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
     }
-    if mapping.evaluator.is_none() && !is_transport_only_mapping(mapping) {
+    if mapping.evaluator.is_none() && !is_configuration_only_mapping(mapping) {
         return Err(error(ProfileValidationErrorCode::IncompleteRuleMapping));
     }
 
@@ -5298,7 +5298,7 @@ fn validate_mapping(
     Ok(())
 }
 
-fn is_transport_only_mapping(mapping: &TypedRuleMapping) -> bool {
+fn is_configuration_only_mapping(mapping: &TypedRuleMapping) -> bool {
     mapping.evaluator.is_none()
         && !mapping.constraints.is_empty()
         && mapping.constraints.iter().all(|constraint| {
