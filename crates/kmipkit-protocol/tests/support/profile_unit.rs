@@ -1696,6 +1696,107 @@ fn profile_maps_validate_validity_date_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_validate_repeated_certificates_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.57 Table 340 makes Certificate optional
+    // and permits it to be repeated in a Validate request.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const VALIDATE_OPERATION: u32 = 0x0000_0017;
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("repeated Validate Certificates have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the Certificate MAY resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let certificate = |bytes: &[u8]| {
+        structure([
+            tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+            tagged(CERTIFICATE_VALUE_TAG, Value::byte_string(bytes.to_vec())),
+        ])
+    };
+    let validate_request =
+        |payload| request_message_with_operation_payload(VALIDATE_OPERATION, payload);
+    let identifier = || crate::UniqueIdentifier::TextString("managed-certificate".to_owned());
+
+    let omitted_payload = crate::ValidateRequest::new()
+        .with_unique_identifier(identifier())
+        .into_ttlv_payload()
+        .expect("a Validate request may omit Certificate fields");
+    let omitted = validate_request(omitted_payload);
+    result
+        .validate_request(&omitted)
+        .expect("the optional Certificate fields may be omitted");
+
+    let one_payload = crate::ValidateRequest::new()
+        .with_certificate(certificate(b"one"))
+        .with_unique_identifier(identifier())
+        .into_ttlv_payload()
+        .expect("one Certificate is a valid Validate request");
+    let one = validate_request(one_payload);
+    result
+        .validate_request(&one)
+        .expect("one Certificate remains valid");
+
+    let two_payload = crate::ValidateRequest::new()
+        .with_certificate(certificate(b"first"))
+        .with_certificate(certificate(b"second"))
+        .with_unique_identifier(identifier())
+        .into_ttlv_payload()
+        .expect("repeated Certificates are represented in the request payload");
+    assert_eq!(
+        two_payload
+            .view()
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [CERTIFICATE_TAG, CERTIFICATE_TAG, UNIQUE_IDENTIFIER_TAG]
+    );
+    for (field, expected) in two_payload
+        .view()
+        .children()
+        .iter()
+        .zip([b"first".as_slice(), b"second".as_slice()])
+    {
+        field.with_value(|value| {
+            let ValueView::Structure(certificate) = value else {
+                panic!("Certificate Structure")
+            };
+            certificate.children()[1].with_value(|value| {
+                assert!(matches!(value, ValueView::ByteString(bytes) if bytes == expected));
+            });
+        });
+    }
+    let two = validate_request(two_payload);
+    result
+        .validate_request(&two)
+        .expect("two ordered Certificate values are accepted");
+}
+
+#[test]
 fn profile_rejects_malformed_validate_validity_date_when_present() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
