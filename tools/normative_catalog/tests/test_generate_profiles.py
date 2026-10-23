@@ -4768,6 +4768,15 @@ class ProfileTargetManifestTests(unittest.TestCase):
                 self.assertIn("source_keyword: None", row)
                 self.assertIn(f'source_force: Some("{requirement["source_force"]}")', row)
                 self.assertIn(f'source_gap_id: Some("{requirement["source_gap_id"]}")', row)
+                locator = requirement["source_locator"]
+                line_start, line_end = locator["html_line_range"]
+                table = f', table {locator["table"]}' if locator.get("table") else ""
+                expected_locator = (
+                    f'Section {locator["section"]}{table}, '
+                    f'row {locator["row_label"]}, HTML lines {line_start}-{line_end}'
+                )
+                self.assertIn("source_locator: Some(", row)
+                self.assertIn(expected_locator, row)
         self.assertNotIn("ProfileRuleMapping", generated)
 
     def test_generated_requirements_classify_keyword_specific_verification_categories(self) -> None:

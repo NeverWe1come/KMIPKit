@@ -907,6 +907,7 @@ fn requirement(
         source_keyword: Some("SHALL"),
         source_force: None,
         source_gap_id: None,
+        source_locator: None,
         verification_category: category,
         scope_state: "client_1_0",
         source_clause_ids: &["TEST-CLAUSE"],
@@ -932,6 +933,7 @@ fn mapping(
     TypedRuleMapping {
         requirement_id,
         source_clause_id: "TEST-CLAUSE",
+        source_gap_id: None,
         verification_category: category,
         evaluator: Some(passing_rule),
         test_evidence,
@@ -5049,6 +5051,7 @@ fn configured_tls13_constraint_accepts_both_tls_client_transports() {
     let mapping = [TypedRuleMapping {
         requirement_id: REQUIREMENT_ID,
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         evaluator: None,
         test_evidence: &TLS13_RECOMMENDED_TEST,
@@ -8138,6 +8141,21 @@ fn profile_maps_required_fields_of_opaque_register_object() {
             None,
             "a table-body requirement must not be reported as a clause"
         );
+        assert_eq!(
+            error.source_gap_id(),
+            Some("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED")
+        );
+        assert_eq!(
+            error.source_gap_locator(),
+            Some(
+                "Section 2.3, table object_definition, row Opaque Data Type, HTML lines 6927-6945"
+            )
+        );
+        let display = error.to_string();
+        assert!(
+            display.contains("source gap KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED")
+        );
+        assert!(display.contains("HTML lines 6927-6945"));
     }
 }
 
