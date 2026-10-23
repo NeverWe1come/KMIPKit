@@ -7908,3 +7908,96 @@ fn profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed() 
         assert_revoke_profile_request_rejected(&request);
     }
 }
+
+const CERTIFY_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-001";
+const CERTIFY_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-001";
+const CERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+const CERTIFY_OPERATION: u32 = 0x0000_0006;
+const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
+
+fn certify_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![CERTIFY_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn certify_payload_with_request_values(count: usize) -> Structure {
+    structure((0..count).map(|index| {
+        tagged(
+            CERTIFICATE_REQUEST_VALUE_TAG,
+            Value::byte_string(vec![u8::try_from(index).expect("small test index")]),
+        )
+    }))
+}
+
+#[test]
+fn profile_maps_certify_single_certificate_request_value_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.6 paragraph 1 limits each Certify request
+    // payload to at most one Certificate Request Value.
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == CERTIFY_REQUIREMENT_ID)
+        .expect("the Certify single-certificate SHALL has a typed profile mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == CERTIFY_REQUIREMENT_ID)
+        .expect("the Certify SHALL resolves to generated normative metadata");
+
+    assert_eq!(mapping.source_clause_id, CERTIFY_SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(CERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::PositiveBehavior
+            && evidence.test_id.ends_with("profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item")
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::NegativeBehavior
+            && evidence.test_id.ends_with("profile_rejects_duplicate_certify_certificate_request_values_per_batch_item")
+    }));
+}
+
+#[test]
+fn profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item() {
+    let result = certify_profile_result();
+
+    for count in [0, 1] {
+        let request = request_message_with_operation_payload(
+            CERTIFY_OPERATION,
+            certify_payload_with_request_values(count),
+        );
+        result
+            .validate_request(&request)
+            .expect("an omitted or single Certificate Request Value is permitted");
+    }
+
+    let request = request_message_with_batch_operations([
+        (CERTIFY_OPERATION, certify_payload_with_request_values(1)),
+        (CERTIFY_OPERATION, certify_payload_with_request_values(1)),
+    ]);
+    result
+        .validate_request(&request)
+        .expect("each Certify Batch Item may request one certificate");
+}
+
+#[test]
+fn profile_rejects_duplicate_certify_certificate_request_values_per_batch_item() {
+    let request = request_message_with_operation_payload(
+        CERTIFY_OPERATION,
+        certify_payload_with_request_values(2),
+    );
+    let error = certify_profile_result()
+        .validate_request(&request)
+        .expect_err("a Certify Batch Item cannot request two certificates");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(CERTIFY_REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(CERTIFY_SOURCE_CLAUSE_ID));
+}
