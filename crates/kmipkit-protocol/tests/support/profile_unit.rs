@@ -9792,3 +9792,133 @@ fn profile_accepts_certificate_request_fields_without_certificate_type_attribute
         .validate_request(&request)
         .expect("Certificate Type is conditional on both Certificate Request fields being omitted");
 }
+
+const ORIGINAL_CREATION_DATE_TAG: u32 = 0x0042_00BC;
+const ORIGINAL_CREATION_DATE_ADD_OPERATION: u32 = 0x0000_000D;
+const ORIGINAL_CREATION_DATE_NEW_ATTRIBUTE: u32 = 0x0042_013D;
+const ORIGINAL_CREATION_DATE_REQUIREMENTS: [&str; 3] = [
+    "KMIPKIT-REQ-SPEC-4.38-001-001",
+    "KMIPKIT-REQ-SPEC-4.38-001-002",
+    "KMIPKIT-REQ-SPEC-4.38-001-003",
+];
+
+fn register_original_creation_date_request(date: Option<Value>) -> crate::RequestMessage {
+    let mut attributes = vec![
+        tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+        tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+    ];
+    if let Some(date) = date {
+        attributes.push(tagged(ORIGINAL_CREATION_DATE_TAG, date));
+    }
+
+    request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            attributes,
+        ),
+    )
+}
+
+fn add_original_creation_date_request(value: Value) -> crate::RequestMessage {
+    request_message_with_operation_payload(
+        ORIGINAL_CREATION_DATE_ADD_OPERATION,
+        structure([
+            tagged(
+                TABLE12_UNIQUE_IDENTIFIER,
+                Value::text_string("date-target".to_owned()),
+            ),
+            tagged(
+                ORIGINAL_CREATION_DATE_NEW_ATTRIBUTE,
+                Value::structure(structure([tagged(ORIGINAL_CREATION_DATE_TAG, value)])),
+            ),
+        ]),
+    )
+}
+
+#[test]
+// KMIP Specification v2.1 §4.38 Table 105 and §11.56; §6.1.43 Table 293.
+fn profile_maps_original_creation_date_register_and_add_capabilities() {
+    let evidence_tests = [
+        "profile_accepts_register_without_original_creation_date",
+        "profile_accepts_register_original_creation_date",
+        "profile_accepts_add_attribute_original_creation_date",
+    ];
+    for (requirement_id, evidence_test) in ORIGINAL_CREATION_DATE_REQUIREMENTS
+        .into_iter()
+        .zip(evidence_tests)
+    {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id);
+        assert!(
+            mapping.is_some(),
+            "Original Creation Date has a typed mapping"
+        );
+        if let Some(mapping) = mapping {
+            assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.38-001");
+            assert_eq!(
+                mapping.verification_category,
+                GeneratedVerificationCategory::OptionalCapability
+            );
+            assert!(mapping.test_evidence.iter().any(|evidence| {
+                evidence.kind == RuleTestKind::OptionalCapabilityUsable
+                    && evidence.test_id.ends_with(evidence_test)
+            }));
+        }
+    }
+}
+
+#[test]
+// KMIP Specification v2.1 §4.38 Table 105 permits omission and client setting on Register.
+fn profile_accepts_register_without_and_with_original_creation_date() {
+    let omitted = register_original_creation_date_request(None);
+    table12_profile_result(&[ORIGINAL_CREATION_DATE_REQUIREMENTS[0]])
+        .validate_request(&omitted)
+        .expect("Register may omit Original Creation Date");
+
+    let supplied = register_original_creation_date_request(Some(Value::date_time(1_700_000_000)));
+    table12_profile_result(&[ORIGINAL_CREATION_DATE_REQUIREMENTS[1]])
+        .validate_request(&supplied)
+        .expect("Register may set Original Creation Date");
+}
+
+#[test]
+// KMIP Specification v2.1 §4.38 Table 105 permits later addition through §6.1.2 Table 167.
+fn profile_accepts_add_attribute_original_creation_date() {
+    let request = add_original_creation_date_request(Value::date_time(1_700_000_000));
+    table12_profile_result(&[ORIGINAL_CREATION_DATE_REQUIREMENTS[2]])
+        .validate_request(&request)
+        .expect("Add Attribute can carry a previously omitted Original Creation Date");
+}
+
+#[test]
+// KMIP Specification v2.1 §4.38 Table 105 encodes Original Creation Date as Date-Time.
+fn profile_rejects_malformed_original_creation_date() {
+    let register = register_original_creation_date_request(Some(Value::integer(7)));
+    let register_error = table12_profile_result(&[ORIGINAL_CREATION_DATE_REQUIREMENTS[1]])
+        .validate_request(&register)
+        .expect_err("Register Original Creation Date is Date-Time");
+    assert_eq!(
+        register_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        register_error.requirement_id(),
+        Some(ORIGINAL_CREATION_DATE_REQUIREMENTS[1])
+    );
+
+    let add_attribute = add_original_creation_date_request(Value::integer(7));
+    let add_attribute_error = table12_profile_result(&[ORIGINAL_CREATION_DATE_REQUIREMENTS[2]])
+        .validate_request(&add_attribute)
+        .expect_err("Add Attribute Original Creation Date is Date-Time");
+    assert_eq!(
+        add_attribute_error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        add_attribute_error.requirement_id(),
+        Some(ORIGINAL_CREATION_DATE_REQUIREMENTS[2])
+    );
+}
