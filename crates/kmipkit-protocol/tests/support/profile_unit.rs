@@ -262,10 +262,7 @@ fn request_message_with_extensions<'a>(
                     Value::text_string(vendor.to_owned()),
                 ),
                 tagged(CRITICALITY_INDICATOR_TAG, Value::boolean(criticality)),
-                tagged(
-                    VENDOR_EXTENSION_TAG,
-                    Value::structure(Structure::new()),
-                ),
+                tagged(VENDOR_EXTENSION_TAG, Value::structure(Structure::new())),
             ])),
         )
     }));
@@ -1655,10 +1652,16 @@ fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
         .expect("generated metadata includes Baseline Client");
 
     assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
-    assert_eq!(mapping.verification_category, GeneratedVerificationCategory::OptionalCapability);
-    assert_eq!(mapping.verification_category, requirement.verification_category);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    assert_eq!(
+        mapping.verification_category,
+        requirement.verification_category
+    );
     assert!(baseline.requirement_ids.contains(&REQUIREMENT_ID));
-    assert!(requirement.official_test_case_ids.is_empty());
+    assert_eq!(requirement.official_test_case_ids, &[] as &[&str]);
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the optional capability has category-matched executable evidence");
     assert!(mapping.test_evidence.iter().any(|evidence| {
@@ -1666,8 +1669,7 @@ fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
             && evidence.kind == RuleTestKind::OptionalCapabilityUsable
     }));
     assert!(mapping.test_evidence.iter().any(|evidence| {
-        evidence.test_id == MODEL_TEST_ID
-            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+        evidence.test_id == MODEL_TEST_ID && evidence.kind == RuleTestKind::OptionalCapabilityUsable
     }));
     let evaluate = mapping
         .evaluator
@@ -1700,14 +1702,14 @@ fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
         })
         .collect::<Vec<_>>();
     assert_eq!(vendors, ["Vendor_A", "Vendor.B"]);
-    assert_eq!(
-        batch_item.message_extension(0).and_then(|extension| extension.criticality_indicator()),
-        Some(false)
-    );
-    assert_eq!(
-        batch_item.message_extension(1).and_then(|extension| extension.criticality_indicator()),
-        Some(true)
-    );
+    let first_extension = batch_item
+        .message_extension(0)
+        .expect("the first extension is present");
+    let second_extension = batch_item
+        .message_extension(1)
+        .expect("the second extension is present");
+    assert_eq!(first_extension.criticality_indicator(), Some(false));
+    assert_eq!(second_extension.criticality_indicator(), Some(true));
     result
         .validate_request(&request_with_extensions)
         .expect("a client request can carry repeated Message Extensions in source order");
