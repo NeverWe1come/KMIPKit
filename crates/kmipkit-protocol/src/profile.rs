@@ -4805,6 +4805,31 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "encoding",
+            value: "ttlv",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-11.56-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-11.56-001",
         source_gap_id: None,
@@ -5280,6 +5305,7 @@ fn is_transport_only_mapping(mapping: &TypedRuleMapping) -> bool {
             (constraint.key == "transport_security" && matches!(constraint.value, "tls" | "tls13"))
                 || (constraint.key == "tls13_cipher_suites"
                     && constraint.value == "kmip_profiles_3_1_2")
+                || (constraint.key == "encoding" && constraint.value == "ttlv")
         })
 }
 

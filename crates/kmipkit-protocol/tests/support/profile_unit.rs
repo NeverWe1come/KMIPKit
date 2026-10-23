@@ -1402,11 +1402,11 @@ fn profile_maps_required_ttlv_text_and_byte_string_padding() {
         mapping.test_evidence,
         &[
             RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
@@ -1422,6 +1422,14 @@ fn profile_maps_required_ttlv_text_and_byte_string_padding() {
         .expect("the selected-profile padding requirement is generated");
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the required TTLV padding behavior has linked executable evidence");
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    result
+        .validate_request(&request_message())
+        .expect("the TTLV encoding constraint does not add request-payload restrictions");
 }
 
 #[test]
@@ -5399,7 +5407,7 @@ fn missing_evaluator_and_wrong_source_link_fail_closed() {
         ProfileValidationErrorCode::RuleMappingMismatch
     );
 
-    let encoding_only = TypedRuleMapping {
+    let encoding_constraint = TypedRuleMapping {
         evaluator: None,
         ..mapping(
             "TEST-REQ",
@@ -5408,12 +5416,8 @@ fn missing_evaluator_and_wrong_source_link_fail_closed() {
             &CONSTRAINTS_TTLV,
         )
     };
-    let error = validate_mapping("TEST-PROFILE", &requirement, &encoding_only)
-        .expect_err("an encoding-only rule is not a transport-only mapping");
-    assert_eq!(
-        error.code(),
-        ProfileValidationErrorCode::IncompleteRuleMapping
-    );
+    validate_mapping("TEST-PROFILE", &requirement, &encoding_constraint)
+        .expect("a TTLV-only encoding rule has byte-level positive test evidence");
 
     let wrong_clause = TypedRuleMapping {
         source_clause_id: "OTHER-CLAUSE",
