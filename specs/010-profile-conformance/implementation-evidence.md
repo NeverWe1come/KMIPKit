@@ -5298,3 +5298,20 @@ The prior PR head's Script Contracts failed because the synthetic typed-rule fix
 | Exact-head hosted CI | GitHub Actions after pushing this repair | Pending. |
 
 The §12 addition brings the typed mapping count to 84/265 (181 unmapped). Three mandatory fixtures remain blocked and 77 cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — TTLV Text String and Byte String padding (2026-10-24)
+
+Mapped Baseline Client requirement `KMIPKIT-REQ-SPEC-10.1.5-001-001` from KMIP Specification v2.1 §10.1.5, with Item Length semantics cross-referenced to §10.1.3. The client wire encoder already emits minimum following padding for both Text String and Byte String values. A typed configuration mapping now links the Baseline Client's TTLV-only encoding constraint to those wire-encoder tests; it does not pretend the generic profile message model inspects the encoded padding bytes. The catalog's prior decoder references were removed from this client-to-server requirement's readiness evidence. No requirement-specific official OASIS Test Case is linked.
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red — require a typed mapping for §10.1.5 padding | DCO commit `f707ddac`; `cargo test -p kmipkit-protocol --all-features profile_maps_required_ttlv_text_and_byte_string_padding -- --nocapture` | Expected failure: no typed Baseline mapping existed for `KMIPKIT-REQ-SPEC-10.1.5-001-001`. |
+| Green — link the TTLV constraint to encoder evidence | DCO commit `717e5c80`; add the static rule, catalog links, generated report, and snapshot expectations | PASS: the profile mapping resolves to the selected requirement, and the profile does not add request-payload restrictions for a TTLV-only configuration rule. |
+| Refactor — clarify configuration-only mappings | DCO commit `6b85d0f6`; rename `is_transport_only_mapping` to `is_configuration_only_mapping` | PASS: rule behavior is unchanged; protocol tests and Clippy pass. |
+| Protocol and encoder tests | `cargo test -p kmipkit-protocol --lib --all-features --locked`; `cargo test -p kmipkit-client --lib --all-features padding -- --nocapture` | PASS: 933 protocol unit tests and 5 padding tests. |
+| Traceability and report regressions | Focused `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests`; focused `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` | PASS: exact code/test links and the 3 new typed-evidence rows match the report snapshot. |
+| Catalog generation and quality | Catalog validation; profile generation `--check`; report generation `--check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: 4 sources, 1,411 clauses, 4,123 records; generated artifacts are current. |
+| Rust workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/t040-string-padding-workspace-coverage.json` | PASS: 32,192/33,724 lines (95.46%) workspace; `profile.rs` 2,934/3,057 lines (95.98%). |
+| Exact-head hosted CI | GitHub Actions after pushing this increment | Pending. |
+
+Baseline now has 85 typed mappings of 265 assigned requirements; 180 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 cases remain unavailable. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
