@@ -260,6 +260,57 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
             path = ROOT / reference.partition("::")[0]
             self.assertTrue(path.is_file(), reference)
 
+    def test_certify_get_id_placeholder_may_links_request_path_and_tests(self) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.6-003"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.6-003"
+        element_ids = (
+            "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+            "KMIPKIT-ELEM-OP-C2S-GET",
+            "KMIPKIT-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
+            "KMIPKIT-ELEM-TAG-420094",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+        )
+        verification_refs = (
+            f"{PROFILE_TEST_PATH}::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
+            "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+            "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+            "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
+        )
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirements = {
+            record["requirement_id"]: record for record in catalog["requirements"]
+        }
+        elements = {record["element_id"]: record for record in catalog["elements"]}
+        requirement = requirements[requirement_id]
+
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertEqual(requirement["source_refs"][0]["section"], "6.1.6")
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["normative_strength"], "permission_or_optional")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertEqual(set(requirement["element_ids"]), set(element_ids))
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
+        self.assertIn("crates/kmipkit-protocol/src/get.rs", requirement["implementation_refs"])
+        self.assertIn("crates/kmipkit-client/src/execute.rs", requirement["implementation_refs"])
+        for reference in verification_refs:
+            self.assertIn(reference, requirement["verification_refs"])
+        for element_id in element_ids:
+            self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
+            self.assertIn(
+                "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
+                elements[element_id]["verification_refs"],
+            )
+
+        for reference in (
+            *requirement["implementation_refs"],
+            *verification_refs,
+        ):
+            path = ROOT / reference.partition("::")[0]
+            self.assertTrue(path.is_file(), reference)
+
 
 if __name__ == "__main__":
     unittest.main()
