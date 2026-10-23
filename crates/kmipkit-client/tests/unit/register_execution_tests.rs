@@ -803,7 +803,11 @@ fn register_sends_table_291_and_exposes_table_292_identifier_once() {
     assert_eq!(
         nested,
         [
-            vec![CERTIFICATE_LENGTH],
+            vec![
+                CERTIFICATE_LENGTH,
+                CRYPTOGRAPHIC_ALGORITHM,
+                CRYPTOGRAPHIC_LENGTH,
+            ],
             vec![UNKNOWN_VENDOR_TAG],
             vec![PROTECTION_STORAGE_MASK],
         ]
