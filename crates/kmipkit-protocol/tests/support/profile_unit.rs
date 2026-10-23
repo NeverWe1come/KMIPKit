@@ -8040,10 +8040,11 @@ fn profile_maps_omitted_certify_certificate_request_object_as_optional_capabilit
         requirement_ids: vec![CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID.to_owned()],
     };
     let payload = crate::CertifyRequest::new()
-        .with_unique_identifier(crate::UniqueIdentifier::TextString(
-            "public-key".to_owned(),
-        ))
-        .with_attributes(structure([tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1))]))
+        .with_unique_identifier(crate::UniqueIdentifier::TextString("public-key".to_owned()))
+        .with_attributes(structure([tagged(
+            CERTIFICATE_TYPE_TAG,
+            Value::enumeration(1),
+        )]))
         .into_ttlv_payload()
         .expect("the omitted-object request includes its required identifier and Certificate Type");
 
