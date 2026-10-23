@@ -222,6 +222,9 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
         }
         requirement = requirements[requirement_id]
         certify_element = elements["KMIPKIT-ELEM-OP-C2S-CERTIFY"]
+        request_type_element = elements[
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE"
+        ]
 
         self.assertEqual(requirement["source_clause_ids"], [clause_id])
         self.assertEqual(requirement["source_refs"][0]["section"], "6.1.6")
@@ -236,11 +239,19 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertIn("KMIPKIT-ELEM-OP-C2S-CERTIFY", requirement["element_ids"])
         self.assertIn(requirement_id, certify_element["requirement_ids"])
+        self.assertIn(
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE",
+            requirement["element_ids"],
+        )
+        self.assertIn(requirement_id, request_type_element["requirement_ids"])
+        self.assertEqual(request_type_element["source_encoding"], "Enumeration")
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", certify_element["implementation_refs"])
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", request_type_element["implementation_refs"])
         for profile_test in profile_tests:
             self.assertIn(profile_test, requirement["verification_refs"])
             self.assertIn(profile_test, certify_element["verification_refs"])
+            self.assertIn(profile_test, request_type_element["verification_refs"])
 
         for reference in (
             "crates/kmipkit-protocol/src/profile.rs",
