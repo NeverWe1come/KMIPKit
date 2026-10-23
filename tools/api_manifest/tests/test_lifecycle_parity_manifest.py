@@ -288,6 +288,42 @@ class LifecycleParityManifestTests(unittest.TestCase):
             self.assertEqual("verified", operation["apiState"])
             self.assertEqual(LANGUAGES, set(operation["declarations"]))
 
+    def test_lifecycle_response_dataclass_artifacts_are_exactly_excluded(self) -> None:
+        generated_members = (
+            "__dataclass_fields__",
+            "__dataclass_params__",
+            "__delattr__",
+            "__eq__",
+            "__hash__",
+            "__init__",
+            "__match_args__",
+            "__repr__",
+            "__setattr__",
+            "__slots__",
+        )
+        response_names = (
+            "ActivateResponse",
+            "ArchiveResponse",
+            "DestroyResponse",
+            "RecoverResponse",
+        )
+        expected = {
+            f"kmipkit.client.{response}.{member}"
+            for response in response_names
+            for member in generated_members
+        }
+        exclusions = {
+            row["exportName"]: row
+            for row in self.manifest["approvedExclusions"]
+            if row["exportName"] in expected
+        }
+
+        self.assertEqual(expected, set(exclusions))
+        for export_name, exclusion in exclusions.items():
+            with self.subTest(export_name=export_name):
+                self.assertEqual("python-kmipkit", exclusion["packageId"])
+                self.assertIn("T039", exclusion["evidence"])
+
 
 if __name__ == "__main__":
     unittest.main()
