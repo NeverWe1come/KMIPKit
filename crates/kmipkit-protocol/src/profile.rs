@@ -2371,7 +2371,6 @@ fn register_object_tag(object_type: u32) -> Option<u32> {
         SPLIT_KEY_OBJECT_TYPE => Some(SPLIT_KEY),
         PGP_KEY_OBJECT_TYPE => Some(PGP_KEY),
         CERTIFICATE_REQUEST_OBJECT_TYPE => Some(CERTIFICATE_REQUEST_OBJECT),
-        SECRET_DATA_OBJECT_TYPE | OPAQUE_OBJECT_TYPE => None,
         _ => None,
     }
 }
