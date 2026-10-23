@@ -12,12 +12,17 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OWNER_SPEC = "specs/018-managed-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
+LANGUAGE_PACKAGES = {
+    "rust": {"rust-kmipkit-client", "rust-kmipkit-protocol"},
+    "c": {"c-kmipkit"},
+    "java": {"java-kmipkit"},
+    "python": {"python-kmipkit"},
+}
 OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-ACTIVATE": {
         "name": "Activate",
         "section": "6.1.1",
         "rust": {
-            "kmipkit_client::Client::activate",
             "kmipkit_client::ClientRequest::Activate",
             "kmipkit_client::ClientBatchOutcome::activate_response",
             "kmipkit_protocol::ActivateRequest",
@@ -47,7 +52,6 @@ OPERATIONS = {
         "name": "Archive",
         "section": "6.1.4",
         "rust": {
-            "kmipkit_client::Client::archive",
             "kmipkit_client::ClientRequest::Archive",
             "kmipkit_client::ClientBatchOutcome::archive_response",
             "kmipkit_protocol::ArchiveRequest",
@@ -77,7 +81,6 @@ OPERATIONS = {
         "name": "Destroy",
         "section": "6.1.15",
         "rust": {
-            "kmipkit_client::Client::destroy",
             "kmipkit_client::ClientRequest::Destroy",
             "kmipkit_client::ClientBatchOutcome::destroy_response",
             "kmipkit_protocol::DestroyRequest",
@@ -107,7 +110,6 @@ OPERATIONS = {
         "name": "Recover",
         "section": "6.1.42",
         "rust": {
-            "kmipkit_client::Client::recover",
             "kmipkit_client::ClientRequest::Recover",
             "kmipkit_client::ClientBatchOutcome::recover_response",
             "kmipkit_protocol::RecoverRequest",
@@ -137,10 +139,15 @@ OPERATIONS = {
 OWNER_REQUIREMENTS = {
     f"KMIPKIT-0018-FR-{index:03}"
     for index in range(1, 11)
-} | {
-    "KMIPKIT-REQ-SPEC-6.1.4-001",
-    "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-    "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+}
+OPERATION_NORMATIVE_REQUIREMENTS = {
+    "Activate": set(),
+    "Archive": {"KMIPKIT-REQ-SPEC-6.1.4-001"},
+    "Destroy": set(),
+    "Recover": {
+        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+    },
 }
 API_REQUIREMENTS = {
     "KMIPKIT-0043-FR-003",
@@ -163,11 +170,26 @@ PARITY_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/extensions/LifecycleOperationMappingTest.java",
     "bindings/python/tests/test_lifecycle_operations.py",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
-    "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
-    "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
-    "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
-    "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+    "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
     "tools/api_manifest/tests/test_lifecycle_parity_manifest.py",
+}
+OPERATION_PARITY_EVIDENCE = {
+    "Activate": {
+        "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
+    },
+    "Archive": {
+        "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
+    },
+    "Destroy": {
+        "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
+    },
+    "Recover": {
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
+    },
 }
 
 
@@ -206,7 +228,9 @@ class LifecycleParityManifestTests(unittest.TestCase):
                 self.assertIn("Draft for independent human review", approval["evidence"])
                 self.assertEqual(LANGUAGES, set(operation["declarations"]))
                 self.assertTrue(PARITY_EVIDENCE <= set(operation["parityEvidenceIds"]))
-                for evidence in PARITY_EVIDENCE:
+                operation_evidence = OPERATION_PARITY_EVIDENCE[expected["name"]]
+                self.assertTrue(operation_evidence <= set(operation["parityEvidenceIds"]))
+                for evidence in PARITY_EVIDENCE | operation_evidence:
                     self.assertTrue((ROOT / evidence).is_file(), evidence)
 
                 actual = {language: set() for language in LANGUAGES}
@@ -216,6 +240,9 @@ class LifecycleParityManifestTests(unittest.TestCase):
                     for declaration_id in declaration_ids:
                         declaration = self.declarations[declaration_id]
                         self.assertEqual(operation_id, declaration["capabilityId"])
+                        self.assertIn(
+                            declaration["packageId"], LANGUAGE_PACKAGES[language]
+                        )
                         self.assertEqual("verified", declaration["declarationState"])
                         self.assertEqual("four-language", declaration["parityScope"])
                         self.assertEqual(LANGUAGES, set(declaration["languageMappings"]))
@@ -232,6 +259,10 @@ class LifecycleParityManifestTests(unittest.TestCase):
                 for language in LANGUAGES:
                     self.assertTrue(expected[language] <= actual[language], language)
                 self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
+                self.assertTrue(
+                    OPERATION_NORMATIVE_REQUIREMENTS[expected["name"]]
+                    <= linked_requirements
+                )
 
     def test_generated_parity_inventory_contains_verified_lifecycle_mappings(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))
