@@ -5282,3 +5282,19 @@ The exact-head documentation contract also exposed that the feature-traceability
 | Exact-head hosted CI | GitHub Actions after pushing this batch | Pending. |
 
 Baseline now has 84 typed mappings of 265 assigned requirements; 181 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 profile cases remain unavailable. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+### T040 follow-up — repair exact-head Python contracts (2026-10-24)
+
+The prior PR head's Script Contracts failed because the synthetic typed-rule fixtures had not been updated for the required `source_gap_id` field. Documentation traceability also needed to accept the Opaque Object table-row mapping's source-gap locator, and the new §12 mask requirement's test note had to explicitly distinguish pinned official-case evidence. The complete local normative suite ran 663 tests in 627 seconds and exposed 10 assertions tied to these stale expectations and fixtures. The fixes synchronize the parser fixtures, update the T002 status-count assertion for the newly `scoped_verified` §12 requirement, and clarify the official OASIS Test Case note. No runtime behavior changed.
+
+| Check | Evidence | Result |
+|---|---|---|
+| Focused regressions | `python -B -m unittest tools.normative_catalog.tests.test_source_gap_adjudication.SourceGapAdjudicationTests.test_t002_maps_all_requirements_without_clause_ids_to_exact_table_rows tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_optional_evidence_gate_accepts_only_scoped_client_exchange_evidence tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_requirement_test_evidence_is_bidirectional_or_has_gap_reason tools.normative_catalog.tests.test_report.CoverageReportTests.test_typed_rule_registry_reader_parses_tls_and_tls13_mappings -v` | PASS: 4 tests. |
+| Full report tests | `python -B -m unittest tools.normative_catalog.tests.test_report -v` | PASS: 55 tests, 1 skipped. |
+| Script contracts | `python -B -m unittest discover -s scripts/tests -p 'test_*.py' -v` | PASS: 296 tests, 26 skipped. |
+| Catalog validation and generated artifacts | `validate.py`; `generate_profiles.py --check`; `report.py --write` and `report.py --check` | PASS: 4 sources, 1,411 clauses, 4,123 records; generated artifacts current. |
+| Formatting and diff hygiene | `cargo fmt --all --check`; `git diff --check` | PASS. |
+| Complete normative suite after repair | Run by exact-head hosted CI | Pending. The 627-second Windows run is not repeated locally; the previously failing cases pass in the focused regressions above. |
+| Exact-head hosted CI | GitHub Actions after pushing this repair | Pending. |
+
+The §12 addition brings the typed mapping count to 84/265 (181 unmapped). Three mandatory fixtures remain blocked and 77 cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
