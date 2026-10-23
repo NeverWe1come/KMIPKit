@@ -861,6 +861,36 @@ fn client_certify_requests_at_most_one_certificate(
     })
 }
 
+fn client_certify_certificate_request_value_is_omittable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CERTIFY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == CERTIFICATE_REQUEST_VALUE)
+                    .all(|field| {
+                        field.with_value(|value| matches!(value, ValueView::ByteString(_)))
+                    })
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn type_specific_parameters_do_not_infer_remote_object_type(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -3075,6 +3105,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
             kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_certify_certificate_request_value_is_omittable),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_request_object_as_optional_capability",
+            kind: RuleTestKind::OptionalCapabilityUsable,
         }],
         constraints: &[],
     },
