@@ -3837,12 +3837,17 @@ fn profile_maps_client_export_key_compression_type_selector() {
 #[test]
 fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
     // KMIP Specification v2.1 §2.4/Table 5 permits PGP Key versions 3 and 4;
-    // its Key Value is caller-owned opaque ASCII-armored data.
+    // §2.4 also recommends preserving its Key Block as caller-owned opaque data.
     const REQUIREMENT_OBJECT_FORM: &str = "KMIPKIT-REQ-SPEC-2.4-001-001";
     const REQUIREMENT_VERSION: &str = "KMIPKIT-REQ-SPEC-2.4-001-002";
+    const REQUIREMENT_OPAQUE_KEY_BLOCK: &str = "KMIPKIT-REQ-SPEC-2.4-002-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
-    let requirement_ids = [REQUIREMENT_OBJECT_FORM, REQUIREMENT_VERSION];
+    let requirement_ids = [
+        REQUIREMENT_OBJECT_FORM,
+        REQUIREMENT_VERSION,
+        REQUIREMENT_OPAQUE_KEY_BLOCK,
+    ];
     for requirement_id in requirement_ids {
         let mapping = TYPED_RULE_MAPPINGS
             .iter()
