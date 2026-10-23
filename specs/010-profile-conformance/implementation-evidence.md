@@ -4971,3 +4971,16 @@ KMIP Specification v2.1 §6.1.6 Table 179 permits `Unique Identifier = Enumerati
 | Independent review | Security re-review found no actionable findings. QA identified a duplicated stale evidence section; it was removed, and QA confirmed the correction. | No profile-conformance claim is made; the three mandatory preflight blockers and 77 unavailable fixtures remain unchanged. |
 
 The Baseline Client typed registry remains at 68 unique mappings of 265 assigned requirements; 197 remain unmapped. Readiness remains `evidence_incomplete`; T040 remains open. The requirement inventory now includes Certify. Full local catalog and workspace checks pass; the local single-platform changed-line coverage is 94.89%, so the three-platform CI aggregate remains outstanding before this branch update is ready.
+
+
+### KMIPKIT-0010 T040 coverage-gate correction — direct and explicit Get identifiers (2026-10-23)
+
+The prior PR head failed only the selected-scope coverage gate: hosted run [39918542957](https://github.com/NeverWe1come/KMIPKit/actions/runs/39918542957) reported changed Rust coverage of 2,840/2,993 lines (94.89%), below 95%; the CI summary consequently failed. The new cases stay within the existing Certify/Get ID Placeholder rule and add no production behavior: a direct Unique Identifier Get is accepted without consuming the placeholder, while `Unique Identifier = Enumeration(1)` after Certify is accepted as an explicit placeholder consumer. Independent QA reviewed this test-only change and accepted it without findings.
+
+| Phase | DCO-signed commit and command | Result |
+|---|---|---|
+| Red coverage gate | Prior head `9668e4a344e1fcd92bd923ca1ef2e25f3f2d370f`; hosted run [39918542957](https://github.com/NeverWe1come/KMIPKit/actions/runs/39918542957) | Expected Red: the changed-Rust threshold failed at 2,840/2,993 (94.89%). The other 32 completed checks passed and 2 were skipped; the coverage gate and dependent CI summary failed. |
+| Green behavior and coverage | `a979a41b`; `cargo test -p kmipkit-protocol --all-features --locked profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability`; focused `cargo llvm-cov test` for the same test; full `cargo llvm-cov --workspace --all-features --locked --json` | PASS: the focused profile test passed; the focused LLVM report records execution of the direct-identifier and explicit-placeholder evaluator paths; the full Windows workspace coverage run completed and emitted its report. |
+| Refactor/evidence | This DCO-signed documentation commit; `cargo fmt --all --check`; `git diff --check` | PASS: the prior hosted failure and its exact metric are recorded, and the fresh three-platform hosted aggregate remains explicitly pending. |
+
+The new Windows report was locally substituted into the prior run's Ubuntu/macOS coverage artifacts to reproduce the selected-scope aggregate; that local reproduction is being checked separately and is not a replacement for hosted CI on this new commit. No coverage threshold is relaxed. T040 remains open, readiness remains `evidence_incomplete`, 197 Baseline Client requirements remain unmapped, three mandatory fixtures remain blocked by typed preflight, and 77 fixtures remain unavailable. No profile-conformance claim is made.
