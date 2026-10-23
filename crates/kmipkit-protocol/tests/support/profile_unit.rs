@@ -31,6 +31,7 @@ const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
 const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
 const BATCH_ERROR_CONTINUATION_OPTION_TAG: u32 = 0x0042_000E;
+const BATCH_ORDER_OPTION_TAG: u32 = 0x0042_0010;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const LOCATE_OPERATION_TAG: u32 = 0x0000_0008;
@@ -329,14 +330,23 @@ fn request_message_with_operation_payload(
 fn request_message_with_batch_operations(
     operations: impl IntoIterator<Item = (u32, Structure)>,
 ) -> crate::RequestMessage {
+    request_message_with_batch_operations_and_order(operations, None)
+}
+
+fn request_message_with_batch_operations_and_order(
+    operations: impl IntoIterator<Item = (u32, Structure)>,
+    batch_order_option: Option<bool>,
+) -> crate::RequestMessage {
     let operations: Vec<_> = operations.into_iter().collect();
     let batch_count = i32::try_from(operations.len()).expect("test batch count fits in an Integer");
+    let mut header_items = vec![test_protocol_version()];
+    if let Some(value) = batch_order_option {
+        header_items.push(tagged(BATCH_ORDER_OPTION_TAG, Value::boolean(value)));
+    }
+    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(batch_count)));
     let mut root_items = vec![tagged(
         REQUEST_HEADER_TAG,
-        Value::structure(structure([
-            test_protocol_version(),
-            tagged(BATCH_COUNT_TAG, Value::integer(batch_count)),
-        ])),
+        Value::structure(structure(header_items)),
     )];
 
     root_items.extend(
@@ -8063,6 +8073,66 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
     certify_get_placeholder_profile_result()
         .validate_request(&request_without_the_optional_capability)
         .expect("the MAY does not require every request to use Certify and Get");
+
+    let register_get = request_message_with_batch_operations([
+        (REGISTER_OPERATION_TAG, Structure::new()),
+        (GET_OPERATION, Structure::new()),
+    ]);
+    certify_get_placeholder_profile_result()
+        .validate_request(&register_get)
+        .expect("other valid placeholder producer and Get batches remain permitted");
+}
+
+#[test]
+fn profile_rejects_get_id_placeholder_without_a_preceding_producer() {
+    const GET_OPERATION: u32 = 0x0000_000A;
+    let request = request_message_with_operation_payload(GET_OPERATION, Structure::new());
+
+    let error = certify_get_placeholder_profile_result()
+        .validate_request(&request)
+        .expect_err("a Get that uses the ID Placeholder needs a prior producer");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
+fn profile_rejects_get_id_placeholder_when_batch_order_is_false() {
+    const GET_OPERATION: u32 = 0x0000_000A;
+    let request = request_message_with_batch_operations_and_order(
+        [
+            (CERTIFY_OPERATION, Structure::new()),
+            (GET_OPERATION, Structure::new()),
+        ],
+        Some(false),
+    );
+
+    let error = certify_get_placeholder_profile_result()
+        .validate_request(&request)
+        .expect_err("ID Placeholder use requires Batch Order Option true");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID)
+    );
 }
 
 #[test]
@@ -8448,15 +8518,37 @@ fn profile_rejects_id_placeholder_for_omitted_certify_request_value() {
     // is omitted; Enumeration(1) names the batch ID Placeholder, not the key.
     let request = request_message_with_operation_payload(
         CERTIFY_OPERATION,
-        structure([tagged(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::enumeration(1),
-        )]),
+        structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(1))]),
     );
 
     let error = certify_omitted_value_identifier_profile_result()
         .validate_request(&request)
         .expect_err("the ID Placeholder is not an explicit public-key identifier");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
+fn profile_rejects_malformed_certify_identifier_for_omitted_request_value() {
+    let request = request_message_with_operation_payload(
+        CERTIFY_OPERATION,
+        structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::integer(9))]),
+    );
+
+    let error = certify_omitted_value_identifier_profile_result()
+        .validate_request(&request)
+        .expect_err("an Integer is not a direct Unique Identifier");
 
     assert_eq!(
         error.code(),

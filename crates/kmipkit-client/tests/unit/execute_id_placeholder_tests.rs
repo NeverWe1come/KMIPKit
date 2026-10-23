@@ -3,11 +3,14 @@
 //! ID Placeholder operation classification derived from KMIP Specification v2.1 §6.1 and operation clauses.
 
 use kmipkit_protocol::{
-    AttributeSet, CreateSplitKeyRequest, DerivationMethod, DerivationParameters, DeriveKeyRequest,
-    ExportRequest, ObjectType, SecretBytes, SplitKeyMethod, UniqueIdentifier,
+    AttributeSet, CreateRequest, CreateSplitKeyRequest, DerivationMethod, DerivationParameters,
+    DeriveKeyRequest, ExportRequest, ImportRequest, JoinSplitKeyRequest, ObjectType,
+    RecertifyRequest, SecretBytes, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
 };
+use kmipkit_ttlv::Value;
 
 use super::ClientRequest;
+use crate::execute_test_support::{test_item, test_structure};
 
 #[test]
 fn operation_clauses_add_create_split_key_derive_key_and_export_as_producers() {
@@ -69,4 +72,74 @@ fn create_split_key_can_select_a_preceding_placeholder_before_producing_its_resu
         Err(super::BatchValidationError::IneligibleIdPlaceholder),
         "the request cannot consume a placeholder produced only by itself"
     );
+}
+
+fn explicit_id_placeholder_consumers() -> [(&'static str, ClientRequest); 3] {
+    [
+        (
+            "Import Unique Identifier",
+            ClientRequest::Import(ImportRequest::new(
+                UniqueIdentifier::Enumeration(1),
+                ObjectType::from_raw(2),
+                AttributeSet::new(),
+                test_item(0x0042_0040, Value::structure(test_structure([]))),
+            )),
+        ),
+        (
+            "Join Split Key Unique Identifier",
+            ClientRequest::JoinSplitKey(JoinSplitKeyRequest::new(
+                ObjectType::from_raw(7),
+                vec![
+                    SplitKeyReference::new(UniqueIdentifier::Enumeration(1))
+                        .with_split_key_threshold(1),
+                ],
+            )),
+        ),
+        (
+            "Re-certify Certificate Request Unique Identifier",
+            ClientRequest::Recertify(
+                RecertifyRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::TextString(
+                        "existing-certificate".to_owned(),
+                    ))
+                    .with_certificate_request_unique_identifier(UniqueIdentifier::Enumeration(1)),
+            ),
+        ),
+    ]
+}
+
+#[test]
+fn explicit_id_placeholder_in_import_join_split_key_and_recertify_is_a_consumer() {
+    for (field, request) in explicit_id_placeholder_consumers() {
+        assert!(
+            request.uses_id_placeholder(),
+            "{field} selects Enumeration(1)"
+        );
+        let batch = super::ClientBatch::new(super::ClientBatchItem::new(request));
+        assert_eq!(
+            super::validate_id_placeholder_eligibility(&batch),
+            Err(super::BatchValidationError::IneligibleIdPlaceholder),
+            "{field} cannot consume a missing preceding placeholder"
+        );
+    }
+}
+
+#[test]
+fn explicit_id_placeholder_consumers_reject_false_batch_order_before_send() {
+    for (field, request) in explicit_id_placeholder_consumers() {
+        let batch = super::ClientBatch::from_items([
+            super::ClientBatchItem::new(ClientRequest::Create(CreateRequest::new(
+                ObjectType::from_raw(2),
+                AttributeSet::new(),
+            ))),
+            super::ClientBatchItem::new(request),
+        ])
+        .with_batch_order_option(false);
+
+        assert_eq!(
+            super::validate_id_placeholder_eligibility(&batch),
+            Err(super::BatchValidationError::IneligibleIdPlaceholder),
+            "{field} requires Batch Order Option true or absent"
+        );
+    }
 }
