@@ -56995,11 +56995,14 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/certify.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item"
       ],
       "payload_tables": [
         {
@@ -96940,16 +96943,19 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/certify.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed. The typed Baseline Client profile mapping counts direct Certificate Request Value fields separately within each outbound Certify Batch Item and rejects a count above one. It does not inspect the opaque field bytes, and multiple Certify Batch Items remain independently permitted. No server behavior or formal profile conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-002-001",

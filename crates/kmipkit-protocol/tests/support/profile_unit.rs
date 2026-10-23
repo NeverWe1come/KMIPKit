@@ -7953,11 +7953,9 @@ fn profile_maps_certify_single_certificate_request_value_as_required_behavior() 
         .expect("the required behavior has positive executable evidence");
     assert!(mapping.test_evidence.iter().any(|evidence| {
         evidence.kind == RuleTestKind::PositiveBehavior
-            && evidence.test_id.ends_with("profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item")
-    }));
-    assert!(mapping.test_evidence.iter().any(|evidence| {
-        evidence.kind == RuleTestKind::NegativeBehavior
-            && evidence.test_id.ends_with("profile_rejects_duplicate_certify_certificate_request_values_per_batch_item")
+            && evidence.test_id.ends_with(
+                "profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
+            )
     }));
 }
 
