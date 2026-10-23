@@ -14,6 +14,7 @@ use super::{
     client_opaque_object_context_custom_attributes,
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
+    client_register_opaque_object_has_required_data_fields,
     client_register_random_number_generator_is_well_formed,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_form_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
@@ -8097,6 +8098,31 @@ fn profile_maps_required_fields_of_opaque_register_object() {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Opaque Object requirement has generated source metadata");
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Opaque Object requirement has an explicit typed mapping");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the typed mapping preserves its catalogued source gap and locator");
+    let mismatched_mapping = TypedRuleMapping {
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-003",
+        ..*mapping
+    };
+    let mismatch = validate_mapping(BASELINE_PROFILE_ID, requirement, &mismatched_mapping)
+        .expect_err("a source gap cannot be relabeled as a clause");
+    assert_eq!(mismatch.source_clause_id(), None);
+    assert_eq!(
+        mismatch.source_gap_id(),
+        Some("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED")
+    );
+    assert_eq!(
+        mismatch.source_gap_locator(),
+        Some("Section 2.3, table object_definition, row Opaque Data Type, HTML lines 6927-6945")
+    );
     validation
         .validate_request(&request_message_with_operation_payload(
             REGISTER_OPERATION_TAG,
@@ -8106,6 +8132,7 @@ fn profile_maps_required_fields_of_opaque_register_object() {
 
     for malformed_object in [
         Value::structure(structure([])),
+        Value::text_string("not-an-Opaque-Object-structure".to_owned()),
         Value::structure(structure([tagged(
             OPAQUE_DATA_TYPE_TAG,
             Value::enumeration(0xF123_4567),
@@ -8157,6 +8184,85 @@ fn profile_maps_required_fields_of_opaque_register_object() {
         );
         assert!(display.contains("HTML lines 6927-6945"));
     }
+}
+
+#[test]
+fn profile_opaque_rule_accepts_non_applicable_and_response_contexts() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    assert!(!client_register_opaque_object_has_required_data_fields(
+        None, None
+    ));
+
+    for request in [
+        request_message_with_operation_payload(0x0000_000A, Structure::new()),
+        request_message_with_operation_payload(REGISTER_OPERATION_TAG, Structure::new()),
+        request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([tagged(
+                OBJECT_TYPE_TAG,
+                Value::text_string("opaque".to_owned()),
+            )]),
+        ),
+        request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+        ),
+    ] {
+        validation
+            .validate_request(&request)
+            .expect("non-applicable Object Types are evaluated by their own requirements");
+    }
+
+    let missing_opaque_object = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(8))]),
+    );
+    validation
+        .validate_request(&missing_opaque_object)
+        .expect_err("an Opaque Object Register request requires its object structure");
+
+    let valid_request = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        opaque_object_register_payload(false),
+    );
+    validation
+        .validate_response(&valid_request, &response_message())
+        .expect("response validation preserves the already checked request rule");
+}
+
+#[test]
+fn profile_validation_error_rejects_conflicting_source_references() {
+    let conflicting = ProfileValidationError::for_rule_requirement(
+        ProfileValidationErrorCode::RuleMappingMismatch,
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-REQ-SPEC-2.3-003",
+        "KMIPKIT-CLAUSE-SPEC-2.3-001",
+        Some("KMIPKIT-SOURCE-GAP-UNKNOWN"),
+    );
+    assert_eq!(conflicting.source_clause_id(), None);
+    assert_eq!(conflicting.source_gap_id(), None);
+    assert_eq!(conflicting.source_gap_locator(), None);
+
+    let unresolved_gap = ProfileValidationError::for_rule_requirement(
+        ProfileValidationErrorCode::RuleMappingMismatch,
+        "KMIPKIT-PROFILE-BASELINE-CLIENT",
+        "KMIPKIT-REQ-SPEC-2.3-003",
+        "",
+        Some("KMIPKIT-SOURCE-GAP-UNKNOWN"),
+    );
+    assert_eq!(unresolved_gap.source_clause_id(), None);
+    assert_eq!(
+        unresolved_gap.source_gap_id(),
+        Some("KMIPKIT-SOURCE-GAP-UNKNOWN")
+    );
+    assert_eq!(unresolved_gap.source_gap_locator(), None);
+    assert!(!unresolved_gap.to_string().contains(" at "));
 }
 
 #[test]
