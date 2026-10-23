@@ -99639,17 +99639,19 @@
       "feature_spec": "KMIPKIT-0008",
       "implementation_refs": [
         "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/credential/attestation.rs",
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
         "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
+        "crates/kmipkit-protocol/tests/credential_public_api.rs::standalone_attestation_hashed_password_and_nonce_views_are_lossless",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_capable_indicator_when_client_can_create_credential"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The shipped Rust API can construct a structurally valid Attestation Credential, so synchronous and asynchronous requests advertise Attestation Capable Indicator true. The Baseline Client typed RequiredBehavior mapping accepts true and rejects omission or false with the exact §9.3 requirement and clause IDs. The profile regression and client advertisement tests are local evidence only; they do not claim attestation evidence generation, verification, an official Test Cases pass, or profile conformance. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-9.3-001-001 at KMIP Specification v2.1 §9.3 under the catalog's source-backed linking policy, so test_case_ids remains empty."
+      "review_note": "The shipped Rust API can construct a structurally valid Attestation Credential from caller-supplied TTLV, so synchronous and asynchronous requests advertise Attestation Capable Indicator true. The linked constructor test covers structural model construction only, not attestation evidence generation or verification. The Baseline Client typed RequiredBehavior mapping accepts true and rejects omission or false with the exact §9.3 requirement and clause IDs. The profile regression, constructor test, and client advertisement tests are local evidence only; they do not claim an official Test Cases pass or profile conformance. No official Test Cases ID is explicitly linked from the pinned KMIP Test Cases v2.1 CN01 source (KMIPKIT-SRC-testcases) to KMIPKIT-REQ-SPEC-9.3-001-001 at KMIP Specification v2.1 §9.3 under the catalog's source-backed linking policy, so test_case_ids remains empty."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.3-001-002",

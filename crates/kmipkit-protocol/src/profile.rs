@@ -3535,6 +3535,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 test_id: "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
                 kind: RuleTestKind::PositiveBehavior,
             },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/credential_public_api.rs::standalone_attestation_hashed_password_and_nonce_views_are_lossless",
+                kind: RuleTestKind::PositiveBehavior,
+            },
         ],
         constraints: &[],
     },
