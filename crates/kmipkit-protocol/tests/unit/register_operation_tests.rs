@@ -1088,8 +1088,15 @@ fn request_requires_usage_mask_for_managed_cryptographic_objects() {
 #[test]
 fn request_requires_certificate_length_and_allows_embedded_signature_algorithm() {
     let certificate = item(CERTIFICATE, Value::structure(structure([])));
-    let missing_length =
-        RegisterRequest::new(ObjectType::from_raw(1), attrs([]), certificate).into_ttlv_payload();
+    let missing_length = RegisterRequest::new(
+        ObjectType::from_raw(1),
+        attrs([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
+        ]),
+        certificate,
+    )
+    .into_ttlv_payload();
     assert!(missing_length.is_err());
 
     let request = RegisterRequest::new(
