@@ -8081,6 +8081,20 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
     certify_get_placeholder_profile_result()
         .validate_request(&register_get)
         .expect("other valid placeholder producer and Get batches remain permitted");
+}
+
+#[test]
+fn profile_certify_get_placeholder_evaluator_accepts_direct_and_explicit_identifiers() {
+    // KMIP Specification v2.1 §11.58 Table 489 defines Enumeration(1) as
+    // the ID Placeholder; a direct identifier remains an ordinary Get.
+    const GET_OPERATION: u32 = 0x0000_000A;
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID)
+        .expect("the same-batch Certify/Get rule has a typed evaluator");
+    let evaluator = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
 
     let direct_get = request_message_with_operation_payload(
         GET_OPERATION,
@@ -8102,12 +8116,7 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
         })
         .expect("the direct Get has a Request Payload");
     assert_eq!(direct_identifier_count, 1);
-    assert!(mapping
-        .evaluator
-        .expect("the optional capability has a typed evaluator")(
-        Some(&direct_get),
-        None,
-    ));
+    assert!(evaluator(Some(&direct_get), None));
     certify_get_placeholder_profile_result()
         .validate_request(&direct_get)
         .expect("a direct Get identifier does not consume the batch ID Placeholder");
@@ -8128,12 +8137,7 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
             structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(1))]),
         ),
     ]);
-    assert!(mapping
-        .evaluator
-        .expect("the optional capability has a typed evaluator")(
-        Some(&explicit_placeholder_get),
-        None,
-    ));
+    assert!(evaluator(Some(&explicit_placeholder_get), None));
     certify_get_placeholder_profile_result()
         .validate_request(&explicit_placeholder_get)
         .expect("an explicit ID Placeholder follows a successful-path Certify item");
