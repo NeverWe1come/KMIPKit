@@ -2253,6 +2253,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             _normalized_html_source_span(spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-8.3-004"]),
             request_review["source_excerpt"],
         )
+        requirements_by_id = {item["requirement_id"]: item for item in catalog["requirements"]}
+        request_requirement = requirements_by_id["KMIPKIT-REQ-SPEC-8.3-004"]
+        self.assertEqual(
+            request_requirement["element_ids"],
+            [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+            ],
+        )
+        elements_by_id = {item["element_id"]: item for item in catalog["elements"]}
+        self.assertEqual(request_requirement["direction"], "client_to_server")
+        self.assertEqual(
+            {elements_by_id[element_id]["direction"] for element_id in request_requirement["element_ids"]},
+            {"client_to_server", "both"},
+        )
 
         response_clause = catalog_clauses["KMIPKIT-CLAUSE-SPEC-8.6-004"]
         self.assertEqual(response_clause["disposition"], "server_only")

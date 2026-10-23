@@ -98789,7 +98789,6 @@
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
-        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
         "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
       ],
       "profile_ids": [],

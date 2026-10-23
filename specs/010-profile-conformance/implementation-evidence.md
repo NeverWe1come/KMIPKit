@@ -4997,7 +4997,7 @@ The DCO-signed refactor commit recorded above is the Green resolution for the Cl
 
 ### KMIP 2.1 §8.3 Table 396 — repeated request Message Extension capability (2026-10-23)
 
-`KMIPKIT-REQ-SPEC-8.3-004` / `KMIPKIT-CLAUSE-SPEC-8.3-004` is a client-to-server MAY: the request Message Extension structure may repeat. The Baseline Client typed registry now maps it as `OptionalCapabilityUsable`. The evaluator accepts an absent extension and any structurally valid repeated request extensions; the existing message model remains responsible for shape validation, typed fields, and source ordering. The profile regression checks the catalog metadata and accepts an ordinary request plus a request with two extensions in order. Response Message Extension remains a Table 399 singleton; no response behavior or pinned upstream OASIS file changed.
+`KMIPKIT-REQ-SPEC-8.3-004` / `KMIPKIT-CLAUSE-SPEC-8.3-004` is a client-to-server MAY: the request Message Extension structure may repeat. The Baseline Client typed registry uses the `OptionalCapability` verification category and records the profile and model tests as `OptionalCapabilityUsable` positive evidence. The evaluator accepts an absent extension and any structurally valid repeated request extensions; the existing message model remains responsible for shape validation, typed fields, and source ordering. The profile regression checks the catalog metadata and accepts an ordinary request plus a request with two extensions in order. The catalog links the client requirement to the §8.3 request placement and §9.13 structure, not the §8.6 response placement. Response Message Extension remains a Table 399 singleton; no response behavior or pinned upstream OASIS file changed.
 
 | Phase | DCO-signed commit and command | Result |
 |---|---|---|
@@ -5011,3 +5011,21 @@ The DCO-signed refactor commit recorded above is the Green resolution for the Cl
 | Workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/coverage-raw.json`; `py -3 -B scripts/coverage_gate.py normalize --workspace . --input target/coverage-raw.json --output target/coverage.json` | PASS on this Windows host. Workspace line coverage: 31,705/33,222 (95.43%); `crates/kmipkit-protocol/src/profile.rs`: 2,458/2,566 (95.79%). This is local single-platform evidence, not a multi-platform CI aggregate. |
 
 The generated Baseline Client registry now has 69 typed mappings among 265 assigned requirements, with 196 still unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 remain unavailable. The requirement has no explicitly linked official OASIS Test Case ID. This slice does not claim profile conformance; T040 remains unchecked and open. The profile test source received a small assertion/helper refactor during the Refactor phase to satisfy Clippy without a lint exception.
+
+
+### Independent review follow-up — Message Extension direction links and terminology (2026-10-23)
+
+The `client_to_server` requirement `KMIPKIT-REQ-SPEC-8.3-004` previously linked the server-to-client §8.6 Message Extension element. Removed `KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION` from its catalog `element_ids`; it now links the §8.3 request placement and §9.13 structure, whose catalog direction is `both`. The generated coverage row now shows those two linked elements and the `MAY / OptionalCapability` verification category. The response requirement mapping and §8.6 Table 399 singleton behavior are unchanged.
+
+Terminology now distinguishes the `OptionalCapability` verification category from the `OptionalCapabilityUsable` positive test-evidence kind in the T040 progress note, implementation evidence, and ignored task report/progress ledger. The focused Rust test already asserts these as separate metadata fields and required no behavior change.
+
+| Check | Command | Result |
+|---|---|---|
+| Red cross-link regression | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileMetadataGeneratorTests.test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk -v` before catalog correction | Expected failure: `KMIPKIT-REQ-SPEC-8.3-004` included the §8.6 server-to-client element in its request `element_ids`. |
+| Green cross-link regression | Same focused unittest after catalog correction | PASS: the request requirement links exactly the §8.3 client request element and §9.13 bidirectional structure element. |
+| Catalog regeneration and validation | `py -3 -B tools/normative_catalog/report.py --write`; `py -3 -B tools/normative_catalog/validate.py --repo-root .` | PASS: coverage report regenerated; catalog valid with 4 sources, 1,411 clauses, and 4,123 records. |
+| Deterministic outputs | `py -3 -B tools/normative_catalog/generate_profiles.py --check`; `py -3 -B tools/normative_catalog/generate_attribute_policy.py --check`; `py -3 -B tools/normative_catalog/report.py --check` | PASS: generated profile metadata, attribute policies, and coverage report are current. |
+| Focused Rust behavior | `cargo test -p kmipkit-protocol --lib profile_maps_repeated_request_message_extensions_as_optional_capability --locked -- --nocapture` | PASS: the existing optional/repeated request behavior remains unchanged. |
+| Rust quality and diff | `cargo fmt --all --check`; `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`; `git diff --check` | PASS. Clippy emitted only existing non-fatal AWS-LC/MSVC/NASM environment warnings. |
+
+No runtime behavior changed. The client requirement no longer cross-links the response element, the response mapping remains unchanged, and T040 remains open with no profile-conformance claim.
