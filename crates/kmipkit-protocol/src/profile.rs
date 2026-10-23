@@ -797,6 +797,8 @@ const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
+const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
+const RNG_ALGORITHM: u32 = 0x0042_00DA;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const PUBLIC_KEY_OBJECT_TYPE: u32 = 3;
@@ -2520,6 +2522,91 @@ fn optional_date_time_attribute_is_well_formed(attributes: &StructureView<'_>, t
     }
 }
 
+fn client_register_random_number_generator_is_well_formed(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(
+                |payload| match field_presence(&payload, REGISTER_ATTRIBUTES) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(attributes) => {
+                        attributes.with_value(|value| match value {
+                            ValueView::Structure(attributes) => {
+                                rng_parameters_attribute_is_well_formed(&attributes)
+                            }
+                            _ => false,
+                        })
+                    }
+                },
+            )
+            .unwrap_or(false)
+    })
+}
+
+fn client_add_attribute_random_number_generator_is_well_formed(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != ADD_ATTRIBUTE_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| match field_presence(&payload, NEW_ATTRIBUTE) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(new_attribute) => {
+                    new_attribute.with_value(|value| match value {
+                        ValueView::Structure(new_attribute) => {
+                            rng_parameters_attribute_is_well_formed(&new_attribute)
+                        }
+                        _ => false,
+                    })
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn rng_parameters_attribute_is_well_formed(attributes: &StructureView<'_>) -> bool {
+    match field_presence(attributes, RANDOM_NUMBER_GENERATOR) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(rng) => rng.with_value(|value| {
+            let ValueView::Structure(parameters) = value else {
+                return false;
+            };
+            let FieldPresence::Unique(algorithm) = field_presence(&parameters, RNG_ALGORITHM)
+            else {
+                return false;
+            };
+            algorithm.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        }),
+    }
+}
+
 fn client_register_key_value_location_requires_omitted_key_value(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -3779,6 +3866,40 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_register_random_number_generator_is_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_add_attribute_random_number_generator_is_well_formed),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_random_number_generator",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],

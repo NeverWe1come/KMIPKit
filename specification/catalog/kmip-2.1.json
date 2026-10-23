@@ -90465,6 +90465,22 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.46"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.49"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -90486,15 +90502,19 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/register.rs",
-        "crates/kmipkit-protocol/src/attribute.rs"
+        "crates/kmipkit-protocol/src/profile.rs::client_register_random_number_generator_is_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_and_add_attribute_random_number_generator_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_register_random_number_generator",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_random_number_generator",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "OASIS KMIP v2.1 §4.46 Table 121, §7.36 Table 388, and §§11.49, 11.56 permit the client to set Random Number Generator on Register. The test encodes the Structure with direct RNG Algorithm Enumeration Unspecified (1), without a nested RNG Parameters member, and includes Table 293 prerequisites. This is request serialization evidence only; it does not assert a server RNG outcome. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
+      "status": "scoped_verified",
+      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.46 Table 121 and §6.1.43 Table 293. A supplied Random Number Generator is encoded as an RNG Parameters structure with a direct, unique RNG Algorithm Enumeration per §7.36 Table 388; the enum value Unspecified (1) is accepted. The test is request serialization evidence only and makes no claim about server RNG behavior or outcomes. No official Test Case is linked and no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -90505,6 +90525,26 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "4.46"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "5.7"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.2"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "7.36"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.49"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "11.56"
         }
       ],
       "source_keyword": "MAY",
@@ -90527,15 +90567,19 @@
       "feature_spec": null,
       "implementation_refs": [
         "crates/kmipkit-protocol/src/add_attribute.rs",
-        "crates/kmipkit-protocol/src/attribute.rs"
+        "crates/kmipkit-protocol/src/profile.rs::client_add_attribute_random_number_generator_is_well_formed",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_and_add_attribute_random_number_generator_capabilities",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_add_attribute_random_number_generator",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_random_number_generator",
         "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "OASIS KMIP v2.1 §4.46 Table 121, §7.36 Table 388, and §§11.49, 11.56 permit the client to add Random Number Generator using Add Attribute. The test encodes the Structure with direct RNG Algorithm Enumeration Unspecified (1), without a nested RNG Parameters member. This is request serialization evidence only; it does not assert a server RNG outcome. No requirement-specific official Test Case ID is linked by the pinned source; test_case_ids remains empty."
+      "status": "scoped_verified",
+      "review_note": "The typed Baseline Client rule checks client Add Attribute New Attribute under KMIP Specification v2.1 §4.46, §6.1.2 Table 167, and §5.7 Table 163. A supplied Random Number Generator is encoded as an RNG Parameters structure with a direct, unique RNG Algorithm Enumeration per §7.36 Table 388; it is not a nested RNG Parameters member. The test is request serialization evidence only and makes no claim about server RNG behavior or outcomes. No official Test Case is linked and no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-001-001",
