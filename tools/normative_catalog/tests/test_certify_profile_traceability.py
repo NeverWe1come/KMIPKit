@@ -123,6 +123,16 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertEqual(requirement["condition"], "When Certificate Request is omitted.")
         self.assertEqual(requirement["decision_id"], "KMIPKIT-DEC-013")
+        decision = next(
+            record
+            for record in catalog["decisions"]
+            if record["decision_id"] == requirement["decision_id"]
+        )
+        self.assertIn(requirement_id, decision["requirement_ids"])
+        self.assertIn(
+            "Do not apply the conflicting Table 179 sentence as an ID Placeholder substitution",
+            decision["interpretation"],
+        )
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
         for reference in (positive_test, negative_test, boundary_test):
             self.assertIn(reference, requirement["verification_refs"])

@@ -7917,8 +7917,7 @@ const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
 const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-001";
 const CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 const CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-002";
-const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str =
-    "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
+const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 
 fn certify_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
@@ -8094,9 +8093,7 @@ fn profile_maps_omitted_certify_request_identifier_as_required_behavior() {
     // resolves the conflicting Table 179 ID Placeholder sentence.
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
-        .find(|mapping| {
-            mapping.requirement_id == CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID
-        })
+        .find(|mapping| mapping.requirement_id == CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID)
         .expect("the conditional Certify Unique Identifier SHALL has a typed mapping");
     let requirement = CLIENT_REQUIREMENTS
         .iter()
@@ -8121,6 +8118,14 @@ fn profile_maps_omitted_certify_request_identifier_as_required_behavior() {
                 "profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
             )
     }));
+    let evaluate = mapping
+        .evaluator
+        .expect("the required behavior has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let unrelated_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    assert!(evaluate(Some(&unrelated_request), None));
 }
 
 #[test]
