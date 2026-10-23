@@ -30,6 +30,10 @@ const PROTOCOL_VERSION_MINOR_TAG: u32 = 0x0042_006B;
 const BATCH_COUNT_TAG: u32 = 0x0042_000D;
 const BATCH_ITEM_TAG: u32 = 0x0042_000F;
 const ATTESTATION_TYPE_TAG: u32 = 0x0042_00C7;
+const MESSAGE_EXTENSION_TAG: u32 = 0x0042_0051;
+const CRITICALITY_INDICATOR_TAG: u32 = 0x0042_0026;
+const VENDOR_EXTENSION_TAG: u32 = 0x0042_009C;
+const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const BATCH_ERROR_CONTINUATION_OPTION_TAG: u32 = 0x0042_000E;
 const BATCH_ORDER_OPTION_TAG: u32 = 0x0042_0010;
 const OPERATION_TAG: u32 = 0x0042_005C;
@@ -60,7 +64,6 @@ const OPAQUE_OBJECT_TAG: u32 = 0x0042_005B;
 const OPAQUE_DATA_TYPE_TAG: u32 = 0x0042_0059;
 const OPAQUE_DATA_VALUE_TAG: u32 = 0x0042_005A;
 const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
-const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
 const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
 const CRYPTOGRAPHIC_USAGE_MASK_TAG: u32 = 0x0042_002C;
@@ -241,6 +244,46 @@ fn request_message_with_unique_batch_item_id(
         ),
     ]))
     .expect("test single-item Request Message is valid")
+}
+
+fn request_message_with_extensions<'a>(
+    extensions: impl IntoIterator<Item = (&'a str, bool)>,
+) -> crate::RequestMessage {
+    let mut batch_item_fields = vec![
+        tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+        tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+    ];
+    batch_item_fields.extend(extensions.into_iter().map(|(vendor, criticality)| {
+        tagged(
+            MESSAGE_EXTENSION_TAG,
+            Value::structure(structure([
+                tagged(
+                    VENDOR_IDENTIFICATION_TAG,
+                    Value::text_string(vendor.to_owned()),
+                ),
+                tagged(CRITICALITY_INDICATOR_TAG, Value::boolean(criticality)),
+                tagged(
+                    VENDOR_EXTENSION_TAG,
+                    Value::structure(Structure::new()),
+                ),
+            ])),
+        )
+    }));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(
+            REQUEST_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure(batch_item_fields)),
+        ),
+    ]))
+    .expect("test Request Message with valid Message Extensions is valid")
 }
 
 fn request_message_with_batch_item_ids(ids: &[&[u8]]) -> crate::RequestMessage {
@@ -1587,6 +1630,87 @@ fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
     result
         .validate_request(&repeated_types_request)
         .expect("a client can represent repeated Request Header Attestation Type values");
+}
+
+#[test]
+fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
+    // KMIP Specification v2.1 §8.3 Table 396 permits repeated request Message Extensions.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.3-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.3-004";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_message_extensions_as_optional_capability";
+    const MODEL_TEST_ID: &str = "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("repeated request Message Extensions have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Message Extension capability resolves to generated metadata");
+    let baseline = crate::profiles_generated::CLIENT_PROFILES
+        .iter()
+        .find(|profile| profile.profile_id == BASELINE_PROFILE_ID)
+        .expect("generated metadata includes Baseline Client");
+
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(mapping.verification_category, GeneratedVerificationCategory::OptionalCapability);
+    assert_eq!(mapping.verification_category, requirement.verification_category);
+    assert!(baseline.requirement_ids.contains(&REQUIREMENT_ID));
+    assert!(requirement.official_test_case_ids.is_empty());
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has category-matched executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == MODEL_TEST_ID
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional Message Extension capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request_without_extensions = request_message();
+    result
+        .validate_request(&request_without_extensions)
+        .expect("the optional capability does not require an extension in every request");
+
+    let request_with_extensions =
+        request_message_with_extensions([("Vendor_A", false), ("Vendor.B", true)]);
+    let batch_item = request_with_extensions
+        .batch_items()
+        .next()
+        .expect("the test request contains one Batch Item");
+    assert_eq!(batch_item.message_extension_count(), 2);
+    let vendors = (0..batch_item.message_extension_count())
+        .map(|index| {
+            batch_item
+                .message_extension(index)
+                .expect("each repeated extension is preserved")
+                .with_vendor_identification(str::to_owned)
+                .expect("each extension has a Vendor Identification")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(vendors, ["Vendor_A", "Vendor.B"]);
+    assert_eq!(
+        batch_item.message_extension(0).and_then(|extension| extension.criticality_indicator()),
+        Some(false)
+    );
+    assert_eq!(
+        batch_item.message_extension(1).and_then(|extension| extension.criticality_indicator()),
+        Some(true)
+    );
+    result
+        .validate_request(&request_with_extensions)
+        .expect("a client request can carry repeated Message Extensions in source order");
 }
 
 #[test]
