@@ -8152,6 +8152,10 @@ const CERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
 const CERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-007";
 const CERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-007";
+const RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-008";
+const RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-008";
+const RECERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+const RECERTIFY_OPERATION_TAG: u32 = 0x0000_0007;
 const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
 const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
 const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-001";
@@ -8190,6 +8194,13 @@ fn certify_request_type_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
         requirement_ids: vec![CERTIFY_REQUEST_TYPE_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn recertify_request_type_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec![RECERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID.to_owned()],
     }
 }
 
@@ -8528,6 +8539,133 @@ fn profile_maps_certify_request_type_when_request_value_is_present_as_required_b
     let unrelated_request =
         request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
     assert!(evaluate(Some(&unrelated_request), None));
+}
+
+#[test]
+fn profile_maps_recertify_request_type_when_request_value_is_present_as_required_behavior() {
+    // KMIP Specification v2.1 §6.1.45 Table 300 requires Certificate Request
+    // Type when Certificate Request Value is present.
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID)
+        .expect("the conditional Re-certify Certificate Request Type REQUIRED has a typed mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID)
+        .expect("the conditional Re-certify REQUIRED resolves to normative metadata");
+
+    assert_eq!(
+        mapping.source_clause_id,
+        RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(RECERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the required behavior has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.kind == RuleTestKind::PositiveBehavior
+            && evidence
+                .test_id
+                .ends_with("profile_accepts_recertify_request_type_with_request_value")
+    }));
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the conditional REQUIRED has a typed evaluator");
+    assert!(!evaluate(None, None));
+    let unrelated_request =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    assert!(evaluate(Some(&unrelated_request), None));
+}
+
+#[test]
+fn profile_accepts_recertify_request_type_with_request_value() {
+    let payload = structure([
+        tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(1)),
+        tagged(
+            CERTIFICATE_REQUEST_VALUE_TAG,
+            Value::byte_string(vec![0x30, 0x00]),
+        ),
+    ]);
+    let request = request_message_with_operation_payload(RECERTIFY_OPERATION_TAG, payload);
+
+    recertify_request_type_profile_result()
+        .validate_request(&request)
+        .expect("Certificate Request Type accompanies the supplied Certificate Request Value");
+}
+
+#[test]
+fn profile_rejects_recertify_request_value_without_request_type_in_any_batch_item() {
+    let valid_payload = structure([
+        tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(1)),
+        tagged(
+            CERTIFICATE_REQUEST_VALUE_TAG,
+            Value::byte_string(vec![0x30, 0x00]),
+        ),
+    ]);
+    let missing_type_payload = structure([tagged(
+        CERTIFICATE_REQUEST_VALUE_TAG,
+        Value::byte_string(vec![0x30, 0x00]),
+    )]);
+    let request = request_message_with_batch_operations([
+        (RECERTIFY_OPERATION_TAG, valid_payload),
+        (RECERTIFY_OPERATION_TAG, missing_type_payload),
+    ]);
+    let error = recertify_request_type_profile_result()
+        .validate_request(&request)
+        .expect_err("each Re-certify Batch Item with Certificate Request Value needs its type");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
+fn profile_rejects_malformed_recertify_request_type_when_request_value_is_present() {
+    let payload = structure([
+        tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::integer(1)),
+        tagged(
+            CERTIFICATE_REQUEST_VALUE_TAG,
+            Value::byte_string(vec![0x30, 0x00]),
+        ),
+    ]);
+    let request = request_message_with_operation_payload(RECERTIFY_OPERATION_TAG, payload);
+    let error = recertify_request_type_profile_result()
+        .validate_request(&request)
+        .expect_err("Table 300 defines Certificate Request Type as an Enumeration");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID)
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID)
+    );
+}
+
+#[test]
+fn profile_accepts_recertify_request_without_certificate_request_fields() {
+    let request = request_message_with_operation_payload(RECERTIFY_OPERATION_TAG, Structure::new());
+
+    recertify_request_type_profile_result()
+        .validate_request(&request)
+        .expect("the conditional rule does not apply when Certificate Request Value is omitted");
 }
 
 #[test]
