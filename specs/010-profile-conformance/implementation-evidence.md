@@ -5264,4 +5264,21 @@ Mapped client requirement `KMIPKIT-REQ-SPEC-2.3-003` from KMIP Specification v2.
 
 Baseline now has 83 typed mappings of 265 assigned requirements; 182 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 profile cases remain unavailable. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
 
-\n
+### KMIPKIT-0010 T040 — TTLV mask integer mapping and traceability gate repair (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-12-001-001` from KMIP Specification v2.1 §12. The evaluator recursively checks Cryptographic Usage Mask, Protection Storage Mask, and Storage Status Mask in outbound requests and received responses. It accepts TTLV Integer values, including signed boundaries, and rejects other item types. Positive and negative tests are separately linked to the catalog. The mapping does not establish server acceptance or a profile-conformance claim.
+
+The exact-head documentation contract also exposed that the feature-traceability test assumed every typed rule has a clause ID. The Opaque Object requirement is a mandatory table-body row with a catalogued source-gap ID and row locator. The test now validates that source-backed locator without fabricating a clause ID. It continues to require positive behavior evidence for each `RequiredBehavior` mapping while accepting an additional catalogued negative test.
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red — require a typed mapping for §12 masks | DCO commit `84ee3983`; `cargo test -p kmipkit-protocol --all-features profile_maps_ttlv_bit_mask_values_as_integers` | Expected failure: `KMIPKIT-REQ-SPEC-12-001-001` had no typed profile mapping. |
+| Green — validate all mask tags in requests and responses | DCO commit `f90f5d2e`; split positive and negative tests, catalog links, report snapshot, and source-gap traceability regression | PASS: valid Integer masks are accepted; Enumeration masks are rejected with the stable requirement and clause IDs. |
+| Refactor — isolate mask-tag detection | DCO commit `77b64272`; use `is_none_or` and extract `is_ttlv_bit_mask_tag` | PASS: behavior unchanged; protocol Clippy passes. |
+| Protocol tests | `cargo test -p kmipkit-protocol --lib --all-features --locked` | PASS: 932 tests. |
+| Traceability/report tests | `python -B -m unittest tools.normative_catalog.tests.test_feature_traceability.FeatureTraceabilityTests.test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests -v`; `python -B -m unittest tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | PASS: source clauses and table-body source gaps resolve to their respective exact evidence; report snapshot and mapping count match. |
+| Quality and deterministic generation | `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check`; catalog `validate.py`; `generate_profiles.py --check`; `report.py --check` | PASS. Catalog: 4 sources, 1,411 clauses, 4,123 records. |
+| Rust workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/t040-mask-final-workspace-coverage.json` | PASS: 32,191/33,723 lines (95.46%) workspace; `profile.rs` 2,933/3,056 lines (95.98%). |
+| Exact-head hosted CI | GitHub Actions after pushing this batch | Pending. |
+
+Baseline now has 84 typed mappings of 265 assigned requirements; 181 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 profile cases remain unavailable. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
