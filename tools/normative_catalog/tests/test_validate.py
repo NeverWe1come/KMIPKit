@@ -45,13 +45,13 @@ TABLE_HEADER_REJECTION_DISPOSITIONS = frozenset(
 
 
 def _is_required_table_body_requirement(requirement: dict[str, Any]) -> bool:
-    """Identify a required table-body mapping that has no clause-header link."""
+    """Identify a required table-body mapping with exact source-row metadata."""
     locator = requirement.get("source_locator")
     return (
         requirement.get("source_force") == "required_table_body_value"
         and isinstance(locator, dict)
         and locator.get("kind") == "table_body_row"
-        and requirement.get("source_clause_ids") == []
+        and isinstance(requirement.get("source_clause_ids"), list)
     )
 
 
@@ -2256,6 +2256,21 @@ class CatalogValidationTests(unittest.TestCase):
                 requirement["normative_strength"],
                 catalog_validate._expected_normative_strength(requirement),
             )
+
+    def test_table_body_requirement_can_link_exact_required_rows_without_modal_keyword(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(
+            row for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-2.3-003"
+        )
+
+        self.assertIsNone(requirement["source_keyword"])
+        self.assertEqual(requirement["source_force"], "required_table_body_value")
+        self.assertEqual(
+            requirement["source_clause_ids"],
+            ["KMIPKIT-CLAUSE-SPEC-2.3-004", "KMIPKIT-CLAUSE-SPEC-2.3-005"],
+        )
+        self.assertGreater(validate(catalog)["record_count"], 0)
 
     def test_negated_locate_required_clause_accepts_only_reviewed_permission_strength(self) -> None:
         """A source-negated REQUIRED keyword is optional only for its reviewed row."""
