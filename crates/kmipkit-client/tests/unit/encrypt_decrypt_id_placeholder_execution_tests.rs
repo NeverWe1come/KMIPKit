@@ -8,8 +8,8 @@
 
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
-    EncryptRequest, ExportRequest, GetRequest, ObjectType, OperationData, ResultReason,
-    SecretBytes, SplitKeyMethod, UniqueIdentifier,
+    EncryptRequest, ExportRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest,
+    ObjectType, OperationData, ResultReason, SecretBytes, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
@@ -27,6 +27,8 @@ const CREATE_OPERATION: u32 = 0x0000_0001;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
 const GET_OPERATION: u32 = 0x0000_000A;
+const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
+const GET_ATTRIBUTE_LIST_OPERATION: u32 = 0x0000_000C;
 const PING_OPERATION: u32 = 0x0000_003B;
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 
@@ -213,6 +215,81 @@ fn export_without_identifier_and_no_placeholder_producer_is_rejected_before_send
     let request = ClientRequest::Export(ExportRequest::new());
 
     assert_rejected_before_send(ClientBatch::new(batch_item(request, EXPORT_BATCH_ID)));
+}
+
+#[test]
+fn attribute_lookup_without_identifier_requires_a_placeholder_producer() {
+    let requests = [
+        ClientRequest::GetAttributes(
+            GetAttributesRequest::try_new(None, Vec::new())
+                .expect("an empty reference list requests all attributes"),
+        ),
+        ClientRequest::GetAttributeList(GetAttributeListRequest::new(None)),
+    ];
+
+    for request in requests {
+        assert_rejected_before_send(ClientBatch::new(batch_item(request, b"attribute-lookup")));
+    }
+}
+
+#[test]
+fn attribute_lookup_without_identifier_is_rejected_when_batch_order_is_false() {
+    let requests = [
+        ClientRequest::GetAttributes(
+            GetAttributesRequest::try_new(None, Vec::new())
+                .expect("an empty reference list requests all attributes"),
+        ),
+        ClientRequest::GetAttributeList(GetAttributeListRequest::new(None)),
+    ];
+
+    for (index, request) in requests.into_iter().enumerate() {
+        let producer_id = format!("attribute-lookup-producer-{index}").into_bytes();
+        let consumer_id = format!("attribute-lookup-consumer-{index}").into_bytes();
+        let batch = ClientBatch::from_items([
+            batch_item(certify_placeholder_producer(), &producer_id),
+            batch_item(request, &consumer_id),
+        ])
+        .with_batch_order_option(false);
+
+        assert_rejected_before_send(batch);
+    }
+}
+
+#[test]
+fn attribute_lookup_without_identifier_is_allowed_after_a_placeholder_producer() {
+    for (request, operation, consumer_id) in [
+        (
+            ClientRequest::GetAttributes(
+                GetAttributesRequest::try_new(None, Vec::new())
+                    .expect("an empty reference list requests all attributes"),
+            ),
+            GET_ATTRIBUTES_OPERATION,
+            b"get-attributes-consumer".as_slice(),
+        ),
+        (
+            ClientRequest::GetAttributeList(GetAttributeListRequest::new(None)),
+            GET_ATTRIBUTE_LIST_OPERATION,
+            b"get-attribute-list-consumer".as_slice(),
+        ),
+    ] {
+        let response = response_bytes([
+            ResponseItem::failure(CERTIFY_OPERATION, CREATE_BATCH_ID, RESPONSE_TOO_LARGE),
+            ResponseItem::failure(operation, consumer_id, INVALID_FIELD),
+        ]);
+        let (mut client, fake, _) = client_for(ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        });
+        let batch = ClientBatch::from_items([
+            batch_item(certify_placeholder_producer(), CREATE_BATCH_ID),
+            batch_item(request, consumer_id),
+        ]);
+
+        client
+            .execute(batch, &CodecLimits::defaults())
+            .expect("the attribute operation may consume an eligible batch placeholder");
+        assert_eq!(fake.borrow().exchange_count(), 1);
+    }
 }
 
 #[test]
