@@ -8266,6 +8266,106 @@ fn profile_validation_error_rejects_conflicting_source_references() {
 }
 
 #[test]
+fn profile_maps_ttlv_bit_mask_values_as_integers() {
+    // KMIP Specification v2.1 §12 requires every TTLV mask value to use Integer encoding.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-12-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROTECTION_STORAGE_MASKS_TAG: u32 = 0x0042_015F;
+    const PROTECTION_STORAGE_MASK_TAG: u32 = 0x0042_015E;
+    const STORAGE_STATUS_MASK_TAG: u32 = 0x0042_008E;
+    const GET_OPERATION_TAG: u32 = 0x0000_000A;
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-12-001";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("the client bit-mask encoding requirement has a typed profile mapping");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_payload = structure([
+        tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(-1)),
+        tagged(STORAGE_STATUS_MASK_TAG, Value::integer(i32::MIN)),
+        tagged(
+            PROTECTION_STORAGE_MASKS_TAG,
+            Value::structure(structure([tagged(
+                PROTECTION_STORAGE_MASK_TAG,
+                Value::integer(i32::MAX),
+            )])),
+        ),
+    ]);
+    let valid_request = request_message_with_operation_payload(GET_OPERATION_TAG, valid_payload);
+    validation
+        .validate_request(&valid_request)
+        .expect("all request mask values use TTLV Integer items");
+
+    for invalid_payload in [
+        structure([tagged(
+            CRYPTOGRAPHIC_USAGE_MASK_TAG,
+            Value::enumeration(1),
+        )]),
+        structure([tagged(STORAGE_STATUS_MASK_TAG, Value::enumeration(1))]),
+        structure([tagged(
+            PROTECTION_STORAGE_MASKS_TAG,
+            Value::structure(structure([tagged(
+                PROTECTION_STORAGE_MASK_TAG,
+                Value::enumeration(1),
+            )])),
+        )]),
+    ] {
+        let request = request_message_with_operation_payload(GET_OPERATION_TAG, invalid_payload);
+        let error = validation
+            .validate_request(&request)
+            .expect_err("a non-Integer mask value violates KMIP Specification §12");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    }
+
+    let response_with_mask = |mask_value| {
+        crate::ResponseMessage::try_from_ttlv(structure([
+            tagged(
+                RESPONSE_HEADER_TAG,
+                Value::structure(structure([
+                    test_protocol_version(),
+                    tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                    tagged(BATCH_COUNT_TAG, Value::integer(1)),
+                ])),
+            ),
+            tagged(
+                BATCH_ITEM_TAG,
+                Value::structure(structure([
+                    tagged(OPERATION_TAG, Value::enumeration(GET_OPERATION_TAG)),
+                    tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                    tagged(
+                        RESPONSE_PAYLOAD_TAG,
+                        Value::structure(structure([tagged(
+                            CRYPTOGRAPHIC_USAGE_MASK_TAG,
+                            mask_value,
+                        )])),
+                    ),
+                ])),
+            ),
+        ]))
+    };
+    let valid_response = response_with_mask(Value::integer(i32::MIN))
+        .expect("a response with an Integer mask remains structurally representable");
+    validation
+        .validate_response(&valid_request, &valid_response)
+        .expect("Integer mask values are valid in received responses");
+
+    let invalid_response = response_with_mask(Value::enumeration(1))
+        .expect("a response with an Enumeration mask remains structurally representable");
+    let error = validation
+        .validate_response(&valid_request, &invalid_response)
+        .expect_err("a non-Integer response mask violates the TTLV encoding rule");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+}
+
+#[test]
 fn profile_maps_client_register_opaque_object_context_custom_attributes() {
     // KMIP Specification v2.1 §2.3, §4.60/Table 150, and §6.1.43/Table 291.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
