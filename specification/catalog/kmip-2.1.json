@@ -95572,7 +95572,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_count_key_block_length_from_a_non_object_register_structure",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_applies_register_algorithm_length_rule_to_standard_object_types"
       ],
       "negative_verification_required": false,
       "decision_id": null,
