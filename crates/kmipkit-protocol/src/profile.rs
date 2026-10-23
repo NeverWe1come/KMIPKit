@@ -709,6 +709,8 @@ struct TypedRuleMapping {
 }
 
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
+const CERTIFY_OPERATION: u32 = 0x0000_0006;
+const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const SPECIFICATION_TAG_PREFIX: u32 = 0x42;
 const EXTENSION_TAG_PREFIX: u32 = 0x54;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -825,6 +827,35 @@ fn discover_versions_advertises_only_client_supported_versions(
                             _ => false,
                         })
                     })
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_certify_requests_at_most_one_certificate(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CERTIFY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == CERTIFICATE_REQUEST_VALUE)
+                    .count()
+                    <= 1
             })
             .unwrap_or(false)
     })
@@ -3032,6 +3063,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion",
                 kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-001",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_certify_requests_at_most_one_certificate),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],
