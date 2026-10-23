@@ -953,15 +953,21 @@ fn client_certify_omitted_request_requires_unique_identifier(
 
         batch_item
             .with_request_payload(|payload| {
-                let has_certificate_request = payload
-                    .children()
+                let fields = payload.children();
+                let has_certificate_request = fields
                     .iter()
                     .any(|field| field.tag().raw() == CERTIFICATE_REQUEST_VALUE);
-                has_certificate_request
-                    || payload
-                        .children()
-                        .iter()
-                        .any(|field| field.tag().raw() == CERTIFY_UNIQUE_IDENTIFIER)
+                let mut identifier_count = 0;
+                let mut has_direct_identifier = false;
+                for field in fields
+                    .iter()
+                    .filter(|field| field.tag().raw() == CERTIFY_UNIQUE_IDENTIFIER)
+                {
+                    identifier_count += 1;
+                    has_direct_identifier =
+                        field.with_value(|value| !matches!(value, ValueView::Enumeration(1)));
+                }
+                has_certificate_request || (identifier_count == 1 && has_direct_identifier)
             })
             .unwrap_or(false)
     })
@@ -3258,6 +3264,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
                 kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_id_placeholder_for_omitted_certify_request_value",
+                kind: RuleTestKind::NegativeBehavior,
             },
         ],
         constraints: &[],

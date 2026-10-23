@@ -91,7 +91,11 @@ impl CertifyRequest {
         if has_request_value && self.certificate_request_type.is_none() {
             return Err(invalid_request());
         }
-        if !has_request_value && self.unique_identifier.is_none() {
+        let has_explicit_public_key_identifier = self
+            .unique_identifier
+            .as_ref()
+            .is_some_and(|identifier| !matches!(identifier, UniqueIdentifier::Enumeration(1)));
+        if !has_request_value && !has_explicit_public_key_identifier {
             return Err(invalid_request());
         }
         if !has_request_value
