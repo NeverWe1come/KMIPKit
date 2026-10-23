@@ -8130,9 +8130,13 @@ fn profile_maps_required_fields_of_opaque_register_object() {
             REGISTER_OPERATION_TAG,
             raw_opaque_object_register_payload(malformed_object),
         );
-        assert!(
-            validation.validate_request(&request).is_err(),
-            "Opaque Object violates the required §2.3/Table 4 child shape"
+        let error = validation
+            .validate_request(&request)
+            .expect_err("Opaque Object violates the required §2.3/Table 4 child shape");
+        assert_eq!(
+            error.source_clause_id(),
+            None,
+            "a table-body requirement must not be reported as a clause"
         );
     }
 }

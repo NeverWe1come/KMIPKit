@@ -1377,6 +1377,21 @@ mod unrelated {
         for name in ("Certify", "Get", "ID Placeholder", "Unique Identifier", "Batch Item", "Batch Order Option"):
             self.assertIn(name, requirement_row)
 
+    def test_typed_rule_mapping_preserves_table_body_source_gap(self) -> None:
+        from tools.normative_catalog import report as report_module
+
+        mapping = next(
+            row
+            for row in report_module.load_typed_rule_mappings(ROOT)
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-2.3-003"
+        )
+
+        self.assertIsNone(mapping.get("source_clause_id"))
+        self.assertEqual(
+            mapping.get("source_gap_id"),
+            "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED",
+        )
+
     def test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures(self) -> None:
         from tools.normative_catalog import report as report_module
 

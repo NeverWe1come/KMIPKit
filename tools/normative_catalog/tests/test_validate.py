@@ -45,13 +45,13 @@ TABLE_HEADER_REJECTION_DISPOSITIONS = frozenset(
 
 
 def _is_required_table_body_requirement(requirement: dict[str, Any]) -> bool:
-    """Identify a required table-body mapping with exact source-row metadata."""
+    """Identify a required table-body mapping without inventing a clause ID."""
     locator = requirement.get("source_locator")
     return (
         requirement.get("source_force") == "required_table_body_value"
         and isinstance(locator, dict)
         and locator.get("kind") == "table_body_row"
-        and isinstance(requirement.get("source_clause_ids"), list)
+        and requirement.get("source_clause_ids") == []
     )
 
 
@@ -2257,7 +2257,7 @@ class CatalogValidationTests(unittest.TestCase):
                 catalog_validate._expected_normative_strength(requirement),
             )
 
-    def test_table_body_requirement_can_link_exact_required_rows_without_modal_keyword(self) -> None:
+    def test_table_body_requirement_keeps_source_gap_without_clause_ids(self) -> None:
         catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(
             row for row in catalog["requirements"]
@@ -2266,9 +2266,10 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertIsNone(requirement["source_keyword"])
         self.assertEqual(requirement["source_force"], "required_table_body_value")
+        self.assertEqual(requirement["source_clause_ids"], [])
         self.assertEqual(
-            requirement["source_clause_ids"],
-            ["KMIPKIT-CLAUSE-SPEC-2.3-004", "KMIPKIT-CLAUSE-SPEC-2.3-005"],
+            requirement["source_gap_id"],
+            "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED",
         )
         self.assertGreater(validate(catalog)["record_count"], 0)
 
