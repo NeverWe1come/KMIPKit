@@ -8554,9 +8554,15 @@ fn profile_rejects_malformed_register_object_key_block_shapes_for_key_value_loca
 const REVOKE_OPERATION: u32 = 0x0000_0013;
 const REVOCATION_REASON: u32 = 0x0042_0081;
 const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
+const REVOCATION_MESSAGE: u32 = 0x0042_0080;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
 const REVOKE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-002";
 const REVOKE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.44-003";
+const REVOKE_MESSAGE_REQUIREMENT_IDS: [&str; 2] = [
+    "KMIPKIT-REQ-SPEC-4.47-001-001",
+    "KMIPKIT-REQ-SPEC-4.47-001-002",
+];
+const REVOKE_MESSAGE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.47-001";
 
 fn revoke_reason_item(reason_code: Value) -> Item {
     tagged(
@@ -8580,6 +8586,16 @@ fn revoke_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
         requirement_ids: vec![REVOKE_REQUIREMENT_ID.to_owned()],
+    }
+}
+
+fn revoke_message_profile_result() -> ProfileValidationResult {
+    ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
+        requirement_ids: REVOKE_MESSAGE_REQUIREMENT_IDS
+            .iter()
+            .map(|id| (*id).to_owned())
+            .collect(),
     }
 }
 
@@ -8623,6 +8639,83 @@ fn profile_maps_revoke_compromise_occurrence_date_shall_not_rule() {
                 )
         }));
     }
+}
+
+#[test]
+fn profile_maps_revoke_revocation_message_as_optional_capability() {
+    for requirement_id in REVOKE_MESSAGE_REQUIREMENT_IDS {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id);
+        assert!(
+            mapping.is_some(),
+            "the Revoke Revocation Message permission has a typed profile mapping"
+        );
+        if let Some(mapping) = mapping {
+            assert_eq!(mapping.source_clause_id, REVOKE_MESSAGE_SOURCE_CLAUSE_ID);
+            assert_eq!(
+                mapping.verification_category,
+                GeneratedVerificationCategory::OptionalCapability
+            );
+            assert!(mapping.test_evidence.iter().any(|evidence| {
+                evidence.kind == RuleTestKind::OptionalCapabilityUsable
+                    && evidence.test_id.ends_with(
+                        "profile_accepts_optional_revoke_revocation_message",
+                    )
+            }));
+        }
+    }
+}
+
+#[test]
+fn profile_accepts_optional_revoke_revocation_message() {
+    let result = revoke_message_profile_result();
+    let request = revoke_profile_request(
+        [tagged(
+            REVOCATION_REASON,
+            Value::structure(structure([
+                tagged(REVOCATION_REASON_CODE, Value::enumeration(1)),
+                tagged(
+                    REVOCATION_MESSAGE,
+                    Value::text_string("audit detail".to_owned()),
+                ),
+            ])),
+        )],
+        false,
+    );
+
+    assert!(result.validate_request(&request).is_ok());
+}
+
+#[test]
+fn profile_rejects_malformed_revoke_revocation_message() {
+    let result = revoke_message_profile_result();
+    let request = revoke_profile_request(
+        [tagged(
+            REVOCATION_REASON,
+            Value::structure(structure([
+                tagged(REVOCATION_REASON_CODE, Value::enumeration(1)),
+                tagged(REVOCATION_MESSAGE, Value::integer(7)),
+            ])),
+        )],
+        false,
+    );
+
+    let error = result
+        .validate_request(&request)
+        .expect_err("Revocation Message uses a Text String value");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(
+        error.requirement_id(),
+        Some(REVOKE_MESSAGE_REQUIREMENT_IDS[0])
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some(REVOKE_MESSAGE_SOURCE_CLAUSE_ID)
+    );
 }
 
 #[test]
