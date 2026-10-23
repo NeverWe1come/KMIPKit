@@ -7914,6 +7914,8 @@ const CERTIFY_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-001";
 const CERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
 const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
+const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-001";
+const CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 
 fn certify_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
@@ -7998,4 +8000,78 @@ fn profile_rejects_duplicate_certify_certificate_request_values_per_batch_item()
     );
     assert_eq!(error.requirement_id(), Some(CERTIFY_REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(CERTIFY_SOURCE_CLAUSE_ID));
+}
+
+#[test]
+fn profile_maps_omitted_certify_certificate_request_object_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.6 paragraph 2 permits omitting the
+    // Certificate Request object. Its conditional SHALL requirements remain
+    // mapped separately.
+    const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID)
+        .expect("omitting Certificate Request has a typed optional-capability mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID)
+        .expect("the Certificate Request MAY resolves to generated normative metadata");
+
+    assert_eq!(
+        mapping.source_clause_id,
+        CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(CERTIFY_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![CERTIFY_PROFILE_ID.to_owned()],
+        requirement_ids: vec![CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID.to_owned()],
+    };
+    let payload = crate::CertifyRequest::new()
+        .with_unique_identifier(crate::UniqueIdentifier::TextString(
+            "public-key".to_owned(),
+        ))
+        .with_attributes(structure([tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1))]))
+        .into_ttlv_payload()
+        .expect("the omitted-object request includes its required identifier and Certificate Type");
+
+    assert_eq!(
+        payload
+            .view()
+            .children()
+            .iter()
+            .map(|field| field.tag().raw())
+            .collect::<Vec<_>>(),
+        [UNIQUE_IDENTIFIER_TAG, ATTRIBUTES_TAG]
+    );
+    let payload_view = payload.view();
+    let attributes = &payload_view.children()[1];
+    assert!(attributes.with_value(|value| matches!(value, ValueView::Structure(attributes)
+        if attributes.children().len() == 1
+            && attributes.children()[0].tag().raw() == CERTIFICATE_TYPE_TAG
+            && attributes.children()[0].with_value(|value| matches!(value, ValueView::Enumeration(1))))));
+    assert!(!payload.view().children().iter().any(|field| {
+        matches!(
+            field.tag().raw(),
+            CERTIFICATE_REQUEST_TYPE_TAG | CERTIFICATE_REQUEST_VALUE_TAG
+        )
+    }));
+
+    let request = request_message_with_operation_payload(CERTIFY_OPERATION, payload);
+    assert!(evaluate(Some(&request), None));
+    result
+        .validate_request(&request)
+        .expect("the Baseline profile accepts the valid omitted-object path");
 }

@@ -55,6 +55,41 @@ class CertifyProfileTraceabilityTests(unittest.TestCase):
             path = ROOT / reference.partition("::")[0]
             self.assertTrue(path.is_file(), reference)
 
+    def test_certificate_request_omission_may_has_typed_profile_traceability(self) -> None:
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.6-002-001"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.6-002"
+        profile_test = (
+            f"{PROFILE_TEST_PATH}::"
+            "profile_maps_omitted_certify_certificate_request_object_as_optional_capability"
+        )
+        catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        requirements = {
+            record["requirement_id"]: record for record in catalog["requirements"]
+        }
+        elements = {
+            record["element_id"]: record for record in catalog["elements"]
+        }
+        requirement = requirements[requirement_id]
+        certify_element = elements["KMIPKIT-ELEM-OP-C2S-CERTIFY"]
+
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertEqual(requirement["source_refs"][0]["section"], "6.1.6")
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["normative_strength"], "permission_or_optional")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertIsNone(requirement["condition"])
+        self.assertEqual(requirement["test_case_ids"], [])
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
+        self.assertIn(profile_test, requirement["verification_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs::"
+            "request_without_request_value_requires_public_key_identifier_and_certificate_type_attribute",
+            requirement["verification_refs"],
+        )
+        self.assertIn("crates/kmipkit-protocol/src/profile.rs", certify_element["implementation_refs"])
+        self.assertIn(profile_test, certify_element["verification_refs"])
+
 
 if __name__ == "__main__":
     unittest.main()
