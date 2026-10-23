@@ -6775,9 +6775,8 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 
 #[test]
 fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
-    // KMIP Specification v2.1 §6.1.43 Table 293 links the Register Algorithm
-    // to Length information available in Register Attributes or Key Block.
-    // §3.1 Table 12 separately governs direct Key Block member pairing.
+    // KMIP Specification v2.1 §6.1.43 Table 293 pairs the outer Register
+    // Attributes. §§3.1–3.2 separately describe Key Block and Key Value data.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes";
@@ -6911,49 +6910,139 @@ fn profile_rejects_client_register_algorithm_without_length_in_attributes() {
 }
 
 #[test]
-fn profile_counts_register_length_encapsulated_in_key_block_for_algorithm_pairing() {
-    // KMIP Specification v2.1 §6.1.43 Table 293 permits the Length information
-    // to be encapsulated in the Key Block; §3.2, Table 13 permits associated
-    // Attributes in a structured Key Value.
+fn profile_does_not_use_key_block_length_as_register_attribute_pairing() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 makes the Register Attributes
+    // pair direct; §3.1 Table 12 independently governs fields inside Key Block.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
 
     let result = table12_profile_result(&[REQUIREMENT_ID]);
-    let algorithm = tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3));
-    let length_in_key_value_attributes = table12_key_block_object(
+    let key_block_length = [
+        table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, true, None),
+        table12_key_block_object(
+            TABLE12_SYMMETRIC_KEY,
+            false,
+            false,
+            Some(tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))),
+        ),
+    ];
+
+    for object in key_block_length {
+        let request = request_message_with_operation_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_request_payload(
+                TABLE12_REGISTER_OPERATION,
+                object,
+                [tagged(
+                    TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                    Value::enumeration(3),
+                )],
+            ),
+        );
+        let error = result
+            .validate_request(&request)
+            .expect_err("Key Block Length does not pair an outer Register Algorithm");
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    }
+}
+
+#[test]
+fn profile_maps_client_register_length_requires_algorithm_in_attributes() {
+    // KMIP Specification v2.1 §6.1.43 Table 293's Length row requires the
+    // Algorithm row above in the outer Register Attributes.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-010";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_length_requires_algorithm_in_attributes";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Register Length/Algorithm has a typed profile rule");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    assert!(mapping.evaluator.is_some());
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+
+    let result = table12_profile_result(&[REQUIREMENT_ID]);
+    let length_without_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            [tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))],
+        ),
+    );
+    let error = result
+        .validate_request(&length_without_algorithm)
+        .expect_err("an outer Register Length requires an outer Algorithm");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let length_with_key_block_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, true, true, None),
+            [tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))],
+        ),
+    );
+    let error = result
+        .validate_request(&length_with_key_block_algorithm)
+        .expect_err("Key Block Algorithm does not replace the outer Register Algorithm");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let direct_pair = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+            [
+                tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            ],
+        ),
+    );
+    result
+        .validate_request(&direct_pair)
+        .expect("the outer Algorithm and Length attributes satisfy the pair");
+
+    let opaque_key_format = tagged(
         TABLE12_SYMMETRIC_KEY,
-        false,
-        false,
-        Some(tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))),
+        Value::structure(structure([tagged(
+            TABLE12_KEY_BLOCK,
+            Value::structure(structure([
+                tagged(TABLE12_KEY_FORMAT_TYPE, Value::enumeration(2)),
+                tagged(
+                    TABLE12_KEY_VALUE,
+                    Value::byte_string(b"opaque key format bytes".to_vec()),
+                ),
+            ])),
+        )])),
     );
-    let request = request_message_with_operation_payload(
+    let length_on_symmetric_key_with_opaque_key_format = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
             TABLE12_REGISTER_OPERATION,
-            length_in_key_value_attributes,
-            [algorithm],
+            opaque_key_format,
+            [tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))],
         ),
     );
-
-    result
-        .validate_request(&request)
-        .expect("the paired Length may be structurally visible in Key Value Attributes");
-
-    let length_in_key_block = table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, true, None);
-    let request = request_message_with_operation_payload(
-        TABLE12_REGISTER_OPERATION,
-        table12_request_payload(
-            TABLE12_REGISTER_OPERATION,
-            length_in_key_block,
-            [tagged(
-                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
-                Value::enumeration(3),
-            )],
-        ),
-    );
-
-    result
-        .validate_request(&request)
-        .expect("the paired Length may be structurally visible in the Key Block");
+    let error = result
+        .validate_request(&length_on_symmetric_key_with_opaque_key_format)
+        .expect_err("Key Format Type Opaque does not make a Symmetric Key an Opaque Object");
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
 }
 
 #[test]

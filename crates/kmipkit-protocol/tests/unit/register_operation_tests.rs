@@ -688,9 +688,9 @@ fn request_requires_key_algorithm_and_length_in_attributes_or_key_block() {
 
 #[test]
 fn request_allows_algorithm_and_length_embedded_in_key_value() {
-    // KMIP Specification v2.1 §3.1, Tables 11–12 and §3.2 permit omitting
-    // Cryptographic Algorithm and Cryptographic Length when they are available
-    // in the Key Value Structure.
+    // KMIP Specification v2.1 §6.1.43 Table 293 keeps a present outer
+    // Register Attribute paired there. §§3.1–3.2 permit both values to be
+    // omitted from Register Attributes when both are available in Key Value.
     let embedded_pair = RegisterRequest::new(
         ObjectType::from_raw(2),
         symmetric_attributes([]),
@@ -705,7 +705,10 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
         key_object_with_key_value_attributes(true, false),
     )
     .into_ttlv_payload();
-    assert!(algorithm_in_key_value.is_ok());
+    assert!(
+        algorithm_in_key_value.is_err(),
+        "Key Value Algorithm does not pair an outer Register Length"
+    );
 
     let length_in_key_value = RegisterRequest::new(
         ObjectType::from_raw(2),
@@ -713,7 +716,10 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
         key_object_with_key_value_attributes(false, true),
     )
     .into_ttlv_payload();
-    assert!(length_in_key_value.is_ok());
+    assert!(
+        length_in_key_value.is_err(),
+        "Key Value Length does not pair an outer Register Algorithm"
+    );
 
     for (algorithm, length) in [(true, false), (false, true)] {
         let incomplete = RegisterRequest::new(
@@ -730,27 +736,29 @@ fn request_allows_algorithm_and_length_embedded_in_key_value() {
 }
 
 #[test]
-fn request_allows_algorithm_and_length_split_between_direct_and_key_value_attributes() {
-    let algorithm_in_key_value = RegisterRequest::new(
-        ObjectType::from_raw(2),
-        symmetric_attributes([item(CRYPTOGRAPHIC_LENGTH, Value::integer(256))]),
-        key_object_with_key_value_attributes(true, false),
-    )
-    .into_ttlv_payload();
-    assert!(
-        algorithm_in_key_value.is_ok(),
-        "Algorithm may be encapsulated while Length is a direct Attribute"
-    );
-
+fn request_rejects_algorithm_and_length_split_between_register_and_key_value_attributes() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 pairs direct Register
+    // Attributes; §§3.1–3.2 do not make Key Block metadata its counterpart.
     let length_in_key_value = RegisterRequest::new(
         ObjectType::from_raw(2),
-        symmetric_attributes([item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3))]),
-        key_object_with_key_value_attributes(false, true),
+        symmetric_attributes([item(CRYPTOGRAPHIC_LENGTH, Value::integer(256))]),
+        key_object_with_key_value_attributes(true, true),
     )
     .into_ttlv_payload();
     assert!(
-        length_in_key_value.is_ok(),
-        "Length may be encapsulated while Algorithm is a direct Attribute"
+        length_in_key_value.is_err(),
+        "a Key Value Algorithm does not pair an outer Register Length"
+    );
+
+    let algorithm_in_key_value = RegisterRequest::new(
+        ObjectType::from_raw(2),
+        symmetric_attributes([item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3))]),
+        key_object_with_key_value_attributes(true, true),
+    )
+    .into_ttlv_payload();
+    assert!(
+        algorithm_in_key_value.is_err(),
+        "a Key Value Length does not pair an outer Register Algorithm"
     );
 }
 
@@ -1087,6 +1095,8 @@ fn request_requires_certificate_length_and_allows_embedded_signature_algorithm()
     let request = RegisterRequest::new(
         ObjectType::from_raw(1),
         attrs([
+            item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+            item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
             item(CERTIFICATE_LENGTH, Value::integer(4096)),
             item(DIGITAL_SIGNATURE_ALGORITHM, Value::enumeration(1)),
         ]),

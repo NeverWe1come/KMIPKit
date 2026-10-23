@@ -28,6 +28,7 @@ const OBJECT_TYPE: u32 = 0x0042_0057;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const LINK_ATTRIBUTE: u32 = 0x0042_004A;
 const CERTIFICATE: u32 = 0x0042_0013;
+const CERTIFICATE_REQUEST: u32 = 0x0042_0018;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
@@ -82,8 +83,12 @@ const OASIS_PKCS12_STEP_2_CERTIFICATE_DER: &[u8] =
 fn register_request() -> RegisterRequest {
     RegisterRequest::new(
         ObjectType::from_raw(1),
-        AttributeSet::try_new([test_item(CERTIFICATE_LENGTH, Value::integer(512))])
-            .expect("Table 293 certificate attribute is correctly typed"),
+        AttributeSet::try_new([
+            test_item(CERTIFICATE_LENGTH, Value::integer(512)),
+            test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+            test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
+        ])
+        .expect("Table 293 certificate attributes are correctly typed"),
         test_item(
             CERTIFICATE,
             Value::structure(test_structure([test_item(
@@ -94,11 +99,158 @@ fn register_request() -> RegisterRequest {
     )
 }
 
+fn register_request_with_one_outer_pair_attribute(
+    algorithm: bool,
+    length: bool,
+) -> RegisterRequest {
+    let mut attributes = vec![test_item(CRYPTOGRAPHIC_USAGE_MASK, Value::integer(3))];
+    if algorithm {
+        attributes.push(test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)));
+    }
+    if length {
+        attributes.push(test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)));
+    }
+
+    RegisterRequest::new(
+        ObjectType::from_raw(2),
+        AttributeSet::try_new(attributes).expect("Register attributes are structurally valid"),
+        test_item(
+            SYMMETRIC_KEY,
+            Value::structure(test_structure([test_item(
+                KEY_BLOCK,
+                Value::structure(test_structure([
+                    test_item(KEY_FORMAT_TYPE, Value::enumeration(1)),
+                    test_item(
+                        KEY_VALUE,
+                        Value::byte_string(b"opaque wrapped key value".to_vec()),
+                    ),
+                    test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                    test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+                ])),
+            )])),
+        ),
+    )
+}
+
 fn register_request_with_protection_storage_masks() -> RegisterRequest {
     register_request().with_protection_storage_masks(test_structure([test_item(
         PROTECTION_STORAGE_MASK,
         Value::integer(1),
     )]))
+}
+
+#[test]
+fn register_rejects_one_sided_outer_algorithm_length_before_transport() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 requires the paired direct
+    // Register Attribute even when the Key Block contains a complete pair.
+    for (algorithm, length) in [(true, false), (false, true)] {
+        let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+            response: Vec::new(),
+            request_write_chunks: Vec::new(),
+        });
+
+        let error = client
+            .register(
+                register_request_with_one_outer_pair_attribute(algorithm, length),
+                &CodecLimits::defaults(),
+            )
+            .expect_err("a one-sided outer Register pair must fail local validation");
+
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert!(
+            captured.borrow().is_none(),
+            "no request bytes reach transport"
+        );
+        assert_eq!(fake.borrow().exchange_count(), 0);
+        assert_eq!(fake.borrow().write_call_count(), 0);
+    }
+}
+
+fn register_pair_attribute(raw_tag: u32) -> Item {
+    match raw_tag {
+        CRYPTOGRAPHIC_ALGORITHM => test_item(raw_tag, Value::enumeration(3)),
+        CRYPTOGRAPHIC_LENGTH => test_item(raw_tag, Value::integer(256)),
+        _ => panic!("only the Table 293 pair attributes are used here"),
+    }
+}
+
+fn assert_register_request_is_not_sent(request: RegisterRequest) {
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response: Vec::new(),
+        request_write_chunks: Vec::new(),
+    });
+
+    let error = client
+        .register(request, &CodecLimits::defaults())
+        .expect_err("an invalid Table 293 Register pair must fail local validation");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert!(
+        captured.borrow().is_none(),
+        "no request bytes reach transport"
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+    assert_eq!(fake.borrow().write_call_count(), 0);
+}
+
+#[test]
+fn register_certificate_rejects_one_sided_outer_algorithm_length_before_transport() {
+    // KMIP Specification v2.1 §§2.1 and 6.1.43 Table 293: a Certificate is
+    // a Managed Cryptographic Object and therefore uses the outer pair rule.
+    for raw_tag in [CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH] {
+        let request = RegisterRequest::new(
+            ObjectType::from_raw(1),
+            AttributeSet::try_new([
+                test_item(CERTIFICATE_LENGTH, Value::integer(512)),
+                register_pair_attribute(raw_tag),
+            ])
+            .expect("Certificate Register attributes are structurally valid"),
+            test_item(CERTIFICATE, Value::structure(test_structure([]))),
+        );
+        assert_register_request_is_not_sent(request);
+    }
+}
+
+#[test]
+fn register_certificate_request_rejects_one_sided_outer_algorithm_length_before_transport() {
+    // KMIP Specification v2.1 §§2.2 and 6.1.43 Table 293: a Certificate
+    // Request is a Managed Cryptographic Object and uses the same outer pair.
+    for raw_tag in [CRYPTOGRAPHIC_ALGORITHM, CRYPTOGRAPHIC_LENGTH] {
+        let request = RegisterRequest::new(
+            ObjectType::from_raw(10),
+            AttributeSet::try_new([register_pair_attribute(raw_tag)])
+                .expect("Certificate Request Register attributes are structurally valid"),
+            test_item(CERTIFICATE_REQUEST, Value::structure(test_structure([]))),
+        );
+        assert_register_request_is_not_sent(request);
+    }
+}
+
+#[test]
+fn register_certificate_rejects_omitted_outer_algorithm_length_without_key_block_before_transport()
+{
+    // KMIP Specification v2.1 §2.1 Table 2 defines Certificate without a Key
+    // Block; §6.1.43 Table 293 therefore requires both outer attributes.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(1),
+        AttributeSet::try_new([test_item(CERTIFICATE_LENGTH, Value::integer(512))])
+            .expect("Certificate Length is structurally valid"),
+        test_item(CERTIFICATE, Value::structure(test_structure([]))),
+    );
+    assert_register_request_is_not_sent(request);
+}
+
+#[test]
+fn register_certificate_request_rejects_omitted_outer_algorithm_length_without_key_block_before_transport()
+ {
+    // KMIP Specification v2.1 §2.2 Table 3 defines Certificate Request
+    // without a Key Block; §6.1.43 Table 293 therefore requires both outer attributes.
+    let request = RegisterRequest::new(
+        ObjectType::from_raw(10),
+        AttributeSet::try_new([]).expect("an empty attribute set is structurally valid"),
+        test_item(CERTIFICATE_REQUEST, Value::structure(test_structure([]))),
+    );
+    assert_register_request_is_not_sent(request);
 }
 
 fn managed_opaque_register_request(attributes: AttributeSet) -> RegisterRequest {
@@ -764,6 +916,8 @@ fn register_client_omits_signature_algorithm_when_x509_certificate_encodes_it() 
         ObjectType::from_raw(1),
         AttributeSet::try_new([
             test_item(CERTIFICATE_TYPE, Value::enumeration(1)),
+            test_item(CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+            test_item(CRYPTOGRAPHIC_LENGTH, Value::integer(2048)),
             test_item(
                 CERTIFICATE_LENGTH,
                 Value::integer(
