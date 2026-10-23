@@ -1387,41 +1387,15 @@ fn profile_maps_required_ttlv_text_and_byte_string_padding() {
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-10.1.5-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
-    let mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
-        .expect("TTLV Text String and Byte String padding has a typed profile mapping");
-    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
-    assert_eq!(
-        mapping.verification_category,
-        GeneratedVerificationCategory::RequiredBehavior
-    );
-    assert!(mapping.evaluator.is_none());
-    assert_eq!(mapping.constraints, &CONSTRAINTS_TTLV);
-    assert_eq!(
-        mapping.test_evidence,
+    assert_required_ttlv_mapping(
+        REQUIREMENT_ID,
+        SOURCE_CLAUSE_ID,
         &[
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
-                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-        ]
+            "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
+            "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
+            "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries",
+        ],
     );
-
-    let requirement = CLIENT_REQUIREMENTS
-        .iter()
-        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
-        .expect("the selected-profile padding requirement is generated");
-    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-        .expect("the required TTLV padding behavior has linked executable evidence");
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -1430,6 +1404,41 @@ fn profile_maps_required_ttlv_text_and_byte_string_padding() {
     result
         .validate_request(&request_message())
         .expect("the TTLV encoding constraint does not add request-payload restrictions");
+}
+
+fn assert_required_ttlv_mapping(
+    requirement_id: &str,
+    source_clause_id: &str,
+    expected_test_ids: &[&str],
+) {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .unwrap_or_else(|| panic!("{requirement_id} has a typed profile mapping"));
+    assert_eq!(mapping.source_clause_id, source_clause_id);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(mapping.constraints, &CONSTRAINTS_TTLV);
+    assert_eq!(
+        mapping
+            .test_evidence
+            .iter()
+            .map(|evidence| evidence.test_id)
+            .collect::<Vec<_>>(),
+        expected_test_ids
+    );
+
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .unwrap_or_else(|| panic!("{requirement_id} is generated for the client profile"));
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .unwrap_or_else(|error| panic!("{requirement_id} maps to executable evidence: {error}"));
 }
 
 #[test]
@@ -1468,32 +1477,7 @@ fn profile_maps_required_ttlv_structure_order_and_numeric_padding() {
     ];
 
     for (requirement_id, source_clause_id, expected_test_ids) in expected_mappings {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == *requirement_id)
-            .unwrap_or_else(|| panic!("{requirement_id} has a typed profile mapping"));
-        assert_eq!(mapping.source_clause_id, *source_clause_id);
-        assert_eq!(
-            mapping.verification_category,
-            GeneratedVerificationCategory::RequiredBehavior
-        );
-        assert!(mapping.evaluator.is_none());
-        assert_eq!(mapping.constraints, &CONSTRAINTS_TTLV);
-        assert_eq!(
-            mapping
-                .test_evidence
-                .iter()
-                .map(|evidence| evidence.test_id)
-                .collect::<Vec<_>>(),
-            *expected_test_ids
-        );
-
-        let requirement = CLIENT_REQUIREMENTS
-            .iter()
-            .find(|requirement| requirement.requirement_id == *requirement_id)
-            .unwrap_or_else(|| panic!("{requirement_id} is generated for the client profile"));
-        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
-            .unwrap_or_else(|error| panic!("{requirement_id} maps to encoder evidence: {error}"));
+        assert_required_ttlv_mapping(requirement_id, source_clause_id, expected_test_ids);
     }
 
     let result = ProfileValidationResult {
