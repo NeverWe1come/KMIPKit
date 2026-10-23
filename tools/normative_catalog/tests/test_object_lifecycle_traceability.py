@@ -163,6 +163,15 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                     ],
                     row[0],
                 )
+            elif row[0] == "KMIPKIT-REQ-SPEC-6.1.6-002-003":
+                self.assertEqual(
+                    requirement["element_ids"],
+                    [
+                        "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
+                        "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+                    ],
+                    row[0],
+                )
             elif row[0] != ABSENT_LINK_REQUIREMENT_ID:
                 self.assertEqual(len(requirement["element_ids"]), 1, row[0])
                 self.assertEqual(
