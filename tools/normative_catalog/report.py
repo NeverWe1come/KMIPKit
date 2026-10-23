@@ -932,6 +932,11 @@ def _profile_requirement_coverage(
         for row in catalog.get("requirements", [])
         if row.get("requirement_id")
     }
+    elements_by_id = {
+        row.get("element_id"): row
+        for row in catalog.get("elements", [])
+        if isinstance(row.get("element_id"), str)
+    }
     profiles_by_requirement: dict[str, set[str]] = defaultdict(set)
     profiles_by_id = {row.get("profile_id"): row for row in profiles if row.get("profile_id")}
     unresolved_scope_by_profile = {
@@ -965,11 +970,12 @@ def _profile_requirement_coverage(
         if requirement is None:
             rows.append((
                 requirement_id,
+                "—",
                 "unresolved catalog requirement",
                 "unknown",
                 "not evaluated" if typed_rule_mappings is None else "No typed rule mapping",
                 "not evaluated" if typed_rule_mappings is None else "No category-appropriate rule test",
-                "—", "—", "—", "—", "—", "—",
+                "—", "—", "—", "—", "—", "—", "—",
             ))
             requirement_complete[requirement_id] = False if typed_rule_mappings is not None else None
             continue
@@ -1012,9 +1018,17 @@ def _profile_requirement_coverage(
         official_test_ids = sorted(
             value for value in requirement.get("test_case_ids") or [] if isinstance(value, str)
         )
+        element_ids = sorted(
+            value for value in requirement.get("element_ids") or [] if isinstance(value, str)
+        )
+        linked_elements = ", ".join(
+            f"{element_id} ({elements_by_id.get(element_id, {}).get('name', element_id)})"
+            for element_id in element_ids
+        ) or "—"
         rule_implementation_refs = [PROFILE_RULE_SOURCE] if valid_mappings else []
         rows.append((
             requirement_id,
+            linked_elements,
             ", ".join(source_clause_ids),
             category_label,
             mapping_status,
@@ -1214,9 +1228,9 @@ def _evaluate_profile_readiness(
         if coverage is None:
             blockers.append(f"requirement is outside the checked profile closure: {requirement_id}")
             continue
-        if coverage[3] != "Typed rule mapping: present":
+        if coverage[4] != "Typed rule mapping: present":
             blockers.append(f"typed rule mapping incomplete: {requirement_id}")
-        if coverage[4] not in {"Category test reference: present"} and not coverage[4].startswith(
+        if coverage[5] not in {"Category test reference: present"} and not coverage[5].startswith(
             "Accepted deviation: "
         ):
             blockers.append(f"category-appropriate test incomplete: {requirement_id}")
@@ -1490,7 +1504,7 @@ def render_report(
         catalog, typed_rule_mappings
     )
     requirement_rule_status = {
-        row[0]: (row[3], row[4]) for row in rule_coverage_rows
+        row[0]: (row[4], row[5]) for row in rule_coverage_rows
     }
     test_cases_by_id = {
         row.get("test_id"): row
@@ -1565,7 +1579,7 @@ def render_report(
     ])
     lines.extend(_table(
         (
-            "Requirement", "Source clauses", "Source keyword / category",
+            "Requirement", "Elements", "Source clauses", "Source keyword / category",
             "Typed rule mapping", "Rule-test coverage", "Typed rule-test IDs",
             "Typed rule implementation refs", "Catalog implementation refs",
             "Catalog verification refs", "Official test IDs",

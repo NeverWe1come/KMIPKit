@@ -1346,7 +1346,7 @@ mod unrelated {
             [mapping],
         )
 
-        self.assertEqual("Accepted deviation: KMIPKIT-DEC-PROFILE-001", rows[0][4])
+        self.assertEqual("Accepted deviation: KMIPKIT-DEC-PROFILE-001", rows[0][5])
         self.assertTrue(runtime_availability["KMIPKIT-PROFILE-BASELINE-CLIENT"])
 
     def test_requirement_rule_coverage_shows_linked_certify_request_type_element(self) -> None:
