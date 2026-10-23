@@ -114,6 +114,28 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch": (
         "KMIPKIT-REQ-SPEC-6.1.6-003",
     ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::explicit_id_placeholder_get_after_certify_is_sent_once": (
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::attribute_lookup_without_identifier_requires_a_placeholder_producer": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::attribute_lookup_without_identifier_is_allowed_after_a_placeholder_producer": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::export_without_identifier_and_no_placeholder_producer_is_rejected_before_send": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::create_split_key_can_select_a_preceding_placeholder_before_producing_its_result": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
     "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once": (
         "KMIPKIT-REQ-SPEC-6.1.7-003",
         "KMIPKIT-REQ-SPEC-6.1.7-004-001",
@@ -211,6 +233,25 @@ OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     ),
     "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291": (
         "KMIPKIT-REQ-SPEC-6.1.43-005",
+    ),
+}
+
+
+ID_PLACEHOLDER_REGRESSION_TEST_REQUIREMENTS = {
+    "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::explicit_id_placeholder_in_certify_import_join_split_key_and_recertify_is_a_consumer": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::explicit_id_placeholder_consumers_including_certify_reject_false_batch_order_before_send": (
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+    ),
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certify_identifier_for_omitted_request_value": (
+        "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+    ),
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_get_id_placeholder_without_a_preceding_producer": (
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
+    ),
+    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_get_id_placeholder_when_batch_order_is_false": (
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
     ),
 }
 
@@ -2266,6 +2307,63 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(requirement_id=requirement_id):
                 element_ids = requirements[requirement_id]["element_ids"]
                 self.assertEqual(element_ids, sorted(element_ids))
+
+    def test_id_placeholder_requirement_lists_all_mapped_client_paths(self) -> None:
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        requirement = next(
+            row
+            for row in catalog["requirements"]
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1-003-002"
+        )
+        expected = {
+            "KMIPKIT-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+            "KMIPKIT-ELEM-TAG-420094",
+            *(
+                f"KMIPKIT-ELEM-OP-C2S-{name}"
+                for name in (
+                    "ACTIVATE",
+                    "ADD-ATTRIBUTE",
+                    "ADJUST-ATTRIBUTE",
+                    "ARCHIVE",
+                    "CERTIFY",
+                    "CHECK",
+                    "CREATE",
+                    "CREATE-KEY-PAIR",
+                    "CREATE-SPLIT-KEY",
+                    "DECRYPT",
+                    "DELETE-ATTRIBUTE",
+                    "DERIVE-KEY",
+                    "DESTROY",
+                    "ENCRYPT",
+                    "EXPORT",
+                    "GET",
+                    "GET-ATTRIBUTE-LIST",
+                    "GET-ATTRIBUTES",
+                    "GET-USAGE-ALLOCATION",
+                    "IMPORT",
+                    "JOIN-SPLIT-KEY",
+                    "LOCATE",
+                    "MAC",
+                    "MAC-VERIFY",
+                    "MODIFY-ATTRIBUTE",
+                    "OBTAIN-LEASE",
+                    "RE-CERTIFY",
+                    "RE-KEY",
+                    "RE-KEY-KEY-PAIR",
+                    "RECOVER",
+                    "REGISTER",
+                    "REVOKE",
+                    "SET-ATTRIBUTE",
+                    "SIGN",
+                    "SIGNATURE-VERIFY",
+                )
+            ),
+        }
+
+        self.assertEqual(set(requirement["element_ids"]), expected)
+        self.assertEqual(requirement["element_ids"], sorted(expected))
 
     def test_optional_lifecycle_evidence_rows_are_client_to_server_requests(self) -> None:
         """Lifecycle MAY evidence remains client-originated and has no official test claim."""
@@ -14553,7 +14651,7 @@ class CatalogValidationTests(unittest.TestCase):
         ])
         self.assertEqual(contract["verification_refs"], [
             "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs::table_232_preserves_optional_identifier_and_required_long_integer_count",
-            "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs::table_232_one_exchange_encodes_optional_id_and_long_integer_count",
+            "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs::table_232_one_exchange_encodes_identifier_and_long_integer_count",
         ])
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
         self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
@@ -17223,6 +17321,18 @@ class CatalogValidationTests(unittest.TestCase):
                                     self.assertIn(fragment, source_without_comments_or_literals, expected_test)
                     requirement = requirements[requirement_id]
                     self.assertIn(expected_test, requirement["verification_refs"])
+
+    def test_id_placeholder_regression_tests_are_traced_to_their_requirements(self) -> None:
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+        )
+        requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
+
+        for expected_test, requirement_ids in ID_PLACEHOLDER_REGRESSION_TEST_REQUIREMENTS.items():
+            self.assertIsNotNone(_rust_test_body(expected_test), expected_test)
+            for requirement_id in requirement_ids:
+                with self.subTest(requirement_id=requirement_id, test=expected_test):
+                    self.assertIn(expected_test, requirements[requirement_id]["verification_refs"])
 
     def test_validate_validity_date_may_has_typed_optional_traceability(self) -> None:
         """The §6.1.57 date MAY links to its typed request representation rule."""
