@@ -2654,18 +2654,26 @@ def client_batch_item_get_usage_allocation(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
-def _client_batch_item_lifecycle(operation: str, unique_identifier: UniqueIdentifier | None) -> ClientBatchItem:
+def _client_native_unique_identifier(
+    value: UniqueIdentifier | None,
+    staging_buffers: list[Any],
+) -> Any:
+    identifier, _owner = _native_unique_identifier(value, staging_buffers)
+    if value is None:
+        return _client_ffi.NULL
+    return _client_ffi.cast(
+        "kmipkit_unique_identifier_v1_t *",
+        int(ffi.cast("uintptr_t", identifier)),
+    )
+
+
+def _client_batch_item_lifecycle(
+    operation: str,
+    unique_identifier: UniqueIdentifier | None,
+) -> ClientBatchItem:
     with _staging_buffer_scope() as staging_buffers:
-        identifier, _owner = _native_unique_identifier(
+        client_identifier = _client_native_unique_identifier(
             unique_identifier, staging_buffers
-        )
-        client_identifier = (
-            _client_ffi.NULL
-            if unique_identifier is None
-            else _client_ffi.cast(
-                "kmipkit_unique_identifier_v1_t *",
-                int(ffi.cast("uintptr_t", identifier)),
-            )
         )
         handle = _make_handle(
             "kmipkit_client_batch_item_t",
