@@ -5,8 +5,7 @@
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CreateRequest, CreateSplitKeyRequest, DerivationMethod,
     DerivationParameters, DeriveKeyRequest, ExportRequest, ImportRequest, JoinSplitKeyRequest,
-    ObjectType, RecertifyRequest, SecretBytes, SplitKeyMethod, SplitKeyReference,
-    UniqueIdentifier,
+    ObjectType, RecertifyRequest, SecretBytes, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
 };
 use kmipkit_ttlv::Value;
 

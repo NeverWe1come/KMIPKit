@@ -372,7 +372,7 @@ Stable IDs and summaries below come from the checked-in normative catalog. The i
 | KMIPKIT-REQ-SPEC-6.1.6-002-001 | §6.1.6 | MAY | A client may omit the Certificate Request object. |
 | KMIPKIT-REQ-SPEC-6.1.6-002-002 | §6.1.6 | SHALL | If Certificate Request is omitted, the request must identify the public key by Unique Identifier. |
 | KMIPKIT-REQ-SPEC-6.1.6-002-003 | §6.1.6 | SHALL | If both Certificate Request Type and Certificate Request are omitted, specify Certificate Type in Attributes. |
-| KMIPKIT-REQ-SPEC-6.1.6-003 | §6.1.6 | MAY | A client may retrieve the generated certificate with Get in the same batch using the ID Placeholder. |
+| KMIPKIT-REQ-SPEC-6.1.6-003 | §6.1.6 | MAY | A client may retrieve the generated Certificate with a subsequent Get in the same batch using the ID Placeholder. |
 | KMIPKIT-REQ-SPEC-6.1.6-007 | §6.1.6 | REQUIRED | Certificate Request Type is required when Certificate Request is present. |
 | KMIPKIT-REQ-SPEC-6.1.7-001 | §6.1.7 | SHOULD | A client should use Check in a batch, generally after locating or creating an object and before Get. |
 | KMIPKIT-REQ-SPEC-6.1.7-002-001 | §6.1.7 | SHOULD | A client should set Batch Order Option to true in a batch containing Check. |

@@ -99061,7 +99061,7 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs::table_232_preserves_optional_identifier_and_required_long_integer_count",
-        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs::table_232_one_exchange_encodes_optional_id_and_long_integer_count"
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs::table_232_one_exchange_encodes_identifier_and_long_integer_count"
       ],
       "evidence_disposition": {
         "status": "mapped_to_feature_contract",
