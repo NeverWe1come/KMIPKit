@@ -35,6 +35,7 @@ const CRITICALITY_INDICATOR_TAG: u32 = 0x0042_0026;
 const VENDOR_EXTENSION_TAG: u32 = 0x0042_009C;
 const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
 const BATCH_ERROR_CONTINUATION_OPTION_TAG: u32 = 0x0042_000E;
+const ATTESTATION_CAPABLE_INDICATOR_TAG: u32 = 0x0042_00D3;
 const BATCH_ORDER_OPTION_TAG: u32 = 0x0042_0010;
 const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
@@ -213,6 +214,31 @@ fn test_protocol_version() -> Item {
 
 fn request_message() -> crate::RequestMessage {
     request_message_with_unique_batch_item_id(None)
+}
+
+fn request_message_with_attestation_capable_indicator(
+    indicator: Option<bool>,
+) -> crate::RequestMessage {
+    let mut header_items = vec![test_protocol_version()];
+    if let Some(indicator) = indicator {
+        header_items.push(tagged(
+            ATTESTATION_CAPABLE_INDICATOR_TAG,
+            Value::boolean(indicator),
+        ));
+    }
+    header_items.push(tagged(BATCH_COUNT_TAG, Value::integer(1)));
+
+    crate::RequestMessage::try_from_ttlv(structure([
+        tagged(REQUEST_HEADER_TAG, Value::structure(structure(header_items))),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(0x1E)),
+                tagged(REQUEST_PAYLOAD_TAG, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("test Request Message has an optional Attestation Capable Indicator")
 }
 
 fn request_message_with_unique_batch_item_id(
@@ -3473,6 +3499,75 @@ fn profile_maps_assigned_batch_error_continuation_values() {
             error.code(),
             ProfileValidationErrorCode::RequestRuleRejected
         );
+    }
+}
+
+#[test]
+fn profile_requires_attestation_capable_indicator_when_client_can_create_credential() {
+    // KMIP Specification v2.1 §9.3 requires True exactly when this client can
+    // create an Attestation Credential; an absent indicator has effective value False.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.3-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.3-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_capable_indicator_when_client_can_create_credential";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Attestation Capable Indicator behavior has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the indicator behavior resolves to generated requirement metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("required indicator behavior has positive executable evidence");
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id == PROFILE_TEST_ID && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload"
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+    assert!(mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability"
+            && evidence.kind == RuleTestKind::PositiveBehavior
+    }));
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the indicator requirement has a typed request evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    let advertised = request_message_with_attestation_capable_indicator(Some(true));
+    assert_eq!(advertised.header().attestation_capable_indicator(), Some(true));
+    assert!(evaluate(Some(&advertised), None));
+    result
+        .validate_request(&advertised)
+        .expect("a capable client advertises the true indicator");
+
+    for indicator in [None, Some(false)] {
+        let request = request_message_with_attestation_capable_indicator(indicator);
+        assert!(!evaluate(Some(&request), None));
+        let error = result
+            .validate_request(&request)
+            .expect_err("a capable client cannot omit or clear the indicator");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
     }
 }
 
