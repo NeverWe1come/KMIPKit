@@ -303,9 +303,12 @@ fn attributes_satisfy_register_requirements(
     }
 
     match object_type.raw() {
-        // Certificate Length is required for a Certificate. Table 293 does
-        // not apply the managed-cryptographic-object requirements to it.
-        1 => has_attribute(attributes, CERTIFICATE_LENGTH),
+        // Certificate has its own Certificate Length requirement and also
+        // follows Table 293's Managed Cryptographic Object attribute pairing.
+        1 => {
+            has_attribute(attributes, CERTIFICATE_LENGTH)
+                && cryptographic_algorithm_and_length_outer_pair_is_present(attributes)
+        }
         // Opaque Object has its own Table 4 Structure, independent of whether
         // the caller selects generic or managed-cryptographic context.
         8 => {
@@ -322,6 +325,8 @@ fn attributes_satisfy_register_requirements(
         2 | 3 | 4 | 5 | 7 | 9 => {
             managed_crypto_attributes_satisfy_register_requirements(object_type, attributes, object)
         }
+        // Certificate Request is a Managed Cryptographic Object under §2.2.
+        10 => cryptographic_algorithm_and_length_outer_pair_is_present(attributes),
         // Table 293's certificate-specific signature algorithm may be omitted
         // when it is encoded in the supplied Certificate object. KMIPKit does
         // not parse certificate bytes locally.
@@ -356,15 +361,29 @@ fn cryptographic_algorithm_and_length_satisfy_register_requirements(
     object: Option<&Item>,
 ) -> bool {
     let has_algorithm = has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM);
-    let has_length = has_attribute(attributes, CRYPTOGRAPHIC_LENGTH);
 
-    // The paired values may be split between direct and Key Value Attributes.
-    let algorithm_available = has_algorithm
-        || object.is_some_and(|object| key_block_has(object, CRYPTOGRAPHIC_ALGORITHM));
-    let length_available =
-        has_length || object.is_some_and(|object| key_block_has(object, CRYPTOGRAPHIC_LENGTH));
+    // §6.1.43 Table 293 couples the outer Register Attributes. Key Block data
+    // can satisfy both omitted values, but cannot supply one side of an outer
+    // pair whose other side is present in Register Attributes.
+    if !cryptographic_algorithm_and_length_outer_pair_is_satisfied(attributes) {
+        return false;
+    }
 
-    algorithm_available && length_available
+    has_algorithm
+        || object.is_some_and(|object| {
+            key_block_has(object, CRYPTOGRAPHIC_ALGORITHM)
+                && key_block_has(object, CRYPTOGRAPHIC_LENGTH)
+        })
+}
+
+fn cryptographic_algorithm_and_length_outer_pair_is_satisfied(attributes: &AttributeSet) -> bool {
+    has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM)
+        == has_attribute(attributes, CRYPTOGRAPHIC_LENGTH)
+}
+
+fn cryptographic_algorithm_and_length_outer_pair_is_present(attributes: &AttributeSet) -> bool {
+    has_attribute(attributes, CRYPTOGRAPHIC_ALGORITHM)
+        && has_attribute(attributes, CRYPTOGRAPHIC_LENGTH)
 }
 
 fn opaque_object_has_required_fields(object: &Item) -> bool {

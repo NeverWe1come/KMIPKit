@@ -743,8 +743,6 @@ const SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const KEY_BLOCK: u32 = 0x0042_0040;
 const KEY_FORMAT_TYPE: u32 = 0x0042_0042;
 const KEY_VALUE: u32 = 0x0042_0045;
-const CERTIFICATE_OBJECT: u32 = 0x0042_0013;
-const CERTIFICATE_REQUEST_OBJECT: u32 = 0x0042_0018;
 const PGP_KEY: u32 = 0x0042_00BD;
 const PGP_KEY_VERSION: u32 = 0x0042_00BE;
 const SYMMETRIC_KEY: u32 = 0x0042_008F;
@@ -2286,6 +2284,29 @@ fn client_register_algorithm_requires_length(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
+    client_register_table293_outer_attribute_pair(
+        request,
+        CRYPTOGRAPHIC_ALGORITHM,
+        CRYPTOGRAPHIC_LENGTH,
+    )
+}
+
+fn client_register_length_requires_algorithm(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_register_table293_outer_attribute_pair(
+        request,
+        CRYPTOGRAPHIC_LENGTH,
+        CRYPTOGRAPHIC_ALGORITHM,
+    )
+}
+
+fn client_register_table293_outer_attribute_pair(
+    request: Option<&RequestMessage>,
+    trigger_tag: u32,
+    companion_tag: u32,
+) -> bool {
     let Some(request) = request else {
         return false;
     };
@@ -2317,9 +2338,9 @@ fn client_register_algorithm_requires_length(
                 // Secret Data is explicitly exempted by §6.1.43, Table 293.
                 // Unknown/vendor object types remain forward-compatible and
                 // are outside the base specification's typed applicability.
-                let Some(object_tag) = register_object_tag(object_type) else {
+                if !register_table293_object_type_applies(object_type) {
                     return true;
-                };
+                }
 
                 match field_presence(&payload, REGISTER_ATTRIBUTES) {
                     FieldPresence::Missing => true,
@@ -2327,27 +2348,26 @@ fn client_register_algorithm_requires_length(
                     FieldPresence::Unique(attributes) => {
                         attributes.with_value(|value| match value {
                             ValueView::Structure(attributes) => {
-                                match field_presence(&attributes, CRYPTOGRAPHIC_ALGORITHM) {
+                                match field_presence(&attributes, trigger_tag) {
                                     FieldPresence::Missing => true,
                                     FieldPresence::Duplicate => false,
-                                    FieldPresence::Unique(algorithm) => {
-                                        if !algorithm.with_value(|value| {
-                                            matches!(value, ValueView::Enumeration(_))
-                                        }) {
+                                    FieldPresence::Unique(trigger) => {
+                                        if !register_table293_attribute_has_type(
+                                            trigger,
+                                            trigger_tag,
+                                        ) {
                                             return false;
                                         }
 
-                                        match field_presence(&attributes, CRYPTOGRAPHIC_LENGTH) {
-                                            FieldPresence::Unique(length) => {
-                                                length.with_value(|value| {
-                                                    matches!(value, ValueView::Integer(_))
-                                                })
-                                            }
-                                            FieldPresence::Duplicate => false,
-                                            FieldPresence::Missing => {
-                                                register_key_block_has_crypto_length(
-                                                    &payload, object_tag,
+                                        match field_presence(&attributes, companion_tag) {
+                                            FieldPresence::Unique(companion) => {
+                                                register_table293_attribute_has_type(
+                                                    companion,
+                                                    companion_tag,
                                                 )
+                                            }
+                                            FieldPresence::Duplicate | FieldPresence::Missing => {
+                                                false
                                             }
                                         }
                                     }
@@ -2362,71 +2382,24 @@ fn client_register_algorithm_requires_length(
     })
 }
 
-fn register_object_tag(object_type: u32) -> Option<u32> {
-    match object_type {
-        CERTIFICATE_OBJECT_TYPE => Some(CERTIFICATE_OBJECT),
-        SYMMETRIC_KEY_OBJECT_TYPE => Some(SYMMETRIC_KEY),
-        PUBLIC_KEY_OBJECT_TYPE => Some(PUBLIC_KEY),
-        PRIVATE_KEY_OBJECT_TYPE => Some(PRIVATE_KEY),
-        SPLIT_KEY_OBJECT_TYPE => Some(SPLIT_KEY),
-        PGP_KEY_OBJECT_TYPE => Some(PGP_KEY),
-        CERTIFICATE_REQUEST_OBJECT_TYPE => Some(CERTIFICATE_REQUEST_OBJECT),
-        _ => None,
-    }
+fn register_table293_object_type_applies(object_type: u32) -> bool {
+    matches!(
+        object_type,
+        CERTIFICATE_OBJECT_TYPE
+            | SYMMETRIC_KEY_OBJECT_TYPE
+            | PUBLIC_KEY_OBJECT_TYPE
+            | PRIVATE_KEY_OBJECT_TYPE
+            | SPLIT_KEY_OBJECT_TYPE
+            | PGP_KEY_OBJECT_TYPE
+            | CERTIFICATE_REQUEST_OBJECT_TYPE
+    )
 }
 
-fn register_key_block_has_crypto_length(payload: &StructureView<'_>, object_tag: u32) -> bool {
-    let FieldPresence::Unique(object) = field_presence(payload, object_tag) else {
-        return false;
-    };
-    object.with_value(|value| {
-        let ValueView::Structure(object) = value else {
-            return false;
-        };
-        let FieldPresence::Unique(key_block) = field_presence(&object, KEY_BLOCK) else {
-            return false;
-        };
-        key_block.with_value(|value| {
-            let ValueView::Structure(key_block) = value else {
-                return false;
-            };
-            match field_presence(&key_block, CRYPTOGRAPHIC_LENGTH) {
-                FieldPresence::Unique(length) => {
-                    length.with_value(|value| matches!(value, ValueView::Integer(_)))
-                }
-                FieldPresence::Duplicate => false,
-                FieldPresence::Missing => {
-                    register_key_value_attributes_have_crypto_length(&key_block)
-                }
-            }
-        })
-    })
-}
-
-fn register_key_value_attributes_have_crypto_length(key_block: &StructureView<'_>) -> bool {
-    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
-        return false;
-    };
-    key_value.with_value(|value| {
-        let ValueView::Structure(key_value) = value else {
-            // Wrapped Key Value bytes are opaque to this structural evaluator.
-            return false;
-        };
-        let FieldPresence::Unique(attributes) = field_presence(&key_value, REGISTER_ATTRIBUTES)
-        else {
-            return false;
-        };
-        attributes.with_value(|value| match value {
-            ValueView::Structure(attributes) => {
-                let FieldPresence::Unique(length) =
-                    field_presence(&attributes, CRYPTOGRAPHIC_LENGTH)
-                else {
-                    return false;
-                };
-                length.with_value(|value| matches!(value, ValueView::Integer(_)))
-            }
-            _ => false,
-        })
+fn register_table293_attribute_has_type(attribute: &Item, tag: u32) -> bool {
+    attribute.with_value(|value| match tag {
+        CRYPTOGRAPHIC_ALGORITHM => matches!(value, ValueView::Enumeration(_)),
+        CRYPTOGRAPHIC_LENGTH => matches!(value, ValueView::Integer(_)),
+        _ => false,
     })
 }
 
@@ -3451,10 +3424,6 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_counts_register_length_encapsulated_in_key_block_for_algorithm_pairing",
-                kind: RuleTestKind::PositiveBehavior,
-            },
-            RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opaque",
                 kind: RuleTestKind::PositiveBehavior,
             },
@@ -3463,6 +3432,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_register_length_requires_algorithm),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_length_requires_algorithm_in_attributes",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

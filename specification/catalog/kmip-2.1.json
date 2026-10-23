@@ -95510,7 +95510,7 @@
       "summary": "Cryptographic Algorithm may be omitted only when encoded in Key Block; it does not apply to Secret Data.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "For applicable registered objects.",
+      "condition": "For a managed cryptographic object other than Secret Data, Cryptographic Algorithm may be omitted only when its information is encapsulated in the Key Block. Certificate and Certificate Request structures have no Key Block, so this information is required in the outer Register Attributes for those Object Types.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-REGISTER"
@@ -95525,13 +95525,15 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "Typed RegisterRequest preserves Key Block omission only when the metadata is structurally available there. Certificate and Certificate Request structures have no Key Block (§2.1 Table 2; §2.2 Table 3), so omitted Algorithm/Length are rejected before transport. These MAY requirements do not have a wire-only profile mapping here. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-009-002",
@@ -95547,10 +95549,10 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Cryptographic Algorithm/Length",
-      "summary": "For a known Managed Cryptographic Object other than Secret Data, if Cryptographic Algorithm is present in Register Attributes, Cryptographic Length SHALL also be available in Register Attributes or the Key Block.",
+      "summary": "For an applicable Register Object, if Cryptographic Algorithm is present in Register Attributes, Cryptographic Length SHALL also be present in Register Attributes.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "When a KMIP-defined, context-independent Managed Cryptographic Object other than Secret Data is registered and Cryptographic Algorithm is present in Register Attributes. Opaque is excluded from TTLV-only evaluation because its managed status depends on client context.",
+      "condition": "For an outbound Register Batch Item whose Object Type is a KMIP-defined standard Managed Cryptographic Object other than Secret Data, when outer Register Attributes contains Cryptographic Algorithm. The corresponding Cryptographic Length is required in those same outer Register Attributes; a Key Block value does not replace the companion when one outer field is present. Context-unknown Opaque and unknown/vendor Object Types are neutral in the wire-only profile evaluator.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-REGISTER"
@@ -95565,7 +95567,7 @@
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_counts_register_length_encapsulated_in_key_block_for_algorithm_pairing",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_use_key_block_length_as_register_attribute_pairing",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opaque",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_register_algorithm_without_length_in_attributes",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_attributes_for_algorithm_length_requirement",
@@ -95575,12 +95577,16 @@
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_count_key_block_length_from_a_non_object_register_structure",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_applies_register_algorithm_length_rule_to_standard_object_types",
-    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_object_key_block_length_sources"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_object_key_block_length_sources",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_rejects_algorithm_and_length_split_between_register_and_key_value_attributes",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_rejects_one_sided_outer_algorithm_length_before_transport",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_one_sided_outer_algorithm_length_before_transport",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_one_sided_outer_algorithm_length_before_transport"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.43 Table 293 applies to Managed Cryptographic Objects and explicitly exempts Secret Data. The evaluator counts structurally visible Cryptographic Length in Register Attributes, direct Key Block fields, or Key Value Attributes; wrapped Key Value bytes remain opaque. KMIP §2.3 makes Opaque's managed status depend on client context that is not encoded in TTLV, so this wire-only evaluator leaves Opaque neutral while the typed RegisterRequest enforces its selected local context. Related Key Block attribute placement follows §§3.1–3.2. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.43 Table 293 couples the outer Register Attributes: when Algorithm is present, Length is also present there. Table 293 permits omitted information to be encapsulated in the Key Block, but does not let a Key Block value replace the companion to an outer field already present. §§3.1 Table 12 and 3.2 Table 13 separately govern Key Block and structured Key Value Attributes; wrapped Key Value bytes remain opaque. The rule keys applicability from Object Type, not Key Format Type Opaque. Secret Data is expressly exempt. Opaque's managed status depends on client context not encoded in TTLV, so the wire-only profile evaluator leaves it neutral; unknown/vendor Object Types remain forward-compatible and neutral. This is Register-only and does not establish server acceptance, an official Test Case pass, or profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-001",
@@ -95599,7 +95605,7 @@
       "summary": "Cryptographic Length may be omitted only when encoded in Key Block; it does not apply to Secret Data.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "For applicable registered objects.",
+      "condition": "For a managed cryptographic object other than Secret Data, Cryptographic Length may be omitted only when its information is encapsulated in the Key Block. Certificate and Certificate Request structures have no Key Block, so this information is required in the outer Register Attributes for those Object Types.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-REGISTER"
@@ -95614,13 +95620,15 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "Typed RegisterRequest preserves Key Block omission only when the metadata is structurally available there. Certificate and Certificate Request structures have no Key Block (§2.1 Table 2; §2.2 Table 3), so omitted Algorithm/Length are rejected before transport. These MAY requirements do not have a wire-only profile mapping here. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-002",
@@ -95636,10 +95644,10 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Cryptographic Algorithm/Length",
-      "summary": "If Cryptographic Length is present, also include Cryptographic Algorithm.",
+      "summary": "For an applicable Register Object, if Cryptographic Length is present in Register Attributes, Cryptographic Algorithm SHALL also be present in Register Attributes.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "When Length is present.",
+      "condition": "For an outbound Register Batch Item whose Object Type is a KMIP-defined standard Managed Cryptographic Object other than Secret Data, when outer Register Attributes contains Cryptographic Length. The corresponding Cryptographic Algorithm is required in those same outer Register Attributes; a Key Block value does not replace the companion when one outer field is present. Context-unknown Opaque and unknown/vendor Object Types are neutral in the wire-only profile evaluator.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-REGISTER"
@@ -95649,17 +95657,24 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/register.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_length_requires_algorithm_in_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opaque",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_applies_register_algorithm_length_rule_to_standard_object_types",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_allows_algorithm_and_length_embedded_in_key_value",
+        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_rejects_algorithm_and_length_split_between_register_and_key_value_attributes",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_rejects_one_sided_outer_algorithm_length_before_transport",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_one_sided_outer_algorithm_length_before_transport",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_one_sided_outer_algorithm_length_before_transport"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §6.1.43 Table 293 couples the outer Register Attributes: when Length is present, Algorithm is also present there. Table 293 permits omitted information to be encapsulated in the Key Block, but does not let a Key Block value replace the companion to an outer field already present. §§3.1 Table 12 and 3.2 Table 13 separately govern Key Block and structured Key Value Attributes; wrapped Key Value bytes remain opaque. The rule keys applicability from Object Type, not Key Format Type Opaque. Secret Data is expressly exempt. Opaque's managed status depends on client context not encoded in TTLV, so the wire-only profile evaluator leaves it neutral; unknown/vendor Object Types remain forward-compatible and neutral. This is Register-only and does not establish server acceptance, an official Test Case pass, or profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-011",
