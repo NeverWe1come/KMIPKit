@@ -1392,6 +1392,22 @@ mod unrelated {
             "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED",
         )
 
+        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        report = render_report(
+            catalog,
+            selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
+            typed_rule_mappings=report_module.load_typed_rule_mappings(ROOT),
+        )
+        requirement_row = next(
+            row
+            for row in report.splitlines()
+            if row.startswith("| KMIPKIT-REQ-SPEC-2.3-003 |")
+        )
+        self.assertIn("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED", requirement_row)
+        self.assertIn("§2.3", requirement_row)
+        self.assertIn("Opaque Data Type", requirement_row)
+        self.assertIn("6927-6945", requirement_row)
+
     def test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures(self) -> None:
         from tools.normative_catalog import report as report_module
 
@@ -1419,6 +1435,7 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-2.3-002",
                 "KMIPKIT-REQ-SPEC-2.3-002",
                 "KMIPKIT-REQ-SPEC-2.3-002",
+                "KMIPKIT-REQ-SPEC-2.3-003",
                 "KMIPKIT-REQ-SPEC-2.4-001-001",
                 "KMIPKIT-REQ-SPEC-2.4-001-001",
                 "KMIPKIT-REQ-SPEC-2.4-001-002",

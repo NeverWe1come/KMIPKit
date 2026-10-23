@@ -86571,16 +86571,18 @@
       "feature_spec": "KMIPKIT-0044",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/register.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::opaque_object_requires_typed_table4_data_type_and_data_value_children",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::malformed_table_4_opaque_object_is_not_sent"
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::malformed_table_4_opaque_object_is_not_sent",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_fields_of_opaque_register_object"
       ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §2.3/Table 4 marks the Opaque Data Type (Enumeration) row required at HTML lines 6927-6945 and the Opaque Data Value (Byte String) row required at lines 6946-6964. The REQUIRED heading at lines 6891-6907 is a non-applicable table header, not an obligation. The Register request context is specified in §6.1.43/Table 291. No requirement-specific official Test Cases ID is linked in the pinned OASIS Test Cases inventory; the referenced local tests are project-derived and no official pass is claimed."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §2.3/Table 4 marks the Opaque Data Type (Enumeration) row required at HTML lines 6927-6945 and the Opaque Data Value (Byte String) row required at lines 6946-6964. These table-body rows remain source-gap evidence rather than invented clause IDs; the REQUIRED heading at lines 6891-6907 is only a non-applicable table header. The Register request context is specified in §6.1.43/Table 291. The typed profile rule checks the visible Opaque Object structure only and preserves unknown child fields; it does not interpret Opaque Data Value or claim server acceptance. No requirement-specific official Test Cases ID is linked in the pinned OASIS Test Cases inventory; the referenced local tests are project-derived and no official pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-001-001",

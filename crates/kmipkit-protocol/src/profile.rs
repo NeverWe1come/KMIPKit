@@ -227,11 +227,12 @@ impl ProfileValidationResult {
                     _ => true,
                 };
                 if !satisfied {
-                    return Err(ProfileValidationError::for_requirement(
+                    return Err(ProfileValidationError::for_rule_requirement(
                         ProfileValidationErrorCode::TransportConstraintRejected,
                         profile_id,
                         requirement_id,
-                        Some(mapping.source_clause_id),
+                        mapping.source_clause_id,
+                        mapping.source_gap_id,
                     ));
                 }
             }
@@ -244,7 +245,7 @@ impl ProfileValidationResult {
     ///
     /// # Errors
     ///
-    /// Returns a stable requirement and source-clause error when a mapped
+    /// Returns a stable requirement and source-reference error when a mapped
     /// evaluator rejects the request or the validated registry is no longer
     /// complete.
     pub fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
@@ -261,7 +262,7 @@ impl ProfileValidationResult {
     ///
     /// # Errors
     ///
-    /// Returns a stable requirement and source-clause error when a mapped
+    /// Returns a stable requirement and source-reference error when a mapped
     /// evaluator rejects the response or the validated registry is no longer
     /// complete.
     pub fn validate_response(
@@ -301,19 +302,21 @@ impl ProfileValidationResult {
                 if is_transport_only_mapping(mapping) {
                     continue;
                 }
-                return Err(ProfileValidationError::for_requirement(
+                return Err(ProfileValidationError::for_rule_requirement(
                     ProfileValidationErrorCode::IncompleteRuleMapping,
                     profile_id,
                     requirement_id,
-                    Some(mapping.source_clause_id),
+                    mapping.source_clause_id,
+                    mapping.source_gap_id,
                 ));
             };
             if !evaluator(request, response) {
-                return Err(ProfileValidationError::for_requirement(
+                return Err(ProfileValidationError::for_rule_requirement(
                     rejection_code,
                     profile_id,
                     requirement_id,
-                    Some(mapping.source_clause_id),
+                    mapping.source_clause_id,
+                    mapping.source_gap_id,
                 ));
             }
         }
@@ -702,6 +705,7 @@ type RuleEvaluator = for<'a> fn(
 struct TypedRuleMapping {
     requirement_id: &'static str,
     source_clause_id: &'static str,
+    source_gap_id: Option<&'static str>,
     verification_category: GeneratedVerificationCategory,
     evaluator: Option<RuleEvaluator>,
     test_evidence: &'static [RuleTestEvidence],
@@ -796,6 +800,9 @@ const GET_OPERATION: u32 = 0x0000_000A;
 const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
+const REGISTER_OPAQUE_OBJECT: u32 = 0x0042_005B;
+const OPAQUE_DATA_TYPE: u32 = 0x0042_0059;
+const OPAQUE_DATA_VALUE: u32 = 0x0042_005A;
 const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
 const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
 const RNG_PARAMETERS: u32 = 0x0042_00D9;
@@ -2023,6 +2030,68 @@ fn client_opaque_object_context_custom_attributes(
 
         batch_item
             .with_request_payload(|payload| register_opaque_context_is_well_formed(&payload))
+            .unwrap_or(false)
+    })
+}
+
+fn client_register_opaque_object_has_required_data_fields(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if response.is_some() {
+        return true;
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        if batch_item.operation() != Some(REGISTER_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, REGISTER_OBJECT_TYPE)
+                else {
+                    return true;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return true;
+                };
+                if object_type != OPAQUE_OBJECT_TYPE {
+                    return true;
+                }
+
+                let FieldPresence::Unique(opaque_object) =
+                    field_presence(&payload, REGISTER_OPAQUE_OBJECT)
+                else {
+                    return false;
+                };
+                opaque_object.with_value(|value| match value {
+                    ValueView::Structure(opaque_object) => {
+                        let FieldPresence::Unique(data_type) =
+                            field_presence(&opaque_object, OPAQUE_DATA_TYPE)
+                        else {
+                            return false;
+                        };
+                        let FieldPresence::Unique(data_value) =
+                            field_presence(&opaque_object, OPAQUE_DATA_VALUE)
+                        else {
+                            return false;
+                        };
+                        data_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                            && data_value
+                                .with_value(|value| matches!(value, ValueView::ByteString(_)))
+                    }
+                    _ => false,
+                })
+            })
             .unwrap_or(false)
     })
 }
@@ -3441,6 +3510,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-3.1-001",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: None,
         test_evidence: &[RuleTestEvidence {
@@ -3455,6 +3525,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.1-002",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         evaluator: None,
         test_evidence: &[RuleTestEvidence {
@@ -3469,6 +3540,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.1-005",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.1-005",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: None,
         test_evidence: &[RuleTestEvidence {
@@ -3483,6 +3555,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.2-002",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.2-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: None,
         test_evidence: &[
@@ -3503,6 +3576,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-3.1.2-005",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-3.1.2-005",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: None,
         test_evidence: &[
@@ -3523,6 +3597,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_opaque_object_context_custom_attributes),
         test_evidence: &[
@@ -3540,6 +3615,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.3-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_opaque_object_context_managed_attributes),
         test_evidence: &[
@@ -3559,8 +3635,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.3-003",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_register_opaque_object_has_required_data_fields),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_fields_of_opaque_register_object",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
         test_evidence: &[
@@ -3578,6 +3667,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
         test_evidence: &[
@@ -3595,6 +3685,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.4-002-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         evaluator: Some(import_preserves_pgp_key_form_and_opaque_bytes),
         test_evidence: &[
@@ -3612,6 +3703,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.7-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.7-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(import_preserves_wrapped_secret_data_shape),
         test_evidence: &[
@@ -3629,6 +3721,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-3.3-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-004",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_key_wrapping_data_has_required_key_information),
         test_evidence: &[RuleTestEvidence {
@@ -3640,6 +3733,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_get_or_export_key_compression_type_is_enumeration),
         test_evidence: &[
@@ -3661,6 +3755,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
         test_evidence: &[
@@ -3678,6 +3773,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.14-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
         test_evidence: &[
@@ -3695,6 +3791,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-004-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_key_block_algorithm_requires_length),
         test_evidence: &[RuleTestEvidence {
@@ -3706,6 +3803,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-3.1-005-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_key_block_length_requires_algorithm),
         test_evidence: &[RuleTestEvidence {
@@ -3717,6 +3815,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_register_algorithm_requires_length),
         test_evidence: &[
@@ -3738,6 +3837,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-010-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_register_length_requires_algorithm),
         test_evidence: &[RuleTestEvidence {
@@ -3749,6 +3849,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.27-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.27-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_register_key_value_location_requires_omitted_key_value),
         test_evidence: &[RuleTestEvidence {
@@ -3760,6 +3861,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: Some(client_register_does_not_specify_key_value_present),
         test_evidence: &[
@@ -3785,6 +3887,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: Some(client_key_value_present_is_not_modified),
         test_evidence: &[RuleTestEvidence {
@@ -3796,6 +3899,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.28-001-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_locate_key_value_present_is_boolean_when_used),
         test_evidence: &[
@@ -3813,6 +3917,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_certify_requests_at_most_one_certificate),
         test_evidence: &[RuleTestEvidence {
@@ -3824,6 +3929,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_certify_certificate_request_value_is_omittable),
         test_evidence: &[RuleTestEvidence {
@@ -3835,6 +3941,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_certify_omitted_request_requires_unique_identifier),
         test_evidence: &[
@@ -3852,6 +3959,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_certify_omitted_request_requires_certificate_type_attribute),
         test_evidence: &[RuleTestEvidence {
@@ -3863,6 +3971,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-003",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_retrieve_certified_certificate_with_get_in_batch),
         test_evidence: &[
@@ -3880,6 +3989,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-007",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-007",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_certify_request_type_required_with_request_value),
         test_evidence: &[RuleTestEvidence {
@@ -3891,6 +4001,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-005",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_register_preserves_optional_wrapped_key_value),
         test_evidence: &[
@@ -3908,6 +4019,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_register_original_creation_date_is_datetime_when_used),
         test_evidence: &[
@@ -3925,6 +4037,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_register_original_creation_date_is_datetime_when_used),
         test_evidence: &[
@@ -3942,6 +4055,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.38-001-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_add_original_creation_date_is_datetime_when_used),
         test_evidence: &[
@@ -3959,6 +4073,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_register_random_number_generator_is_well_formed),
         test_evidence: &[
@@ -3976,6 +4091,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.46-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_add_attribute_random_number_generator_is_well_formed),
         test_evidence: &[
@@ -3993,6 +4109,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_revoke_revocation_message_is_text_when_used),
         test_evidence: &[
@@ -4014,6 +4131,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.47-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_revoke_revocation_message_is_text_when_used),
         test_evidence: &[
@@ -4035,6 +4153,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: Some(client_compromise_occurrence_date_only_for_key_or_ca_compromise),
         test_evidence: &[
@@ -4052,6 +4171,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.45-008",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.45-008",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_recertify_request_type_required_with_request_value),
         test_evidence: &[
@@ -4077,6 +4197,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-002-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_validate_validity_date_is_usable),
         test_evidence: &[RuleTestEvidence {
@@ -4088,6 +4209,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-004",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_validate_repeated_certificates_are_usable),
         test_evidence: &[RuleTestEvidence {
@@ -4099,6 +4221,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.57-005",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.57-005",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_validate_repeated_unique_identifiers_are_usable),
         test_evidence: &[RuleTestEvidence {
@@ -4110,6 +4233,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.62-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.62-003",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_response_preserves_x509_optional_values),
         test_evidence: &[RuleTestEvidence {
@@ -4121,6 +4245,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.63-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-004",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_response_preserves_x509_optional_values),
         test_evidence: &[RuleTestEvidence {
@@ -4132,6 +4257,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.63-005",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.63-005",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_response_preserves_x509_optional_values),
         test_evidence: &[RuleTestEvidence {
@@ -4143,6 +4269,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-8.1-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.1-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_repeat_request_batch_items),
         test_evidence: &[RuleTestEvidence {
@@ -4154,6 +4281,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-8.2-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.2-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_repeat_request_attestation_types),
         test_evidence: &[RuleTestEvidence {
@@ -4165,6 +4293,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.3-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.3-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_sets_attestation_indicator_true),
         test_evidence: &[
@@ -4190,6 +4319,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.9-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.9-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_client_correlation_value),
         test_evidence: &[
@@ -4211,6 +4341,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.12-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_maximum_response_size),
         test_evidence: &[RuleTestEvidence {
@@ -4222,6 +4353,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.20-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.20-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_request_time_stamp),
         test_evidence: &[
@@ -4239,6 +4371,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.21-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.21-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_optional_unique_batch_item_id),
         test_evidence: &[
@@ -4256,6 +4389,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-8.3-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.3-003",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_includes_unique_batch_item_id_for_multi_item_request),
         test_evidence: &[RuleTestEvidence {
@@ -4267,6 +4401,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-8.3-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-8.3-004",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_repeat_request_message_extensions),
         test_evidence: &[
@@ -4284,6 +4419,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.5-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.5-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_sets_batch_count_to_request_item_count),
         test_evidence: &[RuleTestEvidence {
@@ -4295,6 +4431,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.5-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.5-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_sets_batch_count_to_one_for_single_operation),
         test_evidence: &[RuleTestEvidence {
@@ -4306,6 +4443,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_includes_batch_error_continuation_only_for_multi_item_request),
         test_evidence: &[RuleTestEvidence {
@@ -4317,6 +4455,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_uses_assigned_batch_error_continuation_values),
         test_evidence: &[
@@ -4334,6 +4473,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.6-001-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_defaults_batch_error_continuation_to_stop),
         test_evidence: &[RuleTestEvidence {
@@ -4345,6 +4485,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-PROF-4.1.2-007",
         source_clause_id: "KMIPKIT-CLAUSE-PROF-4.1.2-007",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_optional_unique_batch_item_id),
         test_evidence: &[
@@ -4362,6 +4503,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-9.17-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-9.17-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_inspect_optional_result_message),
         test_evidence: &[
@@ -4383,6 +4525,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(type_specific_parameters_do_not_infer_remote_object_type),
         test_evidence: &[RuleTestEvidence {
@@ -4394,6 +4537,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(type_specific_parameters_do_not_infer_remote_object_type),
         test_evidence: &[
@@ -4419,6 +4563,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_variable_iv_cryptographic_parameters_include_iv_length),
         test_evidence: &[RuleTestEvidence {
@@ -4430,6 +4575,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-4.16-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.16-003",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_gcm_cryptographic_parameters_include_tag_length),
         test_evidence: &[RuleTestEvidence {
@@ -4441,6 +4587,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(discover_versions_advertises_only_client_supported_versions),
         test_evidence: &[RuleTestEvidence {
@@ -4452,6 +4599,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.10-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.10-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_optional_create_split_key_source_identifier),
         test_evidence: &[RuleTestEvidence {
@@ -4463,6 +4611,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_optional_locate_maximum_items),
         test_evidence: &[RuleTestEvidence {
@@ -4474,6 +4623,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_optional_locate_offset_items),
         test_evidence: &[RuleTestEvidence {
@@ -4485,6 +4635,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-007",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_can_send_partial_structured_locate_attributes),
         test_evidence: &[RuleTestEvidence {
@@ -4496,6 +4647,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_supplies_locate_attributes_structure),
         test_evidence: &[RuleTestEvidence {
@@ -4507,6 +4659,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-013-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_supplies_locate_attributes_structure),
         test_evidence: &[RuleTestEvidence {
@@ -4518,6 +4671,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: Some(get_attributes_references_are_not_repeated),
         test_evidence: &[RuleTestEvidence {
@@ -4529,6 +4683,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.20-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_include_optional_get_attributes_attribute_references),
         test_evidence: &[RuleTestEvidence {
@@ -4540,6 +4695,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-014",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_query_contains_one_or_more_functions),
         test_evidence: &[RuleTestEvidence {
@@ -4551,6 +4707,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.40-016",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(client_can_repeat_query_functions),
         test_evidence: &[RuleTestEvidence {
@@ -4562,6 +4719,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(derive_key_specifies_cryptographic_length),
         test_evidence: &[RuleTestEvidence {
@@ -4573,6 +4731,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-003",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(derive_key_specifies_cryptographic_algorithm_for_key_output),
         test_evidence: &[RuleTestEvidence {
@@ -4584,6 +4743,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-001-004",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(derive_key_secret_data_uses_total_cryptographic_length),
         test_evidence: &[RuleTestEvidence {
@@ -4595,6 +4755,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-006-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: Some(derive_key_specifies_explicit_source_identifiers),
         test_evidence: &[RuleTestEvidence {
@@ -4606,6 +4767,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-11.56-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-11.56-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: Some(client_request_tags_use_kmip_prefixes),
         test_evidence: &[RuleTestEvidence {
@@ -4617,6 +4779,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-11-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-11-001",
+        source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: Some(client_request_tags_are_allocated),
         test_evidence: &[
@@ -4640,6 +4803,8 @@ pub struct ProfileValidationError {
     profile_id: Option<String>,
     requirement_id: Option<String>,
     source_clause_id: Option<&'static str>,
+    source_gap_id: Option<&'static str>,
+    source_gap_locator: Option<&'static str>,
 }
 
 impl ProfileValidationError {
@@ -4649,6 +4814,8 @@ impl ProfileValidationError {
             profile_id: None,
             requirement_id: None,
             source_clause_id: None,
+            source_gap_id: None,
+            source_gap_locator: None,
         }
     }
 
@@ -4671,6 +4838,8 @@ impl ProfileValidationError {
             profile_id: Some(profile_id.to_owned()),
             requirement_id: None,
             source_clause_id: None,
+            source_gap_id: None,
+            source_gap_locator: None,
         }
     }
 
@@ -4685,7 +4854,34 @@ impl ProfileValidationError {
             profile_id: Some(profile_id.to_owned()),
             requirement_id: Some(requirement_id.to_owned()),
             source_clause_id,
+            source_gap_id: None,
+            source_gap_locator: None,
         }
+    }
+
+    fn for_rule_requirement(
+        code: ProfileValidationErrorCode,
+        profile_id: &str,
+        requirement_id: &str,
+        source_clause_id: &'static str,
+        source_gap_id: Option<&'static str>,
+    ) -> Self {
+        let (source_clause_id, source_gap_id) = match (source_clause_id, source_gap_id) {
+            (source_clause_id, None) if !source_clause_id.is_empty() => {
+                (Some(source_clause_id), None)
+            }
+            ("", Some(source_gap_id)) => (None, Some(source_gap_id)),
+            _ => (None, None),
+        };
+        let mut error = Self::for_requirement(code, profile_id, requirement_id, source_clause_id);
+        error.source_gap_id = source_gap_id;
+        error.source_gap_locator = source_gap_id.and_then(|gap_id| {
+            CLIENT_REQUIREMENTS
+                .iter()
+                .find(|requirement| requirement.source_gap_id == Some(gap_id))
+                .and_then(|requirement| requirement.source_locator)
+        });
+        error
     }
 
     /// Returns the stable machine-readable failure code.
@@ -4711,6 +4907,18 @@ impl ProfileValidationError {
     pub const fn source_clause_id(&self) -> Option<&'static str> {
         self.source_clause_id
     }
+
+    /// Returns the exact source gap for a normative table-body requirement.
+    #[must_use]
+    pub const fn source_gap_id(&self) -> Option<&'static str> {
+        self.source_gap_id
+    }
+
+    /// Returns the exact catalogued source locator for a normative table-body row.
+    #[must_use]
+    pub const fn source_gap_locator(&self) -> Option<&'static str> {
+        self.source_gap_locator
+    }
 }
 
 impl fmt::Display for ProfileValidationError {
@@ -4728,6 +4936,11 @@ impl fmt::Display for ProfileValidationError {
         }
         if let Some(source_clause_id) = self.source_clause_id {
             write!(formatter, "; source clause {source_clause_id}")?;
+        } else if let Some(source_gap_id) = self.source_gap_id {
+            write!(formatter, "; source gap {source_gap_id}")?;
+            if let Some(source_gap_locator) = self.source_gap_locator {
+                write!(formatter, " at {source_gap_locator}")?;
+            }
         }
         Ok(())
     }
@@ -4922,18 +5135,40 @@ fn validate_mapping(
     mapping: &TypedRuleMapping,
 ) -> Result<(), ProfileValidationError> {
     let error = |code| {
-        ProfileValidationError::for_requirement(
+        let (source_clause_id, source_gap_id) = if let Some(source_gap_id) = requirement
+            .source_gap_id
+            .filter(|_| requirement.source_locator.is_some())
+        {
+            ("", Some(source_gap_id))
+        } else {
+            let source_clause_id = if requirement
+                .source_clause_ids
+                .contains(&mapping.source_clause_id)
+            {
+                mapping.source_clause_id
+            } else {
+                requirement.source_clause_ids.first().copied().unwrap_or("")
+            };
+            (source_clause_id, None)
+        };
+        ProfileValidationError::for_rule_requirement(
             code,
             profile_id,
             requirement.requirement_id,
-            Some(mapping.source_clause_id),
+            source_clause_id,
+            source_gap_id,
         )
     };
-    if !requirement
-        .source_clause_ids
-        .contains(&mapping.source_clause_id)
-        || mapping.verification_category != requirement.verification_category
-    {
+    let source_matches = match (mapping.source_clause_id, mapping.source_gap_id) {
+        (source_clause_id, None) if !source_clause_id.is_empty() => {
+            requirement.source_clause_ids.contains(&source_clause_id)
+        }
+        ("", Some(source_gap_id)) => {
+            requirement.source_gap_id == Some(source_gap_id) && requirement.source_locator.is_some()
+        }
+        _ => false,
+    };
+    if !source_matches || mapping.verification_category != requirement.verification_category {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
     }
     if mapping.constraints.iter().any(|constraint| {

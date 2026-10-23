@@ -35,7 +35,8 @@ _TYPED_RULE_REGISTRY_DECLARATION = re.compile(
 _TYPED_RULE_MAPPING_ENTRY = re.compile(
     r'''\s*TypedRuleMapping\s*\{\s*
     requirement_id:\s*"(?P<requirement_id>KMIPKIT-REQ-[A-Z0-9.-]+)",\s*
-    source_clause_id:\s*"(?P<source_clause_id>KMIPKIT-CLAUSE-[A-Z0-9.-]+)",\s*
+    source_clause_id:\s*"(?P<source_clause_id>KMIPKIT-CLAUSE-[A-Z0-9.-]*|)",\s*
+    source_gap_id:\s*(?:Some\("(?P<source_gap_id>KMIPKIT-SOURCE-GAP-[A-Z0-9.-]+)"\)|None),\s*
     verification_category:\s*GeneratedVerificationCategory::(?P<category>[A-Za-z][A-Za-z0-9_]*),\s*
     evaluator:\s*(?P<evaluator>None|Some\([A-Za-z_][A-Za-z0-9_]*\)),\s*
     test_evidence:\s*&\[(?P<test_evidence>.*?)\],\s*
@@ -304,8 +305,12 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
         fields = match.groupdict()
         requirement_id = fields["requirement_id"]
         category = fields["category"]
+        source_clause_id = fields["source_clause_id"] or None
+        source_gap_id = fields["source_gap_id"]
         if requirement_id in seen_requirement_ids or category not in _VERIFICATION_CATEGORIES:
             raise ValueError("unsupported typed profile rule mapping")
+        if (source_clause_id is None) == (source_gap_id is None):
+            raise ValueError("typed profile rule mapping must name one clause or source gap")
         seen_requirement_ids.add(requirement_id)
 
         evaluator = fields["evaluator"]
@@ -355,7 +360,8 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
         for item in evidence:
             mappings.append({
                 "requirement_id": requirement_id,
-                "source_clause_id": fields["source_clause_id"],
+                "source_clause_id": source_clause_id,
+                "source_gap_id": source_gap_id,
                 "verification_category": category,
                 "evaluator_present": evaluator != "None",
                 "transport_only": transport_only,
@@ -839,7 +845,11 @@ def _clause_section_rows(clauses: list[dict[str, Any]]) -> list[tuple[str, str, 
 
 def _source_reference(record: dict[str, Any]) -> str:
     references = record.get("source_refs") or []
-    return ", ".join(f"{item.get('source_id', '?')} §{item.get('section', '?')}" for item in references)
+    rendered = ", ".join(f"{item.get('source_id', '?')} §{item.get('section', '?')}" for item in references)
+    source_gap_id = record.get("source_gap_id")
+    if isinstance(source_gap_id, str) and source_gap_id:
+        rendered = f"{rendered}; {source_gap_id}" if rendered else source_gap_id
+    return rendered
 
 
 def _typed_rule_coverage(
@@ -862,10 +872,15 @@ def _typed_rule_coverage(
     except ValueError:
         category = "unknown"
 
+    source_gap_id = requirement.get("source_gap_id")
     valid_mappings = [
         mapping
         for mapping in candidates
-        if mapping.get("source_clause_id") in source_clause_ids
+        if (
+            mapping.get("source_clause_id") in source_clause_ids
+            if mapping.get("source_clause_id") is not None
+            else mapping.get("source_gap_id") == source_gap_id and source_gap_id is not None
+        )
         and mapping.get("verification_category") == category
         and (
             mapping.get("evaluator_present") is True

@@ -4728,6 +4728,24 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertNotIn("ProfileRuleMapping", baseline_output)
         self.assertNotIn("ProfileRuleMapping", alternate_target_output)
 
+    def test_source_gap_locator_rejects_missing_or_malformed_catalog_location(self) -> None:
+        from tools.normative_catalog.generate_profiles import _source_gap_locator
+
+        with self.assertRaises(ProfileGenerationError):
+            _source_gap_locator({"source_gap_id": "KMIPKIT-SOURCE-GAP-TEST"})
+
+        with self.assertRaises(ProfileGenerationError):
+            _source_gap_locator(
+                {
+                    "source_gap_id": "KMIPKIT-SOURCE-GAP-TEST",
+                    "source_locator": {
+                        "section": "2.3",
+                        "row_label": "Opaque Data Type",
+                        "html_line_range": [0, 10],
+                    },
+                }
+            )
+
     def test_generated_requirement_metadata_preserves_exact_normative_keywords(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)

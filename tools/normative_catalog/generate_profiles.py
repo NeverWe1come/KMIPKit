@@ -400,6 +400,34 @@ def _rust_optional_string(value: Any) -> str:
     return f"Some({rust_string_literal(value)})"
 
 
+def _source_gap_locator(requirement: Mapping[str, Any]) -> str | None:
+    if requirement.get("source_gap_id") is None:
+        return None
+    locator = requirement.get("source_locator")
+    if not isinstance(locator, Mapping):
+        raise ProfileGenerationError("source-gap requirement lacks a structured source locator")
+    section = locator.get("section")
+    row_label = locator.get("row_label")
+    line_range = locator.get("html_line_range")
+    table = locator.get("table")
+    if (
+        not isinstance(section, str)
+        or not section
+        or not isinstance(row_label, str)
+        or not row_label
+        or not isinstance(line_range, list)
+        or len(line_range) != 2
+        or any(type(line) is not int or line < 1 for line in line_range)
+        or (table is not None and (not isinstance(table, str) or not table))
+    ):
+        raise ProfileGenerationError("source-gap requirement has an invalid source locator")
+    table_reference = f", table {table}" if table is not None else ""
+    return (
+        f"Section {section}{table_reference}, row {row_label}, "
+        f"HTML lines {line_range[0]}-{line_range[1]}"
+    )
+
+
 def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) -> str:
     """Render deterministic immutable client metadata without executable rules."""
     raw_profiles = catalog.get("profiles")
@@ -494,6 +522,8 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
         "    pub source_force: Option<&'static str>,",
         "    /// Stable source-only gap ID for a table-field classification.",
         "    pub source_gap_id: Option<&'static str>,",
+        "    /// Exact catalogued source locator for a table-field classification.",
+        "    pub source_locator: Option<&'static str>,",
         "    /// Category-specific verification obligation derived from the source force.",
         "    pub verification_category: GeneratedVerificationCategory,",
         "    /// Catalogued client applicability state.",
@@ -567,6 +597,7 @@ def render_profiles_source(catalog: Mapping[str, Any], targets: ProfileTargets) 
                 f"        source_keyword: {_rust_optional_string(source_keyword)},",
                 f"        source_force: {_rust_optional_string(source_force)},",
                 f"        source_gap_id: {_rust_optional_string(requirement.get('source_gap_id'))},",
+                f"        source_locator: {_rust_optional_string(_source_gap_locator(requirement))},",
                 (
                     "        verification_category: GeneratedVerificationCategory::"
                     f"{_verification_category(category_source)},"

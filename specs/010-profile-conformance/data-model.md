@@ -96,7 +96,7 @@ The normative catalog's `requirements[].status` (for example, `scoped_verified`)
 
 ## ProfileValidationError
 
-A profile validation error contains a stable error code, profile ID, requirement ID, exact source clause ID, and request delivery state. It contains no free-form source error, arbitrary diagnostic text, secret data, credentials, or raw KMIP body. Implementation references are repository-relative paths validated beneath the canonical checkout root; verification references are stable IDs, not caller-provided paths.
+A profile validation error contains a stable error code, profile ID, requirement ID, one exact source reference, and request delivery state. Clause requirements use their catalogued source clause ID. Normative table-body requirements without a clause ID use their catalogued source-gap ID and exact source locator; the gap must not be represented as a clause. An error never carries both source reference kinds. It contains no free-form source error, arbitrary diagnostic text, secret data, credentials, or raw KMIP body. Implementation references are repository-relative paths validated beneath the canonical checkout root; verification references are stable IDs, not caller-provided paths.
 
 ## CurrentVerificationManifest
 
