@@ -86709,6 +86709,10 @@
         {
           "source_id": "KMIPKIT-SRC-spec",
           "section": "2.4"
+        },
+        {
+          "source_id": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
         }
       ],
       "source_keyword": "SHOULD",
@@ -86723,12 +86727,19 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-protocol/src/profile.rs::import_preserves_pgp_key_versions_and_opaque_bytes",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §2.4 recommends treating the PGP Key Block as an opaque value. The typed Import profile rule and serialization test preserve synthetic PGP key bytes without parsing or interpreting them. The client library is not PGP-aware and does not decompose key material. This is request-model evidence only; it does not claim server acceptance. No requirement-specific official Test Cases ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.4-002-002",

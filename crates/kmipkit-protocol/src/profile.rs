@@ -3549,6 +3549,23 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-2.4-002-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.4-002",
+        verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
+        evaluator: Some(import_preserves_pgp_key_versions_and_opaque_bytes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_pgp_key_versions_and_opaque_key_bytes",
+                kind: RuleTestKind::RecommendedBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-2.7-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.7-001",
         verification_category: GeneratedVerificationCategory::OptionalCapability,
