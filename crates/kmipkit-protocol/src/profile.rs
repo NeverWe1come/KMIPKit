@@ -2275,6 +2275,61 @@ fn client_key_block_direct_field_requires_companion(
     })
 }
 
+fn client_register_algorithm_requires_length_in_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let is_secret_data = matches!(
+                    field_presence(&payload, REGISTER_OBJECT_TYPE),
+                    FieldPresence::Unique(object_type)
+                        if object_type.with_value(|value| matches!(
+                            value,
+                            ValueView::Enumeration(value)
+                                if *value == SECRET_DATA_OBJECT_TYPE
+                        ))
+                );
+                if is_secret_data {
+                    return true;
+                }
+
+                match field_presence(&payload, REGISTER_ATTRIBUTES) {
+                    FieldPresence::Missing => true,
+                    FieldPresence::Duplicate => false,
+                    FieldPresence::Unique(attributes) => {
+                        attributes.with_value(|value| match value {
+                            ValueView::Structure(attributes) => {
+                                match field_presence(&attributes, CRYPTOGRAPHIC_ALGORITHM) {
+                                    FieldPresence::Missing => true,
+                                    FieldPresence::Duplicate => false,
+                                    FieldPresence::Unique(_) => matches!(
+                                        field_presence(&attributes, CRYPTOGRAPHIC_LENGTH),
+                                        FieldPresence::Unique(_)
+                                    ),
+                                }
+                            }
+                            _ => false,
+                        })
+                    }
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn pgp_key_preserves_required_fields(pgp_key: &StructureView<'_>) -> bool {
     let FieldPresence::Unique(version) = field_presence(pgp_key, PGP_KEY_VERSION) else {
         return false;
@@ -3283,6 +3338,31 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_register_algorithm_requires_length_in_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_register_algorithm_without_length_in_attributes",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_attributes_for_algorithm_length_requirement",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

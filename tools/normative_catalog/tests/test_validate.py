@@ -10802,7 +10802,7 @@ class CatalogValidationTests(unittest.TestCase):
                 ("KMIPKIT-REQ-SPEC-6.1.45-002-003", 2),
                 ("KMIPKIT-REQ-SPEC-6.1.45-004", 1),
                 ("KMIPKIT-REQ-SPEC-6.1.45-006-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.45-008", 1),
+                ("KMIPKIT-REQ-SPEC-6.1.45-008", 3),
             },
         )
         for line_range, caption in [

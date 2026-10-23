@@ -6791,6 +6791,7 @@ fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
     }));
 
     let result = table12_profile_result(&[REQUIREMENT_ID]);
+    assert!(!super::client_register_algorithm_requires_length_in_attributes(None, None));
     let algorithm_and_length = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
@@ -6801,6 +6802,38 @@ fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
                 tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
             ],
         ),
+    );
+    assert!(algorithm_and_length.batch_items().all(|batch_item| {
+        batch_item
+            .with_request_payload(|payload| {
+                let Some(attributes) = payload
+                    .children()
+                    .iter()
+                    .find(|field| field.tag().raw() == TABLE12_ATTRIBUTES)
+                else {
+                    return false;
+                };
+                attributes.with_value(|value| match value {
+                    ValueView::Structure(attributes) => {
+                        attributes
+                            .children()
+                            .iter()
+                            .any(|field| field.tag().raw() == TABLE12_CRYPTOGRAPHIC_ALGORITHM)
+                            && attributes
+                                .children()
+                                .iter()
+                                .any(|field| field.tag().raw() == TABLE12_CRYPTOGRAPHIC_LENGTH)
+                    }
+                    _ => false,
+                })
+            })
+            .unwrap_or(false)
+    }));
+    assert!(
+        super::client_register_algorithm_requires_length_in_attributes(
+            Some(&algorithm_and_length),
+            None,
+        )
     );
     result
         .validate_request(&algorithm_and_length)
@@ -6817,6 +6850,26 @@ fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
     result
         .validate_request(&no_algorithm)
         .expect("the conditional Table 293 rule allows Algorithm to be absent");
+
+    let no_attributes = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(
+                TABLE12_OBJECT_TYPE,
+                Value::enumeration(TABLE12_SYMMETRIC_KEY),
+            ),
+            table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
+        ]),
+    );
+    result
+        .validate_request(&no_attributes)
+        .expect("omitting Register Attributes also omits the conditional Algorithm");
+
+    let unrelated_operation =
+        request_message_with_operation_payload(TABLE12_GET_OPERATION, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Register Attribute rule does not constrain Get");
 }
 
 #[test]
@@ -6839,12 +6892,79 @@ fn profile_rejects_client_register_algorithm_without_length_in_attributes() {
     let error = table12_profile_result(&[REQUIREMENT_ID])
         .validate_request(&algorithm_without_length)
         .expect_err("a Register Algorithm requires Cryptographic Length");
+    assert!(
+        !super::client_register_algorithm_requires_length_in_attributes(
+            Some(&algorithm_without_length),
+            None,
+        )
+    );
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+}
+
+#[test]
+fn profile_rejects_malformed_register_attributes_for_algorithm_length_requirement() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 requires readable Register
+    // Attributes to evaluate the conditional Cryptographic Algorithm pair.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
+    let result = table12_profile_result(&[REQUIREMENT_ID]);
+    let object = || table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None);
+    let assert_rejected = |payload: Structure| {
+        let request = request_message_with_operation_payload(TABLE12_REGISTER_OPERATION, payload);
+        let error = result
+            .validate_request(&request)
+            .expect_err("ambiguous Register Attributes fail closed");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+        assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+    };
+
+    let algorithm = || tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3));
+    let length = || tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256));
+
+    assert_rejected(structure([
+        tagged(
+            TABLE12_OBJECT_TYPE,
+            Value::enumeration(TABLE12_SYMMETRIC_KEY),
+        ),
+        tagged(TABLE12_ATTRIBUTES, Value::integer(1)),
+        object(),
+    ]));
+
+    assert_rejected(structure([
+        tagged(
+            TABLE12_OBJECT_TYPE,
+            Value::enumeration(TABLE12_SYMMETRIC_KEY),
+        ),
+        tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure([algorithm(), length()])),
+        ),
+        tagged(
+            TABLE12_ATTRIBUTES,
+            Value::structure(structure([algorithm(), length()])),
+        ),
+        object(),
+    ]));
+
+    assert_rejected(table12_request_payload(
+        TABLE12_REGISTER_OPERATION,
+        object(),
+        [algorithm(), algorithm(), length()],
+    ));
+    assert_rejected(table12_request_payload(
+        TABLE12_REGISTER_OPERATION,
+        object(),
+        [algorithm(), length(), length()],
+    ));
 }
 
 #[test]

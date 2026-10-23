@@ -95547,10 +95547,10 @@
       "source_keyword": "SHALL",
       "normative_strength": "mandatory",
       "subject": "Cryptographic Algorithm/Length",
-      "summary": "If Cryptographic Algorithm is present, also include Cryptographic Length.",
+      "summary": "For Register, if Cryptographic Algorithm is present in Attributes, also include Cryptographic Length; this requirement does not apply to Secret Data.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "When Algorithm is present.",
+      "condition": "When a Register request has Cryptographic Algorithm in Attributes and the Object Type is not Secret Data.",
       "scope_state": "client_1_0",
       "element_ids": [
         "KMIPKIT-ELEM-OP-C2S-REGISTER"
@@ -95560,9 +95560,14 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/register.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_register_algorithm_without_length_in_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_attributes_for_algorithm_length_requirement",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
@@ -95570,7 +95575,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.43 Table 293 is mapped only for the direct Register Attributes pair and its explicit Secret Data exception; direct Key Block fields remain under the separate §3.1 Table 12 mappings. Profile evidence checks caller request representation and fails closed on ambiguous Attribute structures. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.43-010-001",
@@ -96066,7 +96071,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.45 Table 300 requires Certificate Request Type when Certificate Request Value is present and defines the field as an Enumeration. The Baseline Client typed RequiredBehavior mapping enforces that condition for each Re-certify Batch Item without inspecting the opaque request bytes. Linked profile tests cover present, omitted, malformed, and mixed-batch cases; existing protocol and fake-transport tests cover request encoding and execution. These are derived local tests. No official Test Case is linked to this requirement, and no formal conformance is claimed."
+      "review_note": "The pinned OASIS KMIP Specification v2.1 §6.1.45 Table 300 requires Certificate Request Type when Certificate Request Value is present and defines the field as an Enumeration. The Baseline Client typed RequiredBehavior mapping enforces that condition for each Re-certify Batch Item without inspecting the opaque request bytes. Linked profile tests cover present, omitted, malformed, and mixed-batch cases; existing protocol and fake-transport tests cover request encoding and execution. These are derived local tests. No official Test Case is linked to this requirement, and no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-001",
