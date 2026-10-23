@@ -294,6 +294,35 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         feature = generate._feature_directory(ROOT, "KMIPKIT-0036")
         self.assertEqual(feature.name, "022-object-lifecycle")
 
+    def test_merged_spec_pr_approval_evidence_resolves_stale_owner_status(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owner = root / "specs" / "018-managed-object-lifecycle" / "spec.md"
+            owner.parent.mkdir(parents=True)
+            owner.write_text(
+                "# Lifecycle\n\n**Status**: Draft for independent human review\n",
+                encoding="utf-8",
+            )
+            evidence = (
+                root
+                / "specs"
+                / "043-public-api-bindings"
+                / "implementation-evidence.md"
+            )
+            evidence.parent.mkdir(parents=True)
+            evidence.write_text(
+                "- **Merged owner approval evidence**: `KMIPKIT-0018` is approved "
+                "for implementation by specification PR #65, MERGED into "
+                "`release/1.0.0` on `2026-10-09`; the PR body gates implementation "
+                "on approval and merge. The checked-in owner status remains "
+                "`Status: Draft for independent human review`.\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                "approved", generate._operation_owner_state(root, "KMIPKIT-0018")
+            )
+
     def test_pkcs11_dependency_matrix_preserves_implementation_only_approval(self) -> None:
         matrix_path = (
             ROOT
