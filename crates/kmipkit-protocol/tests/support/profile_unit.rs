@@ -1382,6 +1382,49 @@ fn profile_maps_client_optional_derive_key_secret_data_total_length() {
 }
 
 #[test]
+fn profile_maps_required_ttlv_text_and_byte_string_padding() {
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-10.1.5-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-10.1.5-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("TTLV Text String and Byte String padding has a typed profile mapping");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    assert!(mapping.evaluator.is_none());
+    assert_eq!(mapping.constraints, &CONSTRAINTS_TTLV);
+    assert_eq!(
+        mapping.test_evidence,
+        &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_text_string_golden_vector_with_minimum_following_padding",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_byte_string_golden_vector_with_minimum_following_padding",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ]
+    );
+
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the selected-profile padding requirement is generated");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required TTLV padding behavior has linked executable evidence");
+}
+
+#[test]
 fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
     // KMIP Specification v2.1 §11.56: defined tags start with 0x42 and
     // extension tags start with 0x54. Applicability is mapped by DEC-018.
