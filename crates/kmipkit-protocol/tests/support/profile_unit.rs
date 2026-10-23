@@ -6907,6 +6907,81 @@ fn profile_rejects_client_register_algorithm_without_length_in_attributes() {
 }
 
 #[test]
+fn profile_counts_register_length_encapsulated_in_key_block_for_algorithm_pairing() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 permits the Length information
+    // to be encapsulated in the Key Block; §3.2, Table 13 permits associated
+    // Attributes in a structured Key Value.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+
+    let result = table12_profile_result(&[REQUIREMENT_ID]);
+    let algorithm = tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3));
+    let length_in_key_value_attributes = table12_key_block_object(
+        TABLE12_SYMMETRIC_KEY,
+        false,
+        false,
+        Some(tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256))),
+    );
+    let request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            length_in_key_value_attributes,
+            [algorithm],
+        ),
+    );
+
+    result
+        .validate_request(&request)
+        .expect("the paired Length may be structurally visible in Key Value Attributes");
+
+    let length_in_key_block = table12_key_block_object(
+        TABLE12_SYMMETRIC_KEY,
+        false,
+        true,
+        None,
+    );
+    let request = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            length_in_key_block,
+            [tagged(
+                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(3),
+            )],
+        ),
+    );
+
+    result
+        .validate_request(&request)
+        .expect("the paired Length may be structurally visible in the Key Block");
+}
+
+#[test]
+fn profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opaque() {
+    // KMIP Specification v2.1 §2.3 makes Opaque's managed-crypto status depend
+    // on local client context, which is not encoded in the §6.1.43 Table 291
+    // request. A wire-only evaluator cannot infer that context.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+
+    let opaque_with_algorithm_only = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_opaque_object(),
+            [tagged(
+                TABLE12_CRYPTOGRAPHIC_ALGORITHM,
+                Value::enumeration(3),
+            )],
+        ),
+    );
+
+    table12_profile_result(&[REQUIREMENT_ID])
+        .validate_request(&opaque_with_algorithm_only)
+        .expect("wire-only validation leaves context-dependent Opaque applicability neutral");
+}
+
+#[test]
 fn profile_rejects_malformed_register_attributes_for_algorithm_length_requirement() {
     // KMIP Specification v2.1 §6.1.43 Table 293 requires readable Register
     // Attributes to evaluate the conditional Cryptographic Algorithm pair.
