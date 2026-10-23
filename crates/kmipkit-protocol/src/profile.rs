@@ -3479,7 +3479,7 @@ fn client_mask_values_use_ttlv_integer_encoding(
     };
 
     let request_is_valid = request.with_ttlv(|message| mask_values_are_ttlv_integers(&message));
-    let response_is_valid = response.map_or(true, |(_, response)| {
+    let response_is_valid = response.is_none_or(|(_, response)| {
         response.with_ttlv(|message| mask_values_are_ttlv_integers(&message))
     });
 
@@ -3488,12 +3488,8 @@ fn client_mask_values_use_ttlv_integer_encoding(
 
 fn mask_values_are_ttlv_integers(structure: &StructureView<'_>) -> bool {
     structure.children().iter().all(|item| {
-        let is_mask = matches!(
-            item.tag().raw(),
-            CRYPTOGRAPHIC_USAGE_MASK | STORAGE_STATUS_MASK | PROTECTION_STORAGE_MASK
-        );
         item.with_value(|value| {
-            if is_mask {
+            if is_ttlv_bit_mask_tag(item.tag().raw()) {
                 matches!(value, ValueView::Integer(_))
             } else {
                 match value {
@@ -3503,6 +3499,13 @@ fn mask_values_are_ttlv_integers(structure: &StructureView<'_>) -> bool {
             }
         })
     })
+}
+
+fn is_ttlv_bit_mask_tag(tag: u32) -> bool {
+    matches!(
+        tag,
+        CRYPTOGRAPHIC_USAGE_MASK | STORAGE_STATUS_MASK | PROTECTION_STORAGE_MASK
+    )
 }
 
 fn client_request_tags_are_allocated(
