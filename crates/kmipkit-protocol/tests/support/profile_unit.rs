@@ -1433,6 +1433,82 @@ fn profile_maps_required_ttlv_text_and_byte_string_padding() {
 }
 
 #[test]
+fn profile_maps_required_ttlv_structure_order_and_numeric_padding() {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let expected_mappings: &[(&str, &str, &[&str])] = &[
+        (
+            "KMIPKIT-REQ-SPEC-10.1.2-001",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+            &[
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
+            ],
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+            &[
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
+            ],
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+            &[
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+            ],
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+            "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+            &[
+                "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
+            ],
+        ),
+    ];
+
+    for (requirement_id, source_clause_id, expected_test_ids) in expected_mappings {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == *requirement_id)
+            .unwrap_or_else(|| panic!("{requirement_id} has a typed profile mapping"));
+        assert_eq!(mapping.source_clause_id, *source_clause_id);
+        assert_eq!(
+            mapping.verification_category,
+            GeneratedVerificationCategory::RequiredBehavior
+        );
+        assert!(mapping.evaluator.is_none());
+        assert_eq!(mapping.constraints, &CONSTRAINTS_TTLV);
+        assert_eq!(
+            mapping
+                .test_evidence
+                .iter()
+                .map(|evidence| evidence.test_id)
+                .collect::<Vec<_>>(),
+            *expected_test_ids
+        );
+
+        let requirement = CLIENT_REQUIREMENTS
+            .iter()
+            .find(|requirement| requirement.requirement_id == *requirement_id)
+            .unwrap_or_else(|| panic!("{requirement_id} is generated for the client profile"));
+        validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+            .unwrap_or_else(|error| panic!("{requirement_id} maps to encoder evidence: {error}"));
+    }
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: expected_mappings
+            .iter()
+            .map(|(requirement_id, _, _)| (*requirement_id).to_owned())
+            .collect(),
+    };
+    result
+        .validate_request(&request_message())
+        .expect("TTLV encoding constraints do not add request-payload restrictions");
+}
+
+#[test]
 fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
     // KMIP Specification v2.1 §11.56: defined tags start with 0x42 and
     // extension tags start with 0x54. Applicability is mapped by DEC-018.
