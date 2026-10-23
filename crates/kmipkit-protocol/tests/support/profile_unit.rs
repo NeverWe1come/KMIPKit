@@ -8081,6 +8081,62 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
     certify_get_placeholder_profile_result()
         .validate_request(&register_get)
         .expect("other valid placeholder producer and Get batches remain permitted");
+
+    let direct_get = request_message_with_operation_payload(
+        GET_OPERATION,
+        structure([tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("issued-certificate".to_owned()),
+        )]),
+    );
+    let direct_identifier_count = direct_get
+        .batch_items()
+        .next()
+        .expect("the direct Get contains one Batch Item")
+        .with_request_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .filter(|field| field.tag().raw() == UNIQUE_IDENTIFIER_TAG)
+                .count()
+        })
+        .expect("the direct Get has a Request Payload");
+    assert_eq!(direct_identifier_count, 1);
+    assert!(mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator")(
+        Some(&direct_get),
+        None,
+    ));
+    certify_get_placeholder_profile_result()
+        .validate_request(&direct_get)
+        .expect("a direct Get identifier does not consume the batch ID Placeholder");
+
+    let explicit_placeholder_get = request_message_with_batch_operations([
+        (
+            CERTIFY_OPERATION,
+            structure([
+                tagged(CERTIFICATE_REQUEST_TYPE_TAG, Value::enumeration(1)),
+                tagged(
+                    CERTIFICATE_REQUEST_VALUE_TAG,
+                    Value::byte_string(vec![0x30, 0x00]),
+                ),
+            ]),
+        ),
+        (
+            GET_OPERATION,
+            structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::enumeration(1))]),
+        ),
+    ]);
+    assert!(mapping
+        .evaluator
+        .expect("the optional capability has a typed evaluator")(
+        Some(&explicit_placeholder_get),
+        None,
+    ));
+    certify_get_placeholder_profile_result()
+        .validate_request(&explicit_placeholder_get)
+        .expect("an explicit ID Placeholder follows a successful-path Certify item");
 }
 
 #[test]
