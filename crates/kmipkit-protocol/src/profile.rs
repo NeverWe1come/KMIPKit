@@ -796,7 +796,12 @@ const EXPORT_OPERATION: u32 = 0x0000_002B;
 const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const CERTIFICATE_OBJECT_TYPE: u32 = 1;
+const PUBLIC_KEY_OBJECT_TYPE: u32 = 3;
+const PRIVATE_KEY_OBJECT_TYPE: u32 = 4;
+const SPLIT_KEY_OBJECT_TYPE: u32 = 5;
 const OPAQUE_OBJECT_TYPE: u32 = 8;
+const CERTIFICATE_REQUEST_OBJECT_TYPE: u32 = 10;
 const CRYPTOGRAPHIC_USAGE_MASK: u32 = 0x0042_002C;
 const CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
@@ -2275,7 +2280,7 @@ fn client_key_block_direct_field_requires_companion(
     })
 }
 
-fn client_register_algorithm_requires_length_in_attributes(
+fn client_register_algorithm_requires_length(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
@@ -2293,16 +2298,27 @@ fn client_register_algorithm_requires_length_in_attributes(
 
         batch_item
             .with_request_payload(|payload| {
-                let is_secret_data = matches!(
-                    field_presence(&payload, REGISTER_OBJECT_TYPE),
-                    FieldPresence::Unique(object_type)
-                        if object_type.with_value(|value| matches!(
-                            value,
-                            ValueView::Enumeration(value)
-                                if *value == SECRET_DATA_OBJECT_TYPE
-                        ))
-                );
-                if is_secret_data {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, REGISTER_OBJECT_TYPE)
+                else {
+                    return false;
+                };
+                let Some(object_type) = object_type.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Some(*value),
+                    _ => None,
+                }) else {
+                    return false;
+                };
+
+                // KMIP v2.1 §2.3 makes Opaque's managed-cryptographic status
+                // depend on client context, which is not carried in TTLV.
+                // Secret Data is explicitly exempted by §6.1.43, Table 293.
+                // Unknown/vendor object types remain forward-compatible and
+                // are outside the base specification's typed applicability.
+                if object_type == SECRET_DATA_OBJECT_TYPE
+                    || object_type == OPAQUE_OBJECT_TYPE
+                    || !is_known_managed_cryptographic_object_type(object_type)
+                {
                     return true;
                 }
 
@@ -2315,10 +2331,25 @@ fn client_register_algorithm_requires_length_in_attributes(
                                 match field_presence(&attributes, CRYPTOGRAPHIC_ALGORITHM) {
                                     FieldPresence::Missing => true,
                                     FieldPresence::Duplicate => false,
-                                    FieldPresence::Unique(_) => matches!(
-                                        field_presence(&attributes, CRYPTOGRAPHIC_LENGTH),
-                                        FieldPresence::Unique(_)
-                                    ),
+                                    FieldPresence::Unique(algorithm) => {
+                                        if !algorithm.with_value(|value| {
+                                            matches!(value, ValueView::Enumeration(_))
+                                        }) {
+                                            return false;
+                                        }
+
+                                        match field_presence(&attributes, CRYPTOGRAPHIC_LENGTH) {
+                                            FieldPresence::Unique(length) => {
+                                                length.with_value(|value| {
+                                                    matches!(value, ValueView::Integer(_))
+                                                })
+                                            }
+                                            FieldPresence::Duplicate => false,
+                                            FieldPresence::Missing => {
+                                                register_key_block_has_crypto_length(&payload)
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             _ => false,
@@ -2327,6 +2358,87 @@ fn client_register_algorithm_requires_length_in_attributes(
                 }
             })
             .unwrap_or(false)
+    })
+}
+
+fn is_known_managed_cryptographic_object_type(object_type: u32) -> bool {
+    matches!(
+        object_type,
+        CERTIFICATE_OBJECT_TYPE
+            | SYMMETRIC_KEY_OBJECT_TYPE
+            | PUBLIC_KEY_OBJECT_TYPE
+            | PRIVATE_KEY_OBJECT_TYPE
+            | SPLIT_KEY_OBJECT_TYPE
+            | PGP_KEY_OBJECT_TYPE
+            | CERTIFICATE_REQUEST_OBJECT_TYPE
+    )
+}
+
+fn register_key_block_has_crypto_length(payload: &StructureView<'_>) -> bool {
+    for field in payload.children() {
+        if matches!(
+            field.tag().raw(),
+            REGISTER_OBJECT_TYPE | REGISTER_ATTRIBUTES | REGISTER_PROTECTION_STORAGE_MASKS
+        ) {
+            continue;
+        }
+
+        let has_length = field.with_value(|value| {
+            let ValueView::Structure(object) = value else {
+                return None;
+            };
+            match field_presence(&object, KEY_BLOCK) {
+                FieldPresence::Missing => None,
+                FieldPresence::Duplicate => Some(false),
+                FieldPresence::Unique(key_block) => Some(key_block.with_value(|value| {
+                    let ValueView::Structure(key_block) = value else {
+                        return false;
+                    };
+                    match field_presence(&key_block, CRYPTOGRAPHIC_LENGTH) {
+                        FieldPresence::Unique(length) => {
+                            length.with_value(|value| matches!(value, ValueView::Integer(_)))
+                        }
+                        FieldPresence::Duplicate => false,
+                        FieldPresence::Missing => {
+                            register_key_value_attributes_have_crypto_length(&key_block)
+                        }
+                    }
+                })),
+            }
+        });
+
+        if let Some(has_length) = has_length {
+            return has_length;
+        }
+    }
+
+    false
+}
+
+fn register_key_value_attributes_have_crypto_length(key_block: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(key_value) = field_presence(key_block, KEY_VALUE) else {
+        return false;
+    };
+    key_value.with_value(|value| {
+        let ValueView::Structure(key_value) = value else {
+            // Wrapped Key Value bytes are opaque to this structural evaluator.
+            return false;
+        };
+        let FieldPresence::Unique(attributes) = field_presence(&key_value, REGISTER_ATTRIBUTES)
+        else {
+            return false;
+        };
+        attributes.with_value(|value| match value {
+            ValueView::Structure(attributes) => {
+                let FieldPresence::Unique(length) =
+                    field_presence(&attributes, CRYPTOGRAPHIC_LENGTH)
+                else {
+                    return false;
+                };
+                length.with_value(|value| matches!(value, ValueView::Integer(_)))
+            }
+            _ => false,
+        })
     })
 }
 
@@ -3344,19 +3456,19 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-009-002",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
-        evaluator: Some(client_register_algorithm_requires_length_in_attributes),
+        evaluator: Some(client_register_algorithm_requires_length),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes",
                 kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_register_algorithm_without_length_in_attributes",
-                kind: RuleTestKind::NegativeBehavior,
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_counts_register_length_encapsulated_in_key_block_for_algorithm_pairing",
+                kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
-                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_attributes_for_algorithm_length_requirement",
-                kind: RuleTestKind::NegativeBehavior,
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opaque",
+                kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",

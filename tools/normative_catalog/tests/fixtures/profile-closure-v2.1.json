@@ -24266,8 +24266,8 @@
       "role": "client",
       "scope_state": "client_1_0",
       "applies_to": "all_client_profiles",
-      "review_note": "Specification v2.1 section 6.1.45; client obligation mapped from source obligation 1.",
-      "source_obligation_order": 1,
+      "review_note": "Specification v2.1 section 6.1.45; Certificate Request Type maps to source obligation 3.",
+      "source_obligation_order": 3,
       "source_actor": "client"
     },
     {

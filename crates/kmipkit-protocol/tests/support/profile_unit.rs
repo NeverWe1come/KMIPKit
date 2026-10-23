@@ -6315,6 +6315,7 @@ const TABLE12_KEY_MATERIAL: u32 = 0x0042_0043;
 const TABLE12_CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const TABLE12_CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
 const TABLE12_SYMMETRIC_KEY: u32 = 0x0042_008F;
+const TABLE12_SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const TABLE12_SECRET_DATA: u32 = 0x0042_0085;
 const TABLE12_SECRET_DATA_TYPE: u32 = 0x0042_0086;
 const TABLE12_OPAQUE_OBJECT: u32 = 0x0042_005B;
@@ -6392,7 +6393,7 @@ fn table12_request_payload(
     outer_attributes: impl IntoIterator<Item = Item>,
 ) -> Structure {
     let object_type = match object.tag().raw() {
-        TABLE12_SYMMETRIC_KEY => 2,
+        TABLE12_SYMMETRIC_KEY => TABLE12_SYMMETRIC_KEY_OBJECT_TYPE,
         TABLE12_SECRET_DATA => 7,
         TABLE12_OPAQUE_OBJECT => 8,
         TABLE12_PGP_KEY => 9,
@@ -6769,9 +6770,9 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 
 #[test]
 fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
-    // KMIP Specification v2.1 §6.1.43 Table 293 links Cryptographic Algorithm
-    // in Register Attributes to Cryptographic Length. §3.1 Table 12 separately
-    // governs direct Key Block fields.
+    // KMIP Specification v2.1 §6.1.43 Table 293 links the Register Algorithm
+    // to Length information available in Register Attributes or Key Block.
+    // §3.1 Table 12 separately governs direct Key Block member pairing.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes";
@@ -6791,7 +6792,9 @@ fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
     }));
 
     let result = table12_profile_result(&[REQUIREMENT_ID]);
-    assert!(!super::client_register_algorithm_requires_length_in_attributes(None, None));
+    assert!(!super::client_register_algorithm_requires_length(
+        None, None
+    ));
     let algorithm_and_length = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
@@ -6829,12 +6832,10 @@ fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
             })
             .unwrap_or(false)
     }));
-    assert!(
-        super::client_register_algorithm_requires_length_in_attributes(
-            Some(&algorithm_and_length),
-            None,
-        )
-    );
+    assert!(super::client_register_algorithm_requires_length(
+        Some(&algorithm_and_length),
+        None,
+    ));
     result
         .validate_request(&algorithm_and_length)
         .expect("Register Attributes may provide Algorithm and Length together");
@@ -6856,7 +6857,7 @@ fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
         structure([
             tagged(
                 TABLE12_OBJECT_TYPE,
-                Value::enumeration(TABLE12_SYMMETRIC_KEY),
+                Value::enumeration(TABLE12_SYMMETRIC_KEY_OBJECT_TYPE),
             ),
             table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None),
         ]),
@@ -6892,12 +6893,10 @@ fn profile_rejects_client_register_algorithm_without_length_in_attributes() {
     let error = table12_profile_result(&[REQUIREMENT_ID])
         .validate_request(&algorithm_without_length)
         .expect_err("a Register Algorithm requires Cryptographic Length");
-    assert!(
-        !super::client_register_algorithm_requires_length_in_attributes(
-            Some(&algorithm_without_length),
-            None,
-        )
-    );
+    assert!(!super::client_register_algorithm_requires_length(
+        Some(&algorithm_without_length),
+        None,
+    ));
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
@@ -6934,12 +6933,7 @@ fn profile_counts_register_length_encapsulated_in_key_block_for_algorithm_pairin
         .validate_request(&request)
         .expect("the paired Length may be structurally visible in Key Value Attributes");
 
-    let length_in_key_block = table12_key_block_object(
-        TABLE12_SYMMETRIC_KEY,
-        false,
-        true,
-        None,
-    );
+    let length_in_key_block = table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, true, None);
     let request = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
@@ -7008,7 +7002,7 @@ fn profile_rejects_malformed_register_attributes_for_algorithm_length_requiremen
     assert_rejected(structure([
         tagged(
             TABLE12_OBJECT_TYPE,
-            Value::enumeration(TABLE12_SYMMETRIC_KEY),
+            Value::enumeration(TABLE12_SYMMETRIC_KEY_OBJECT_TYPE),
         ),
         tagged(TABLE12_ATTRIBUTES, Value::integer(1)),
         object(),
@@ -7017,7 +7011,7 @@ fn profile_rejects_malformed_register_attributes_for_algorithm_length_requiremen
     assert_rejected(structure([
         tagged(
             TABLE12_OBJECT_TYPE,
-            Value::enumeration(TABLE12_SYMMETRIC_KEY),
+            Value::enumeration(TABLE12_SYMMETRIC_KEY_OBJECT_TYPE),
         ),
         tagged(
             TABLE12_ATTRIBUTES,
