@@ -2159,6 +2159,30 @@ fn import_preserves_wrapped_secret_data_shape(
     })
 }
 
+fn client_key_wrapping_data_has_required_key_information(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if !matches!(operation, REGISTER_OPERATION | IMPORT_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                key_wrapping_data_has_required_key_information(&payload)
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn import_preserves_pgp_key_form_and_opaque_bytes(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -3288,6 +3312,26 @@ fn key_wrapping_data_has_key_information(data: &StructureView<'_>) -> bool {
     has_key_information
 }
 
+fn key_wrapping_data_has_required_key_information(structure: &StructureView<'_>) -> bool {
+    structure.children().iter().all(|field| {
+        let wrapping_data_is_valid = if field.tag().raw() == KEY_WRAPPING_DATA {
+            field.with_value(|value| match value {
+                ValueView::Structure(data) => key_wrapping_data_has_key_information(&data),
+                _ => false,
+            })
+        } else {
+            true
+        };
+        wrapping_data_is_valid
+            && field.with_value(|value| match value {
+                ValueView::Structure(nested) => {
+                    key_wrapping_data_has_required_key_information(&nested)
+                }
+                _ => true,
+            })
+    })
+}
+
 fn key_wrapping_data_has_valid_encoding_option(data: &StructureView<'_>) -> bool {
     match field_presence(data, ENCODING_OPTION) {
         FieldPresence::Missing => {}
@@ -3580,6 +3624,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-3.3-004",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-3.3-004",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_key_wrapping_data_has_required_key_information),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {

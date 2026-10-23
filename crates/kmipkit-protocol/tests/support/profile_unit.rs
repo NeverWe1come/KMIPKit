@@ -9,7 +9,9 @@ use super::{
     client_add_attribute_random_number_generator_is_well_formed,
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_get_or_export_key_compression_type_is_enumeration,
-    client_key_value_present_is_not_modified, client_opaque_object_context_custom_attributes,
+    client_key_value_present_is_not_modified,
+    client_key_wrapping_data_has_required_key_information,
+    client_opaque_object_context_custom_attributes,
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
     client_register_random_number_generator_is_well_formed,
@@ -5985,6 +5987,9 @@ fn typed_rule_evaluators_fail_closed_without_a_request() {
     assert!(!import_preserves_wrapped_secret_data_shape(None, None));
     assert!(!client_create_key_pair_domain_parameters_have_valid_wire_types(None, None));
     assert!(!client_register_key_value_location_requires_omitted_key_value(None, None));
+    assert!(!client_key_wrapping_data_has_required_key_information(
+        None, None
+    ));
 }
 
 #[test]
@@ -6092,6 +6097,12 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
             None,
         ))
         .expect("the conditional key-information requirement does not require wrapping");
+    result
+        .validate_request(&request_message_with_operation_payload(
+            0x0000_0008,
+            Structure::new(),
+        ))
+        .expect("the key-wrapping requirement does not constrain unrelated operations");
 
     let malformed_import = secret_data_import_request(
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
@@ -6103,6 +6114,23 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
     let error = result
         .validate_request(&malformed_import)
         .expect_err("wrapped Secret Data requires Encryption or MAC/Signature Key Information");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
+    );
+
+    let wrong_type_import = secret_data_import_request(
+        Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
+        Some(Value::integer(1)),
+    );
+    let error = result
+        .validate_request(&wrong_type_import)
+        .expect_err("Key Wrapping Data must remain a Structure");
     assert_eq!(
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected

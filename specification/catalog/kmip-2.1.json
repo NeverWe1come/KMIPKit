@@ -87823,12 +87823,18 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs::client_key_wrapping_data_has_required_key_information",
+        "crates/kmipkit-protocol/src/profile.rs::key_wrapping_data_has_required_key_information",
+        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_key_information_when_wrapping_data_is_supplied"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "Pinned KMIP Specification v2.1 §3.3/Table 14 requires Encryption Key Information, MAC/Signature Key Information, or both when Key Wrapping Data is supplied. The profile evaluator checks outbound Register and Import request structures and preserves the conditional path where no wrapping data is supplied. Tests cover valid wrapped Register and Import requests and reject each operation when key information is absent. This is request-validation evidence only; KMIPKit does not perform wrapping or claim server acceptance. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources; no formal profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.3-005",
