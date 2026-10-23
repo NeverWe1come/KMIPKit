@@ -96037,29 +96037,36 @@
       "source_keyword": "REQUIRED",
       "normative_strength": "mandatory",
       "subject": "Certificate Request Type",
-      "summary": "Certificate Request Type is required when Certificate Request is present.",
+      "summary": "Certificate Request Type is required when Certificate Request Value is present.",
       "role": "client",
       "direction": "client_to_server",
-      "condition": "When Certificate Request is present.",
+      "condition": "When Certificate Request Value is present.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+        "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-VALUE"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/recertify.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_request_type_with_request_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_recertify_request_value_without_request_type_in_any_batch_item",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_recertify_request_type_when_request_value_is_present",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_recertify_request_without_certificate_request_fields",
+        "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_requires_type_when_certificate_request_value_is_present",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.45 Table 300 requires Certificate Request Type when Certificate Request Value is present and defines the field as an Enumeration. The Baseline Client typed RequiredBehavior mapping enforces that condition for each Re-certify Batch Item without inspecting the opaque request bytes. Linked profile tests cover present, omitted, malformed, and mixed-batch cases; existing protocol and fake-transport tests cover request encoding and execution. These are derived local tests. No official Test Case is linked to this requirement, and no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.46-001",
