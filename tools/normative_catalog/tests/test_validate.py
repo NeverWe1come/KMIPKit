@@ -16551,10 +16551,15 @@ class CatalogValidationTests(unittest.TestCase):
             }.issubset(requirement["element_ids"])
         )
         self.assertIn("crates/kmipkit-client/src/execute.rs", requirement["implementation_refs"])
+        self.assertIn(
+            "crates/kmipkit-protocol/src/credential/attestation.rs",
+            requirement["implementation_refs"],
+        )
         self.assertTrue(
             {
                 "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
                 "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::async_follow_up_request_advertises_attestation_capability",
+                "crates/kmipkit-protocol/tests/credential_public_api.rs::standalone_attestation_hashed_password_and_nonce_views_are_lossless",
             }.issubset(requirement["verification_refs"])
         )
 
