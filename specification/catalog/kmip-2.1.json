@@ -95666,7 +95666,10 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_applies_register_algorithm_length_rule_to_standard_object_types",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_allows_algorithm_and_length_embedded_in_key_value",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_rejects_algorithm_and_length_split_between_register_and_key_value_attributes",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_rejects_one_sided_outer_algorithm_length_before_transport",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_one_sided_outer_algorithm_length_before_transport",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_one_sided_outer_algorithm_length_before_transport"
