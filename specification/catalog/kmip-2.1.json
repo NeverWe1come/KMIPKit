@@ -51092,12 +51092,22 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-UNIQUE-IDENTIFIER"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.6-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability"
+      ],
       "wire_value": "00000001",
       "allocation": "assigned"
     },
@@ -53437,7 +53447,9 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-MESSAGE"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.6-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [
         "KMIPKIT-TEST-PROF-5-12-6-2",
@@ -53445,16 +53457,22 @@
       ],
       "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/message/mod.rs",
-        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/mod.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-protocol/tests/message_contract.rs",
-        "crates/kmipkit-protocol/tests/message_accessors.rs"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability"
       ],
       "source_encoding": "Structure, MAY be repeated",
       "source_requiredness": "Yes"
@@ -53753,22 +53771,29 @@
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER"
       ],
       "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.6-003",
         "KMIPKIT-REQ-SPEC-9.8-001-001"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0006",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/message/mod.rs",
-        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/message/batch.rs",
+        "crates/kmipkit-protocol/src/message/header.rs",
+        "crates/kmipkit-protocol/src/message/mod.rs",
         "crates/kmipkit-protocol/src/message/validation.rs",
         "crates/kmipkit-protocol/src/message/version.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/result.rs"
       ],
       "verification_refs": [
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
+        "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-protocol/tests/message_contract.rs",
-        "crates/kmipkit-protocol/tests/message_accessors.rs"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability"
       ],
       "source_requiredness": "No",
       "source_comment": "If omitted, then True is assumed"
@@ -57004,30 +57029,34 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/certify.rs",
         "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/certify.rs",
         "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/certify_execution_tests.rs",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_request_object_as_optional_capability",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_request_identifier_as_required_behavior",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_at_most_one_certify_certificate_request_value_per_batch_item",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_request_value_without_unique_identifier",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_type_as_required_behavior",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_certificate_type_in_attributes",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_certificate_type_when_attribute_missing",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certificate_type_attribute_when_request_fields_are_omitted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_fields_without_certificate_type_attribute",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_request_type_when_request_value_is_present_as_required_behavior",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certificate_request_type_with_request_value",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_certify_request_value_without_unique_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_certificate_type_in_attributes",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_valid_certify_omission_without_request_type",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_request_type_when_request_value_is_present_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_request_object_as_optional_capability",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_certificate_type_as_required_behavior",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_omitted_certify_request_identifier_as_required_behavior",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_certificate_request_value_without_request_type",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_certify_certificate_request_values_per_batch_item",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certificate_request_type_when_request_value_is_present",
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_valid_certify_omission_without_request_type"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certificate_type_attribute_when_request_fields_are_omitted",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_certificate_type_when_attribute_missing",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_omitted_certify_request_value_without_unique_identifier",
+        "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs"
       ],
       "payload_tables": [
         {
@@ -57736,7 +57765,8 @@
       "parent_element_ids": [],
       "requirement_ids": [
         "KMIPKIT-REQ-SPEC-6.1.19-001",
-        "KMIPKIT-REQ-SPEC-6.1.19-002"
+        "KMIPKIT-REQ-SPEC-6.1.19-002",
+        "KMIPKIT-REQ-SPEC-6.1.6-003"
       ],
       "profile_ids": [
         "KMIPKIT-PROFILE-AES-XTS-CLIENT",
@@ -57781,8 +57811,17 @@
         "KMIPKIT-TEST-PROF-5-12-6-3"
       ],
       "feature_spec": "KMIPKIT-0017",
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability"
+      ],
       "payload_tables": [
         {
           "role": "request",
@@ -72156,23 +72195,29 @@
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-TAG"
       ],
-      "requirement_ids": [],
+      "requirement_ids": [
+        "KMIPKIT-REQ-SPEC-6.1.6-003"
+      ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0004",
       "implementation_refs": [
-        "crates/kmipkit-ttlv/src/tag.rs",
-        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/get_usage_allocation.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-protocol/src/validate.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-ttlv/src/generated/tag_allocations.rs",
+        "crates/kmipkit-ttlv/src/tag.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
-        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted",
-        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
         "crates/kmipkit-client/tests/unit/usage_allocation_guard_tests.rs",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs::every_transport_delivery_state_is_preserved_without_retry",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs::validate_sends_chain_and_date_and_returns_open_indicator",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability",
+        "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_001_models_one_chain_and_rejects_malformed_certificate_wrapper",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_002_001_certificate_identifier_and_mixed_inputs_are_available",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_002_002_optional_validity_date_preserves_exact_value",
@@ -72181,8 +72226,9 @@
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::req_006_omitted_date_remains_absent_in_request_serialization",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::table_341_requires_one_open_indicator_and_retains_unknown_fields",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::table_342_failure_and_pending_preserve_results_without_indicator",
-        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs::validate_sends_chain_and_date_and_returns_open_indicator",
-        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs::every_transport_delivery_state_is_preserved_without_retry"
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_allocation_range_boundary_and_adjacent_value_matches_catalog",
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_exact_catalog_record_matches_public_allocation_check",
+        "crates/kmipkit-ttlv/tests/tag_allocation.rs::every_extension_range_tag_is_accepted"
       ]
     },
     {
@@ -97133,28 +97179,38 @@
       "source_keyword": "MAY",
       "normative_strength": "permission_or_optional",
       "subject": "generated certificate",
-      "summary": "A client may retrieve the generated certificate with Get in the same batch using the ID Placeholder.",
+      "summary": "A client may retrieve the generated Certificate with a subsequent Get in the same batch using the ID Placeholder.",
       "role": "client",
       "direction": "client_to_server",
       "condition": "When retrieving the certificate in the same batch.",
       "scope_state": "client_1_0",
       "element_ids": [
-        "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+        "KMIPKIT-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+        "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+        "KMIPKIT-ELEM-OP-C2S-GET",
+        "KMIPKIT-ELEM-TAG-420094"
       ],
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
+        "crates/kmipkit-client/src/execute.rs",
         "crates/kmipkit-protocol/src/certify.rs",
-        "crates/kmipkit-client/src/execute.rs"
+        "crates/kmipkit-protocol/src/get.rs",
+        "crates/kmipkit-protocol/src/profile.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch"
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capability"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Caller-facing behavior links to table-derived protocol and fake-transport tests in specs/022-object-lifecycle/traceability.md. No official Test Cases are linked to this requirement in the pinned OASIS source; no formal conformance is claimed."
+      "review_note": "Profile and fake-transport tests verify the client-side request representation and placeholder eligibility only. They do not assert Certify success, server-side placeholder storage or consumption, or Get response content. No official OASIS Test Cases are linked to this requirement; no formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.6-007",
@@ -98570,7 +98626,7 @@
       "status": "verified",
       "review_note": "KMIP Specification v2.1 §8.1 Table 394 marks Request Batch Item as a required Structure that MAY be repeated. This mapping covers the client optional repetition capability; the in-memory Request Message model enforces at least one item and preserves multiple Batch Items in order, while multi-item IDs remain governed by §8.3. KMIPKIT-0006 owns the in-memory client protocol model for this clause; outbound execution behavior remains assigned to its follow-on owner where specified. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
-        {
+    {
       "requirement_id": "KMIPKIT-REQ-SPEC-8.2-002",
       "source_clause_ids": [
         "KMIPKIT-CLAUSE-SPEC-8.2-002"
@@ -99938,7 +99994,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 \u00a79.6 states that when Batch Error Continuation Option is not specified, Stop is assumed. The typed request rule checks the effective Batch Error Continuation Option accessor on omission; explicit values remain governed by their separate requirement. The in-memory client protocol model owns this default. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
+      "review_note": "KMIP Specification v2.1 §9.6 states that when Batch Error Continuation Option is not specified, Stop is assumed. The typed request rule checks the effective Batch Error Continuation Option accessor on omission; explicit values remain governed by their separate requirement. The in-memory client protocol model owns this default. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-9.7-001",
