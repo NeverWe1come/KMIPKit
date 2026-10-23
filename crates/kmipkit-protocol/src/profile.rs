@@ -798,6 +798,7 @@ const REGISTER_ATTRIBUTES: u32 = 0x0042_0125;
 const REGISTER_OBJECT_TYPE: u32 = 0x0042_0057;
 const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
 const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
+const RNG_PARAMETERS: u32 = 0x0042_00D9;
 const RNG_ALGORITHM: u32 = 0x0042_00DA;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 const CERTIFICATE_OBJECT_TYPE: u32 = 1;
@@ -2598,6 +2599,12 @@ fn rng_parameters_attribute_is_well_formed(attributes: &StructureView<'_>) -> bo
             let ValueView::Structure(parameters) = value else {
                 return false;
             };
+            if !matches!(
+                field_presence(&parameters, RNG_PARAMETERS),
+                FieldPresence::Missing
+            ) {
+                return false;
+            }
             let FieldPresence::Unique(algorithm) = field_presence(&parameters, RNG_ALGORITHM)
             else {
                 return false;
