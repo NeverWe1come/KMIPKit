@@ -2626,21 +2626,26 @@ fn client_revoke_revocation_message_is_text_when_used(
                 |payload| match field_presence(&payload, REVOCATION_REASON) {
                     FieldPresence::Missing => true,
                     FieldPresence::Duplicate => false,
-                    FieldPresence::Unique(reason) => reason.with_value(|value| {
-                        let ValueView::Structure(reason) = value else {
-                            return false;
-                        };
-                        match field_presence(&reason, REVOCATION_MESSAGE) {
-                            FieldPresence::Missing => true,
-                            FieldPresence::Duplicate => false,
-                            FieldPresence::Unique(message) => message
-                                .with_value(|value| matches!(value, ValueView::TextString(_))),
+                    FieldPresence::Unique(reason) => reason.with_value(|value| match value {
+                        ValueView::Structure(reason) => {
+                            revoke_reason_has_valid_optional_message(&reason)
                         }
+                        _ => false,
                     }),
                 },
             )
             .unwrap_or(false)
     })
+}
+
+fn revoke_reason_has_valid_optional_message(reason: &StructureView<'_>) -> bool {
+    match field_presence(reason, REVOCATION_MESSAGE) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(message) => {
+            message.with_value(|value| matches!(value, ValueView::TextString(_)))
+        }
+    }
 }
 
 fn client_validate_validity_date_is_usable(
