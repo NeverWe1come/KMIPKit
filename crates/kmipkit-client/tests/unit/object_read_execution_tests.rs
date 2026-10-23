@@ -556,13 +556,14 @@ fn get_without_identifier_follows_create_and_keeps_the_batch_order() {
 
 #[test]
 fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
+    // KMIP v2.1 §6.1.28 leaves ID Placeholder empty for multi-match Locate; a single result permits the later Get.
     let attributes = AttributeSet::try_new([
         test_item(ACTIVATION_DATE, Value::date_time(100)),
         test_item(ACTIVATION_DATE, Value::date_time(200)),
     ])
     .expect("the two Activation Date values form an ordered date-range criterion");
     let locate = LocateRequest::new(attributes)
-        .with_maximum_items(9)
+        .with_maximum_items(1)
         .with_offset_items(0)
         .with_storage_status_mask(StorageStatusMask::from_raw(3))
         .with_object_group_member(ObjectGroupMember::from_raw(1));
@@ -572,7 +573,7 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
         (
             LOCATE_OPERATION,
             LOCATE_BATCH_ID.to_vec(),
-            successful_locate_payload(&["server-id-z", "server-id-a", "server-id-z"]),
+            successful_locate_payload(&["server-id-z"]),
         ),
         (
             GET_OPERATION,
@@ -625,11 +626,7 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
             .locate_response()
             .expect("the Locate result remains typed")
             .unique_identifiers(),
-        &[
-            UniqueIdentifier::TextString("server-id-z".to_owned()),
-            UniqueIdentifier::TextString("server-id-a".to_owned()),
-            UniqueIdentifier::TextString("server-id-z".to_owned()),
-        ],
+        &[UniqueIdentifier::TextString("server-id-z".to_owned()),],
         "Locate identifiers preserve server order and repetitions"
     );
     assert_eq!(
@@ -644,11 +641,8 @@ fn locate_batch_preserves_criteria_results_and_server_placeholder_boundary() {
     assert!(outcome_display.contains("LocateCompleted"));
     assert!(outcome_display.contains("status 0"));
     assert!(!response_debug.contains("server-id-z"));
-    assert!(!response_debug.contains("server-id-a"));
     assert!(!outcome_debug.contains("server-id-z"));
-    assert!(!outcome_debug.contains("server-id-a"));
     assert!(!outcome_display.contains("server-id-z"));
-    assert!(!outcome_display.contains("server-id-a"));
     assert!(
         get_result.outcome().get_response().is_some(),
         "the subsequent Get response is exposed without a client-selected identifier"
@@ -916,7 +910,7 @@ fn assert_locate_request_preserves_criteria(request: &RequestItemSnapshot) {
     assert_eq!(request.unique_batch_item_id, LOCATE_BATCH_ID);
     assert_eq!(
         wire_field(&request.payload, MAXIMUM_ITEMS),
-        Some(&WireValue::Integer(9)),
+        Some(&WireValue::Integer(1)),
         "Maximum Items reaches the server unchanged"
     );
     assert_eq!(

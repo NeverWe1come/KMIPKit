@@ -89,6 +89,10 @@ mod import_execution_tests;
 mod key_transfer_operations_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/execute_id_placeholder_tests.rs"]
+mod id_placeholder_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/delegated_login_execution_tests.rs"]
 mod delegated_login_execution_tests;
 

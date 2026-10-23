@@ -8,8 +8,8 @@
 
 use kmipkit_protocol::{
     AttributeSet, CertifyRequest, CreateRequest, CreateSplitKeyRequest, DecryptRequest,
-    EncryptRequest, GetRequest, ObjectType, OperationData, ResultReason, SecretBytes,
-    SplitKeyMethod,
+    EncryptRequest, ExportRequest, GetRequest, ObjectType, OperationData, ResultReason,
+    SecretBytes, SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestDeliveryState;
@@ -24,6 +24,9 @@ use crate::{
 };
 
 const CREATE_OPERATION: u32 = 0x0000_0001;
+const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
+const CERTIFY_OPERATION: u32 = 0x0000_0006;
+const GET_OPERATION: u32 = 0x0000_000A;
 const PING_OPERATION: u32 = 0x0000_003B;
 const ENCRYPT_OPERATION: u32 = 0x0000_001F;
 
@@ -56,6 +59,7 @@ const CREATE_BATCH_ID: &[u8] = b"id-placeholder-create";
 const ENCRYPT_BATCH_ID: &[u8] = b"id-placeholder-encrypt";
 const DECRYPT_BATCH_ID: &[u8] = b"id-placeholder-decrypt";
 const GET_BATCH_ID: &[u8] = b"id-placeholder-get";
+const EXPORT_BATCH_ID: &[u8] = b"id-placeholder-export";
 
 fn create_request() -> CreateRequest {
     CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new())
@@ -142,12 +146,82 @@ fn get_without_identifier_is_rejected_when_batch_order_is_false() {
 }
 
 #[test]
-fn omitted_identifier_validation_diagnostic_is_static() {
+fn explicit_id_placeholder_get_without_a_producer_is_rejected_before_send() {
+    // KMIP Specification v2.1 §11.58 Table 489 assigns Enumeration 1 to ID Placeholder.
+    let request = ClientRequest::Get(
+        GetRequest::new().with_unique_identifier(UniqueIdentifier::Enumeration(1)),
+    );
+
+    assert_rejected_before_send(ClientBatch::new(batch_item(request, GET_BATCH_ID)));
+}
+
+#[test]
+fn explicit_id_placeholder_get_is_rejected_when_batch_order_is_false() {
+    // §6.1 permits a subsequent request to use ID Placeholder only if Batch Order is true or absent.
+    let request = ClientRequest::Get(
+        GetRequest::new().with_unique_identifier(UniqueIdentifier::Enumeration(1)),
+    );
+    let batch = ClientBatch::from_items([
+        batch_item(certify_placeholder_producer(), CREATE_BATCH_ID),
+        batch_item(request, GET_BATCH_ID),
+    ])
+    .with_batch_order_option(false);
+
+    assert_rejected_before_send(batch);
+}
+
+#[test]
+fn explicit_id_placeholder_get_after_certify_is_sent_once() {
+    // KMIP v2.1 §§6.1 and 11.58 Table 489 allow a later item to select ID Placeholder explicitly.
+    let response = response_bytes([
+        ResponseItem::failure(CERTIFY_OPERATION, CREATE_BATCH_ID, RESPONSE_TOO_LARGE),
+        ResponseItem::failure(GET_OPERATION, GET_BATCH_ID, OBJECT_NOT_FOUND),
+    ]);
+    let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let batch = ClientBatch::from_items([
+        batch_item(certify_placeholder_producer(), CREATE_BATCH_ID),
+        batch_item(
+            ClientRequest::Get(
+                GetRequest::new().with_unique_identifier(UniqueIdentifier::Enumeration(1)),
+            ),
+            GET_BATCH_ID,
+        ),
+    ])
+    .with_batch_order_option(true);
+
+    let response = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("an explicit ID Placeholder after Certify passes local eligibility validation");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_eq!(response.len(), 2);
+    let captured_request = captured_request.borrow();
+    let request = captured_request
+        .as_deref()
+        .expect("the eligible Certify/Get batch reaches the fake transport");
+    assert_eq!(request_item_operation(request, 0), Some(CERTIFY_OPERATION));
+    assert_eq!(request_item_operation(request, 1), Some(GET_OPERATION));
+    assert!(request_payload_uses_id_placeholder(request, 1));
+}
+
+#[test]
+fn export_without_identifier_and_no_placeholder_producer_is_rejected_before_send() {
+    // KMIP v2.1 §6.1.18 Table 217 permits Export to use ID Placeholder when Unique Identifier is omitted.
+    let request = ClientRequest::Export(ExportRequest::new());
+
+    assert_rejected_before_send(ClientBatch::new(batch_item(request, EXPORT_BATCH_ID)));
+}
+
+#[test]
+fn id_placeholder_validation_diagnostic_is_static() {
     let error = crate::execute::BatchValidationError::IneligibleIdPlaceholder;
 
     assert_eq!(
         error.to_string(),
-        "omitted Unique Identifier has no eligible preceding ID Placeholder producer"
+        "ID Placeholder has no eligible preceding batch item"
     );
 }
 
@@ -273,7 +347,7 @@ fn later_encrypt_uses_id_placeholder_when_batch_order_option_is_unspecified() {
 }
 
 #[test]
-fn create_split_key_does_not_make_a_later_identifier_eligible() {
+fn create_split_key_is_eligible_as_a_later_placeholder_producer() {
     let create_split_key = CreateSplitKeyRequest::new(
         ObjectType::from_raw(7),
         3,
@@ -281,6 +355,18 @@ fn create_split_key_does_not_make_a_later_identifier_eligible() {
         SplitKeyMethod::XOR,
         AttributeSet::new(),
     );
+    let response = response_bytes([
+        ResponseItem::failure(
+            CREATE_SPLIT_KEY_OPERATION,
+            CREATE_BATCH_ID,
+            RESPONSE_TOO_LARGE,
+        ),
+        ResponseItem::failure(ENCRYPT_OPERATION, ENCRYPT_BATCH_ID, OBJECT_NOT_FOUND),
+    ]);
+    let (mut client, fake, captured_request) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
     let batch = ClientBatch::from_items([
         batch_item(
             ClientRequest::CreateSplitKey(create_split_key),
@@ -290,7 +376,21 @@ fn create_split_key_does_not_make_a_later_identifier_eligible() {
     ])
     .with_batch_order_option(true);
 
-    assert_rejected_before_send(batch);
+    let response = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("Create Split Key is a normative ID Placeholder producer");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert!(captured_request.borrow().is_some());
+    assert_eq!(response.len(), 2);
+    assert_eq!(
+        response.get(0).and_then(|item| item.unique_batch_item_id()),
+        Some(CREATE_BATCH_ID)
+    );
+    assert_eq!(
+        response.get(1).and_then(|item| item.unique_batch_item_id()),
+        Some(ENCRYPT_BATCH_ID)
+    );
 }
 
 #[test]
@@ -421,6 +521,52 @@ fn request_payload_has_identifier(request: &[u8], index: usize) -> bool {
                     .children()
                     .iter()
                     .any(|item| item.tag().raw() == UNIQUE_IDENTIFIER)
+            })
+        })
+    })
+}
+
+fn request_payload_uses_id_placeholder(request: &[u8], index: usize) -> bool {
+    let Some(document) = decode(request).ok() else {
+        return false;
+    };
+    document.with_value(|message| {
+        let ValueView::Structure(message) = message else {
+            return false;
+        };
+        let Some(batch_item) = message
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == BATCH_ITEM)
+            .nth(index)
+        else {
+            return false;
+        };
+        batch_item.with_value(|batch_item| {
+            let ValueView::Structure(batch_item) = batch_item else {
+                return false;
+            };
+            let Some(payload) = batch_item
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == REQUEST_PAYLOAD)
+            else {
+                return false;
+            };
+            payload.with_value(|payload| {
+                let ValueView::Structure(payload) = payload else {
+                    return false;
+                };
+                let Some(identifier) = payload
+                    .children()
+                    .iter()
+                    .find(|item| item.tag().raw() == UNIQUE_IDENTIFIER)
+                else {
+                    return false;
+                };
+                identifier.with_value(
+                    |value| matches!(value, ValueView::Enumeration(value) if *value == 1),
+                )
             })
         })
     })

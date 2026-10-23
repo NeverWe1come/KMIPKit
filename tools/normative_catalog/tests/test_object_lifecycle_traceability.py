@@ -172,6 +172,19 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
                     ],
                     row[0],
                 )
+            elif row[0] == "KMIPKIT-REQ-SPEC-6.1.6-003":
+                self.assertEqual(
+                    requirement["element_ids"],
+                    [
+                        "KMIPKIT-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+                        "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+                        "KMIPKIT-ELEM-OP-C2S-GET",
+                        "KMIPKIT-ELEM-TAG-420094",
+                    ],
+                    row[0],
+                )
             elif row[0] == "KMIPKIT-REQ-SPEC-6.1.6-007":
                 self.assertEqual(
                     requirement["element_ids"],

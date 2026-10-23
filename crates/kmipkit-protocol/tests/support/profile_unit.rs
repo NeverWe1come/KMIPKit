@@ -8031,7 +8031,7 @@ fn profile_maps_certify_generated_certificate_get_in_same_batch_as_optional_capa
     assert_eq!(
         request
             .batch_items()
-            .map(|batch_item| batch_item.operation())
+            .map(crate::RequestBatchItemView::operation)
             .collect::<Vec<_>>(),
         [Some(CERTIFY_OPERATION), Some(GET_OPERATION)]
     );
