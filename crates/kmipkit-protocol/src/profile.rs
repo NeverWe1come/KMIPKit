@@ -710,6 +710,7 @@ struct TypedRuleMapping {
 
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
+const CERTIFICATE_REQUEST_TYPE: u32 = 0x0042_0019;
 const CERTIFICATE_REQUEST_VALUE: u32 = 0x0042_0140;
 const CERTIFY_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 const SPECIFICATION_TAG_PREFIX: u32 = 0x42;
@@ -768,6 +769,7 @@ const OFFSET_ITEMS: u32 = 0x0042_00D4;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const QUERY_FUNCTION: u32 = 0x0042_0074;
 const ATTRIBUTES: u32 = 0x0042_0125;
+const CERTIFICATE_TYPE_ATTRIBUTE: u32 = 0x0042_001D;
 const LINK_ATTRIBUTE: u32 = 0x0042_004A;
 const ISSUER_ALTERNATIVE_NAME: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME: u32 = 0x0042_00B3;
@@ -919,6 +921,56 @@ fn client_certify_omitted_request_requires_unique_identifier(
                         .children()
                         .iter()
                         .any(|field| field.tag().raw() == CERTIFY_UNIQUE_IDENTIFIER)
+            })
+            .unwrap_or(false)
+    })
+}
+
+fn client_certify_omitted_request_requires_certificate_type_attribute(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != CERTIFY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let fields = payload.children();
+                let both_request_fields_omitted = !fields.iter().any(|field| {
+                    matches!(
+                        field.tag().raw(),
+                        CERTIFICATE_REQUEST_TYPE | CERTIFICATE_REQUEST_VALUE
+                    )
+                });
+                if both_request_fields_omitted {
+                    fields
+                        .iter()
+                        .filter(|field| field.tag().raw() == ATTRIBUTES)
+                        .any(|field| {
+                            field.with_value(|value| match value {
+                                ValueView::Structure(attributes) => {
+                                    attributes.children().iter().any(|attribute| {
+                                        attribute.tag().raw() == CERTIFICATE_TYPE_ATTRIBUTE
+                                            && attribute.with_value(|value| {
+                                                matches!(value, ValueView::Enumeration(_))
+                                            })
+                                    })
+                                }
+                                _ => false,
+                            })
+                        })
+                } else {
+                    true
+                }
             })
             .unwrap_or(false)
     })
@@ -3167,6 +3219,17 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.6-002-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_certify_omitted_request_requires_certificate_type_attribute),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_omitted_certify_certificate_type_in_attributes",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
