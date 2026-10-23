@@ -4786,3 +4786,20 @@ This bounded slice maps `KMIPKIT-REQ-SPEC-6.1.57-002-002`, the client MAY in KMI
 | Full normative-catalog suite | Corrected `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` | PASS: 648 tests in 563.406 s; 10 skipped; exit 0. |
 
 The Baseline Client typed registry now has 60 unique mappings of 265 assigned requirements; 205 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 remain unavailable. Readiness remains `evidence_incomplete`; T040 remains open.
+
+
+### KMIPKIT-0010 T040 slice — repeated Certificate optional capability (2026-10-23)
+
+This slice maps only `KMIPKIT-REQ-SPEC-6.1.57-004`, the client MAY in KMIP Specification v2.1 §6.1.57 Table 340, Certificate row ordinal 4. The row says Certificate is not REQUIRED and MAY be repeated, describing “One or more Certificates.” The typed Baseline Client rule applies only to outbound Validate requests. It accepts omission, one Certificate, and repeated Certificate Structure fields while preserving their supplied order. The evaluator checks only that each present Certificate field is a Structure; it does not inspect certificate contents, validate a chain, infer a trust anchor, or claim server evaluation. The adjacent single-chain SHALL, Certificate/Identifier list capability, Validity Date capability, and repeated Unique Identifier capability remain separate. No requirement-specific official OASIS Test Case is linked; no profile-conformance claim is made.
+
+| Phase | DCO-signed commit and command | Result |
+|---|---|---|
+| Red | `2de16148`; `cargo test -p kmipkit-protocol --lib profile_maps_validate_repeated_certificates_as_optional_capability -- --nocapture` | Expected Red: 1 failed / 865 filtered. The focused test failed at the missing typed-rule lookup (`repeated Validate Certificates have a typed profile rule`). |
+| Green | `6df5125d`; `cargo test -p kmipkit-protocol --lib profile_maps_validate_repeated_certificates_as_optional_capability -- --nocapture` | PASS: 1 focused profile test. It verifies the exact source clause and OptionalCapability category, missing evaluator context fails closed, omission and one Certificate are accepted, and two Certificate values are accepted in preserved order. |
+| Refactor / catalog evidence | This DCO-signed completion commit; `py -3 -B -m unittest tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_validate_repeated_certificate_may_has_typed_optional_traceability tools.normative_catalog.tests.test_report.CoverageReportTests.test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures -v` | PASS: 2 tests. The regression checks Table 340 row ordinal 4, client-to-server MAY with no condition, Validate element, evaluator and operation test references, OptionalCapability mapping, and typed-registry report inventory. |
+| Generated artifacts and catalog validation | `generate_profiles.py --write`; `report.py --write`; then `validate.py`, `generate_profiles.py --check`, `generate_attribute_policy.py --check`, and `report.py --check` | PASS: catalog valid with 4 sources, 1,411 clauses, and 4,123 records; generated profile metadata, attribute policy, and report are current. Only the generated coverage report changed. |
+| Protocol package | `cargo test -p kmipkit-protocol --all-features --locked --quiet` | PASS: 866 unit tests plus all protocol integration test binaries and doctests. |
+| Rust quality | `cargo fmt --all --check`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings` | PASS: formatting clean; Clippy clean with warnings denied. |
+| Full normative-catalog suite | `py -3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_*.py' -q` | PASS: 649 tests in 529.914 s; 10 skipped; exit 0. |
+
+The Baseline Client typed registry now has 61 unique mappings of 265 assigned requirements; 204 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 remain unavailable. Readiness remains `evidence_incomplete`; T040 remains open.

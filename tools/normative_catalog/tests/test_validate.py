@@ -17279,6 +17279,64 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(mappings[0]["test_id"], positive_test)
         self.assertTrue(mappings[0]["evaluator_present"])
 
+    def test_validate_repeated_certificate_may_has_typed_optional_traceability(self) -> None:
+        """The Table 340 Certificate row links to its typed request capability."""
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-004"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.57-004"
+        positive_test = (
+            "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
+            "profile_maps_validate_repeated_certificates_as_optional_capability"
+        )
+        operation_test = (
+            "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs::"
+            "req_004_repeated_certificate_values_preserve_order"
+        )
+        catalog = json.loads(
+            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        requirement = next(
+            row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
+        )
+        clause = next(
+            row for row in catalog["source_clauses"] if row["clause_id"] == clause_id
+        )
+        mappings = [
+            mapping
+            for mapping in load_typed_rule_mappings(ROOT)
+            if mapping["requirement_id"] == requirement_id
+        ]
+
+        self.assertEqual(
+            clause["locator"], {"ordinal": 4, "block_kind": "table_row"}
+        )
+        self.assertEqual(clause["source_keywords"], ["MAY"])
+        self.assertEqual(clause["condition"], None)
+        self.assertEqual(requirement["source_clause_ids"], [clause_id])
+        self.assertEqual(
+            requirement["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.57"}]
+        )
+        self.assertEqual(requirement["source_keyword"], "MAY")
+        self.assertEqual(requirement["role"], "client")
+        self.assertEqual(requirement["direction"], "client_to_server")
+        self.assertIsNone(requirement["condition"])
+        self.assertEqual(requirement["element_ids"], ["KMIPKIT-ELEM-OP-C2S-VALIDATE"])
+        self.assertTrue(
+            {
+                "crates/kmipkit-protocol/src/validate.rs",
+                "crates/kmipkit-protocol/src/profile.rs::client_validate_repeated_certificates_are_usable",
+            }.issubset(requirement["implementation_refs"])
+        )
+        self.assertIn(operation_test, requirement["verification_refs"])
+        self.assertIn(positive_test, requirement["verification_refs"])
+        self.assertEqual(len(mappings), 1)
+        self.assertEqual(mappings[0]["source_clause_id"], clause_id)
+        self.assertEqual(mappings[0]["verification_category"], "OptionalCapability")
+        self.assertEqual(mappings[0]["test_kind"], "OptionalCapabilityUsable")
+        self.assertEqual(mappings[0]["test_id"], positive_test)
+        self.assertTrue(mappings[0]["evaluator_present"])
+
     def test_opaque_object_context_capability_evidence_has_a_bounded_typed_rule(self) -> None:
         """The §2.3 capability is limited to tested client encode/decode paths."""
         requirement_id = "KMIPKIT-REQ-SPEC-2.3-001"
