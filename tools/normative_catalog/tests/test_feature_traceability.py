@@ -1112,8 +1112,26 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     self.assertNotEqual(requirement.get("feature_spec"), "KMIPKIT-0010")
 
                 source_clause_id = mapping["source_clause_id"]
-                self.assertIn(source_clause_id, clauses)
-                self.assertIn(source_clause_id, requirement.get("source_clause_ids", []))
+                if source_clause_id is None:
+                    source_gap_id = mapping["source_gap_id"]
+                    self.assertIsNotNone(source_gap_id)
+                    self.assertEqual(source_gap_id, requirement.get("source_gap_id"))
+                    source_locator = requirement.get("source_locator")
+                    self.assertIsInstance(source_locator, dict)
+                    self.assertEqual(source_locator.get("kind"), "table_body_row")
+                    self.assertTrue(source_locator.get("row_label"))
+                    self.assertTrue(source_locator.get("html_line_range"))
+                    self.assertIn(
+                        source_locator.get("section"),
+                        [
+                            source_ref.get("section")
+                            for source_ref in requirement.get("source_refs", [])
+                            if source_ref.get("source_id") == "KMIPKIT-SRC-spec"
+                        ],
+                    )
+                else:
+                    self.assertIn(source_clause_id, clauses)
+                    self.assertIn(source_clause_id, requirement.get("source_clause_ids", []))
                 keyword = requirement.get("source_keyword") or requirement.get("source_force")
                 category = _verification_category(keyword)
                 self.assertEqual(mapping["verification_category"], category)
@@ -1127,6 +1145,9 @@ class FeatureTraceabilityTests(unittest.TestCase):
                         ),
                         "positive evidence for a prohibition is limited to a profile configuration check",
                     )
+                elif category == "RequiredBehavior" and mapping["test_kind"] == "NegativeBehavior":
+                    # Negative checks may supplement a required rule; the positive kind is asserted below.
+                    self.assertIn(mapping["test_id"], requirement.get("verification_refs", []))
                 else:
                     self.assertEqual(mapping["test_kind"], expected_test_kind)
                 self.assertIsNotNone(mapping["test_id"])

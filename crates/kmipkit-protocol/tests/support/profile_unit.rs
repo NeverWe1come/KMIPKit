@@ -8266,7 +8266,7 @@ fn profile_validation_error_rejects_conflicting_source_references() {
 }
 
 #[test]
-fn profile_maps_ttlv_bit_mask_values_as_integers() {
+fn profile_accepts_ttlv_mask_integer_values() {
     // KMIP Specification v2.1 §12 requires every TTLV mask value to use Integer encoding.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-12-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -8302,11 +8302,34 @@ fn profile_maps_ttlv_bit_mask_values_as_integers() {
         .validate_request(&valid_request)
         .expect("all request mask values use TTLV Integer items");
 
+    let valid_response =
+        response_message_with_mask_value(GET_OPERATION_TAG, Value::integer(i32::MIN));
+    validation
+        .validate_response(&valid_request, &valid_response)
+        .expect("Integer mask values are valid in received responses");
+}
+
+#[test]
+fn profile_rejects_non_integer_ttlv_mask_values() {
+    // KMIP Specification v2.1 §12 requires every TTLV mask value to use Integer encoding.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-12-001-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const PROTECTION_STORAGE_MASKS_TAG: u32 = 0x0042_015F;
+    const PROTECTION_STORAGE_MASK_TAG: u32 = 0x0042_015E;
+    const STORAGE_STATUS_MASK_TAG: u32 = 0x0042_008E;
+    const GET_OPERATION_TAG: u32 = 0x0000_000A;
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-12-001";
+
+    let validation = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid_request = request_message_with_operation_payload(
+        GET_OPERATION_TAG,
+        structure([tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(1))]),
+    );
     for invalid_payload in [
-        structure([tagged(
-            CRYPTOGRAPHIC_USAGE_MASK_TAG,
-            Value::enumeration(1),
-        )]),
+        structure([tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::enumeration(1))]),
         structure([tagged(STORAGE_STATUS_MASK_TAG, Value::enumeration(1))]),
         structure([tagged(
             PROTECTION_STORAGE_MASKS_TAG,
@@ -8324,45 +8347,44 @@ fn profile_maps_ttlv_bit_mask_values_as_integers() {
         assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
     }
 
-    let response_with_mask = |mask_value| {
-        crate::ResponseMessage::try_from_ttlv(structure([
-            tagged(
-                RESPONSE_HEADER_TAG,
-                Value::structure(structure([
-                    test_protocol_version(),
-                    tagged(TIME_STAMP_TAG, Value::date_time(1)),
-                    tagged(BATCH_COUNT_TAG, Value::integer(1)),
-                ])),
-            ),
-            tagged(
-                BATCH_ITEM_TAG,
-                Value::structure(structure([
-                    tagged(OPERATION_TAG, Value::enumeration(GET_OPERATION_TAG)),
-                    tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
-                    tagged(
-                        RESPONSE_PAYLOAD_TAG,
-                        Value::structure(structure([tagged(
-                            CRYPTOGRAPHIC_USAGE_MASK_TAG,
-                            mask_value,
-                        )])),
-                    ),
-                ])),
-            ),
-        ]))
-    };
-    let valid_response = response_with_mask(Value::integer(i32::MIN))
-        .expect("a response with an Integer mask remains structurally representable");
-    validation
-        .validate_response(&valid_request, &valid_response)
-        .expect("Integer mask values are valid in received responses");
-
-    let invalid_response = response_with_mask(Value::enumeration(1))
-        .expect("a response with an Enumeration mask remains structurally representable");
+    let invalid_response =
+        response_message_with_mask_value(GET_OPERATION_TAG, Value::enumeration(1));
     let error = validation
         .validate_response(&valid_request, &invalid_response)
         .expect_err("a non-Integer response mask violates the TTLV encoding rule");
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+}
+
+fn response_message_with_mask_value(
+    operation_tag: u32,
+    mask_value: Value,
+) -> crate::ResponseMessage {
+    crate::ResponseMessage::try_from_ttlv(structure([
+        tagged(
+            RESPONSE_HEADER_TAG,
+            Value::structure(structure([
+                test_protocol_version(),
+                tagged(TIME_STAMP_TAG, Value::date_time(1)),
+                tagged(BATCH_COUNT_TAG, Value::integer(1)),
+            ])),
+        ),
+        tagged(
+            BATCH_ITEM_TAG,
+            Value::structure(structure([
+                tagged(OPERATION_TAG, Value::enumeration(operation_tag)),
+                tagged(RESULT_STATUS_TAG, Value::enumeration(0)),
+                tagged(
+                    RESPONSE_PAYLOAD_TAG,
+                    Value::structure(structure([tagged(
+                        CRYPTOGRAPHIC_USAGE_MASK_TAG,
+                        mask_value,
+                    )])),
+                ),
+            ])),
+        ),
+    ]))
+    .expect("response with a structurally valid mask value")
 }
 
 #[test]

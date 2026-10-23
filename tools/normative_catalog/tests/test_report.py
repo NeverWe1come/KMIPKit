@@ -1557,6 +1557,8 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-11.56-001",
                 "KMIPKIT-REQ-SPEC-11-001",
                 "KMIPKIT-REQ-SPEC-11-001",
+                "KMIPKIT-REQ-SPEC-12-001-001",
+                "KMIPKIT-REQ-SPEC-12-001-001",
             ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],
         )

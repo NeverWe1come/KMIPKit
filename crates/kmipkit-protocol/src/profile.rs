@@ -808,6 +808,8 @@ const RANDOM_NUMBER_GENERATOR: u32 = 0x0042_00DE;
 const RNG_PARAMETERS: u32 = 0x0042_00D9;
 const RNG_ALGORITHM: u32 = 0x0042_00DA;
 const REGISTER_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
+const STORAGE_STATUS_MASK: u32 = 0x0042_008E;
+const PROTECTION_STORAGE_MASK: u32 = 0x0042_015E;
 const CERTIFICATE_OBJECT_TYPE: u32 = 1;
 const PUBLIC_KEY_OBJECT_TYPE: u32 = 3;
 const PRIVATE_KEY_OBJECT_TYPE: u32 = 4;
@@ -3468,6 +3470,41 @@ fn client_request_tags_use_kmip_prefixes(
     request.with_ttlv(|message| structure_tags_use_kmip_prefixes(&message))
 }
 
+fn client_mask_values_use_ttlv_integer_encoding(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    let request_is_valid = request.with_ttlv(|message| mask_values_are_ttlv_integers(&message));
+    let response_is_valid = response.map_or(true, |(_, response)| {
+        response.with_ttlv(|message| mask_values_are_ttlv_integers(&message))
+    });
+
+    request_is_valid && response_is_valid
+}
+
+fn mask_values_are_ttlv_integers(structure: &StructureView<'_>) -> bool {
+    structure.children().iter().all(|item| {
+        let is_mask = matches!(
+            item.tag().raw(),
+            CRYPTOGRAPHIC_USAGE_MASK | STORAGE_STATUS_MASK | PROTECTION_STORAGE_MASK
+        );
+        item.with_value(|value| {
+            if is_mask {
+                matches!(value, ValueView::Integer(_))
+            } else {
+                match value {
+                    ValueView::Structure(nested) => mask_values_are_ttlv_integers(&nested),
+                    _ => true,
+                }
+            }
+        })
+    })
+}
+
 fn client_request_tags_are_allocated(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -4789,6 +4826,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-ttlv/tests/codec_negative.rs::public_decoder_rejects_received_reserved_tags",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-12-001-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-12-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_mask_values_use_ttlv_integer_encoding),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_ttlv_mask_integer_values",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_integer_ttlv_mask_values",
                 kind: RuleTestKind::NegativeBehavior,
             },
         ],

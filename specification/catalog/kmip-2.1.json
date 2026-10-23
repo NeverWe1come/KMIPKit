@@ -80206,7 +80206,7 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
+      "feature_spec": "KMIPKIT-0010",
       "implementation_refs": [],
       "verification_refs": [],
       "negative_verification_required": false,
@@ -86232,12 +86232,17 @@
       "profile_ids": [],
       "test_case_ids": [],
       "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_ttlv_mask_integer_values",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_non_integer_ttlv_mask_values"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §12 requires all mask values to use TTLV Integer encoding. The typed profile evaluator checks Cryptographic Usage Mask, Protection Storage Mask, and Storage Status Mask recursively in outbound requests and received responses. Project tests accept signed Integer boundary values and reject Enumeration encodings. The pinned OASIS Test Cases do not link a requirement-specific case; this project test is local evidence and does not establish profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-12-001-002",
