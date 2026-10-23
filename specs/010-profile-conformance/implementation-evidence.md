@@ -5245,3 +5245,23 @@ Exact-head CI run `40022706549` failed the changed-Rust gate at 3,111/3,286 exec
 | Rust workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/t040-workspace-coverage.json` | PASS: all local Rust workspace test targets; 32,046/33,580 lines (95.43%) overall and 2,790/2,913 lines (95.78%) in `profile.rs`. Three Cosmian integration tests remain ignored because the local server is unavailable. |
 | Protocol lint and formatting | `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS. |
 | Exact-head hosted coverage | GitHub Actions after pushing this commit | Pending; hosted CI remains authoritative for the changed-Rust threshold. |
+
+### KMIPKIT-0010 T040 — Opaque Object table-body mapping and locator evidence (2026-10-24)
+
+Mapped client requirement `KMIPKIT-REQ-SPEC-2.3-003` from KMIP Specification v2.1 §2.3/Table 4 and Register context §6.1.43/Table 291. The catalog correctly represents its REQUIRED table-body rows with `source_gap_id` and `source_locator`, not fabricated clause IDs. The typed registry now validates that exact pair, evaluates Opaque Object Register requests for the required Enumeration and Byte String children, and preserves unknown child values. Profile errors expose the source-gap ID and generated catalog locator. The deterministic generated metadata and coverage report were refreshed.
+
+| Stage | Commit or command | Result |
+|---|---|---|
+| Red — require a generated locator and a locator-bearing Rust error | DCO commit `7630d382`; generator metadata test and `cargo test -p kmipkit-protocol --lib profile_maps_required_fields_of_opaque_register_object --all-features --locked` | Expected failure: generated requirement metadata had no source locator and the Rust error API had no `source_gap_locator`. |
+| Red — reject clause relabeling and preserve catalog evidence on mapping errors | DCO commit `6501b4bc`; `cargo test -p kmipkit-protocol --lib profile_maps_required_fields_of_opaque_register_object --all-features --locked` | Expected failure: the mismatch error returned no catalog source-gap ID. |
+| Green — implement the source-gap mapping, generated locator, report evidence, and request evaluator | DCO commit `9e1244be` | The table-body mapping uses the real source-gap record; validation errors and the generated report expose the catalog locator. |
+| Refactor — isolate catalog source-gap locator lookup | DCO commit `8459324b`; focused Rust regressions and protocol Clippy | PASS; behavior unchanged and catalog lookup is shared by the error constructor. |
+| Protocol tests | `cargo test -p kmipkit-protocol --lib --all-features --locked` | PASS: 930 tests. |
+| Generator, report, and catalog regressions | `py -3 -B -m unittest tools.normative_catalog.tests.test_generate_profiles.ProfileTargetManifestTests.test_source_gap_locator_rejects_missing_or_malformed_catalog_location tools.normative_catalog.tests.test_generate_profiles.ProfileTargetManifestTests.test_generated_requirement_metadata_preserves_exact_normative_keywords`; focused report and validator tests | PASS: generator, rendered source-gap locator, stale mapping snapshot, and table-body catalog validation. |
+| Quality and deterministic generation | `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check`; catalog validation; profile generator `--check`; report `--check` | PASS. |
+| Rust workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/t040-final-workspace-coverage.json` | PASS: 32,159/33,691 lines (95.45%) workspace; `profile.rs` 2,901/3,024 lines (95.93%). |
+| Exact-head hosted CI | GitHub Actions after pushing this batch | Pending. |
+
+Baseline now has 83 typed mappings of 265 assigned requirements; 182 remain unmapped. Three mandatory profile fixtures remain blocked by typed preflight and 77 profile cases remain unavailable. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+\n
