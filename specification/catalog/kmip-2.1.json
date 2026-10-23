@@ -90514,7 +90514,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.46 Table 121 and §6.1.43 Table 293. A supplied Random Number Generator is encoded as an RNG Parameters structure with a direct, unique RNG Algorithm Enumeration per §7.36 Table 388; the enum value Unspecified (1) is accepted. The test is request serialization evidence only and makes no claim about server RNG behavior or outcomes. No official Test Case is linked and no profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule checks client Register Attributes under KMIP Specification v2.1 §4.46 Table 121 and §6.1.43 Table 293. A supplied Random Number Generator is an RNG Parameters structure with one direct RNG Algorithm Enumeration per §7.36 Table 388; Unspecified (1) is accepted. The profile and protocol tests are request-serialization evidence only and do not assert a server RNG outcome. No official Test Case is linked and no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.46-001-002",
@@ -90579,7 +90579,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client rule checks client Add Attribute New Attribute under KMIP Specification v2.1 §4.46, §6.1.2 Table 167, and §5.7 Table 163. A supplied Random Number Generator is encoded as an RNG Parameters structure with a direct, unique RNG Algorithm Enumeration per §7.36 Table 388; it is not a nested RNG Parameters member. The test is request serialization evidence only and makes no claim about server RNG behavior or outcomes. No official Test Case is linked and no profile-conformance claim is made."
+      "review_note": "The typed Baseline Client rule checks client Add Attribute New Attribute under KMIP Specification v2.1 §4.46, §6.1.2 Table 167, and §5.7 Table 163. A supplied Random Number Generator is an RNG Parameters structure with one direct RNG Algorithm Enumeration per §7.36 Table 388; it is not a nested RNG Parameters member. The profile and protocol tests are request-serialization evidence only and do not assert a server RNG outcome. No official Test Case is linked and no profile-conformance claim is made."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.47-001-001",
