@@ -2595,22 +2595,28 @@ fn rng_parameters_attribute_is_well_formed(attributes: &StructureView<'_>) -> bo
     match field_presence(attributes, RANDOM_NUMBER_GENERATOR) {
         FieldPresence::Missing => true,
         FieldPresence::Duplicate => false,
-        FieldPresence::Unique(rng) => rng.with_value(|value| {
-            let ValueView::Structure(parameters) = value else {
-                return false;
-            };
-            if !matches!(
-                field_presence(&parameters, RNG_PARAMETERS),
-                FieldPresence::Missing
-            ) {
-                return false;
+        FieldPresence::Unique(rng) => rng.with_value(|value| match value {
+            ValueView::Structure(parameters) => {
+                rng_parameters_structure_is_well_formed(&parameters)
             }
-            let FieldPresence::Unique(algorithm) = field_presence(&parameters, RNG_ALGORITHM)
-            else {
-                return false;
-            };
-            algorithm.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+            _ => false,
         }),
+    }
+}
+
+fn rng_parameters_structure_is_well_formed(parameters: &StructureView<'_>) -> bool {
+    if !matches!(
+        field_presence(parameters, RNG_PARAMETERS),
+        FieldPresence::Missing
+    ) {
+        return false;
+    }
+
+    match field_presence(parameters, RNG_ALGORITHM) {
+        FieldPresence::Unique(algorithm) => {
+            algorithm.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        }
+        FieldPresence::Missing | FieldPresence::Duplicate => false,
     }
 }
 

@@ -10054,8 +10054,8 @@ fn profile_rejects_malformed_random_number_generator() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
 
-    let nested_parameters = add_attribute_random_number_generator_request(Value::structure(
-        structure([
+    let nested_parameters =
+        add_attribute_random_number_generator_request(Value::structure(structure([
             tagged(RNG_ALGORITHM_TAG, Value::enumeration(1)),
             tagged(
                 RNG_PARAMETERS_TAG,
@@ -10064,8 +10064,7 @@ fn profile_rejects_malformed_random_number_generator() {
                     Value::enumeration(1),
                 )])),
             ),
-        ]),
-    ));
+        ])));
     let nested_parameters_error =
         table12_profile_result(&[RANDOM_NUMBER_GENERATOR_REQUIREMENTS[1]])
             .validate_request(&nested_parameters)
