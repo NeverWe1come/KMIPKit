@@ -59367,7 +59367,7 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "payload_tables": [
@@ -85803,13 +85803,18 @@
         "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0005",
+      "implementation_refs": [
+        "crates/kmipkit-client/src/wire_encoder.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_ttlv_structure_order_and_numeric_padding"
+      ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-018",
-      "status": "unassigned",
-      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 specifies this mandatory TTLV encoding/tag rule but does not identify its endpoint actor or direction. KMIPKit maps it to outbound client request encoding for the 14 client_1_0 profiles and conditional HTTPS Client, all of which use TTLV in 1.0. JSON, XML, and PKCS#11 remain out of scope. Existing implementation and verification references are not upgraded to profile-readiness evidence; no requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
+      "status": "scoped_verified",
+      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 defines this mandatory TTLV encoder rule without naming an endpoint actor; KMIPKit applies it to outbound client requests for the selected client profiles. The linked encoder test and typed profile mapping provide implementation and verification evidence. No requirement-specific official OASIS Test Case ID is explicitly linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.2-002-001",
@@ -85858,12 +85863,12 @@
       "verification_refs": [
         "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
         "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
-        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_round_trips_sign_extension_and_aligned_octets_exactly"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_ttlv_structure_order_and_numeric_padding"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-018",
-      "status": "unassigned",
-      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 specifies this mandatory TTLV encoding/tag rule but does not identify its endpoint actor or direction. KMIPKit maps it to outbound client request encoding for the 14 client_1_0 profiles and conditional HTTPS Client, all of which use TTLV in 1.0. JSON, XML, and PKCS#11 remain out of scope. Existing implementation and verification references are not upgraded to profile-readiness evidence; no requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
+      "status": "scoped_verified",
+      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 defines this mandatory TTLV encoder rule without naming an endpoint actor; KMIPKit applies it to outbound client requests for the selected client profiles. The linked encoder test and typed profile mapping provide implementation and verification evidence. No requirement-specific official OASIS Test Case ID is explicitly linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.2-002-002",
@@ -85909,13 +85914,12 @@
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
-        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
-        "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_round_trips_sign_extension_and_aligned_octets_exactly"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_ttlv_structure_order_and_numeric_padding"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-018",
-      "status": "unassigned",
-      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 specifies this mandatory TTLV encoding/tag rule but does not identify its endpoint actor or direction. KMIPKit maps it to outbound client request encoding for the 14 client_1_0 profiles and conditional HTTPS Client, all of which use TTLV in 1.0. JSON, XML, and PKCS#11 remain out of scope. Existing implementation and verification references are not upgraded to profile-readiness evidence; no requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
+      "status": "scoped_verified",
+      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 defines this mandatory TTLV encoder rule without naming an endpoint actor; KMIPKit applies it to outbound client requests for the selected client profiles. The linked encoder test and typed profile mapping provide implementation and verification evidence. No requirement-specific official OASIS Test Case ID is explicitly linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.5-001-001",
@@ -85968,7 +85972,7 @@
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-018",
       "status": "scoped_verified",
-      "review_note": "KMIP Specification v2.1 §10.1.5 requires Text String and Byte String values to use the minimum following padding needed to reach an eight-byte boundary; §10.1.3 defines Item Length without those padding bytes. KMIPKIT-0010 maps the selected Baseline Client requirement to the TTLV-only encoding constraint and the KMIPKIT-0005 wire encoder. Golden vectors cover UTF-8 Text String and Byte String headers, and boundary tests exercise 0, 1, 7, and 8-byte payload lengths. No requirement-specific official OASIS Test Case is linked; this is local client-encoding evidence and does not establish profile conformance."
+      "review_note": "The pinned KMIP Specification v2.1 §10.1.5 requires Text String and Byte String values to use the minimum following padding needed to reach an eight-byte boundary; §10.1.3 defines Item Length without those padding bytes. KMIPKIT-0010 maps the selected Baseline Client requirement to the TTLV-only encoding constraint and the KMIPKIT-0005 wire encoder. Golden vectors cover UTF-8 Text String and Byte String headers, and boundary tests exercise 0, 1, 7, and 8-byte payload lengths. No requirement-specific official OASIS Test Case is linked; this is local client-encoding evidence and does not establish profile conformance."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.1.5-001-002",
@@ -86010,20 +86014,16 @@
       "test_case_ids": [],
       "feature_spec": "KMIPKIT-0005",
       "implementation_refs": [
-        "crates/kmipkit-client/src/wire_encoder.rs",
-        "crates/kmipkit-ttlv/src/codec/decoder.rs"
+        "crates/kmipkit-client/src/wire_encoder.rs"
       ],
       "verification_refs": [
         "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
-        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_integer_item_and_its_four_byte_padding",
-        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_enumeration_item_and_its_four_byte_padding",
-        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::decodes_a_valid_interval_item_and_its_four_byte_padding",
-        "crates/kmipkit-ttlv/tests/support/codec_red_tests.rs::rejects_short_padding_and_bytes_beyond_each_required_padding_extent"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_ttlv_structure_order_and_numeric_padding"
       ],
       "negative_verification_required": false,
       "decision_id": "KMIPKIT-DEC-018",
-      "status": "unassigned",
-      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 specifies this mandatory TTLV encoding/tag rule but does not identify its endpoint actor or direction. KMIPKit maps it to outbound client request encoding for the 14 client_1_0 profiles and conditional HTTPS Client, all of which use TTLV in 1.0. JSON, XML, and PKCS#11 remain out of scope. Existing implementation and verification references are not upgraded to profile-readiness evidence; no requirement-specific official Test Case ID is explicitly linked by the pinned OASIS sources."
+      "status": "scoped_verified",
+      "review_note": "T002 applicability decision (KMIPKIT-DEC-018): pinned KMIP Specification v2.1 defines this mandatory TTLV encoder rule without naming an endpoint actor; KMIPKit applies it to outbound client requests for the selected client profiles. The linked encoder test and typed profile mapping provide implementation and verification evidence. No requirement-specific official OASIS Test Case ID is explicitly linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-10.4-001-001",
@@ -86521,8 +86521,8 @@
         "crates/kmipkit-protocol/src/profile.rs::client_opaque_object_context_managed_attributes"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_managed_attributes",
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order"
@@ -95524,8 +95524,8 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order"
       ],
       "negative_verification_required": false,
@@ -95621,7 +95621,7 @@
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order",
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "negative_verification_required": false,
@@ -95663,7 +95663,7 @@
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "negative_verification_required": false,
@@ -95708,9 +95708,9 @@
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_client_register_algorithm_without_length_in_attributes",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_attributes_for_algorithm_length_requirement",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_exempts_secret_data_from_register_algorithm_length_requirement",
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::managed_opaque_context_requires_algorithm_and_length_as_a_pair",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_does_not_count_key_block_length_from_a_non_object_register_structure",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_applies_register_algorithm_length_rule_to_standard_object_types",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_register_object_key_block_length_sources",
@@ -95758,7 +95758,7 @@
         "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_request_rejects_omitted_outer_algorithm_length_without_key_block_before_transport",
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs"
       ],
       "negative_verification_required": false,
@@ -95845,8 +95845,8 @@
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
-        "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
+    "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
+    "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_client_omits_signature_algorithm_when_x509_certificate_encodes_it"
       ],
       "negative_verification_required": false,

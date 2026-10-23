@@ -4805,6 +4805,57 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "encoding",
+            value: "ttlv",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
+        constraints: &[RuleConstraint {
+            key: "encoding",
+            value: "ttlv",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "encoding",
+            value: "ttlv",
+        }],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-10.1.5-001-001",
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
         source_gap_id: None,
@@ -4824,6 +4875,21 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::PositiveBehavior,
             },
         ],
+        constraints: &[RuleConstraint {
+            key: "encoding",
+            value: "ttlv",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
         constraints: &[RuleConstraint {
             key: "encoding",
             value: "ttlv",
