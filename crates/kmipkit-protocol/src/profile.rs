@@ -2460,13 +2460,10 @@ fn client_register_original_creation_date_is_datetime_when_used(
                     FieldPresence::Unique(attributes) => {
                         attributes.with_value(|value| match value {
                             ValueView::Structure(attributes) => {
-                                match field_presence(&attributes, ORIGINAL_CREATION_DATE) {
-                                    FieldPresence::Missing => true,
-                                    FieldPresence::Duplicate => false,
-                                    FieldPresence::Unique(date) => date.with_value(|value| {
-                                        matches!(value, ValueView::DateTime(_))
-                                    }),
-                                }
+                                optional_date_time_attribute_is_well_formed(
+                                    &attributes,
+                                    ORIGINAL_CREATION_DATE,
+                                )
                             }
                             _ => false,
                         })
@@ -2500,13 +2497,10 @@ fn client_add_original_creation_date_is_datetime_when_used(
                 FieldPresence::Unique(new_attribute) => {
                     new_attribute.with_value(|value| match value {
                         ValueView::Structure(new_attribute) => {
-                            match field_presence(&new_attribute, ORIGINAL_CREATION_DATE) {
-                                FieldPresence::Missing => true,
-                                FieldPresence::Duplicate => false,
-                                FieldPresence::Unique(date) => {
-                                    date.with_value(|value| matches!(value, ValueView::DateTime(_)))
-                                }
-                            }
+                            optional_date_time_attribute_is_well_formed(
+                                &new_attribute,
+                                ORIGINAL_CREATION_DATE,
+                            )
                         }
                         _ => false,
                     })
@@ -2514,6 +2508,16 @@ fn client_add_original_creation_date_is_datetime_when_used(
             })
             .unwrap_or(false)
     })
+}
+
+fn optional_date_time_attribute_is_well_formed(attributes: &StructureView<'_>, tag: u32) -> bool {
+    match field_presence(attributes, tag) {
+        FieldPresence::Missing => true,
+        FieldPresence::Duplicate => false,
+        FieldPresence::Unique(date) => {
+            date.with_value(|value| matches!(value, ValueView::DateTime(_)))
+        }
+    }
 }
 
 fn client_register_key_value_location_requires_omitted_key_value(
