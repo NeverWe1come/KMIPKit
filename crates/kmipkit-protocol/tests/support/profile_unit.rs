@@ -4012,8 +4012,8 @@ fn profile_maps_client_check_lease_time() {
 
 #[test]
 fn profile_maps_client_check_cryptographic_usage_mask() {
-    // KMIP Specification v2.1 §6.1.7 Table 182 permits a different Check mask
-    // from a preceding Locate; Table 183 encodes the Check mask as Integer.
+    // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a Check mask
+    // different from Locate; §4.17 Table 61 defines its TTLV type as Integer.
     let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-004-002");
     let locate_then_check = request_message_with_batch_operations([
         (
@@ -4061,7 +4061,7 @@ fn profile_maps_client_check_cryptographic_usage_mask() {
 #[test]
 fn profile_maps_client_check_intended_cryptographic_uses() {
     // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit the client to
-    // state intended Check uses with an optional Integer Cryptographic Usage Mask.
+    // state intended Check uses; §4.17 Table 61 defines the mask's TTLV type as Integer.
     let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-004-001");
     let with_mask = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
@@ -4079,8 +4079,13 @@ fn profile_maps_client_check_intended_cryptographic_uses() {
         .validate_request(&omitted)
         .expect("the optional Check mask may be omitted");
 
-    let unrelated_operation =
-        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    let unrelated_operation = request_message_with_operation_payload(
+        LOCATE_OPERATION_TAG,
+        structure([tagged(
+            CRYPTOGRAPHIC_USAGE_MASK_TAG,
+            Value::text_string("not-an-integer".to_owned()),
+        )]),
+    );
     result
         .validate_request(&unrelated_operation)
         .expect("a Check-only rule does not reject unrelated operations");

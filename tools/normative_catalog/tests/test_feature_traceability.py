@@ -15,6 +15,11 @@ ROOT = Path(__file__).resolve().parents[3]
 MAX_TEST_SOURCE_BYTES = 1_048_576
 CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0003"
+PROFILE_CONFORMANCE_FEATURE_SPEC = "KMIPKIT-0010"
+PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS = {
+    "KMIPKIT-REQ-SPEC-14.1-001",
+    "KMIPKIT-REQ-SPEC-14.1-002",
+}
 MESSAGE_MODEL_FEATURE_SPEC = "KMIPKIT-0006"
 MESSAGE_MODEL_REQUIREMENTS_PATH = ROOT / "specification/compliance/requirements/KMIPKIT-0006.csv"
 CLIENT_EXECUTION_FEATURE_SPEC = "KMIPKIT-0007"
@@ -1051,9 +1056,17 @@ class FeatureTraceabilityTests(unittest.TestCase):
             requirement_id
             for requirement_id in in_scope_requirement_ids
             if requirement_id.startswith("KMIPKIT-REQ-SPEC-")
-            and requirements[requirement_id].get("feature_spec") == "KMIPKIT-0010"
+            and requirements[requirement_id].get("feature_spec")
+            == PROFILE_CONFORMANCE_FEATURE_SPEC
+            and requirement_id not in PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS
         )
         self.assertEqual([], incorrectly_owned_base_requirements)
+        for requirement_id in PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS:
+            self.assertIn(requirement_id, requirements)
+            self.assertEqual(
+                requirements[requirement_id].get("feature_spec"),
+                PROFILE_CONFORMANCE_FEATURE_SPEC,
+            )
 
     def test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests(self) -> None:
         from tools.normative_catalog.generate_profiles import _verification_category
@@ -1126,9 +1139,20 @@ class FeatureTraceabilityTests(unittest.TestCase):
                 self.assertIn(requirement_id, in_scope_client_requirement_ids)
                 requirement = requirements[requirement_id]
                 if requirement_id.startswith("KMIPKIT-REQ-PROF-"):
-                    self.assertEqual(requirement.get("feature_spec"), "KMIPKIT-0010")
+                    self.assertEqual(
+                        requirement.get("feature_spec"),
+                        PROFILE_CONFORMANCE_FEATURE_SPEC,
+                    )
+                elif requirement_id in PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS:
+                    self.assertEqual(
+                        requirement.get("feature_spec"),
+                        PROFILE_CONFORMANCE_FEATURE_SPEC,
+                    )
                 else:
-                    self.assertNotEqual(requirement.get("feature_spec"), "KMIPKIT-0010")
+                    self.assertNotEqual(
+                        requirement.get("feature_spec"),
+                        PROFILE_CONFORMANCE_FEATURE_SPEC,
+                    )
 
                 source_clause_id = mapping["source_clause_id"]
                 if source_clause_id is None:

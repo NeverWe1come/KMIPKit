@@ -97838,7 +97838,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a client to specify intended cryptographic uses with the optional Check Cryptographic Usage Mask. The typed Baseline Client evaluator accepts omission or one Integer field; a protocol profile test and fake-transport Check test verify request representation. No official Test Case ID is linked by the pinned OASIS source, and no server outcome or formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a client to specify intended cryptographic uses with the optional Check Cryptographic Usage Mask; §4.17 Table 61 defines the mask's TTLV type as Integer. The typed Baseline Client evaluator accepts omission or one Integer field; a protocol profile test and fake-transport Check test verify request representation. No official Test Case ID is linked by the pinned OASIS source, and no server outcome or formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-004-002",
@@ -97878,7 +97878,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "scoped_verified",
-      "review_note": "The typed Baseline Client evaluator confirms that Cryptographic Usage Mask is optional in outbound Check requests and preserves its KMIP Integer encoding. The profile regression and fake-transport test cover a preceding Locate mask of Encrypt plus Decrypt (0x0C) followed by a distinct Check mask of Encrypt (0x04). Evidence is limited to caller request representation and makes no server matching, authorization, or acceptance claim. No official Test Case ID is linked by the pinned OASIS source."
+      "review_note": "KMIP Specification v2.1 §6.1.7 Table 182 permits a Check mask different from a preceding Locate mask; §4.17 Table 61 defines its TTLV type as Integer. The typed Baseline Client evaluator confirms the optional Check request field, and the profile regression and fake-transport test cover a preceding Locate mask of Encrypt plus Decrypt (0x0C) followed by a distinct Check mask of Encrypt (0x04). Evidence is limited to caller request representation and makes no server matching, authorization, or acceptance claim. No official Test Case ID is linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-005",
