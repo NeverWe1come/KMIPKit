@@ -7381,29 +7381,34 @@ fn profile_maps_register_omission_exemptions_and_malformed_containers() {
     const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
     const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers";
-    const KEY_BLOCK_TAG: u32 = 0x0042_0040;
-    const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0027;
-    const KEY_VALUE_TAG: u32 = 0x0042_0045;
-    const KEY_MATERIAL_TAG: u32 = 0x0042_0043;
-    const CERTIFICATE_TAG: u32 = 0x0042_0013;
-    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
-    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
 
     for requirement_id in [
         ALGORITHM_REQUIREMENT_ID,
         LENGTH_REQUIREMENT_ID,
         SIGNATURE_REQUIREMENT_ID,
     ] {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == requirement_id)
-            .expect("Register omission requirements have typed profile rules");
+        let mapping = register_omission_mapping(requirement_id);
         assert!(mapping.test_evidence.iter().any(|evidence| {
             evidence.test_id == PROFILE_TEST_ID
                 && evidence.kind == RuleTestKind::OptionalCapabilityUsable
         }));
     }
 
+    assert_register_secret_data_omission_is_allowed();
+    assert_register_duplicate_key_block_algorithm_is_rejected();
+    assert_register_signature_omission_rejects_malformed_certificates();
+}
+
+fn register_omission_mapping(requirement_id: &str) -> &'static TypedRuleMapping {
+    TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("Register omission requirements have typed profile rules")
+}
+
+fn assert_register_secret_data_omission_is_allowed() {
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
     let secret_data = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
@@ -7413,16 +7418,20 @@ fn profile_maps_register_omission_exemptions_and_malformed_containers() {
         ),
     );
     for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
-        let mapping = TYPED_RULE_MAPPINGS
-            .iter()
-            .find(|mapping| mapping.requirement_id == requirement_id)
-            .expect("Table 293 Algorithm and Length have typed profile rules");
+        let mapping = register_omission_mapping(requirement_id);
         assert!(mapping.evaluator.expect("the rule has an evaluator")(
             Some(&secret_data),
             None
         ));
     }
+}
 
+fn assert_register_duplicate_key_block_algorithm_is_rejected() {
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0027;
+    const KEY_VALUE_TAG: u32 = 0x0042_0045;
+    const KEY_MATERIAL_TAG: u32 = 0x0042_0043;
     let duplicate_algorithm_key_block = tagged(
         TABLE12_SYMMETRIC_KEY,
         Value::structure(structure([tagged(
@@ -7450,17 +7459,20 @@ fn profile_maps_register_omission_exemptions_and_malformed_containers() {
             [],
         ),
     );
-    let algorithm_mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == ALGORITHM_REQUIREMENT_ID)
-        .expect("Table 293 Algorithm has a typed profile rule");
+    let algorithm_mapping = register_omission_mapping(ALGORITHM_REQUIREMENT_ID);
     assert!(!algorithm_mapping
         .evaluator
         .expect("the rule has an evaluator")(
         Some(&duplicate_algorithm),
         None
     ));
+}
 
+fn assert_register_signature_omission_rejects_malformed_certificates() {
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
     let invalid_certificate_value = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         structure([
@@ -7496,10 +7508,7 @@ fn profile_maps_register_omission_exemptions_and_malformed_containers() {
             ),
         ]),
     );
-    let signature_mapping = TYPED_RULE_MAPPINGS
-        .iter()
-        .find(|mapping| mapping.requirement_id == SIGNATURE_REQUIREMENT_ID)
-        .expect("Table 293 Digital Signature Algorithm has a typed profile rule");
+    let signature_mapping = register_omission_mapping(SIGNATURE_REQUIREMENT_ID);
     let signature_rule = signature_mapping
         .evaluator
         .expect("the rule has an evaluator");
