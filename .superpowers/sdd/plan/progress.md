@@ -249,5 +249,11 @@ Task 9: complete (commits 90ff5750..600d8092, review approved with one deferred 
 - Added the Baseline Client optional mapping for `KMIPKIT-REQ-SPEC-7.18-006` (KMIP Specification v2.1 §7.18 Table 370; Get carries the wrapping specification under §6.1.19 Table 220). The profile regression accepts two repeated Attribute Name values and confirms the wrapping specification remains optional. DCO Red/Green/Refactor commits: `f8f0a613`, `693a19ff`, `d91f6971`.
 - Current generated coverage is 99/265 valid executable typed mappings; 166 remain. Three mandatory fixtures remain blocked and 77 profile cases unavailable; T040 remains open, with no conformance claim.
 - Verification passed locally: 943 protocol library tests, focused all-features regression, protocol Clippy, formatting, diff check, typed-profile traceability, 55 report tests (1 skipped), report/profile generation checks, and catalog validation (4 sources, 1,411 clauses, 4,123 records).
-- The prior exact-head CI run `40056665741` remains in progress on `cafb844b` and does not include this tranche. Do not push until that run is terminal; then publish the completed batch once and run exact-head CI.
+- The prior exact-head CI run `40056665741` completed on `cafb844b`: changed Rust coverage was 3,496/3,682, below the 3,498 threshold; the other completed cross-platform and adapter jobs passed.
 - The §7.8 multipart correlation requirement remains deliberately unmapped because current request-local profile evaluation cannot prove response-to-follow-up correlation continuity. Existing client tests cover Encrypt/Decrypt examples but do not satisfy the complete inherited-operation scope on their own.
+
+## KMIPKIT-0010 coverage follow-up (2026-10-24)
+
+- Added DCO-signed test commit `11fae33a` covering malformed non-Structure `Cryptographic Parameters` for both variable-IV and GCM Tag Length profile evaluators. This targets reachable negative branches without changing production behavior.
+- Local evidence: the focused test and all 944 `kmipkit-protocol` library tests pass; Clippy passes. `cargo llvm-cov` generated a Windows report, but the repository's strict parser rejected a segment at `profile.rs:837:16`; rely on the hosted Linux/Windows/macOS coverage gate for the authoritative cross-platform result.
+- Previous run `40056665741` is terminal. Publish the accumulated batch once, then use the exact-head CI run to confirm the coverage threshold and all checks.
