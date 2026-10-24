@@ -17017,7 +17017,12 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["direction"], direction)
                 self.assertEqual(requirement["scope_state"], "client_1_0")
-                self.assertEqual(requirement["status"], "unassigned")
+                expected_status = (
+                    "verified"
+                    if requirement_id == "KMIPKIT-REQ-SPEC-6.1.18-001-001"
+                    else "unassigned"
+                )
+                self.assertEqual(requirement["status"], expected_status)
                 self.assertEqual(clause["disposition"], "requirement")
                 self.assertEqual(clause["scope_state"], clause_scope)
                 self.assertIn(requirement_id, clause["requirement_ids"])
@@ -22526,9 +22531,13 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Format Type",
                 [26902, 26917],
                 "KMIPKIT-0037",
-                ["crates/kmipkit-protocol/src/export.rs"],
                 [
-                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                    "crates/kmipkit-protocol/src/export.rs",
+                    "crates/kmipkit-protocol/src/profile.rs",
+                ],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
                 ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.18-006": (
@@ -22537,9 +22546,13 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Wrap Type",
                 [26918, 26933],
                 "KMIPKIT-0037",
-                ["crates/kmipkit-protocol/src/export.rs"],
                 [
-                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                    "crates/kmipkit-protocol/src/export.rs",
+                    "crates/kmipkit-protocol/src/profile.rs",
+                ],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
                 ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.18-007": (
@@ -22548,9 +22561,13 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Compression Type",
                 [26934, 26950],
                 "KMIPKIT-0037",
-                ["crates/kmipkit-protocol/src/export.rs"],
                 [
-                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                    "crates/kmipkit-protocol/src/export.rs",
+                    "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_key_compression_type_is_enumeration",
+                ],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
                 ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.18-008": (
@@ -22559,9 +22576,13 @@ class CatalogValidationTests(unittest.TestCase):
                 "Key Wrapping Specification",
                 [26951, 26966],
                 "KMIPKIT-0037",
-                ["crates/kmipkit-protocol/src/export.rs"],
                 [
-                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields"
+                    "crates/kmipkit-protocol/src/export.rs",
+                    "crates/kmipkit-protocol/src/profile.rs::client_get_or_export_optional_wrapping_specification_is_structure",
+                ],
+                [
+                    "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs::request_preserves_all_explicit_optional_choices_and_omits_absent_fields",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_wrapping_specification",
                 ],
             ),
             "KMIPKIT-REQ-SPEC-6.1.19-003": (

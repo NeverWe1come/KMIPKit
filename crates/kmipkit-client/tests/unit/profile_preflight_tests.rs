@@ -9,15 +9,15 @@ use std::error::Error;
 use std::rc::Rc;
 
 use kmipkit_protocol::{
-    ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
+    GetAttributesRequest, ProfileTransport, ProfileValidationError, ProfileValidationErrorCode,
     ProfileValidationSelection, QueryFunction, QueryRequest, RequestMessage, ResponseMessage,
     SetDefaultsRequest, profiles_generated::CLIENT_PROFILES,
 };
 use kmipkit_transport::{RequestDeliveryState, Transport, TransportError, TransportResponse};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
-use kmipkit_ttlv::{Value, ValueView};
+use kmipkit_ttlv::{Structure, Value, ValueView};
 
-use crate::execute::ProfileExchangeValidator;
+use crate::execute::{ProfileExchangeValidator, encode_message_for_test};
 use crate::execute_test_support::{
     ResponseItemFixture, one_item_response_bytes, response_bytes, test_item, test_structure,
 };
@@ -714,4 +714,194 @@ fn server_result_has_no_local_profile_validation_error() {
     assert_eq!(error.cause_category(), None);
     assert_eq!(error.delivery_state(), None);
     assert!(Error::source(&error).is_none());
+}
+
+#[test]
+fn profile_exchange_preserves_reordered_batch_items_for_response_validation() {
+    // KMIP Specification v2.1 §8.3 correlates batch items by their unique IDs.
+    const LINK_ATTRIBUTE: u32 = 0x0042_004A;
+    const LINK_TYPE: u32 = 0x0042_004B;
+    const LINKED_OBJECT_IDENTIFIER: u32 = 0x0042_004C;
+
+    let valid_response = profile_link_batch_response(
+        0,
+        Some(test_structure([test_item(
+            LINK_ATTRIBUTE,
+            Value::structure(test_structure([
+                test_item(LINK_TYPE, Value::enumeration(1)),
+                test_item(
+                    LINKED_OBJECT_IDENTIFIER,
+                    Value::text_string("linked-object".to_owned()),
+                ),
+            ])),
+        )])),
+    );
+    execute_link_profile_batch(valid_response, 0)
+        .expect("the profile exchange validator receives correlated reordered responses");
+
+    let failed_get_attributes_response = profile_link_batch_response(1, None);
+    execute_link_profile_batch(failed_get_attributes_response, 1)
+        .expect("a failed Get Attributes result remains correlated by its batch ID");
+}
+
+struct ReorderedBatchValidator {
+    expected_get_attributes_status: u32,
+}
+
+impl ProfileExchangeValidator for ReorderedBatchValidator {
+    fn validate_transport(
+        &self,
+        _transport: ProfileTransport,
+    ) -> Result<(), ProfileValidationError> {
+        Ok(())
+    }
+
+    fn validate_request(&self, request: &RequestMessage) -> Result<(), ProfileValidationError> {
+        let items = request.batch_items().collect::<Vec<_>>();
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0].operation(), Some(0x0000_000B));
+        assert_eq!(
+            items[0].with_unique_batch_item_id(<[u8]>::to_vec),
+            Some(b"get-attributes".to_vec())
+        );
+        assert_eq!(items[1].operation(), Some(0x0000_001E));
+        assert_eq!(
+            items[1].with_unique_batch_item_id(<[u8]>::to_vec),
+            Some(b"discover-versions".to_vec())
+        );
+        Ok(())
+    }
+
+    fn validate_response(
+        &self,
+        request: &RequestMessage,
+        response: &ResponseMessage,
+    ) -> Result<(), ProfileValidationError> {
+        assert_eq!(request.batch_items().len(), 2);
+        let items = response.batch_items().collect::<Vec<_>>();
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0].operation(), Some(0x0000_001E));
+        assert_eq!(
+            items[0].with_unique_batch_item_id(<[u8]>::to_vec),
+            Some(b"discover-versions".to_vec())
+        );
+        assert_eq!(items[1].operation(), Some(0x0000_000B));
+        assert_eq!(
+            items[1].with_unique_batch_item_id(<[u8]>::to_vec),
+            Some(b"get-attributes".to_vec())
+        );
+        assert_eq!(
+            items[1].result_status().map(|status| status.raw()),
+            Some(self.expected_get_attributes_status)
+        );
+        Ok(())
+    }
+}
+
+fn execute_link_profile_batch(
+    response: Vec<u8>,
+    expected_get_attributes_status: u32,
+) -> Result<(), crate::ClientError> {
+    let exchanges = Rc::new(Cell::new(0));
+    let transport = CountingTransport::with_responses(Rc::clone(&exchanges), [response]);
+    let mut client = Client::for_test(transport);
+    let validator = ReorderedBatchValidator {
+        expected_get_attributes_status,
+    };
+    let get_attributes = GetAttributesRequest::try_new(Some("object".to_owned()), [])
+        .expect("an empty Attribute Reference list requests all attributes");
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::get_attributes(get_attributes))
+            .with_unique_batch_item_id(b"get-attributes".to_vec()),
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"discover-versions".to_vec()),
+    ]);
+
+    client
+        .execute_inner(
+            batch,
+            &CodecLimits::defaults(),
+            &kmipkit_transport::RequestOptions::default(),
+            Some(&validator),
+        )
+        .map(|_| ())
+}
+
+fn profile_link_batch_response(get_attributes_status: u32, links: Option<Structure>) -> Vec<u8> {
+    const RESPONSE_HEADER: u32 = 0x0042_007A;
+    const PROTOCOL_VERSION: u32 = 0x0042_0069;
+    const PROTOCOL_VERSION_MAJOR: u32 = 0x0042_006A;
+    const PROTOCOL_VERSION_MINOR: u32 = 0x0042_006B;
+    const TIME_STAMP: u32 = 0x0042_0092;
+    const BATCH_COUNT: u32 = 0x0042_000D;
+    const BATCH_ITEM: u32 = 0x0042_000F;
+    const OPERATION: u32 = 0x0042_005C;
+    const UNIQUE_BATCH_ITEM_ID: u32 = 0x0042_0093;
+    const RESULT_STATUS: u32 = 0x0042_007F;
+    const RESULT_REASON: u32 = 0x0042_007E;
+    const RESULT_MESSAGE: u32 = 0x0042_007D;
+    const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
+    const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const GET_ATTRIBUTES: u32 = 0x0000_000B;
+    const DISCOVER_VERSIONS: u32 = 0x0000_001E;
+
+    let response_version = test_structure([
+        test_item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+        test_item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+    ]);
+    let header = test_structure([
+        test_item(PROTOCOL_VERSION, Value::structure(response_version)),
+        test_item(TIME_STAMP, Value::date_time(1)),
+        test_item(BATCH_COUNT, Value::integer(2)),
+    ]);
+    let mut get_fields = vec![
+        test_item(OPERATION, Value::enumeration(GET_ATTRIBUTES)),
+        test_item(
+            UNIQUE_BATCH_ITEM_ID,
+            Value::byte_string(b"get-attributes".to_vec()),
+        ),
+        test_item(RESULT_STATUS, Value::enumeration(get_attributes_status)),
+    ];
+    if get_attributes_status == 0 {
+        let attributes = links.unwrap_or_else(|| test_structure([]));
+        get_fields.push(test_item(
+            RESPONSE_PAYLOAD,
+            Value::structure(test_structure([
+                test_item(UNIQUE_IDENTIFIER, Value::text_string("object".to_owned())),
+                test_item(ATTRIBUTES, Value::structure(attributes)),
+            ])),
+        ));
+    } else {
+        get_fields.push(test_item(RESULT_REASON, Value::enumeration(1)));
+        get_fields.push(test_item(
+            RESULT_MESSAGE,
+            Value::text_string("fixture failure".to_owned()),
+        ));
+    }
+    let get_response = test_item(BATCH_ITEM, Value::structure(test_structure(get_fields)));
+    let discover_payload = test_structure([test_item(
+        PROTOCOL_VERSION,
+        Value::structure(test_structure([
+            test_item(PROTOCOL_VERSION_MAJOR, Value::integer(2)),
+            test_item(PROTOCOL_VERSION_MINOR, Value::integer(1)),
+        ])),
+    )]);
+    let discover_response = test_item(
+        BATCH_ITEM,
+        Value::structure(test_structure([
+            test_item(OPERATION, Value::enumeration(DISCOVER_VERSIONS)),
+            test_item(
+                UNIQUE_BATCH_ITEM_ID,
+                Value::byte_string(b"discover-versions".to_vec()),
+            ),
+            test_item(RESULT_STATUS, Value::enumeration(0)),
+            test_item(RESPONSE_PAYLOAD, Value::structure(discover_payload)),
+        ])),
+    );
+
+    let mut message = vec![test_item(RESPONSE_HEADER, Value::structure(header))];
+    message.extend([discover_response, get_response]);
+    encode_message_for_test(test_structure(message), &CodecLimits::defaults())
+        .expect("the reordered mixed-batch response fixture is valid")
 }

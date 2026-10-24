@@ -94738,7 +94738,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.31-004",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "§4.31 Table 91 marks each member Required=Yes for complete Link attribute values. This applies to client-visible object state, not partial structured Locate search criteria: §6.1.28 explicitly permits Linked Object Identifier without Link Type in a Locate criterion. Do not infer a server rejection duty. The associated official PGP Link case is mapped but unavailable for execution, and no local typed Link validation or verification evidence is linked."
+      "review_note": "KMIP Specification v2.1 §4.31 Table 91 requires every complete Link value in object state to contain its required members. This applies to client request object state and successful Get Attributes response Attributes (§6.1.20), not partial structured Locate criteria; §6.1.28 permits those filters to omit Link Type. KMIPKit provides local typed validation for both object-state directions without claiming server acceptance. The associated official PGP Link case is mapped but unavailable for execution. KMIPKIT-0010 provides request and response validation evidence."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED",
@@ -94771,7 +94771,7 @@
       "candidate_requirement_id": "KMIPKIT-REQ-SPEC-4.31-005",
       "proposed_requirement_id": null,
       "status": "source_obligation_covered_by_existing_stable_label",
-      "review_note": "§4.31 Table 91 marks each member Required=Yes for complete Link attribute values. This applies to client-visible object state, not partial structured Locate search criteria: §6.1.28 explicitly permits Linked Object Identifier without Link Type in a Locate criterion. Do not infer a server rejection duty. The associated official PGP Link case is mapped but unavailable for execution, and no local typed Link validation or verification evidence is linked."
+      "review_note": "KMIP Specification v2.1 §4.31 Table 91 requires every complete Link value in object state to contain its required members. This applies to client request object state and successful Get Attributes response Attributes (§6.1.20), not partial structured Locate criteria; §6.1.28 permits those filters to omit Link Type. KMIPKit provides local typed validation for both object-state directions without claiming server acceptance. The associated official PGP Link case is mapped but unavailable for execution. KMIPKIT-0010 provides request and response validation evidence."
     },
     {
       "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-4.39-LOWERCASE-FRIENDLY-NAME",

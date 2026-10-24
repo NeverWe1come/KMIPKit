@@ -371,9 +371,31 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(requirement["profile_ids"], [])
                 self.assertEqual(requirement["test_case_ids"], [test_case_id])
                 self.assertIsNone(requirement["feature_spec"])
-                self.assertEqual(requirement["implementation_refs"], [])
-                self.assertEqual(requirement["verification_refs"], [])
-                self.assertEqual(requirement["status"], "unassigned")
+                expected_implementation_refs = {
+                    "KMIPKIT-REQ-SPEC-4.31-004": [
+                        "crates/kmipkit-protocol/src/profile.rs::client_link_type_is_required_in_object_state",
+                        "crates/kmipkit-protocol/src/profile.rs::object_state_links_have_required_members",
+                        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
+                    ],
+                    "KMIPKIT-REQ-SPEC-4.31-005": [
+                        "crates/kmipkit-protocol/src/profile.rs::client_linked_object_identifier_is_required_in_object_state",
+                        "crates/kmipkit-protocol/src/profile.rs::object_state_links_have_required_members",
+                        "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
+                    ],
+                }
+                expected_verification_refs = [
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_complete_client_object_state_link_values",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
+                    "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria",
+                ]
+                self.assertEqual(
+                    requirement["implementation_refs"],
+                    expected_implementation_refs[requirement_id],
+                )
+                self.assertEqual(requirement["verification_refs"], expected_verification_refs)
+                self.assertEqual(requirement["status"], "verified")
                 self.assertTrue(all(requirement_id in profile["requirement_ids"] for profile in client_profiles))
                 self.assertTrue(all(requirement_id in profile["requirement_ids"] for profile in oracle_profiles))
 
@@ -389,7 +411,8 @@ class SourceGapAdjudicationTests(unittest.TestCase):
 
                 self.assertIn("Table 91", gap["review_note"])
                 self.assertIn("Locate", gap["review_note"])
-                self.assertIn("no local typed Link", gap["review_note"])
+                self.assertIn("Get Attributes", gap["review_note"])
+                self.assertIn("KMIPKIT-0010 provides request and response validation evidence", gap["review_note"])
 
         official_case = next(
             row for row in catalog["test_cases"] if row["test_id"] == "KMIPKIT-TEST-CN01-2-66"
@@ -877,7 +900,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertEqual(
             {status: sum(row["status"] == status for row in requirements)
              for status in ("verified", "scoped_verified", "unassigned")},
-            {"verified": 23, "scoped_verified": 7, "unassigned": 27},
+            {"verified": 25, "scoped_verified": 7, "unassigned": 25},
         )
 
         for requirement in requirements:

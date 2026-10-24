@@ -5029,6 +5029,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
                 kind: RuleTestKind::NegativeBehavior,
             },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_payloads",
+                kind: RuleTestKind::NegativeBehavior,
+            },
         ],
         constraints: &[],
     },
@@ -5658,6 +5662,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::NegativeBehavior,
             },
             RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria",
                 kind: RuleTestKind::PositiveBehavior,
             },
@@ -5682,6 +5690,10 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
                 kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
+                kind: RuleTestKind::PositiveBehavior,
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria",

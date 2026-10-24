@@ -1435,7 +1435,7 @@ mod unrelated {
             typed_rule_mappings=typed_rule_mappings,
         )
 
-        self.assertEqual(
+        self.assertCountEqual(
             [
                 "KMIPKIT-REQ-PROF-3.1-001",
                 "KMIPKIT-REQ-PROF-3.1.1-002",
@@ -1665,6 +1665,26 @@ mod unrelated {
                 "KMIPKIT-REQ-SPEC-11-001",
                 "KMIPKIT-REQ-SPEC-12-001-001",
                 "KMIPKIT-REQ-SPEC-12-001-001",
+                "KMIPKIT-REQ-SPEC-2.8-001-002",
+                "KMIPKIT-REQ-SPEC-2.8-001-002",
+                "KMIPKIT-REQ-SPEC-2.8-001-002",
+                "KMIPKIT-REQ-SPEC-3.3-003",
+                "KMIPKIT-REQ-SPEC-3.3-003",
+                "KMIPKIT-REQ-SPEC-3.3-009",
+                "KMIPKIT-REQ-SPEC-3.3-009",
+                "KMIPKIT-REQ-SPEC-4.31-004",
+                "KMIPKIT-REQ-SPEC-4.31-004",
+                "KMIPKIT-REQ-SPEC-4.31-004",
+                "KMIPKIT-REQ-SPEC-4.31-004",
+                "KMIPKIT-REQ-SPEC-4.31-004",
+                "KMIPKIT-REQ-SPEC-4.31-005",
+                "KMIPKIT-REQ-SPEC-4.31-005",
+                "KMIPKIT-REQ-SPEC-4.31-005",
+                "KMIPKIT-REQ-SPEC-4.31-005",
+                "KMIPKIT-REQ-SPEC-4.31-005",
+                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+                "KMIPKIT-REQ-SPEC-6.1.18-007",
+                "KMIPKIT-REQ-SPEC-6.1.18-008",
             ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],
         )

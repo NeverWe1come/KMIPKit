@@ -7,17 +7,24 @@ use super::{
     ProfileValidationSelection, RuleConstraint, RuleEvaluator, RuleTestEvidence, RuleTestKind,
     TYPED_RULE_MAPPINGS, TypedRuleMapping,
     client_add_attribute_random_number_generator_is_well_formed,
+    client_can_include_optional_locate_maximum_items,
+    client_can_include_optional_locate_offset_items,
+    client_check_optional_cryptographic_usage_mask_is_integer,
+    client_check_optional_usage_limits_count_is_long_integer,
     client_create_key_pair_domain_parameters_have_valid_wire_types,
     client_create_split_key_requires_prime_field_size_for_polynomial_method,
     client_get_or_export_key_compression_type_is_enumeration,
     client_key_value_present_is_not_modified,
     client_key_wrapping_data_is_absent_or_has_required_key_information,
     client_key_wrapping_data_is_only_present_for_wrapped_key_value,
+    client_no_encoding_excludes_key_value_attributes,
     client_opaque_object_context_custom_attributes,
+    client_optional_wrapping_specification_is_structure,
     client_register_does_not_specify_key_value_present,
     client_register_key_value_location_requires_omitted_key_value,
     client_register_opaque_object_has_required_data_fields,
     client_register_random_number_generator_is_well_formed,
+    client_split_key_part_identifier_is_within_declared_parts,
     client_wrapped_key_value_requires_key_wrapping_data,
     discover_versions_advertises_only_client_supported_versions,
     import_preserves_pgp_key_form_and_opaque_bytes, import_preserves_wrapped_secret_data_shape,
@@ -4540,7 +4547,6 @@ fn profile_allows_partial_link_locate_search_criteria() {
     result
         .validate_request(&request)
         .expect("KMIP Specification v2.1 §6.1.28 permits partial structured Locate Link criteria");
-
 }
 
 #[test]
@@ -4548,10 +4554,8 @@ fn profile_rejects_incomplete_client_object_state_links_in_get_attributes_respon
     // KMIP Specification v2.1 §4.31 Table 91 applies to Link values in
     // object state, including attributes returned by Get Attributes (§6.1.20).
     let result = client_object_state_link_profile_result();
-    let request = request_message_with_operation_payload(
-        GET_ATTRIBUTES_OPERATION,
-        Structure::new(),
-    );
+    let request =
+        request_message_with_operation_payload(GET_ATTRIBUTES_OPERATION, Structure::new());
 
     let malformed = [
         (
@@ -4572,7 +4576,10 @@ fn profile_rejects_incomplete_client_object_state_links_in_get_attributes_respon
         let error = result
             .validate_response(&request, &response)
             .expect_err("successful Get Attributes responses must return complete Link values");
-        assert_eq!(error.code(), ProfileValidationErrorCode::ResponseRuleRejected);
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::ResponseRuleRejected
+        );
         assert_eq!(error.requirement_id(), Some(requirement_id));
     }
 
@@ -4760,10 +4767,7 @@ fn get_attributes_link_response(links: impl IntoIterator<Item = Item>) -> crate:
                             UNIQUE_IDENTIFIER_TAG,
                             Value::text_string("linked-object".to_owned()),
                         ),
-                        tagged(
-                            ATTRIBUTES_TAG,
-                            Value::structure(structure(links)),
-                        ),
+                        tagged(ATTRIBUTES_TAG, Value::structure(structure(links))),
                     ])),
                 ),
             ])),
@@ -8560,6 +8564,32 @@ fn import_key_block_wrapping_request(
             tagged(object_tag, Value::structure(structure(object_fields))),
         ]),
     )
+}
+
+fn register_key_block_request(fields: impl IntoIterator<Item = Item>) -> crate::RequestMessage {
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+
+    request_message_with_operation_payload(
+        0x0000_0003,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(2)),
+            tagged(
+                SYMMETRIC_KEY,
+                Value::structure(structure([tagged(
+                    KEY_BLOCK,
+                    Value::structure(structure(fields)),
+                )])),
+            ),
+        ]),
+    )
+}
+
+fn register_wrapping_payload_request(
+    fields: impl IntoIterator<Item = Item>,
+) -> crate::RequestMessage {
+    request_message_with_operation_payload(0x0000_0003, structure(fields))
 }
 
 #[test]
@@ -14048,6 +14078,274 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
             .expect("the rule constrains only No Encoding and preserves other values");
     }
 }
+
+#[test]
+fn profile_wrapping_rule_handles_object_type_forms() {
+    // KMIP Specification v2.1 §3.3 and Table 14 define object types used by Key Blocks.
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    let request = register_wrapping_payload_request([]);
+    assert!(client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&request),
+        None
+    ));
+
+    let duplicate = register_wrapping_payload_request([
+        tagged(OBJECT_TYPE, Value::enumeration(2)),
+        tagged(OBJECT_TYPE, Value::enumeration(2)),
+    ]);
+    assert!(client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&duplicate),
+        None
+    ));
+
+    let malformed = register_wrapping_payload_request([tagged(
+        OBJECT_TYPE,
+        Value::text_string("not-an-object-type".to_owned()),
+    )]);
+    assert!(client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&malformed),
+        None
+    ));
+
+    for object_type in [2, 3, 4, 5, 99] {
+        let request = register_wrapping_payload_request([tagged(
+            OBJECT_TYPE,
+            Value::enumeration(object_type),
+        )]);
+        assert!(client_wrapped_key_value_requires_key_wrapping_data(
+            Some(&request),
+            None
+        ));
+    }
+}
+
+#[test]
+fn profile_wrapping_rule_checks_object_and_key_block_envelopes() {
+    // KMIP Specification v2.1 §3.3 and Table 14 define the object/Key Block nesting.
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const SYMMETRIC_KEY: u32 = 0x0042_008F;
+    const KEY_BLOCK: u32 = 0x0042_0040;
+    const KEY_VALUE: u32 = 0x0042_0045;
+
+    let duplicate_object = register_wrapping_payload_request([
+        tagged(OBJECT_TYPE, Value::enumeration(2)),
+        tagged(SYMMETRIC_KEY, Value::structure(Structure::new())),
+        tagged(SYMMETRIC_KEY, Value::structure(Structure::new())),
+    ]);
+    assert!(!client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&duplicate_object),
+        None
+    ));
+
+    let malformed_object = register_wrapping_payload_request([
+        tagged(OBJECT_TYPE, Value::enumeration(2)),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::text_string("not-an-object-structure".to_owned()),
+        ),
+    ]);
+    assert!(!client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&malformed_object),
+        None
+    ));
+
+    let missing_key_block = register_wrapping_payload_request([
+        tagged(OBJECT_TYPE, Value::enumeration(2)),
+        tagged(SYMMETRIC_KEY, Value::structure(Structure::new())),
+    ]);
+    assert!(client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&missing_key_block),
+        None
+    ));
+
+    let duplicate_key_block = register_wrapping_payload_request([
+        tagged(OBJECT_TYPE, Value::enumeration(2)),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([
+                tagged(KEY_BLOCK, Value::structure(Structure::new())),
+                tagged(KEY_BLOCK, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]);
+    assert!(!client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&duplicate_key_block),
+        None
+    ));
+
+    let malformed_key_block = register_wrapping_payload_request([
+        tagged(OBJECT_TYPE, Value::enumeration(2)),
+        tagged(
+            SYMMETRIC_KEY,
+            Value::structure(structure([tagged(
+                KEY_BLOCK,
+                Value::text_string("not-a-key-block".to_owned()),
+            )])),
+        ),
+    ]);
+    assert!(!client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&malformed_key_block),
+        None
+    ));
+
+    let empty_key_block = register_key_block_request(Vec::<Item>::new());
+    assert!(client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&empty_key_block),
+        None
+    ));
+    assert!(
+        client_key_wrapping_data_is_only_present_for_wrapped_key_value(
+            Some(&empty_key_block),
+            None
+        )
+    );
+
+    let malformed_key_value = register_key_block_request([tagged(
+        KEY_VALUE,
+        Value::text_string("not-a-Key-Value".to_owned()),
+    )]);
+    assert!(!client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&malformed_key_value),
+        None
+    ));
+
+    let duplicate_key_value = register_key_block_request([
+        tagged(KEY_VALUE, Value::byte_string(vec![0x5A])),
+        tagged(KEY_VALUE, Value::byte_string(vec![0xA5])),
+    ]);
+    assert!(!client_wrapped_key_value_requires_key_wrapping_data(
+        Some(&duplicate_key_value),
+        None
+    ));
+}
+
+#[test]
+fn profile_wrapping_rule_checks_optional_wrapping_data_encodings() {
+    // KMIP Specification v2.1 §3.3, Table 14 distinguishes wrapped values and Encoding Option.
+    const KEY_VALUE: u32 = 0x0042_0045;
+    const KEY_MATERIAL: u32 = 0x0042_0043;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+    const KEY_WRAPPING_DATA: u32 = 0x0042_0046;
+    const ENCODING_OPTION: u32 = 0x0042_00A3;
+    const NO_ENCODING: u32 = 1;
+
+    let key_value = |with_attributes| {
+        let mut fields = vec![tagged(KEY_MATERIAL, Value::byte_string(vec![0xA5]))];
+        if with_attributes {
+            fields.push(tagged(ATTRIBUTES, Value::structure(Structure::new())));
+        }
+        Value::structure(structure(fields))
+    };
+    let wrapping_data = |encoding_options: Vec<Item>| Value::structure(structure(encoding_options));
+
+    let without_wrapping_data = register_key_block_request([tagged(KEY_VALUE, key_value(false))]);
+    assert!(client_no_encoding_excludes_key_value_attributes(
+        Some(&without_wrapping_data),
+        None
+    ));
+    assert!(
+        client_key_wrapping_data_is_only_present_for_wrapped_key_value(
+            Some(&without_wrapping_data),
+            None
+        )
+    );
+
+    for (encoding_options, expected) in [
+        (Vec::new(), true),
+        (
+            vec![
+                tagged(ENCODING_OPTION, Value::enumeration(NO_ENCODING)),
+                tagged(ENCODING_OPTION, Value::enumeration(2)),
+            ],
+            false,
+        ),
+        (vec![tagged(ENCODING_OPTION, Value::enumeration(2))], true),
+        (
+            vec![tagged(
+                ENCODING_OPTION,
+                Value::text_string("not-an-enumeration".to_owned()),
+            )],
+            false,
+        ),
+    ] {
+        let request = register_key_block_request([
+            tagged(KEY_VALUE, key_value(false)),
+            tagged(KEY_WRAPPING_DATA, wrapping_data(encoding_options)),
+        ]);
+        assert_eq!(
+            client_no_encoding_excludes_key_value_attributes(Some(&request), None),
+            expected
+        );
+    }
+
+    let malformed_wrapping_data = register_key_block_request([
+        tagged(KEY_VALUE, key_value(false)),
+        tagged(
+            KEY_WRAPPING_DATA,
+            Value::text_string("not-a-structure".to_owned()),
+        ),
+    ]);
+    assert!(!client_no_encoding_excludes_key_value_attributes(
+        Some(&malformed_wrapping_data),
+        None
+    ));
+
+    let duplicate_wrapping_data = register_key_block_request([
+        tagged(KEY_VALUE, key_value(false)),
+        tagged(KEY_WRAPPING_DATA, wrapping_data(Vec::new())),
+        tagged(KEY_WRAPPING_DATA, wrapping_data(Vec::new())),
+    ]);
+    assert!(
+        !client_key_wrapping_data_is_only_present_for_wrapped_key_value(
+            Some(&duplicate_wrapping_data),
+            None
+        )
+    );
+
+    let no_encoding_with_attributes = register_key_block_request([
+        tagged(KEY_VALUE, key_value(true)),
+        tagged(
+            KEY_WRAPPING_DATA,
+            wrapping_data(vec![tagged(
+                ENCODING_OPTION,
+                Value::enumeration(NO_ENCODING),
+            )]),
+        ),
+    ]);
+    assert!(!client_no_encoding_excludes_key_value_attributes(
+        Some(&no_encoding_with_attributes),
+        None
+    ));
+}
+
+#[test]
+fn profile_operation_specific_optional_rules_ignore_register_payloads() {
+    // KMIP Specification v2.1 §§6.1.8, 6.1.18, 6.1.19, and 6.1.28 scope these fields to their operations.
+    let register_request = request_message_with_operation_payload(0x0000_0003, Structure::new());
+
+    assert!(client_can_include_optional_locate_maximum_items(
+        Some(&register_request),
+        None
+    ));
+    assert!(client_can_include_optional_locate_offset_items(
+        Some(&register_request),
+        None
+    ));
+    assert!(client_check_optional_usage_limits_count_is_long_integer(
+        Some(&register_request),
+        None
+    ));
+    assert!(client_check_optional_cryptographic_usage_mask_is_integer(
+        Some(&register_request),
+        None
+    ));
+    assert!(client_optional_wrapping_specification_is_structure(
+        Some(&register_request),
+        &[0x0000_000A, 0x0000_002B],
+        None
+    ));
+}
+
 #[test]
 fn profile_requires_unique_identifier_for_key_wrapping_key_information() {
     // KMIP Specification v2.1 §3.3/Table 14 requires Unique Identifier in
@@ -14184,6 +14482,27 @@ fn profile_constrains_split_key_part_identifier_to_declared_parts() {
             assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
         }
 
+        for (split_key_parts, key_part_identifier) in [
+            (Value::integer(0), Value::integer(1)),
+            (Value::integer(3), Value::text_string("2".to_owned())),
+            (Value::text_string("3".to_owned()), Value::integer(2)),
+        ] {
+            let request = register_or_import_split_key_request(
+                operation,
+                split_key_parts,
+                key_part_identifier,
+            );
+            let error = result
+                .validate_request(&request)
+                .expect_err("malformed split-key bounds must be rejected");
+            assert_eq!(
+                error.code(),
+                ProfileValidationErrorCode::RequestRuleRejected
+            );
+            assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+            assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+        }
+
         for key_part_identifier in [1, 3] {
             let request = register_or_import_split_key_request(
                 operation,
@@ -14195,4 +14514,82 @@ fn profile_constrains_split_key_part_identifier_to_declared_parts() {
                 .expect("both inclusive Key Part Identifier bounds are valid");
         }
     }
+}
+
+#[test]
+fn profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_payloads() {
+    // KMIP Specification v2.1 §2.8 and Table 9 scope this rule to Split Key objects.
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const QUERY_OPERATION: u32 = 0x0000_0018;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const SPLIT_KEY_OBJECT_TYPE: u32 = 5;
+    const SPLIT_KEY: u32 = 0x0042_0089;
+    const SPLIT_KEY_PARTS: u32 = 0x0042_008B;
+    const KEY_PART_IDENTIFIER: u32 = 0x0042_0044;
+
+    let unrelated_operation =
+        request_message_with_operation_payload(QUERY_OPERATION, Structure::new());
+    assert!(client_split_key_part_identifier_is_within_declared_parts(
+        Some(&unrelated_operation),
+        None
+    ));
+
+    let unrelated_object_type = request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([tagged(OBJECT_TYPE, Value::enumeration(1))]),
+    );
+    assert!(client_split_key_part_identifier_is_within_declared_parts(
+        Some(&unrelated_object_type),
+        None
+    ));
+
+    let missing_object_type =
+        request_message_with_operation_payload(REGISTER_OPERATION, Structure::new());
+    assert!(!client_split_key_part_identifier_is_within_declared_parts(
+        Some(&missing_object_type),
+        None
+    ));
+
+    let malformed_object_type = request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([tagged(
+            OBJECT_TYPE,
+            Value::text_string("Split Key".to_owned()),
+        )]),
+    );
+    assert!(!client_split_key_part_identifier_is_within_declared_parts(
+        Some(&malformed_object_type),
+        None
+    ));
+
+    let malformed_split_key = request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(SPLIT_KEY_OBJECT_TYPE)),
+            tagged(SPLIT_KEY, Value::text_string("not a structure".to_owned())),
+        ]),
+    );
+    assert!(!client_split_key_part_identifier_is_within_declared_parts(
+        Some(&malformed_split_key),
+        None
+    ));
+
+    let duplicate_split_key_parts = request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE, Value::enumeration(SPLIT_KEY_OBJECT_TYPE)),
+            tagged(
+                SPLIT_KEY,
+                Value::structure(structure([
+                    tagged(SPLIT_KEY_PARTS, Value::integer(3)),
+                    tagged(SPLIT_KEY_PARTS, Value::integer(4)),
+                    tagged(KEY_PART_IDENTIFIER, Value::integer(2)),
+                ])),
+            ),
+        ]),
+    );
+    assert!(!client_split_key_part_identifier_is_within_declared_parts(
+        Some(&duplicate_split_key_parts),
+        None
+    ));
 }

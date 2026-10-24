@@ -87064,9 +87064,10 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_constrains_split_key_part_identifier_to_declared_parts",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_payloads"
       ],
-      "negative_verification_required": false,
+      "negative_verification_required": true,
       "decision_id": null,
       "status": "scoped_verified",
       "review_note": "KMIP Specification v2.1 §2.8 requires Key Part Identifier to be at least 1 and no greater than Split Key Parts; Table 9 defines both as required Integer members of the Split Key structure. The typed client rule applies to client-originated Register and Import requests with Object Type Split Key, validates the inclusive range and Integer types, and leaves unrelated object types untouched. The pinned clause does not establish request/response direction; this mapping is scoped to Split Key representations supplied by the client. No requirement-specific official OASIS Test Case ID is linked by the pinned source."
@@ -89765,12 +89766,16 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_complete_client_object_state_link_values",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Link Type member as an Enumeration in each complete Link value represented as client object state. The typed rule validates client-originated request structures, permits repeated Link attributes and unknown Link Type enumeration values, and excludes Locate search criteria because §6.1.28 permits partial structured Link filters. This records client request representation only; it makes no claim about server-provided object state, server acceptance, or formal conformance. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering linked PGP objects, but its fixture is unavailable and no official execution evidence is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires Link Type as an Enumeration in each complete Link value represented as object state. The typed rule validates client request object state and successful Get Attributes response Attributes (§6.1.20), correlating reordered batch responses by Unique Batch Item ID under §9.21; it permits repeated Links and unknown Link Type enumeration values, and excludes Locate search criteria because §6.1.28 permits partial structured Link filters. This is local typed validation only; it makes no claim about server acceptance or formal conformance. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering linked PGP objects, but its fixture is unavailable and no official execution evidence is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.31-005",
@@ -89814,12 +89819,16 @@
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_complete_link_members_in_client_object_state"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_complete_client_object_state_link_values",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_incomplete_client_object_state_links_in_get_attributes_responses",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_correlates_reordered_get_attributes_link_responses_by_batch_id",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_allows_partial_link_locate_search_criteria"
       ],
       "negative_verification_required": true,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires the Linked Object Identifier member as Text String, Enumeration, or Integer in each complete Link value represented as client object state. The typed rule validates client-originated request structures, permits repeated Link attributes, and excludes Locate search criteria because §6.1.28 permits partial structured Link filters. This records client request representation only; it makes no claim about server-provided object state, server acceptance, or formal conformance. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering linked PGP objects, but its fixture is unavailable and no official execution evidence is claimed."
+      "review_note": "Pinned KMIP Specification v2.1 §4.31 Table 91 requires Linked Object Identifier as Text String, Enumeration, or Integer in each complete Link value represented as object state. The typed rule validates client request object state and successful Get Attributes response Attributes (§6.1.20), correlating reordered batch responses by Unique Batch Item ID under §9.21; it permits repeated Links and excludes Locate search criteria because §6.1.28 permits partial structured Link filters. This is local typed validation only; it makes no claim about server acceptance or formal conformance. The pinned Test Cases CN01 §2.66 entry TC-PGP-1-21 describes registering linked PGP objects, but its fixture is unavailable and no official execution evidence is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-4.32-001",
@@ -97915,7 +97924,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator confirms the client can encode Common Attributes and leaves the optional group absent when omitted; it makes no claim about server assignment or outcome. No requirement-specific official OASIS Test Case is linked."
+      "review_note": "The pinned KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator confirms the client can encode Common Attributes and leaves the optional group absent when omitted; it makes no claim about server assignment or outcome. No requirement-specific official Test Cases are linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-002",
@@ -97954,7 +97963,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator checks both optional Private Key Attributes and Public Key Attributes groups, while the request-construction tests use distinct values and preserve omission. It makes no claim about server-side attribute semantics or outcome. No requirement-specific official OASIS Test Case is linked."
+      "review_note": "The pinned KMIP Specification v2.1 §6.1.9 paragraph 1 and Table 189 support this client-side request-representation capability. The profile evaluator checks both optional Private Key Attributes and Public Key Attributes groups, while the request-construction tests use distinct values and preserve omission. It makes no claim about server-side attribute semantics or outcome. No requirement-specific official Test Cases are linked by the pinned OASIS source."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-006",
@@ -101222,7 +101231,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The pinned KMIP Specification v2.1 §6.1.18 Table 217 Key Format Type row (HTML lines 26902-26917) records optional_table_body_value, distinct from an RFC keyword. The typed Baseline Client rule accepts one caller-selected Enumeration in an Export request, preserves omission and future values, and rejects malformed or duplicate selectors. Local request tests establish caller representation only; they do not prove the server returns the selected format. No requirement-specific official Test Case is linked by the pinned OASIS source."
+      "review_note": "The pinned KMIP Specification v2.1 §6.1.18 Table 217 Key Format Type row (HTML lines 26902-26917) records optional_table_body_value, distinct from an RFC keyword. The typed Baseline Client rule accepts one caller-selected Enumeration in an Export request, preserves omission and future values, and rejects malformed or duplicate selectors. Local request tests establish caller representation only; they do not assert server-side behavior or prove that the server returns the selected format. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS source. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-006",
@@ -101270,7 +101279,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "The pinned KMIP Specification v2.1 §6.1.18 Table 217 Key Wrap Type row (HTML lines 26918-26933) records optional_table_body_value, distinct from an RFC keyword. The typed Baseline Client rule accepts one caller-selected Enumeration in an Export request, preserves omission and future values, and rejects malformed or duplicate selectors. Local request tests establish caller representation only; they do not prove the server returns the selected wrap type. No requirement-specific official Test Case is linked by the pinned OASIS source."
+      "review_note": "The pinned KMIP Specification v2.1 §6.1.18 Table 217 Key Wrap Type row (HTML lines 26918-26933) records optional_table_body_value, distinct from an RFC keyword. The typed Baseline Client rule accepts one caller-selected Enumeration in an Export request, preserves omission and future values, and rejects malformed or duplicate selectors. Local request tests establish caller representation only; they do not assert server-side behavior or prove that the server returns the selected wrap type. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS source. No official case-level pass is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.18-007",
