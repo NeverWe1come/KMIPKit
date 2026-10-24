@@ -4161,6 +4161,55 @@ fn profile_maps_create_split_key_optional_source_identifier() {
             .expect("the client may omit or provide the optional split source ID");
     }
 }
+#[test]
+fn profile_requires_prime_field_size_for_polynomial_split_key_requests() {
+    // KMIP Specification v2.1 §2.8, Table 9 requires Prime Field Size for
+    // Polynomial Sharing Prime Field.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.8-003";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let request = create_split_key_profile_request(3, None);
+    let error = result
+        .validate_request(&request)
+        .expect_err("a polynomial split request requires an explicit Prime Field Size");
+
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+}
+
+fn create_split_key_profile_request(
+    split_key_method: u32,
+    prime_field_size: Option<Value>,
+) -> crate::RequestMessage {
+    const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const SPLIT_KEY_PARTS: u32 = 0x0042_008B;
+    const SPLIT_KEY_THRESHOLD: u32 = 0x0042_008C;
+    const SPLIT_KEY_METHOD: u32 = 0x0042_008A;
+    const PRIME_FIELD_SIZE: u32 = 0x0042_0062;
+    const ATTRIBUTES: u32 = 0x0042_0125;
+
+    let mut fields = vec![
+        tagged(OBJECT_TYPE, Value::enumeration(7)),
+        tagged(SPLIT_KEY_PARTS, Value::integer(3)),
+        tagged(SPLIT_KEY_THRESHOLD, Value::integer(2)),
+        tagged(SPLIT_KEY_METHOD, Value::enumeration(split_key_method)),
+    ];
+    if let Some(prime_field_size) = prime_field_size {
+        fields.push(tagged(PRIME_FIELD_SIZE, prime_field_size));
+    }
+    fields.push(tagged(ATTRIBUTES, Value::structure(Structure::new())));
+
+    request_message_with_operation_payload(CREATE_SPLIT_KEY_OPERATION, structure(fields))
+}
+
 fn request_message_with_time_stamp(seconds: i64) -> crate::RequestMessage {
     crate::RequestMessage::try_from_ttlv(structure([
         tagged(
