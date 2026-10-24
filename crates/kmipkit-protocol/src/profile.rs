@@ -2461,21 +2461,10 @@ fn client_register_length_requires_algorithm(
     )
 }
 
-fn client_register_algorithm_may_be_in_key_block(
+fn client_register_table293_pair_may_be_in_key_block(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
 ) -> bool {
-    client_register_table293_pair_may_be_in_key_block(request)
-}
-
-fn client_register_length_may_be_in_key_block(
-    request: Option<&RequestMessage>,
-    _response: Option<(&RequestMessage, &ResponseMessage)>,
-) -> bool {
-    client_register_table293_pair_may_be_in_key_block(request)
-}
-
-fn client_register_table293_pair_may_be_in_key_block(request: Option<&RequestMessage>) -> bool {
     let Some(request) = request else {
         return false;
     };
@@ -4157,7 +4146,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_algorithm_may_be_in_key_block),
+        evaluator: Some(client_register_table293_pair_may_be_in_key_block),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
@@ -4175,7 +4164,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
-        evaluator: Some(client_register_length_may_be_in_key_block),
+        evaluator: Some(client_register_table293_pair_may_be_in_key_block),
         test_evidence: &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions",
