@@ -7929,6 +7929,38 @@ fn profile_maps_register_key_value_attributes_as_optional_capability() {
         .validate_request(&without_key_value_attributes)
         .expect("the optional Attributes do not become required");
 
+    let without_key_value = register_request_with_key_value_location(None, false);
+    assert!(evaluate(Some(&without_key_value), None));
+    result
+        .validate_request(&without_key_value)
+        .expect("Key Value itself remains optional for this capability");
+
+    let without_key_block = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            tagged(TABLE12_SYMMETRIC_KEY, Value::structure(structure([]))),
+            [],
+        ),
+    );
+    assert!(evaluate(Some(&without_key_block), None));
+    result
+        .validate_request(&without_key_block)
+        .expect("objects without Key Block do not acquire a Key Value requirement here");
+
+    let wrapped_key_value = register_wrapped_key_value_request(Value::enumeration(2));
+    assert!(evaluate(Some(&wrapped_key_value), None));
+    result
+        .validate_request(&wrapped_key_value)
+        .expect("wrapped Byte String contents remain opaque to this optional capability");
+
+    let unrelated_operation =
+        request_message_with_operation_payload(TABLE12_GET_OPERATION, Structure::new());
+    assert!(evaluate(Some(&unrelated_operation), None));
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Register-only rule does not constrain unrelated operations");
+
     let malformed = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
