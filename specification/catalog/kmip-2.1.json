@@ -97916,7 +97916,7 @@
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a client to supply Lease Time in a Check request when evaluating a later Obtain Lease request. The typed optional-capability rule accepts omission and one Interval value, and rejects malformed or repeated fields. The protocol test exercises those branches; the fake-transport Check test confirms the caller-supplied value is encoded. No official Test Case ID is linked by the pinned source, and no server outcome or formal conformance is claimed."
+      "review_note": "KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a client to supply Lease Time in a Check request when evaluating a later Obtain Lease request; §4.30 Table 88 defines Lease Time's TTLV type as Interval. The typed optional-capability rule accepts omission and one Interval value, and rejects malformed or repeated fields. The protocol test exercises those branches; the fake-transport Check test confirms the caller-supplied value is encoded. No official Test Case ID is linked by the pinned source, and no server outcome or formal conformance is claimed."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-6.1.9-001-001",

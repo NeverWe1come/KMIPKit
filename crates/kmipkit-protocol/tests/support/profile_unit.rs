@@ -3969,8 +3969,8 @@ fn profile_maps_client_check_usage_limits_count() {
 
 #[test]
 fn profile_maps_client_check_lease_time() {
-    // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define Lease Time
-    // as an optional Check request Interval.
+    // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define optional
+    // Check Lease Time; §4.30 Table 88 defines its TTLV type as Interval.
     let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-005");
     let with_lease_time = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
@@ -4002,6 +4002,12 @@ fn profile_maps_client_check_lease_time() {
         ]),
     );
     assert!(result.validate_request(&duplicate).is_err());
+
+    let unrelated_operation =
+        request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated_operation)
+        .expect("a Check-only rule does not reject unrelated operations");
 }
 
 #[test]
