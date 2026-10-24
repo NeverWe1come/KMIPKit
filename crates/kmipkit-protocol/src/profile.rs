@@ -1894,32 +1894,37 @@ fn client_join_split_key_secret_data_type_is_valid_when_applicable(
 
         batch_item
             .with_request_payload(|payload| {
-                let FieldPresence::Unique(object_type) =
-                    field_presence(&payload, JOIN_SPLIT_KEY_OBJECT_TYPE_TAG)
-                else {
-                    // Object Type is a separate operation requirement. This optional rule
-                    // only checks Secret Data Type when its condition is observable.
-                    return true;
-                };
-                let Some(object_type) = object_type.with_value(|value| match value {
-                    ValueView::Enumeration(value) => Some(*value),
-                    _ => None,
-                }) else {
-                    return true;
-                };
-                if object_type != SECRET_DATA_OBJECT_TYPE {
-                    return true;
-                }
-
-                match field_presence(&payload, SECRET_DATA_TYPE) {
-                    FieldPresence::Missing => true,
-                    FieldPresence::Unique(secret_data_type) => secret_data_type
-                        .with_value(|value| matches!(value, ValueView::Enumeration(_))),
-                    FieldPresence::Duplicate => false,
-                }
+                join_split_key_secret_data_type_is_well_formed(&payload)
             })
             .unwrap_or(false)
     })
+}
+
+fn join_split_key_secret_data_type_is_well_formed(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) =
+        field_presence(payload, JOIN_SPLIT_KEY_OBJECT_TYPE_TAG)
+    else {
+        // Object Type is a separate operation requirement. This optional rule only
+        // checks Secret Data Type when its condition is observable.
+        return true;
+    };
+    let Some(object_type) = object_type.with_value(|value| match value {
+        ValueView::Enumeration(value) => Some(*value),
+        _ => None,
+    }) else {
+        return true;
+    };
+    if object_type != SECRET_DATA_OBJECT_TYPE {
+        return true;
+    }
+
+    match field_presence(payload, SECRET_DATA_TYPE) {
+        FieldPresence::Missing => true,
+        FieldPresence::Unique(secret_data_type) => {
+            secret_data_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        }
+        FieldPresence::Duplicate => false,
+    }
 }
 
 fn delegated_login_rights_are_well_formed(structure: &kmipkit_ttlv::StructureView<'_>) -> bool {
