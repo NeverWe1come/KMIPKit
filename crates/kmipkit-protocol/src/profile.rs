@@ -8484,6 +8484,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         constraints: &[],
     },
     TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-010",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_specifies_explicit_source_identifiers),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_unique_identifier",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
         requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-011",
         source_clause_id: "",
         source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED"),
