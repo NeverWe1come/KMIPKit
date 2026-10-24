@@ -2136,22 +2136,22 @@ fn client_register_has_required_object_type_and_attributes(
 
         batch_item
             .with_request_payload(|payload| {
-                let FieldPresence::Unique(object_type) =
-                    field_presence(&payload, REGISTER_OBJECT_TYPE)
-                else {
-                    return false;
-                };
-                let FieldPresence::Unique(attributes) =
-                    field_presence(&payload, REGISTER_ATTRIBUTES)
-                else {
-                    return false;
-                };
-
-                object_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
-                    && attributes.with_value(|value| matches!(value, ValueView::Structure(_)))
+                register_payload_has_required_table_291_fields(&payload)
             })
             .unwrap_or(false)
     })
+}
+
+fn register_payload_has_required_table_291_fields(payload: &StructureView<'_>) -> bool {
+    let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
+        return false;
+    };
+    let FieldPresence::Unique(attributes) = field_presence(payload, REGISTER_ATTRIBUTES) else {
+        return false;
+    };
+
+    object_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+        && attributes.with_value(|value| matches!(value, ValueView::Structure(_)))
 }
 
 fn register_opaque_context_is_well_formed(payload: &StructureView<'_>) -> bool {
