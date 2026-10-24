@@ -57,6 +57,11 @@ const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const LOCATE_OPERATION_TAG: u32 = 0x0000_0008;
 const CHECK_OPERATION_TAG: u32 = 0x0000_0009;
+const DELEGATED_LOGIN_OPERATION_TAG: u32 = 0x0000_002F;
+const DELEGATED_LOGIN_RIGHTS_TAG: u32 = 0x0042_014D;
+const DELEGATED_LOGIN_RIGHT_TAG: u32 = 0x0042_014E;
+const DELEGATED_LOGIN_REQUEST_COUNT_TAG: u32 = 0x0042_014C;
+const DELEGATED_LOGIN_USAGE_LIMITS_TAG: u32 = 0x0042_0095;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const RESPONSE_PAYLOAD_TAG: u32 = 0x0042_007C;
@@ -3928,6 +3933,37 @@ fn optional_check_profile_result(requirement_id: &str) -> ProfileValidationResul
     }
 }
 
+fn delegated_login_profile_result(requirement_id: &str) -> ProfileValidationResult {
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == requirement_id)
+        .expect("the Delegated Login field has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == requirement_id)
+        .expect("the Delegated Login field resolves to generated metadata");
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the Delegated Login rule is linked to its source and executable test");
+    assert!(!mapping
+        .evaluator
+        .expect("the Delegated Login rule has a typed evaluator")(
+        None, None
+    ));
+
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![requirement_id.to_owned()],
+    }
+}
+
+fn delegated_login_rights() -> Structure {
+    structure([tagged(
+        DELEGATED_LOGIN_RIGHT_TAG,
+        Value::structure(Structure::new()),
+    )])
+}
+
 #[test]
 fn profile_maps_client_check_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.7 Table 182 and Table 183 define this
@@ -4089,6 +4125,164 @@ fn profile_maps_client_check_intended_cryptographic_uses() {
     result
         .validate_request(&unrelated_operation)
         .expect("a Check-only rule does not reject unrelated operations");
+}
+
+#[test]
+fn profile_maps_client_delegated_login_rights_as_required_structure() {
+    // KMIP Specification v2.1 §6.1.12 Table 199 requires Rights in the request.
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-003");
+    let valid = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .into_ttlv_payload()
+            .expect("required Rights structure is representable"),
+    );
+    result
+        .validate_request(&valid)
+        .expect("a Delegated Login request with Rights is valid");
+
+    let missing = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        Structure::new(),
+    );
+    assert!(result.validate_request(&missing).is_err());
+
+    let malformed = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        structure([tagged(DELEGATED_LOGIN_RIGHTS_TAG, Value::integer(1))]),
+    );
+    assert!(result.validate_request(&malformed).is_err());
+
+    let unrelated_operation = request_message_with_operation_payload(
+        LOCATE_OPERATION_TAG,
+        structure([tagged(DELEGATED_LOGIN_RIGHTS_TAG, Value::integer(1))]),
+    );
+    result
+        .validate_request(&unrelated_operation)
+        .expect("a Delegated Login-only rule does not inspect Locate payload fields");
+}
+
+#[test]
+fn profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_time() {
+    // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Lease Time.
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-005");
+    let rights_only = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .into_ttlv_payload()
+            .expect("Rights-only Delegated Login request is representable"),
+    );
+    result
+        .validate_request(&rights_only)
+        .expect("optional Lease Time may be omitted");
+
+    for payload in [
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .with_lease_time_interval(60)
+            .into_ttlv_payload()
+            .expect("Interval Lease Time is representable"),
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .with_lease_time_date_time(1_700_000_000)
+            .into_ttlv_payload()
+            .expect("Date Time Lease Time is representable"),
+    ] {
+        let supplied =
+            request_message_with_operation_payload(DELEGATED_LOGIN_OPERATION_TAG, payload);
+        result
+            .validate_request(&supplied)
+            .expect("both Table 199 Lease Time forms are valid");
+    }
+
+    let malformed = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        structure([
+            tagged(LEASE_TIME_TAG, Value::text_string("sixty".to_owned())),
+            tagged(
+                DELEGATED_LOGIN_RIGHTS_TAG,
+                Value::structure(delegated_login_rights()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed).is_err());
+}
+
+#[test]
+fn profile_maps_client_delegated_login_request_count_as_optional_integer() {
+    // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Request Count.
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-006");
+    let omitted = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .into_ttlv_payload()
+            .expect("Rights-only Delegated Login request is representable"),
+    );
+    result
+        .validate_request(&omitted)
+        .expect("optional Request Count may be omitted");
+
+    let supplied = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .with_request_count(4)
+            .into_ttlv_payload()
+            .expect("Integer Request Count is representable"),
+    );
+    result
+        .validate_request(&supplied)
+        .expect("the client can supply Request Count as Integer");
+
+    let malformed = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        structure([
+            tagged(
+                DELEGATED_LOGIN_REQUEST_COUNT_TAG,
+                Value::text_string("four".to_owned()),
+            ),
+            tagged(
+                DELEGATED_LOGIN_RIGHTS_TAG,
+                Value::structure(delegated_login_rights()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed).is_err());
+}
+
+#[test]
+fn profile_maps_client_delegated_login_usage_limits_as_optional_structure() {
+    // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Usage Limits.
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-007");
+    let omitted = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .into_ttlv_payload()
+            .expect("Rights-only Delegated Login request is representable"),
+    );
+    result
+        .validate_request(&omitted)
+        .expect("optional Usage Limits may be omitted");
+
+    let supplied = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        crate::DelegatedLoginRequest::new(delegated_login_rights())
+            .with_usage_limits(Structure::new())
+            .into_ttlv_payload()
+            .expect("Structure Usage Limits is representable"),
+    );
+    result
+        .validate_request(&supplied)
+        .expect("the client can supply Usage Limits as a Structure");
+
+    let malformed = request_message_with_operation_payload(
+        DELEGATED_LOGIN_OPERATION_TAG,
+        structure([
+            tagged(DELEGATED_LOGIN_USAGE_LIMITS_TAG, Value::integer(1)),
+            tagged(
+                DELEGATED_LOGIN_RIGHTS_TAG,
+                Value::structure(delegated_login_rights()),
+            ),
+        ]),
+    );
+    assert!(result.validate_request(&malformed).is_err());
 }
 
 #[test]
