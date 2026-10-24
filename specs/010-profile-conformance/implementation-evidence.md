@@ -5576,3 +5576,20 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.13-006` from KMIP Specification v2.1 §6.1.13 Table
 | Hosted CI | Run `40066856718` on prior published head `9f5bdb4d` | In progress; this local increment is not part of that head. |
 
 Baseline Client now has 109 valid executable typed mappings of 265 assigned requirements; 156 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Optional Key Wrapping Data (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-3.3-001-001` and `KMIPKIT-REQ-SPEC-3.3-001-002` from KMIP Specification v2.1 §3.3, including Table 14. The profile evidence covers Register and Import request representations with Key Wrapping Data present, and unwrapped Key Values with the structure omitted. KMIP Specification v2.1 §3.1 still requires Key Wrapping Data when the Key Value is wrapped; these tests do not claim that a wrapped request may omit it. The evaluator validates required wrapping-key information when the optional structure is present. No server behavior, unwrapping, server acceptance, or official OASIS Test Case result is claimed.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `f24f87fb`; `cargo test -p kmipkit-protocol --lib --all-features profile_maps_optional_key_wrapping_data_for_register_and_import` | Expected failure: `MissingRuleMapping` for `KMIPKIT-REQ-SPEC-3.3-001-001`. |
+| Green | DCO commit `673d6936`; added optional-capability mappings for both §3.3 requirements using the existing fail-closed Key Wrapping Data validator | PASS: the focused profile test accepts wrapped and unwrapped Register and Import representations. |
+| Refactor | DCO commit `49fa0185`; renamed the evaluator to state that wrapping data may be absent or valid when supplied | PASS: focused optional-data and required-key-information profile tests pass. |
+| Rust verification | Focused optional Key Wrapping Data and §3.3 required-key-information profile tests; protocol Clippy with `-D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: both profile tests, Clippy, formatting, and diff checks pass. |
+| Catalog and generated evidence | Catalog validator; profile metadata generator `--check`; coverage report generation and `--check`; full-profile report snapshot | PASS: source clauses, runtime mappings, and executable test evidence resolve. |
+| Traceability | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | PASS: both new mappings and the renamed evaluator resolve to the catalog and test evidence. |
+| Hosted CI | Exact-head run after the batch is pushed | Pending. |
+
+Baseline Client now has 111 valid executable typed mappings of 265 assigned requirements; 154 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.

@@ -87712,16 +87712,18 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/import.rs"
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_wrapping_data_is_absent_or_has_required_key_information"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type",
-        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Specification v2.1 §3.3 permits a client to supply Key Wrapping Data in a Key Block. The PGP test asserts that a wrapped PGP Key request carries Key Wrap Type Enumeration 1. The Import replacement test asserts caller-supplied replacement and Key Wrap Type values and confirms the wrapped object contains generic TTLV Encryption Key Information and a ByteString Key Value. These tests do not validate every inner wrapping field or claim server-side unwrap behavior. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance."
+      "review_note": "Pinned KMIP Specification v2.1 §3.3 permits a client to supply optional Key Wrapping Data inside a Key Block. The Baseline Client profile test covers wrapped Register and Import request representations with Key Wrapping Data. Existing Import tests cover Key Wrap Type preservation. This is request representation evidence only; it does not claim server-side unwrapping, server acceptance, or formal profile conformance. No requirement-specific official Test Case ID is linked by the pinned OASIS sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.3-001-002",
@@ -87747,16 +87749,18 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/import.rs"
+        "crates/kmipkit-protocol/src/import.rs",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_wrapping_data_is_absent_or_has_required_key_information"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices",
-        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data"
+        "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data",
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_key_wrapping_data_for_register_and_import"
       ],
       "negative_verification_required": false,
       "decision_id": null,
       "status": "verified",
-      "review_note": "Specification v2.1 §3.3 marks wrapping-mechanism information OPTIONAL. These tests show that an Import request for an unwrapped key can omit wrapping information and that Key Wrap Type presence is checked against wrapping data; they do not make required fields inside a wrapped structure optional. No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002; these local tests are not official OASIS evidence or formal profile conformance."
+      "review_note": "Pinned KMIP Specification v2.1 §3.3 marks Key Wrapping Data as optional information. The profile test permits omission for unwrapped Register and Import Key Values and requires valid wrapping metadata when it is supplied; KMIP Specification v2.1 §3.1 still requires Key Wrapping Data when the Key Value is wrapped. This does not make required fields inside a supplied wrapping structure optional, and does not claim server behavior or formal profile conformance. No requirement-specific official OASIS Test Case ID is linked by the pinned sources."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-3.3-002",
@@ -87861,7 +87865,7 @@
       "test_case_ids": [],
       "feature_spec": null,
       "implementation_refs": [
-        "crates/kmipkit-protocol/src/profile.rs::client_key_wrapping_data_has_required_key_information",
+        "crates/kmipkit-protocol/src/profile.rs::client_key_wrapping_data_is_absent_or_has_required_key_information",
         "crates/kmipkit-protocol/src/profile.rs::key_wrapping_data_has_required_key_information",
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS"
       ],
