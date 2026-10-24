@@ -16382,6 +16382,58 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
 }
 
 #[test]
+fn profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability() {
+    // KMIP Specification v2.1 §6.1.27 Table 244 permits Unique Identifier
+    // to be repeated in a Join Split Key request.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-005";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Join Split Key repeated identifiers have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Join Split Key repeated identifiers resolve to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional repeated-identifier capability has executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Join Split Key repeated identifiers have a typed evaluator");
+    let request = request_message_with_operation_payload(
+        JOIN_SPLIT_KEY_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-a".to_owned()),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-b".to_owned()),
+            ),
+        ]),
+    );
+    assert!(evaluate(Some(&request), None));
+
+    ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    }
+    .validate_request(&request)
+    .expect("the profile accepts both Unique Identifier entries in the request");
+}
+
+#[test]
 fn profile_rejects_usage_limits_count_in_add_and_modify_attribute() {
     // KMIP Specification v2.1 §4.59 paragraph 3 prohibits setting or modifying
     // Usage Limits Count through Add Attribute or Modify Attribute.
