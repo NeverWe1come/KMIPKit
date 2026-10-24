@@ -11265,6 +11265,91 @@ fn profile_maps_register_key_value_attributes_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_optional_register_nist_key_type_capability() {
+    // KMIP Specification v2.1 §4.34 Table 97 and §11.32 define its optional Enumeration form.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.34-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.34-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const NIST_KEY_TYPE_TAG: u32 = 0x0042_013A;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("NIST Key Type has a typed optional-capability mapping");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("NIST Key Type resolves to generated requirement metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("NIST Key Type has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let register_with_nist_key_types = |values: Vec<Value>| {
+        request_message_with_operation_payload(
+            REGISTER_OPERATION_TAG,
+            structure([
+                tagged(OBJECT_TYPE_TAG, Value::enumeration(2)),
+                tagged(
+                    ATTRIBUTES_TAG,
+                    Value::structure(structure(
+                        values
+                            .into_iter()
+                            .map(|value| tagged(NIST_KEY_TYPE_TAG, value)),
+                    )),
+                ),
+            ]),
+        )
+    };
+    let with_nist_key_type = register_with_nist_key_types(vec![Value::enumeration(6)]);
+    assert!(evaluate(Some(&with_nist_key_type), None));
+    result
+        .validate_request(&with_nist_key_type)
+        .expect("the client can set NIST Key Type in a Register request");
+
+    let without_nist_key_type = register_with_nist_key_types(vec![]);
+    assert!(evaluate(Some(&without_nist_key_type), None));
+    result
+        .validate_request(&without_nist_key_type)
+        .expect("NIST Key Type remains optional");
+
+    let with_extension_nist_key_type =
+        register_with_nist_key_types(vec![Value::enumeration(0x8123_4567)]);
+    assert!(evaluate(Some(&with_extension_nist_key_type), None));
+    result
+        .validate_request(&with_extension_nist_key_type)
+        .expect("future or vendor NIST Key Type enumeration values remain representable");
+
+    let malformed_nist_key_type = register_with_nist_key_types(vec![Value::integer(6)]);
+    assert!(!evaluate(Some(&malformed_nist_key_type), None));
+    assert!(result.validate_request(&malformed_nist_key_type).is_err());
+
+    let duplicate_nist_key_type =
+        register_with_nist_key_types(vec![Value::enumeration(6), Value::enumeration(7)]);
+    assert!(!evaluate(Some(&duplicate_nist_key_type), None));
+    assert!(result.validate_request(&duplicate_nist_key_type).is_err());
+
+    let unrelated_operation =
+        request_message_with_operation_payload(TABLE12_GET_OPERATION, Structure::new());
+    assert!(evaluate(Some(&unrelated_operation), None));
+    result
+        .validate_request(&unrelated_operation)
+        .expect("the Register-only rule does not constrain unrelated operations");
+}
+
+#[test]
 fn profile_rejects_malformed_register_key_value_attributes_container() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.2-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
