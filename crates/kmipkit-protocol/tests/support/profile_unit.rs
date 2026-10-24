@@ -1104,6 +1104,35 @@ fn profile_maps_derive_key_unique_identifiers_exclude_id_placeholder() {
     validate_mapping(DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID, requirement, mapping)
         .expect("the prohibition has category-matched negative evidence");
 
+    const REPEATED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-001";
+    let repeated_identifier_mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REPEATED_IDENTIFIER_REQUIREMENT_ID)
+        .expect("Derive Key repeated Unique Identifier capability has a typed profile mapping");
+    let repeated_identifier_requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REPEATED_IDENTIFIER_REQUIREMENT_ID)
+        .expect("the repeated Derive Key identifier requirement resolves to normative metadata");
+    assert_eq!(
+        repeated_identifier_mapping.source_clause_id,
+        DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID
+    );
+    assert_eq!(
+        repeated_identifier_mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(
+        DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID,
+        repeated_identifier_requirement,
+        repeated_identifier_mapping,
+    )
+    .expect("the repeated identifier capability has usable positive evidence");
+    assert!(repeated_identifier_mapping.test_evidence.iter().any(|evidence| {
+        evidence.test_id
+            == "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_derive_key_unique_identifiers_exclude_id_placeholder"
+            && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+    }));
+
     let result = ProfileValidationResult {
         profile_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID.to_owned()],
         requirement_ids: vec![DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID.to_owned()],
