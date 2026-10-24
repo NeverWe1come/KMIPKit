@@ -2794,15 +2794,12 @@ fn client_accepts_rng_seed_zero_data_length(
             .with_response_payload(|payload| {
                 // §6.1.50 Table 320 requires Data Length; the paragraph above
                 // the table permits a successful value of zero.
-                let mut data_lengths = payload
-                    .children()
-                    .iter()
-                    .filter(|field| field.tag().raw() == RNG_SEED_DATA_LENGTH);
-                let Some(data_length) = data_lengths.next() else {
+                let FieldPresence::Unique(data_length) =
+                    field_presence(&payload, RNG_SEED_DATA_LENGTH)
+                else {
                     return false;
                 };
-                data_lengths.next().is_none()
-                    && data_length.with_value(|value| matches!(value, ValueView::Integer(_)))
+                data_length.with_value(|value| matches!(value, ValueView::Integer(_)))
             })
             .unwrap_or(false)
     })
