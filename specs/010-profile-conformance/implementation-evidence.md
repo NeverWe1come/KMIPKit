@@ -5495,3 +5495,18 @@ Mapped `KMIPKIT-REQ-SPEC-7.18-004` and `KMIPKIT-REQ-SPEC-7.18-005` from KMIP Spe
 | Hosted CI | Exact-head run after this batch is pushed | Pending. No current-head CI result is claimed for these commits. |
 
 Baseline Client now has 101 valid executable typed mappings of 265 assigned requirements; 164 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+### KMIPKIT-0010 T040 — Get wrapped-key request mapping (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-7.18-001-001` from KMIP Specification v2.1 §7.18. Get Table 220 exposes Key Wrapping Specification as an optional request item; the profile test verifies that the client can express a wrapped-key request and accepts Get without that option without inferring wrapped-key intent. This is request representation evidence only; it does not claim server behavior or profile conformance. No requirement-specific official Test Case is linked.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `90288a17`; `cargo test -p kmipkit-protocol --lib --all-features profile_maps_get_wrapped_key_requests_to_key_wrapping_specification` | Expected failure: the requirement had no typed profile mapping. |
+| Green | DCO commit `4d465779`; Get request evaluator, `RequiredBehavior` mapping, catalog links, generated report, and report registry snapshot | PASS: the focused profile test accepts wrapped-key and no-wrapping Get requests; catalog validation and the generated report identify §7.18 and the executable evidence. |
+| Refactor | DCO commit `0deb17a1`; renamed the evaluator to `client_supports_get_wrapped_key_request` to distinguish API capability evidence from inferring caller intent | PASS: all 946 protocol library tests, protocol Clippy, formatting, and diff checks. |
+| Catalog and traceability | Catalog validator; profile generator `--check`; report generator `--check`; typed profile traceability test | PASS: 4 sources, 1,411 clauses, 4,123 records; generated profile metadata and report are current; typed references resolve. |
+| Report regression | Full `test_report` run found one stale mapping-order snapshot; the expected order was corrected and `test_full_profile_report_fails_closed_with_partial_runtime_registry_and_pinned_fixtures` passes in isolation | PASS for corrected failing test; full suite rerun remains part of exact-head CI. |
+| Hosted CI | Exact-head run after publishing this batch | Pending. Current PR run `40062079953` targets prior head `23cfd0db` and remains in progress. |
+
+Baseline Client now has 102 valid executable typed mappings of 265 assigned requirements; 163 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
