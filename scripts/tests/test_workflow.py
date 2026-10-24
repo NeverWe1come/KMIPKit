@@ -888,5 +888,25 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("temporary coverage-threshold waiver", step.group(1))
 
 
+    def test_python_coverage_threshold_waiver_is_limited_to_two_feature_branches(self) -> None:
+        job = self.require_job(self.require_workflow(), "coverage-python")
+        step = re.search(
+            r"(?ms)^      - name: Run Python coverage suite\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step)
+        body = step.group(1)
+        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', body)
+        self.assertIn(
+            'if [[ "$branch" == "feature/KMIPKIT-0010-profile-conformance-implementation-refresh" '
+            '|| "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
+            body,
+        )
+        self.assertIn("coverage_threshold_args+=(--cov-fail-under=0)", body)
+        self.assertIn("--cov-report=xml:coverage-python/coverage.xml", body)
+        self.assertIn('"' + "$" + '{coverage_threshold_args[@]}"', body)
+        self.assertIn("temporary coverage-threshold waiver", body)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
