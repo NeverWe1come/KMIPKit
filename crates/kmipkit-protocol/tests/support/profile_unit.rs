@@ -4419,6 +4419,42 @@ fn profile_accepts_complete_client_object_state_link_values() {
     }
 }
 
+#[test]
+fn profile_maps_optional_absent_link_for_unavailable_associated_key_material() {
+    // KMIP Specification v2.1 §4.31 paragraph 2 permits absent Links when the
+    // associated cryptographic key material is unavailable to the client.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.31-002";
+    const CERTIFICATE_OBJECT_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+
+    let request = request_message_with_operation_payload(
+        REGISTER_OPERATION_TAG,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(1)),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+            tagged(
+                CERTIFICATE_OBJECT_TAG,
+                Value::structure(structure([
+                    tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+                    tagged(
+                        CERTIFICATE_VALUE_TAG,
+                        Value::byte_string(b"certificate-without-associated-key".to_vec()),
+                    ),
+                ])),
+            ),
+        ]),
+    );
+    let result = ProfileValidationResult {
+        profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    result
+        .validate_request(&request)
+        .expect("the selected client profile permits a certificate without an unavailable Link");
+}
+
 fn client_object_state_link_with_future_type(identifier: Value) -> Item {
     client_object_state_link([
         tagged(0x0042_004B, Value::enumeration(0xFFFF_FFFF)),
