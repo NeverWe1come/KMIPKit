@@ -5331,3 +5331,20 @@ Mapped four Baseline Client requirements to the KMIPKit 1.0 TTLV encoder: `KMIPK
 | Exact-head hosted CI | Run after publishing this coherent batch | Pending. |
 
 Baseline now has 89 typed mappings of 265 assigned requirements; 176 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+### KMIPKIT-0010 T040 — KMIP channel confidentiality, integrity, and authenticity (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-10.4-001-001`, `-002`, and `-003` from KMIP Specification v2.1 §10.4. The clause requires confidentiality, integrity, and authenticity for KMIP messaging as specified by KMIP Profiles; Baseline Client inherits Basic Authentication Suite §§3.1.1–3.1.3. The typed rules require TLS 1.3 for the exchange and link the KMIPKIT-0013 mTLS transport, server certificate/hostname validation, and tampered-record rejection tests. Evidence covers raw TTLV/TLS and HTTPS. These configuration rules do not inspect request payload bytes, and no requirement-specific official OASIS Test Case is linked.
+
+| Stage | Evidence | Result |
+|---|---|---|
+| Red | Commit `19e5bbb3`; focused `profile_maps_required_channel_confidentiality_integrity_and_authenticity` test | Expected failure: the §10.4 requirements had no typed Baseline mappings. |
+| Green | Commit `f97d3c95`; three typed TLS 1.3 rules, catalog assignments, generated report, and mapping-registry snapshot | PASS: both supported client transports satisfy the mapped TLS 1.3 constraint; security tests link to the exact requirement and clause. |
+| Refactor | Commit `41f4bc21`; share configuration-only mapping assertions between TTLV and transport rules | PASS: ten focused profile mapping tests passed after the refactor. |
+| Protocol and transport tests | 935 protocol unit tests; raw TLS, HTTPS, and TLS-integrity targets | PASS: 935 protocol tests and 301 transport tests. |
+| Traceability regressions | Full-profile report snapshot, bidirectional requirement/test evidence, and `test_message_model_csv_maps_requirements_and_executable_evidence` | PASS after updating the stale §10.1.2 status expectation to `scoped_verified`, with its KMIPKIT-0005 code and profile-test references. |
+| Quality and generation | Catalog validation; profile generation `--check`; report generation `--check`; protocol Clippy; `cargo fmt --all --check`; `git diff --check` | PASS: 4 sources, 1,411 clauses, 4,123 records; generated artifacts current. |
+| Protocol coverage | `cargo llvm-cov -p kmipkit-protocol --lib --all-features --locked --json --output-path target/t040-channel-protocol-coverage.json` | `profile.rs`: 2,926/3,057 lines (95.71%). The protocol-library-only aggregate is 14,959/17,259 (86.67%) because this command omits workspace integration-test targets. |
+| Workspace coverage | `cargo llvm-cov --workspace --all-features --locked --json --output-path target/t040-channel-security-coverage.json` | Local run could not complete: three loopback DNS fixture tests were denied socket access by Windows (`PermissionError`). The previous workspace run was 95.46%; exact-head hosted CI is required for this batch's full workspace gate. |
+| Hosted CI on prior pushed head `2345194f` | Run `40042031530` | Documentation contracts failed because `test_message_model_csv_maps_requirements_and_executable_evidence` still expected the newly mapped §10.1.2 order requirement to be `unassigned`. The assertion is corrected and its focused test passes; the other run jobs were still active when recorded. A fresh exact-head CI run is pending this batch's push. |
+
+Baseline now has 92 typed mappings of 265 assigned requirements; 173 remain unmapped. Three mandatory profile fixtures remain blocked and 77 profile cases remain unavailable. T040 remains open; readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
