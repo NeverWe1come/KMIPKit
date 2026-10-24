@@ -96570,10 +96570,13 @@
       "feature_spec": "KMIPKIT-0036",
       "implementation_refs": [
         "crates/kmipkit-protocol/src/rekey_key_pair.rs",
+        "crates/kmipkit-protocol/src/profile.rs",
         "crates/kmipkit-client/src/execute.rs"
       ],
       "verification_refs": [
-        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups"
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_offset_as_optional_interval",
+        "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once"
       ],
       "negative_verification_required": false,
       "decision_id": null,

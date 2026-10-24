@@ -1575,6 +1575,19 @@ fn client_rekey_offset_is_optional_interval(
     )
 }
 
+fn client_rekey_key_pair_offset_is_optional_interval(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    client_operation_field_is_well_formed(
+        request,
+        REKEY_KEY_PAIR_OPERATION,
+        OFFSET,
+        OperationFieldType::Interval,
+        false,
+    )
+}
+
 // Table 313 marks both request objects optional; §6.1.48 does not say they
 // are mutually exclusive. Each present object still has the required §2 shape.
 fn client_reprovision_request_fields_are_well_formed(
@@ -6665,6 +6678,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             },
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.47-004-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.47-004",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_rekey_key_pair_offset_is_optional_interval),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_rekey_key_pair_offset_as_optional_interval",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
