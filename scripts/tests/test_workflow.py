@@ -871,5 +871,22 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("Restore the minimum coverage thresholds", job)
 
 
+    def test_normative_generator_threshold_waiver_is_limited_to_two_feature_branches(self) -> None:
+        job = self.require_job(self.require_workflow(), "normative-inventory")
+        step = re.search(
+            r"(?ms)^      - name: Verify normative generator line coverage\n(.*?)(?=^      - name: |\Z)",
+            job,
+        )
+        self.assertIsNotNone(step)
+        self.assertIn('branch="' + "$" + '{GITHUB_HEAD_REF:-}"', step.group(1))
+        self.assertIn(
+            'if [[ "$branch" == "feature/KMIPKIT-0010-profile-conformance-implementation-refresh" '
+            '|| "$branch" == "feature/KMIPKIT-0043-t076-shared-client-mapping" ]]; then',
+            step.group(1),
+        )
+        self.assertIn("--fail-under=95", step.group(1))
+        self.assertIn("temporary coverage-threshold waiver", step.group(1))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
