@@ -5678,3 +5678,20 @@ Mapped `KMIPKIT-REQ-SPEC-6.1.7-003` and `KMIPKIT-REQ-SPEC-6.1.7-004-002` from KM
 | Hosted CI | Exact-head run after this coherent batch is pushed | Pending. |
 
 Baseline Client now has 122 valid executable typed mappings of 265 assigned requirements; 143 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
+
+
+### KMIPKIT-0010 T040 — Optional Export format selectors (2026-10-24)
+
+Mapped `KMIPKIT-REQ-SPEC-6.1.18-005` and `-006` from KMIP Specification v2.1 §6.1.18, Table 217. The Baseline Client profile now validates that an Export request may contain one caller-selected Key Format Type and Key Wrap Type Enumeration, preserves omission and future values, and rejects malformed or duplicate selectors. The checks concern request-side representation only; they do not claim the server returns the selected representation or supports a given value. No requirement-specific official OASIS Test Case is linked by the pinned source.
+
+| Stage or check | Evidence | Result |
+|---|---|---|
+| Red | DCO commit `9d0fc697`; `cargo test -p kmipkit-protocol --lib profile_maps_client_export_optional_format_and_wrap_selectors --all-features --locked` | Expected failure: the optional Export selectors had no typed profile rule. |
+| Green | DCO commit `d822c493`; added typed optional-capability mappings and Export-scoped Enumeration checks | PASS: caller-selected values validate, omission remains accepted, and malformed/duplicate values are rejected. |
+| Refactor | DCO commit `595a8b02`; shared Get/Export selector validation, source-specific catalog notes, generated coverage report, and report snapshot | PASS: the report snapshot matches both evidence references per mapping. |
+| Rust checks | `cargo test -p kmipkit-protocol --lib profile_maps_client_export --all-features --locked`; `cargo clippy -p kmipkit-protocol --all-targets --all-features --locked -- -D warnings`; `cargo fmt --all --check`; `git diff --check` | PASS: both focused profile tests, Clippy, formatting, and diff checks pass. |
+| Catalog and generated evidence | `python -B tools/normative_catalog/validate.py --repo-root .`; `generate_profiles.py --check`; `report.py --check`; full-profile report snapshot | PASS: catalog has 4 sources, 1,411 clauses, and 4,123 records; generated metadata/report and snapshot are current. |
+| Traceability | `test_typed_profile_mappings_resolve_to_closure_and_traceable_code_and_tests` | PASS: both mappings resolve to the Baseline Client closure, implementation, and category-appropriate tests. |
+| Hosted CI | Exact-head run after the coherent batch is pushed | Pending. |
+
+Baseline Client now has 124 valid executable typed mappings of 265 assigned requirements; 141 remain unmapped. Three mandatory fixture blockers and 77 unavailable profile cases remain. T040 remains open, readiness remains `evidence_incomplete`, and no profile-conformance claim is made.
