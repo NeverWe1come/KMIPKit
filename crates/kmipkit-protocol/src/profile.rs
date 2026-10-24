@@ -2117,6 +2117,43 @@ fn client_register_opaque_object_has_required_data_fields(
     })
 }
 
+fn client_register_has_required_object_type_and_attributes(
+    request: Option<&RequestMessage>,
+    response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    if response.is_some() {
+        return true;
+    }
+
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        if batch_item.operation() != Some(REGISTER_OPERATION) {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(object_type) =
+                    field_presence(&payload, REGISTER_OBJECT_TYPE)
+                else {
+                    return false;
+                };
+                let FieldPresence::Unique(attributes) =
+                    field_presence(&payload, REGISTER_ATTRIBUTES)
+                else {
+                    return false;
+                };
+
+                object_type.with_value(|value| matches!(value, ValueView::Enumeration(_)))
+                    && attributes.with_value(|value| matches!(value, ValueView::Structure(_)))
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn register_opaque_context_is_well_formed(payload: &StructureView<'_>) -> bool {
     let FieldPresence::Unique(object_type) = field_presence(payload, REGISTER_OBJECT_TYPE) else {
         return true;
@@ -3869,6 +3906,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_accepts_absent_or_present_direct_key_block_pairs",
             kind: RuleTestKind::PositiveBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.43-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.43-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(client_register_has_required_object_type_and_attributes),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_object_type_and_attributes_as_required",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_emits_table_291_fields_in_order_and_preserves_object_item",
+                kind: RuleTestKind::PositiveBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {

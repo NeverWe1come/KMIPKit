@@ -7241,6 +7241,11 @@ fn profile_maps_register_object_type_and_attributes_as_required() {
     result
         .validate_request(&valid)
         .expect("a future Object Type Enumeration and empty Attributes structure are preserved");
+    result
+        .validate_response(&valid, &response_message())
+        .expect("the outbound Register field rule does not reject a response");
+    let unrelated_operation = request_message();
+    assert!(evaluate(Some(&unrelated_operation), None));
 
     for malformed in [
         request_message_with_operation_payload(
@@ -7254,15 +7259,18 @@ fn profile_maps_register_object_type_and_attributes_as_required() {
         request_message_with_operation_payload(
             REGISTER_OPERATION,
             structure([
-                tagged(OBJECT_TYPE_TAG, Value::text_string("symmetric-key".to_owned())),
+                tagged(
+                    OBJECT_TYPE_TAG,
+                    Value::text_string("symmetric-key".to_owned()),
+                ),
                 tagged(ATTRIBUTES_TAG, Value::integer(7)),
             ]),
         ),
     ] {
         assert!(!evaluate(Some(&malformed), None));
-        let error = result
-            .validate_request(&malformed)
-            .expect_err("Register requires one Enumeration Object Type and one Attributes Structure");
+        let error = result.validate_request(&malformed).expect_err(
+            "Register requires one Enumeration Object Type and one Attributes Structure",
+        );
         assert_eq!(
             error.code(),
             ProfileValidationErrorCode::RequestRuleRejected
