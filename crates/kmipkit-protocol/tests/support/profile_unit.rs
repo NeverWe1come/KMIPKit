@@ -4332,8 +4332,6 @@ fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_i
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
-    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
-
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
@@ -6775,6 +6773,7 @@ const TABLE12_KEY_VALUE: u32 = 0x0042_0045;
 const TABLE12_KEY_MATERIAL: u32 = 0x0042_0043;
 const TABLE12_CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const TABLE12_CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002A;
+const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
 const TABLE12_CERTIFICATE: u32 = 0x0042_0013;
 const TABLE12_CERTIFICATE_REQUEST: u32 = 0x0042_0018;
 const TABLE12_SYMMETRIC_KEY: u32 = 0x0042_008F;
@@ -7500,8 +7499,6 @@ fn assert_register_table293_outer_pair_metadata_branches() {
 
 fn assert_register_signature_algorithm_presence_branches() {
     const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
-    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
-
     let signature_algorithm_present = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         structure([
