@@ -405,6 +405,9 @@ fn request_extension_depth_limit_is_checked_before_encoding() {
         nested = structure([item(0x0054_1234, Value::structure(nested))]);
     }
     let error = ValidateRequest::new()
+        .with_unique_identifier(UniqueIdentifier::TextString(
+            "managed-certificate".to_owned(),
+        ))
         .with_extension(item(0x0054_1234, Value::structure(nested)))
         .into_ttlv_payload()
         .unwrap_err();
