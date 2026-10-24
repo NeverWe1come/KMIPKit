@@ -16294,6 +16294,87 @@ fn profile_split_key_rule_ignores_other_object_types_and_rejects_malformed_paylo
 }
 
 #[test]
+fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence() {
+    // KMIP Specification v2.1 §6.1.27 and Table 244 require at least the
+    // caller-known Split Key Threshold number of Unique Identifier entries.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
+    const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Join Split Key threshold SHALL has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("Join Split Key threshold SHALL resolves to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the threshold SHALL has positive and negative executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("Join Split Key threshold has a typed request evaluator");
+    assert!(!evaluate(None, None));
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+
+    // Repeated values remain separate Unique Identifier entries and count as
+    // entries; the typed request constructor separately checks their count
+    // against the maximum caller-supplied threshold before serialization.
+    let repeated_identifiers = request_message_with_operation_payload(
+        JOIN_SPLIT_KEY_OPERATION,
+        structure([
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-a".to_owned()),
+            ),
+            tagged(
+                UNIQUE_IDENTIFIER_TAG,
+                Value::text_string("split-a".to_owned()),
+            ),
+        ]),
+    );
+    assert!(evaluate(Some(&repeated_identifiers), None));
+    result
+        .validate_request(&repeated_identifiers)
+        .expect("serialized Join Split Key retains each caller-approved identifier entry");
+
+    let missing_identifier =
+        request_message_with_operation_payload(JOIN_SPLIT_KEY_OPERATION, Structure::new());
+    assert!(!evaluate(Some(&missing_identifier), None));
+    let error = result
+        .validate_request(&missing_identifier)
+        .expect_err("Join Split Key must contain at least one Unique Identifier entry");
+    assert_eq!(
+        error.code(),
+        ProfileValidationErrorCode::RequestRuleRejected
+    );
+    assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    assert_eq!(error.source_clause_id(), Some(SOURCE_CLAUSE_ID));
+
+    let malformed_identifier = request_message_with_operation_payload(
+        JOIN_SPLIT_KEY_OPERATION,
+        structure([tagged(UNIQUE_IDENTIFIER_TAG, Value::integer(1))]),
+    );
+    assert!(!evaluate(Some(&malformed_identifier), None));
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Join Split Key-only rule does not constrain Locate requests");
+}
+
+#[test]
 fn profile_rejects_usage_limits_count_in_add_and_modify_attribute() {
     // KMIP Specification v2.1 §4.59 paragraph 3 prohibits setting or modifying
     // Usage Limits Count through Add Attribute or Modify Attribute.
