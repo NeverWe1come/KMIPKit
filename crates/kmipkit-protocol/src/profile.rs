@@ -738,6 +738,7 @@ const CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const USAGE_LIMITS_COUNT: u32 = 0x0042_0096;
 const USAGE_LIMITS_TOTAL: u32 = 0x0042_0097;
 const USAGE_LIMITS_UNIT: u32 = 0x0042_0098;
+const USAGE_LIMITS_ATTRIBUTE: u32 = 0x0042_0095;
 const LEASE_TIME: u32 = 0x0042_0049;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT: u32 = 0x0042_014E;
@@ -4320,6 +4321,56 @@ fn client_key_value_present_is_not_modified(
     })
 }
 
+fn client_usage_limits_count_is_not_set_by_add_or_modify(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        let Some(mutation) = (match operation {
+            ADD_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Add),
+            MODIFY_ATTRIBUTE_OPERATION => Some(ClientAttributeMutation::Modify),
+            _ => None,
+        }) else {
+            return true;
+        };
+
+        batch_item
+            .with_request_payload(|payload| match field_presence(&payload, NEW_ATTRIBUTE) {
+                FieldPresence::Missing => true,
+                FieldPresence::Duplicate => false,
+                FieldPresence::Unique(new_attribute) => {
+                    new_attribute.with_value(|value| match value {
+                        ValueView::Structure(attributes) => {
+                            attributes.children().iter().all(|attribute| {
+                                attribute.tag().raw() != USAGE_LIMITS_ATTRIBUTE
+                                    || attribute.with_value(|value| match value {
+                                        ValueView::Structure(usage_limits) => {
+                                            !usage_limits.children().iter().any(|field| {
+                                                field.tag().raw() == USAGE_LIMITS_COUNT
+                                            }) || !client_attribute_mutation_is_prohibited(
+                                                USAGE_LIMITS_ATTRIBUTE,
+                                                mutation,
+                                            )
+                                        }
+                                        _ => true,
+                                    })
+                            })
+                        }
+                        _ => false,
+                    })
+                }
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_compromise_occurrence_date_only_for_key_or_ca_compromise(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -5959,6 +6010,24 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_key_value_present_attribute_mutations",
             kind: RuleTestKind::NegativeBehavior,
         }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.59-003",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
+        evaluator: Some(client_usage_limits_count_is_not_set_by_add_or_modify),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_usage_limits_count_in_add_and_modify_attribute",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::usage_limits_new_attribute_is_rejected_only_for_add_and_modify",
+                kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
         constraints: &[],
     },
     TypedRuleMapping {
