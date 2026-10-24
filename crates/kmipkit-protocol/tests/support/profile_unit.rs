@@ -7373,6 +7373,140 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
     assert_register_certificate_signature_omission(SIGNATURE_REQUIREMENT_ID);
 }
 
+#[test]
+fn profile_maps_register_omission_exemptions_and_malformed_containers() {
+    // KMIP Specification v2.1 §6.1.43 Table 293 exempts Secret Data and only
+    // permits omission when the required information is structurally present.
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
+    const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers";
+    const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+    const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0027;
+    const KEY_VALUE_TAG: u32 = 0x0042_0045;
+    const KEY_MATERIAL_TAG: u32 = 0x0042_0043;
+    const CERTIFICATE_TAG: u32 = 0x0042_0013;
+    const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
+    const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
+
+    for requirement_id in [
+        ALGORITHM_REQUIREMENT_ID,
+        LENGTH_REQUIREMENT_ID,
+        SIGNATURE_REQUIREMENT_ID,
+    ] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("Register omission requirements have typed profile rules");
+        assert!(mapping.test_evidence.iter().any(|evidence| {
+            evidence.test_id == PROFILE_TEST_ID
+                && evidence.kind == RuleTestKind::OptionalCapabilityUsable
+        }));
+    }
+
+    let secret_data = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            table12_key_block_object(TABLE12_SECRET_DATA, false, false, None),
+            [],
+        ),
+    );
+    for requirement_id in [ALGORITHM_REQUIREMENT_ID, LENGTH_REQUIREMENT_ID] {
+        let mapping = TYPED_RULE_MAPPINGS
+            .iter()
+            .find(|mapping| mapping.requirement_id == requirement_id)
+            .expect("Table 293 Algorithm and Length have typed profile rules");
+        assert!(mapping.evaluator.expect("the rule has an evaluator")(
+            Some(&secret_data),
+            None
+        ));
+    }
+
+    let duplicate_algorithm_key_block = tagged(
+        TABLE12_SYMMETRIC_KEY,
+        Value::structure(structure([tagged(
+            KEY_BLOCK_TAG,
+            Value::structure(structure([
+                tagged(KEY_FORMAT_TYPE_TAG, Value::enumeration(1)),
+                tagged(
+                    KEY_VALUE_TAG,
+                    Value::structure(structure([tagged(
+                        KEY_MATERIAL_TAG,
+                        Value::byte_string(b"synthetic-key-material".to_vec()),
+                    )])),
+                ),
+                tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
+                tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(4)),
+                tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
+            ])),
+        )])),
+    );
+    let duplicate_algorithm = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        table12_request_payload(
+            TABLE12_REGISTER_OPERATION,
+            duplicate_algorithm_key_block,
+            [],
+        ),
+    );
+    let algorithm_mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == ALGORITHM_REQUIREMENT_ID)
+        .expect("Table 293 Algorithm has a typed profile rule");
+    assert!(!algorithm_mapping
+        .evaluator
+        .expect("the rule has an evaluator")(
+            Some(&duplicate_algorithm),
+            None
+        ));
+
+    let invalid_certificate_value = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(1)),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+            tagged(
+                CERTIFICATE_TAG,
+                Value::structure(structure([
+                    tagged(CERTIFICATE_TYPE_TAG, Value::enumeration(1)),
+                    tagged(CERTIFICATE_VALUE_TAG, Value::integer(1)),
+                ])),
+            ),
+        ]),
+    );
+    let duplicate_certificate = request_message_with_operation_payload(
+        TABLE12_REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(1)),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+            tagged(
+                CERTIFICATE_TAG,
+                Value::structure(structure([tagged(
+                    CERTIFICATE_VALUE_TAG,
+                    Value::byte_string(b"certificate".to_vec()),
+                )])),
+            ),
+            tagged(
+                CERTIFICATE_TAG,
+                Value::structure(structure([tagged(
+                    CERTIFICATE_VALUE_TAG,
+                    Value::byte_string(b"duplicate".to_vec()),
+                )])),
+            ),
+        ]),
+    );
+    let signature_mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == SIGNATURE_REQUIREMENT_ID)
+        .expect("Table 293 Digital Signature Algorithm has a typed profile rule");
+    let signature_rule = signature_mapping
+        .evaluator
+        .expect("the rule has an evaluator");
+    assert!(!signature_rule(Some(&invalid_certificate_value), None));
+    assert!(!signature_rule(Some(&duplicate_certificate), None));
+}
+
 fn assert_register_key_block_omission_paths(
     algorithm_requirement_id: &str,
     length_requirement_id: &str,
