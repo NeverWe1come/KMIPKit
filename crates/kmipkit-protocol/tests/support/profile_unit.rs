@@ -3833,6 +3833,18 @@ fn profile_maps_client_check_optional_usage_fields() {
             .validate_request(&malformed_usage_limits)
             .is_err()
     );
+    let duplicate_usage_limits = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(2)),
+            tagged(USAGE_LIMITS_COUNT_TAG, Value::long_integer(3)),
+        ]),
+    );
+    assert!(
+        usage_limits_result
+            .validate_request(&duplicate_usage_limits)
+            .is_err()
+    );
 
     let cryptographic_usage_result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -3848,6 +3860,18 @@ fn profile_maps_client_check_optional_usage_fields() {
     assert!(
         cryptographic_usage_result
             .validate_request(&malformed_cryptographic_usage)
+            .is_err()
+    );
+    let duplicate_cryptographic_usage = request_message_with_operation_payload(
+        CHECK_OPERATION_TAG,
+        structure([
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(0x04)),
+            tagged(CRYPTOGRAPHIC_USAGE_MASK_TAG, Value::integer(0x08)),
+        ]),
+    );
+    assert!(
+        cryptographic_usage_result
+            .validate_request(&duplicate_cryptographic_usage)
             .is_err()
     );
 }
