@@ -4829,6 +4829,20 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
     const DATA_TAG: u32 = 0x0042_00C2;
 
+    fn sign_payload(parameters: impl IntoIterator<Item = Value>) -> Structure {
+        let mut fields = vec![tagged(
+            UNIQUE_IDENTIFIER_TAG,
+            Value::text_string("signing-key".to_owned()),
+        )];
+        fields.extend(
+            parameters
+                .into_iter()
+                .map(|parameters| tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, parameters)),
+        );
+        fields.push(tagged(DATA_TAG, Value::byte_string(b"message".to_vec())));
+        structure(fields)
+    }
+
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
@@ -4855,20 +4869,6 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
-
-    fn sign_payload(parameters: impl IntoIterator<Item = Value>) -> Structure {
-        let mut fields = vec![tagged(
-            UNIQUE_IDENTIFIER_TAG,
-            Value::text_string("signing-key".to_owned()),
-        )];
-        fields.extend(
-            parameters
-                .into_iter()
-                .map(|parameters| tagged(CRYPTOGRAPHIC_PARAMETERS_TAG, parameters)),
-        );
-        fields.push(tagged(DATA_TAG, Value::byte_string(b"message".to_vec())));
-        structure(fields)
-    }
 
     for payload in [
         sign_payload([]),
