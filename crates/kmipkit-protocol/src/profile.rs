@@ -720,6 +720,7 @@ const RECERTIFY_OPERATION: u32 = 0x0000_0007;
 const REPROVISION_OPERATION: u32 = 0x0000_0035;
 const REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
 const SIGN_OPERATION: u32 = 0x0000_0021;
+const SIGNATURE_VERIFY_OPERATION: u32 = 0x0000_0022;
 const RECOVER_OPERATION: u32 = 0x0000_0016;
 const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
 const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
@@ -1603,6 +1604,21 @@ fn client_sign_cryptographic_parameters_are_optional_structure(
         request,
         SIGN_OPERATION,
         SIGN_CRYPTOGRAPHIC_PARAMETERS,
+        OperationFieldType::Structure,
+        false,
+    )
+}
+
+fn client_signature_verify_cryptographic_parameters_are_optional_structure(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    // §6.1.56 permits omission when managed-object attributes supply the
+    // parameters. This client-side rule checks representation only.
+    client_operation_field_is_well_formed(
+        request,
+        SIGNATURE_VERIFY_OPERATION,
+        CRYPTOGRAPHIC_PARAMETERS,
         OperationFieldType::Structure,
         false,
     )
@@ -6799,6 +6815,28 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             RuleTestEvidence {
                 test_id: "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
                 kind: RuleTestKind::NegativeBehavior,
+            },
+        ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.56-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.56-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_signature_verify_cryptographic_parameters_are_optional_structure),
+        test_evidence: &[
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_capability",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs::request_allows_optional_key_parameters_and_input_data_to_be_omitted",
+                kind: RuleTestKind::OptionalCapabilityUsable,
+            },
+            RuleTestEvidence {
+                test_id: "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
+                kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
         constraints: &[],
