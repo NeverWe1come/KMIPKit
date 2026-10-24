@@ -268,6 +268,7 @@ class CoverageReportTests(unittest.TestCase):
                         "verification_category": "RequiredBehavior",
                         "evaluator_present": False,
                         "transport_only": True,
+                        "configuration_only": True,
                         "test_kind": "PositiveBehavior",
                         "test_id": (
                             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
@@ -281,6 +282,7 @@ class CoverageReportTests(unittest.TestCase):
                         "verification_category": "RecommendedBehaviorOrDeviation",
                         "evaluator_present": False,
                         "transport_only": True,
+                        "configuration_only": True,
                         "test_kind": "RecommendedBehavior",
                         "test_id": (
                             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"

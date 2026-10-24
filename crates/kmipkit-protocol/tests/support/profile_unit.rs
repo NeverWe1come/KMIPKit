@@ -7077,11 +7077,8 @@ fn selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closur
     const CLAIMED_PROFILE_CLOSURE: &str = "KMIPKIT-REQ-SPEC-14.1-002";
     const UNMAPPED_CHILD: &str = "KMIPKIT-REQ-PROF-3.2-001";
     const CONFORMANCE_REQUIREMENTS: &[&str] = &[CLIENT_CONFORMANCE, CLAIMED_PROFILE_CLOSURE];
-    const INCOMPLETE_CLOSURE: &[&str] = &[
-        CLIENT_CONFORMANCE,
-        CLAIMED_PROFILE_CLOSURE,
-        UNMAPPED_CHILD,
-    ];
+    const INCOMPLETE_CLOSURE: &[&str] =
+        &[CLIENT_CONFORMANCE, CLAIMED_PROFILE_CLOSURE, UNMAPPED_CHILD];
 
     let complete_profile = profile(PROFILE_ID, CONFORMANCE_REQUIREMENTS, &[]);
     let complete_requirements = CLIENT_REQUIREMENTS
@@ -7100,7 +7097,10 @@ fn selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closur
     assert_eq!(complete_result.profile_ids(), &[PROFILE_ID.to_owned()]);
     assert_eq!(
         complete_result.requirement_ids(),
-        &[CLIENT_CONFORMANCE.to_owned(), CLAIMED_PROFILE_CLOSURE.to_owned()]
+        &[
+            CLIENT_CONFORMANCE.to_owned(),
+            CLAIMED_PROFILE_CLOSURE.to_owned()
+        ]
     );
 
     let incomplete_profile = profile(PROFILE_ID, INCOMPLETE_CLOSURE, &[]);

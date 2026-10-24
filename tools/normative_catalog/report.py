@@ -79,6 +79,16 @@ _RULE_CONSTRAINTS = {
     ("transport_security", "tls13"),
     ("tls13_cipher_suites", "kmip_profiles_3_1_2"),
     ("encoding", "ttlv"),
+    ("client_profile_selection", "at_least_one"),
+    ("client_profile_closure", "all_normative_statements"),
+}
+_CONFIGURATION_ONLY_RULE_CONSTRAINTS = {
+    ("transport_security", "tls"),
+    ("transport_security", "tls13"),
+    ("tls13_cipher_suites", "kmip_profiles_3_1_2"),
+    ("encoding", "ttlv"),
+    ("client_profile_selection", "at_least_one"),
+    ("client_profile_closure", "all_normative_statements"),
 }
 _DOUBLE_QUOTED_SECRET_VALUE = r'"(?:\\.|[^"\\\r\n])*"'
 _SINGLE_QUOTED_SECRET_VALUE = r"'(?:\\.|[^'\\\r\n])*'"
@@ -354,6 +364,15 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
                 for constraint in constraints
             )
         )
+        configuration_only = (
+            evaluator == "None"
+            and bool(constraints)
+            and all(
+                (constraint["key"], constraint["value"])
+                in _CONFIGURATION_ONLY_RULE_CONSTRAINTS
+                for constraint in constraints
+            )
+        )
 
         if not evidence:
             evidence.append({"test_id": "", "kind": ""})
@@ -365,6 +384,7 @@ def _parse_typed_rule_registry(text: str) -> list[dict[str, Any]]:
                 "verification_category": category,
                 "evaluator_present": evaluator != "None",
                 "transport_only": transport_only,
+                "configuration_only": configuration_only,
                 "test_kind": item["kind"] or None,
                 "test_id": item["test_id"] or None,
             })
@@ -885,6 +905,7 @@ def _typed_rule_coverage(
         and (
             mapping.get("evaluator_present") is True
             or mapping.get("transport_only") is True
+            or mapping.get("configuration_only") is True
         )
     ]
     if typed_rule_mappings is None:

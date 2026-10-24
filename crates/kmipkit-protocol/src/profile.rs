@@ -7117,6 +7117,36 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         ],
         constraints: &[],
     },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-14.1-001",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-14.1-001",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_selection",
+            value: "at_least_one",
+        }],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-14.1-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-14.1-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: None,
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[RuleConstraint {
+            key: "client_profile_closure",
+            value: "all_normative_statements",
+        }],
+    },
 ];
 
 /// Redacted validation failure containing only stable IDs and a fixed code.
@@ -7503,6 +7533,8 @@ fn validate_mapping(
                 | ("transport_security", "tls" | "tls13")
                 | ("tls13_cipher_suites", "kmip_profiles_3_1_2")
                 | ("encoding", "ttlv")
+                | ("client_profile_selection", "at_least_one")
+                | ("client_profile_closure", "all_normative_statements")
         )
     }) {
         return Err(error(ProfileValidationErrorCode::RuleMappingMismatch));
@@ -7546,6 +7578,10 @@ fn is_configuration_only_mapping(mapping: &TypedRuleMapping) -> bool {
                 || (constraint.key == "tls13_cipher_suites"
                     && constraint.value == "kmip_profiles_3_1_2")
                 || (constraint.key == "encoding" && constraint.value == "ttlv")
+                || (constraint.key == "client_profile_selection"
+                    && constraint.value == "at_least_one")
+                || (constraint.key == "client_profile_closure"
+                    && constraint.value == "all_normative_statements")
         })
 }
 

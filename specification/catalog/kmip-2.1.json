@@ -86324,13 +86324,17 @@
       "element_ids": [],
       "profile_ids": [],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §14.1 requires a KMIP client implementation to be conforming. KMIPKit records profile selection and rejects a selected profile unless each requirement in its computed closure has valid typed mapping and test evidence. This verifies the readiness gate only; the Baseline Client profile still has unmapped requirements, so no conformance claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-14.1-002",
@@ -86373,13 +86377,17 @@
         "KMIPKIT-PROFILE-XML-CLIENT"
       ],
       "test_case_ids": [],
-      "feature_spec": null,
-      "implementation_refs": [],
-      "verification_refs": [],
+      "feature_spec": "KMIPKIT-0010",
+      "implementation_refs": [
+        "crates/kmipkit-protocol/src/profile.rs"
+      ],
+      "verification_refs": [
+        "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure"
+      ],
       "negative_verification_required": false,
       "decision_id": null,
-      "status": "unassigned",
-      "review_note": "No requirement-specific official Test Cases ID is explicitly linked by the pinned OASIS sources in KMIPKIT-0002. No verification link is inferred; fixture-level evidence is unavailable where cited fixtures are missing."
+      "status": "scoped_verified",
+      "review_note": "KMIP Specification v2.1 §14.1 requires every normative statement in a claimed client profile and its subclauses to be satisfied. KMIPKit's selection gate walks the computed profile closure and rejects a profile when any requirement lacks a valid typed mapping and executable evidence. The test covers a complete synthetic closure and rejection of an unmapped child; the Baseline Client closure remains incomplete, so no profile claim is made. The pinned OASIS sources do not link a requirement-specific official Test Case ID."
     },
     {
       "requirement_id": "KMIPKIT-REQ-SPEC-2.1-001",
