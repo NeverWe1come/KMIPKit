@@ -57,6 +57,7 @@ const OPERATION_TAG: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD_TAG: u32 = 0x0042_0079;
 const LOCATE_OPERATION_TAG: u32 = 0x0000_0008;
 const CHECK_OPERATION_TAG: u32 = 0x0000_0009;
+const LOGIN_OPERATION_TAG: u32 = 0x0000_002D;
 const DELEGATED_LOGIN_OPERATION_TAG: u32 = 0x0000_002F;
 const DELEGATED_LOGIN_RIGHTS_TAG: u32 = 0x0042_014D;
 const DELEGATED_LOGIN_RIGHT_TAG: u32 = 0x0042_014E;
@@ -4298,6 +4299,76 @@ fn profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_t
         ]),
     );
     assert!(result.validate_request(&malformed).is_err());
+}
+
+#[test]
+fn profile_maps_login_optional_lease_time_as_optional_interval_or_date_time() {
+    // KMIP Specification v2.1 §6.1.30 Table 253 marks Lease Time optional.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.30-001";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Login Lease Time has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("optional Login Lease Time resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("optional Login Lease Time has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("optional Login Lease Time has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let requests = [
+        crate::LoginRequest::new()
+            .into_ttlv_payload()
+            .expect("Lease Time may be omitted"),
+        crate::LoginRequest::new()
+            .with_lease_time_interval(60)
+            .into_ttlv_payload()
+            .expect("Interval Lease Time is representable"),
+        crate::LoginRequest::new()
+            .with_lease_time_date_time(1_700_000_000)
+            .into_ttlv_payload()
+            .expect("Date Time Lease Time is representable"),
+    ];
+    for payload in requests {
+        let request = request_message_with_operation_payload(LOGIN_OPERATION_TAG, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("omitted, Interval, and Date Time Lease Time are valid");
+    }
+
+    let malformed = request_message_with_operation_payload(
+        LOGIN_OPERATION_TAG,
+        structure([tagged(
+            LEASE_TIME_TAG,
+            Value::text_string("sixty".to_owned()),
+        )]),
+    );
+    assert!(!evaluate(Some(&malformed), None));
+    assert!(result.validate_request(&malformed).is_err());
+
+    let unrelated = request_message_with_operation_payload(LOCATE_OPERATION_TAG, Structure::new());
+    result
+        .validate_request(&unrelated)
+        .expect("a Login-only rule does not constrain Locate requests");
 }
 
 #[test]
