@@ -3422,6 +3422,33 @@ fn derive_key_includes_required_derivation_parameters(
     })
 }
 
+fn derive_key_includes_required_attributes(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != DERIVE_KEY_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let FieldPresence::Unique(attributes) = field_presence(&payload, ATTRIBUTES) else {
+                    return false;
+                };
+                attributes.with_value(|value| matches!(value, ValueView::Structure(_)))
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn derive_key_specifies_cryptographic_algorithm_for_key_output(
     request: Option<&RequestMessage>,
     _response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -8416,6 +8443,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         evaluator: Some(derive_key_specifies_cryptographic_algorithm_for_key_output),
         test_evidence: &[RuleTestEvidence {
             test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_cryptographic_algorithm_for_key_results",
+            kind: RuleTestKind::PositiveBehavior,
+        }],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        source_clause_id: "",
+        source_gap_id: Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"),
+        verification_category: GeneratedVerificationCategory::RequiredBehavior,
+        evaluator: Some(derive_key_includes_required_attributes),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_derive_key_attributes",
             kind: RuleTestKind::PositiveBehavior,
         }],
         constraints: &[],
