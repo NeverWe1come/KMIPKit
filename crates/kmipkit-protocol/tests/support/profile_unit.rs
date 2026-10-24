@@ -4827,6 +4827,7 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
     const SIGN_OPERATION_TAG: u32 = 0x0000_0021;
     const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
+    const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
     const DATA_TAG: u32 = 0x0042_00C2;
 
     fn sign_payload(parameters: impl IntoIterator<Item = Value>) -> Structure {
@@ -4872,7 +4873,10 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
 
     for payload in [
         sign_payload([]),
-        sign_payload([Value::structure(Structure::new())]),
+        sign_payload([Value::structure(structure([tagged(
+            DIGITAL_SIGNATURE_ALGORITHM_TAG,
+            Value::enumeration(0x13),
+        )]))]),
     ] {
         let request = request_message_with_operation_payload(SIGN_OPERATION_TAG, payload);
         assert!(evaluate(Some(&request), None));
@@ -4884,8 +4888,14 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
     for payload in [
         sign_payload([Value::text_string("not-a-Structure".to_owned())]),
         sign_payload([
-            Value::structure(Structure::new()),
-            Value::structure(Structure::new()),
+            Value::structure(structure([tagged(
+                DIGITAL_SIGNATURE_ALGORITHM_TAG,
+                Value::enumeration(0x13),
+            )])),
+            Value::structure(structure([tagged(
+                DIGITAL_SIGNATURE_ALGORITHM_TAG,
+                Value::enumeration(0x13),
+            )])),
         ]),
     ] {
         let malformed = request_message_with_operation_payload(SIGN_OPERATION_TAG, payload);
