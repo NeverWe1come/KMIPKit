@@ -3457,6 +3457,60 @@ fn profile_maps_delete_attribute_reference_as_optional_capability() {
 }
 
 #[test]
+fn profile_maps_delete_attribute_current_attribute_as_optional_capability() {
+    // KMIP Specification v2.1 §6.1.13 Table 202 marks Current Attribute optional.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.13-005";
+    const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("optional Delete Attribute Current Attribute has a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the optional Current Attribute resolves to generated normative metadata");
+    assert_eq!(mapping.source_clause_id, "");
+    assert_eq!(mapping.source_gap_id, Some(SOURCE_GAP_ID));
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::OptionalCapability
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the optional capability has positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the optional selector has a typed request evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    // Comment (0x4200FD) is a §4 Object Attribute accepted by Table 162.
+    let current_attribute = crate::CurrentAttribute::new(tagged(
+        0x0042_00FD,
+        Value::text_string("selected value".to_owned()),
+    ));
+    for current_attribute in [None, Some(current_attribute)] {
+        let payload = crate::DeleteAttributeRequest::new(
+            Some("test-object".to_owned()),
+            current_attribute,
+            None,
+        )
+        .to_ttlv_payload()
+        .expect("the typed selector preserves valid Table 202 request fields");
+        let request = request_message_with_operation_payload(0x0000_000F, payload);
+        assert!(evaluate(Some(&request), None));
+        result
+            .validate_request(&request)
+            .expect("the client may include or omit Current Attribute");
+    }
+}
+
+#[test]
 fn profile_maps_client_get_attributes_optional_attribute_references() {
     // KMIP Specification v2.1 §6.1.20 Table 223 permits repeated references.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-004";
