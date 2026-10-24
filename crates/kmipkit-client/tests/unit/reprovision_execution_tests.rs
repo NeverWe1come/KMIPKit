@@ -190,6 +190,37 @@ fn reprovision_sends_replacement_certificate_form() {
 }
 
 #[test]
+fn reprovision_sends_both_optional_certificate_fields() {
+    let response = asynchronous_response_bytes(
+        REPROVISION_OPERATION,
+        SUCCESS,
+        None,
+        None,
+        Some(test_structure([])),
+    );
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    client
+        .reprovision(
+            ReProvisionRequest::new()
+                .with_certificate_request(certificate_material("csr-data"))
+                .with_certificate(certificate_material("certificate-data")),
+            &CodecLimits::defaults(),
+        )
+        .expect("§6.1.48 and Table 313 do not prohibit both optional fields");
+    assert_eq!(
+        request_fields(captured.borrow().as_deref().expect("request captured")),
+        (
+            Some(REPROVISION_OPERATION),
+            vec![CERTIFICATE_REQUEST, CERTIFICATE]
+        )
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
 fn reprovision_failure_preserves_table_315_result_without_retry() {
     let response = asynchronous_response_bytes(
         REPROVISION_OPERATION,
