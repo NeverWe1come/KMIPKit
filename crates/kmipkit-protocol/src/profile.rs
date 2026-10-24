@@ -1886,6 +1886,39 @@ fn client_can_send_partial_structured_locate_attributes(
     })
 }
 
+fn client_can_omit_link_when_associated_key_material_is_unavailable(
+    request: Option<&RequestMessage>,
+    _response: Option<(&RequestMessage, &ResponseMessage)>,
+) -> bool {
+    let Some(request) = request else {
+        return false;
+    };
+
+    request.batch_items().all(|batch_item| {
+        let Some(operation) = batch_item.operation() else {
+            return false;
+        };
+        if operation != REGISTER_OPERATION {
+            return true;
+        }
+
+        batch_item
+            .with_request_payload(|payload| {
+                let mut found_attributes = false;
+                payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == ATTRIBUTES)
+                    .all(|field| {
+                        found_attributes = true;
+                        field.with_value(|value| matches!(value, ValueView::Structure(_)))
+                    })
+                    && found_attributes
+            })
+            .unwrap_or(false)
+    })
+}
+
 fn client_link_type_is_required_in_object_state(
     request: Option<&RequestMessage>,
     response: Option<(&RequestMessage, &ResponseMessage)>,
@@ -5640,6 +5673,18 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
                 kind: RuleTestKind::OptionalCapabilityUsable,
             },
         ],
+        constraints: &[],
+    },
+    TypedRuleMapping {
+        requirement_id: "KMIPKIT-REQ-SPEC-4.31-002",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.31-002",
+        source_gap_id: None,
+        verification_category: GeneratedVerificationCategory::OptionalCapability,
+        evaluator: Some(client_can_omit_link_when_associated_key_material_is_unavailable),
+        test_evidence: &[RuleTestEvidence {
+            test_id: "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_absent_link_for_unavailable_associated_key_material",
+            kind: RuleTestKind::OptionalCapabilityUsable,
+        }],
         constraints: &[],
     },
     TypedRuleMapping {
