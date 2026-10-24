@@ -7196,6 +7196,82 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 }
 
 #[test]
+fn profile_maps_register_object_type_and_attributes_as_required() {
+    // KMIP Specification v2.1 §6.1.43 Table 291 requires both request fields.
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-001";
+    const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const REGISTER_OPERATION: u32 = 0x0000_0003;
+    const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
+    const ATTRIBUTES_TAG: u32 = 0x0042_0125;
+
+    let mapping = TYPED_RULE_MAPPINGS
+        .iter()
+        .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
+        .expect("Register Object Type and Attributes have a typed profile rule");
+    let requirement = CLIENT_REQUIREMENTS
+        .iter()
+        .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
+        .expect("the required Register fields resolve to generated metadata");
+    assert_eq!(mapping.source_clause_id, SOURCE_CLAUSE_ID);
+    assert_eq!(
+        mapping.verification_category,
+        GeneratedVerificationCategory::RequiredBehavior
+    );
+    validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
+        .expect("the required fields have positive executable evidence");
+
+    let evaluate = mapping
+        .evaluator
+        .expect("the required Register fields have a typed evaluator");
+    assert!(!evaluate(None, None));
+
+    let result = ProfileValidationResult {
+        profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
+        requirement_ids: vec![REQUIREMENT_ID.to_owned()],
+    };
+    let valid = request_message_with_operation_payload(
+        REGISTER_OPERATION,
+        structure([
+            tagged(OBJECT_TYPE_TAG, Value::enumeration(0x8000_0001)),
+            tagged(ATTRIBUTES_TAG, Value::structure(Structure::new())),
+        ]),
+    );
+    assert!(evaluate(Some(&valid), None));
+    result
+        .validate_request(&valid)
+        .expect("a future Object Type Enumeration and empty Attributes structure are preserved");
+
+    for malformed in [
+        request_message_with_operation_payload(
+            REGISTER_OPERATION,
+            structure([tagged(ATTRIBUTES_TAG, Value::structure(Structure::new()))]),
+        ),
+        request_message_with_operation_payload(
+            REGISTER_OPERATION,
+            structure([tagged(OBJECT_TYPE_TAG, Value::enumeration(2))]),
+        ),
+        request_message_with_operation_payload(
+            REGISTER_OPERATION,
+            structure([
+                tagged(OBJECT_TYPE_TAG, Value::text_string("symmetric-key".to_owned())),
+                tagged(ATTRIBUTES_TAG, Value::integer(7)),
+            ]),
+        ),
+    ] {
+        assert!(!evaluate(Some(&malformed), None));
+        let error = result
+            .validate_request(&malformed)
+            .expect_err("Register requires one Enumeration Object Type and one Attributes Structure");
+        assert_eq!(
+            error.code(),
+            ProfileValidationErrorCode::RequestRuleRejected
+        );
+        assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
+    }
+}
+
+#[test]
 fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
     // KMIP Specification v2.1 §6.1.43 Table 293 pairs the outer Register
     // Attributes. §§3.1–3.2 separately describe Key Block and Key Value data.
